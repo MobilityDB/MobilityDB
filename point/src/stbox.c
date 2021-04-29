@@ -32,9 +32,7 @@
 #include "stbox.h"
 
 #include <assert.h>
-#include <funcapi.h>
 #include <utils/builtins.h>
-#include <utils/timestamp.h>
 
 #include "period.h"
 #include "timestampset.h"

@@ -32,11 +32,6 @@
 #include "tpoint_spatialfuncs.h"
 
 #include <assert.h>
-#include <float.h>
-#include <funcapi.h>
-#include <math.h>
-#include <utils/builtins.h>
-#include <utils/timestamp.h>
 
 #include "period.h"
 #include "periodset.h"

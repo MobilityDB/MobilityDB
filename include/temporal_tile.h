@@ -43,14 +43,26 @@ typedef struct RangeBucketState
   bool done;
   Oid valuetypid;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
-  Datum size;
+  Datum width;
   Datum origin;
   int coordmin;
   int coordmax;
   int coord;
 } RangeBucketState;
 
-/*****************************************************************************/
+/**
+ * Struct for storing the state that persists across multiple calls generating
+ * the bucket list
+ */
+typedef struct PeriodBucketState
+{
+  bool done;
+  int64 tunits;
+  int64 torigin;
+  int coordmin;
+  int coordmax;
+  int coord;
+} PeriodBucketState;
 
 /**
  * Struct for storing the state that persists across multiple calls generating
@@ -60,7 +72,7 @@ typedef struct TboxGridState
 {
   bool done;
   double xsize;
-  int64 tsize;
+  int64 tunits;
   double xorigin;
   int64 torigin;
   int min[2];
@@ -98,33 +110,19 @@ typedef struct ValueTimeSplitState
   int count;
 } ValueTimeSplitState;
 
-extern ValueTimeSplitState *value_time_split_state_make(Datum *value_buckets,
-  TimestampTz *time_buckets, Temporal **splits, int count);
-
-
 /*****************************************************************************/
 
+extern Datum number_bucket(PG_FUNCTION_ARGS);
 extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
-extern Datum int_bucket(PG_FUNCTION_ARGS);
-extern Datum float_bucket(PG_FUNCTION_ARGS);
+extern Datum range_bucket_list(PG_FUNCTION_ARGS);
+extern Datum range_bucket(PG_FUNCTION_ARGS);
+extern Datum period_bucket_list(PG_FUNCTION_ARGS);
+extern Datum period_bucket(PG_FUNCTION_ARGS);
+extern Datum tnumber_value_split(PG_FUNCTION_ARGS);
 extern Datum temporal_time_split(PG_FUNCTION_ARGS);
-extern Datum tnumber_range_split(PG_FUNCTION_ARGS);
-extern Datum tnumber_range_time_split(PG_FUNCTION_ARGS);
-
-extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
-  int64 tunits, TimestampTz origin);
-
-extern Temporal **temporal_time_split_internal(Temporal *temp,
-  TimestampTz start, TimestampTz end, int64 tunits, int count,
-  TimestampTz **buckets, int *newcount);
-
-extern TimeSplitState *time_split_state_new(int64 tunits, TimestampTz *buckets,
-  Temporal **splits, int count);
-extern void time_split_state_next(TimeSplitState *state);
-
-extern ValueTimeSplitState *value_time_split_state_new(Datum *value_buckets,
-  TimestampTz *time_buckets, Temporal **splits, int count);
-extern void value_time_split_state_next(ValueTimeSplitState *state);
+extern Datum tbox_multidim_grid(PG_FUNCTION_ARGS);
+extern Datum tbox_multidim_tile(PG_FUNCTION_ARGS);
+extern Datum tnumber_value_time_split(PG_FUNCTION_ARGS);
 
 #endif /* __TEMPORAL_TILE_H__ */
 

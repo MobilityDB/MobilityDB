@@ -49,7 +49,7 @@ typedef struct STboxGridState
   int32 srid;
   Temporal *temp;
   double size;
-  int64 tsize;
+  int64 tunits;
   POINT3DZ sorigin;
   int64 torigin;
   int min[MAXDIMS];

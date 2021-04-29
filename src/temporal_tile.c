@@ -35,7 +35,6 @@
 #include <assert.h>
 #include <float.h>
 #include <funcapi.h>
-#include <utils/builtins.h>
 #include <utils/datetime.h>
 
 #include "temporal_tile.h"
@@ -46,10 +45,9 @@
 #include "rangetypes_ext.h"
 #include "temporal.h"
 #include "temporal_util.h"
-#include "tnumber_mathfuncs.h"
 
 /*****************************************************************************
- * Bucket functions for numbers
+ * Number bucket functions
  *****************************************************************************/
 
 /**
@@ -95,7 +93,7 @@ int_bucket_internal(int value, int width, int origin)
  * @param[in] width Width of the buckets
  * @param[in] origin Origin of the buckets
  */
-double
+static double
 float_bucket_internal(double value, double width, double origin)
 {
   if (value == DBL_MIN || value == DBL_MAX)
@@ -165,29 +163,29 @@ number_bucket(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Bucket functions for timestamps
+ * Timestamp bucket functions
  *****************************************************************************/
 
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.
  *
  * @param[in] timestamp Input timestamp
- * @param[in] tunits Size of the buckets
- * @param[in] origin Origin of the buckets
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] torigin Origin of the buckets
  */
-TimestampTz
+static TimestampTz
 timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
-  TimestampTz origin)
+  TimestampTz torigin)
 {
   TimestampTz result;
-  /* origin = origin % tunits, but use TMODULO */
-  TMODULO(origin, result, tunits);
+  /* torigin = torigin % tunits, but use TMODULO */
+  TMODULO(torigin, result, tunits);
 
-  if ((origin > 0 && timestamp < DT_NOBEGIN + origin) ||
-    (origin < 0 && timestamp > DT_NOEND + origin))
+  if ((torigin > 0 && timestamp < DT_NOBEGIN + torigin) ||
+    (torigin < 0 && timestamp > DT_NOEND + torigin))
     ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
       errmsg("timestamp out of range")));
-  timestamp -= origin;
+  timestamp -= torigin;
 
   /* result = (timestamp / tunits) * tunits */
   TMODULO(timestamp, result, tunits);
@@ -203,7 +201,7 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
   }
   else
     result *= tunits;
-  result += origin;
+  result += torigin;
   return result;
 }
 
@@ -227,78 +225,89 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions manipulating the state of the range bucket list
+ * Range bucket functions
  *****************************************************************************/
 
 /**
- * Generate an integer or float range bucket from the current state of the
- * bucket list
+ * Generate an integer or float range bucket from a bucket list
+ *
+ * @param[in] coord Coordinate of the bucket
+ * @param[in] width Width of the buckets
+ * @param[in] origin Origin of the buckets
+ * @param[in] type Oid of the data type for width and origin
  */
-RangeType *
-range_get_bucket(int coord, Datum size, Datum origin, Oid type)
+static RangeType *
+range_bucket_get(int coord, Datum width, Datum origin, Oid type)
 {
   Datum lower, upper;
   if (type == INT4OID)
   {
-    int isize = DatumGetInt32(size);
+    int iwidth = DatumGetInt32(width);
     int iorigin = DatumGetInt32(origin);
-    lower = Int32GetDatum(iorigin + (isize * coord));
-    upper = Int32GetDatum(iorigin + (isize * (coord + 1)));
+    lower = Int32GetDatum(iorigin + (iwidth * coord));
+    upper = Int32GetDatum(iorigin + (iwidth * (coord + 1)));
   }
   else
   {
-    double dsize = DatumGetFloat8(size);
+    double dwidth = DatumGetFloat8(width);
     double dorigin = DatumGetFloat8(origin);
-    lower = Float8GetDatum(dorigin + (dsize * coord));
-    upper = Float8GetDatum(dorigin + (dsize * (coord + 1)));
+    lower = Float8GetDatum(dorigin + (dwidth * coord));
+    upper = Float8GetDatum(dorigin + (dwidth * (coord + 1)));
   }
   return range_make(lower, upper, true, false, type);
 }
 
 /**
- * Create the initial state that persists across multiple calls generating
- * the bucket list or to split the temporal value with respect to the buckets
- * @pre The size argument must be greater to 0.
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] temp Temporal number to split
+ * @param[in] r Bounds for generating the bucket list
+ * @param[in] width Width of the buckets
+ * @param[in] origin Origin of the buckets
+ * 
+ * @pre The width argument must be greater to 0.
+ * @note The first argument is NULL when generating the bucket list, otherwise
+ * it is a temporal number to be split and in this case r is the value range
+ * of the temporal number
  */
 RangeBucketState *
-range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
+range_bucket_state_make(Temporal *temp, RangeType *r, Datum width, Datum origin)
 {
   bool intrange = (r->rangetypid == type_oid(T_INTRANGE));
-  int isize, iorigin, ilower, iupper;
-  double dsize, dorigin, dlower, dupper;
+  int iwidth, iorigin, ilower, iupper;
+  double dwidth, dorigin, dlower, dupper;
   if (intrange)
   {
-    isize = DatumGetInt32(size);
-    assert(isize > 0);
+    iwidth = DatumGetInt32(width);
+    assert(iwidth > 0);
     iorigin = DatumGetInt32(origin);
     ilower = DatumGetInt32(lower_datum(r));
     iupper = DatumGetInt32(upper_datum(r));
   }
   else /* r->rangetypid == type_oid(T_FLOATRANGE) */
   {
-    dsize = DatumGetFloat8(size);
-    assert(dsize > 0.0);
+    dwidth = DatumGetFloat8(width);
+    assert(dwidth > 0.0);
     dorigin = DatumGetFloat8(origin);
     dlower = DatumGetFloat8(lower_datum(r));
     dupper = DatumGetFloat8(upper_datum(r));
   }
   RangeBucketState *state = palloc0(sizeof(RangeBucketState));
-
   /* Fill in state */
   state->done = false;
   state->temp = temp;
   state->valuetypid = intrange ? INT4OID : FLOAT8OID;
-  state->size = size;
+  state->width = width;
   state->origin = origin;
   if (intrange)
   {
-    state->coordmin = (ilower / isize) - (iorigin / isize);
-    state->coordmax = (iupper / isize) - (iorigin / isize);
+    state->coordmin = (ilower / iwidth) - (iorigin / iwidth);
+    state->coordmax = (iupper / iwidth) - (iorigin / iwidth);
   }
   else
   {
-    state->coordmin = floor(dlower / dsize) - floor(dorigin / dsize);
-    state->coordmax = floor(dupper / dsize) - floor(dorigin / dsize);
+    state->coordmin = floor(dlower / dwidth) - floor(dorigin / dwidth);
+    state->coordmax = floor(dupper / dwidth) - floor(dorigin / dwidth);
   }
   state->coord = state->coordmin;
   return state;
@@ -306,22 +315,22 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
 
 /**
  * Increment the current state to the next bucket of the bucket list
+ *
+ * @param[in] state State to increment
  */
 void
 range_bucket_state_next(RangeBucketState *state)
 {
   if (!state || state->done)
     return;
-  /* Move to the next cell */
+  /* Move to the next bucket */
   state->coord++;
   if (state->coord > state->coordmax)
     state->done = true;
   return;
 }
 
-/*****************************************************************************
- * Bucket list functions for ranges
- *****************************************************************************/
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(range_bucket_list);
 /**
@@ -345,44 +354,40 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
 #else
     RangeType *bounds = PG_GETARG_RANGE_P(0);
 #endif
-    Datum size = PG_GETARG_DATUM(1);
+    Datum width = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    bool intrange = (bounds->rangetypid == type_oid(T_INTRANGE));
-    if (intrange)
-      assert(Int32GetDatum(size) > 0);
-    else /* bounds->rangetypid == type_oid(T_FLOATRANGE) */
-      assert(Float8GetDatum(size) > 0);
+    Oid type = get_fn_expr_argtype(fcinfo->flinfo, 1);
+    ensure_positive_datum(width, type);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = range_bucket_state_make(NULL, bounds, size, origin);
-    /* Build a tuple description for a multidimensial grid tuple */
+    funcctx->user_fctx = range_bucket_state_make(NULL, bounds, width, origin);
+    /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
-  /* Stop when we've used up all the grid squares */
+  /* Stop when we've used up all buckets */
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
   /* Store bucket coordinate */
-  tuple_arr[0] = PointerGetDatum(Int32GetDatum(state->coord));
+  tuple_arr[0] = Int32GetDatum(state->coord);
   /* Generate bucket */
-  RangeType *bucket = range_get_bucket(state->coord, state->size,
-      state->origin, state->valuetypid);
+  tuple_arr[1] = PointerGetDatum(range_bucket_get(state->coord, state->width,
+      state->origin, state->valuetypid));
+  /* Advance state */
   range_bucket_state_next(state);
-  tuple_arr[1] = PointerGetDatum(bucket);
-
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
@@ -393,21 +398,21 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(range_bucket);
 /**
- * Generate an intrange bucket in a bucket list for ranges.
+ * Generate an integer or float range bucket in a bucket list for ranges.
 */
 Datum range_bucket(PG_FUNCTION_ARGS)
 {
   int coord = PG_GETARG_INT32(0);
-  Datum size = PG_GETARG_DATUM(1);
+  Datum width = PG_GETARG_DATUM(1);
   Oid type = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  ensure_positive_datum(size, type);
+  ensure_positive_datum(width, type);
   Datum origin = PG_GETARG_DATUM(2);
-  RangeType *result = range_get_bucket(coord, size, origin, type);
+  RangeType *result = range_bucket_get(coord, width, origin, type);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Range split functions for temporal values
+ * Value split functions for temporal numbers
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_value_split);
@@ -433,38 +438,40 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
 
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL(0);
-    Datum size = PG_GETARG_DATUM(1);
+    Datum width = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
     ensure_tnumber_base_type(temp->valuetypid);
-    ensure_positive_datum(size, temp->valuetypid);
+    ensure_positive_datum(width, temp->valuetypid);
     RangeType *bounds = tnumber_value_range_internal((const Temporal *) temp);
 
     /* Create function state */
-    funcctx->user_fctx = range_bucket_state_make(temp, bounds, size, origin);
-    /* Build a tuple description for a multidimensial grid tuple */
+    funcctx->user_fctx = range_bucket_state_make(temp, bounds, width, origin);
+    /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
 
-  /* We need to loop since atRange may be NULL */
+  /* We need to loop since the result of atRange may be NULL */
   while (true)
   {
-    /* Stop when we've used up all the grid squares */
+    /* Stop when we've used up all splits */
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
     /* Generate bucket */
-    RangeType *range = range_get_bucket(state->coord, state->size,
+    RangeType *range = range_bucket_get(state->coord, state->width,
       state->origin, state->valuetypid);
+    /* Advance state */
     range_bucket_state_next(state);
+    /* Restrict temporal value to range */
     Temporal *atrange = tnumber_restrict_range_internal(state->temp, range,
       REST_AT);
     if (atrange != NULL)
@@ -480,20 +487,164 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions manipulating the state of the time bucket list
+ * Period bucket functions
  *****************************************************************************/
 
 /**
- * Create the initial state that persists across multiple calls to output
- * the temporal splits
+ * Generate period bucket from a bucket list
+ *
+ * @param[in] coord Coordinate of the bucket
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] torigin Origin of the buckets
+ */
+static Period *
+period_bucket_get(int coord, int64 tunits, TimestampTz torigin)
+{
+  TimestampTz lower = torigin + (tunits * coord);
+  TimestampTz upper = lower + tunits;
+  return period_make(lower, upper, true, false);
+}
+
+/**
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] p Bounds for generating the bucket list
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] torigin Origin of the buckets
+ *
+ * @pre The tunits argument must be greater to 0.
+ */
+static PeriodBucketState *
+period_bucket_state_make(Period *p, int64 tunits, TimestampTz torigin)
+{
+  assert(tunits > 0);
+  PeriodBucketState *state = palloc0(sizeof(PeriodBucketState));
+
+  /* Fill in state */
+  state->done = false;
+  state->tunits = tunits;
+  state->torigin = torigin;
+  state->coordmin = (p->lower / tunits) - (torigin / tunits);
+  state->coordmax = (p->upper / tunits) - (torigin / tunits);
+  state->coord = state->coordmin;
+  return state;
+}
+
+/**
+ * Increment the current state to the next bucket of the bucket list
+ *
+ * @param[in] state State to increment
+ */
+static void
+period_bucket_state_next(PeriodBucketState *state)
+{
+  if (!state || state->done)
+    return;
+  /* Move to the next bucket */
+  state->coord++;
+  if (state->coord > state->coordmax)
+    state->done = true;
+  return;
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(period_bucket_list);
+/**
+ * Generate a bucket list for periods.
+ */
+Datum period_bucket_list(PG_FUNCTION_ARGS)
+{
+  FuncCallContext *funcctx;
+  PeriodBucketState *state;
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  Datum tuple_arr[2]; /* used to construct the composite return value */
+  HeapTuple tuple;
+  Datum result; /* the actual composite return value */
+
+  /* If the function is being called for the first time */
+  if (SRF_IS_FIRSTCALL())
+  {
+    /* Get input parameters */
+    Period *bounds = PG_GETARG_PERIOD(0);
+    Interval *duration = PG_GETARG_INTERVAL_P(1);
+    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+
+    /* Ensure parameter validity */
+    ensure_valid_duration(duration);
+    int64 tunits = get_interval_units(duration);
+
+    /* Initialize the FuncCallContext */
+    funcctx = SRF_FIRSTCALL_INIT();
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    /* Create function state */
+    funcctx->user_fctx = period_bucket_state_make(bounds, tunits, torigin);
+    /* Build a tuple description for the function output */
+    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
+    BlessTupleDesc(funcctx->tuple_desc);
+    MemoryContextSwitchTo(oldcontext);
+  }
+
+  /* Stuff done on every call of the function */
+  funcctx = SRF_PERCALL_SETUP();
+  /* Get state */
+  state = funcctx->user_fctx;
+  /* Stop when we've used up all buckets */
+  if (state->done)
+    SRF_RETURN_DONE(funcctx);
+
+  /* Store bucket coordinate */
+  tuple_arr[0] = PointerGetDatum(Int32GetDatum(state->coord));
+  /* Generate bucket */
+  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->coord, state->tunits,
+    state->torigin));
+  /* Advance state */
+  period_bucket_state_next(state);
+  /* Form tuple and return */
+  tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+  result = HeapTupleGetDatum(tuple);
+  SRF_RETURN_NEXT(funcctx, result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(period_bucket);
+/**
+ * Generate a bucket in a bucket list for periods.
+*/
+Datum period_bucket(PG_FUNCTION_ARGS)
+{
+  int coord = PG_GETARG_INT32(0);
+  Interval *interval = PG_GETARG_INTERVAL_P(1);
+  ensure_valid_duration(interval);
+  int64 tunits = get_interval_units(interval);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+  Period *result = period_bucket_get(coord, tunits, torigin);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Time split functions for temporal numbers
+ *****************************************************************************/
+
+/**
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] buckets Initial timestamps of the buckets
+ * @param[in] splits Fragments of the input temporal value
+ * @param[in] count Number of elements in the input arrays
+ *
+ * @pre count is greater than 0
  */
 TimeSplitState *
 time_split_state_make(int64 tunits, TimestampTz *buckets, Temporal **splits,
   int count)
 {
+  assert(count > 0);
   TimeSplitState *state = palloc0(sizeof(TimeSplitState));
-
-  /* fill in state */
+  /* Fill in state */
   state->done = false;
   state->tunits = tunits;
   state->buckets = buckets;
@@ -505,6 +656,8 @@ time_split_state_make(int64 tunits, TimestampTz *buckets, Temporal **splits,
 
 /**
  * Increment the current state to output the next split
+ *
+ * @param[in] state State to increment
  */
 void
 time_split_state_next(TimeSplitState *state)
@@ -516,25 +669,21 @@ time_split_state_next(TimeSplitState *state)
   return;
 }
 
-/*****************************************************************************
- * Time split functions for temporal values
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * Split a temporal value into an array of splits according to time buckets.
  *
  * @param[in] inst Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
- * @param[in] tunits Bucket width
- * @param[in] count Number of buckets
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
  */
 static TInstant **
 tinstant_time_split(const TInstant *inst, TimestampTz start, TimestampTz end,
-  int64 tunits, int count, TimestampTz **buckets, int *newcount)
+  int64 tunits, TimestampTz **buckets, int *newcount)
 {
-  assert(start < end);
   TInstant **result = palloc(sizeof(TInstant *));
   TimestampTz *times = palloc(sizeof(TimestampTz));
   result[0] = (TInstant *) inst;
@@ -561,7 +710,7 @@ tinstant_time_split(const TInstant *inst, TimestampTz start, TimestampTz end,
  *
  * @param[in] ti Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
- * @param[in] tunits Bucket width
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
@@ -570,7 +719,6 @@ static TInstantSet **
 tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
-  assert(start < end);
   TInstantSet **result = palloc(sizeof(TInstantSet *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
   const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
@@ -621,24 +769,23 @@ tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end
  * @param[out] times Output array of bucket lower bounds
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
- * @param[in] tunits Bucket width
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
+ *
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int
 tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *seq,
   TimestampTz start, TimestampTz end, int64 tunits, int count)
 {
-  assert(start < end);
-  assert(count > 0);
-
   /* This loop is needed for filtering unnecesary buckets for the sequences
    * composing a sequence set */
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
   /* The upper bound for the bucket is exclusive => the test below is >= */
-  while (lower < end && (seq->period.lower >= upper || lower > seq->period.upper ||
-    (lower == seq->period.upper && ! seq->period.upper_inc)))
+  while (lower < end && 
+    (seq->period.lower >= upper || lower > seq->period.upper ||
+      (lower == seq->period.upper && ! seq->period.upper_inc)))
   {
     lower = upper;
     upper += tunits;
@@ -684,7 +831,7 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
          (k > 1) ? false : true, linear, NORMALIZE);
       k = 0;
       lower = upper;
-      upper  += tunits;
+      upper += tunits;
       /* The second condition is needed for filtering unnecesary buckets for the
        * sequences composing a sequence set */
       if (lower >= end || ! contains_period_timestamp_internal(&seq->period, lower))
@@ -711,7 +858,7 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
  *
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
- * @param[in] tunits Bucket width
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
@@ -733,7 +880,8 @@ tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
  *
  * @param[in] ts Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
- * @param[in] tunits Bucket width
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a split
  * @param[out] newcount Number of values in the output array
  */
@@ -767,11 +915,13 @@ Temporal **
 temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
+  assert(start < end);
+  assert(count > 0);
   /* Split the temporal value */
   Temporal **splits;
   if (temp->temptype == INSTANT)
     splits = (Temporal **) tinstant_time_split((const TInstant *) temp,
-      start, end, tunits, count, buckets, newcount);
+      start, end, tunits, buckets, newcount);
   else if (temp->temptype == INSTANTSET)
     splits = (Temporal **) tinstantset_time_split((const TInstantSet *) temp,
       start, end, tunits, count, buckets, newcount);
@@ -803,9 +953,11 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
+    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
+
+    /* Ensure parameter validity */
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
-    TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
@@ -832,15 +984,15 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
 
     /* Create function state */
     funcctx->user_fctx = time_split_state_make(tunits, buckets, splits, newcount);
-    /* Build a tuple description for a multidimensial grid tuple */
+    /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
   /* Stop when we've output all the splits */
   if (state->done)
@@ -849,6 +1001,7 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
   /* Store timestamp and split */
   tuple_arr[0] = TimestampTzGetDatum(state->buckets[state->i]);
   tuple_arr[1] = PointerGetDatum(state->splits[state->i]);
+  /* Advance state */
   time_split_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
@@ -857,46 +1010,58 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions manipulating the state of the value-time tile list
+ * TBOX tile functions
  *****************************************************************************/
 
 /**
- * Generate a tile from the current state of the multidimensional grid
+ * Generate a tile from the a multidimensional grid
+ *
+ * @param[in] coords Coordinates of the tile to output
+ * @param[in] xsize Value size of the tiles
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[in] xorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
  */
 static TBOX *
-tbox_tile(int *coords, double xsize, int64 tsize, double xorigin,
+tbox_tile_get(int *coords, double xsize, int64 tunits, double xorigin,
   TimestampTz torigin)
 {
   double xmin = xorigin + (xsize * coords[0]);
-  double xmax = xorigin + (xsize * (coords[0] + 1));
-  TimestampTz tmin = torigin + (TimestampTz) (tsize * coords[1]);
-  TimestampTz tmax = torigin + (TimestampTz) (tsize * (coords[1] + 1));
+  double xmax = xmin + xsize;
+  TimestampTz tmin = torigin + (tunits * coords[1]);
+  TimestampTz tmax = tmin + tunits;
   return (TBOX *) tbox_make(true, true, xmin, xmax, tmin, tmax);
 }
 
 /**
- * Create the initial state that persists across multiple calls generating
- * the multidimensional grid
- * @pre The xsize and tsize arguments must be greater to 0.
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] box Bounds of the multidimensional grid
+ * @param[in] xsize Value size of the tiles
+ * @param[in] tunits Time size of the tiles in PostgreSQL time units
+ * @param[in] xorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ *
+ * @pre Both xsize and tunits must be greater than 0.
  */
 static TboxGridState *
-tbox_tile_state_make(TBOX *box, double xsize, int64 tsize, double xorigin,
+tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   TimestampTz torigin)
 {
   assert(xsize > 0);
-  assert(tsize > 0);
+  assert(tunits > 0);
   TboxGridState *state = palloc0(sizeof(TboxGridState));
 
-  /* fill in state */
+  /* Fill in state */
   state->done = false;
   state->xsize = xsize;
-  state->tsize = tsize;
+  state->tunits = tunits;
   state->xorigin = xorigin;
   state->torigin = torigin;
   state->min[0] = floor(box->xmin / xsize) - floor(xorigin / xsize);
   state->max[0] = floor(box->xmax / xsize) - floor(xorigin / xsize);
-  state->min[1] = (box->tmin / tsize) - (torigin / tsize);
-  state->max[1] = (box->tmax / tsize) - (torigin / tsize);
+  state->min[1] = (box->tmin / tunits) - (torigin / tunits);
+  state->max[1] = (box->tmax / tunits) - (torigin / tunits);
   for (int i = 0; i < 2; i++)
     state->coords[i] = state->min[i];
   return state;
@@ -904,13 +1069,15 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tsize, double xorigin,
 
 /**
  * Increment the current state to the next tile of the multidimensional grid
+ *
+ * @param[in] state State to increment
  */
 static void
 tbox_tile_state_next(TboxGridState *state)
 {
   if (!state || state->done)
       return;
-  /* Move to the next cell */
+  /* Move to the next tile */
   state->coords[0]++;
   if (state->coords[0] > state->max[0])
   {
@@ -925,18 +1092,11 @@ tbox_tile_state_next(TboxGridState *state)
   return;
 }
 
-/*****************************************************************************
- * Functions for listing the tile grid
- *****************************************************************************/
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tbox_multidim_grid);
 /**
  * Generate a multidimensional grid for temporal numbers.
- *
- * Signature
- * @code
- * tbox_multidim_grid(bounds TBOX, xsize float8, interval Interval)
- * @endcode
  */
 Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
 {
@@ -952,53 +1112,48 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   {
     /* Get input parameters */
     TBOX *bounds = PG_GETARG_TBOX_P(0);
-    ensure_has_X_tbox(bounds);
-    ensure_has_T_tbox(bounds);
     double xsize = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(DatumGetFloat8(xsize), FLOAT8OID);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
-    ensure_valid_duration(duration);
-    int64 tsize = get_interval_units(duration);
     double xorigin = PG_GETARG_FLOAT8(3);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
+
+    /* Ensure parameter validity */
+    ensure_has_X_tbox(bounds);
+    ensure_has_T_tbox(bounds);
+    ensure_positive_datum(DatumGetFloat8(xsize), FLOAT8OID);
+    ensure_valid_duration(duration);
+    int64 tunits = get_interval_units(duration);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = tbox_tile_state_make(bounds, xsize, tsize, xorigin, torigin);
-    /* Build a tuple description for a multidimensial grid tuple */
+    funcctx->user_fctx = tbox_tile_state_make(bounds, xsize, tunits, xorigin, torigin);
+    /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
-
-  /* Stop when we've used up all the grid squares */
+  /* Stop when we've used up all tiles */
   if (state->done)
-  {
     SRF_RETURN_DONE(funcctx);
-  }
 
   /* Store tile coordinates */
   Datum coords[2];
   coords[0] = Int32GetDatum(state->coords[0]);
   coords[1] = Int32GetDatum(state->coords[1]);
-  ArrayType *coordarr = intarr_to_array(coords, 2);
-  tuple_arr[0] = PointerGetDatum(coordarr);
-
+  tuple_arr[0] = PointerGetDatum(intarr_to_array(coords, 2));
   /* Generate box */
-  TBOX *box = tbox_tile(state->coords, state->xsize, state->tsize,
-    state->xorigin, state->torigin);
+  tuple_arr[1] = PointerGetDatum(tbox_tile_get(state->coords, state->xsize,
+    state->tunits, state->xorigin, state->torigin));
+  /* Advance state */
   tbox_tile_state_next(state);
-  tuple_arr[1] = PointerGetDatum(box);
-
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
@@ -1010,13 +1165,6 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(tbox_multidim_tile);
 /**
  * Generate a tile in a multidimensional grid for temporal numbers.
- *
- * Signature
- * @code
- * tbox_multidim_tile(ArrayType coords, xsize double, interval Interval,
- *   xorigin double default DEFAULT_FLOATRANGE_ORIGIN,
- *   torigin TimestampTz default DEFAULT_TIME_ORIGIN)
- * @endcode
 */
 Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
 {
@@ -1031,31 +1179,35 @@ Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
   ensure_positive_datum(DatumGetFloat8(xsize), FLOAT8OID);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(interval);
-  int64 tsize = get_interval_units(interval);
+  int64 tunits = get_interval_units(interval);
   double xorigin = PG_GETARG_FLOAT8(3);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
-
-  TBOX *result = tbox_tile(coords, xsize, tsize, xorigin, torigin);
-
+  TBOX *result = tbox_tile_get(coords, xsize, tunits, xorigin, torigin);
   PG_FREE_IF_COPY(coords, 0);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
- * Functions for manipulating the state of the value-time tile grid
+ * Value and time split functions for temporal numbers
  *****************************************************************************/
 
 /**
- * Create the initial state that persists across multiple calls to output
- * the temporal splits
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] value_buckets Initial values of the tiles
+ * @param[in] time_buckets Initial timestamps of the tiles
+ * @param[in] splits Fragments of the input temporal value
+ * @param[in] count Number of elements in the input arrays
+ *
+ * @pre count is greater than 0
  */
 ValueTimeSplitState *
 value_time_split_state_make(Datum *value_buckets, TimestampTz *time_buckets,
   Temporal **splits, int count)
 {
+  assert(count > 0);
   ValueTimeSplitState *state = palloc0(sizeof(ValueTimeSplitState));
-
-  /* fill in state */
+  /* Fill in state */
   state->done = false;
   state->value_buckets = value_buckets;
   state->time_buckets = time_buckets;
@@ -1066,7 +1218,9 @@ value_time_split_state_make(Datum *value_buckets, TimestampTz *time_buckets,
 }
 
 /**
- * Increment the current state to output the next split
+ * Increment the current state to the next tile of the multidimensional grid
+ *
+ * @param[in] state State to increment
  */
 void
 value_time_split_state_next(ValueTimeSplitState *state)
@@ -1078,9 +1232,7 @@ value_time_split_state_next(ValueTimeSplitState *state)
   return;
 }
 
-/*****************************************************************************
- * Functions for spliting temporal numbers with respect to a tile grid
- *****************************************************************************/
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnumber_value_time_split);
 /**
@@ -1132,8 +1284,8 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     temporal_period(&p, temp);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
-    TimestampTz start_time_bucket = timestamptz_bucket_internal(start_time, tunits,
-      torigin);
+    TimestampTz start_time_bucket = timestamptz_bucket_internal(start_time,
+      tunits, torigin);
     /* We need to add tunits to obtain the end timestamp of the last bucket */
     TimestampTz end_time_bucket = timestamptz_bucket_internal(end_time, tunits,
       torigin) + tunits;
@@ -1157,8 +1309,9 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
       {
         int num_time_splits;
         TimestampTz *times;
-        Temporal **time_splits = temporal_time_split_internal(atrange, start_time_bucket,
-          end_time_bucket, tunits, time_count, &times, &num_time_splits);
+        Temporal **time_splits = temporal_time_split_internal(atrange,
+          start_time_bucket, end_time_bucket, tunits, time_count, &times,
+          &num_time_splits);
         for (int i = 0; i < num_time_splits; i++)
         {
           value_buckets[i + k] = lower_value;
@@ -1175,8 +1328,9 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
 
     assert(k > 0);
     /* Create function state */
-    funcctx->user_fctx = value_time_split_state_make(value_buckets, time_buckets, splits, k);
-    /* Build a tuple description for a multidimensial grid tuple */
+    funcctx->user_fctx = value_time_split_state_make(value_buckets,
+      time_buckets, splits, k);
+    /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
@@ -1194,6 +1348,7 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
   tuple_arr[0] = state->value_buckets[state->i];
   tuple_arr[1] = TimestampTzGetDatum(state->time_buckets[state->i]);
   tuple_arr[2] = PointerGetDatum(state->splits[state->i]);
+  /* Advance state */
   value_time_split_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);

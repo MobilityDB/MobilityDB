@@ -174,10 +174,6 @@ extern TBOX *tbox_union_internal(const TBOX *box1, const TBOX *box2);
 extern TBOX *tbox_minus_internal(const TBOX *box1, const TBOX *box2);
 extern TBOX *tbox_intersection_internal(const TBOX *box1, const TBOX *box2);
 
-/* Tiling functions */
-
-extern Datum tbox_multidim_grid(PG_FUNCTION_ARGS);
-
 /* Comparison functions */
 
 extern Datum tbox_cmp(PG_FUNCTION_ARGS);

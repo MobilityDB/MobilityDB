@@ -32,8 +32,6 @@
 #include "tbox.h"
 
 #include <assert.h>
-#include <funcapi.h>
-#include <utils/timestamp.h>
 #include <utils/builtins.h>
 
 #include "oidcache.h"

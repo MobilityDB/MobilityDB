@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 /**
- * @file tile.c
+ * @file tpoint_tile.c
  * Functions for spatial and spatiotemporal tiles.
  */
 
@@ -47,41 +47,59 @@
 
 /**
  * Generate a tile from the current state of the multidimensional grid
+ *
+ * @param[in] coords Coordinates of the tile to output
+ * @param[in] size Spatial size of the tiles
+ * @param[in] tunits Temporal size of the tiles in PostgreSQL time units
+ * @param[in] sorigin Spatial origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
+ * @param[in] srid SRID of the spatial coordinates
+ *
  */
 STBOX *
-stbox_tile(bool hasz, bool hast, int32 srid, POINT3DZ sorigin,
-  TimestampTz torigin, double xsize, int64 tsize, int *coords)
+stbox_tile_get(int *coords, double size, int64 tunits, POINT3DZ sorigin,
+  TimestampTz torigin, bool hasz, bool hast, int32 srid)
 {
-  double xmin = sorigin.x + (xsize * coords[0]);
-  double xmax = sorigin.x + (xsize * (coords[0] + 1));
-  double ymin = sorigin.y + (xsize * coords[1]);
-  double ymax = sorigin.y + (xsize * (coords[1] + 1));
+  double xmin = sorigin.x + (size * coords[0]);
+  double xmax = xmin + size;
+  double ymin = sorigin.y + (size * coords[1]);
+  double ymax = ymin + size;
   double zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
   int ndims = 2;
   if (hasz)
   {
-    zmin = sorigin.z + (xsize * coords[ndims]);
-    zmax = sorigin.z + (xsize * (coords[ndims++] + 1));
+    zmin = sorigin.z + (size * coords[ndims++]);
+    zmax = zmin + size;
   }
   if (hast)
   {
-    tmin = torigin + (TimestampTz) (tsize * coords[ndims]);
-    tmax = torigin + (TimestampTz) (tsize * (coords[ndims] + 1));
+    tmin = torigin + (tunits * coords[ndims]);
+    tmax = tmin + tunits;
   }
-  return (STBOX *) stbox_make(true, hasz, hast, false, srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
+  return (STBOX *) stbox_make(true, hasz, hast, false, srid, xmin, xmax,
+    ymin, ymax, zmin, zmax, tmin, tmax);
 }
 
 /**
- * Create the initial state that persists across the multiple calls generating
- * the multidimensional grid.
+ * Create the initial state that persists across multiple calls of the function
+ *
+ * @param[in] temp Temporal point to split
+ * @param[in] box Bounds for generating the multidimensional grid
+ * @param[in] size Spatial size of the tiles
+ * @param[in] tunits Temporal size of the tiles in PostgreSQL time units
+ * @param[in] sorigin Spatial origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] srid SRID of the spatial coordinates
+ *
  * @pre The xsize argument must be greater to 0.
- * @note The tsize argument may be equal to 0 if it was not provided by the
+ * @note The tunits argument may be equal to 0 if it was not provided by the
  * user. In that case only the spatial dimension is tiled.
  */
 STboxGridState *
-stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tsize,
+stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
   POINT3DZ sorigin, TimestampTz torigin, int32 srid)
 {
   assert(size > 0);
@@ -91,10 +109,10 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tsize,
   /* fill in state */
   state->done = false;
   state->hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  state->hast = MOBDB_FLAGS_GET_T(box->flags) && tsize > 0;
+  state->hast = MOBDB_FLAGS_GET_T(box->flags) && tunits > 0;
   state->srid = box->srid;
   state->size = size;
-  state->tsize = tsize;
+  state->tunits = tunits;
   state->srid = srid;
   state->temp = temp;
   state->sorigin = sorigin;
@@ -111,8 +129,8 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tsize,
   }
   else if (state->hast)
   {
-    state->min[ndims] = (box->tmin / tsize) - (torigin / tsize);
-    state->max[ndims++] = (box->tmax / tsize) - (torigin / tsize);
+    state->min[ndims] = (box->tmin / tunits) - (torigin / tunits);
+    state->max[ndims++] = (box->tmax / tunits) - (torigin / tunits);
   }
   for (int i = 0; i < ndims; i++)
     state->coords[i] = state->min[i];
@@ -121,6 +139,8 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tsize,
 
 /**
  * Increment the current state to the next tile of the multidimensional grid
+ *
+ * @param[in] state State to increment
  */
 void
 stbox_tile_state_next(STboxGridState *state)
@@ -214,7 +234,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     GSERIALIZED *sorigin;
-    int64 tsize = 0;
+    int64 tunits = 0;
     TimestampTz torigin = 0;
     if (PG_NARGS() == 3)
       sorigin = PG_GETARG_GSERIALIZED_P(2);
@@ -224,7 +244,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
       ensure_has_T_stbox(bounds);
       Interval *duration = PG_GETARG_INTERVAL_P(2);
       ensure_valid_duration(duration);
-      tsize = get_interval_units(duration);
+      tunits = get_interval_units(duration);
       sorigin = PG_GETARG_GSERIALIZED_P(3);
       torigin = PG_GETARG_TIMESTAMPTZ(4);
     }
@@ -233,16 +253,16 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != 0)
       error_if_srid_mismatch(srid, gs_srid);
-    POINT3DZ p;
+    POINT3DZ pt;
     if (FLAGS_GET_Z(sorigin->flags))
-      p = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
-      memset(&p, 0, sizeof(POINT3DZ));
+      memset(&pt, 0, sizeof(POINT3DZ));
       const POINT2D *p2d = gs_get_point2d_p(sorigin);
-      p.x = p2d->x;
-      p.y = p2d->y;
+      pt.x = p2d->x;
+      pt.y = p2d->y;
     }
 
     /* Initialize the FuncCallContext */
@@ -250,7 +270,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Switch to memory context appropriate for multiple function calls */
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tsize, p,
+    funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
       torigin, srid);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
@@ -258,9 +278,9 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
   /* Stop when we've used up all the grid tiles */
   if (state->done)
@@ -273,18 +293,15 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   int ndims = 2;
   if (state->hasz)
     coords[ndims++] = Int32GetDatum(state->coords[2]);
-  if (state->hast && state->tsize > 0)
+  if (state->hast && state->tunits > 0)
     coords[ndims++] = Int32GetDatum(state->coords[3]);
-  ArrayType *coordarr = intarr_to_array(coords, ndims);
-  tuple_arr[0] = PointerGetDatum(coordarr);
-
+  tuple_arr[0] = PointerGetDatum(intarr_to_array(coords, ndims));
   /* Generate box */
-  STBOX *box = stbox_tile(state->hasz, state->hast, state->srid, 
-    state->sorigin, state->torigin, state->size, state->tsize,
-    state->coords);
+  tuple_arr[1] = PointerGetDatum(stbox_tile_get(state->coords, state->size,
+    state->tunits, state->sorigin, state->torigin, state->hasz, state->hast,
+    state->srid));
+  /* Advance state */
   stbox_tile_state_next(state);
-  tuple_arr[1] = PointerGetDatum(box);
-
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
@@ -307,10 +324,9 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   double size = PG_GETARG_FLOAT8(1);
   ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
   GSERIALIZED *sorigin;
-  int64 tsize = 0;
+  int64 tunits = 0;
   bool hast = false;
   TimestampTz torigin = 0;
-
   if (PG_NARGS() == 3)
     sorigin = PG_GETARG_GSERIALIZED_P(2);
   else /* PG_NARGS() == 5 */
@@ -321,29 +337,28 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
         errmsg("The number of coordinates must be at least 3 for the temporal dimension")));
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     ensure_valid_duration(duration);
-    tsize = get_interval_units(duration);
+    tunits = get_interval_units(duration);
     sorigin = PG_GETARG_GSERIALIZED_P(3);
     torigin = PG_GETARG_TIMESTAMPTZ(4);
     hast = true;
   }
-
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(sorigin);
   bool hasz = (ndims == 4 || (ndims == 3 && ! hast));
-  POINT3DZ p;
+  POINT3DZ pt;
   if (FLAGS_GET_Z(sorigin->flags))
-    p = datum_get_point3dz(PointerGetDatum(sorigin));
+    pt = datum_get_point3dz(PointerGetDatum(sorigin));
   else
   {
     /* Initialize to 0 the Z dimension if it is missing */
-    memset(&p, 0, sizeof(POINT3DZ));
+    memset(&pt, 0, sizeof(POINT3DZ));
     const POINT2D *p2d = gs_get_point2d_p(sorigin);
-    p.x = p2d->x;
-    p.y = p2d->y;
+    pt.x = p2d->x;
+    pt.y = p2d->y;
   }
-  STBOX *result = stbox_tile(hasz, hast, srid, p, torigin, size, tsize,
-    coords);
+  STBOX *result = stbox_tile_get(coords, size, tunits, pt, torigin, hasz,
+    hast, srid);
   PG_FREE_IF_COPY(coordarr, 0);
   PG_RETURN_POINTER(result);
 }
@@ -354,7 +369,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(tpoint_space_split);
 /**
- * Split a temporal number with respect to value buckets.
+ * Split a temporal number with respect to space tiles.
  */
 Datum tpoint_space_split(PG_FUNCTION_ARGS)
 {
@@ -407,17 +422,16 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(temp, &bounds, size, 0,
       pt, 0, srid);
-    /* Build a tuple description for a multidimensial grid tuple */
+    /* Build a tuple description for a multidimensional grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
-  
   /* We need to loop since atRange may be NULL */
   while (true)
   {
@@ -428,10 +442,11 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Generate tile 
      * We must generate a 2D geometry so that we can project a 3D point 
      * to 2D geometry */
-    STBOX *box = stbox_tile(false, state->hast, state->srid, 
-      state->sorigin, state->torigin, state->size, state->tsize,
-      state->coords);
+    STBOX *box = stbox_tile_get(state->coords, state->size, state->tunits,
+      state->sorigin, state->torigin, false, state->hast, state->srid);
+    /* Advance state */
     stbox_tile_state_next(state);
+    /* Restrict the temporal point to the box */
     Temporal *atstbox = tpoint_at_stbox_internal(state->temp, box);
     if (atstbox != NULL)
     {
@@ -505,17 +520,16 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(temp, &bounds, size, tunits,
       pt, torigin, srid);
-    /* Build a tuple description for a multidimensial grid tuple */
+    /* Build a tuple description for a multidimensional grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* stuff done on every call of the function */
+  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* get state */
+  /* Get state */
   state = funcctx->user_fctx;
-  
   /* We need to loop since atRange may be NULL */
   while (true)
   {
@@ -526,10 +540,11 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     /* Generate tile 
      * We must generate a 2D geometry so that we can project a 3D point 
      * to 2D geometry */
-    STBOX *box = stbox_tile(false, state->hast, state->srid, 
-      state->sorigin, state->torigin, state->size, state->tsize,
-      state->coords);
+    STBOX *box = stbox_tile_get(state->coords, state->size, state->tunits,
+      state->sorigin, state->torigin, false, state->hast, state->srid);
+    /* Advance state */
     stbox_tile_state_next(state);
+    /* Restrict the temporal point to the box */
     Temporal *atstbox = tpoint_at_stbox_internal(state->temp, box);
     if (atstbox != NULL)
     {

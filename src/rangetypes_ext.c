@@ -34,7 +34,6 @@
 #include "rangetypes_ext.h"
 
 #include <assert.h>
-#include <funcapi.h>
 #include <utils/builtins.h>
 
 #include "temporal.h"

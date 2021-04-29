@@ -108,7 +108,11 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  *****************************************************************************/
 
 /**
- * Evalues tintersects for a temporal point and a geometry
+ * Evalues tintersects/tdisjoint for a temporal point and a geometry
+ *
+ * @param[in] inst Temporal point
+ * @param[in] geom Geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 static TInstant *
 tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter)
@@ -122,7 +126,11 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter)
 }
 
 /**
- * Evalues tintersects for a temporal point and a geometry
+ * Evalues tintersects/tdisjoint for a temporal point and a geometry
+ *
+ * @param[in] ti Temporal point
+ * @param[in] geom Geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 static TInstantSet *
 tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter)
@@ -145,11 +153,12 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter)
 }
 
 /**
- * Evalues tintersects for a temporal sequence point with step^ interpolation
- * and a geometry
+ * Evalues tintersects/tdisjoint for a temporal sequence point with step
+ * interpolation and a geometry
  *
  * @param[in] seq Temporal point
  * @param[in] gsinter Intersection of the temporal point and the geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point is simple, that is, non self-intersecting
  */
@@ -199,17 +208,18 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, GSERIALIZED *gsinter,
 }
 
 /**
- * Evalues tintersects for a temporal sequence point with linear interpolation
- * and a geometry
+ * Evalues tintersects/tdisjoint for a temporal sequence point with linear
+ * interpolation and a geometry
  *
  * @param[in] seq Temporal point
  * @param[in] gsinter Intersection of the temporal point and the geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point is simple, that is, non self-intersecting
  */
 static TSequence **
 tinterrel_tpointseq_linear_geom(const TSequence *seq, GSERIALIZED *gsinter,
-  const TInstant *start, const TInstant *end, bool tinter, int *count)
+  bool tinter, int *count)
 {
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Datum datum_yes = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
@@ -265,11 +275,12 @@ tinterrel_tpointseq_linear_geom(const TSequence *seq, GSERIALIZED *gsinter,
 }
 
 /**
- * Evalues tintersects for a temporal sequence point and a geometry
+ * Evalues tintersects/tdisjoint for a temporal sequence point and a geometry
  *
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point is simple, that is, non self-intersecting
  */
@@ -328,12 +339,12 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
   }
 
   return MOBDB_FLAGS_GET_LINEAR(seq->flags) ?
-    tinterrel_tpointseq_linear_geom(seq, gsinter, start, end, tinter, count) :
+    tinterrel_tpointseq_linear_geom(seq, gsinter, tinter, count) :
     tinterrel_tpointseq_step_geom(seq, gsinter, tinter, count);
 }
 
 /**
- * Evalues tintersects for a temporal sequence point and a geometry
+ * Evalues tintersects/tdisjoint for a temporal sequence point and a geometry
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -341,6 +352,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  * @param[out] count Number of elements in the output array
  */
 TSequence **
@@ -381,13 +393,15 @@ tinterrel_tpointseq_geom2(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * Evalues tintersects for a temporal sequence point and a geometry
+ * Evalues tintersects/tdisjoint for a temporal sequence point and a geometry
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
  * for each piece.
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
+ * @param[in] box Bounding box of the geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 TSequenceSet *
 tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
@@ -401,11 +415,12 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * Evalues tintersects for a temporal sequence set point and a geometry
+ * Evalues tintersects/tdisjoint for a temporal sequence set point and a geometry
  *
  * @param[in] ts Temporal point
- * @param[in] gs Geometry
+ * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
+ * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 static TSequenceSet *
 tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
