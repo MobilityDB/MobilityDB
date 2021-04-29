@@ -30,13 +30,24 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
--- bucketing of timestamptz happens at UTC time
-CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, bucket_width interval)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'timestamptz_bucket'
+/*****************************************************************************
+ * Bucket functions
+ *****************************************************************************/
+
+CREATE OR REPLACE FUNCTION numberBucket("value" integer, bucket_width integer,
+  origin integer DEFAULT '0')
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'number_bucket'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE OR REPLACE FUNCTION numberBucket("value" float, bucket_width float,
+  origin float DEFAULT '0.0')
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, bucket_width interval, origin timestamptz)
+-- bucketing of timestamptz happens at UTC time
+CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, bucket_width interval,
+  origin timestamptz DEFAULT '2000-01-03')
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'timestamptz_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;

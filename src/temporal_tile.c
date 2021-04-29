@@ -62,16 +62,16 @@
 static int
 int_bucket_internal(int value, int width, int origin)
 {
-  int result;
+  if (value == PG_INT32_MIN || value == PG_INT32_MAX)
+    return value;
   origin = origin % width;
-
   if ((origin > 0 && value < PG_INT32_MIN + origin) ||
     (origin < 0 && value > PG_INT32_MAX + origin))
     ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
       errmsg("integer value out of range")));
-  value -= origin;
 
-  result = value / width;
+  value -= origin;
+  int result = value / width;
   if (result < 0)
   {
     /*
@@ -98,17 +98,18 @@ int_bucket_internal(int value, int width, int origin)
 double
 float_bucket_internal(double value, double width, double origin)
 {
-  double result;
+  if (value == DBL_MIN || value == DBL_MAX)
+    return value;
   origin = fmod(origin, width);
-
   if ((origin > 0 && value < DBL_MIN + origin) ||
     (origin < 0 && value > DBL_MAX + origin))
     ereport(ERROR,
         (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
          errmsg("value out of range")));
-  value -= origin;
 
+  value -= origin;
   /* result = (value / width) * width */
+  double result;
   FMODULO(value, result, width);
   if (result < 0)
   {
@@ -126,52 +127,41 @@ float_bucket_internal(double value, double width, double origin)
   return result;
 }
 
+/**
+ * Return the initial value of the bucket in which a number value falls.
+ *
+ * @param[in] value Input value
+ * @param[in] width Width of the buckets
+ * @param[in] origin Origin of the buckets
+ * @param[in] type Oid of the values
+ */
 static Datum
 number_bucket_internal(Datum value, Datum width, Datum origin, Oid type)
 {
   ensure_tnumber_base_type(type);
   if (type == INT4OID)
-    return Int32GetDatum(float_bucket_internal(DatumGetInt32(value),
+    return Int32GetDatum(int_bucket_internal(DatumGetInt32(value),
       DatumGetInt32(width), DatumGetInt32(origin)));
   else
     return Float8GetDatum(float_bucket_internal(DatumGetFloat8(value),
       DatumGetFloat8(width), DatumGetFloat8(origin)));
 }
 
-PG_FUNCTION_INFO_V1(int_bucket);
+PG_FUNCTION_INFO_V1(number_bucket);
 /**
  * Return the initial value of the bucket in which an integer value falls.
  */
 PGDLLEXPORT Datum
-int_bucket(PG_FUNCTION_ARGS)
+number_bucket(PG_FUNCTION_ARGS)
 {
-  int value = PG_GETARG_INT32(0);
-  if (value == PG_INT32_MIN || value == PG_INT32_MAX)
-    PG_RETURN_INT32(value);
-  int width = PG_GETARG_INT32(1);
-  ensure_positive_datum(Int32GetDatum(width), INT4OID);
-  int origin = PG_GETARG_INT32(2);
+  Datum value = PG_GETARG_DATUM(0);
+  Datum width = PG_GETARG_DATUM(1);
+  Datum origin = PG_GETARG_DATUM(2);
 
-  int result = int_bucket_internal(value, width, origin);
-  PG_RETURN_INT32(result);
-}
-
-PG_FUNCTION_INFO_V1(float_bucket);
-/**
- * Return the initial value of the bucket in which a float value falls.
- */
-PGDLLEXPORT Datum
-float_bucket(PG_FUNCTION_ARGS)
-{
-  double value = PG_GETARG_FLOAT8(0);
-  if (value == DBL_MIN || value == DBL_MAX)
-    PG_RETURN_INT32(value);
-  double width = PG_GETARG_FLOAT8(1);
-  ensure_positive_datum(Float8GetDatum(width), FLOAT8OID);
-  double origin = PG_GETARG_FLOAT8(2);
-
-  double result = float_bucket_internal(value, width, origin);
-  PG_RETURN_FLOAT8(result);
+  Oid type = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  ensure_positive_datum(width, type);
+  Datum result = number_bucket_internal(value, width, origin, type);
+  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************
@@ -241,7 +231,7 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Generate an integer or float range bucket from the current state of the 
+ * Generate an integer or float range bucket from the current state of the
  * bucket list
  */
 RangeType *
@@ -357,7 +347,7 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
 #endif
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
-    
+
     /* Ensure parameter validity */
     bool intrange = (bounds->rangetypid == type_oid(T_INTRANGE));
     if (intrange)
@@ -445,7 +435,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     Temporal *temp = PG_GETARG_TEMPORAL(0);
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
-    
+
     /* Ensure parameter validity */
     ensure_tnumber_base_type(temp->valuetypid);
     ensure_positive_datum(size, temp->valuetypid);
@@ -463,7 +453,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* get state */
   state = funcctx->user_fctx;
-  
+
   /* We need to loop since atRange may be NULL */
   while (true)
   {
