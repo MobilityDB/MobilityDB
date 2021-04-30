@@ -405,22 +405,6 @@ SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
 
 -------------------------------------------------------------------------------
--- Multidimensional tiling
--------------------------------------------------------------------------------
-
-SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
-SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
-SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
-SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3)', '2000-01-15') LIMIT 3;
-SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15') LIMIT 3;
-
-SELECT multidimTileStbox(ARRAY[2,0], 2.0);
-SELECT multidimTileStbox(ARRAY[2,0,0], 2.0);
-SELECT multidimTileStbox(ARRAY[2,0,0], 2.0, interval '2 days');
-SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days');
-SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');
-
--------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------
 

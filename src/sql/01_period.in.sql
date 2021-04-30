@@ -137,27 +137,6 @@ CREATE FUNCTION periodsel(internal, oid, internal, integer)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Bucketing
- *****************************************************************************/
-
-CREATE TYPE index_period AS (
-  index integer,
-  per period
-);
-
-CREATE OR REPLACE FUNCTION bucketList(period, interval,
-  TimestampTz DEFAULT '2000-01-03')
-  RETURNS SETOF period_bucket
-  AS 'MODULE_PATHNAME', 'period_bucket_list'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION bucketPeriod(integer, interval,
-  TimestampTz DEFAULT '2000-01-03')
-  RETURNS period
-  AS 'MODULE_PATHNAME', 'period_bucket'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************
  * Operators
  ******************************************************************************/

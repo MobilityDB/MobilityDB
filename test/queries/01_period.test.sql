@@ -107,9 +107,6 @@ SELECT shift(period '(2000-01-01,2000-01-02]', '5 min');
 SELECT shift(period '[2000-01-01,2000-01-02)', '5 min');
 SELECT shift(period '(2000-01-01,2000-01-02)', '5 min');
 
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '2 days') LIMIT 3;
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '2 days', '2020-06-15') LIMIT 3;
-
 SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
 SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
 SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';

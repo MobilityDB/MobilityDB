@@ -232,11 +232,15 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that completely cover the period or range argument with buckets of the same width</para>
+					<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input integer or float value.</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> within the bucket space using the index and bucket width</para>
+					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start value of the timestamp that contains the input timestamp.</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that completely cover the range or period argument with buckets of the same width</para>
 				</listitem>
 
 				<listitem>
@@ -248,12 +252,9 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start value of the bucket that contains the input <varname>timestamptz</varname>.</para>
+					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> within the bucket space using the index and bucket width</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Returns the start value of the bucket that contains the input <varname>integer</varname> o <varname>float</varname>.</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 

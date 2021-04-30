@@ -86,6 +86,20 @@ typedef struct TboxGridState
  * Struct for storing the state that persists across multiple calls to output
  * the temporal splits
  */
+typedef struct ValueSplitState
+{
+  bool done;
+  Datum width;
+  Datum *buckets;
+  Temporal **splits;
+  int i;
+  int count;
+} ValueSplitState;
+
+/**
+ * Struct for storing the state that persists across multiple calls to output
+ * the temporal splits
+ */
 typedef struct TimeSplitState
 {
   bool done;

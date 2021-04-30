@@ -25,60 +25,19 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests for extensions of range data type.
--- File Range.c
+-- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT intrange 'empty' << 5;
-SELECT intrange '[3,5)' << 5;
-SELECT 5 << intrange 'empty';
-SELECT 5 << intrange '[3,5)';
+SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
+SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)') LIMIT 3;
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)') LIMIT 3;
+SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3)', '2000-01-15') LIMIT 3;
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15') LIMIT 3;
 
-SELECT intrange 'empty' >> 5;
-SELECT intrange '[3,5)' >> 5;
-SELECT 5 >> intrange 'empty';
-SELECT 5 >> intrange '[3,5)';
-
-SELECT intrange 'empty' &< 5;
-SELECT intrange '[3,5)' &< 5;
-SELECT 5 &< intrange 'empty';
-SELECT 5 &< intrange '[3,5)';
-
-SELECT intrange 'empty' &> 5;
-SELECT intrange '[3,5)' &> 5;
-SELECT 5 &> intrange 'empty';
-SELECT 5 &> intrange '[3,5)';
-
-SELECT intrange 'empty' -|- 5;
-SELECT intrange '[3,5)' -|- 5;
-SELECT 5 -|- intrange 'empty';
-SELECT 5 -|- intrange '[3,5)';
-
--------------------------------------------------------------------------------
-
-SELECT floatrange 'empty' << 5.5;
-SELECT floatrange '[3.5, 5.5]' << 5.5;
-SELECT 5.5 << floatrange 'empty';
-SELECT 5.5 << floatrange '[3.5, 5.5]';
-
-SELECT floatrange 'empty' >> 5.5;
-SELECT floatrange '[3.5, 5.5]' >> 5.5;
-SELECT 5.5 >> floatrange 'empty';
-SELECT 5.5 >> floatrange '[3.5, 5.5]';
-
-SELECT floatrange 'empty' &< 5.5;
-SELECT floatrange '[3.5, 5.5]' &< 5.5;
-SELECT 5.5 &< floatrange 'empty';
-SELECT 5.5 &< floatrange '[3.5, 5.5]';
-
-SELECT floatrange 'empty' &> 5.5;
-SELECT floatrange '[3.5, 5.5]' &> 5.5;
-SELECT 5.5 &> floatrange 'empty';
-SELECT 5.5 &> floatrange '[3.5, 5.5]';
-
-SELECT floatrange 'empty' -|- 5.5;
-SELECT floatrange '[3.5, 5.5]' -|- 5.5;
-SELECT 5.5 -|- floatrange 'empty';
-SELECT 5.5 -|- floatrange '[3.5, 5.5]';
+SELECT multidimTileStbox(ARRAY[2,0], 2.0);
+SELECT multidimTileStbox(ARRAY[2,0,0], 2.0);
+SELECT multidimTileStbox(ARRAY[2,0,0], 2.0, interval '2 days');
+SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days');
+SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days', geometry 'Point(1 1 1)', '2020-06-15');
 
 -------------------------------------------------------------------------------
