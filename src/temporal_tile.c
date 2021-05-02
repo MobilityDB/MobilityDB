@@ -266,7 +266,7 @@ range_bucket_get(int coord, Datum width, Datum origin, Oid type)
  * @param[in] r Bounds for generating the bucket list
  * @param[in] width Width of the buckets
  * @param[in] origin Origin of the buckets
- * 
+ *
  * @pre The width argument must be greater to 0.
  * @note The first argument is NULL when generating the bucket list, otherwise
  * it is a temporal number to be split and in this case r is the value range
@@ -785,7 +785,7 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
   /* The upper bound for the bucket is exclusive => the test below is >= */
-  while (lower < end && 
+  while (lower < end &&
     (seq->period.lower >= upper || lower > seq->period.upper ||
       (lower == seq->period.upper && ! seq->period.upper_inc)))
   {
@@ -1241,10 +1241,10 @@ bucket_position(Datum value, Datum width, Datum origin, Oid type)
 {
   ensure_tnumber_base_type(type);
   if (type == INT4OID)
-    return DatumGetInt32(value) / DatumGetInt32(width) + 
+    return DatumGetInt32(value) / DatumGetInt32(width) +
       DatumGetInt32(origin);
   else
-    return (int) floor(DatumGetFloat8(value) / DatumGetFloat8(width) + 
+    return (int) floor(DatumGetFloat8(value) / DatumGetFloat8(width) +
       DatumGetFloat8(origin));
 }
 
@@ -1329,7 +1329,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum width, Datum origin,
 /**
  * Split a temporal value into an array of splits according to value buckets.
  *
- * @param[inout] result Array containing the splits of each bucket 
+ * @param[inout] result Array containing the splits of each bucket
  * @param[inout] numseqs Number of splits for each bucket
  * @param[in] seq Temporal value
  * @param[in] start_bucket Value of the start bucket
@@ -1367,7 +1367,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
       tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, valuetypid);
       countinst++;
     }
-    result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds, 
+    result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
       countinst, lower_inc1, false, STEP, NORMALIZE_NO);
     bounds[0] = bounds[1];
     inst1 = inst2;
@@ -1382,7 +1382,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     bucket_no = bucket_position(bucket_value, width, start_bucket, valuetypid);
     seq_no = numseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tsequence_make(&inst1, 1,
-      true, true, STEP, NORMALIZE_NO);  
+      true, true, STEP, NORMALIZE_NO);
   }
   pfree_array((void **) tofree, l);
   return;
@@ -1393,7 +1393,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
 /**
  * Split a temporal value into an array of splits according to value buckets.
  *
- * @param[inout] result Array containing the splits of each bucket 
+ * @param[inout] result Array containing the splits of each bucket
  * @param[inout] numseqs Number of splits for each bucket
  * @param[in] numcols Number of columns in the 2D pointer array. It can be
  *    seq->count for sequences or ts->totalcount for sequence sets
@@ -1423,41 +1423,48 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
     Datum bucket_value2 = number_bucket_internal(value2, width, start_bucket, valuetypid);
     int bucket_no2 = bucket_position(bucket_value2, width, start_bucket, valuetypid);
     bool lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
-    TInstant *bounds[2];
-    bounds[0] = (TInstant *) inst1;
-    Datum bucket_start = bucket_value1;
     /* Take into account on whether the segment is increasing or decreasing */
-    int next;
-    Datum bucket_end, min, max;
+    Datum min, max;
+    int bucket_first, bucket_last, first, last;
+    TInstant *bounds[2], *inst_before, *inst_after;
     if (bucket_no1 < bucket_no2)
     {
-      next = 1;
-      bucket_end = datum_add(bucket_start, width, valuetypid, valuetypid);
       min = value1;
       max = value2;
+      bucket_first = bucket_no1;
+      bucket_last = bucket_no2;
+      first = 0;
+      last = 1;
+      inst_before = (TInstant *) inst1;
+      inst_after = (TInstant *) inst2;
     }
     else
     {
-      next = -1;
-      bucket_end = datum_sub(bucket_start, width, valuetypid, valuetypid);
       min = value2;
       max = value1;
+      bucket_first = bucket_no2;
+      bucket_last = bucket_no1;
+      first = 1;
+      last = 0;
+      inst_before = (TInstant *) inst2;
+      inst_after = (TInstant *) inst1;
     }
-    /* Bidirectional loop either increasing or decreasing */
-    for (int j = bucket_no1; j != bucket_no2 + next; j += next)
+    bounds[first] = inst_before;
+    Datum bucket_upper = datum_add(start_bucket, width, valuetypid, valuetypid);
+    for (int j = bucket_first; j <= bucket_last; j++)
     {
-      /* Choose between interpolate or take inst2 */
-      if (datum_lt(min, bucket_end, valuetypid) && 
-        datum_lt(bucket_end, max, valuetypid))
+      /* Choose between interpolate or take one of the segment ends */
+      if (datum_lt(min, bucket_upper, valuetypid) &&
+        datum_lt(bucket_upper, max, valuetypid))
       {
         Datum projvalue;
         TimestampTz t;
-        tlinearseq_intersection_value(inst1, inst2, bucket_end, valuetypid, 
+        tlinearseq_intersection_value(inst1, inst2, bucket_upper, valuetypid,
           &projvalue, &t);
-        tofree[l++] = bounds[1] = tinstant_make(projvalue, t, valuetypid);;
+        tofree[l++] = bounds[last] = tinstant_make(projvalue, t, valuetypid);;
       }
       else
-        bounds[1] = (TInstant *) inst2;
+        bounds[last] = inst_after;
       /* If last bucket contains a single instant */
       int countinst = (bounds[0]->t == bounds[1]->t) ? 1 : 2;
       /* Get the inclusiveness of the upper bound of the sequence if last instant */
@@ -1469,13 +1476,10 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       /* Set to inclusive when constructing instantaneous sequence */
       upper_inc1 |= (countinst == 1);
       int seq_no = numseqs[j]++;
-      result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds, 
+      result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
         countinst, lower_inc1, upper_inc1, LINEAR, NORMALIZE_NO);
-      bounds[0] = bounds[1];
-      bucket_start = bucket_end;
-      bucket_end = (next > 0) ?
-        datum_add(bucket_start, width, valuetypid, valuetypid) :
-        datum_sub(bucket_start, width, valuetypid, valuetypid);
+      bounds[first] = bounds[last];
+      bucket_upper = datum_add(bucket_upper, width, valuetypid, valuetypid);
     }
     inst1 = inst2;
     value1 = value2;
@@ -1506,7 +1510,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum width,
     *newcount = 1;
     return result;
   }
-  
+
   /* General case */
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * seq->count * count);
   /* palloc0 to initialize the counters to 0 */
@@ -1537,7 +1541,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum width,
   *buckets = values;
   *newcount = k;
   return result;}
-  
+
 /*****************************************************************************/
 
 /**
@@ -1568,7 +1572,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum widt
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
-      tnumberseq_linear_value_split(bucketseqs, numseqs, ts->totalcount, seq, 
+      tnumberseq_linear_value_split(bucketseqs, numseqs, ts->totalcount, seq,
         start_bucket, width, count);
     else
       tnumberseq_step_value_split(bucketseqs, numseqs, ts->totalcount, seq,
@@ -1602,7 +1606,6 @@ Temporal **
 tnumber_value_split_internal(Temporal *temp, Datum start_bucket, Datum width,
   int count, Datum **buckets, int *newcount)
 {
-  // assert(start < end);
   assert(count > 0);
   /* Split the temporal value */
   Temporal **splits;

@@ -228,37 +228,6 @@
 		</sect2>
 
 		<sect2>
-			<title>Bucket Functions</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input integer or float value.</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start value of the timestamp that contains the input timestamp.</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that completely cover the range or period argument with buckets of the same width</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Returns an <varname>intrange</varname> within the bucket space using the index and bucket width</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Returns a <varname>floatrange</varname> within the bucket space using the index and bucket width</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> within the bucket space using the index and bucket width</para>
-				</listitem>
-
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
 			<title>Aggregate Functions</title>
 
 			<itemizedlist>
@@ -402,24 +371,6 @@
 
 				<listitem>
 					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Multidimensional Tiling</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (indices, tile) that completely covers the box with multidimensional tiles of the same width.</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1249,29 +1200,82 @@
 		</sect2>
 
 		<sect2>
-			<title>Bucket and Grid Functions</title>
+			<title>Multidimensional Tiling</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment the temporal number with respect to value buckets</para>
-				</listitem>
+			<sect3>
+				<title>Bucket Functions</title>
 
-				<listitem>
-					<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment the temporal value with respect to time buckets</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input integer or float value.</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start value of the timestamp that contains the input timestamp.</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="spaceSlice"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that completely cover the range or period argument with buckets of the same width</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="spaceTimeSlice"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Returns an <varname>intrange</varname> within the bucket space using the index and bucket width</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Returns a <varname>floatrange</varname> within the bucket space using the index and bucket width</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Returns a <varname>period</varname> within the bucket space using the index and bucket width</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Grid Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (indices, tile) that completely covers the box with multidimensional tiles of the same width.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Split Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment the temporal number with respect to value buckets</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment the temporal value with respect to time buckets</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceSlice"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeSlice"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 
 		<sect2>

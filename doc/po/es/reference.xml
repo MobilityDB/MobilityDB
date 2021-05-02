@@ -228,37 +228,6 @@
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
-			<title>Funciones de intervalos</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número entero o flotante de entrada.</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre completamente el período o el rango con intervalos de la misma amplitud</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Obtener un <varname>intrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un <varname>floatrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Obtener un <varname>period</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
-				</listitem>
-
-			</itemizedlist>
-		</sect2>
-
 
 		<sect2>
 			<title>Funciones agregadas</title>
@@ -404,24 +373,6 @@
 
 				<listitem>
 					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Mosaicos multidimensionales</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre completamente el cuadro delimitador con mosaicos multidimensionales</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Obtener un mosaico de tipo <varname>tbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Obtener un mosaico de tipo <varname>stbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1259,29 +1210,83 @@
 		</sect2>
 
 		<sect2>
-			<title>Operaciones de intervalos y mosaicos</title>
+			<title>Mosaicos multidimensionales</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
-				</listitem>
+			<sect3>
+				<title>Operaciones de intervalos</title>
 
-				<listitem>
-					<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número entero o flotante de entrada.</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre completamente el período o el rango con intervalos de la misma amplitud</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Obtener un <varname>intrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un <varname>floatrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Obtener un <varname>period</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de malla</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre completamente el cuadro delimitador con mosaicos multidimensionales</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Obtener un mosaico de tipo <varname>tbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Obtener un mosaico de tipo <varname>stbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de fragmentación</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
 		</sect2>
 
 		<sect2>

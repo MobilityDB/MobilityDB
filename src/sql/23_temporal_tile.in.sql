@@ -101,7 +101,7 @@ CREATE OR REPLACE FUNCTION bucketFloatRange(integer, float,
 
 CREATE TYPE index_period AS (
   index integer,
-  per period
+  period period
 );
 
 CREATE OR REPLACE FUNCTION bucketList(period, interval,
