@@ -376,6 +376,16 @@
 		</sect2>
 
 		<sect2>
+			<title>Aggregate Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Bounding box extent</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Comparison Operators</title>
 			<itemizedlist>
 				<listitem>

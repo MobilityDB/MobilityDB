@@ -397,6 +397,34 @@ SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, 2000-01-01),
 		</itemizedlist>
 	</sect1>
 
+	<sect1>
+		<title>Aggregate Functions</title>
+
+		<itemizedlist>
+			<listitem id="box_extent">
+				<indexterm><primary><varname>extent</varname></primary></indexterm>
+				<para>Bounding box extent</para>
+				<para><varname>extent(box): box</varname></para>
+				<programlisting>
+WITH boxes(b) AS (
+  SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' UNION
+  SELECT tbox 'TBOX((5, 2000-01-05),(7, 2000-01-07))' UNION
+  SELECT tbox 'TBOX((6, 2000-01-06),(8, 2000-01-08))'
+)
+SELECT extent(b) FROM boxes;
+-- TBOX((1,2000-01-01 00:00:00+01),(8,2000-01-08 00:00:00+01))
+WITH boxes(b) AS (
+  SELECT stbox 'STBOX Z((1, 1, 1),(3, 3, 3))' UNION
+  SELECT stbox 'STBOX Z((5, 5, 5),(7, 7, 7))' UNION
+  SELECT stbox 'STBOX Z((6, 6, 6),(8, 8, 8))'
+)
+SELECT extent(b) FROM boxes;
+-- STBOX Z((1,1,1),(8,8,8))
+				</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 id="comparison_box_types">
 		<title>Comparison Operators</title>
 

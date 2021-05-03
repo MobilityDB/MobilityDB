@@ -225,12 +225,12 @@ CREATE TYPE float_time_tfloat AS (
   tnumber tfloat
 );
 
-CREATE OR REPLACE FUNCTION valueTimeSplit(tint, integer, interval,
+CREATE OR REPLACE FUNCTION valueTimeSplit(tint, width integer, duration interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof int_time_tint
   AS 'MODULE_PATHNAME', 'tnumber_value_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION valueTimeSplit(tfloat, float, interval,
+CREATE OR REPLACE FUNCTION valueTimeSplit(tfloat, width float, duration interval,
     vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS setof float_time_tfloat
   AS 'MODULE_PATHNAME', 'tnumber_value_time_split'

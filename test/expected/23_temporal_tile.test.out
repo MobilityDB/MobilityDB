@@ -1,3 +1,39 @@
+SELECT SUM(valueBucket(3, 2));
+ sum 
+-----
+   2
+(1 row)
+
+SELECT SUM(valueBucket(3, 2, 1));
+ sum 
+-----
+   3
+(1 row)
+
+SELECT SUM(valueBucket(3.5, 2.5));
+ sum 
+-----
+ 2.5
+(1 row)
+
+SELECT SUM(valueBucket(3.5, 2.5, 1.5));
+ sum 
+-----
+ 1.5
+(1 row)
+
+SELECT timeBucket('2020-01-01', '1 week');
+       timebucket       
+------------------------
+ 2019-12-30 00:00:00+00
+(1 row)
+
+SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
+       timebucket       
+------------------------
+ 2019-12-27 00:00:00+00
+(1 row)
+
 SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
  bucketlist  
 -------------

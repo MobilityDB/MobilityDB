@@ -524,6 +524,26 @@ CREATE OPERATOR * (
 );
 
 /*****************************************************************************
+ * Extent aggreation
+ *****************************************************************************/
+
+CREATE OR REPLACE FUNCTION stbox_extent_transfn(stbox, stbox)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION stbox_extent_combinefn(stbox, stbox)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(stbox) (
+  SFUNC = stbox_extent_transfn,
+  STYPE = stbox,
+  COMBINEFUNC = stbox_extent_combinefn,
+  PARALLEL = safe
+);
+
+/*****************************************************************************
  * Comparison
  *****************************************************************************/
 

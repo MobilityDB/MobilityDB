@@ -1793,6 +1793,65 @@ stbox_intersection(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Extent aggregation
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(stbox_extent_transfn);
+/**
+ * Transition function for extent aggregation for boxes
+ */
+PGDLLEXPORT Datum
+stbox_extent_transfn(PG_FUNCTION_ARGS)
+{
+  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+
+  /* Can't do anything with null inputs */
+  if (!box1 && !box2)
+    PG_RETURN_NULL();
+  STBOX *result = palloc0(sizeof(STBOX));
+  /* One of the boxes is null, return the other one */
+  if (!box1)
+  {
+    memcpy(result, box2, sizeof(STBOX));
+    PG_RETURN_POINTER(result);
+  }
+  if (!box2)
+  {
+    memcpy(result, box1, sizeof(STBOX));
+    PG_RETURN_POINTER(result);
+  }
+
+  /* Both boxes are not null */
+  memcpy(result, box1, sizeof(STBOX));
+  stbox_expand(result, box2);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_extent_combinefn);
+/**
+ * Combine function for extent aggregation for boxes
+ */
+PGDLLEXPORT Datum
+stbox_extent_combinefn(PG_FUNCTION_ARGS)
+{
+  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+
+  if (!box2 && !box1)
+    PG_RETURN_NULL();
+  if (box1 && !box2)
+    PG_RETURN_POINTER(box1);
+  if (box2 && !box1)
+    PG_RETURN_POINTER(box2);
+  /* Both boxes are not null */
+  ensure_same_dimensionality(box1->flags, box2->flags);
+  STBOX *result = stbox_copy(box1);
+  stbox_expand(result, box2);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

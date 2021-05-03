@@ -28,6 +28,18 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
+SELECT SUM(valueBucket(3, 2));
+SELECT SUM(valueBucket(3, 2, 1));
+SELECT SUM(valueBucket(3.5, 2.5));
+SELECT SUM(valueBucket(3.5, 2.5, 1.5));
+
+-------------------------------------------------------------------------------
+
+SELECT timeBucket('2020-01-01', '1 week');
+SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
+
+-------------------------------------------------------------------------------
+
 SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
 SELECT bucketList(intrange '[1, 10]', 2, 1) LIMIT 3;
 

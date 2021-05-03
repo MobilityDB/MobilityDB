@@ -378,6 +378,16 @@
 		</sect2>
 
 		<sect2>
+			<title>Funciones aggregadas</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Operadores de comparación</title>
 			<itemizedlist>
 				<listitem>

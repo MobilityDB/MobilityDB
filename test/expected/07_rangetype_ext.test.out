@@ -238,35 +238,3 @@ SELECT 5.5 -|- floatrange '[3.5, 5.5]';
  f
 (1 row)
 
-SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
- bucketlist  
--------------
- (0,"[0,2)")
- (1,"[2,4)")
- (2,"[4,6)")
-(3 rows)
-
-SELECT bucketList(intrange '[1, 10]', 2, 1) LIMIT 3;
- bucketlist  
--------------
- (0,"[1,3)")
- (1,"[3,5)")
- (2,"[5,7)")
-(3 rows)
-
-SELECT bucketList(floatrange '(1, 10)', 2) LIMIT 3;
- bucketlist  
--------------
- (0,"[0,2)")
- (1,"[2,4)")
- (2,"[4,6)")
-(3 rows)
-
-SELECT bucketList(floatrange '(1, 10)', 2, 1) LIMIT 3;
- bucketlist  
--------------
- (0,"[1,3)")
- (1,"[3,5)")
- (2,"[5,7)")
-(3 rows)
-
