@@ -1,0 +1,80 @@
+SELECT multidimGrid(b, 2.5, geometry 'Point(10 10)'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+               multidimgrid               | count 
+------------------------------------------+-------
+ ("{7,10}","STBOX((27.5,35),(30,37.5))")  |     4
+ ("{20,21}","STBOX((60,62.5),(62.5,65))") |     4
+ ("{21,18}","STBOX((62.5,55),(65,57.5))") |     4
+(3 rows)
+
+SELECT multidimGrid(b, 2.5, interval '1 week'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                        multidimgrid                                        | count 
+--------------------------------------------------------------------------------------------+-------
+ ("{17,16,0}","STBOX T((42.5,40,2001-02-05 00:00:00+00),(45,42.5,2001-02-12 00:00:00+00))") |     2
+ ("{17,17,0}","STBOX T((42.5,42.5,2001-02-05 00:00:00+00),(45,45,2001-02-12 00:00:00+00))") |     2
+ ("{18,16,0}","STBOX T((45,40,2001-02-05 00:00:00+00),(47.5,42.5,2001-02-12 00:00:00+00))") |     2
+(3 rows)
+
+SELECT multidimGrid(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), COUNT(*) FROM tbl_stbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+                                        multidimgrid                                        | count 
+--------------------------------------------------------------------------------------------+-------
+ ("{13,12,0}","STBOX T((42.5,40,2001-02-09 00:00:00+00),(45,42.5,2001-02-16 00:00:00+00))") |     2
+ ("{13,13,0}","STBOX T((42.5,42.5,2001-02-09 00:00:00+00),(45,45,2001-02-16 00:00:00+00))") |     2
+ ("{14,12,0}","STBOX T((45,40,2001-02-09 00:00:00+00),(47.5,42.5,2001-02-16 00:00:00+00))") |     2
+(3 rows)
+
+SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i, t2.i], 2.5)) FROM 
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 30) t3;
+               extent                
+-------------------------------------
+ STBOX Z((17.5,0,2.5),(245,2.5,215))
+(1 row)
+
+SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i, t2.i], 2.5, geometry 'Point(10 10)')) FROM 
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 30) t3;
+                extent                 
+---------------------------------------
+ STBOX Z((27.5,10,2.5),(255,12.5,215))
+(1 row)
+
+SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i, t2.i], 2.5, interval '2 days')) FROM 
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 30) t3;
+                                  extent                                   
+---------------------------------------------------------------------------
+ STBOX T((17.5,0,2000-01-05 00:00:00+00),(245,2.5,2000-06-23 00:00:00+00))
+(1 row)
+
+SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i, t2.i], 2.5, interval '2 days', geometry 'Point(10 10)', '2001-06-01')) FROM 
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 30) t3;
+                                   extent                                    
+-----------------------------------------------------------------------------
+ STBOX T((27.5,10,2001-06-03 00:00:00+00),(255,12.5,2001-11-20 00:00:00+00))
+(1 row)
+
+SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i, t3.i, t4.i], 2.5, interval '2 days')) FROM 
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 30) t3,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 40) t4;
+                                       extent                                       
+------------------------------------------------------------------------------------
+ STBOX ZT((17.5,0,2.5,2000-01-03 00:00:00+00),(245,2.5,215,2000-01-05 00:00:00+00))
+(1 row)
+
+SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i, t3.i, t4.i], 2.5, interval '2 days', geometry 'Point(10 10)', '2001-06-01')) FROM 
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 30) t3,
+(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 40) t4;
+                                        extent                                        
+--------------------------------------------------------------------------------------
+ STBOX ZT((27.5,10,2.5,2001-06-01 00:00:00+00),(255,12.5,215,2001-06-03 00:00:00+00))
+(1 row)
+

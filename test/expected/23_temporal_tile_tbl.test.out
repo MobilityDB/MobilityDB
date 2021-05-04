@@ -206,3 +206,99 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) 
    56.5 |    45
 (3 rows)
 
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-08-27 14:00:00+00 |     2
+ 2001-11-04 08:00:00+00 |     2
+ 2001-11-02 10:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-08-27 14:00:00+00 |     2
+ 2001-11-04 08:00:00+00 |     2
+ 2001-11-02 10:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-06-29 18:00:00+00 |     3
+ 2001-02-12 06:00:00+00 |     2
+ 2001-10-27 04:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-06-29 18:00:00+00 |     3
+ 2001-02-12 06:00:00+00 |     2
+ 2001-10-27 04:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-07-26 10:00:00+00 |     2
+ 2001-07-26 12:00:00+00 |     2
+ 2001-04-21 16:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-07-26 10:00:00+00 |     2
+ 2001-07-26 12:00:00+00 |     2
+ 2001-04-21 16:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-12-02 10:00:00+00 |     3
+ 2001-12-02 08:00:00+00 |     3
+ 2001-09-02 18:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+          time          | count 
+------------------------+-------
+ 2001-12-02 10:00:00+00 |     3
+ 2001-12-02 08:00:00+00 |     3
+ 2001-09-02 18:00:00+00 |     2
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+ number | count 
+--------+-------
+     48 |    20
+     64 |    18
+     60 |    17
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days', 1, '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+ number | count 
+--------+-------
+     25 |    19
+     41 |    18
+     63 |    18
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+ number | count 
+--------+-------
+   67.5 |    53
+     55 |    51
+     65 |    51
+(3 rows)
+
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days', 1.5, '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+ number | count 
+--------+-------
+     69 |    49
+   66.5 |    49
+     54 |    48
+(3 rows)
+
