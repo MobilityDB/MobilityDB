@@ -2453,6 +2453,10 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Mosaicos multidimensionales</title>
+		<para>Los mosaicos multidimensionales es el mecanismo que se utiliza para dividir el dominio de valores temporales en intervalos o mosaicos de un número variable de dimensiones. En el caso de una sola dimensión, el dominio se puede dividir por valor o por tiempo utilizando intervalos del mismo ancho o la misma duración, respectivamente. Para los números temporales, el dominio se puede dividir en mosaicos bidimensionales del mismo ancho para la dimensión de valor y la misma duración para la dimensión de tiempo. Para los puntos temporales, el dominio se puede dividir en el espacio en mosaicos bidimensionales o tridimensionales, dependiendo del número de dimensiones de las coordenadas espaciales. Finalmente, para los puntos temporales, el dominio se puede dividir por espacio y por tiempo usando mosaicos tridimensionales o tetradimensionales. Además, los valores temporales también se pueden fragmentar en piezas de acuerdo con una malla multidimensional definida sobre el dominio subyacente.</para>
+
+		<para>Los mosaicos multidimensionales se pueden utilizar para diversos fines. Por ejemplo, se pueden utilizar para calcular histogramas multidimensionales, donde los valores temporales se agregan de acuerdo con la partición subyacente del dominio. Por otro lado, el mosaico multidimensional se puede utilizar para distribuir un conjunto de datos en un grupo de servidores, donde cada servidor contiene una partición del conjunto de datos. La ventaja de este mecanismo de partición es que conserva la proximidad en el espacio y el tiempo, a diferencia de los mecanismos de partición tradicionales basados ​​en hash utilizados en entornos de big data.</para>
+
 		<sect2 id="bucket_functions">
 			<title>Operaciones de intervalos</title>
 

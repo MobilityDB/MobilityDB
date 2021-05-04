@@ -2462,6 +2462,9 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Multidimensional Tiling</title>
+		<para>Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same width or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same width for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned by space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented in pieces according to a multidimensional grid defined over the underlying domain.</para>
+
+		<para>Multidimensional tiling can be used for various purposes. For example, it can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can be used for distributing a data set across a cluster of servers, where each server contains a partition of the data set. The advantage of this partition mechanism is that it preserves proximitity in space and time, unlike the traditional hash-based partition mechanisms used in big data environments.</para>
 
 		<sect2 id="bucket_functions">
 			<title>Bucket Functions</title>
