@@ -3659,7 +3659,7 @@ tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
     coll = lwgeom_as_lwcollection(lwgeom_inter);
     countinter = coll->ngeoms;
   }
-  Period **result = palloc(sizeof(Period *) * countinter);
+  Period **periods = palloc(sizeof(Period *) * countinter);
   int k = 0;
   for (int i = 0; i < countinter; i++)
   {
@@ -3687,7 +3687,7 @@ tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       if ((seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        result[k++] = period_make(t1, t1, true, true);
+        periods[k++] = period_make(t1, t1, true, true);
       }
     }
     else
@@ -3710,7 +3710,7 @@ tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       if (t1 == t2 && (seq->period.lower_inc || t1 > start->t) &&
         (seq->period.upper_inc || t1 < end->t))
       {
-        result[k++] = period_make(t1, t1, true, true);
+        periods[k++] = period_make(t1, t1, true, true);
       }
       else
       {
@@ -3718,22 +3718,28 @@ tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
         TimestampTz upper1 = Max(t1, t2);
         bool lower_inc1 = (lower1 == start->t) ? seq->period.lower_inc : true;
         bool upper_inc1 = (upper1 == end->t) ? seq->period.upper_inc : true;
-        result[k++] = period_make(lower1, upper1, lower_inc1, upper_inc1);
+        periods[k++] = period_make(lower1, upper1, lower_inc1, upper_inc1);
       }
     }
   }
   lwgeom_free(lwgeom_inter);
 
-  *count = k;
   if (k == 0)
   {
-    pfree(result);
+    *count = k;
+    pfree(periods);
     return NULL;
   }
+  if (k == 1)
+  {
+    *count = k;
+    return periods;
+  }
 
-  /* It is necessary to sort the periods */
-  if (k > 1)
-    periodarr_sort(result, k);
+  /* It is necessary to normalize the periods due to roundoff errors */
+  int newcount;
+  Period **result = periodarr_normalize(periods, k, &newcount);
+  *count = newcount;
   return result;
 }
 
