@@ -45,9 +45,10 @@ typedef struct RangeBucketState
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
   Datum width;
   Datum origin;
-  int coordmin;
-  int coordmax;
-  int coord;
+  Datum minvalue;
+  Datum maxvalue;
+  Datum value;
+  int i;
 } RangeBucketState;
 
 /**
@@ -59,9 +60,10 @@ typedef struct PeriodBucketState
   bool done;
   int64 tunits;
   int64 torigin;
-  int coordmin;
-  int coordmax;
-  int coord;
+  TimestampTz mint;
+  TimestampTz maxt;
+  TimestampTz t;
+  int i;
 } PeriodBucketState;
 
 /**
@@ -75,9 +77,13 @@ typedef struct TboxGridState
   int64 tunits;
   double xorigin;
   int64 torigin;
-  int min[2];
-  int max[2];
-  int coords[2];
+  double minvalue;
+  double maxvalue;
+  TimestampTz mint;
+  TimestampTz maxt;
+  double value;
+  TimestampTz t;
+  int i;
 } TboxGridState;
 
 /*****************************************************************************/

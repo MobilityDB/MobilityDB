@@ -2470,11 +2470,44 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 			<title>Bucket Functions</title>
 
 			<itemizedlist>
+				<listitem id="bucketList">
+					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
+					<para>Returns a set of couples (index, bucket) that cover the range or period with buckets of the same width aligned with the origin.</para>
+					<para>The indices start by 1. If the origin is not provided, it is set by default to 0 for ranges and Monday, January 3, 2000 for periods.</para>
+					<para><varname>bucketList(bounds range,width number,origin number=0): setof index_range</varname></para>
+					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
+					<para><varname>  setof index_period</varname></para>
+					<programlisting>
+SELECT (bl).index, (bl).range
+FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intrange, 2) AS bl) t;
+-- 1 | [14,16)
+   2 | [16,18)
+   3 | [18,20)
+   ...
+SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatrange, 2, -7);
+-- (1,"[-11,-9)")
+   (2,"[-9,-7)")
+   (3,"[-7,-5)")
+   ...
+SELECT (bl).index, (bl).period
+FROM (SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period,'2 days') AS bl) t;
+-- 1 | [2000-01-15, 2000-01-17)
+   2 | [2000-01-17, 2000-01-19)
+   3 | [2000-01-19, 2000-01-21)
+   ...
+SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period, '2 days', '2000-01-02');
+-- (1,"[2000-01-14, 2000-01-16)")
+   (2,"[2000-01-16, 2000-01-18)")
+   (3,"[2000-01-18, 2000-01-20)")
+   ...
+					</programlisting>
+				</listitem>
+
 				<listitem id="valueBucket">
 					<indexterm><primary><varname>valueBucket</varname></primary></indexterm>
 					<para> Returns the start value of the bucket that contains the input integer or float value.</para>
 					<para>If the origen is not specified, it is set by default to 0.</para>
-					<para><varname>valueBucket(value number,width number, origin number=0): number</varname></para>
+					<para><varname>valueBucket(value number,width number,origin number=0): number</varname></para>
 					<programlisting>
 SELECT valueBucket(3, 2);
 -- 2
@@ -2490,92 +2523,50 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 					<para><varname>timeBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  timestamptz</varname></para>
 					<programlisting>
-SELECT timeBucket(timestamptz '2020-06-01', interval '2 days');
--- 2020-05-31 02:00:00+02
-SELECT timeBucket(timestamptz '2020-06-01', interval '2 days', timestamptz '2020-01-01');
--- 2020-05-30 01:00:00+02
-					</programlisting>
-				</listitem>
-
-				<listitem id="bucketList">
-					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
-					<para>Returns a set of couples (index, bucket) that completely cover the period or range with buckets of the same width.</para>
-					<para>If the origin is not provided, it is set by default to 0 for ranges and Monday, January 3, 2000 for periods. Notice that the bucket indices are determined by the origin.</para>
-					<para><varname>bucketList(bounds range,width number,origin number=0): setof index_range</varname></para>
-					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
-					<para><varname>  setof index_period</varname></para>
-					<programlisting>
-SELECT (bl).index, (bl).range
-FROM (SELECT bucketList(tint '[15@2000-01-01, 25@2000-01-10]'::intrange, 2) AS bl) t;
--- 7 | [14,16)
-   8 | [16,18)
-   9 | [18,20)
-   ...
-SELECT bucketList(tfloat '[15@2000-01-01, 25@2000-01-10]'::floatrange, 2.0, 15.0);
--- (0,"[15,17)")
-   (1,"[17,19)")
-   (2,"[19,21)")
-   ...
-SELECT bucketList(tfloat '[-1@2000-01-01, -10@2000-01-10]'::floatrange, 2);
--- (-5,"[-10,-8)")
-   (-4,"[-8,-6)")
-   (-3,"[-6,-4)")
-   ...
-SELECT (bl).index, (bl).period
-FROM (SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period,'2 days') AS bl) t;
--- 6 | [2000-01-15, 2000-01-17)
-   7 | [2000-01-17, 2000-01-19)
-   8 | [2000-01-19, 2000-01-21)
-   ...
-SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period, '2 days', '2000-01-15');
--- (0,"[2000-01-15, 2000-01-17)")
-   (1,"[2000-01-17, 2000-01-19)")
-   (2,"[2000-01-19, 2000-01-21)")
-   ...
-SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period, '2 days', '2000-01-18');
--- (-2,"[2000-01-14, 2000-01-16)")
-   (-1,"[2000-01-16, 2000-01-18)")
-   (0,"[2000-01-18, 2000-01-20)")
-   ...
+SELECT timeBucket(timestamptz '2020-05-01', interval '2 days');
+-- 2020-04-29 01:00:00+02
+SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020-01-01');
+-- 2020-04-30 01:00:00+02
 					</programlisting>
 				</listitem>
 
 				<listitem id="bucketIntRange">
-					<indexterm><primary><varname>bucketIntRange</varname></primary></indexterm>
-					<para>Returns an <varname>intrange</varname> within the bucket space using the bucket index and width.</para>
-					<para>If the origin is not provided, it is set by default to 0. Notice that the bucket indices are determined by the origin.</para>
-					<para><varname>bucketIntRange(index integer,width integer,origin integer=0): intrange</varname></para>
+					<indexterm><primary><varname>intRangeBucket</varname></primary></indexterm>
+					<para>Returns an <varname>intrange</varname> in the bucket space that contains the input integer value.</para>
+					<para>If the origin is not provided, it is set by default to 0.</para>
+					<para><varname>intRangeBucket(value integer,width integer,origin integer=0): intrange</varname></para>
 					<programlisting>
-SELECT bucketIntRange(2, 2);
--- [4,6)
-SELECT bucketIntRange(2, 2, 1);
--- [5,7)
+SELECT intRangeBucket(2, 2);
+-- [2,4)
+SELECT intRangeBucket(2, 2, 1);
+-- [1,3)
 					</programlisting>
 				</listitem>
 
-				<listitem id="bucketFloatRange">
-					<indexterm><primary><varname>bucketFloatRange</varname></primary></indexterm>
-					<para>Returns a <varname>floatrange</varname> within the bucket space using the bucket index and width.</para>
-					<para>If the origin is not provided, it is set by default to 0. Notice that the bucket indices are determined by the origin.</para>
-					<para><varname>bucketFloatRange(index integer,width float,origin float=0): floatrange</varname></para>
+				<listitem id="floatRangeBucket">
+					<indexterm><primary><varname>floatRangeBucket</varname></primary></indexterm>
+					<para>Returns a <varname>floatrange</varname> in the bucket space that contains the input float value.</para>
+					<para>If the origin is not provided, it is set by default to 0.</para>
+					<para><varname>floatRangeBucket(value float,width float,origin float=0): floatrange</varname></para>
 					<programlisting>
-SELECT bucketFloatRange(2, 2.0);
--- [4,6)
-SELECT bucketFloatRange(2, 2.0, 1.0);
--- [5,7)
+SELECT floatRangeBucket(2, 2.5);
+-- [0,2.5)
+SELECT floatRangeBucket(2, 2.5, 1.5);
+-- [1.5,4)
 					</programlisting>
 				</listitem>
 
-				<listitem id="bucketPeriod">
-					<indexterm><primary><varname>bucketPeriod</varname></primary></indexterm>
-					<para>Returns a <varname>period</varname> within the bucket space using the bucket index and width.</para>
-					<para>If the origin is not provided, it is set by default to Monday, January 3, 2000. Notice that the bucket indices are determined by the origin.</para>
-					<para><varname>bucketPeriod(index integer,duration interval,origin timestamptz='2000-01-03'): period</varname></para>
+				<listitem id="periodBucket">
+					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
+					<para>Returns a <varname>period</varname> within the bucket space that contains the input timestamp.</para>
+					<para>If the origin is not provided, it is set by default to Monday, January 3, 2000.</para>
+					<para><varname>bucketPeriod(time timestamptz,duration interval,origin timestamptz='2000-01-03'):</varname></para>
+					<para><varname>  period</varname></para>
 					<programlisting>
-SELECT bucketPeriod(2, interval '2 days');
--- [2000-01-07, 2000-01-09)
-SELECT bucketPeriod(2, interval '2 days', '2020-06-15');
--- [2020-06-19, 2020-06-21)
+SELECT periodBucket('2000-01-04', interval '1 week');
+-- [2000-01-03, 2000-01-10)
+SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
+-- [1999-12-31, 2000-01-07)
 					</programlisting>
 				</listitem>
 
@@ -2588,17 +2579,17 @@ SELECT bucketPeriod(2, interval '2 days', '2020-06-15');
 			<itemizedlist>
 				<listitem id="multidimGrid">
 					<indexterm><primary><varname>multidimGrid</varname></primary></indexterm>
-					<para>Returns a set of couples (indices, tile) that completely covers the box with multidimensional tiles of the same width. &Z_support;</para>
-					<para>If the origin of the value and/or time dimensions are not provided, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension. Notice that the tile indices depend on the origin of the dimensions.</para>
+					<para>Returns a set of couples (index, tile) that covers the box with multidimensional tiles of the same width. &Z_support;</para>
+					<para>If the origin of the value and/or time dimensions are not provided, they are set by default to 0 or <varname>'Point(0 0 0)'</varname> for the value dimension (depending on the box type) and to Monday, January 3, 2000 for the time dimension.</para>
 					<para><varname>multidimGrid(bounds tbox,width float,duration interval,vorigin float=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03'): setof indices_box</varname></para>
 					<para><varname>multidimGrid(bounds stbox,width float,origin geometry='Point(0 0 0)'):</varname></para>
 					<para><varname>  setof indices_box</varname></para>
 					<para><varname>multidimGrid(bounds stbox,width float,duration interval,sorigin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): setof indices_box</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03'): setof index_box</varname></para>
 					<para>In the case of a spatiotemporal grid, the SRID of the tile coordinates is determined by the input box and the spatial width is given in the units of the SRID. If the origin for the spatial coordinates is given, which must be a point, its SRID should be equal to the one of box, otherwise an error is raised.</para>
 					<programlisting>
-SELECT (gr).indices, (gr).box
+SELECT (gr).index, (gr).box
 FROM (SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days')
   AS gr) t;
 --  {7,6} | TBOX((14,2000-01-15),(16,2000-01-17))

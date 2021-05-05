@@ -28,10 +28,10 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT SUM(valueBucket(3, 2));
-SELECT SUM(valueBucket(3, 2, 1));
-SELECT SUM(valueBucket(3.5, 2.5));
-SELECT SUM(valueBucket(3.5, 2.5, 1.5));
+SELECT valueBucket(3, 2);
+SELECT valueBucket(3, 2, 1);
+SELECT valueBucket(3.5, 2.5);
+SELECT valueBucket(3.5, 2.5, 1.5);
 
 -------------------------------------------------------------------------------
 
@@ -43,21 +43,21 @@ SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
 SELECT bucketList(intrange '[1, 10]', 2) LIMIT 3;
 SELECT bucketList(intrange '[1, 10]', 2, 1) LIMIT 3;
 
-SELECT bucketList(floatrange '(1, 10)', 2) LIMIT 3;
-SELECT bucketList(floatrange '(1, 10)', 2, 1) LIMIT 3;
+SELECT bucketList(floatrange '(1, 10)', 2.5) LIMIT 3;
+SELECT bucketList(floatrange '(1, 10)', 2.5, 1.5) LIMIT 3;
 
 -------------------------------------------------------------------------------
 
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '2 days') LIMIT 3;
-SELECT bucketList(period '[2000-01-01, 2000-01-10]', '2 days', '2020-06-15') LIMIT 3;
+SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week') LIMIT 3;
+SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIMIT 3;
 
 -------------------------------------------------------------------------------
 
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days') LIMIT 3;
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days', 15.0) LIMIT 3;
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days', 15.0, '2000-01-15') LIMIT 3;
-SELECT multidimTileTbox(ARRAY[2,0], 2.0, interval '2 days');
-SELECT multidimTileTbox(ARRAY[2,2], 2.0, interval '2 days', 1.0, '2020-06-15');
+SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week') LIMIT 3;
+SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5) LIMIT 3;
+SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.5, '1 week', 15.5, '2000-01-15') LIMIT 3;
+SELECT multidimTileTbox(15.5, timestamptz '2000-01-15', 2.5, interval '1 week');
+SELECT multidimTileTbox(15.5, timestamptz '2000-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
 
 -------------------------------------------------------------------------------
 -- valueSplit
@@ -78,38 +78,38 @@ SELECT valueSplit(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@
 -- timeSplit
 -------------------------------------------------------------------------------
 
-SELECT timeSplit(tbool 't@2000-01-01', '2 days');
-SELECT timeSplit(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '2 days');
-SELECT timeSplit(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '2 days');
-SELECT timeSplit(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '2 days');
-SELECT timeSplit(tint '1@2000-01-01', '2 days');
-SELECT timeSplit(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '2 days');
-SELECT timeSplit(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '2 days');
-SELECT timeSplit(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '2 days');
-SELECT timeSplit(tfloat '1.5@2000-01-01', '2 days');
-SELECT timeSplit(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '2 days');
-SELECT timeSplit(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '2 days');
-SELECT timeSplit(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '2 days');
-SELECT timeSplit(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '2 days');
-SELECT timeSplit(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '2 days');
-SELECT timeSplit(ttext 'AAA@2000-01-01', '2 days');
-SELECT timeSplit(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '2 days');
-SELECT timeSplit(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '2 days');
-SELECT timeSplit(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '2 days');
+SELECT timeSplit(tbool 't@2000-01-01', '1 week');
+SELECT timeSplit(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', '1 week');
+SELECT timeSplit(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', '1 week');
+SELECT timeSplit(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', '1 week');
+SELECT timeSplit(tint '1@2000-01-01', '1 week');
+SELECT timeSplit(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', '1 week');
+SELECT timeSplit(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', '1 week');
+SELECT timeSplit(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', '1 week');
+SELECT timeSplit(tfloat '1.5@2000-01-01', '1 week');
+SELECT timeSplit(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 week');
+SELECT timeSplit(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 week');
+SELECT timeSplit(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 week');
+SELECT timeSplit(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 week');
+SELECT timeSplit(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 week');
+SELECT timeSplit(ttext 'AAA@2000-01-01', '1 week');
+SELECT timeSplit(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', '1 week');
+SELECT timeSplit(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', '1 week');
+SELECT timeSplit(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', '1 week');
 
 -------------------------------------------------------------------------------
 -- valueTimeSplit
 -------------------------------------------------------------------------------
 
-SELECT valueTimeSplit(tint '1@2000-01-01', 2, '2 days');
-SELECT valueTimeSplit(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 2, '2 days');
-SELECT valueTimeSplit(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 2, '2 days');
-SELECT valueTimeSplit(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 2, '2 days');
-SELECT valueTimeSplit(tfloat '1.5@2000-01-01', 0.5, '2 days');
-SELECT valueTimeSplit(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 0.5, '2 days');
-SELECT valueTimeSplit(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 0.5, '2 days');
-SELECT valueTimeSplit(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 0.5, '2 days');
-SELECT valueTimeSplit(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 0.5, '2 days');
-SELECT valueTimeSplit(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 0.5, '2 days');
+SELECT valueTimeSplit(tint '1@2000-01-01', 2, '1 week');
+SELECT valueTimeSplit(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 2, '1 week');
+SELECT valueTimeSplit(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 2, '1 week');
+SELECT valueTimeSplit(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 2, '1 week');
+SELECT valueTimeSplit(tfloat '1.5@2000-01-01', 0.5, '1 week');
+SELECT valueTimeSplit(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 0.5, '1 week');
+SELECT valueTimeSplit(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 0.5, '1 week');
+SELECT valueTimeSplit(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 0.5, '1 week');
+SELECT valueTimeSplit(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 0.5, '1 week');
+SELECT valueTimeSplit(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 0.5, '1 week');
 
 -------------------------------------------------------------------------------

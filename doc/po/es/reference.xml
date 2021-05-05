@@ -1227,15 +1227,15 @@
 
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el período o el rango con intervalos de la misma amplitud alineados con el origen</para>
+					</listitem>
+
+					<listitem>
 						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número entero o flotante de entrada.</para>
 					</listitem>
 
 					<listitem>
 						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre completamente el período o el rango con intervalos de la misma amplitud</para>
 					</listitem>
 
 					<listitem>
@@ -1258,7 +1258,7 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre completamente el cuadro delimitador con mosaicos multidimensionales</para>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales</para>
 					</listitem>
 
 					<listitem>

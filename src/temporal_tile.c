@@ -63,6 +63,7 @@ int_bucket_internal(int value, int width, int origin)
   assert(width > 0);
   if (value == PG_INT32_MIN || value == PG_INT32_MAX)
     return value;
+  /* origin = origin % width, but use FMODULO */
   origin = origin % width;
   if ((origin > 0 && value < PG_INT32_MIN + origin) ||
     (origin < 0 && value > PG_INT32_MAX + origin))
@@ -100,7 +101,9 @@ float_bucket_internal(double value, double width, double origin)
   assert(width > 0.0);
   if (value == -1 * DBL_MAX || value == DBL_MAX)
     return value;
-  origin = fmod(origin, width);
+  double result;
+  /* origin = origin % width, but use FMODULO */
+  FMODULO(origin, result, width);
   if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
     (origin < 0 && value > DBL_MAX + origin))
     ereport(ERROR,
@@ -109,7 +112,6 @@ float_bucket_internal(double value, double width, double origin)
 
   value -= origin;
   /* result = (value / width) * width */
-  double result;
   FMODULO(value, result, width);
   if (result < 0)
   {
@@ -233,29 +235,16 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
 /**
  * Generate an integer or float range bucket from a bucket list
  *
- * @param[in] coord Coordinate of the bucket
+ * @param[in] value Start value of the bucket
  * @param[in] width Width of the buckets
  * @param[in] origin Origin of the buckets
  * @param[in] type Oid of the data type for width and origin
  */
 static RangeType *
-range_bucket_get(int coord, Datum width, Datum origin, Oid type)
+range_bucket_get(Datum value, Datum width, Datum origin, Oid type)
 {
-  Datum lower, upper;
-  if (type == INT4OID)
-  {
-    int iwidth = DatumGetInt32(width);
-    int iorigin = DatumGetInt32(origin);
-    lower = Int32GetDatum(iorigin + (iwidth * coord));
-    upper = Int32GetDatum(iorigin + (iwidth * (coord + 1)));
-  }
-  else
-  {
-    double dwidth = DatumGetFloat8(width);
-    double dorigin = DatumGetFloat8(origin);
-    lower = Float8GetDatum(dorigin + (dwidth * coord));
-    upper = Float8GetDatum(dorigin + (dwidth * (coord + 1)));
-  }
+  Datum lower = value;
+  Datum upper = datum_add(value, width, type, type);
   return range_make(lower, upper, true, false, type);
 }
 
@@ -276,24 +265,6 @@ RangeBucketState *
 range_bucket_state_make(Temporal *temp, RangeType *r, Datum width, Datum origin)
 {
   bool intrange = (r->rangetypid == type_oid(T_INTRANGE));
-  int iwidth, iorigin, ilower, iupper;
-  double dwidth, dorigin, dlower, dupper;
-  if (intrange)
-  {
-    iwidth = DatumGetInt32(width);
-    assert(iwidth > 0);
-    iorigin = DatumGetInt32(origin);
-    ilower = DatumGetInt32(lower_datum(r));
-    iupper = DatumGetInt32(upper_datum(r));
-  }
-  else /* r->rangetypid == type_oid(T_FLOATRANGE) */
-  {
-    dwidth = DatumGetFloat8(width);
-    assert(dwidth > 0.0);
-    dorigin = DatumGetFloat8(origin);
-    dlower = DatumGetFloat8(lower_datum(r));
-    dupper = DatumGetFloat8(upper_datum(r));
-  }
   RangeBucketState *state = palloc0(sizeof(RangeBucketState));
   /* Fill in state */
   state->done = false;
@@ -301,17 +272,12 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum width, Datum origin)
   state->valuetypid = intrange ? INT4OID : FLOAT8OID;
   state->width = width;
   state->origin = origin;
-  if (intrange)
-  {
-    state->coordmin = (ilower / iwidth) - (iorigin / iwidth);
-    state->coordmax = (iupper / iwidth) - (iorigin / iwidth);
-  }
-  else
-  {
-    state->coordmin = floor(dlower / dwidth) - floor(dorigin / dwidth);
-    state->coordmax = floor(dupper / dwidth) - floor(dorigin / dwidth);
-  }
-  state->coord = state->coordmin;
+  Datum lower = lower_datum(r);
+  Datum upper = upper_datum(r);
+  state->minvalue = number_bucket_internal(lower, width, origin, state->valuetypid);
+  state->maxvalue = number_bucket_internal(upper, width, origin, state->valuetypid);
+  state->value = state->minvalue;
+  state->i = 1;
   return state;
 }
 
@@ -326,8 +292,10 @@ range_bucket_state_next(RangeBucketState *state)
   if (!state || state->done)
     return;
   /* Move to the next bucket */
-  state->coord++;
-  if (state->coord > state->coordmax)
+  state->i++;
+  state->value = datum_add(state->value, state->width,
+    state->valuetypid, state->valuetypid);
+  if (datum_gt(state->value, state->maxvalue, state->valuetypid))
     state->done = true;
   return;
 }
@@ -383,10 +351,10 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store bucket coordinate */
-  tuple_arr[0] = Int32GetDatum(state->coord);
+  /* Store bucket value */
+  tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
-  tuple_arr[1] = PointerGetDatum(range_bucket_get(state->coord, state->width,
+  tuple_arr[1] = PointerGetDatum(range_bucket_get(state->value, state->width,
       state->origin, state->valuetypid));
   /* Advance state */
   range_bucket_state_next(state);
@@ -404,12 +372,13 @@ PG_FUNCTION_INFO_V1(range_bucket);
 */
 Datum range_bucket(PG_FUNCTION_ARGS)
 {
-  int coord = PG_GETARG_INT32(0);
+  Datum value = PG_GETARG_DATUM(0);
   Datum width = PG_GETARG_DATUM(1);
   Oid type = get_fn_expr_argtype(fcinfo->flinfo, 1);
   ensure_positive_datum(width, type);
   Datum origin = PG_GETARG_DATUM(2);
-  RangeType *result = range_bucket_get(coord, width, origin, type);
+  Datum value_bucket = number_bucket_internal(value, width, origin, type);
+  RangeType *result = range_bucket_get(value_bucket, width, origin, type);
   PG_RETURN_POINTER(result);
 }
 
@@ -469,7 +438,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
       SRF_RETURN_DONE(funcctx);
 
     /* Generate bucket */
-    RangeType *range = range_bucket_get(state->coord, state->width,
+    RangeType *range = range_bucket_get(state->value, state->width,
       state->origin, state->valuetypid);
     /* Advance state */
     range_bucket_state_next(state);
@@ -495,14 +464,14 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
 /**
  * Generate period bucket from a bucket list
  *
- * @param[in] coord Coordinate of the bucket
+ * @param[in] t Start timestamp of the bucket
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] torigin Origin of the buckets
  */
 static Period *
-period_bucket_get(int coord, int64 tunits, TimestampTz torigin)
+period_bucket_get(TimestampTz t, int64 tunits, TimestampTz torigin)
 {
-  TimestampTz lower = torigin + (tunits * coord);
+  TimestampTz lower = t;
   TimestampTz upper = lower + tunits;
   return period_make(lower, upper, true, false);
 }
@@ -526,9 +495,10 @@ period_bucket_state_make(Period *p, int64 tunits, TimestampTz torigin)
   state->done = false;
   state->tunits = tunits;
   state->torigin = torigin;
-  state->coordmin = (p->lower / tunits) - (torigin / tunits);
-  state->coordmax = (p->upper / tunits) - (torigin / tunits);
-  state->coord = state->coordmin;
+  state->mint = timestamptz_bucket_internal(p->lower, tunits, torigin);
+  state->maxt = timestamptz_bucket_internal(p->upper, tunits, torigin);
+  state->t = state->mint;
+  state->i = 1;
   return state;
 }
 
@@ -543,8 +513,9 @@ period_bucket_state_next(PeriodBucketState *state)
   if (!state || state->done)
     return;
   /* Move to the next bucket */
-  state->coord++;
-  if (state->coord > state->coordmax)
+  state->i++;
+  state->t += state->tunits;
+  if (state->t > state->maxt)
     state->done = true;
   return;
 }
@@ -596,10 +567,10 @@ Datum period_bucket_list(PG_FUNCTION_ARGS)
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store bucket coordinate */
-  tuple_arr[0] = PointerGetDatum(Int32GetDatum(state->coord));
+  /* Store bucket time */
+  tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
-  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->coord, state->tunits,
+  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->t, state->tunits,
     state->torigin));
   /* Advance state */
   period_bucket_state_next(state);
@@ -617,12 +588,13 @@ PG_FUNCTION_INFO_V1(period_bucket);
 */
 Datum period_bucket(PG_FUNCTION_ARGS)
 {
-  int coord = PG_GETARG_INT32(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(interval);
   int64 tunits = get_interval_units(interval);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
-  Period *result = period_bucket_get(coord, tunits, torigin);
+  TimestampTz time_bucket = timestamptz_bucket_internal(t, tunits, torigin);
+  Period *result = period_bucket_get(time_bucket, tunits, torigin);
   PG_RETURN_POINTER(result);
 }
 
@@ -1084,20 +1056,21 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
 /**
  * Generate a tile from the a multidimensional grid
  *
- * @param[in] coords Coordinates of the tile to output
+ * @param[in] value Start value of the tile to output
+ * @param[in] t Start timestamp of the tile to output
  * @param[in] xsize Value size of the tiles
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
  * @param[in] xorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  */
 static TBOX *
-tbox_tile_get(int *coords, double xsize, int64 tunits, double xorigin,
-  TimestampTz torigin)
+tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
+  double xorigin, TimestampTz torigin)
 {
-  double xmin = xorigin + (xsize * coords[0]);
-  double xmax = xmin + xsize;
-  TimestampTz tmin = torigin + (tunits * coords[1]);
-  TimestampTz tmax = tmin + tunits;
+  double xmin = value;
+  double xmax = value + xsize;
+  TimestampTz tmin = t;
+  TimestampTz tmax = t + tunits;
   return (TBOX *) tbox_make(true, true, xmin, xmax, tmin, tmax);
 }
 
@@ -1126,12 +1099,12 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   state->tunits = tunits;
   state->xorigin = xorigin;
   state->torigin = torigin;
-  state->min[0] = floor(box->xmin / xsize) - floor(xorigin / xsize);
-  state->max[0] = floor(box->xmax / xsize) - floor(xorigin / xsize);
-  state->min[1] = (box->tmin / tunits) - (torigin / tunits);
-  state->max[1] = (box->tmax / tunits) - (torigin / tunits);
-  for (int i = 0; i < 2; i++)
-    state->coords[i] = state->min[i];
+  state->minvalue = float_bucket_internal(box->xmin, xsize, xorigin);
+  state->maxvalue = float_bucket_internal(box->xmax, xsize, xorigin);
+  state->mint = timestamptz_bucket_internal(box->tmin, tunits, torigin);
+  state->maxt = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+  state->value = state->minvalue;
+  state->t = state->mint;
   return state;
 }
 
@@ -1146,12 +1119,12 @@ tbox_tile_state_next(TboxGridState *state)
   if (!state || state->done)
       return;
   /* Move to the next tile */
-  state->coords[0]++;
-  if (state->coords[0] > state->max[0])
+  state->value += state->xsize;
+  if (state->value > state->maxvalue)
   {
-    state->coords[0] = state->min[0];
-    state->coords[1]++;
-    if (state->coords[1] > state->max[1])
+    state->value = state->minvalue;
+    state->t += state->tunits;
+    if (state->t > state->maxt)
     {
       state->done = true;
       return;
@@ -1212,14 +1185,11 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store tile coordinates */
-  Datum coords[2];
-  coords[0] = Int32GetDatum(state->coords[0]);
-  coords[1] = Int32GetDatum(state->coords[1]);
-  tuple_arr[0] = PointerGetDatum(intarr_to_array(coords, 2));
+  /* Store tile value and time */
+  tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
-  tuple_arr[1] = PointerGetDatum(tbox_tile_get(state->coords, state->xsize,
-    state->tunits, state->xorigin, state->torigin));
+  tuple_arr[1] = PointerGetDatum(tbox_tile_get(state->value, state->t,
+    state->xsize, state->tunits, state->xorigin, state->torigin));
   /* Advance state */
   tbox_tile_state_next(state);
   /* Form tuple and return */
@@ -1236,22 +1206,19 @@ PG_FUNCTION_INFO_V1(tbox_multidim_tile);
 */
 Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
 {
-  ArrayType *coordarr = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(coordarr);
-  int ndims;
-  int *coords = intarr_extract(coordarr, &ndims);
-  if (ndims != 2)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The coordinates must be an array of two integer values")));
-  double xsize = PG_GETARG_FLOAT8(1);
+  double value = PG_GETARG_FLOAT8(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  double xsize = PG_GETARG_FLOAT8(2);
   ensure_positive_datum(Float8GetDatum(xsize), FLOAT8OID);
-  Interval *interval = PG_GETARG_INTERVAL_P(2);
+  Interval *interval = PG_GETARG_INTERVAL_P(3);
   ensure_valid_duration(interval);
   int64 tunits = get_interval_units(interval);
-  double xorigin = PG_GETARG_FLOAT8(3);
-  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
-  TBOX *result = tbox_tile_get(coords, xsize, tunits, xorigin, torigin);
-  PG_FREE_IF_COPY(coords, 0);
+  double xorigin = PG_GETARG_FLOAT8(4);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
+  double value_bucket = float_bucket_internal(value, xsize, xorigin);
+  TimestampTz time_bucket = timestamptz_bucket_internal(t, tunits, torigin);
+  TBOX *result = tbox_tile_get(value_bucket, time_bucket, xsize, tunits,
+    xorigin, torigin);
   PG_RETURN_POINTER(result);
 }
 

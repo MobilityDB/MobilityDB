@@ -54,11 +54,11 @@ SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days', '2001
 SELECT bucketIntRange(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT bucketIntRange(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT bucketFloatRange(i, 2.5), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT bucketFloatRange(i, 2.5, 1.5), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT bucketFloatRange(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT bucketFloatRange(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT bucketPeriod(i, '2 days'), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT bucketPeriod(i, '2 days', '2001-06-01'), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT bucketPeriod(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT bucketPeriod(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 
@@ -66,13 +66,12 @@ SELECT multidimGrid(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER B
 SELECT multidimGrid(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT multidimGrid(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-
-SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i], 2.5)) FROM 
-(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
-(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2;
-SELECT extent(multidimTileSTbox(ARRAY[t1.i, t2.i], 2.5, geometry 'Point(10 10)')) FROM 
-(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 10) t1,
-(SELECT * FROM tbl_int WHERE i IS NOT NULL LIMIT 10 OFFSET 20) t2;
+SELECT extent(multidimTileTbox(t1.f, t2.t, 2.5, '1 week')) FROM 
+(SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
+SELECT extent(multidimTileTbox(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM 
+(SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
+(SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 
 -------------------------------------------------------------------------------
 -- valueSplit

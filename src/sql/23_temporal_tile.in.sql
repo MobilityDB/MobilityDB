@@ -34,6 +34,26 @@
  * Bucket functions
  *****************************************************************************/
 
+CREATE TYPE number_intrange AS (
+  index integer,
+  range intrange
+);
+CREATE TYPE number_floatrange AS (
+  index integer,
+  range floatrange
+);
+
+CREATE OR REPLACE FUNCTION bucketList(bounds intrange, width integer,
+  origin int DEFAULT 0)
+  RETURNS SETOF number_intrange
+  AS 'MODULE_PATHNAME', 'range_bucket_list'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION bucketList(bounds floatrange, width float,
+  origin float DEFAULT 0.0)
+  RETURNS SETOF number_floatrange
+  AS 'MODULE_PATHNAME', 'range_bucket_list'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OR REPLACE FUNCTION valueBucket("value" integer, width integer,
   origin integer DEFAULT '0')
   RETURNS integer
@@ -45,52 +65,13 @@ CREATE OR REPLACE FUNCTION valueBucket("value" float, width float,
   AS 'MODULE_PATHNAME', 'number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
--- bucketing of timestamptz happens at UTC time
-CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, width interval,
-  origin timestamptz DEFAULT '2000-01-03')
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'timestamptz_bucket'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-
--- If an interval is given as the third argument, the bucket alignment is offset by the interval.
-CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, width interval, "offset" interval)
-  RETURNS timestamptz
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT AS
-$BODY$
-    SELECT @extschema@.timeBucket(ts-"offset", width)+"offset";
-$BODY$;
-
-/*****************************************************************************
- * Bucketing
- *****************************************************************************/
-
-CREATE TYPE index_intrange AS (
-  index integer,
-  range intrange
-);
-CREATE TYPE index_floatrange AS (
-  index integer,
-  range floatrange
-);
-
-CREATE OR REPLACE FUNCTION bucketList(intrange, int,
-  int DEFAULT 0)
-  RETURNS SETOF index_intrange
-  AS 'MODULE_PATHNAME', 'range_bucket_list'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION bucketList(floatrange, float,
-  float DEFAULT 0.0)
-  RETURNS SETOF index_floatrange
-  AS 'MODULE_PATHNAME', 'range_bucket_list'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION bucketIntRange(integer, int,
-  int DEFAULT 0)
+CREATE OR REPLACE FUNCTION intRangeBucket(value integer, width integer,
+  origin integer DEFAULT 0)
   RETURNS intrange
   AS 'MODULE_PATHNAME', 'range_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION bucketFloatRange(integer, float,
-  float DEFAULT 0.0)
+CREATE OR REPLACE FUNCTION floatRangeBucket(value float, width float,
+  origin float DEFAULT 0.0)
   RETURNS floatrange
   AS 'MODULE_PATHNAME', 'range_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -99,19 +80,34 @@ CREATE OR REPLACE FUNCTION bucketFloatRange(integer, float,
  * Bucketing
  *****************************************************************************/
 
-CREATE TYPE index_period AS (
+CREATE TYPE time_period AS (
   index integer,
   period period
 );
 
 CREATE OR REPLACE FUNCTION bucketList(period, interval,
-  TimestampTz DEFAULT '2000-01-03')
-  RETURNS SETOF index_period
+  timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF time_period
   AS 'MODULE_PATHNAME', 'period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION bucketPeriod(integer, interval,
-  TimestampTz DEFAULT '2000-01-03')
+-- bucketing of timestamptz happens at UTC time
+CREATE OR REPLACE FUNCTION timeBucket("time" timestamptz, width interval,
+  origin timestamptz DEFAULT '2000-01-03')
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'timestamptz_bucket'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+-- If an interval is given as the third argument, the bucket alignment is offset by the interval.
+-- CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, width interval, "offset" interval)
+  -- RETURNS timestamptz
+  -- LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT AS
+-- $BODY$
+    -- SELECT @extschema@.timeBucket(ts-"offset", width)+"offset";
+-- $BODY$;
+
+CREATE OR REPLACE FUNCTION periodBucket("time" timestamptz, duration interval,
+  origin timestamptz DEFAULT '2000-01-03')
   RETURNS period
   AS 'MODULE_PATHNAME', 'period_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -120,19 +116,19 @@ CREATE OR REPLACE FUNCTION bucketPeriod(integer, interval,
  * Multidimensional tiling
  *****************************************************************************/
 
-CREATE TYPE indices_tbox AS (
-  indices integer[],
+CREATE TYPE index_tbox AS (
+  index int,
   box tbox
 );
 
 CREATE OR REPLACE FUNCTION multidimGrid(tbox, float, interval,
   float DEFAULT 0.0, TimestampTz DEFAULT '2000-01-03')
-  RETURNS SETOF indices_tbox
+  RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'tbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTileTbox(int[], float, interval,
-  float DEFAULT 0.0, TimestampTz DEFAULT '2000-01-03')
+CREATE OR REPLACE FUNCTION multidimTileTbox(float, timestamptz, float,
+  interval, float DEFAULT 0.0, TimestampTz DEFAULT '2000-01-03')
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'tbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
