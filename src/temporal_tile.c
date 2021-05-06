@@ -95,7 +95,7 @@ int_bucket_internal(int value, int width, int origin)
  * @param[in] width Width of the buckets
  * @param[in] origin Origin of the buckets
  */
-static double
+double
 float_bucket_internal(double value, double width, double origin)
 {
   assert(width > 0.0);
@@ -177,7 +177,7 @@ number_bucket(PG_FUNCTION_ARGS)
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] torigin Origin of the buckets
  */
-static TimestampTz
+TimestampTz
 timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin)
 {
@@ -241,7 +241,7 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
  * @param[in] type Oid of the data type for width and origin
  */
 static RangeType *
-range_bucket_get(Datum value, Datum width, Datum origin, Oid type)
+range_bucket_get(Datum value, Datum width, Oid type)
 {
   Datum lower = value;
   Datum upper = datum_add(value, width, type, type);
@@ -261,13 +261,14 @@ range_bucket_get(Datum value, Datum width, Datum origin, Oid type)
  * it is a temporal number to be split and in this case r is the value range
  * of the temporal number
  */
-RangeBucketState *
+static RangeBucketState *
 range_bucket_state_make(Temporal *temp, RangeType *r, Datum width, Datum origin)
 {
   bool intrange = (r->rangetypid == type_oid(T_INTRANGE));
   RangeBucketState *state = palloc0(sizeof(RangeBucketState));
   /* Fill in state */
   state->done = false;
+  state->i = 1;
   state->temp = temp;
   state->valuetypid = intrange ? INT4OID : FLOAT8OID;
   state->width = width;
@@ -277,7 +278,6 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum width, Datum origin)
   state->minvalue = number_bucket_internal(lower, width, origin, state->valuetypid);
   state->maxvalue = number_bucket_internal(upper, width, origin, state->valuetypid);
   state->value = state->minvalue;
-  state->i = 1;
   return state;
 }
 
@@ -286,7 +286,7 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum width, Datum origin)
  *
  * @param[in] state State to increment
  */
-void
+static void
 range_bucket_state_next(RangeBucketState *state)
 {
   if (!state || state->done)
@@ -351,11 +351,11 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store bucket value */
+  /* Store index */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
   tuple_arr[1] = PointerGetDatum(range_bucket_get(state->value, state->width,
-      state->origin, state->valuetypid));
+    state->valuetypid));
   /* Advance state */
   range_bucket_state_next(state);
   /* Form tuple and return */
@@ -378,7 +378,7 @@ Datum range_bucket(PG_FUNCTION_ARGS)
   ensure_positive_datum(width, type);
   Datum origin = PG_GETARG_DATUM(2);
   Datum value_bucket = number_bucket_internal(value, width, origin, type);
-  RangeType *result = range_bucket_get(value_bucket, width, origin, type);
+  RangeType *result = range_bucket_get(value_bucket, width, type);
   PG_RETURN_POINTER(result);
 }
 
@@ -439,7 +439,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
 
     /* Generate bucket */
     RangeType *range = range_bucket_get(state->value, state->width,
-      state->origin, state->valuetypid);
+      state->valuetypid);
     /* Advance state */
     range_bucket_state_next(state);
     /* Restrict temporal value to range */
@@ -1060,12 +1060,9 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
  * @param[in] t Start timestamp of the tile to output
  * @param[in] xsize Value size of the tiles
  * @param[in] tunits Time size of the tiles in PostgreSQL time units
- * @param[in] xorigin Value origin of the tiles
- * @param[in] torigin Time origin of the tiles
  */
 static TBOX *
-tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits,
-  double xorigin, TimestampTz torigin)
+tbox_tile_get(double value, TimestampTz t, double xsize, int64 tunits)
 {
   double xmin = value;
   double xmax = value + xsize;
@@ -1095,16 +1092,15 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
 
   /* Fill in state */
   state->done = false;
+  state->i = 1;
   state->xsize = xsize;
   state->tunits = tunits;
-  state->xorigin = xorigin;
-  state->torigin = torigin;
-  state->minvalue = float_bucket_internal(box->xmin, xsize, xorigin);
-  state->maxvalue = float_bucket_internal(box->xmax, xsize, xorigin);
-  state->mint = timestamptz_bucket_internal(box->tmin, tunits, torigin);
-  state->maxt = timestamptz_bucket_internal(box->tmax, tunits, torigin);
-  state->value = state->minvalue;
-  state->t = state->mint;
+  state->box.xmin = float_bucket_internal(box->xmin, xsize, xorigin);
+  state->box.xmax = float_bucket_internal(box->xmax, xsize, xorigin);
+  state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
+  state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+  state->value = state->box.xmin;
+  state->t = state->box.tmin;
   return state;
 }
 
@@ -1119,12 +1115,13 @@ tbox_tile_state_next(TboxGridState *state)
   if (!state || state->done)
       return;
   /* Move to the next tile */
+  state->i++;
   state->value += state->xsize;
-  if (state->value > state->maxvalue)
+  if (state->value > state->box.xmax)
   {
-    state->value = state->minvalue;
+    state->value = state->box.xmin;
     state->t += state->tunits;
-    if (state->t > state->maxt)
+    if (state->t > state->box.tmax)
     {
       state->done = true;
       return;
@@ -1189,7 +1186,7 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
   tuple_arr[1] = PointerGetDatum(tbox_tile_get(state->value, state->t,
-    state->xsize, state->tunits, state->xorigin, state->torigin));
+    state->xsize, state->tunits));
   /* Advance state */
   tbox_tile_state_next(state);
   /* Form tuple and return */
@@ -1217,8 +1214,7 @@ Datum tbox_multidim_tile(PG_FUNCTION_ARGS)
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(5);
   double value_bucket = float_bucket_internal(value, xsize, xorigin);
   TimestampTz time_bucket = timestamptz_bucket_internal(t, tunits, torigin);
-  TBOX *result = tbox_tile_get(value_bucket, time_bucket, xsize, tunits,
-    xorigin, torigin);
+  TBOX *result = tbox_tile_get(value_bucket, time_bucket, xsize, tunits);
   PG_RETURN_POINTER(result);
 }
 

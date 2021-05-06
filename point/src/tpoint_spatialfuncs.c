@@ -487,6 +487,18 @@ ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
+ * Ensure that the temporal points have the same SRID
+ */
+void
+ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The geometries must be in the same SRID")));
+  return;
+}
+
+/**
  * Ensure that the temporal point and the spatiotemporal boxes have the same SRID
  */
 void
@@ -559,6 +571,18 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
   if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal point and the geometry must be of the same dimensionality")));
+  return;
+}
+
+/**
+ * Ensure that the temporal point and the geometry/geography have the same dimensionality
+ */
+void
+ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The geometries must be of the same dimensionality")));
   return;
 }
 
@@ -3997,7 +4021,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty
  */
-static Temporal *
+Temporal *
 tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 {
   /* Bounding box test */

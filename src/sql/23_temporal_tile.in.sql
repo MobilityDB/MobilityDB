@@ -44,7 +44,7 @@ CREATE TYPE number_floatrange AS (
 );
 
 CREATE OR REPLACE FUNCTION bucketList(bounds intrange, width integer,
-  origin int DEFAULT 0)
+  origin integer DEFAULT 0)
   RETURNS SETOF number_intrange
   AS 'MODULE_PATHNAME', 'range_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -55,7 +55,7 @@ CREATE OR REPLACE FUNCTION bucketList(bounds floatrange, width float,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION valueBucket("value" integer, width integer,
-  origin integer DEFAULT '0')
+  origin integer DEFAULT 0)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
@@ -65,20 +65,18 @@ CREATE OR REPLACE FUNCTION valueBucket("value" float, width float,
   AS 'MODULE_PATHNAME', 'number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE OR REPLACE FUNCTION intRangeBucket(value integer, width integer,
+CREATE OR REPLACE FUNCTION rangeBucket(value integer, width integer,
   origin integer DEFAULT 0)
   RETURNS intrange
   AS 'MODULE_PATHNAME', 'range_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION floatRangeBucket(value float, width float,
+CREATE OR REPLACE FUNCTION rangeBucket(value float, width float,
   origin float DEFAULT 0.0)
   RETURNS floatrange
   AS 'MODULE_PATHNAME', 'range_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Bucketing
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE TYPE time_period AS (
   index integer,
@@ -92,7 +90,7 @@ CREATE OR REPLACE FUNCTION bucketList(period, interval,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- bucketing of timestamptz happens at UTC time
-CREATE OR REPLACE FUNCTION timeBucket("time" timestamptz, width interval,
+CREATE OR REPLACE FUNCTION timeBucket("time" timestamptz, duration interval,
   origin timestamptz DEFAULT '2000-01-03')
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'timestamptz_bucket'
@@ -117,18 +115,20 @@ CREATE OR REPLACE FUNCTION periodBucket("time" timestamptz, duration interval,
  *****************************************************************************/
 
 CREATE TYPE index_tbox AS (
-  index int,
+  index integer,
   box tbox
 );
 
-CREATE OR REPLACE FUNCTION multidimGrid(tbox, float, interval,
-  float DEFAULT 0.0, TimestampTz DEFAULT '2000-01-03')
+CREATE OR REPLACE FUNCTION multidimGrid(bounds tbox, size float, 
+  duration interval, vorigin float DEFAULT 0.0, 
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'tbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTileTbox(float, timestamptz, float,
-  interval, float DEFAULT 0.0, TimestampTz DEFAULT '2000-01-03')
+CREATE OR REPLACE FUNCTION multidimTile("value" float, "time" timestamptz, 
+  size float, duration interval, vorigin float DEFAULT 0.0, 
+  torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'tbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

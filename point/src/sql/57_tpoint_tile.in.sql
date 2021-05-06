@@ -33,28 +33,31 @@
  * Multidimensional tiling
  ******************************************************************************/
 
-CREATE TYPE indices_stbox AS (
-  indices integer[],
+CREATE TYPE index_stbox AS (
+  index integer,
   box stbox
 );
 
-CREATE OR REPLACE FUNCTION multidimGrid(stbox, float,
-    geometry DEFAULT 'Point(0 0 0)')
-  RETURNS SETOF indices_stbox
+CREATE OR REPLACE FUNCTION multidimGrid(bounds stbox, size float,
+    sorigin geometry DEFAULT 'Point(0 0 0)')
+  RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION multidimGrid(stbox, float, interval,
-  geometry DEFAULT 'Point(0 0 0)', timestamptz DEFAULT '2000-01-03')
-  RETURNS SETOF indices_stbox
+CREATE OR REPLACE FUNCTION multidimGrid(bounds stbox, size float, 
+  duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
+  timestamptz DEFAULT '2000-01-03')
+  RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTileStbox(int[], float, geometry DEFAULT 'Point(0 0 0)')
+CREATE OR REPLACE FUNCTION multidimTile(point geometry, size float, 
+    sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION multidimTileStbox(int[], float, interval, 
-    geometry DEFAULT 'Point(0 0 0)', timestamptz DEFAULT '2000-01-03')
+CREATE OR REPLACE FUNCTION multidimTile(point geometry, "time" timestamptz, 
+    size float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)', 
+    torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -1227,27 +1227,23 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el período o el rango con intervalos de la misma amplitud alineados con el origen</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número entero o flotante de entrada.</para>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número de entrada.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
+						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="bucketIntRange"><varname>bucketIntRange</varname></link>: Obtener un <varname>intrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene la marca de tiempo de entrada.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="bucketFloatRange"><varname>bucketFloatRange</varname></link>: Obtener un <varname>floatrange</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="bucketPeriod"><varname>bucketPeriod</varname></link>: Obtener un <varname>period</varname> en el espacio de intervalos utilizando el índice y la amplitud de los intervalos</para>
+						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
 					</listitem>
 
 				</itemizedlist>
@@ -1258,16 +1254,12 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales</para>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Obtener un mosaico de tipo <varname>tbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
+						<para><link linkend="multidimTile"><varname>multidimTile</varname></link>: Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo</para>
 						</listitem>
-
-					<listitem>
-						<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Obtener un mosaico de tipo <varname>stbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
-					</listitem>
 				</itemizedlist>
 			</sect3>
 

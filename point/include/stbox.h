@@ -48,7 +48,7 @@
  *****************************************************************************/
 
 /**
- * Structure to represent temporal boxes
+ * Structure to represent spatiotemporal boxes
  */
 typedef struct
 {

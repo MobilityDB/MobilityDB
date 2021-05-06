@@ -40,23 +40,19 @@
  * Struct for storing the state that persists across multiple calls generating
  * a multidimensional grid
  */
-#define MAXDIMS 4
 typedef struct STboxGridState
 {
   bool done;
-  bool hasz;
-  bool hast;
-  int32 srid;
-  Temporal *temp;
+  int i;
   double size;
   int64 tunits;
-  POINT3DZ sorigin;
-  int64 torigin;
-  int min[MAXDIMS];
-  int max[MAXDIMS];
-  int coords[MAXDIMS];
+  STBOX box;
+  Temporal *temp;
+  double x;
+  double y;
+  double z;
+  TimestampTz t;
 } STboxGridState;
-
 
 /*****************************************************************************/
 

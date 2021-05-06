@@ -2457,14 +2457,15 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 		<para>Los mosaicos multidimensionales se pueden utilizar para diversos fines. Por ejemplo, se pueden utilizar para calcular histogramas multidimensionales, donde los valores temporales se agregan de acuerdo con la partición subyacente del dominio. Por otro lado, el mosaico multidimensional se puede utilizar para distribuir un conjunto de datos en un grupo de servidores, donde cada servidor contiene una partición del conjunto de datos. La ventaja de este mecanismo de partición es que conserva la proximidad en el espacio y el tiempo, a diferencia de los mecanismos de partición tradicionales basados ​​en hash utilizados en entornos de big data.</para>
 
+		<para>Muchas de las funciones de esta sección son <emphasis>funciones de retorno de conjuntos</emphasis> (también conocidas como <emphasis>funciones de tabla</emphasis>) ya que normalmente devuelven más de un valor. En este caso, las funciones están marcadas con el símbolo &SRF;.</para>
 		<sect2 id="bucket_functions">
 			<title>Operaciones de intervalos</title>
 
 			<itemizedlist>
 				<listitem id="bucketList">
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
-					<para>Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen.</para>
-					<para>Los índices empiezan en 1. Si el origen no se especifica, su valor se establece por defecto en 0 para los rangos y en lunes 3 de enero de 2000 para los períodos.</para>
+					<para>Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud o duración alineados con el origen &SRF;.</para>
+					<para>Si el origen no se especifica, su valor se establece por defecto en 0 para los rangos y en lunes 3 de enero de 2000 para los períodos. Los índices empiezan en 1. </para>
 					<para><varname>bucketList(bounds range,width number,origin number=0): setof index_range</varname></para>
 					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof index_period</varname></para>
@@ -2496,7 +2497,7 @@ SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period, '2 days', '200
 
 				<listitem id="valueBucket">
 					<indexterm><primary><varname>valueBucket</varname></primary></indexterm>
-					<para> Obtener el valor inicial del intervalo que contiene el <varname>integer</varname> o <varname>float</varname> de entrada.</para>
+					<para> Obtener el valor inicial del intervalo que contiene el número de entrada.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en 0.</para>
 					<para><varname>valueBucket(value number,width number, origin number=0): number</varname></para>
 					<programlisting>
@@ -2507,9 +2508,26 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 					</programlisting>
 				</listitem>
 
+				<listitem id="rangeBucket">
+					<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
+					<para>Obtener el rango en el espacio de intervalos que contiene el número de entrada.</para>
+					<para>Si el origen no se especifica, su valor se establece por defecto en 0.</para>
+					<para><varname>rangeBucket(value number,width number,origin number=0): range</varname></para>
+					<programlisting>
+SELECT rangeBucket(2, 2);
+-- [2,4)
+SELECT rangeBucket(2, 2, 1);
+-- [1,3)
+SELECT rangeBucket(2, 2.5);
+-- [0,2.5)
+SELECT rangeBucket(2, 2.5, 1.5);
+-- [1.5,4)
+					</programlisting>
+				</listitem>
+
 				<listitem id="timeBucket">
 					<indexterm><primary><varname>timeBucket</varname></primary></indexterm>
-					<para> Obtener el valor inicial del intervalo que contiene el <varname>timestamptz</varname> de entrada.</para>
+					<para> Obtener el valor inicial del intervalo que contiene la marca de tiempo de entrada.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<para><varname>timeBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  timestamptz</varname></para>
@@ -2521,35 +2539,9 @@ SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020
 					</programlisting>
 				</listitem>
 
-				<listitem id="bucketIntRange">
-					<indexterm><primary><varname>intRangeBucket</varname></primary></indexterm>
-					<para>Obtener un <varname>intrange</varname> en el espacio de intervalos utilizando el número y la amplitud de los intervalos.</para>
-					<para>Si el origen no se especifica, su valor se establece por defecto en 0. Nótese que los índices en el espacio de intervalos dependen del origen.</para>
-					<para><varname>intRangeBucket(index integer,width integer,origin integer=0): intrange</varname></para>
-					<programlisting>
-SELECT intRangeBucket(2, 2);
--- [2,4)
-SELECT intRangeBucket(2, 2, 1);
--- [1,3)
-					</programlisting>
-				</listitem>
-
-				<listitem id="bucketFloatRange">
-					<indexterm><primary><varname>floatRangeBucket</varname></primary></indexterm>
-					<para>Obtener un <varname>floatrange</varname> en el espacio de intervalos que contiene el número de entrada.</para>
-					<para>Si el origen no se especifica, su valor se establece por defecto en 0.</para>
-					<para><varname>floatRangeBucket(index integer,width float,origin float=0): floatrange</varname></para>
-					<programlisting>
-SELECT floatRangeBucket(2, 2.5);
--- [0,2.5)
-SELECT floatRangeBucket(2, 2.5, 1.5);
--- [1.5,4)
-					</programlisting>
-				</listitem>
-
 				<listitem id="bucketPeriod">
 					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
-					<para>Obtener un <varname>period</varname> en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
+					<para>Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
 					<para><varname>bucketPeriod(time timestamptz,duration interval,origin timestamptz='2000-01-03'): period</varname></para>
 					<programlisting>
@@ -2569,104 +2561,83 @@ SELECT bucketPeriod(2, interval '2 days', '2020-06-15');
 			<itemizedlist>
 				<listitem id="multimGrid">
 					<indexterm><primary><varname>multimGrid</varname></primary></indexterm>
-					<para>Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales. &Z_support;</para>
-					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo. Nótese que los índices de los mosaicos dependen de los orígenes de las dimensiones.</para>
-					<para><varname>multidimGrid(bounds tbox,width float,duration interval,vorigin float=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): setof indices_box</varname></para>
-					<para><varname>multidimGrid(bounds stbox,width float,origin geometry='Point(0 0 0)'):</varname></para>
-					<para><varname>  setof indices_box</varname></para>
-					<para><varname>multidimGrid(bounds stbox,width float,duration interval,sorigin geometry='Point(0 0 0)',</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): setof indices_box</varname></para>
-					<para>En el caso de una malla espacio-temporal, el SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y la amplitud espacial se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su SRID debe ser igual al del cuadro delimitador, de lo contrario se genera un error.</para>
+					<para>Obtener un conjunto de parejas (índice, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración. &Z_support; &SRF;</para>
+					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
+					<para><varname>multidimGrid(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03'): setof index_box</varname></para>
+					<para><varname>multidimGrid(bounds stbox,size float,sorigin geometry='Point(0 0 0)'):</varname></para>
+					<para><varname>  setof index_box</varname></para>
+					<para><varname>multidimGrid(bounds stbox,size float,duration interval,sorigin geometry='Point(0 0 0)',</varname></para>
+					<para><varname>  torigin timestamptz='2000-01-03'): setof index_box</varname></para>
+					<para>En el caso de una malla espacio-temporal, el SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting>
-SELECT (gr).indices, (gr).box
+SELECT (gr).index, (gr).box
 FROM (SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days')
   AS gr) t;
---  {7,6} | TBOX((14,2000-01-15),(16,2000-01-17))
-    {8,6} | TBOX((16,2000-01-15),(18,2000-01-17))
-    {9,6} | TBOX((18,2000-01-15),(20,2000-01-17))
-	 ...
-SELECT multidimGrid(tfloat '[-15@2000-01-15, -25@2000-01-25]'::tbox, 2.0, '2 days');
--- ("{-13,6}","TBOX((-26,2000-01-15),(-24,2000-01-17))")
-	 ("{-12,6}","TBOX((-24,2000-01-15),(-22,2000-01-17))")
-	 ("{-11,6}","TBOX((-22,2000-01-15),(-20,2000-01-17))")
-	 ...
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days', 15.0);
--- ("{0,6}","TBOX((15,2000-01-15),(17,2000-01-17))")
-   ("{1,6}","TBOX((17,2000-01-15),(19,2000-01-17))")
-   ("{2,6}","TBOX((19,2000-01-15),(21,2000-01-17))")
+-- 1 | TBOX((14,2000-01-15),(16,2000-01-17))
+   2 | TBOX((16,2000-01-15),(18,2000-01-17))
+   3 | TBOX((18,2000-01-15),(20,2000-01-17))
    ...
-SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days', 15.0,
-  '2000-01-15');
--- ("{0,0}","TBOX((15,2000-01-15),(17,2000-01-17))")
-   ("{1,0}","TBOX((17,2000-01-15),(19,2000-01-17))")
-   ("{2,0}","TBOX((19,2000-01-15),(21,2000-01-17))")
+SELECT multidimGrid(tfloat '[15@2000-01-15, 25@2000-01-25]'::tbox, 2.0, '2 days', 11.5);
+-- (1,"TBOX((13.5,2000-01-15),(15.5,2000-01-17))")
+   (2,"TBOX((15.5,2000-01-15),(17.5,2000-01-17))")
+   (3,"TBOX((17.5,2000-01-15),(19.5,2000-01-17))")
    ...
 SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15,
   Point(15 15)@2000-01-25]'::stbox, 2.0);
--- ("{1,1}","STBOX((2,2),(4,4))")
-   ("{2,1}","STBOX((4,2),(6,4))")
-   ("{3,1}","STBOX((6,2),(8,4))")
+-- (1,"STBOX((2,2),(4,4))")
+   (2,"STBOX((4,2),(6,4))")
+   (3,"STBOX((6,2),(8,4))")
    ...
 SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15,
   Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
--- ("{0,0}","SRID=3812;STBOX((3,3),(5,5))")
-   ("{1,0}","SRID=3812;STBOX((5,3),(7,5))")
-   ("{2,0}","SRID=3812;STBOX((7,3),(9,5))")
+-- (1,"SRID=3812;STBOX((3,3),(5,5))")
+   (2,"SRID=3812;STBOX((5,3),(7,5))")
+   (3,"SRID=3812;STBOX((7,3),(9,5))")
    ...
 SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15,
   Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3 3)');
--- ("{0,0,0}","STBOX Z((3,3,3),(5,5,5))")
-   ("{1,0,0}","STBOX Z((5,3,3),(7,5,5))")
-   ("{2,0,0}","STBOX Z((7,3,3),(9,5,5))")
+-- (1,"STBOX Z((3,3,3),(5,5,5))")
+   (2,"STBOX Z((5,3,3),(7,5,5))")
+   (3,"STBOX Z((7,3,3),(9,5,5))")
    ...
 SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15,
-  Point(15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3)', '2000-01-15');
--- ("{0,0,0}","STBOX T((3,3,2000-01-15),(5,5,2000-01-17))")
-   ("{1,0,0}","STBOX T((5,3,2000-01-15),(7,5,2000-01-17))")
-   ("{2,0,0}","STBOX T((7,3,2000-01-15),(9,5,2000-01-17))")
+  Point(15 15)@2000-01-25]'::stbox, 2.0, interval '2 days');
+-- (1,"STBOX T((2,2,2000-01-15),(4,4,2000-01-17))")
+   (2,"STBOX T((4,2,2000-01-15),(6,4,2000-01-17))")
+   (3,"STBOX T((6,2,2000-01-15),(8,4,2000-01-17))")
    ...
 SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15,
   Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15');
--- ("{0,0,0,0}","STBOX ZT((3,3,3,2000-01-15),(5,5,5,2000-01-17))")
-   ("{1,0,0,0}","STBOX ZT((5,3,3,2000-01-15),(7,5,5,2000-01-17))")
-   ("{2,0,0,0}","STBOX ZT((7,3,3,2000-01-15),(9,5,5,2000-01-17))")
+-- (1,"STBOX ZT((3,3,3,2000-01-15),(5,5,5,2000-01-17))")
+   (2,"STBOX ZT((5,3,3,2000-01-15),(7,5,5,2000-01-17))")
+   (3,"STBOX ZT((7,3,3,2000-01-15),(9,5,5,2000-01-17))")
    ...
 					</programlisting>
 				</listitem>
 
-				<listitem id="multidimTileTbox">
-					<indexterm><primary><varname>multidimTileTbox</varname></primary></indexterm>
-					<para>Obtener un mosaico de tipo <varname>tbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
-					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo, respectivamente. Nótese que los índices de los mosaicos dependen de los orígenes de las dimensiones.</para>
-					<para><varname>multidimTileTbox(indices integer[],width float,duration interval,vorigin float=0,</varname></para>
-					<para><varname>  torigin timestamptz='2000-01-03'): tbox</varname></para>
+				<listitem id="multidimTile">
+					<indexterm><primary><varname>multidimTile</varname></primary></indexterm>
+					<para>Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo. &Z_support;</para>
+					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point(0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo, respectivamente.</para>
+					<para><varname>multidimTile(value float,time timestamptz,size float,duration interval,</varname></para>
+					<para><varname>  vorigin float=0.0,torigin timestamptz='2000-01-03'): tbox</varname></para>
+					<para><varname>multidimTile(point geometry,size float,sorigin geometry='Point(0 0 0)'): stbox</varname></para>
+					<para><varname>multidimTile(point geometry,time timestamptz,size float,duration interval,sorigin</varname></para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03'): stbox</varname></para>
+					<para>En el caso de una malla espacio-temporal, el SRID de las coordenadas de los mosaicos está determinado por el punto de entrada y la amplitud espacial se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting>
-SELECT multidimTileTbox(ARRAY[2,0], 2, interval '2 days');
--- TBOX((4,2000-01-03 00:00:00+01),(6,2000-01-05 00:00:00+01))
-SELECT multidimTileTbox(ARRAY[2,2], 2, interval '2 days', 1, '2020-01-01');
--- TBOX((5,2020-01-01 00:00:00+01),(7,2020-01-03 00:00:00+01))
-					</programlisting>
-				</listitem>
-
-				<listitem id="multidimTileStbox">
-					<indexterm><primary><varname>multidimTileStbox</varname></primary></indexterm>
-					<para>Obtener un mosaico de tipo <varname>stbox</varname> de la malla multidimensional utilizando los índices y la amplitud de los mosaicos.</para>
-					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> para la dimensión de valores y en el lunes 3 de enero de 2000 para la dimensión de tiempo, respectivamente. Nótese que los índices de los mosaicos dependen de los orígenes de las dimensiones.</para>
-					<para><varname>multidimTileStbox(indices integer[],width float,duration interval,</varname></para>
-					<para><varname>  sorigin geometry='Point(0 0 0)',torigin timestamptz='2000-01-03'): stbox</varname></para>
-					<programlisting>
-SELECT multidimTileStbox(ARRAY[2,0], 2.0);
--- STBOX((4,0),(6,2))
-SELECT multidimTileStbox(ARRAY[2,0,0], 2.0);
--- STBOX Z((4,0,0),(6,2,2))
-SELECT multidimTileStbox(ARRAY[2,0,0], 2.0, interval '2 days');
--- STBOX T((4,0,2000-01-03 00:00:00+01),(6,2,2000-01-05 00:00:00+01))
-SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days');
--- STBOX ZT((4,0,0,2000-01-03 00:00:00+01),(6,2,2,2000-01-05 00:00:00+01))
-SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days',
-  geometry 'Point(1 1 1)', '2020-06-15');
--- STBOX ZT((5,1,1,2020-06-15 00:00:00+02),(7,3,3,2020-06-17 00:00:00+02))
+SELECT multidimTile(15, '2000-01-15', 2, interval '2 days');
+-- TBOX((14,2000-01-15),(16,2000-01-17))
+SELECT multidimTile(15, '2000-01-15', 2, interval '2 days', 1, '2000-01-02');
+-- TBOX((15,2000-01-14),(17,2000-01-16))
+SELECT multidimTile(geometry 'Point(1 1 1)', 2.0);
+-- STBOX Z((0,0,0),(2,2,2))
+SELECT multidimTile(geometry 'Point(1 1)', '2000-01-01', 2.0, interval '2 days');
+-- STBOX T((0,0,2000-01-01),(2,2,2000-01-03))
+SELECT multidimTile(geometry 'Point(1 1)', '2000-01-01', 2.0, '2 days', 'Point(1 1)',
+  '2000-01-02');
+-- STBOX T((1,1,1999-12-31),(3,3,2000-01-02))
 					</programlisting>
 				</listitem>
 
@@ -2680,7 +2651,7 @@ SELECT multidimTileStbox(ARRAY[2,0,0,0], 2.0, interval '2 days',
 			<itemizedlist>
 				<listitem id="valueSplit">
 					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
-					<para>Fragmentar el número temporal con respecto a intervalos de valores</para>
+					<para>Fragmentar el número temporal con respecto a intervalos de valores. &SRF;</para>
 					<para><varname>valueSplit(value tnumber,width number,origin number=0): setof number_tnumber</varname></para>
 					<para>Si el origen de los valores no se especifica, su valor se establece por defecto en 0.</para>
 					<programlisting>
@@ -2702,7 +2673,7 @@ SELECT valueSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 2.0, 1.0);
 
 				<listitem id="timeSplit">
 					<indexterm><primary><varname>timeSplit</varname></primary></indexterm>
-					<para>Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+					<para>Fragmentar el valor temporal con respecto a intervalos de tiempo. &SRF;</para>
 					<para><varname>timeSplit(value ttype,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof time_temp</varname></para>
 					<para>Si el origen del tiempo no se especifica, su valor se establece por defecto en el lunes 3 de enero de 2000.</para>
@@ -2725,7 +2696,7 @@ FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-
 
 				<listitem id="valueTimeSplit">
 					<indexterm><primary><varname>valueTimeSplit</varname></primary></indexterm>
-					<para>Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo.</para>
+					<para>Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo. &SRF;</para>
 					<para><varname>valueTimeSplit(value tumber,width number,duration interval,vorigin number=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03'): setof number_time_tnumber</varname></para>
 					<para>Si el origen de los valores y/o el tiempo no se especifican, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente.</para>
@@ -2746,48 +2717,48 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 5.0, '5 days
 
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
-					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial.</para>
+					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial. &SRF;</para>
 					<para><varname>spaceSplit(value tgeompoint,width float,origin geometry='Point(0 0 0)'):</varname></para>
 					<para><varname>  setof point_tpoint</varname></para>
 					<para>Si el origen del espacio no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname>.</para>
 					<programlisting>
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
-			2.0) AS sp) t;
--- POINT(0 0) | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02]}
-	 POINT(2 0) | {[POINT(2 2)@2020-03-02]}
-	 POINT(0 2) | {[POINT(2 2)@2020-03-02]}
-	 ...
+  2.0) AS sp) t;
+-- POINT(0 0) | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
+   POINT(2 2) | {[POINT(2 2)@2020-03-02, POINT(4 4)@2020-03-04)}
+   POINT(4 4) | {[POINT(4 4)@2020-03-04, POINT(6 6)@2020-03-06)}
+   ...
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-	Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
--- POINT Z(1 1 0) | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03]}
-	 POINT Z(3 1 0) | {[POINT Z(3 3 3)@2020-03-03]}
-	 POINT Z(1 3 0) | {[POINT Z(3 3 3)@2020-03-03]}
-	 ...
+  Point(10 10 10)@2020-03-10]', 2.0, 'Point(1 1 1)') AS sp) t;
+-- POINT Z (1 1 1) | {[POINT Z (1 1 1)@2020-03-01, POINT Z (3 3 3)@2020-03-03)}
+   POINT Z (3 3 3) | {[POINT Z (3 3 3)@2020-03-03, POINT Z (5 5 5)@2020-03-05)}
+   POINT Z (5 5 5) | {[POINT Z (5 5 5)@2020-03-05, POINT Z (7 7 7)@2020-03-07)}
+   ...
 					</programlisting>
 				</listitem>
 				<listitem id="spaceTimeSplit">
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
-					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal.</para>
+					<para>Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal. &SRF;</para>
 					<para><varname>spaceTimeSplit(value tgeompoint,width float,duration interval,sorigin </varname></para>
 					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03'): setof point_time_tpoint</varname></para>
 					<para>Si el origen del espacio y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente.</para>
 					<programlisting>
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
-FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01,
-			Point(10 10)@2020-03-10]', 5.0, '5 days') AS sp) t;
--- POINT(0 0) | 2020-02-27 | {[POINT(1 1)@2020-03-01, POINT(3 3)@2020-03-03]}
-	 POINT(0 0) | 2020-03-03 | {[POINT(3 3)@2020-03-03, POINT(5 5)@2020-03-05]}
-	 POINT(5 0) | 2020-03-03 | {[POINT(5 5)@2020-03-05]}
-	 ...
+FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
+  2.0, '2 days') AS sp) t;
+-- POINT(0 0) | 2020-03-01 | {[POINT(1 1)@2020-03-01, POINT(2 2)@2020-03-02)}
+   POINT(2 2) | 2020-03-01 | {[POINT(2 2)@2020-03-02, POINT(3 3)@2020-03-03]}
+   POINT(2 2) | 2020-03-03 | {[POINT(3 3)@2020-03-03, POINT(4 4)@2020-03-04)}
+   ...
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
-			Point(10 10 10)@2020-03-10]', 5.0, '5 days', 'Point(1 1 1)', '2020-03-01') AS sp) t;
--- POINT Z(1 1 0) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(6 6 6)@2020-03-06]}
-	 POINT Z(6 1 0) | 2020-03-01 | {[POINT Z(6 6 6)@2020-03-06]}
-	 POINT Z(1 6 0) | 2020-03-01 | {[POINT Z(6 6 6)@2020-03-06]}
-	 ...
+  Point(10 10 10)@2020-03-10]', 2.0, '2 days', 'Point(1 1 1)', '2020-03-01') AS sp) t;
+-- POINT Z(1 1 1) | 2020-03-01 | {[POINT Z(1 1 1)@2020-03-01, POINT Z(3 3 3)@2020-03-03)}
+   POINT Z(3 3 3) | 2020-03-03 | {[POINT Z(3 3 3)@2020-03-03, POINT Z(5 5 5)@2020-03-05)}
+   POINT Z(5 5 5) | 2020-03-05 | {[POINT Z(5 5 5)@2020-03-05, POINT Z(7 7 7)@2020-03-07)}
+   ...
 					</programlisting>
 				</listitem>
 			</itemizedlist>

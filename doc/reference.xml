@@ -1217,11 +1217,15 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the range or period argument with buckets of the same width aligned the origin</para>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the range or period with buckets of the same width or duration aligned with the origin</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input integer or float value.</para>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input number.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Returns the range in the bucket space that contains the input number</para>
 					</listitem>
 
 					<listitem>
@@ -1229,15 +1233,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="bucketIntRange"><varname>intRangeBucket</varname></link>: Returns an <varname>intrange</varname> within the bucket space that contains the input integer</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="bucketFloatRange"><varname>floatRangeBucket</varname></link>: Returns a <varname>floatrange</varname> within the bucket space that contains the float value</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="bucketPeriod"><varname>periodBucket</varname></link>: Returns a <varname>period</varname> within the bucket space that contains the input timestamp</para>
+						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Returns a period in the bucket space that contains the input timestamp</para>
 					</listitem>
 
 				</itemizedlist>
@@ -1248,16 +1244,12 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (index, tile) that covers the box with multidimensional tiles of the same width.</para>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration.</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="multidimTileTbox"><varname>multidimTileTbox</varname></link>: Returns a <varname>tbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
+						<para><link linkend="multidimTile"><varname>multidimTile</varname></link>: Returns the tile of the multidimensional grid that contains the value and the timestamp</para>
 						</listitem>
-
-					<listitem>
-						<para><link linkend="multidimTileStbox"><varname>multidimTileStbox</varname></link>: Returns an <varname>stbox</varname> tile of the multidimensional grid using the tile indices and widths</para>
-					</listitem>
 				</itemizedlist>
 			</sect3>
 

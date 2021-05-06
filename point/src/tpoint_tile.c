@@ -35,6 +35,8 @@
 #include <liblwgeom.h>
 
 #include "tpoint_tile.h"
+#include "period.h"
+#include "timeops.h"
 #include "temporal.h"
 #include "temporal_util.h"
 #include "temporal_tile.h"
@@ -59,24 +61,23 @@
  *
  */
 STBOX *
-stbox_tile_get(int *coords, double size, int64 tunits, POINT3DZ sorigin,
-  TimestampTz torigin, bool hasz, bool hast, int32 srid)
+stbox_tile_get(double x, double y, double z, TimestampTz t, double size,
+  int64 tunits, bool hasz, bool hast, int32 srid)
 {
-  double xmin = sorigin.x + (size * coords[0]);
+  double xmin = x;
   double xmax = xmin + size;
-  double ymin = sorigin.y + (size * coords[1]);
+  double ymin = y;
   double ymax = ymin + size;
   double zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
-  int ndims = 2;
   if (hasz)
   {
-    zmin = sorigin.z + (size * coords[ndims++]);
+    zmin = z;
     zmax = zmin + size;
   }
   if (hast)
   {
-    tmin = torigin + (tunits * coords[ndims]);
+    tmin = t;
     tmax = tmin + tunits;
   }
   return (STBOX *) stbox_make(true, hasz, hast, false, srid, xmin, xmax,
@@ -98,42 +99,34 @@ stbox_tile_get(int *coords, double size, int64 tunits, POINT3DZ sorigin,
  * @note The tunits argument may be equal to 0 if it was not provided by the
  * user. In that case only the spatial dimension is tiled.
  */
-STboxGridState *
+static STboxGridState *
 stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
-  POINT3DZ sorigin, TimestampTz torigin, int32 srid)
+  POINT3DZ sorigin, TimestampTz torigin)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
-
   /* fill in state */
   state->done = false;
-  state->hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  state->hast = MOBDB_FLAGS_GET_T(box->flags) && tunits > 0;
-  state->srid = box->srid;
+  state->i = 1;
   state->size = size;
   state->tunits = tunits;
-  state->srid = srid;
+  state->box.xmin = float_bucket_internal(box->xmin, size, sorigin.x);
+  state->box.xmax = float_bucket_internal(box->xmax, size, sorigin.x);
+  state->box.ymin = float_bucket_internal(box->ymin, size, sorigin.y);
+  state->box.ymax = float_bucket_internal(box->ymax, size, sorigin.y);
+  state->box.zmin = float_bucket_internal(box->zmin, size, sorigin.z);
+  state->box.zmax = float_bucket_internal(box->zmax, size, sorigin.z);
+  state->box.tmin = timestamptz_bucket_internal(box->tmin, size, torigin);
+  state->box.tmax = timestamptz_bucket_internal(box->tmax, size, torigin);
+  state->box.srid = box->srid;
+  state->box.flags = box->flags;
+  MOBDB_FLAGS_SET_T(state->box.flags, MOBDB_FLAGS_GET_T(box->flags) && tunits > 0);
+  state->x = state->box.xmin;
+  state->y = state->box.ymin;
+  state->z = state->box.zmin;
+  state->t = state->box.tmin;
   state->temp = temp;
-  state->sorigin = sorigin;
-  state->torigin = torigin;
-  state->min[0] = floor(box->xmin / size) - floor(sorigin.x / size);
-  state->max[0] = floor(box->xmax / size) - floor(sorigin.x / size);
-  state->min[1] = floor(box->ymin / size) - floor(sorigin.y / size);
-  state->max[1] = floor(box->ymax / size) - floor(sorigin.y / size);
-  int ndims = 2;
-  if (state->hasz)
-  {
-    state->min[ndims] = floor(box->zmin / size) - floor(sorigin.z / size);
-    state->max[ndims++] = floor(box->zmax / size) - floor(sorigin.z / size);
-  }
-  else if (state->hast)
-  {
-    state->min[ndims] = (box->tmin / tunits) - (torigin / tunits);
-    state->max[ndims++] = (box->tmax / tunits) - (torigin / tunits);
-  }
-  for (int i = 0; i < ndims; i++)
-    state->coords[i] = state->min[i];
   return state;
 }
 
@@ -149,29 +142,30 @@ stbox_tile_state_next(STboxGridState *state)
       return;
   /* Move to the next cell. We need to to take into account whether
    * hasz and/or hast and thus there are 4 possible cases */
-  state->coords[0]++;
-  if (state->coords[0] > state->max[0])
+  state->i++;
+  state->x += state->size;
+  if (state->x > state->box.xmax)
   {
-    state->coords[0] = state->min[0];
-    state->coords[1]++;
-    if (state->coords[1] > state->max[1])
+    state->x = state->box.xmin;
+    state->y += state->size;
+    if (state->y > state->box.ymax)
     {
-      if (state->hasz)
+      if (MOBDB_FLAGS_GET_Z(state->box.flags))
       {
         /* has Z */
-        state->coords[0] = state->min[0];
-        state->coords[1] = state->min[1];
-        state->coords[2]++;
-        if (state->coords[2] > state->max[2])
+        state->x = state->box.xmin;
+        state->y = state->box.ymin;
+        state->z += state->size;
+        if (state->z > state->box.zmax)
         {
-          if (state->hast)
+          if (MOBDB_FLAGS_GET_T(state->box.flags))
           {
             /* has Z and has T */
-            state->coords[0] = state->min[0];
-            state->coords[1] = state->min[1];
-            state->coords[2] = state->min[2];
-            state->coords[3]++;
-            if (state->coords[3] > state->max[3])
+            state->x = state->box.xmin;
+            state->y = state->box.ymin;
+            state->z = state->box.zmin;
+            state->t += state->tunits;
+            if (state->t > state->box.tmax)
             {
               state->done = true;
               return;
@@ -187,13 +181,13 @@ stbox_tile_state_next(STboxGridState *state)
       }
       else
       {
-        /* does not have Z */
-        if (state->hast)
+        if (MOBDB_FLAGS_GET_T(state->box.flags))
         {
-          state->coords[0] = state->min[0];
-          state->coords[1] = state->min[1];
-          state->coords[2]++;
-          if (state->coords[2] > state->max[2])
+          /* does not have Z and has T */
+          state->x = state->box.xmin;
+          state->y = state->box.ymin;
+          state->t += state->tunits;
+          if (state->t > state->box.tmax)
           {
             state->done = true;
             return;
@@ -230,12 +224,11 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     STBOX *bounds = PG_GETARG_STBOX_P(0);
     ensure_not_geodetic_stbox(bounds);
     ensure_has_X_stbox(bounds);
-    int32 srid = bounds->srid;
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     GSERIALIZED *sorigin;
-    int64 tunits = 0;
-    TimestampTz torigin = 0;
+    int64 tunits = 0; /* make compiler quiet */
+    TimestampTz torigin = 0; /* make compiler quiet */
     if (PG_NARGS() == 3)
       sorigin = PG_GETARG_GSERIALIZED_P(2);
     else /* PG_NARGS() == 5 */
@@ -250,6 +243,8 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     }
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
+    // ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
+    int32 srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != 0)
       error_if_srid_mismatch(srid, gs_srid);
@@ -271,7 +266,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
-      torigin, srid);
+      torigin);
     /* Build a tuple description for a multidim_grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -286,20 +281,12 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   if (state->done)
     SRF_RETURN_DONE(funcctx);
 
-  /* Store tile coordinates */
-  Datum coords[4];
-  coords[0] = Int32GetDatum(state->coords[0]);
-  coords[1] = Int32GetDatum(state->coords[1]);
-  int ndims = 2;
-  if (state->hasz)
-    coords[ndims++] = Int32GetDatum(state->coords[2]);
-  if (state->hast && state->tunits > 0)
-    coords[ndims++] = Int32GetDatum(state->coords[3]);
-  tuple_arr[0] = PointerGetDatum(intarr_to_array(coords, ndims));
+  /* Store index */
+  tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
-  tuple_arr[1] = PointerGetDatum(stbox_tile_get(state->coords, state->size,
-    state->tunits, state->sorigin, state->torigin, state->hasz, state->hast,
-    state->srid));
+  tuple_arr[1] = PointerGetDatum(stbox_tile_get(state->x, state->y, state->z,
+    state->t, state->size, state->tunits, MOBDB_FLAGS_GET_Z(state->box.flags), 
+    MOBDB_FLAGS_GET_T(state->box.flags), state->box.srid));
   /* Advance state */
   stbox_tile_state_next(state);
   /* Form tuple and return */
@@ -314,58 +301,96 @@ PG_FUNCTION_INFO_V1(stbox_multidim_tile);
 */
 Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
 {
-  ArrayType *coordarr = PG_GETARG_ARRAYTYPE_P(0);
-  ensure_non_empty_array(coordarr);
-  int ndims;
-  int *coords = intarr_extract(coordarr, &ndims);
-  if (ndims < 2 || ndims > 4)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The number of coordinates must be between 2 and 4")));
-  double size = PG_GETARG_FLOAT8(1);
-  ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+  GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
+  ensure_non_empty(point);
+  ensure_point_type(point);
+  TimestampTz t;
+  double size;
+  int64 tunits = 0; /* make compiler quiet */
   GSERIALIZED *sorigin;
-  int64 tunits = 0;
+  TimestampTz torigin;
   bool hast = false;
-  TimestampTz torigin = 0;
   if (PG_NARGS() == 3)
+  {
+    size = PG_GETARG_FLOAT8(1);
+    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     sorigin = PG_GETARG_GSERIALIZED_P(2);
-  else /* PG_NARGS() == 5 */
+  }
+  else /* PG_NARGS() == 6 */
   {
     /* If time arguments are given */
-    if (ndims == 2)
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("The number of coordinates must be at least 3 for the temporal dimension")));
-    Interval *duration = PG_GETARG_INTERVAL_P(2);
+    t = PG_GETARG_TIMESTAMPTZ(1);
+    size = PG_GETARG_FLOAT8(2);
+    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    Interval *duration = PG_GETARG_INTERVAL_P(3);
     ensure_valid_duration(duration);
     tunits = get_interval_units(duration);
-    sorigin = PG_GETARG_GSERIALIZED_P(3);
-    torigin = PG_GETARG_TIMESTAMPTZ(4);
+    sorigin = PG_GETARG_GSERIALIZED_P(4);
+    torigin = PG_GETARG_TIMESTAMPTZ(5);
     hast = true;
   }
   ensure_non_empty(sorigin);
   ensure_point_type(sorigin);
-  int32 srid = gserialized_get_srid(sorigin);
-  bool hasz = (ndims == 4 || (ndims == 3 && ! hast));
-  POINT3DZ pt;
-  if (FLAGS_GET_Z(sorigin->flags))
-    pt = datum_get_point3dz(PointerGetDatum(sorigin));
+  int32 srid = gserialized_get_srid(point);
+  int32 gs_srid = gserialized_get_srid(sorigin);
+  if (gs_srid != 0)
+    ensure_same_srid_gs(point, sorigin);
+  // ensure_same_dimensionality_gs(point, sorigin);
+  POINT3DZ pt, ptorig;
+  bool hasz = FLAGS_GET_Z(point->flags);
+  if (hasz)
+  {
+    pt = datum_get_point3dz(PointerGetDatum(point));
+    ptorig = datum_get_point3dz(PointerGetDatum(sorigin));
+  }
   else
   {
     /* Initialize to 0 the Z dimension if it is missing */
     memset(&pt, 0, sizeof(POINT3DZ));
-    const POINT2D *p2d = gs_get_point2d_p(sorigin);
-    pt.x = p2d->x;
-    pt.y = p2d->y;
+    const POINT2D *p1 = gs_get_point2d_p(sorigin);
+    pt.x = p1->x;
+    pt.y = p1->y;
+    memset(&ptorig, 0, sizeof(POINT3DZ));
+    const POINT2D *p2 = gs_get_point2d_p(sorigin);
+    ptorig.x = p2->x;
+    ptorig.y = p2->y;
   }
-  STBOX *result = stbox_tile_get(coords, size, tunits, pt, torigin, hasz,
+  double xmin = float_bucket_internal(pt.x, size, ptorig.x);
+  double ymin = float_bucket_internal(pt.y, size, ptorig.y);
+  double zmin = float_bucket_internal(pt.z, size, ptorig.z);
+  TimestampTz tmin = 0; /* make compiler quiet */
+  if (hast)
+    tmin = timestamptz_bucket_internal(t, tunits, torigin);
+  STBOX *result = stbox_tile_get(xmin, ymin, zmin, tmin, size, tunits, hasz,
     hast, srid);
-  PG_FREE_IF_COPY(coordarr, 0);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
  * Split functions
  *****************************************************************************/
+
+static Datum
+stbox_upper_bound(const STBOX *box)
+{
+  /* Compute the 2D upper bound of the box */
+  LWGEOM *points[3];
+  /* Top left */
+  points[0] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmin, box->ymax); 
+  /* Top right */
+  points[1] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymax); 
+  /* Bottom left */
+  points[2] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymin); 
+  FLAGS_SET_GEODETIC(points[0]->flags, false);
+  FLAGS_SET_GEODETIC(points[1]->flags, false);
+  FLAGS_SET_GEODETIC(points[2]->flags, false);
+  LWGEOM *lwgeom = (LWGEOM *) lwline_from_lwgeom_array(box->srid, 3, points);
+  FLAGS_SET_Z(lwgeom->flags, false);
+  FLAGS_SET_GEODETIC(lwgeom->flags, false);
+  Datum result = PointerGetDatum(geo_serialize(lwgeom));
+  lwgeom_free(lwgeom);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(tpoint_space_split);
 /**
@@ -375,7 +400,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
+  bool isnull[3] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
@@ -421,7 +446,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
 
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(temp, &bounds, size, 0,
-      pt, 0, srid);
+      pt, 0);
     /* Build a tuple description for a multidimensional grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -439,21 +464,38 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
-    /* Generate tile 
-     * We must generate a 2D geometry so that we can project a 3D point 
-     * to 2D geometry */
-    STBOX *box = stbox_tile_get(state->coords, state->size, state->tunits,
-      state->sorigin, state->torigin, false, state->hast, state->srid);
+    /* Generate the tile 
+     * We must generate a 2D/3D geometry for keeping the bounds and after we
+     * set the box to 2D so that we can project a 3D point to a 2D geometry */
+    bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
+    STBOX *box = stbox_tile_get(state->x, state->y, state->z, state->t,
+      state->size, state->tunits, hasz, false, state->box.srid);
     /* Advance state */
     stbox_tile_state_next(state);
-    /* Restrict the temporal point to the box */
+    /* Restrict the temporal point to the box projected to 2D */
+    MOBDB_FLAGS_SET_Z(box->flags, false);
     Temporal *atstbox = tpoint_at_stbox_internal(state->temp, box);
-    if (atstbox != NULL)
+    if (atstbox == NULL)
+      continue;
+    if (hasz)
+    {
+      /* Filter the boxes that do not intersect in 3D with the restriction */
+      STBOX box1;
+      memset(&box1, 0, sizeof(STBOX));
+      temporal_bbox(&box1, atstbox);
+      if (box1.zmin >= box->zmax || box->zmin >= box1.zmax)
+        continue;
+    }
+    Datum upper_bound = stbox_upper_bound(box);
+    Temporal *minus_upper = tpoint_restrict_geometry_internal(atstbox,
+      upper_bound, REST_MINUS);
+    pfree(DatumGetPointer(upper_bound));
+    if (minus_upper != NULL)
     {
       /* Form tuple and return */
-      tuple_arr[0] = point_make(box->xmin, box->ymin, box->zmin, state->hasz,
-        false, state->srid);
-      tuple_arr[1] = PointerGetDatum(atstbox);
+      tuple_arr[0] = point_make(box->xmin, box->ymin, box->zmin,
+        MOBDB_FLAGS_GET_Z(state->temp->flags), false, box->srid);
+      tuple_arr[1] = PointerGetDatum(minus_upper);
       tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
       result = HeapTupleGetDatum(tuple);
       SRF_RETURN_NEXT(funcctx, result);
@@ -519,7 +561,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
 
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(temp, &bounds, size, tunits,
-      pt, torigin, srid);
+      pt, torigin);
     /* Build a tuple description for a multidimensional grid tuple */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -537,22 +579,39 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
-    /* Generate tile 
-     * We must generate a 2D geometry so that we can project a 3D point 
-     * to 2D geometry */
-    STBOX *box = stbox_tile_get(state->coords, state->size, state->tunits,
-      state->sorigin, state->torigin, false, state->hast, state->srid);
+    /* Generate the tile 
+     * We must generate a 2D/3D geometry for keeping the bounds and after we
+     * set the box to 2D so that we can project a 3D point to a 2D geometry */
+    bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
+    STBOX *box = stbox_tile_get(state->x, state->y, state->z, state->t,
+      state->size, state->tunits, hasz, true, state->box.srid);
     /* Advance state */
     stbox_tile_state_next(state);
-    /* Restrict the temporal point to the box */
+    /* Restrict the temporal point to the box projected to 2D */
+    MOBDB_FLAGS_SET_Z(box->flags, false);
     Temporal *atstbox = tpoint_at_stbox_internal(state->temp, box);
-    if (atstbox != NULL)
+    if (atstbox == NULL)
+      continue;
+    if (hasz)
+    {
+      /* Filter the boxes that do not intersect in 3D with the restriction */
+      STBOX box1;
+      memset(&box1, 0, sizeof(STBOX));
+      temporal_bbox(&box1, atstbox);
+      if (box1.zmin >= box->zmax || box->zmin >= box1.zmax)
+        continue;
+    }
+    Datum upper_bound = stbox_upper_bound(box);
+    Temporal *minus_upper = tpoint_restrict_geometry_internal(atstbox,
+      upper_bound, REST_MINUS);
+    pfree(DatumGetPointer(upper_bound));
+    if (minus_upper != NULL)
     {
       /* Form tuple and return */
-      tuple_arr[0] = point_make(box->xmin, box->ymin, box->zmin, state->hasz,
-        false, state->srid);
+      tuple_arr[0] = point_make(box->xmin, box->ymin, box->zmin,
+        hasz, false, box->srid);
       tuple_arr[1] = TimestampTzGetDatum(box->tmin);
-      tuple_arr[2] = PointerGetDatum(atstbox);
+      tuple_arr[2] = PointerGetDatum(minus_upper);
       tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
       result = HeapTupleGetDatum(tuple);
       SRF_RETURN_NEXT(funcctx, result);
