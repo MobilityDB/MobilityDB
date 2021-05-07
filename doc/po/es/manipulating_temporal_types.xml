@@ -1583,7 +1583,7 @@ scale_linear(
 				</programlisting>
 				<figure id="figspeed" float="start"><title>Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS.</title>
 					<mediaobject>
-						<imageobject><imagedata scale='30' fileref='images/speed.png'/></imageobject>
+						<imageobject><imagedata scale='30' fileref='../../images/speed.png'/></imageobject>
 					</mediaobject>
 				</figure>
 			</listitem>
@@ -2453,9 +2453,19 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Mosaicos multidimensionales</title>
-		<para>Los mosaicos multidimensionales es el mecanismo que se utiliza para dividir el dominio de valores temporales en intervalos o mosaicos de un número variable de dimensiones. En el caso de una sola dimensión, el dominio se puede dividir por valor o por tiempo utilizando intervalos del mismo ancho o la misma duración, respectivamente. Para los números temporales, el dominio se puede dividir en mosaicos bidimensionales del mismo ancho para la dimensión de valor y la misma duración para la dimensión de tiempo. Para los puntos temporales, el dominio se puede dividir en el espacio en mosaicos bidimensionales o tridimensionales, dependiendo del número de dimensiones de las coordenadas espaciales. Finalmente, para los puntos temporales, el dominio se puede dividir por espacio y por tiempo usando mosaicos tridimensionales o tetradimensionales. Además, los valores temporales también se pueden fragmentar en piezas de acuerdo con una malla multidimensional definida sobre el dominio subyacente.</para>
+		<para>Los mosaicos multidimensionales es el mecanismo que se utiliza para dividir el dominio de valores temporales en intervalos o mosaicos de un número variable de dimensiones. En el caso de una sola dimensión, el dominio se puede dividir por valor o por tiempo utilizando intervalos del mismo ancho o la misma duración, respectivamente. Para los números temporales, el dominio se puede dividir en mosaicos bidimensionales del mismo ancho para la dimensión de valor y la misma duración para la dimensión de tiempo. Para los puntos temporales, el dominio se puede dividir en el espacio en mosaicos bidimensionales o tridimensionales, dependiendo del número de dimensiones de las coordenadas espaciales. Finalmente, para los puntos temporales, el dominio se puede dividir por espacio y por tiempo usando mosaicos tridimensionales o tetradimensionales. Además, los valores temporales también se pueden fragmentar de acuerdo con una malla multidimensional definida sobre el dominio subyacente.</para>
 
 		<para>Los mosaicos multidimensionales se pueden utilizar para diversos fines. Por ejemplo, se pueden utilizar para calcular histogramas multidimensionales, donde los valores temporales se agregan de acuerdo con la partición subyacente del dominio. Por otro lado, el mosaico multidimensional se puede utilizar para distribuir un conjunto de datos en un grupo de servidores, donde cada servidor contiene una partición del conjunto de datos. La ventaja de este mecanismo de partición es que conserva la proximidad en el espacio y el tiempo, a diferencia de los mecanismos de partición tradicionales basados ​​en hash utilizados en entornos de big data.</para>
+
+		<!-- <figure id="tiling" float="start"><title>Multidimensional tiling for temporal floats.</title> -->
+			<mediaobject>
+				<imageobject><imagedata scale='75' fileref='../../images/tiling.pdf'/></imageobject>
+			</mediaobject>
+		<!-- </figure> -->
+
+		<para>
+			La figura anterior ilustra un mosaico multidimensional para números flotantes temporales. El dominio bidimensional se divide en mosaicos que tienen el mismo tamaño para la dimensión de valor y la misma duración para la dimensión de tiempo. Suponga que este esquema de mosaicos se usa para distribuir un conjunto de datos en un clúster de seis servidores, como sugiere el patrón gris en la figura. En este caso, los valores se fragmentan para que cada servidor reciba los datos de mosaicos contiguos. Esto implica en particular que cuatro nodos recibirán un fragmento del número flotante temporal que se muestra en la figura. Una ventaja de esta distribución de datos basada en mosaicos multidimensionales es que reduce los datos que deben intercambiarse entre nodos cuando se procesan consultas, un proceso que generalmente se denomina <emphasis> reshuffling</emphasis>.
+		</para>
 
 		<para>Muchas de las funciones de esta sección son <emphasis>funciones de retorno de conjuntos</emphasis> (también conocidas como <emphasis>funciones de tabla</emphasis>) ya que normalmente devuelven más de un valor. En este caso, las funciones están marcadas con el símbolo &SRF;.</para>
 		<sect2 id="bucket_functions">
@@ -2539,15 +2549,15 @@ SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020
 					</programlisting>
 				</listitem>
 
-				<listitem id="bucketPeriod">
+				<listitem id="periodBucket">
 					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
 					<para>Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
-					<para><varname>bucketPeriod(time timestamptz,duration interval,origin timestamptz='2000-01-03'): period</varname></para>
+					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03'): period</varname></para>
 					<programlisting>
-SELECT bucketPeriod(2, interval '2 days');
+SELECT periodBucket(2, interval '2 days');
 -- [2000-01-07, 2000-01-09)
-SELECT bucketPeriod(2, interval '2 days', '2020-06-15');
+SELECT periodBucket(2, interval '2 days', '2020-06-15');
 -- [2020-06-19, 2020-06-21)
 					</programlisting>
 				</listitem>

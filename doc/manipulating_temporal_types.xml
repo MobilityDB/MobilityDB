@@ -2462,20 +2462,31 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Multidimensional Tiling</title>
-		<para>Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same width or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same width for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned by space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented in pieces according to a multidimensional grid defined over the underlying domain.</para>
+		<para>Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented according to a multidimensional grid defined over the underlying domain.</para>
 
 		<para>Multidimensional tiling can be used for various purposes. For example, it can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can be used for distributing a dataset across a cluster of servers, where each server contains a partition of the dataset. The advantage of this partition mechanism is that it preserves proximitity in space and time, unlike the traditional hash-based partition mechanisms used in big data environments.</para>
 
-    <para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF; symbol.</para>
+		<!-- <figure id="tiling" float="start"><title>Multidimensional tiling for temporal floats.</title> -->
+			<mediaobject>
+				<imageobject><imagedata scale='75' fileref='images/tiling.pdf'/></imageobject>
+			</mediaobject>
+		<!-- </figure> -->
+
+		<para>
+			The figure above illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
+		</para>
+
+		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF; symbol.</para>
+
 		<sect2 id="bucket_functions">
 			<title>Bucket Functions</title>
 
 			<itemizedlist>
 				<listitem id="bucketList">
 					<indexterm><primary><varname>bucketList</varname></primary></indexterm>
-					<para>Returns a set of couples (index, bucket) that cover the range or period with buckets of the same width or duration aligned with the origin. &SRF;</para>
+					<para>Returns a set of couples (index, bucket) that cover the range or period with buckets of the same size or duration aligned with the origin. &SRF;</para>
 					<para>If the origin is not provided, it is set by default to 0 for ranges and Monday, January 3, 2000 for periods. The indices start by 1.</para>
-					<para><varname>bucketList(bounds range,width number,origin number=0): setof index_range</varname></para>
+					<para><varname>bucketList(bounds range,size number,origin number=0): setof index_range</varname></para>
 					<para><varname>bucketList(bounds period,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof index_period</varname></para>
 					<programlisting>
@@ -2508,7 +2519,7 @@ SELECT bucketList(tfloat '[1@2000-01-15, 10@2000-01-25]'::period, '2 days', '200
 					<indexterm><primary><varname>valueBucket</varname></primary></indexterm>
 					<para> Returns the start value of the bucket that contains the input number.</para>
 					<para>If the origen is not specified, it is set by default to 0.</para>
-					<para><varname>valueBucket(value number,width number,origin number=0): number</varname></para>
+					<para><varname>valueBucket(value number,size number,origin number=0): number</varname></para>
 					<programlisting>
 SELECT valueBucket(3, 2);
 -- 2
@@ -2521,7 +2532,7 @@ SELECT valueBucket(3.5, 2.5, 1.5);
 					<indexterm><primary><varname>rangeBucket</varname></primary></indexterm>
 					<para>Returns the range in the bucket space that contains the input number.</para>
 					<para>If the origin is not provided, it is set by default to 0.</para>
-					<para><varname>rangeBucket(value number,width number,origin number=0): range</varname></para>
+					<para><varname>rangeBucket(value number,size number,origin number=0): range</varname></para>
 					<programlisting>
 SELECT rangeBucket(2, 2);
 -- [2,4)
@@ -2552,7 +2563,7 @@ SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020
 					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
 					<para>Returns the period in the bucket space that contains the input timestamp.</para>
 					<para>If the origin is not provided, it is set by default to Monday, January 3, 2000.</para>
-					<para><varname>bucketPeriod(time timestamptz,duration interval,origin timestamptz='2000-01-03'):</varname></para>
+					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  period</varname></para>
 					<programlisting>
 SELECT periodBucket('2000-01-04', interval '1 week');
@@ -2660,7 +2671,7 @@ SELECT multidimTile(geometry 'Point(1 1)', '2000-01-01', 2.0, '2 days', 'Point(1
 				<listitem id="valueSplit">
 					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
 					<para>Fragment the temporal number with respect to range buckets. &SRF;</para>
-					<para><varname>valueSplit(value tnumber,width number,origin number=0): setof number_tnumber</varname></para>
+					<para><varname>valueSplit(value tnumber,size number,origin number=0): setof number_tnumber</varname></para>
 					<para>If the origin of values is not provided, it is set by default to 0.</para>
 					<programlisting>
 SELECT (sp).number, (sp).tnumber
@@ -2705,7 +2716,7 @@ FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-
 				<listitem id="valueTimeSplit">
 					<indexterm><primary><varname>valueTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal number with respect to the tiles in a value-time grid. &SRF;</para>
-					<para><varname>valueTimeSplit(value tumber,width number,duration interval,vorigin number=0,</varname></para>
+					<para><varname>valueTimeSplit(value tumber,size number,duration interval,vorigin number=0,</varname></para>
 					<para><varname>  torigin timestamptz='2000-01-03'): setof number_time_tnumber</varname></para>
 					<para>If the origin of values and/or time origins are not provided, they are set by default to 0 and to Monday, January 3, 2000, respectively.</para>
 					<programlisting>
@@ -2726,7 +2737,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 5.0, '5 days
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid. &Z_support; &SRF;</para>
-					<para><varname>spaceSplit(value tgeompoint,width float,origin geometry='Point(0 0 0)'):</varname></para>
+					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)'):</varname></para>
 					<para><varname>  setof point_tpoint</varname></para>
 					<para>If the origin of space dimension is not provided, it is set by default to <varname>'Point(0 0 0)'</varname>.</para>
 					<programlisting>
@@ -2749,7 +2760,7 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 				<listitem id="spaceTimeSplit">
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid. &Z_support; &SRF;</para>
-					<para><varname>spaceTimeSplit(value tgeompoint,width float,duration interval,sorigin </varname></para>
+					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
 					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03'): setof point_time_tpoint</varname></para>
 					<para>If the origin of space and time dimensions are not provided, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively.</para>
 					<programlisting>
