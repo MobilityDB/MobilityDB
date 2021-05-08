@@ -28,18 +28,6 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT SUM(valueBucket(i, 2)) FROM tbl_int;
-SELECT SUM(valueBucket(i, 2, 1)) FROM tbl_int;
-SELECT SUM(valueBucket(f, 2.5)) FROM tbl_float;
-SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
-
--------------------------------------------------------------------------------
-
-SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-
--------------------------------------------------------------------------------
-
 SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
 SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
 
@@ -51,14 +39,24 @@ SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days', '2001
 
 -------------------------------------------------------------------------------
 
-SELECT bucketIntRange(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT bucketIntRange(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT SUM(valueBucket(i, 2)) FROM tbl_int;
+SELECT SUM(valueBucket(i, 2, 1)) FROM tbl_int;
+SELECT SUM(valueBucket(f, 2.5)) FROM tbl_float;
+SELECT SUM(valueBucket(f, 2.5, 1.5)) FROM tbl_float;
 
-SELECT bucketFloatRange(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT bucketFloatRange(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT rangeBucket(i, 2), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT rangeBucket(i, 2, 1), COUNT(*) FROM tbl_int GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT bucketPeriod(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
-SELECT bucketPeriod(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT rangeBucket(f, 2.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT rangeBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+
+-------------------------------------------------------------------------------
+
+SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+
+SELECT periodBucket(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 
@@ -66,10 +64,10 @@ SELECT multidimGrid(b, 2.5, '1 week'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER B
 SELECT multidimGrid(b, 2.5, '1 week', 1.5), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT multidimGrid(b, 2.5, '1 week', 1.5, '2001-06-01'), COUNT(*) FROM tbl_tbox GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT extent(multidimTileTbox(t1.f, t2.t, 2.5, '1 week')) FROM 
+SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week')) FROM 
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
-SELECT extent(multidimTileTbox(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM 
+SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM 
 (SELECT * FROM tbl_float WHERE f IS NOT NULL LIMIT 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 

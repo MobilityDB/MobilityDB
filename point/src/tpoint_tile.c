@@ -50,11 +50,9 @@
 /**
  * Generate a tile from the current state of the multidimensional grid
  *
- * @param[in] coords Coordinates of the tile to output
+ * @param[in] x,y,z,t Lower coordinates of the tile to output
  * @param[in] size Spatial size of the tiles
  * @param[in] tunits Temporal size of the tiles in PostgreSQL time units
- * @param[in] sorigin Spatial origin of the tiles
- * @param[in] torigin Time origin of the tiles
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] srid SRID of the spatial coordinates
@@ -93,7 +91,6 @@ stbox_tile_get(double x, double y, double z, TimestampTz t, double size,
  * @param[in] tunits Temporal size of the tiles in PostgreSQL time units
  * @param[in] sorigin Spatial origin of the tiles
  * @param[in] torigin Time origin of the tiles
- * @param[in] srid SRID of the spatial coordinates
  *
  * @pre The xsize argument must be greater to 0.
  * @note The tunits argument may be equal to 0 if it was not provided by the

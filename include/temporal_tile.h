@@ -44,7 +44,7 @@ typedef struct RangeBucketState
   int i;
   Oid valuetypid;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
-  Datum width;
+  Datum size;
   Datum origin;
   Datum minvalue;
   Datum maxvalue;
@@ -85,49 +85,49 @@ typedef struct TboxGridState
 
 /**
  * Struct for storing the state that persists across multiple calls to output
- * the temporal splits
+ * the temporal fragments
  */
 typedef struct ValueSplitState
 {
   bool done;
-  Datum width;
+  Datum size;
   Datum *buckets;
-  Temporal **splits;
+  Temporal **fragments;
   int i;
   int count;
 } ValueSplitState;
 
 /**
  * Struct for storing the state that persists across multiple calls to output
- * the temporal splits
+ * the temporal fragments
  */
 typedef struct TimeSplitState
 {
   bool done;
   int64 tunits;
   TimestampTz *buckets;
-  Temporal **splits;
+  Temporal **fragments;
   int i;
   int count;
 } TimeSplitState;
 
 /**
  * Struct for storing the state that persists across multiple calls to output
- * the temporal splits
+ * the temporal fragments
  */
 typedef struct ValueTimeSplitState
 {
   bool done;
   Datum *value_buckets;
   TimestampTz *time_buckets;
-  Temporal **splits;
+  Temporal **fragments;
   int i;
   int count;
 } ValueTimeSplitState;
 
 /*****************************************************************************/
 
-extern double float_bucket_internal(double value, double width,
+extern double float_bucket_internal(double value, double size,
   double origin);
 extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
   int64 tunits, TimestampTz torigin);
