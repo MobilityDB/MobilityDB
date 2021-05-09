@@ -41,6 +41,9 @@
 -- Basic types
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random boolean
+ */
 DROP FUNCTION IF EXISTS random_bool;
 CREATE FUNCTION random_bool()
   RETURNS boolean AS $$
@@ -56,6 +59,11 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random integer in a range
+ * 
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ */
 DROP FUNCTION IF EXISTS random_int;
 CREATE FUNCTION random_int(lowvalue int, highvalue int)
   RETURNS int AS $$
@@ -77,6 +85,13 @@ ORDER BY 1;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate an array of random integers in a range
+ * 
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_int_array;
 CREATE FUNCTION random_int_array(lowvalue int, highvalue int, maxdelta int,
   mincard int, maxcard int)
@@ -116,6 +131,12 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random integer range
+ * 
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between the lower and upper bounds
+ */
 DROP FUNCTION IF EXISTS random_intrange;
 CREATE FUNCTION random_intrange(lowvalue int, highvalue int, maxdelta int)
   RETURNS intrange AS $$
@@ -138,6 +159,11 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random float in a range
+ * 
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ */
 DROP FUNCTION IF EXISTS random_float;
 CREATE FUNCTION random_float(lowvalue float, highvalue float)
   RETURNS float AS $$
@@ -157,6 +183,13 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate an array of random floats in a range
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_float_array;
 CREATE FUNCTION random_float_array(lowvalue float, highvalue float,
   maxdelta float, mincard int, maxcard int)
@@ -196,6 +229,12 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random float range
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ */
 DROP FUNCTION IF EXISTS random_floatrange;
 CREATE FUNCTION random_floatrange(lowvalue float, highvalue float, maxdelta int)
   RETURNS floatrange AS $$
@@ -218,6 +257,9 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random ASCII character
+ */
 DROP FUNCTION IF EXISTS random_ascii;
 CREATE FUNCTION random_ascii()
   RETURNS char AS $$
@@ -234,6 +276,11 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random text value
+ *
+ * @param[in] maxlength Maximum length of the text value
+ */
 DROP FUNCTION IF EXISTS random_text;
 CREATE FUNCTION random_text(maxlength int)
   RETURNS text AS $$
@@ -254,6 +301,12 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate an array of random text values
+ *
+ * @param[in] maxlength Maximum length of the text value
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_textarr;
 CREATE FUNCTION random_textarr(maxlength int, mincard int, maxcard int)
   RETURNS text[] AS $$
@@ -275,6 +328,11 @@ FROM generate_series(1, 15) AS k;
 -- Time Types
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random timestamptz in an period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ */
 DROP FUNCTION IF EXISTS random_timestamptz;
 CREATE FUNCTION random_timestamptz(lowtime timestamptz, hightime timestamptz)
   RETURNS timestamptz AS $$
@@ -295,6 +353,11 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random interval of minutes
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the number of minutes
+ */
 DROP FUNCTION IF EXISTS random_minutes;
 CREATE FUNCTION random_minutes(lowvalue int, highvalue int)
   RETURNS interval AS $$
@@ -310,8 +373,16 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called for
--- generating sequence sets.
+/**
+ * Generate an ordered array of random timestamptz in a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
 DROP FUNCTION IF EXISTS random_timestamptz_array;
 CREATE FUNCTION random_timestamptz_array(lowtime timestamptz,
   hightime timestamptz, maxminutes int, mincard int, maxcard int,
@@ -356,8 +427,14 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called for
--- generating period sets.
+/**
+ * Generate a random period within a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal period
+ * @param[in] maxminutes Maximum number of minutes between the timestamps
+ * @param[in] fixstart True when this function is called for generating 
+ *   a period set and in this case the start timestamp is already fixed
+ */
 DROP FUNCTION IF EXISTS random_period;
 CREATE FUNCTION random_period(lowtime timestamptz, hightime timestamptz,
   maxminutes int, fixstart bool DEFAULT false)
@@ -394,6 +471,13 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate an array of random periods within a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal period
+ * @param[in] maxminutes Maximum number of minutes between the timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_period_array;
 CREATE FUNCTION random_period_array(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
@@ -430,6 +514,12 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tstzrange within a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal period
+ * @param[in] maxminutes Maximum number of minutes between the timestamps
+ */
 DROP FUNCTION IF EXISTS random_tstzrange;
 CREATE FUNCTION random_tstzrange(lowtime timestamptz, hightime timestamptz,
   maxminutes int)
@@ -446,6 +536,13 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate an array of random tstzrange within a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal period
+ * @param[in] maxminutes Maximum number of minutes between the timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_tstzrange_array;
 CREATE FUNCTION random_tstzrange_array(lowtime timestamptz,
   hightime timestamptz, maxminutes int, mincard int, maxcard int)
@@ -473,6 +570,13 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random timestampset within a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal period
+ * @param[in] maxminutes Maximum number of minutes between two consecutive timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_timestampset;
 CREATE FUNCTION random_timestampset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
@@ -490,6 +594,13 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random periodset within a period
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the maximal period
+ * @param[in] maxminutes Maximum number of minutes between two consecutive timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ */
 DROP FUNCTION IF EXISTS random_periodset;
 CREATE FUNCTION random_periodset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
@@ -509,6 +620,14 @@ FROM generate_series(1, 15) AS k;
 -- Tbox Type
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tbox within a range and a period
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum value between the bounds
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ */
 DROP FUNCTION IF EXISTS random_tbox;
 CREATE FUNCTION random_tbox(lowvalue float, highvalue float,
    lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int)
@@ -541,6 +660,11 @@ FROM generate_series(1,10) k;
 -- Temporal Instant
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tbool instant
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ */
 DROP FUNCTION IF EXISTS random_tboolinst;
 CREATE FUNCTION random_tboolinst(lowtime timestamptz, hightime timestamptz)
   RETURNS tbool AS $$
@@ -560,6 +684,12 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tint instant
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ */
 DROP FUNCTION IF EXISTS random_tintinst;
 CREATE FUNCTION random_tintinst(lowvalue int, highvalue int,
   lowtime timestamptz, hightime timestamptz)
@@ -585,6 +715,12 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tfloat instant
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ */
 DROP FUNCTION IF EXISTS random_tfloatinst;
 CREATE FUNCTION random_tfloatinst(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz)
@@ -610,6 +746,12 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random ttext instant
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxlength Maximum length of the text value
+ */
 DROP FUNCTION IF EXISTS random_ttextinst;
 CREATE FUNCTION random_ttextinst(lowtime timestamptz, hightime timestamptz,
   maxlength int)
@@ -632,6 +774,13 @@ FROM generate_series(1,10) k;
 -- Temporal Instant Set
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tbool instant set
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ */
 DROP FUNCTION IF EXISTS random_tbooli;
 CREATE FUNCTION random_tbooli(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
@@ -659,6 +808,15 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tint instant set
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum value between the bounds
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ */
 DROP FUNCTION IF EXISTS random_tinti;
 CREATE FUNCTION random_tinti(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int)
@@ -688,6 +846,15 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tfloat instant set
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum value between the bounds
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ */
 DROP FUNCTION IF EXISTS random_tfloati;
 CREATE FUNCTION random_tfloati(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
@@ -719,9 +886,17 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random ttext instant set
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxlength Maximum length of the text value
+ * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
+ */
 DROP FUNCTION IF EXISTS random_ttexti;
 CREATE FUNCTION random_ttexti(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, mincard int, maxcard int)
+  maxlength int, maxminutes int, mincard int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
   tsarr timestamptz[];
@@ -733,7 +908,7 @@ BEGIN
   card = array_length(tsarr, 1);
   FOR i IN 1..card
   LOOP
-    result[i] = ttextinst(random_text(maxtextlength), tsarr[i]);
+    result[i] = ttextinst(random_text(maxlength), tsarr[i]);
   END LOOP;
   RETURN ttexti(result);
 END;
@@ -748,8 +923,16 @@ FROM generate_series(1,10) k;
 -- Temporal Sequence
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called by the
--- random_tbools function
+/**
+ * Generate a random tbool sequence
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
 DROP FUNCTION IF EXISTS random_tboolseq;
 CREATE FUNCTION random_tboolseq(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int, fixstart bool DEFAULT false)
@@ -795,8 +978,18 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called by the
--- random_tints function
+/**
+ * Generate a random tint sequence
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
 DROP FUNCTION IF EXISTS random_tintseq;
 CREATE FUNCTION random_tintseq(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int,
@@ -844,8 +1037,18 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called by the
--- random_tfloats function
+/**
+ * Generate a random tfloat sequence
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
 DROP FUNCTION IF EXISTS random_tfloatseq;
 CREATE FUNCTION random_tfloatseq(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
@@ -886,11 +1089,20 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
--- The last parameter fixstart is used when this function is called by the
--- random_ttexts function
+/**
+ * Generate a random ttext sequence
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxlength Maximum length of the text value
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
 DROP FUNCTION IF EXISTS random_ttextseq;
 CREATE FUNCTION random_ttextseq(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, mincard int, maxcard int,
+  maxlength int, maxminutes int, mincard int, maxcard int,
   fixstart bool DEFAULT false)
   RETURNS ttext AS $$
 DECLARE
@@ -913,13 +1125,13 @@ BEGIN
   END IF;
   FOR i IN 1..card - 1
   LOOP
-    v = random_text(maxtextlength);
+    v = random_text(maxlength);
     result[i] = ttextinst(v, tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card = 1 OR upper_inc THEN
-    v = random_text(maxtextlength);
+    v = random_text(maxlength);
   END IF;
   result[card] = ttextinst(v, tsarr[card]);
   RETURN ttextseq(result, lower_inc, upper_inc);
@@ -935,12 +1147,19 @@ FROM generate_series(1, 15) AS k;
 -- Temporal Sequence Set
 -------------------------------------------------------------------------------
 
--- Function ensuring that the duration defined by hightime - lowtime is enough
--- for generating the sequence set given the other parameters
--- lowtime must be less than hightime -
--- ( (maxminutes * cardseq * card) + (card * maxminutes) ) minutes
--- where cardseq = (maxcardseq - mincardseq) and card = (maxcard - mincard)
-
+/**
+ * Function ensuring that the duration defined by hightime - lowtime is enough
+ * for generating the sequence set given the other parameters
+ * lowtime must be less than hightime -
+ * ( (maxminutes * cardseq * card) + (card * maxminutes) ) minutes
+ * where cardseq = (maxcardseq - mincardseq) and card = (maxcard - mincard)
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ */
 DROP FUNCTION IF EXISTS valid_duration_tsequenceset;
 CREATE FUNCTION valid_duration_tsequenceset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
@@ -968,6 +1187,15 @@ $$ LANGUAGE 'plpgsql' STRICT;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tbool sequence set
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ */
 DROP FUNCTION IF EXISTS random_tbools;
 CREATE FUNCTION random_tbools(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
@@ -1006,6 +1234,17 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tint sequence set
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ */
 DROP FUNCTION IF EXISTS random_tints;
 CREATE FUNCTION random_tints(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincardseq int,
@@ -1049,6 +1288,17 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random tfloat sequence set
+ *
+ * @param[in] lowvalue, highvalue Inclusive bounds of the range
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxdelta Maximum difference between two consecutive values
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ */
 DROP FUNCTION IF EXISTS random_tfloats;
 CREATE FUNCTION random_tfloats(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
@@ -1092,9 +1342,19 @@ FROM generate_series(1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random ttext sequence set
+ *
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxlength Maximum length of the text value
+ * @param[in] maxminutes Maximum number of minutes between two consecutive
+ *    timestamps
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ */
 DROP FUNCTION IF EXISTS random_ttexts;
 CREATE FUNCTION random_ttexts(lowtime timestamptz, hightime timestamptz,
-  maxtextlength int, maxminutes int, mincardseq int, maxcardseq int,
+  maxlength int, maxminutes int, mincardseq int, maxcardseq int,
   mincard int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
@@ -1114,7 +1374,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_ttextseq(t1, t2, maxtextlength, maxminutes, mincardseq, maxcardseq, i > 1)
+    SELECT random_ttextseq(t1, t2, maxlength, maxminutes, mincardseq, maxcardseq, i > 1)
     INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);

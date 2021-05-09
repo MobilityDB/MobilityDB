@@ -2939,8 +2939,8 @@ tnumberseq_restrict_range1(TSequence **result,
       lower_inc1 = lower_inclu;
       upper_inc1 = ! upper_inclu;
     }
-    instants[0] = (TInstant *)inst1;
-    instants[1] = (TInstant *)inst2;
+    instants[0] = (TInstant *) inst1;
+    instants[1] = (TInstant *) inst2;
     result[0] = tsequence_make((const TInstant **) instants, 2,
       lower_inc1, upper_inc1, linear, NORMALIZE_NO);
     return 1;
@@ -2962,7 +2962,6 @@ tnumberseq_restrict_range1(TSequence **result,
     upper_inc1 = atfunc ? lower_inc2 : ! lower_inc2;
   }
 
-  int k = 0;
   if (atfunc)
   {
     /* Find lower and upper bound of intersection */
@@ -2976,6 +2975,9 @@ tnumberseq_restrict_range1(TSequence **result,
       freei = tfloatseq_intersection_value(inst1, inst2, lower,
         valuetypid, &t1);
       instants[i] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
+      // /* To reduce the roundoff errors we take the bound instead of
+       // * projecting the value to the timestamp */
+      // instants[i] = tinstant_make(lower, t1, valuetypid);
     }
 
     if (dvalue1 == dupper)
@@ -2987,6 +2989,9 @@ tnumberseq_restrict_range1(TSequence **result,
       freej = tfloatseq_intersection_value(inst1, inst2, upper,
         valuetypid, &t2);
       instants[j] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
+      // /* To reduce the roundoff errors we take the bound instead of
+       // * projecting the value to the timestamp */
+      // instants[j] = tinstant_make(upper, t2, valuetypid);
     }
 
     /* Create the result */
@@ -3001,16 +3006,23 @@ tnumberseq_restrict_range1(TSequence **result,
 
   /* MINUS */
   /* Find lower and upper bound of intersection */
+  int k = 0;
   TInstant *instbounds[2] = {NULL, NULL};
   if (dlower != dvalue1 && dlower != dvalue2)
   {
     tfloatseq_intersection_value(inst1, inst2, lower, valuetypid, &t1);
     instbounds[i] = tsequence_at_timestamp1(inst1, inst2, linear, t1);
+    // /* To reduce the roundoff errors we take the bound instead of
+     // * projecting the value to the timestamp */
+    // instbounds[i] = tinstant_make(lower, t1, valuetypid);
   }
   if (dupper != dvalue1 && dupper != dvalue2)
   {
     tfloatseq_intersection_value(inst1, inst2, upper, valuetypid, &t2);
     instbounds[j] = tsequence_at_timestamp1(inst1, inst2, linear, t2);
+    // /* To reduce the roundoff errors we take the bound instead of
+     // * projecting the value to the timestamp */
+    // instbounds[j] = tinstant_make(upper, t2, valuetypid);
   }
 
   /* Create the result */
@@ -3211,10 +3223,10 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
   }
 
   /* General case */
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   if (atfunc)
   {
     /* AT function */
-    bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
     inst1 = tsequence_inst_n(seq, 0);
     bool lower_inc = seq->period.lower_inc;
     int k = 0;
@@ -3238,10 +3250,6 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
   }
   else
   {
-    /*
-     * MINUS function
-     * Compute first the tnumberseq_at_ranges, then compute its complement
-     */
     TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, newcount,
       REST_AT, bboxtest);
     if (ts == NULL)
@@ -3262,6 +3270,83 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
     if (bboxtest)
       pfree(newranges);
     return newcount;
+    // /*
+     // * MINUS function
+     // * Compute first the tnumberseq_at_ranges, then compute its complement
+     // * We do not compute the timespan of the atRanges and use the function 
+     // * minus_period_periodset_internal since we kept the range values
+     // * instead of the projected values when computing atRanges
+     // */
+    // TSequence **atseqs = palloc(sizeof(TSequence *) * seq->count * count);
+    // int atcount = tnumberseq_restrict_ranges1(atseqs, seq, newranges,
+      // newcount, REST_AT, bboxtest);
+    // if (atcount == 0)
+    // {
+      // result[0] = tsequence_copy(seq);
+      // return 1;
+    // }
+    // const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+    // int i = 0, /* counter for the instants in seq */
+        // j = 0, /* counter for the sequences in atseqs */
+        // k = 0, /* counter for the instants of current resulting sequence */
+        // l = 0; /* counter for the sequences in the result */
+    // bool lower_inc1 = seq->period.lower_inc;
+    // while (i < seq->count && j < atcount)
+    // {
+      // const TInstant *inst = tsequence_inst_n(seq, i);
+      // const TInstant *first = tsequence_inst_n(atseqs[j], 0);
+      // const TInstant *last = tsequence_inst_n(atseqs[j], atseqs[j]->count - 1);
+      // TimestampTz t1 = first->t;
+      // if (inst->t < t1)
+      // {
+        // instants[k++] = inst;
+        // i++;
+      // }
+      // else 
+      // {
+        // /* If not the first instant */
+        // if (k > 0)
+        // {
+          // TInstant *tofree = NULL;
+          // bool upper_inc1 = ! atseqs[j]->period.lower_inc;
+          // /* The last two values of sequences with step interpolation and
+             // exclusive upper bound must be equal */
+          // if (!linear && ! upper_inc1)
+          // {
+            // tofree = tinstant_make(tinstant_value(instants[k - 1]), first->t,
+              // seq->valuetypid);
+            // instants[k++] = tofree;
+          // }
+          // else
+            // instants[k++] = first;
+          // result[l++] = tsequence_make(instants, k, lower_inc1, upper_inc1,
+            // linear, NORMALIZE_NO);
+          // if (tofree != NULL)
+            // pfree(tofree);
+        // }
+        // lower_inc1 = ! atseqs[j]->period.upper_inc;
+        // /* We cannot take last since for step interpolation and exclusive upper
+         // * bound it is has previous value at the timestamp */
+        // i = tsequence_find_timestamp(seq, last->t);
+        // instants[0] = tsequence_inst_n(seq, i);
+        // i++;
+        // j++;
+        // k = 1;
+      // }
+    // }
+    // /* Construct last resulting sequence */
+    // if (i < seq->count)
+    // {
+      // for (int j = i; j < seq->count; j++)
+        // instants[k++] = tsequence_inst_n(seq, j);
+      // result[l++] = tsequence_make(instants, k, lower_inc1, 
+        // seq->period.upper_inc, linear, NORMALIZE_NO);
+    // }
+    // pfree_array((void **) atseqs, atcount);
+    // pfree(instants);
+    // if (bboxtest)
+      // pfree(newranges);
+    // return l;
   }
 }
 

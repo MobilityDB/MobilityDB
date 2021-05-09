@@ -3727,6 +3727,8 @@ tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
       return (temp->temptype != SEQUENCE) ? temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
+  if (newcount == 1)
+    return tnumber_restrict_range_internal(temp, newranges[0], atfunc);
 
   Temporal *result;
   ensure_valid_temptype(temp->temptype);

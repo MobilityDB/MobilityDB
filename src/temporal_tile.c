@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <float.h>
 #include <funcapi.h>
+#include <utils/builtins.h>
 #include <utils/datetime.h>
 
 #include "temporal_tile.h"
@@ -1493,9 +1494,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
     /* Take into account on whether the segment is increasing or decreasing */
     Datum min_value, max_value;
     int first_bucket, last_bucket, first, last;
-    TInstant *bounds[2];
-    bool lower_inc_def, upper_inc_def;
-    bool incr = (bucket_no1 < bucket_no2);
+    bool lower_inc1, upper_inc1, lower_inc_def, upper_inc_def;
+    bool incr = datum_lt(value1, value2, valuetypid);
     if (incr)
     {
       min_value = value1;
@@ -1506,6 +1506,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       last = 1;
       lower_inc_def = true;
       upper_inc_def = false;
+      lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
+      upper_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
     }
     else
     {
@@ -1517,7 +1519,15 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       last = 0;
       lower_inc_def = false;
       upper_inc_def = true;
+      lower_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
+      upper_inc1 = (i == 1) ? seq->period.lower_inc : true;
     }
+    if (datum_eq(min_value, max_value, valuetypid))
+    {
+      lower_inc1 = upper_inc1 = true;
+    }
+    RangeType *segrange = range_make(min_value, max_value, lower_inc1, upper_inc1, valuetypid);
+    TInstant *bounds[2];
     bounds[first] = incr ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = incr ? bucket_value1 : bucket_value2;
     Datum bucket_upper = datum_add(bucket_lower, size, valuetypid, valuetypid);
@@ -1538,45 +1548,27 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
       /* Determine the bounds of the resulting sequence */
-      bool lower_inc1, upper_inc1;
-      if (j == first_bucket && j == last_bucket)
+      if (j == first_bucket || j == last_bucket)
       {
+        RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, valuetypid);
+#if MOBDB_PGSQL_VERSION < 110000
+        RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
+          PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
+#else
+        RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
+          PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
+#endif
         if (incr)
         {
-          lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
-          upper_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
+          lower_inc1 = lower_inc(intersect);
+          upper_inc1 = upper_inc(intersect);
         }
         else 
         {
-          lower_inc1 = (i == 1) ? seq->period.lower_inc : false;
-          upper_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
+          lower_inc1 = upper_inc(intersect);
+          upper_inc1 = lower_inc(intersect);
         }
-      }
-      else if (j == first_bucket)
-      {
-        if (incr)
-        {
-          lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
-          upper_inc1 = false;
-        }
-        else 
-        {
-          lower_inc1 = false;
-          upper_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
-        }
-      }
-      else if (j == last_bucket)
-      {
-        if (incr)
-        {
-          lower_inc1 = true;
-          upper_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
-        }
-        else 
-        {
-          lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
-          upper_inc1 = true;
-        }
+        pfree(intersect); pfree(bucketrange);
       }
       else
       {
@@ -1593,8 +1585,10 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
         countinst, lower_inc1, upper_inc1, LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
+      bucket_lower = bucket_upper;
       bucket_upper = datum_add(bucket_upper, size, valuetypid, valuetypid);
     }
+    pfree(segrange);
     inst1 = inst2;
     value1 = value2;
     bucket_value1 = bucket_value2;
