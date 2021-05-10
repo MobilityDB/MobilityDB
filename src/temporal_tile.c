@@ -1537,13 +1537,12 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       if (datum_lt(min_value, bucket_upper, valuetypid) &&
         datum_lt(bucket_upper, max_value, valuetypid))
       {
-        Datum projvalue; // TO REMOVE
         TimestampTz t;
+        /* To reduce the roundoff errors we take the bound instead of
+         * projecting the value to the timestamp */
         tlinearseq_intersection_value(inst1, inst2, bucket_upper, valuetypid,
-          &projvalue, &t);
-          // NULL, &t);
-        tofree[l++] = bounds[last] = tinstant_make(projvalue, t, valuetypid);
-        // tofree[l++] = bounds[last] = tinstant_make(bucket_upper, t, valuetypid);
+          NULL, &t);
+        tofree[l++] = bounds[last] = tinstant_make(bucket_upper, t, valuetypid);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;

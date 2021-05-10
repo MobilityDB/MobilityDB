@@ -898,10 +898,10 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     if (result == NULL)
     {
       if (temp1->temptype == SEQUENCE)
-        result = tinstant_copy(tsequence_find_timestamp_excl(
+        result = tinstant_copy(tsequence_inst_at_timestamp_excl(
           (TSequence *)temp1, min->t));
       else /* temp->temptype == SEQUENCESET */
-        result = tinstant_copy(tsequenceset_find_timestamp_excl(
+        result = tinstant_copy(tsequenceset_inst_at_timestamp_excl(
           (TSequenceSet *)temp1, min->t));
     }
   }

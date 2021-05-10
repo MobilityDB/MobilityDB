@@ -705,7 +705,7 @@ static TInstant *
 sync_tfunc_tinstant_tinstantset(const TInstant *inst, const TInstantSet *ti,
   Datum param, LiftedFunctionInfo lfinfo)
 {
-  // Works for commutative functions
+  // Only works for commutative functions
   return sync_tfunc_tinstantset_tinstant(ti, inst, param, lfinfo);
 }
 
@@ -745,7 +745,7 @@ static TInstant *
 sync_tfunc_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
   Datum param, LiftedFunctionInfo lfinfo)
 {
-  // Works for commutative functions
+  // Only works for commutative functions
   return sync_tfunc_tsequence_tinstant(seq, inst, param, lfinfo);
 }
 
@@ -785,7 +785,7 @@ static TInstant *
 sync_tfunc_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
   Datum param, LiftedFunctionInfo lfinfo)
 {
-  // Works for commutative functions
+  // Only works for commutative functions
   return sync_tfunc_tsequenceset_tinstant(ts, inst, param, lfinfo);
 }
 
@@ -884,7 +884,7 @@ static TInstantSet *
 sync_tfunc_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
   Datum param, LiftedFunctionInfo lfinfo)
 {
-  // Works for commutative functions
+  // Only works for commutative functions
   return sync_tfunc_tsequence_tinstantset(seq, ti, param, lfinfo);
 }
 
@@ -941,7 +941,7 @@ static TInstantSet *
 sync_tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *ts,
   Datum param, LiftedFunctionInfo lfinfo)
 {
-  // Works for commutative functions
+  // Only works for commutative functions
   return sync_tfunc_tsequenceset_tinstantset(ts, ti, param, lfinfo);
 }
 

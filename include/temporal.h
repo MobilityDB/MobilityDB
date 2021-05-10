@@ -438,9 +438,9 @@ typedef struct
 
 /* Utility functions */
 
-extern const TInstant *tsequence_find_timestamp_excl(const TSequence *seq,
+extern const TInstant *tsequence_inst_at_timestamp_excl(const TSequence *seq,
   TimestampTz t);
-extern const TInstant *tsequenceset_find_timestamp_excl(const TSequenceSet *ts,
+extern const TInstant *tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts,
   TimestampTz t);
 
 extern Temporal *temporal_copy(const Temporal *temp);

@@ -24,6 +24,16 @@
  *
  *****************************************************************************/
 
+/*
+ * create_test_tables_tpoint.sql
+ * Function generating a set of test tables for geometry/geography types
+ * and temporal point types.
+ *
+ * These functions use the random generator for these types that are in the
+ * file random_tpoint.sql. Refer to that file for the meaning of the 
+ * parameters used in the function calls of this file.
+ */
+
 DROP FUNCTION IF EXISTS create_test_tables_tpoint();
 CREATE OR REPLACE FUNCTION create_test_tables_tpoint(size int DEFAULT 100)
 RETURNS text AS $$

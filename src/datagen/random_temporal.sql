@@ -26,7 +26,8 @@
 
 /*
  * random_temporal.sql
- * Basic synthetic data generator functions for temporal data types.
+ * Basic synthetic data generator functions for some PostgreSQL data types 
+ * and for temporal data types.
  *
  * These functions use lower and upper bounds for the generated values:
  * lowvalue and highvalue for values, lowtime and hightime for timestamps.
@@ -307,8 +308,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxlength Maximum length of the text value
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  */
-DROP FUNCTION IF EXISTS random_textarr;
-CREATE FUNCTION random_textarr(maxlength int, mincard int, maxcard int)
+DROP FUNCTION IF EXISTS random_text_array;
+CREATE FUNCTION random_text_array(maxlength int, mincard int, maxcard int)
   RETURNS text[] AS $$
 DECLARE
   textarr text[];
@@ -320,7 +321,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_textarr(20, 5, 10) AS text
+SELECT k, random_text_array(20, 5, 10) AS text
 FROM generate_series(1, 15) AS k;
 */
 
@@ -665,8 +666,8 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
  */
-DROP FUNCTION IF EXISTS random_tboolinst;
-CREATE FUNCTION random_tboolinst(lowtime timestamptz, hightime timestamptz)
+DROP FUNCTION IF EXISTS random_tbool_inst;
+CREATE FUNCTION random_tbool_inst(lowtime timestamptz, hightime timestamptz)
   RETURNS tbool AS $$
 BEGIN
   IF lowtime > hightime THEN
@@ -678,7 +679,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tboolinst('2001-01-01', '2002-01-01') AS inst
+SELECT k, random_tbool_inst('2001-01-01', '2002-01-01') AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -690,8 +691,8 @@ FROM generate_series(1,10) k;
  * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
  * @param[in] lowtime, hightime Inclusive bounds of the period
  */
-DROP FUNCTION IF EXISTS random_tintinst;
-CREATE FUNCTION random_tintinst(lowvalue int, highvalue int,
+DROP FUNCTION IF EXISTS random_tint_inst;
+CREATE FUNCTION random_tint_inst(lowvalue int, highvalue int,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tint AS $$
 BEGIN
@@ -709,7 +710,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tintinst(1, 20, '2001-01-01', '2002-01-01') AS inst
+SELECT k, random_tint_inst(1, 20, '2001-01-01', '2002-01-01') AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -721,8 +722,8 @@ FROM generate_series(1,10) k;
  * @param[in] lowvalue, highvalue Inclusive bounds of the range of values
  * @param[in] lowtime, hightime Inclusive bounds of the period
  */
-DROP FUNCTION IF EXISTS random_tfloatinst;
-CREATE FUNCTION random_tfloatinst(lowvalue float, highvalue float,
+DROP FUNCTION IF EXISTS random_tfloat_inst;
+CREATE FUNCTION random_tfloat_inst(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tfloat AS $$
 BEGIN
@@ -740,7 +741,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloatinst(1, 20, '2001-01-01', '2002-01-01') AS inst
+SELECT k, random_tfloat_inst(1, 20, '2001-01-01', '2002-01-01') AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -752,8 +753,8 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxlength Maximum length of the text value
  */
-DROP FUNCTION IF EXISTS random_ttextinst;
-CREATE FUNCTION random_ttextinst(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_ttext_inst;
+CREATE FUNCTION random_ttext_inst(lowtime timestamptz, hightime timestamptz,
   maxlength int)
   RETURNS ttext AS $$
 BEGIN
@@ -766,7 +767,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttextinst('2001-01-01', '2002-01-01', 20) AS inst
+SELECT k, random_ttext_inst('2001-01-01', '2002-01-01', 20) AS inst
 FROM generate_series(1,10) k;
 */
 
@@ -778,11 +779,11 @@ FROM generate_series(1,10) k;
  * Generate a random tbool instant set
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_tbooli;
-CREATE FUNCTION random_tbooli(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tbool_instset;
+CREATE FUNCTION random_tbool_instset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int)
   RETURNS tbool AS $$
 DECLARE
@@ -802,7 +803,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tbooli('2001-01-01', '2002-01-01', 10, 5, 10) AS ti
+SELECT k, random_tbool_instset('2001-01-01', '2002-01-01', 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -813,12 +814,12 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxdelta Maximum value between the bounds
- * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_tinti;
-CREATE FUNCTION random_tinti(lowvalue int, highvalue int, lowtime timestamptz,
+DROP FUNCTION IF EXISTS random_tint_instset;
+CREATE FUNCTION random_tint_instset(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int)
   RETURNS tint AS $$
 DECLARE
@@ -840,7 +841,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tinti(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tint_instset(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -851,12 +852,12 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxdelta Maximum value between the bounds
- * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_tfloati;
-CREATE FUNCTION random_tfloati(lowvalue float, highvalue float,
+DROP FUNCTION IF EXISTS random_tfloat_instset;
+CREATE FUNCTION random_tfloat_instset(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
   mincard int, maxcard int)
   RETURNS tfloat AS $$
@@ -880,7 +881,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloati(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_tfloat_instset(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -891,11 +892,11 @@ FROM generate_series(1,10) k;
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxlength Maximum length of the text value
- * @param[in] maxminutes Maximum number of minutes between the bounds
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  */
-DROP FUNCTION IF EXISTS random_ttexti;
-CREATE FUNCTION random_ttexti(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_ttext_instset;
+CREATE FUNCTION random_ttext_instset(lowtime timestamptz, hightime timestamptz,
   maxlength int, maxminutes int, mincard int, maxcard int)
   RETURNS ttext AS $$
 DECLARE
@@ -915,7 +916,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttexti('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
+SELECT k, random_ttext_instset('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
 FROM generate_series(1,10) k;
 */
 
@@ -927,14 +928,13 @@ FROM generate_series(1,10) k;
  * Generate a random tbool sequence
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
-DROP FUNCTION IF EXISTS random_tboolseq;
-CREATE FUNCTION random_tboolseq(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tbool_seq;
+CREATE FUNCTION random_tbool_seq(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tbool AS $$
 DECLARE
@@ -972,7 +972,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tboolseq('2001-01-01', '2002-01-01', 10, 5, 10) AS seq
+SELECT k, random_tbool_seq('2001-01-01', '2002-01-01', 10, 5, 10) AS seq
 FROM generate_series(1, 15) AS k;
 */
 
@@ -983,15 +983,14 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxdelta Maximum difference between two consecutive values
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
-DROP FUNCTION IF EXISTS random_tintseq;
-CREATE FUNCTION random_tintseq(lowvalue int, highvalue int, lowtime timestamptz,
+DROP FUNCTION IF EXISTS random_tint_seq;
+CREATE FUNCTION random_tint_seq(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincard int, maxcard int,
   fixstart bool DEFAULT false)
   RETURNS tint AS $$
@@ -1031,7 +1030,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tintseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+SELECT k, random_tint_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1042,15 +1041,14 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxdelta Maximum difference between two consecutive values
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
-DROP FUNCTION IF EXISTS random_tfloatseq;
-CREATE FUNCTION random_tfloatseq(lowvalue float, highvalue float,
+DROP FUNCTION IF EXISTS random_tfloat_seq;
+CREATE FUNCTION random_tfloat_seq(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
   mincard int, maxcard int, fixstart bool DEFAULT false)
   RETURNS tfloat AS $$
@@ -1083,7 +1081,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloatseq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+SELECT k, random_tfloat_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1094,14 +1092,13 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxlength Maximum length of the text value
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
  */
-DROP FUNCTION IF EXISTS random_ttextseq;
-CREATE FUNCTION random_ttextseq(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_ttext_seq;
+CREATE FUNCTION random_ttext_seq(lowtime timestamptz, hightime timestamptz,
   maxlength int, maxminutes int, mincard int, maxcard int,
   fixstart bool DEFAULT false)
   RETURNS ttext AS $$
@@ -1139,7 +1136,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttextseq('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
+SELECT k, random_ttext_seq('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1155,13 +1152,12 @@ FROM generate_series(1, 15) AS k;
  * where cardseq = (maxcardseq - mincardseq) and card = (maxcard - mincard)
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
  */
-DROP FUNCTION IF EXISTS valid_duration_tsequenceset;
-CREATE FUNCTION valid_duration_tsequenceset(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS tsequenceset_valid_duration;
+CREATE FUNCTION tsequenceset_valid_duration(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS void AS $$
 BEGIN
@@ -1191,13 +1187,12 @@ $$ LANGUAGE 'plpgsql' STRICT;
  * Generate a random tbool sequence set
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
  */
-DROP FUNCTION IF EXISTS random_tbools;
-CREATE FUNCTION random_tbools(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_tbool_seqset;
+CREATE FUNCTION random_tbool_seqset(lowtime timestamptz, hightime timestamptz,
   maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS tbool AS $$
 DECLARE
@@ -1207,7 +1202,7 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+  PERFORM tsequenceset_valid_duration(lowtime, hightime, maxminutes, mincardseq,
     maxcardseq, mincard, maxcard);
   card = random_int(mincard, maxcard);
   t1 = lowtime;
@@ -1217,7 +1212,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter is set to true for all i except 1
-    SELECT random_tboolseq(t1, t2, maxminutes, mincardseq, maxcardseq, i > 1)
+    SELECT random_tbool_seq(t1, t2, maxminutes, mincardseq, maxcardseq, i > 1)
     INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -1228,7 +1223,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tbools('2001-01-01', '2002-01-01', 10, 5, 10, 5, 10) AS ts
+SELECT k, random_tbool_seqset('2001-01-01', '2002-01-01', 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1239,14 +1234,13 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxdelta Maximum difference between two consecutive values
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
  */
-DROP FUNCTION IF EXISTS random_tints;
-CREATE FUNCTION random_tints(lowvalue int, highvalue int, lowtime timestamptz,
+DROP FUNCTION IF EXISTS random_tint_seqset;
+CREATE FUNCTION random_tint_seqset(lowvalue int, highvalue int, lowtime timestamptz,
   hightime timestamptz, maxdelta int, maxminutes int, mincardseq int,
   maxcardseq int, mincard int, maxcard int)
   RETURNS tint AS $$
@@ -1261,7 +1255,7 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+  PERFORM tsequenceset_valid_duration(lowtime, hightime, maxminutes, mincardseq,
     maxcardseq, mincard, maxcard);
   card = random_int(mincard, maxcard);
   t1 = lowtime;
@@ -1271,7 +1265,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_tintseq(lowvalue, highvalue, t1, t2, maxdelta,
+    SELECT random_tint_seq(lowvalue, highvalue, t1, t2, maxdelta,
       maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -1282,7 +1276,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tints(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+SELECT k, random_tint_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1293,14 +1287,13 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] lowtime, hightime Inclusive bounds of the period
- * @param[in] maxdelta Maximum difference between two consecutive values
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
  */
-DROP FUNCTION IF EXISTS random_tfloats;
-CREATE FUNCTION random_tfloats(lowvalue float, highvalue float,
+DROP FUNCTION IF EXISTS random_tfloat_seqset;
+CREATE FUNCTION random_tfloat_seqset(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
   mincardseq int, maxcardseq int, mincard int, maxcard int)
   RETURNS tfloat AS $$
@@ -1315,7 +1308,7 @@ BEGIN
     RAISE EXCEPTION 'lowvalue must be less than or equal to highvalue: %, %',
       lowvalue, highvalue;
   END IF;
-  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+  PERFORM tsequenceset_valid_duration(lowtime, hightime, maxminutes, mincardseq,
     maxcardseq, mincard, maxcard);
   card = random_int(mincard, maxcard);
   t1 = lowtime;
@@ -1325,7 +1318,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_tfloatseq(lowvalue, highvalue, t1, t2, maxdelta,
+    SELECT random_tfloat_seq(lowvalue, highvalue, t1, t2, maxdelta,
       maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -1336,7 +1329,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_tfloats(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, 15) AS k;
 */
 
@@ -1347,13 +1340,13 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxlength Maximum length of the text value
- * @param[in] maxminutes Maximum number of minutes between two consecutive
- *    timestamps
+ * @param[in] maxdelta Maximum value difference between consecutive instants
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
  */
-DROP FUNCTION IF EXISTS random_ttexts;
-CREATE FUNCTION random_ttexts(lowtime timestamptz, hightime timestamptz,
+DROP FUNCTION IF EXISTS random_ttext_seqset;
+CREATE FUNCTION random_ttext_seqset(lowtime timestamptz, hightime timestamptz,
   maxlength int, maxminutes int, mincardseq int, maxcardseq int,
   mincard int, maxcard int)
   RETURNS ttext AS $$
@@ -1364,7 +1357,7 @@ DECLARE
   t1 timestamptz;
   t2 timestamptz;
 BEGIN
-  PERFORM valid_duration_tsequenceset(lowtime, hightime, maxminutes, mincardseq,
+  PERFORM tsequenceset_valid_duration(lowtime, hightime, maxminutes, mincardseq,
     maxcardseq, mincard, maxcard);
   card = random_int(mincard, maxcard);
   t1 = lowtime;
@@ -1374,7 +1367,7 @@ BEGIN
   FOR i IN 1..card
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
-    SELECT random_ttextseq(t1, t2, maxlength, maxminutes, mincardseq, maxcardseq, i > 1)
+    SELECT random_ttext_seq(t1, t2, maxlength, maxminutes, mincardseq, maxcardseq, i > 1)
     INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
@@ -1385,7 +1378,7 @@ END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
 /*
-SELECT k, random_ttexts('2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
+SELECT k, random_ttext_seqset('2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, 15) AS k;
 */
 

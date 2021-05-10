@@ -24,6 +24,16 @@
  *
  *****************************************************************************/
 
+/*
+ * create_test_tables_temporal.sql
+ * Function generating a set of test tables for some PostgreSQL data types 
+ * and for temporal data types.
+ *
+ * These functions use the random generator for these types that are in the
+ * file random_temporal.sql. Refer to that file for the meaning of the 
+ * parameters used in the function calls of this file.
+ */
+ 
 DROP FUNCTION IF EXISTS create_test_tables_temporal();
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
 RETURNS text AS $$

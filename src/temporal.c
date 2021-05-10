@@ -179,7 +179,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
  * are at an exclusive bound
  */
 const TInstant *
-tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz t)
+tsequence_inst_at_timestamp_excl(const TSequence *seq, TimestampTz t)
 {
   const TInstant *result;
   if (t == seq->period.lower)
@@ -194,7 +194,7 @@ tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz t)
  * at an exclusive bound
  */
 const TInstant *
-tsequenceset_find_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
+tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
 {
   const TInstant *result;
   int loc;
