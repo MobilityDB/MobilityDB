@@ -798,7 +798,7 @@ BEGIN
   LOOP
     result[i] = tboolinst(random_bool(), tsarr[i]);
   END LOOP;
-  RETURN tbooli(result);
+  RETURN tboolinstset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -836,7 +836,7 @@ BEGIN
   LOOP
     result[i] = tintinst(intarr[i], tsarr[i]);
   END LOOP;
-  RETURN tinti(result);
+  RETURN tintinstset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -876,7 +876,7 @@ BEGIN
   LOOP
     result[i] = tfloatinst(floatarr[i], tsarr[i]);
   END LOOP;
-  RETURN tfloati(result);
+  RETURN tfloatinstset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -911,7 +911,7 @@ BEGIN
   LOOP
     result[i] = ttextinst(random_text(maxlength), tsarr[i]);
   END LOOP;
-  RETURN ttexti(result);
+  RETURN ttextinstset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1218,7 +1218,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tbools(result);
+  RETURN tboolseqset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1271,7 +1271,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tints(result);
+  RETURN tintseqset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1324,7 +1324,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tfloats(result);
+  RETURN tfloatseqset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1373,7 +1373,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN ttexts(result);
+  RETURN ttextseqset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 

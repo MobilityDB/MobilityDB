@@ -70,54 +70,61 @@ CREATE TYPE stbox (
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to timestamptz is needed */
-CREATE FUNCTION stbox_t(timestamptz, timestamptz, int DEFAULT 0)
+CREATE FUNCTION stbox_t(timestamptz, timestamptz)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox(float8, float8, float8, float8, int DEFAULT 0)
+CREATE FUNCTION stbox(float8, float8, float8, float8, srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_z(float8, float8, float8, float8, float8, float8, int DEFAULT 0)
+CREATE FUNCTION stbox_z(float8, float8, float8, float8, float8, float8,
+  srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_t(float8, float8, timestamptz, float8, float8, timestamptz, int DEFAULT 0)
+CREATE FUNCTION stbox_t(float8, float8, timestamptz, float8, float8, timestamptz,
+  srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox_zt(float8, float8, float8, timestamptz, float8, float8, float8, timestamptz, int DEFAULT 0)
+CREATE FUNCTION stbox_zt(float8, float8, float8, timestamptz, float8, float8, float8,
+  timestamptz, srid int DEFAULT 0)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /* The names of the SQL and C functions are different, otherwise there is
  * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
-CREATE FUNCTION geodstbox_t(timestamptz, timestamptz, int DEFAULT 4326)
+CREATE FUNCTION geodstbox_t(timestamptz, timestamptz, srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'geodstbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox(float8, float8, float8, float8, float8, float8, int DEFAULT 4326)
+CREATE FUNCTION geodstbox(float8, float8, float8, float8, float8, float8,
+  srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'geodstbox_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_z(float8, float8, float8, float8, float8, float8, int DEFAULT 4326)
+CREATE FUNCTION geodstbox_z(float8, float8, float8, float8, float8, float8,
+  srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'geodstbox_constructor_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_t(float8, float8, float8, timestamptz, float8, float8, float8, timestamptz, int DEFAULT 4326)
+CREATE FUNCTION geodstbox_t(float8, float8, float8, timestamptz, float8,
+  float8, float8, timestamptz, srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'geodstbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION geodstbox_zt(float8, float8, float8, timestamptz, float8, float8, float8, timestamptz, int DEFAULT 4326)
+CREATE FUNCTION geodstbox_zt(float8, float8, float8, timestamptz, float8,
+  float8, float8, timestamptz, srid int DEFAULT 4326)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'geodstbox_constructor_zt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

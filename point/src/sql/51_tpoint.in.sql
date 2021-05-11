@@ -144,11 +144,11 @@ CREATE FUNCTION tgeogpointinst(geography(Point), timestamptz)
   AS 'MODULE_PATHNAME', 'tpointinst_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeompointi(tgeompoint[])
+CREATE FUNCTION tgeompointinstset(tgeompoint[])
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpointi(tgeogpoint[])
+CREATE FUNCTION tgeogpointinstset(tgeogpoint[])
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -164,11 +164,11 @@ CREATE FUNCTION tgeogpointseq(tgeogpoint[], lower_inc boolean DEFAULT true,
   AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeompoints(tgeompoint[])
+CREATE FUNCTION tgeompointseqset(tgeompoint[])
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpoints(tgeogpoint[])
+CREATE FUNCTION tgeogpointseqset(tgeogpoint[])
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -194,7 +194,7 @@ CREATE CAST (tgeogpoint AS period) WITH FUNCTION period(tgeogpoint);
  * Transformations
  ******************************************************************************/
 
-CREATE FUNCTION tgeompointinst(tgeompoint)
+CREATE FUNCTION tgeompoint_inst(tgeompoint)
   RETURNS tgeompoint AS 'MODULE_PATHNAME', 'temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompointi(tgeompoint)

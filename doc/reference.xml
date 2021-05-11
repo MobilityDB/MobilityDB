@@ -549,7 +549,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor for temporal types of instant set subtype</para>
+					<para><link linkend="ttypeinstset"><varname>ttypeinstset</varname></link>: Constructor for temporal types of instant set subtype</para>
 				</listitem>
 
 				<listitem>
@@ -557,7 +557,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor for temporal types of sequence set subtype</para>
+					<para><link linkend="ttypeseqset"><varname>ttypeseqset</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
