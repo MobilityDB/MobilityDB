@@ -332,11 +332,11 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   int32 gs_srid = gserialized_get_srid(sorigin);
   if (gs_srid != 0)
     ensure_same_srid_gs(point, sorigin);
-  // ensure_same_dimensionality_gs(point, sorigin);
   POINT3DZ pt, ptorig;
   bool hasz = FLAGS_GET_Z(point->flags);
   if (hasz)
   {
+    ensure_has_Z_gs(sorigin);
     pt = datum_get_point3dz(PointerGetDatum(point));
     ptorig = datum_get_point3dz(PointerGetDatum(sorigin));
   }

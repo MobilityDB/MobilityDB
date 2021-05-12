@@ -75,6 +75,7 @@ extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSE
 extern void ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern void ensure_has_Z(int16 flags);
 extern void ensure_has_not_Z(int16 flags);
+extern void ensure_has_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);

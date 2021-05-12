@@ -639,6 +639,18 @@ ensure_has_not_Z(int16 flags)
  * Ensure that the geometry/geography has not Z dimension
  */
 void
+ensure_has_Z_gs(const GSERIALIZED *gs)
+{
+  if (! FLAGS_GET_Z(gs->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The geometry must have Z dimension")));
+  return;
+}
+
+/**
+ * Ensure that the geometry/geography has not Z dimension
+ */
+void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
   if (FLAGS_GET_Z(gs->flags))
@@ -4133,6 +4145,10 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
     Period p;
     period_set(&p, box->tmin, box->tmax, true, true);
     temp1 = temporal_at_period_internal(temp, &p);
+    /* Despite the bounding box test above, temp1 may be NULL due to 
+     * exclusive bounds */
+    if (temp1 == NULL)
+      return NULL;
   }
   else
     temp1 = temporal_copy(temp);
