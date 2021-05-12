@@ -25,27 +25,27 @@
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeinst</varname> representa cualquier tipo temporal con subtipo instante,</para>
+			<para><varname>ttype_inst</varname> representa cualquier tipo temporal con subtipo instante,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeinstset</varname> representa cualquier tipo temporal con subtipo conjunto de instantes,</para>
+			<para><varname>ttype_instset</varname> representa cualquier tipo temporal con subtipo conjunto de instantes,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeseq</varname> representa cualquier tipo temporal con subtipo secuencia,</para>
+			<para><varname>ttype_seq</varname> representa cualquier tipo temporal con subtipo secuencia,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tdiscseq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base discreto,</para>
+			<para><varname>tdisc_seq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base discreto,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>tcontseq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base continuo,</para>
+			<para><varname>tcont_seq</varname> representa cualquier tipo temporal con subtipo secuencia y con tipo de base continuo,</para>
 		</listitem>
 
 		<listitem>
-			<para><varname>ttypeseqset</varname> representa cualquier tipo temporal con subtipo conjunto de secuencias</para>
+			<para><varname>ttype_seqset</varname> representa cualquier tipo temporal con subtipo conjunto de secuencias</para>
 		</listitem>
 
 		<listitem>
@@ -198,7 +198,7 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 	<sect1 id="constructor_temporal_tyes">
 		<title>Funciones de constructor</title>
 
-		<para>Cada tipo temporal tiene funciones de constructor con el mismo nombre que el tipo y con un sufijo para el subtipo, donde el sufijo &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>instset</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo; y &lsquo;<varname>seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tintseq</varname> o <varname>tgeompointseqset</varname>. El uso de la función constructora suele ser más conveniente que escribir una constante literal.</para>
+		<para>Cada tipo temporal tiene funciones de constructor con el mismo nombre que el tipo y con un sufijo para el subtipo, donde el sufijo &lsquo;<varname>inst</varname>&rsquo;, &lsquo;<varname>instset</varname>&rsquo;, &lsquo;<varname>seq</varname>&rsquo; y &lsquo;<varname>seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función constructora suele ser más conveniente que escribir una constante literal.</para>
 
 		<itemizedlist>
 			<listitem>
@@ -221,26 +221,26 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 		<para>A continuación, damos las funciones de constructor para los distintos subtipos.</para>
 
 		<itemizedlist>
-			<listitem id="ttypeinst">
-				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
+			<listitem id="ttype_inst">
+				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
 				<para>Constructor para tipos temporales de subtipo instante</para>
-				<para><varname>ttypeinst(base,timestamptz): ttypeinst</varname></para>
+				<para><varname>ttype_inst(base,timestamptz): ttype_inst</varname></para>
 				<programlisting>
-SELECT tboolinst(true, '2001-01-01');
+SELECT tbool_inst(true, '2001-01-01');
 SELECT tfloatinst(1.5, '2001-01-01');
 SELECT tgeompointinst('Point(0 0)', '2001-01-01');
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttypeinstset">
-				<indexterm><primary><varname>ttypeinstset</varname></primary></indexterm>
+			<listitem id="ttype_instset">
+				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
 				<para>Constructor para tipos temporales de subtipo conjunto de instantes</para>
-				<para><varname>ttypeinstset(base,timestampset): ttypeinstset</varname></para>
-				<para><varname>ttypeinstset(ttypeinst[]): ttypeinstset</varname></para>
+				<para><varname>ttype_instset(base,timestampset): ttype_instset</varname></para>
+				<para><varname>ttype_instset(ttype_inst[]): ttype_instset</varname></para>
 				<programlisting>
 SELECT tintinstset(2, '{2001-01-01, 2001-01-02, 2001-01-03}');
 SELECT tgeompointinstset('Point(0 0)', '{2001-01-01, 2001-01-02}');
-SELECT tboolinstset(ARRAY[tbool 'true@2001-01-01 08:00:00', 'false@2001-01-01 08:05:00']);
+SELECT tbool_instset(ARRAY[tbool 'true@2001-01-01 08:00:00', 'false@2001-01-01 08:05:00']);
 SELECT tintinstset(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
 SELECT tfloatinstset(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00']);
 SELECT ttextinstset(ARRAY[ttext 'AAA@2001-01-01 08:00:00', 'BBB@2001-01-01 08:05:00']);
@@ -251,60 +251,60 @@ SELECT tgeogpointinstset(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttypeseq">
-				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
+			<listitem id="ttype_seq">
+				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
 				<para>Constructor para tipos temporales de subtipo secuencia</para>
-				<para><varname>tdiscseq(base,period): tdiscseq</varname></para>
-				<para><varname>tdiscseq(ttypeinst[],left_inc=true,right_inc=true}): tdiscseq</varname></para>
-				<para><varname>tcontseq(base,period,linear=true): tcontseq</varname></para>
-				<para><varname>tcontseq(ttypeinst[],left_inc=true,right_inc=true,linear=true}): tcontseq</varname></para>
+				<para><varname>tdisc_seq(base,period): tdisc_seq</varname></para>
+				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
+				<para><varname>tcont_seq(base,period,linear=true): tcont_seq</varname></para>
+				<para><varname>tcont_seq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): tcont_seq</varname></para>
 				<programlisting>
-SELECT tfloatseq(1.5, '[2001-01-01, 2001-01-02]');
-SELECT tfloatseq(2.0, '[2001-01-01, 2001-01-02]', false);
-SELECT tboolseq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
+SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]');
+SELECT tfloat_seq(2.0, '[2001-01-01, 2001-01-02]', false);
+SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
-SELECT tintseq(ARRAY[tintinst(2,'2001-01-01 08:00:00'),
+SELECT tint_seq(ARRAY[tintinst(2,'2001-01-01 08:00:00'),
   tintinst(2,'2001-01-01 08:10:00')], true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+SELECT tfloat_seq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
   '1@2001-01-03 08:10:00'], true, false);
-SELECT tfloatseq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
+SELECT tfloat_seq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
   '1@2001-01-03 08:10:00'], true, true, false);
-SELECT ttextseq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
+SELECT ttext_seq(ARRAY[ttextinst('AAA', '2001-01-01 08:00:00'),
   ttextinst('BBB', '2001-01-03 08:05:00'), ttextinst('BBB', '2001-01-03 08:10:00')]);
-SELECT tgeompointseq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
+SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
-SELECT tgeogpointseq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
+SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 0)@2001-01-03 08:05:00'], true, true, false);
 				</programlisting>
 			</listitem>
 
-			<listitem id="ttypeseqset">
-				<indexterm><primary><varname>ttypeseqset</varname></primary></indexterm>
+			<listitem id="ttype_seqset">
+				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Constructor para tipos temporales de subtipo conjunto de secuencias</para>
-				<para><varname>tdiscseqset(base,periodset): tdiscseqset</varname></para>
-				<para><varname>tcontseqset(base,periodset,linear=true): tcontseqset</varname></para>
-				<para><varname>ttypeseqset(ttypeseq[]): ttypeseqset</varname></para>
+				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
+				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
+				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
 				<programlisting>
-SELECT ttextseqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
-SELECT tgeogpointseqset('Point(1 1)', '[2001-01-01, 2001-01-02]', false);
-SELECT tboolseqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
+SELECT ttext_seqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tgeogpoint_seqset('Point(1 1)', '[2001-01-01, 2001-01-02]', false);
+SELECT tbool_seqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
-SELECT tintseqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
+SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
   2@2001-01-01 08:10:00, 2@2001-01-01 08:15:00)']);
-SELECT tfloatseqset(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
+SELECT tfloat_seqset(ARRAY[tfloat '[1.0@2001-01-01 08:00:00, 2.0@2001-01-01 08:05:00,
   2.0@2001-01-01 08:10:00]', '[2.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT tfloatseqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
+SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   'Interp=Stepwise;[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
-SELECT ttextseqset(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
+SELECT ttext_seqset(ARRAY[ttext '[AAA@2001-01-01 08:00:00, AAA@2001-01-01 08:05:00)',
   '[BBB@2001-01-01 08:10:00, BBB@2001-01-01 08:15:00)']);
-SELECT tgeompointseqset(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
+SELECT tgeompoint_seqset(ARRAY[tgeompoint '[Point(0 0)@2001-01-01 08:00:00,
   Point(0 1)@2001-01-01 08:05:00, Point(0 1)@2001-01-01 08:10:00)',
   '[Point(0 1)@2001-01-01 08:15:00, Point(0 0)@2001-01-01 08:20:00)']);
-SELECT tgeogpointseqset(ARRAY[tgeogpoint
+SELECT tgeogpoint_seqset(ARRAY[tgeogpoint
   'Interp=Stepwise;[Point(0 0)@2001-01-01 08:00:00, Point(0 0)@2001-01-01 08:05:00)',
   'Interp=Stepwise;[Point(1 1)@2001-01-01 08:10:00, Point(1 1)@2001-01-01 08:15:00)']);
-SELECT tfloatseqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
+SELECT tfloat_seqset(ARRAY[tfloat 'Interp=Stepwise;[1.0@2001-01-01 08:00:00,
   2.0@2001-01-01 08:05:00, 2.0@2001-01-01 08:10:00]',
   '[3.0@2001-01-01 08:15:00, 3.0@2001-01-01 08:20:00)']);
 -- ERROR:  Input sequences must have the same interpolation
@@ -467,27 +467,27 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		<para>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</para>
 		<itemizedlist>
 			<listitem id="ttype_transform">
-				<indexterm><primary><varname>ttypeinst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttypeinstset</varname></primary></indexterm>
-				<indexterm><primary><varname>ttypeseq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttypeseqset</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Transformar un tipo temporal a otro subtipo</para>
-				<para><varname>ttypeinst(ttype): ttypeinst</varname></para>
-				<para><varname>ttypeinstset(ttype): ttypeinstset</varname></para>
-				<para><varname>ttypeseq(ttype): ttypeseq</varname></para>
-				<para><varname>ttypeseqset(ttype): ttypeseqset</varname></para>
+				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
+				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
+				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
+				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
 				<programlisting>
-SELECT tboolinst(tbool '{[true@2001-01-01]}');
+SELECT tbool_inst(tbool '{[true@2001-01-01]}');
 -- "t@2001-01-01 00:00:00+00"
-SELECT tboolinst(tbool '{[true@2001-01-01, true@2001-01-02]}');
+SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
 -- ERROR: Cannot transform input to a temporal instant
-SELECT tboolinstset(tbool 'true@2001-01-01');
+SELECT tbool_instset(tbool 'true@2001-01-01');
 -- "{t@2001-01-01}"
-SELECT tintseq(tint '1@2001-01-01');
+SELECT tint_seq(tint '1@2001-01-01');
 -- "[1@2001-01-01]"
-SELECT tfloatseqset(tfloat '2.5@2001-01-01');
+SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
 -- "{[2.5@2001-01-01]}"
-SELECT tfloatseqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
+SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
 -- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
 				</programlisting>
 			</listitem>
@@ -511,11 +511,11 @@ SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
 			<listitem id="appendInstant">
 				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Anexar un instante temporal a un valor temporal</para>
-				<para><varname>appendInstant(ttype,ttypeinst): ttype</varname></para>
+				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
 				<programlisting>
 SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
 -- "{1@2000-01-01, 1@2000-01-02}"
-SELECT appendInstant(tintseq(tint '1@2000-01-01'), tint '1@2000-01-02');
+SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
 -- "[1@2000-01-01, 1@2000-01-02]"
 SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
   Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
@@ -616,7 +616,7 @@ SELECT interpolation(tgeompoint 'Interp=Stepwise;[Point(1 1)@2012-01-01,
 			<listitem id="getValue">
 				<indexterm><primary><varname>getValue</varname></primary></indexterm>
 				<para>Obtener el valor</para>
-				<para><varname>getValue(ttypeinst): base</varname></para>
+				<para><varname>getValue(ttype_inst): base</varname></para>
 				<programlisting>
 SELECT getValue(tint '1@2012-01-01');
 -- 1
@@ -727,7 +727,7 @@ SELECT valueAtTimestamp(tfloat '[1@2012-01-01, 4@2012-01-04)', '2012-01-02');
 			<listitem id="getTimestamp">
 				<indexterm><primary><varname>getTimestamp</varname></primary></indexterm>
 				<para>Obtener la marca de tiempo</para>
-				<para><varname>getTimestamp(ttypeinst): timestamptz</varname></para>
+				<para><varname>getTimestamp(ttype_inst): timestamptz</varname></para>
 				<programlisting>
 SELECT getTimestamp(tint '1@2012-01-01');
 -- "2012-01-01"
@@ -793,7 +793,7 @@ SELECT numInstants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-
 			<listitem id="startInstant">
 				<indexterm><primary><varname>startInstant</varname></primary></indexterm>
 				<para>Obtener el instante inicial</para>
-				<para><varname>startInstant(ttype): ttypeinst</varname></para>
+				<para><varname>startInstant(ttype): ttype_inst</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting>
 SELECT startInstant(tfloat '{[1@2000-01-01, 2@2000-01-02),
@@ -805,7 +805,7 @@ SELECT startInstant(tfloat '{[1@2000-01-01, 2@2000-01-02),
 			<listitem id="endInstant">
 				<indexterm><primary><varname>endInstant</varname></primary></indexterm>
 				<para>Obtener el instante final</para>
-				<para><varname>endInstant(ttype): ttypeinst</varname></para>
+				<para><varname>endInstant(ttype): ttype_inst</varname></para>
 				<para>La función no tiene en cuenta si los límites son inclusivos o no.</para>
 				<programlisting>
 SELECT endInstant(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}');
@@ -816,7 +816,7 @@ SELECT endInstant(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-0
 			<listitem id="instantN">
 				<indexterm><primary><varname>instantN</varname></primary></indexterm>
 				<para>Obtener el enésimo instante diferente</para>
-				<para><varname>instantN(ttype,integer): ttypeinst</varname></para>
+				<para><varname>instantN(ttype,integer): ttype_inst</varname></para>
 				<programlisting>
 SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}', 3);
 -- "3@2000-01-03"
@@ -826,7 +826,7 @@ SELECT instantN(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-
 			<listitem id="instants">
 				<indexterm><primary><varname>instants</varname></primary></indexterm>
 				<para>Obtener los instantes diferentes</para>
-				<para><varname>instants(ttype): ttypeinst[]</varname></para>
+				<para><varname>instants(ttype): ttype_inst[]</varname></para>
 				<programlisting>
 SELECT instants(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-03)}');
 -- "{"1@2000-01-01","2@2000-01-02","3@2000-01-03"}"
@@ -891,7 +891,7 @@ SELECT timestamps(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-0
 			<listitem id="numSequences">
 				<indexterm><primary><varname>numSequences</varname></primary></indexterm>
 				<para>Obtener el número de secuencias</para>
-				<para><varname>numSequences({ttypeseq,ttypeseqset}): integer</varname></para>
+				<para><varname>numSequences({ttype_seq,ttype_seqset}): integer</varname></para>
 				<programlisting>
 SELECT numSequences(tfloat '{[1@2012-01-01, 2@2012-01-03),
   [3@2012-01-03, 5@2012-01-05)}');
@@ -902,7 +902,7 @@ SELECT numSequences(tfloat '{[1@2012-01-01, 2@2012-01-03),
 			<listitem id="startSequence">
 				<indexterm><primary><varname>startSequence</varname></primary></indexterm>
 				<para>Obtener la secuencia inicial</para>
-				<para><varname>startSequence({ttypeseq,ttypeseqset}): ttypeseq</varname></para>
+				<para><varname>startSequence({ttype_seq,ttype_seqset}): ttype_seq</varname></para>
 				<programlisting>
 SELECT startSequence(tfloat '{[1@2012-01-01, 2@2012-01-03),
   [3@2012-01-03, 5@2012-01-05)}');
@@ -913,7 +913,7 @@ SELECT startSequence(tfloat '{[1@2012-01-01, 2@2012-01-03),
 			<listitem id="endSequence">
 				<indexterm><primary><varname>endSequence</varname></primary></indexterm>
 				<para>Obtener la secuencia final</para>
-				<para><varname>endSequence({ttypeseq,ttypeseqset}): ttypeseq</varname></para>
+				<para><varname>endSequence({ttype_seq,ttype_seqset}): ttype_seq</varname></para>
 				<programlisting>
 SELECT endSequence(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- "[3@2012-01-03, 5@2012-01-05)"
@@ -923,7 +923,7 @@ SELECT endSequence(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-
 			<listitem id="sequenceN">
 				<indexterm><primary><varname>sequenceN</varname></primary></indexterm>
 				<para>Obtener la enésima secuencia</para>
-				<para><varname>sequenceN({ttypeseq,ttypeseqset},integer): ttypeseq</varname></para>
+				<para><varname>sequenceN({ttype_seq,ttype_seqset},integer): ttype_seq</varname></para>
 				<programlisting>
 SELECT sequenceN(tfloat '{[1@2012-01-01, 2@2012-01-03),
   [3@2012-01-03, 5@2012-01-05)}', 2);
@@ -934,7 +934,7 @@ SELECT sequenceN(tfloat '{[1@2012-01-01, 2@2012-01-03),
 			<listitem id="sequences">
 				<indexterm><primary><varname>sequences</varname></primary></indexterm>
 				<para>Obtener las secuencias</para>
-				<para><varname>sequences({ttypeseq,ttypeseqset}): ttypeseq[]</varname></para>
+				<para><varname>sequences({ttype_seq,ttype_seqset}): ttype_seq[]</varname></para>
 				<programlisting>
 SELECT sequences(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
 -- "{"[1@2012-01-01, 2@2012-01-03)", "[3@2012-01-03, 5@2012-01-05)"}"
@@ -944,7 +944,7 @@ SELECT sequences(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01
 			<listitem id="segments">
 				<indexterm><primary><varname>segments</varname></primary></indexterm>
 				<para>Obtener los segmentos</para>
-				<para><varname>segments({ttypeseq,ttypeseqset}): ttypeseq[]</varname></para>
+				<para><varname>segments({ttype_seq,ttype_seqset}): ttype_seq[]</varname></para>
 				<programlisting>
 SELECT segments(tint '{[1@2012-01-01, 3@2012-01-02, 2@2012-01-03],
   (3@2012-01-03, 5@2012-01-05]}');
@@ -1353,7 +1353,7 @@ SELECT length(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
 			<listitem id="cumulativeLength">
 				<indexterm><primary><varname>cumulativeLength</varname></primary></indexterm>
 				<para>Obtener la longitud acumulada atravesada por el punto temporal &Z_support; &geography_support;</para>
-				<para><varname>cumulativeLength(tpoint): tfloatseq</varname></para>
+				<para><varname>cumulativeLength(tpoint): tfloat_seq</varname></para>
 				<programlisting>
 SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
   Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}'), 6);
@@ -1368,7 +1368,7 @@ SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
 			<listitem id="speed">
 				<indexterm><primary><varname>speed</varname></primary></indexterm>
 				<para>Obtener la velocidad del punto temporal en unidades por segundo &Z_support; &geography_support;</para>
-				<para><varname>speed(tpoint): tfloatseqset</varname></para>
+				<para><varname>speed(tpoint): tfloat_seqset</varname></para>
 				<para>El punto temporal debe tener interpolación linear</para>
 				<programlisting>
 SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
@@ -1695,7 +1695,7 @@ SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2000-01-01, Point(4 4 4)@2000
 			<listitem id="atTimestamp">
 				<indexterm><primary><varname>atTimestamp</varname></primary></indexterm>
 				<para>Restringir a una marca de tiempo</para>
-				<para><varname>atTimestamp(ttype,timestamptz): ttypeinst</varname></para>
+				<para><varname>atTimestamp(ttype,timestamptz): ttype_inst</varname></para>
 				<programlisting>
 SELECT atTimestamp(tfloat '[1@2012-01-01, 5@2012-01-05)', '2012-01-02');
 -- "2@2012-01-02"
@@ -1705,7 +1705,7 @@ SELECT atTimestamp(tfloat '[1@2012-01-01, 5@2012-01-05)', '2012-01-02');
 			<listitem id="atTimestampSet">
 				<indexterm><primary><varname>atTimestampSet</varname></primary></indexterm>
 				<para>Restringir a un conjunto de marcas de tiempo</para>
-				<para><varname>atTimestampSet(ttype,timestampset): {ttypeinst,ttypeinstset}</varname></para>
+				<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_instset}</varname></para>
 				<programlisting>
 SELECT atTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
   timestampset '{2012-01-01, 2012-01-03}');
@@ -3207,7 +3207,7 @@ SELECT trelate(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
 			<listitem id="tcount">
 				<indexterm><primary><varname>trelate</varname></primary></indexterm>
 				<para>Conteo temporal</para>
-				<para><varname>tcount(ttype): {tintinstset,tintseqset}</varname></para>
+				<para><varname>tcount(ttype): {tintinstset,tint_seqset}</varname></para>
 				<programlisting>
 SELECT tcount(NoEmps) FROM Department;
 -- "{[1@2012-01-01, 2@2012-02-01, 1@2012-08-01, 1@2012-10-01)}"
@@ -3249,7 +3249,7 @@ SELECT tor(NoEmps #&gt; 6) FROM Department;
 			<listitem id="tmin">
 				<indexterm><primary><varname>tmin</varname></primary></indexterm>
 				<para>Mínimo temporal</para>
-				<para><varname>tmin(ttype): {ttypeinstset,ttypeseqset}</varname></para>
+				<para><varname>tmin(ttype): {ttype_instset,ttype_seqset}</varname></para>
 				<programlisting>
 SELECT tmin(NoEmps) FROM Department;
 -- "{[10@2012-01-01, 4@2012-02-01, 6@2012-06-01, 6@2012-10-01)}"
@@ -3259,7 +3259,7 @@ SELECT tmin(NoEmps) FROM Department;
 			<listitem id="tmax">
 				<indexterm><primary><varname>tmax</varname></primary></indexterm>
 				<para>Máximo temporal</para>
-				<para><varname>tmax(ttype): {ttypeinstset,ttypeseqset}</varname></para>
+				<para><varname>tmax(ttype): {ttype_instset,ttype_seqset}</varname></para>
 				<programlisting>
 SELECT tmax(NoEmps) FROM Department;
 -- "{[10@2012-01-01, 12@2012-04-01, 6@2012-08-01, 6@2012-10-01)}"
@@ -3280,7 +3280,7 @@ SELECT tsum(NoEmps) FROM Department;
 			<listitem id="tavg">
 				<indexterm><primary><varname>tavg</varname></primary></indexterm>
 				<para>Promedio temporal</para>
-				<para><varname>tavg(tnumber): {tfloatinstset,tfloatseqset}</varname></para>
+				<para><varname>tavg(tnumber): {tfloatinstset,tfloat_seqset}</varname></para>
 				<programlisting>
 SELECT tavg(NoEmps) FROM Department;
 -- "{[10@2012-01-01, 10@2012-02-01), [7@2012-02-01, 7@2012-04-01),
@@ -3312,7 +3312,7 @@ SELECT wmax(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wcount">
 				<indexterm><primary><varname>wcount</varname></primary></indexterm>
 				<para>Conteo de ventana</para>
-				<para><varname>wcount(tnumber,interval): {tintinstset,tintseqset}</varname></para>
+				<para><varname>wcount(tnumber,interval): {tintinstset,tint_seqset}</varname></para>
 				<programlisting>
 SELECT wcount(NoEmps, interval '2 days') FROM Department;
 -- "{[1@2012-01-01, 2@2012-02-01, 3@2012-04-01, 2@2012-04-03, 3@2012-06-01, 2@2012-06-03,
@@ -3323,7 +3323,7 @@ SELECT wcount(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wsum">
 				<indexterm><primary><varname>wsum</varname></primary></indexterm>
 				<para>Suma de ventana</para>
-				<para><varname>wsum(tint,interval): {tintinstset,tintseqset}</varname></para>
+				<para><varname>wsum(tint,interval): {tintinstset,tint_seqset}</varname></para>
 				<programlisting>
 SELECT wsum(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2012-01-01, 14@2012-02-01, 26@2012-04-01, 16@2012-04-03, 22@2012-06-01,
@@ -3334,7 +3334,7 @@ SELECT wsum(NoEmps, interval '2 days') FROM Department;
 			<listitem id="wavg">
 				<indexterm><primary><varname>wavg</varname></primary></indexterm>
 				<para>Promedio de ventana</para>
-				<para><varname>wavg(tint,interval): {tfloatinstset,tfloatseqset}</varname></para>
+				<para><varname>wavg(tint,interval): {tfloatinstset,tfloat_seqset}</varname></para>
 				<programlisting>
 SELECT wavg(NoEmps, interval '2 days') FROM Department;
 -- "{[10@2012-01-01, 10@2012-02-01), [7@2012-02-01, 7@2012-04-01),
@@ -3575,7 +3575,7 @@ WHERE intersects(T.Trip, R.Geom);
 			<title>Estimación de la selectividad de los operadores</title>
 			<para>Los operadores booleanos en PostgreSQL se pueden asociar con dos funciones de selectividad, que calculan la probabilidad de que un valor de un tipo dado coincida con un criterio dado. Estas funciones de selectividad se basan en las estadísticas recopiladas. Hay dos tipos de funciones de selectividad. Las funciones de selectividad de <emphasis>restricción</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>column OP constant</varname>. Por otro lado, las funciones de selectividad de <emphasis>unión</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>table1.column1 OP table2.column2</varname>.</para>
 
-			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>integer</varname>, <varname>timestamptz</varname>, etc.) o un nuevo tipo MobilityDB (como <varname>period</varname>, <varname>tintseq</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
+			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>integer</varname>, <varname>timestamptz</varname>, etc.) o un nuevo tipo MobilityDB (como <varname>period</varname>, <varname>tint_seq</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
 
 			<para>Actualmente, sólo están implementadas las funciones de selectividad de restricción para tipos temporales, mientras que las funciones de selectividad de unión dan un valor de selectividad predeterminado según el operador. Está previsto implementar las funciones de selectividad de unión en el futuro.</para>
 		</sect2>

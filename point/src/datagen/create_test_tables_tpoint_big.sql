@@ -39,7 +39,7 @@ IF perc < 1 THEN perc := 1; END IF;
 
 DROP TABLE IF EXISTS tbl_tgeompointinst_big;
 CREATE TABLE tbl_tgeompointinst_big AS
-SELECT k, random_tgeompointinst(0, 100, 0, 100, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_tgeompoint_inst(0, 100, 0, 100, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tgeompointinst_big t1
@@ -47,7 +47,7 @@ SET inst = (SELECT inst FROM tbl_tgeompointinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompointinst_big t1
-SET inst = (SELECT tgeompointinst(random_geompoint(0, 100, 0, 100), getTimestamp(inst))
+SET inst = (SELECT tgeompoint_inst(random_geompoint(0, 100, 0, 100), getTimestamp(inst))
   FROM tbl_tgeompointinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
@@ -61,13 +61,13 @@ SET inst = (SELECT inst FROM tbl_tgeompoint3Dinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3Dinst_big t1
-SET inst = (SELECT tgeompointinst(random_geompoint3D(0, 100, 0, 100, 0, 100), getTimestamp(inst))
+SET inst = (SELECT tgeompoint_inst(random_geompoint3D(0, 100, 0, 100, 0, 100), getTimestamp(inst))
   FROM tbl_tgeompoint3Dinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
 DROP TABLE IF EXISTS tbl_tgeogpointinst_big;
 CREATE TABLE tbl_tgeogpointinst_big AS
-SELECT k, random_tgeogpointinst(-10, 32, 35, 72, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_tgeogpoint_inst(-10, 32, 35, 72, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tgeogpointinst_big t1
@@ -75,7 +75,7 @@ SET inst = (SELECT inst FROM tbl_tgeogpointinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpointinst_big t1
-SET inst = (SELECT tgeogpointinst(random_geogpoint(-10, 32, 35, 72), getTimestamp(inst))
+SET inst = (SELECT tgeogpoint_inst(random_geogpoint(-10, 32, 35, 72), getTimestamp(inst))
   FROM tbl_tgeogpointinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
@@ -89,109 +89,109 @@ SET inst = (SELECT inst FROM tbl_tgeogpoint3Dinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3Dinst_big t1
-SET inst = (SELECT tgeogpointinst(random_geogpoint3D(-10, 32, 35, 72, 0, 1000), getTimestamp(inst))
+SET inst = (SELECT tgeogpoint_inst(random_geogpoint3D(-10, 32, 35, 72, 0, 1000), getTimestamp(inst))
   FROM tbl_tgeogpoint3Dinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
 -------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS tbl_tgeompointi_big;
-CREATE TABLE tbl_tgeompointi_big AS
-SELECT k, random_tgeompointi(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+DROP TABLE IF EXISTS tbl_tgeompointinstset_big;
+CREATE TABLE tbl_tgeompointinstset_big AS
+SELECT k, random_tgeompoint_instset(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompointi_big t1
-SET ti = (SELECT ti FROM tbl_tgeompointi_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompointinstset_big t1
+SET ti = (SELECT ti FROM tbl_tgeompointinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompointi_big t1
-SET ti = (SELECT setPrecision(ti,6) FROM tbl_tgeompointi_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompointinstset_big t1
+SET ti = (SELECT setPrecision(ti,6) FROM tbl_tgeompointinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompointi_big t1
+UPDATE tbl_tgeompointinstset_big t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tgeompointi_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompointinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompointi_big t1
+UPDATE tbl_tgeompointinstset_big t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tgeompointi_big t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tgeompointinstset_big t2 WHERE t2.k = t1.k+2)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
-DROP TABLE IF EXISTS tbl_tgeompoint3Di_big;
-CREATE TABLE tbl_tgeompoint3Di_big AS
-SELECT k, random_tgeompoint3Di(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+DROP TABLE IF EXISTS tbl_tgeompoint3Dinstset_big;
+CREATE TABLE tbl_tgeompoint3Dinstset_big AS
+SELECT k, random_tgeompoint3Dinstset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompoint3Di_big t1
-SET ti = (SELECT ti FROM tbl_tgeompoint3Di_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3Dinstset_big t1
+SET ti = (SELECT ti FROM tbl_tgeompoint3Dinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompoint3Di_big t1
-SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeompoint3Di_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3Dinstset_big t1
+SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeompoint3Dinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompoint3Di_big t1
+UPDATE tbl_tgeompoint3Dinstset_big t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tgeompoint3Di_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompoint3Dinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompoint3Di_big t1
+UPDATE tbl_tgeompoint3Dinstset_big t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tgeompoint3Di_big t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tgeompoint3Dinstset_big t2 WHERE t2.k = t1.k+2)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
-DROP TABLE IF EXISTS tbl_tgeogpointi_big;
-CREATE TABLE tbl_tgeogpointi_big AS
-SELECT k, random_tgeogpointi(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+DROP TABLE IF EXISTS tbl_tgeogpointinstset_big;
+CREATE TABLE tbl_tgeogpointinstset_big AS
+SELECT k, random_tgeogpoint_instset(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tgeogpointi_big t1
-SET ti = (SELECT ti FROM tbl_tgeogpointi_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpointinstset_big t1
+SET ti = (SELECT ti FROM tbl_tgeogpointinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeogpointi_big t1
-SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeogpointi_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpointinstset_big t1
+SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeogpointinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeogpointi_big t1
+UPDATE tbl_tgeogpointinstset_big t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tgeogpointi_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeogpointinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeogpointi_big t1
+UPDATE tbl_tgeogpointinstset_big t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tgeogpointi_big t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tgeogpointinstset_big t2 WHERE t2.k = t1.k+2)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
-DROP TABLE IF EXISTS tbl_tgeogpoint3Di_big;
-CREATE TABLE tbl_tgeogpoint3Di_big AS
-SELECT k, random_tgeogpoint3Di(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+DROP TABLE IF EXISTS tbl_tgeogpoint3Dinstset_big;
+CREATE TABLE tbl_tgeogpoint3Dinstset_big AS
+SELECT k, random_tgeogpoint3Dinstset(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
-UPDATE tbl_tgeogpoint3Di_big t1
-SET ti = (SELECT ti FROM tbl_tgeogpoint3Di_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpoint3Dinstset_big t1
+SET ti = (SELECT ti FROM tbl_tgeogpoint3Dinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeogpoint3Di_big t1
-SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeogpoint3Di_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpoint3Dinstset_big t1
+SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeogpoint3Dinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeogpoint3Di_big t1
+UPDATE tbl_tgeogpoint3Dinstset_big t1
 SET ti = (SELECT shift(ti, endTimestamp(ti)-startTimestamp(ti))
-  FROM tbl_tgeogpoint3Di_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeogpoint3Dinstset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeogpoint3Di_big t1
+UPDATE tbl_tgeogpoint3Dinstset_big t1
 SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(ti))/2))
-  FROM tbl_tgeogpoint3Di_big t2 WHERE t2.k = t1.k+2)
+  FROM tbl_tgeogpoint3Dinstset_big t2 WHERE t2.k = t1.k+2)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
 -------------------------------------------------------------------------------
 
 DROP TABLE IF EXISTS tbl_tgeompointseq_big;
 CREATE TABLE tbl_tgeompointseq_big AS
-SELECT k, random_tgeompointseq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
+SELECT k, random_tgeompoint_seq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tgeompointseq_big t1
@@ -235,7 +235,7 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
 DROP TABLE IF EXISTS tbl_tgeogpointseq_big;
 CREATE TABLE tbl_tgeogpointseq_big AS
-SELECT k, random_tgeogpointseq(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
+SELECT k, random_tgeogpoint_seq(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tgeogpointseq_big t1
@@ -279,92 +279,92 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
 -------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS tbl_tgeompoints_big;
-CREATE TABLE tbl_tgeompoints_big AS
-SELECT k, random_tgeompoints(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
+DROP TABLE IF EXISTS tbl_tgeompointseqset_big;
+CREATE TABLE tbl_tgeompointseqset_big AS
+SELECT k, random_tgeompoint_seqset(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompoints_big t1
-SET ts = (SELECT ts FROM tbl_tgeompoints_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompointseqset_big t1
+SET ts = (SELECT ts FROM tbl_tgeompointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompoints_big t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoints_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompointseqset_big t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompoints_big t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeompoints_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompointseqset_big t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeompointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompoints_big t1
+UPDATE tbl_tgeompointseqset_big t1
 SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
-  FROM tbl_tgeompoints_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
-DROP TABLE IF EXISTS tbl_tgeompoint3Ds_big;
-CREATE TABLE tbl_tgeompoint3Ds_big AS
+DROP TABLE IF EXISTS tbl_tgeompoint3Dseqset_big;
+CREATE TABLE tbl_tgeompoint3Dseqset_big AS
 SELECT k, random_tgeompoint3Ds(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
-UPDATE tbl_tgeompoint3Ds_big t1
-SET ts = (SELECT ts FROM tbl_tgeompoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3Dseqset_big t1
+SET ts = (SELECT ts FROM tbl_tgeompoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeompoint3Ds_big t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3Dseqset_big t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeompoint3Ds_big t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeompoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeompoint3Dseqset_big t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeompoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeompoint3Ds_big t1
+UPDATE tbl_tgeompoint3Dseqset_big t1
 SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
-  FROM tbl_tgeompoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeompoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
-DROP TABLE IF EXISTS tbl_tgeogpoints_big;
-CREATE TABLE tbl_tgeogpoints_big AS
-SELECT k, random_tgeogpoints(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
+DROP TABLE IF EXISTS tbl_tgeogpointseqset_big;
+CREATE TABLE tbl_tgeogpointseqset_big AS
+SELECT k, random_tgeogpoint_seqset(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
-UPDATE tbl_tgeogpoints_big t1
-SET ts = (SELECT ts FROM tbl_tgeogpoints_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpointseqset_big t1
+SET ts = (SELECT ts FROM tbl_tgeogpointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeogpoints_big t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoints_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpointseqset_big t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeogpoints_big t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeogpoints_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpointseqset_big t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeogpointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeogpoints_big t1
+UPDATE tbl_tgeogpointseqset_big t1
 SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
-  FROM tbl_tgeogpoints_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeogpointseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
-DROP TABLE IF EXISTS tbl_tgeogpoint3Ds_big;
-CREATE TABLE tbl_tgeogpoint3Ds_big AS
+DROP TABLE IF EXISTS tbl_tgeogpoint3Dseqset_big;
+CREATE TABLE tbl_tgeogpoint3Dseqset_big AS
 SELECT k, random_tgeogpoint3Ds(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
-UPDATE tbl_tgeogpoint3Ds_big t1
-SET ts = (SELECT ts FROM tbl_tgeogpoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpoint3Dseqset_big t1
+SET ts = (SELECT ts FROM tbl_tgeogpoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
-UPDATE tbl_tgeogpoint3Ds_big t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpoint3Dseqset_big t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
-UPDATE tbl_tgeogpoint3Ds_big t1
-SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeogpoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+UPDATE tbl_tgeogpoint3Dseqset_big t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeogpoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 /* Add perc tuples that overlap */
-UPDATE tbl_tgeogpoint3Ds_big t1
+UPDATE tbl_tgeogpoint3Dseqset_big t1
 SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
-  FROM tbl_tgeogpoint3Ds_big t2 WHERE t2.k = t1.k+perc)
+  FROM tbl_tgeogpoint3Dseqset_big t2 WHERE t2.k = t1.k+perc)
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 
 -------------------------------------------------------------------------------
@@ -372,30 +372,30 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 DROP TABLE IF EXISTS tbl_tgeompoint_big;
 CREATE TABLE tbl_tgeompoint_big(k, temp) AS
 (SELECT k, inst FROM tbl_tgeompointinst_big order by k limit size / 4) union all
-(SELECT k + size / 4, ti FROM tbl_tgeompointi_big order by k limit size / 4) union all
+(SELECT k + size / 4, ti FROM tbl_tgeompointinstset_big order by k limit size / 4) union all
 (SELECT k + size / 2, seq FROM tbl_tgeompointseq_big order by k limit size / 4) union all
-(SELECT k + size / 4 * 3, ts FROM tbl_tgeompoints_big order by k limit size / 4);
+(SELECT k + size / 4 * 3, ts FROM tbl_tgeompointseqset_big order by k limit size / 4);
 
 DROP TABLE IF EXISTS tbl_tgeompoint3D_big;
 CREATE TABLE tbl_tgeompoint3D_big(k, temp) AS
 (SELECT k, inst FROM tbl_tgeompoint3Dinst_big order by k limit size / 4) union all
-(SELECT k + size / 4, ti FROM tbl_tgeompoint3Di_big order by k limit size / 4) union all
+(SELECT k + size / 4, ti FROM tbl_tgeompoint3Dinstset_big order by k limit size / 4) union all
 (SELECT k + size / 2, seq FROM tbl_tgeompoint3Dseq_big order by k limit size / 4) union all
-(SELECT k + size / 4 * 3, ts FROM tbl_tgeompoint3Ds_big order by k limit size / 4);
+(SELECT k + size / 4 * 3, ts FROM tbl_tgeompoint3Dseqset_big order by k limit size / 4);
 
 DROP TABLE IF EXISTS tbl_tgeogpoint_big;
 CREATE TABLE tbl_tgeogpoint_big(k, temp) AS
 (SELECT k, inst FROM tbl_tgeogpointinst_big order by k limit size / 4) union all
-(SELECT k + size / 4, ti FROM tbl_tgeogpointi_big order by k limit size / 4) union all
+(SELECT k + size / 4, ti FROM tbl_tgeogpointinstset_big order by k limit size / 4) union all
 (SELECT k + size / 2, seq FROM tbl_tgeogpointseq_big order by k limit size / 4) union all
-(SELECT k + size / 4 * 3, ts FROM tbl_tgeogpoints_big order by k limit size / 4);
+(SELECT k + size / 4 * 3, ts FROM tbl_tgeogpointseqset_big order by k limit size / 4);
 
 DROP TABLE IF EXISTS tbl_tgeogpoint3D_big;
 CREATE TABLE tbl_tgeogpoint3D_big(k, temp) AS
 (SELECT k, inst FROM tbl_tgeogpoint3Dinst_big order by k limit size / 4) union all
-(SELECT k + size / 4, ti FROM tbl_tgeogpoint3Di_big order by k limit size / 4) union all
+(SELECT k + size / 4, ti FROM tbl_tgeogpoint3Dinstset_big order by k limit size / 4) union all
 (SELECT k + size / 2, seq FROM tbl_tgeogpoint3Dseq_big order by k limit size / 4) union all
-(SELECT k + size / 4 * 3, ts FROM tbl_tgeogpoint3Ds_big order by k limit size / 4);
+(SELECT k + size / 4 * 3, ts FROM tbl_tgeogpoint3Dseqset_big order by k limit size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';

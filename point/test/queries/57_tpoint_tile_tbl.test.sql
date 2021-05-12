@@ -34,28 +34,28 @@ SELECT multidimGrid(b, 2.5, interval '1 week', 'Point(10 10)', '2001-06-01'), CO
 
 -- 2D
 SELECT extent(multidimTile(g, 2.5)) FROM 
-(SELECT * FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
 SELECT extent(multidimTile(g, 2.5, geometry 'Point(10 10)')) FROM 
-(SELECT * FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10) t1;
 -- 3D
 SELECT extent(multidimTile(g, 2.5)) FROM 
-(SELECT * FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10) t1;
 SELECT extent(multidimTile(g, 2.5, geometry 'Point(10 10)')) FROM 
-(SELECT * FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10) t1;
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10) t1;
 
 -- 2D
 SELECT extent(multidimTile(g, t, 2.5, interval '2 days')) FROM 
-(SELECT * FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 SELECT extent(multidimTile(g, t, 2.5, interval '2 days', geometry 'Point(10 10)', '2001-06-01')) FROM 
-(SELECT * FROM tbl_geompoint WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 -- 3D
 SELECT extent(multidimTile(g, t, 2.5, interval '2 days')) FROM 
-(SELECT * FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 SELECT extent(multidimTile(g, t, 2.5, interval '2 days', geometry 'Point(10 10)', '2001-06-01')) FROM 
-(SELECT * FROM tbl_geompoint3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
+(SELECT * FROM tbl_geom_point3D WHERE g IS NOT NULL LIMIT 10 OFFSET 10) t1,
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
 
 -------------------------------------------------------------------------------

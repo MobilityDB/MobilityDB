@@ -545,19 +545,19 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor for temporal types of instant subtype</para>
+					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor for temporal types of instant subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeinstset"><varname>ttypeinstset</varname></link>: Constructor for temporal types of instant set subtype</para>
+					<para><link linkend="ttype_instset"><varname>ttype_instset</varname></link>: Constructor for temporal types of instant set subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor for temporal types of sequence subtype</para>
+					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseqset"><varname>ttypeseqset</varname></link>: Constructor for temporal types of sequence set subtype</para>
+					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -613,7 +613,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_instset, ttype_seq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>

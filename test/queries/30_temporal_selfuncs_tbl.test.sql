@@ -3956,7 +3956,7 @@ END LOOP;
 --Q193
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtintinst:= random_tint_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -3976,7 +3976,7 @@ END LOOP;
 --Q194
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatinst:= random_tfloatinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtfloatinst:= random_tfloat_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -3996,7 +3996,7 @@ END LOOP;
 --Q195
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointinst:= random_tgeompointinst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
+  Randtgeompointinst:= random_tgeompoint_inst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -4019,7 +4019,7 @@ END LOOP;
 --Q196
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtintinst:= random_tint_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -4039,7 +4039,7 @@ END LOOP;
 --Q197
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatinst:= random_tfloatinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtfloatinst:= random_tfloat_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -4059,7 +4059,7 @@ END LOOP;
 --Q198
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointinst:= random_tgeompointinst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
+  Randtgeompointinst:= random_tgeompoint_inst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -4083,7 +4083,7 @@ END LOOP;
 --Q199
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtintinst:= random_tint_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -4103,7 +4103,7 @@ END LOOP;
 --Q200
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatinst:= random_tfloatinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtfloatinst:= random_tfloat_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -4123,7 +4123,7 @@ END LOOP;
 --Q201
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointinst:= random_tgeompointinst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
+  Randtgeompointinst:= random_tgeompoint_inst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -4147,7 +4147,7 @@ END LOOP;
 --Q202
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintinst:= random_tintinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtintinst:= random_tint_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -4167,7 +4167,7 @@ END LOOP;
 --Q203
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatinst:= random_tfloatinst(-10, 120, '2000-10-01', '2002-1-31');
+  Randtfloatinst:= random_tfloat_inst(-10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -4187,7 +4187,7 @@ END LOOP;
 --Q204
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointinst:= random_tgeompointinst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
+  Randtgeompointinst:= random_tgeompoint_inst(-10, 120, -10, 120, '2000-10-01', '2002-1-31');
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointinst
@@ -4211,7 +4211,7 @@ END LOOP;
 --Q205
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtinti:= random_tint_instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -4231,7 +4231,7 @@ END LOOP;
 --Q206
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloati:= random_tfloati(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtfloati:= random_tfloat__instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -4251,7 +4251,7 @@ END LOOP;
 --Q207
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointi:= random_tgeompointi(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointi:= random_tgeompoint_instset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4275,7 +4275,7 @@ END LOOP;
 --Q208
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtinti:= random_tint_instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4295,7 +4295,7 @@ END LOOP;
 --Q209
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloati:= random_tfloati(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtfloati:= random_tfloat_instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4315,7 +4315,7 @@ END LOOP;
 --Q210
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointi:= random_tgeompointi(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointi:= random_tgeompoint_instset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4338,7 +4338,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtinti:= random_tint_instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4357,7 +4357,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloati:= random_tfloati(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtfloati:= random_tfloat_instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4376,7 +4376,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointi:= random_tgeompointi(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointi:= random_tgeompoint_instset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4399,7 +4399,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtinti:= random_tinti(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtinti:= random_tint_instset(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4418,7 +4418,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloati:= random_tfloati(-10, 120, '2000-10-01', '2002-1-31',10, 10);
+  Randtfloati:= random_tfloat_instset(-10, 120, '2000-10-01', '2002-1-31',10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4437,7 +4437,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointi:= random_tgeompointi(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointi:= random_tgeompoint_instset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4460,7 +4460,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtintseq:= random_tint_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -4479,7 +4479,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatseq:= random_tfloatseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtfloatseq:= random_tfloat_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -4498,7 +4498,7 @@ END LOOP;
 
 --k:= k+1;
 --FOR i IN 1..10 LOOP
---  Randtgeompointseq:= random_tgeompointseq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+--  Randtgeompointseq:= random_tgeompoint_seq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
 --  EXPLAIN (ANALYZE, FORMAT XML)
 --  SELECT *
 --  FROM tbl_tgeompointi
@@ -4522,7 +4522,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtintseq:= random_tint_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4541,7 +4541,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatseq:= random_tfloatseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtfloatseq:= random_tfloat_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4560,7 +4560,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointseq:= random_tgeompointseq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointseq:= random_tgeompoint_seq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4583,7 +4583,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtintseq:= random_tint_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4602,7 +4602,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatseq:= random_tfloatseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtfloatseq:= random_tfloat_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4621,7 +4621,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointseq:= random_tgeompointseq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointseq:= random_tgeompoint_seq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4644,7 +4644,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtintseq:= random_tintseq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtintseq:= random_tint_seq(-10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4663,7 +4663,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloatseq:= random_tfloatseq(-10, 120, '2000-10-01', '2002-1-31',10, 10);
+  Randtfloatseq:= random_tfloat_seq(-10, 120, '2000-10-01', '2002-1-31',10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4682,7 +4682,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompointseq:= random_tgeompointseq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
+  Randtgeompointseq:= random_tgeompoint_seq(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4705,7 +4705,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtints:= random_tint_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tintinst
@@ -4724,7 +4724,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloats:= random_tfloats(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtfloats:= random_tfloat_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloatinst
@@ -4743,7 +4743,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompoints:= random_tgeompoints(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtgeompoints:= random_tgeompoint_seqset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4766,7 +4766,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtints:= random_tint_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4785,7 +4785,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloats:= random_tfloats(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtfloats:= random_tfloat_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4804,7 +4804,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompoints:= random_tgeompoints(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtgeompoints:= random_tgeompoint_seqset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4827,7 +4827,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtints:= random_tint_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4846,7 +4846,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloats:= random_tfloats(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtfloats:= random_tfloat_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4865,7 +4865,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompoints:= random_tgeompoints(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtgeompoints:= random_tgeompoint_seqset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi
@@ -4888,7 +4888,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtints:= random_tints(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtints:= random_tint_seqset(-10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tinti
@@ -4907,7 +4907,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtfloats:= random_tfloats(-10, 120, '2000-10-01', '2002-1-31',10, 10, 10);
+  Randtfloats:= random_tfloat_seqset(-10, 120, '2000-10-01', '2002-1-31',10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tfloati
@@ -4926,7 +4926,7 @@ END LOOP;
 
 k:= k+1;
 FOR i IN 1..10 LOOP
-  Randtgeompoints:= random_tgeompoints(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
+  Randtgeompoints:= random_tgeompoint_seqset(-10, 120, -10, 120, '2000-10-01', '2002-1-31', 10, 10, 10);
   EXPLAIN (ANALYZE, FORMAT XML)
   SELECT *
   FROM tbl_tgeompointi

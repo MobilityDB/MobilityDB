@@ -48,13 +48,13 @@ SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tge
  12685412.960367
 (1 row)
 
-SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geompoint LIMIT 10;
+SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point LIMIT 10;
       round      
 -----------------
  15523281.670409
 (1 row)
 
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geomlinestring LIMIT 10;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring LIMIT 10;
       round      
 -----------------
  13567136.086579

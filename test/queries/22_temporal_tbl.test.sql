@@ -57,91 +57,91 @@ DROP TABLE tbl_ttext_tmp;
 -- Transformation functions
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tboolinst(inst)) FROM tbl_tboolinst;
-SELECT DISTINCT tempSubtype(tbooli(inst)) FROM tbl_tboolinst;
-SELECT DISTINCT tempSubtype(tboolseq(inst)) FROM tbl_tboolinst;
-SELECT DISTINCT tempSubtype(tbools(inst)) FROM tbl_tboolinst;
+SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
+SELECT DISTINCT tempSubtype(tbool_instset(inst)) FROM tbl_tbool_inst;
+SELECT DISTINCT tempSubtype(tbool_seq(inst)) FROM tbl_tbool_inst;
+SELECT DISTINCT tempSubtype(tbool_seqset(inst)) FROM tbl_tbool_inst;
 
-SELECT DISTINCT tempSubtype(tintinst(inst)) FROM tbl_tintinst;
-SELECT DISTINCT tempSubtype(tinti(inst)) FROM tbl_tintinst;
-SELECT DISTINCT tempSubtype(tintseq(inst)) FROM tbl_tintinst;
-SELECT DISTINCT tempSubtype(tints(inst)) FROM tbl_tintinst;
+SELECT DISTINCT tempSubtype(tint_inst(inst)) FROM tbl_tint_inst;
+SELECT DISTINCT tempSubtype(tint_instset(inst)) FROM tbl_tint_inst;
+SELECT DISTINCT tempSubtype(tint_seq(inst)) FROM tbl_tint_inst;
+SELECT DISTINCT tempSubtype(tint_seqset(inst)) FROM tbl_tint_inst;
 
-SELECT DISTINCT tempSubtype(tfloatinst(inst)) FROM tbl_tfloatinst;
-SELECT DISTINCT tempSubtype(tfloati(inst)) FROM tbl_tfloatinst;
-SELECT DISTINCT tempSubtype(tfloatseq(inst)) FROM tbl_tfloatinst;
-SELECT DISTINCT tempSubtype(tfloats(inst)) FROM tbl_tfloatinst;
+SELECT DISTINCT tempSubtype(tfloat_inst(inst)) FROM tbl_tfloat_inst;
+SELECT DISTINCT tempSubtype(tfloat_instset(inst)) FROM tbl_tfloat_inst;
+SELECT DISTINCT tempSubtype(tfloat_seq(inst)) FROM tbl_tfloat_inst;
+SELECT DISTINCT tempSubtype(tfloat_seqset(inst)) FROM tbl_tfloat_inst;
 
-SELECT DISTINCT tempSubtype(ttextinst(inst)) FROM tbl_ttextinst;
-SELECT DISTINCT tempSubtype(ttexti(inst)) FROM tbl_ttextinst;
-SELECT DISTINCT tempSubtype(ttextseq(inst)) FROM tbl_ttextinst;
-SELECT DISTINCT tempSubtype(ttexts(inst)) FROM tbl_ttextinst;
-
--------------------------------------------------------------------------------
-
-SELECT DISTINCT tempSubtype(tboolinst(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tbooli(ti)) FROM tbl_tbooli;
-SELECT DISTINCT tempSubtype(tboolseq(ti)) FROM tbl_tbooli WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tbools(ti)) FROM tbl_tbooli;
-
-SELECT DISTINCT tempSubtype(tintinst(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tinti(ti)) FROM tbl_tinti;
-SELECT DISTINCT tempSubtype(tintseq(ti)) FROM tbl_tinti WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tints(ti)) FROM tbl_tinti;
-
-SELECT DISTINCT tempSubtype(tfloatinst(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tfloati(ti)) FROM tbl_tfloati;
-SELECT DISTINCT tempSubtype(tfloatseq(ti)) FROM tbl_tfloati WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(tfloats(ti)) FROM tbl_tfloati;
-
-SELECT DISTINCT tempSubtype(ttextinst(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(ttexti(ti)) FROM tbl_ttexti;
-SELECT DISTINCT tempSubtype(ttextseq(ti)) FROM tbl_ttexti WHERE numInstants(ti) = 1;
-SELECT DISTINCT tempSubtype(ttexts(ti)) FROM tbl_ttexti;
+SELECT DISTINCT tempSubtype(ttext_inst(inst)) FROM tbl_ttext_inst;
+SELECT DISTINCT tempSubtype(ttext_instset(inst)) FROM tbl_ttext_inst;
+SELECT DISTINCT tempSubtype(ttext_seq(inst)) FROM tbl_ttext_inst;
+SELECT DISTINCT tempSubtype(ttext_seqset(inst)) FROM tbl_ttext_inst;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tboolinst(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tbooli(seq)) FROM tbl_tboolseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tboolseq(seq)) FROM tbl_tboolseq;
-SELECT DISTINCT tempSubtype(tbools(seq)) FROM tbl_tboolseq;
+SELECT DISTINCT tempSubtype(tbool_inst(ti)) FROM tbl_tbool_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tbool_instset(ti)) FROM tbl_tbool_instset;
+SELECT DISTINCT tempSubtype(tbool_seq(ti)) FROM tbl_tbool_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tbool_seqset(ti)) FROM tbl_tbool_instset;
 
-SELECT DISTINCT tempSubtype(tintinst(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tinti(seq)) FROM tbl_tintseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tintseq(seq)) FROM tbl_tintseq;
-SELECT DISTINCT tempSubtype(tints(seq)) FROM tbl_tintseq;
+SELECT DISTINCT tempSubtype(tint_inst(ti)) FROM tbl_tint_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tint_instset(ti)) FROM tbl_tint_instset;
+SELECT DISTINCT tempSubtype(tint_seq(ti)) FROM tbl_tint_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tint_seqset(ti)) FROM tbl_tint_instset;
 
-SELECT DISTINCT tempSubtype(tfloatinst(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tfloati(seq)) FROM tbl_tfloatseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(tfloatseq(seq)) FROM tbl_tfloatseq;
-SELECT DISTINCT tempSubtype(tfloats(seq)) FROM tbl_tfloatseq;
+SELECT DISTINCT tempSubtype(tfloat_inst(ti)) FROM tbl_tfloat_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tfloat_instset(ti)) FROM tbl_tfloat_instset;
+SELECT DISTINCT tempSubtype(tfloat_seq(ti)) FROM tbl_tfloat_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(tfloat_seqset(ti)) FROM tbl_tfloat_instset;
 
-SELECT DISTINCT tempSubtype(ttextinst(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(ttexti(seq)) FROM tbl_ttextseq WHERE numInstants(seq) = 1;
-SELECT DISTINCT tempSubtype(ttextseq(seq)) FROM tbl_ttextseq;
-SELECT DISTINCT tempSubtype(ttexts(seq)) FROM tbl_ttextseq;
+SELECT DISTINCT tempSubtype(ttext_inst(ti)) FROM tbl_ttext_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(ttext_instset(ti)) FROM tbl_ttext_instset;
+SELECT DISTINCT tempSubtype(ttext_seq(ti)) FROM tbl_ttext_instset WHERE numInstants(ti) = 1;
+SELECT DISTINCT tempSubtype(ttext_seqset(ti)) FROM tbl_ttext_instset;
 
 -------------------------------------------------------------------------------
 
-SELECT DISTINCT tempSubtype(tboolinst(ts)) FROM tbl_tbools WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tbooli(ts)) FROM tbl_tbools WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tboolseq(ts)) FROM tbl_tbools WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tbools(ts)) FROM tbl_tbools;
+SELECT DISTINCT tempSubtype(tbool_inst(seq)) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tbool_instset(seq)) FROM tbl_tbool_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tbool_seq(seq)) FROM tbl_tbool_seq;
+SELECT DISTINCT tempSubtype(tbool_seqset(seq)) FROM tbl_tbool_seq;
 
-SELECT DISTINCT tempSubtype(tintinst(ts)) FROM tbl_tints WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tinti(ts)) FROM tbl_tints WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tintseq(ts)) FROM tbl_tints WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tints(ts)) FROM tbl_tints;
+SELECT DISTINCT tempSubtype(tint_inst(seq)) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tint_instset(seq)) FROM tbl_tint_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tint_seq(seq)) FROM tbl_tint_seq;
+SELECT DISTINCT tempSubtype(tint_seqset(seq)) FROM tbl_tint_seq;
 
-SELECT DISTINCT tempSubtype(tfloatinst(ts)) FROM tbl_tfloats WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(tfloati(ts)) FROM tbl_tfloats WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(tfloatseq(ts)) FROM tbl_tfloats WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(tfloats(ts)) FROM tbl_tfloats;
+SELECT DISTINCT tempSubtype(tfloat_inst(seq)) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tfloat_instset(seq)) FROM tbl_tfloat_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(tfloat_seq(seq)) FROM tbl_tfloat_seq;
+SELECT DISTINCT tempSubtype(tfloat_seqset(seq)) FROM tbl_tfloat_seq;
 
-SELECT DISTINCT tempSubtype(ttextinst(ts)) FROM tbl_ttexts WHERE numInstants(ts) = 1;
-SELECT DISTINCT tempSubtype(ttexti(ts)) FROM tbl_ttexts WHERE timespan(ts) = '00:00:00';
-SELECT DISTINCT tempSubtype(ttextseq(ts)) FROM tbl_ttexts WHERE numSequences(ts) = 1;
-SELECT DISTINCT tempSubtype(ttexts(ts)) FROM tbl_ttexts;
+SELECT DISTINCT tempSubtype(ttext_inst(seq)) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(ttext_instset(seq)) FROM tbl_ttext_seq WHERE numInstants(seq) = 1;
+SELECT DISTINCT tempSubtype(ttext_seq(seq)) FROM tbl_ttext_seq;
+SELECT DISTINCT tempSubtype(ttext_seqset(seq)) FROM tbl_ttext_seq;
+
+-------------------------------------------------------------------------------
+
+SELECT DISTINCT tempSubtype(tbool_inst(ts)) FROM tbl_tbool_seqset WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tbool_instset(ts)) FROM tbl_tbool_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tbool_seq(ts)) FROM tbl_tbool_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tbool_seqset(ts)) FROM tbl_tbool_seqset;
+
+SELECT DISTINCT tempSubtype(tint_inst(ts)) FROM tbl_tint_seqset WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tint_instset(ts)) FROM tbl_tint_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tint_seq(ts)) FROM tbl_tint_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tint_seqset(ts)) FROM tbl_tint_seqset;
+
+SELECT DISTINCT tempSubtype(tfloat_inst(ts)) FROM tbl_tfloat_seqset WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(tfloat_instset(ts)) FROM tbl_tfloat_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(tfloat_seq(ts)) FROM tbl_tfloat_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(tfloat_seqset(ts)) FROM tbl_tfloat_seqset;
+
+SELECT DISTINCT tempSubtype(ttext_inst(ts)) FROM tbl_ttext_seqset WHERE numInstants(ts) = 1;
+SELECT DISTINCT tempSubtype(ttext_instset(ts)) FROM tbl_ttext_seqset WHERE timespan(ts) = '00:00:00';
+SELECT DISTINCT tempSubtype(ttext_seq(ts)) FROM tbl_ttext_seqset WHERE numSequences(ts) = 1;
+SELECT DISTINCT tempSubtype(ttext_seqset(ts)) FROM tbl_ttext_seqset;
 
 -------------------------------------------------------------------------------
 
@@ -154,10 +154,10 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
 -- Cast functions
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tintinst WHERE tfloat(inst) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tinti WHERE tfloat(ti) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tintseq WHERE tfloat(seq) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tints WHERE tfloat(ts) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -180,10 +180,10 @@ SELECT box(temp) FROM tbl_tfloat;
 SELECT period(temp) FROM tbl_ttext;
 */
 
-SELECT DISTINCT getValue(inst) FROM tbl_tboolinst;
-SELECT MAX(getValue(inst)) FROM tbl_tintinst;
-SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloatinst;
-SELECT MAX(getValue(inst)) FROM tbl_ttextinst;
+SELECT DISTINCT getValue(inst) FROM tbl_tbool_inst;
+SELECT MAX(getValue(inst)) FROM tbl_tint_inst;
+SELECT round(MAX(getValue(inst))::numeric, 6) FROM tbl_tfloat_inst;
+SELECT MAX(getValue(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tbool;
 SELECT MAX(array_length(getValues(temp), 1)) FROM tbl_tint;
@@ -211,10 +211,10 @@ SELECT MAX(maxValue(temp)) FROM tbl_tint;
 SELECT round(MAX(maxValue(temp))::numeric, 6) FROM tbl_tfloat;
 SELECT MAX(maxValue(temp)) FROM tbl_ttext;
 
-SELECT MAX(getTimestamp(inst)) FROM tbl_tboolinst;
-SELECT MAX(getTimestamp(inst)) FROM tbl_tintinst;
-SELECT MAX(getTimestamp(inst)) FROM tbl_tfloatinst;
-SELECT MAX(getTimestamp(inst)) FROM tbl_ttextinst;
+SELECT MAX(getTimestamp(inst)) FROM tbl_tbool_inst;
+SELECT MAX(getTimestamp(inst)) FROM tbl_tint_inst;
+SELECT MAX(getTimestamp(inst)) FROM tbl_tfloat_inst;
+SELECT MAX(getTimestamp(inst)) FROM tbl_ttext_inst;
 
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tbool;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tint;
@@ -231,65 +231,65 @@ SELECT MAX(timespan(temp)) FROM tbl_tint;
 SELECT MAX(timespan(temp)) FROM tbl_tfloat;
 SELECT MAX(timespan(temp)) FROM tbl_ttext;
 
-SELECT MAX(numSequences(seq)) FROM tbl_tboolseq;
-SELECT MAX(numSequences(seq)) FROM tbl_tintseq;
-SELECT MAX(numSequences(seq)) FROM tbl_tfloatseq;
-SELECT MAX(numSequences(seq)) FROM tbl_ttextseq;
+SELECT MAX(numSequences(seq)) FROM tbl_tbool_seq;
+SELECT MAX(numSequences(seq)) FROM tbl_tint_seq;
+SELECT MAX(numSequences(seq)) FROM tbl_tfloat_seq;
+SELECT MAX(numSequences(seq)) FROM tbl_ttext_seq;
 
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tboolseq;
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tintseq;
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_tfloatseq;
-SELECT MAX(timespan(startSequence(seq))) FROM tbl_ttextseq;
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_tbool_seq;
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_tint_seq;
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_tfloat_seq;
+SELECT MAX(timespan(startSequence(seq))) FROM tbl_ttext_seq;
 
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tboolseq;
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tintseq;
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_tfloatseq;
-SELECT MAX(timespan(endSequence(seq))) FROM tbl_ttextseq;
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_tbool_seq;
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_tint_seq;
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_tfloat_seq;
+SELECT MAX(timespan(endSequence(seq))) FROM tbl_ttext_seq;
 
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tboolseq;
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tintseq;
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tfloatseq;
-SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_ttextseq;
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tbool_seq;
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tint_seq;
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_tfloat_seq;
+SELECT MAX(timespan(sequenceN(seq, numSequences(seq)))) FROM tbl_ttext_seq;
 
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tboolseq;
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tintseq;
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tfloatseq;
-SELECT MAX(array_length(sequences(seq),1)) FROM tbl_ttextseq;
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tbool_seq;
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tint_seq;
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_tfloat_seq;
+SELECT MAX(array_length(sequences(seq),1)) FROM tbl_ttext_seq;
 
-SELECT MAX(array_length(segments(seq),1)) FROM tbl_tboolseq;
-SELECT MAX(array_length(segments(seq),1)) FROM tbl_tintseq;
-SELECT MAX(array_length(segments(seq),1)) FROM tbl_tfloatseq;
-SELECT MAX(array_length(segments(seq),1)) FROM tbl_ttextseq;
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tbool_seq;
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tint_seq;
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_tfloat_seq;
+SELECT MAX(array_length(segments(seq),1)) FROM tbl_ttext_seq;
 
-SELECT MAX(numSequences(ts)) FROM tbl_tbools;
-SELECT MAX(numSequences(ts)) FROM tbl_tints;
-SELECT MAX(numSequences(ts)) FROM tbl_tfloats;
-SELECT MAX(numSequences(ts)) FROM tbl_ttexts;
+SELECT MAX(numSequences(ts)) FROM tbl_tbool_seqset;
+SELECT MAX(numSequences(ts)) FROM tbl_tint_seqset;
+SELECT MAX(numSequences(ts)) FROM tbl_tfloat_seqset;
+SELECT MAX(numSequences(ts)) FROM tbl_ttext_seqset;
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tbools;
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tints;
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tfloats;
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_ttexts;
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tbool_seqset;
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tint_seqset;
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tfloat_seqset;
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_ttext_seqset;
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tbools;
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tints;
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tfloats;
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_ttexts;
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tbool_seqset;
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tint_seqset;
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tfloat_seqset;
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_ttext_seqset;
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tbools;
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tints;
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloats;
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_ttexts;
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tbool_seqset;
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tint_seqset;
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tfloat_seqset;
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_ttext_seqset;
 
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tbools;
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tints;
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tfloats;
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_ttexts;
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tbool_seqset;
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tint_seqset;
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tfloat_seqset;
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_ttext_seqset;
 
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_tbools;
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_tints;
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_tfloats;
-SELECT MAX(array_length(segments(ts),1)) FROM tbl_ttexts;
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tbool_seqset;
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tint_seqset;
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_tfloat_seqset;
+SELECT MAX(array_length(segments(ts),1)) FROM tbl_ttext_seqset;
 
 SELECT MAX(numInstants(temp)) FROM tbl_tbool;
 SELECT MAX(numInstants(temp)) FROM tbl_tint;

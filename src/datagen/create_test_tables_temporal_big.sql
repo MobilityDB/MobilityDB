@@ -70,7 +70,7 @@ CREATE TABLE tbl_tboolinst_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS inst
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tboolinst('2001-01-01', '2001-12-31')
+SELECT k, random_tbool_inst('2001-01-01', '2001-12-31')
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tboolinst_big t1
@@ -78,7 +78,7 @@ SET inst = (SELECT inst FROM tbl_tboolinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tboolinst_big t1
-SET inst = (SELECT tboolinst(random_bool(), getTimestamp(inst))
+SET inst = (SELECT tbool_inst(random_bool(), getTimestamp(inst))
   FROM tbl_tboolinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -87,7 +87,7 @@ CREATE TABLE tbl_tintinst_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS inst
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tintinst(1, 100, '2001-01-01', '2001-12-31')
+SELECT k, random_tint_inst(1, 100, '2001-01-01', '2001-12-31')
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tintinst_big t1
@@ -95,7 +95,7 @@ SET inst = (SELECT inst FROM tbl_tintinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tintinst_big t1
-SET inst = (SELECT tintinst(random_int(1, 100), getTimestamp(inst))
+SET inst = (SELECT tint_inst(random_int(1, 100), getTimestamp(inst))
   FROM tbl_tintinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -104,7 +104,7 @@ CREATE TABLE tbl_tfloatinst_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS inst
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloatinst(1, 100, '2001-01-01', '2001-12-31')
+SELECT k, random_tfloat_inst(1, 100, '2001-01-01', '2001-12-31')
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloatinst_big t1
@@ -112,7 +112,7 @@ SET inst = (SELECT inst FROM tbl_tfloatinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tfloatinst_big t1
-SET inst = (SELECT tfloatinst(random_float(1, 100), getTimestamp(inst))
+SET inst = (SELECT tfloat_inst(random_float(1, 100), getTimestamp(inst))
   FROM tbl_tfloatinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -121,7 +121,7 @@ CREATE TABLE tbl_ttextinst_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS inst
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttextinst('2001-01-01', '2001-12-31', 10)
+SELECT k, random_ttext_inst('2001-01-01', '2001-12-31', 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_ttextinst_big t1
@@ -129,7 +129,7 @@ SET inst = (SELECT inst FROM tbl_ttextinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_ttextinst_big t1
-SET inst = (SELECT ttextinst(random_text(10), getTimestamp(inst))
+SET inst = (SELECT ttext_inst(random_text(10), getTimestamp(inst))
   FROM tbl_ttextinst_big t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -140,7 +140,7 @@ CREATE TABLE tbl_tbooli_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tbooli('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tbool_instset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tbooli_big t1
@@ -166,7 +166,7 @@ CREATE TABLE tbl_tinti_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tinti(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+SELECT k, random_tint_instset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tinti_big t1
@@ -192,7 +192,7 @@ CREATE TABLE tbl_tfloati_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloati(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+SELECT k, random_tfloat_instset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloati_big t1
@@ -218,7 +218,7 @@ CREATE TABLE tbl_ttexti_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttexti('2001-01-01', '2001-12-31', 10, 10, 5, 10)
+SELECT k, random_ttext_instset('2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_ttexti_big t1
@@ -246,7 +246,7 @@ CREATE TABLE tbl_tboolseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tboolseq('2001-01-01', '2001-12-31', 10, 5, 10)
+SELECT k, random_tbool_seq('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tboolseq_big t1
@@ -271,7 +271,7 @@ CREATE TABLE tbl_tintseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tintseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+SELECT k, random_tint_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tintseq_big t1
@@ -296,7 +296,7 @@ CREATE TABLE tbl_tfloatseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloatseq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
+SELECT k, random_tfloat_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloatseq_big t1
@@ -321,7 +321,7 @@ CREATE TABLE tbl_ttextseq_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttextseq('2001-01-01', '2001-12-31', 10, 10, 5, 10)
+SELECT k, random_ttext_seq('2001-01-01', '2001-12-31', 10, 10, 5, 10)
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_ttextseq_big t1
@@ -373,7 +373,7 @@ CREATE TABLE tbl_tints_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tints(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
+SELECT k, random_tint_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_tints_big t1
@@ -398,7 +398,7 @@ CREATE TABLE tbl_tfloats_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloats(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
+SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_tfloats_big t1
@@ -423,7 +423,7 @@ CREATE TABLE tbl_ttexts_big AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_ttexts('2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
+SELECT k, random_ttext_seqset('2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10) AS ts
 FROM generate_series(perc+1, size) AS k;
 /* Add perc duplicates */
 UPDATE tbl_ttexts_big t1

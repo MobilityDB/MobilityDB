@@ -96,6 +96,7 @@
 	&temporal_types;
 	&manipulating_box_types;
 	&manipulating_temporal_types;
+	&reference;
 	&data_generator;
 	<index />
 

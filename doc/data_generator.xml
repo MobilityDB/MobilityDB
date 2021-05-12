@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <appendix id ="data_generator">
-	<title>A Simple Synthetic Data Generator</title>
+	<title>Synthetic Data Generator</title>
 	<para>
 		In many circumstances, it is necessary to have a test dataset to evaluate alternative implementation approaches or to perform benchmarks. It is often required that such a data set have particular requirements in size or in the intrinsic characteristics of its data. Even if a real-world dataset could be available, it may be not ideal for such experiments for multiple reasons. Therefore, a synthetic data generator that could be customized to produce data according to the given requirements is often the best solution. Obviously, experiments with synthetic data should be complemented with experiments with real-world data to have a thorough understanding of the problem at hand.
 	</para>
@@ -285,7 +285,7 @@
 	<sect1>
 		<title>Generation of Tables with Random Values</title>
 
-				<para>The files <varname>create_test_tables_temporal.sql</varname> and <varname>create_test_tables_tpoint.sql</varname> provides usage examples for the functions generating random values listed above. For example, the first file defines the following function.</para>
+				<para>The files <varname>create_test_tables_temporal.sql</varname> and <varname>create_test_tables_tpoint.sql</varname> provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.</para>
 				<programlisting>
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
 RETURNS text AS $$
@@ -446,13 +446,13 @@ WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 				</programlisting>
 				<para>As can be seen above, the table has a percentage of null values, of duplicates, and of rows with the same timestamp.</para>
 
-				<para>The creation of a table <varname>tbl_tint_instset</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [1, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, the maximum interval between two consecutive instants is 10 minutes, is given next.</para>
+				<para>The creation of a table <varname>tbl_tint_instset</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
 				<programlisting>
 CREATE TABLE tbl_tint_instset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tint_instset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
+SELECT k, random_tint_instset(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS ti
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tint_instset t1
@@ -475,13 +475,13 @@ WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 				</programlisting>
 				<para>As can be seen above, the table has a percentage of null values, of duplicates, of rows with the same timestamp, of rows that meet, and of rows that overlap.</para>
 
-				<para>The creation of a table <varname>tbl_tfloat_seq</varname> containing random <varname>tfloat</varname> values of sequence subtype having between 5 and 10 timestamps where the float values are in the range [1, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, the maximum interval between two consecutive instants is 10 minutes, is given next.</para>
+				<para>The creation of a table <varname>tbl_tfloat_seq</varname> containing random <varname>tfloat</varname> values of sequence subtype having between 5 and 10 timestamps where the float values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
 				<programlisting>
 CREATE TABLE tbl_tfloat_seq AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_tfloat_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
+SELECT k, random_tfloat_seq(0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10) AS seq
 FROM generate_series(perc+1, size) k;
 /* Add perc duplicates */
 UPDATE tbl_tfloat_seq t1
@@ -502,7 +502,7 @@ SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 				</programlisting>
 
-				<para>The creation of a table <varname>tbl_ttext_seqset</varname> containing random <varname>ttext</varname> values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the text values have at most 10 characters, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum interval between two consecutive instants is 10 minutes, is given next.</para>
+				<para>The creation of a table <varname>tbl_ttext_seqset</varname> containing random <varname>ttext</varname> values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the text values have at most 10 characters, the timestamps are in the range [2001-01-01, 2001-12-31], and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
 				<programlisting>
 CREATE TABLE tbl_ttext_seqset AS
 /* Add perc NULL values */
@@ -529,7 +529,7 @@ SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 				</programlisting>
 
-				<para>The creation of a table <varname>tbl_tgeompoint_instset</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes, is given next.</para>
+				<para>The creation of a table <varname>tbl_tgeompoint_instset</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
 				<programlisting>
 CREATE TABLE tbl_tgeompoint_instset AS
 SELECT k, random_tgeompoint_instset(0, 100, 0, 100, '2001-01-01', '2001-12-31',
@@ -555,7 +555,7 @@ SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 				</programlisting>
 
-				<para>Finally, the creation of a table <varname>tbl_tgeompoint3D_seqset</varname> containing random <varname>tgeompoint</varname> 3D values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the x, y, and z coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes, is given next.</para>
+				<para>Finally, the creation of a table <varname>tbl_tgeompoint3D_seqset</varname> containing random <varname>tgeompoint</varname> 3D values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the x, y, and z coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
 				<programlisting>
 DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
 CREATE TABLE tbl_tgeompoint3D_seqset AS

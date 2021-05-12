@@ -206,7 +206,7 @@ tnot_tboolinst(const TInstant *inst)
  * Returns the temporal boolean not of the temporal value
  */
 static TInstantSet *
-tnot_tbooli(const TInstantSet *ti)
+tnot_tboolinstset(const TInstantSet *ti)
 {
   TInstantSet *result = tinstantset_copy(ti);
   for (int i = 0; i < ti->count; i++)
@@ -239,7 +239,7 @@ tnot_tboolseq(const TSequence *seq)
  * Returns the temporal boolean not of the temporal value
  */
 static TSequenceSet *
-tnot_tbools(const TSequenceSet *ts)
+tnot_tboolseqset(const TSequenceSet *ts)
 {
   TSequenceSet *result = tsequenceset_copy(ts);
   for (int i = 0; i < ts->count; i++)
@@ -267,11 +267,11 @@ tnot_tbool_internal(const Temporal *temp)
   if (temp->temptype == INSTANT)
     result = (Temporal *)tnot_tboolinst((TInstant *)temp);
   else if (temp->temptype == INSTANTSET)
-    result = (Temporal *)tnot_tbooli((TInstantSet *)temp);
+    result = (Temporal *)tnot_tboolinstset((TInstantSet *)temp);
   else if (temp->temptype == SEQUENCE)
     result = (Temporal *)tnot_tboolseq((TSequence *)temp);
   else /* temp->temptype == SEQUENCESET */
-    result = (Temporal *)tnot_tbools((TSequenceSet *)temp);
+    result = (Temporal *)tnot_tboolseqset((TSequenceSet *)temp);
   return result;
 }
 
