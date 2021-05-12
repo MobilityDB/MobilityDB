@@ -32,6 +32,9 @@
 #include <postgres.h>
 #include <assert.h>
 #include <funcapi.h>
+#if MOBDB_PGSQL_VERSION < 120000
+#include <access/htup_details.h>
+#endif
 #include <liblwgeom.h>
 
 #include "tpoint_tile.h"
@@ -397,7 +400,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  bool isnull[3] = {0,0}; /* needed to say no value is null */
+  bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;
   Datum result; /* the actual composite return value */
