@@ -4,49 +4,49 @@ SET parallel_setup_cost=0;
 SET
 SET force_parallel_mode=regress;
 SET
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeompointinst;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeompoint_inst;
                                                          setprecision                                                         
 ------------------------------------------------------------------------------------------------------------------------------
  STBOX T((1.8961993455887,0.7555032968521,2001-01-01 22:05:00+00),(99.8643417358398,99.5074996948242,2001-12-11 14:43:00+00))
 (1 row)
 
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpointinst;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpoint_inst;
                                                                                setprecision                                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.3012902140617,-0.1223893836141,0.5739543992938,2001-01-04 09:31:00+00),(0.8148999810219,0.3773300945759,0.9480414196466,2001-12-30 22:05:00+00))
 (1 row)
 
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeompointi;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeompoint_instset;
                                                          setprecision                                                         
 ------------------------------------------------------------------------------------------------------------------------------
  STBOX T((0.0985009595752,0.8637114167213,2001-01-01 12:09:00+00),(99.8823318481445,99.4073638916016,2001-12-23 15:39:00+00))
 (1 row)
 
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpointi;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpoint_instset;
                                                                                setprecision                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.2659574449062,-0.1391303539276,0.5739040318005,2001-01-10 21:37:00+00),(0.818909406662,0.4140127301216,0.9504268983287,2001-12-29 00:22:00+00))
 (1 row)
 
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeompointseq;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeompoint_seq;
                                                          setprecision                                                         
 ------------------------------------------------------------------------------------------------------------------------------
  STBOX T((0.3148547112942,0.1030134484172,2001-01-08 09:36:00+00),(99.9325866699219,99.5807418823242,2001-12-25 04:46:00+00))
 (1 row)
 
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpointseq;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpoint_seq;
                                                                                setprecision                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.2686485946178,-0.1248092129827,0.573693215847,2001-01-02 19:00:00+00),(0.8190305829048,0.4161925911903,0.9507424235344,2001-12-19 18:07:00+00))
 (1 row)
 
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoints;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoint_seqset;
                                                         setprecision                                                        
 ----------------------------------------------------------------------------------------------------------------------------
  STBOX T((0.0101293902844,0.0528112053871,2001-01-01 10:09:00+00),(99.95361328125,99.9377899169922,2001-12-30 10:07:00+00))
 (1 row)
 
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoints;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoint_seqset;
                                                                                setprecision                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.2699885964394,-0.1344755589962,0.573580801487,2001-01-01 20:01:00+00),(0.8184504508972,0.4233390986919,0.9509806632996,2001-12-22 20:33:00+00))
@@ -64,49 +64,49 @@ SELECT setprecision(extent(temp), 13) FROM tbl_tgeogpoint;
  SRID=4326;GEODSTBOX T((0.2786218225956,-0.1344755589962,0.5736332535744,2001-01-04 09:31:00+00),(0.8190305829048,0.4080115556717,0.9502285011131,2001-12-17 18:56:00+00))
 (1 row)
 
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeompoint3Dinst;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeompoint3D_inst;
                                                                          setprecision                                                                          
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
  STBOX ZT((0.0969903022051,0.9151523709297,1.2832818031311,2001-01-01 05:13:00+00),(95.650016784668,99.5739822387695,98.0109481811523,2001-12-24 21:44:00+00))
 (1 row)
 
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpoint3Dinst;
+SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpoint3D_inst;
                                                                                setprecision                                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.2798745930195,-0.1044272407889,0.574344098568,2001-01-04 03:22:00+00),(0.8162636160851,0.3625725209713,0.9479365348816,2001-12-28 09:03:00+00))
 (1 row)
 
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeompoint3Di;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeompoint3D_instset;
                                                                          setprecision                                                                          
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
  STBOX ZT((0.3783178329468,0.7382856607437,0.4343484938145,2001-01-09 23:49:00+00),(99.8739013671875,99.9101104736328,99.830680847168,2001-12-28 14:07:00+00))
 (1 row)
 
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpoint3Di;
+SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpoint3D_instset;
                                                                               setprecision                                                                               
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.2706721425056,-0.11660400033,0.5744199752808,2001-01-06 01:21:00+00),(0.817047894001,0.4274379014969,0.9509580731392,2001-12-18 06:24:00+00))
 (1 row)
 
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeompoint3Dseq;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeompoint3D_seq;
                                                                           setprecision                                                                          
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
  STBOX ZT((0.0163091812283,0.1959456056356,0.2157480418682,2001-01-02 01:22:00+00),(99.9341430664062,99.7131500244141,99.8706207275391,2001-12-29 08:08:00+00))
 (1 row)
 
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpoint3Dseq;
+SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpoint3D_seq;
                                                                                setprecision                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.2795170247555,-0.1306291073561,0.5736379027367,2001-01-01 05:04:00+00),(0.81496489048,0.4075630903244,0.9508108496666,2001-12-14 14:34:00+00))
 (1 row)
 
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoint3Ds;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoint3D_seqset;
                                                                         setprecision                                                                        
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
  STBOX ZT((0.0139362178743,0.0790459513664,0.0538359843194,2001-01-01 08:42:00+00),(99.9970703125,99.940803527832,99.9818496704102,2001-12-30 14:00:00+00))
 (1 row)
 
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoint3Ds;
+SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoint3D_seqset;
                                                                                setprecision                                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.2636807560921,-0.1383857727051,0.5740966796875,2001-01-02 23:15:00+00),(0.814958691597,0.4136002957821,0.9510354995728,2001-12-30 19:51:00+00))
@@ -124,19 +124,19 @@ SELECT setprecision(extent(temp), 13) FROM tbl_tgeogpoint3D;
  SRID=4326;GEODSTBOX ZT((0.2706721425056,-0.1366866976023,0.574344098568,2001-01-04 03:45:00+00),(0.817047894001,0.4107208251953,0.9504963755608,2001-12-23 08:21:00+00))
 (1 row)
 
-SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompointinst;
+SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompoint_inst;
  numinstants 
 -------------
           96
 (1 row)
 
-SELECT numInstants(tcount(inst)) FROM tbl_tgeompointinst;
+SELECT numInstants(tcount(inst)) FROM tbl_tgeompoint_inst;
  numinstants 
 -------------
           96
 (1 row)
 
-SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompointinst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompoint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -151,7 +151,7 @@ SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompointinst GROUP BY k%10 
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompointinst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -166,19 +166,19 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompointinst GROUP BY k%10 ORD
         9 |          10
 (10 rows)
 
-SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompointi;
+SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint_instset;
  numinstants 
 -------------
          454
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tgeompointi;
+SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint_instset;
  numinstants 
 -------------
          454
 (1 row)
 
-SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompointi GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint_instset GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          59
@@ -193,7 +193,7 @@ SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompointi GROUP BY k%10 ORDER
         9 |          41
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompointi GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint_instset GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          59
@@ -208,19 +208,19 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompointi GROUP BY k%10 ORDER BY
         9 |          41
 (10 rows)
 
-SELECT numSequences(tcentroid(seq)) FROM tbl_tgeompointseq;
+SELECT numSequences(tcentroid(seq)) FROM tbl_tgeompoint_seq;
  numsequences 
 --------------
            99
 (1 row)
 
-SELECT numSequences(tcount(seq)) FROM tbl_tgeompointseq;
+SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint_seq;
  numsequences 
 --------------
            95
 (1 row)
 
-SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompointseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -235,7 +235,7 @@ SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompointseq GROUP BY k%10 O
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompointseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint_seq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -250,19 +250,19 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompointseq GROUP BY k%10 ORDE
         9 |           10
 (10 rows)
 
-SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoints;
+SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoint_seqset;
  numsequences 
 --------------
           474
 (1 row)
 
-SELECT numSequences(tcount(ts)) FROM tbl_tgeompoints;
+SELECT numSequences(tcount(ts)) FROM tbl_tgeompoint_seqset;
  numsequences 
 --------------
           455
 (1 row)
 
-SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoints GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           35
@@ -277,7 +277,7 @@ SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoints GROUP BY k%10 ORDE
         9 |           64
 (10 rows)
 
-SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoints GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           35
@@ -292,19 +292,19 @@ SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoints GROUP BY k%10 ORDER B
         9 |           64
 (10 rows)
 
-SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompoint3Dinst;
+SELECT numInstants(tcentroid(inst)) FROM tbl_tgeompoint3D_inst;
  numinstants 
 -------------
           96
 (1 row)
 
-SELECT numInstants(tcount(inst)) FROM tbl_tgeompoint3Dinst;
+SELECT numInstants(tcount(inst)) FROM tbl_tgeompoint3D_inst;
  numinstants 
 -------------
           96
 (1 row)
 
-SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompoint3Dinst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompoint3D_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -319,7 +319,7 @@ SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tgeompoint3Dinst GROUP BY k%1
         9 |          10
 (10 rows)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint3Dinst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint3D_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -334,19 +334,19 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeompoint3Dinst GROUP BY k%10 O
         9 |          10
 (10 rows)
 
-SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint3Di;
+SELECT numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_instset;
  numinstants 
 -------------
          495
 (1 row)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint3Di;
+SELECT numInstants(tcount(ti)) FROM tbl_tgeompoint3D_instset;
  numinstants 
 -------------
          495
 (1 row)
 
-SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint3Di GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint3D_instset GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          47
@@ -361,7 +361,7 @@ SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tgeompoint3Di GROUP BY k%10 ORD
         9 |          58
 (10 rows)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint3Di GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint3D_instset GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          47
@@ -376,19 +376,19 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeompoint3Di GROUP BY k%10 ORDER 
         9 |          58
 (10 rows)
 
-SELECT numSequences(tcentroid(seq)) FROM tbl_tgeompoint3Dseq;
+SELECT numSequences(tcentroid(seq)) FROM tbl_tgeompoint3D_seq;
  numsequences 
 --------------
            99
 (1 row)
 
-SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint3Dseq;
+SELECT numSequences(tcount(seq)) FROM tbl_tgeompoint3D_seq;
  numsequences 
 --------------
            96
 (1 row)
 
-SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint3Dseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint3D_seq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -403,7 +403,7 @@ SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tgeompoint3Dseq GROUP BY k%10
         9 |           10
 (10 rows)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint3Dseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint3D_seq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -418,19 +418,19 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeompoint3Dseq GROUP BY k%10 OR
         9 |           10
 (10 rows)
 
-SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoint3Ds;
+SELECT numSequences(tcentroid(ts)) FROM tbl_tgeompoint3D_seqset;
  numsequences 
 --------------
           522
 (1 row)
 
-SELECT numSequences(tcount(ts)) FROM tbl_tgeompoint3Ds;
+SELECT numSequences(tcount(ts)) FROM tbl_tgeompoint3D_seqset;
  numsequences 
 --------------
           478
 (1 row)
 
-SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoint3Ds GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           54
@@ -445,7 +445,7 @@ SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tgeompoint3Ds GROUP BY k%10 OR
         9 |           58
 (10 rows)
 
-SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoint3Ds GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoint3D_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           54
@@ -460,13 +460,13 @@ SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeompoint3Ds GROUP BY k%10 ORDER
         9 |           58
 (10 rows)
 
-SELECT numInstants(tcount(inst)) FROM tbl_tgeogpointinst;
+SELECT numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst;
  numinstants 
 -------------
           96
 (1 row)
 
-SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpointinst GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpoint_inst GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -481,13 +481,13 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tgeogpointinst GROUP BY k%10 ORD
         9 |          10
 (10 rows)
 
-SELECT numInstants(tcount(ti)) FROM tbl_tgeogpointi;
+SELECT numInstants(tcount(ti)) FROM tbl_tgeogpoint_instset;
  numinstants 
 -------------
          476
 (1 row)
 
-SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpointi GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpoint_instset GROUP BY k%10 ORDER BY k%10;
  ?column? | numinstants 
 ----------+-------------
         0 |          59
@@ -502,13 +502,13 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tgeogpointi GROUP BY k%10 ORDER BY
         9 |          49
 (10 rows)
 
-SELECT numSequences(tcount(seq)) FROM tbl_tgeogpointseq;
+SELECT numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq;
  numsequences 
 --------------
            95
 (1 row)
 
-SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpointseq GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpoint_seq GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -523,13 +523,13 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tgeogpointseq GROUP BY k%10 ORDE
         9 |           10
 (10 rows)
 
-SELECT numSequences(tcount(ts)) FROM tbl_tgeogpoints;
+SELECT numSequences(tcount(ts)) FROM tbl_tgeogpoint_seqset;
  numsequences 
 --------------
           480
 (1 row)
 
-SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoints GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tgeogpoint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------
         0 |           53
