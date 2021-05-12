@@ -35,6 +35,9 @@
 #include <assert.h>
 #include <float.h>
 #include <funcapi.h>
+#if MOBDB_PGSQL_VERSION < 120000
+#include <htup_details.h>
+#endif
 #include <utils/builtins.h>
 #include <utils/datetime.h>
 

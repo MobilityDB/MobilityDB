@@ -1,53 +1,53 @@
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tcontains(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tcontains(temp, g) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tcovers(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tcovers(temp, g) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tcoveredby(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tcoveredby(temp, g) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tdisjoint(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tdisjoint(temp, g) IS NOT NULL;
  count 
 -------
@@ -68,14 +68,14 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
    148
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tequals(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tequals(temp, g) IS NOT NULL;
  count 
 -------
@@ -89,14 +89,14 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
    152
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tintersects(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tintersects(temp, g) IS NOT NULL;
  count 
 -------
@@ -117,42 +117,42 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
    148
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE ttouches(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE ttouches(temp, g) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE twithin(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE twithin(temp, g) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tdwithin(g, temp, 10) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tdwithin(temp, g, 10) IS NOT NULL;
  count 
 -------
@@ -173,14 +173,14 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
    148
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE trelate(g, temp) IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE trelate(temp, g) IS NOT NULL;
  count 
 -------
@@ -194,14 +194,14 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
    152
 (1 row)
 
-SELECT count(*) FROM tbl_geompoint, tbl_tgeompoint
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE trelate(g, temp, 'T*****FF*') IS NOT NULL;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geompoint
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE trelate(temp, g, 'T*****FF*') IS NOT NULL;
  count 
 -------
