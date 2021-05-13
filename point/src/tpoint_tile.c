@@ -81,8 +81,8 @@ stbox_tile_get(double x, double y, double z, TimestampTz t, double size,
     tmin = t;
     tmax = tmin + tunits;
   }
-  return (STBOX *) stbox_make(true, hasz, hast, false, srid, xmin, xmax,
-    ymin, ymax, zmin, zmax, tmin, tmax);
+  return stbox_make(true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, tmin, tmax);
 }
 
 /**
@@ -457,7 +457,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
   funcctx = SRF_PERCALL_SETUP();
   /* Get state */
   state = funcctx->user_fctx;
-  /* We need to loop since atRange may be NULL */
+  /* We need to loop since atStbox may be NULL */
   while (true)
   {
     /* Stop when we've used up all the grid squares */
@@ -483,8 +483,11 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
       STBOX box1;
       memset(&box1, 0, sizeof(STBOX));
       temporal_bbox(&box1, atstbox);
-      if (box1.zmin >= box->zmax || box->zmin >= box1.zmax)
+      if (box->zmin > box1.zmin || box1.zmin >= box->zmax)
+      {
+        pfree(atstbox);
         continue;
+      }
     }
     Datum upper_bound = stbox_upper_bound(box);
     Temporal *minus_upper = tpoint_restrict_geometry_internal(atstbox,

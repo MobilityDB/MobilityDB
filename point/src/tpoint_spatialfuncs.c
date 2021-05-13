@@ -4131,6 +4131,11 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 Temporal *
 tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
 {
+  /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  assert(hasx || hast);
+
   /* Bounding box test */
   STBOX box1;
   memset(&box1, 0, sizeof(STBOX));
@@ -4138,9 +4143,8 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
   if (!overlaps_stbox_stbox_internal(box, &box1))
     return NULL;
 
-  /* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
   Temporal *temp1;
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  if (hast)
   {
     Period p;
     period_set(&p, box->tmin, box->tmax, true, true);
@@ -4151,10 +4155,10 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
       return NULL;
   }
   else
-    temp1 = temporal_copy(temp);
+    temp1 = (Temporal *) temp;
 
   Temporal *result;
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (hasx)
   {
     Datum gbox = PointerGetDatum(stbox_to_gbox(box));
     Datum geom = MOBDB_FLAGS_GET_Z(box->flags) ?
@@ -4165,7 +4169,8 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
     result = tpoint_restrict_geometry_internal(temp1, geom1, REST_AT);
     pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
     pfree(DatumGetPointer(geom1));
-    pfree(temp1);
+    if (hast)
+      pfree(temp1);
   }
   else
     result = temp1;

@@ -619,7 +619,7 @@ PG_FUNCTION_INFO_V1(box2d_to_stbox);
 PGDLLEXPORT Datum
 box2d_to_stbox(PG_FUNCTION_ARGS)
 {
-  GBOX *box = (GBOX *)PG_GETARG_POINTER(0);
+  GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
   STBOX *result = stbox_make(true, false, false, false, 0,
     box->xmin, box->xmax, box->ymin, box->ymax, 0, 0, 0, 0);
   PG_RETURN_POINTER(result);
@@ -632,7 +632,7 @@ PG_FUNCTION_INFO_V1(box3d_to_stbox);
 PGDLLEXPORT Datum
 box3d_to_stbox(PG_FUNCTION_ARGS)
 {
-  BOX3D *box = (BOX3D *)PG_GETARG_POINTER(0);
+  BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
   STBOX *result = stbox_make(true, true, false, false, box->srid, box->xmin,
     box->xmax, box->ymin, box->ymax, box->zmin, box->zmax, 0, 0);
   PG_RETURN_POINTER(result);
