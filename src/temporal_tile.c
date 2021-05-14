@@ -894,9 +894,9 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       lower += tunits;
       upper += tunits;
     }
-    /* Variable keeping the number of time buckets of the current sequence */
-    int l = tsequence_time_split1(sequences, &times[m], seq, lower, end,
-      tunits, count);
+    /* Number of time buckets of the current sequence */
+    int l = tsequence_time_split1(sequences, times, seq, lower, end,
+      tunits, count); 
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
     {
@@ -915,7 +915,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
         result[m++] = tsequence_to_tsequenceset(sequences[0]);
         pfree(sequences[0]);
       }
-      for (int j = 1; j < l - 2; j++)
+      for (int j = 1; j < l - 1; j++)
       {
         result[m++] = tsequence_to_tsequenceset(sequences[j]);
         pfree(sequences[j]);
@@ -924,7 +924,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
     /* Save the last fragment in case it is necessary to assemble with the
      * first one of the next sequence */
     fragments[k++] = sequences[l - 1];
-    lower = times[m];
+    lower = times[l - 1];
   }
   /* Process the accumulated fragments of the last time bucket */
   if (k > 0)
@@ -1579,13 +1579,14 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         upper_inc1 = upper_inc_def;
       }
       /* If last bucket contains a single instant */
-      int countinst = (bounds[0]->t == bounds[1]->t) ? 1 : 2;
+      int k = (bounds[0]->t == bounds[1]->t) ? 1 : 2;
       /* We cannot add to last bucket if last instant has exclusive bound */
-      if (countinst == 1 && ! upper_inc1)
+      if (k == 1 && ! upper_inc1)
         break;
       seq_no = numseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        countinst, lower_inc1, upper_inc1, LINEAR, NORMALIZE_NO);
+        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true, 
+        LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
       bucket_upper = datum_add(bucket_upper, size, valuetypid, valuetypid);
