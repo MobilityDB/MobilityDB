@@ -3601,20 +3601,29 @@ static bool
 tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  /* We need to do the comparison in 2D since the Z values reported by PostGIS
-   * may not be correct */
-  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst1));
-  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst2));
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-  GSERIALIZED *gs1c = gserialized_copy(gs1);
-  GSERIALIZED *gs2c = gserialized_copy(gs2);
-  GSERIALIZED *gsc = gserialized_copy(gs);
-  FLAGS_SET_Z(gs1c->flags, false);
-  FLAGS_SET_Z(gs2c->flags, false);
-  FLAGS_SET_Z(gsc->flags, false);
-  Datum value1 = PointerGetDatum(gs1c);
-  Datum value2 = PointerGetDatum(gs2c);
-  Datum val = PointerGetDatum(gsc);
+  bool hasz = MOBDB_FLAGS_GET_Z(inst1->flags);
+  Datum value1, value2, val;
+  GSERIALIZED *gs1, *gs2, *gs;
+  if (hasz)
+  {
+    /* We need to do the comparison in 2D since the Z values returned by PostGIS
+     * may not be correct */
+    gs1 = (GSERIALIZED *) DatumGetPointer(tinstant_value_copy(inst1));
+    gs2 = (GSERIALIZED *) DatumGetPointer(tinstant_value_copy(inst2));
+    gs = gserialized_copy((GSERIALIZED *) DatumGetPointer(value));
+    FLAGS_SET_Z(gs1->flags, false);
+    FLAGS_SET_Z(gs2->flags, false);
+    FLAGS_SET_Z(gs->flags, false);
+    value1 = PointerGetDatum(gs1);
+    value2 = PointerGetDatum(gs2);
+    val = PointerGetDatum(gs);
+  }
+  else
+  {
+    value1 = tinstant_value(inst1);
+    value2 = tinstant_value(inst2);
+    val = value;
+  }
   /* Is the lower bound the answer? */
   bool result;
   if (datum_point_eq(value1, val))
@@ -3630,13 +3639,21 @@ tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   }
   else
   {
-    /* For linear interpolation and not constant segment is the
-     * value in the interior of the segment? */
-    if (! tpointseq_intersection_value(inst1, inst2, value, t))
+    double dist;
+    double fraction = geoseg_locate_point(value1, value2, val, &dist);
+    if (fabs(dist) >= EPSILON)
       result = false;
-    result = true;
+    else
+    {
+      double duration = (inst2->t - inst1->t);
+      *t = inst1->t + (TimestampTz) (duration * fraction);
+      result = true;
+    }
   }
-  pfree(gs1c); pfree(gs2c); pfree(gsc);
+  if (hasz)
+  {
+    pfree(gs1); pfree(gs2); pfree(gs);
+  }
   return result;
 }
 
