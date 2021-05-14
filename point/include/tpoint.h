@@ -78,7 +78,7 @@
 #define WKB_INT_SIZE         4  /* Internal use only */
 #define WKB_BYTE_SIZE        1  /* Internal use only */
 
-/* Duration */
+/* Subtype */
 #define WKB_INSTANT        1
 #define WKB_INSTANTSET     2
 #define WKB_SEQUENCE       3

@@ -56,6 +56,15 @@ CREATE FUNCTION tgeogpointFromMFJSON(text)
   AS 'MODULE_PATHNAME', 'tgeogpoint_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeompointFromBinary(bytea)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'tpoint_from_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpointFromBinary(bytea)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'tpoint_from_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tgeompointFromEWKB(bytea)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_from_ewkb'
@@ -65,11 +74,11 @@ CREATE FUNCTION tgeogpointFromEWKB(bytea)
   AS 'MODULE_PATHNAME', 'tpoint_from_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tgeompointFromHexEWKB(cstring)
+CREATE FUNCTION tgeompointFromHexEWKB(text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_from_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpointFromEWKB(cstring)
+CREATE FUNCTION tgeogpointFromEWKB(text)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tpoint_from_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

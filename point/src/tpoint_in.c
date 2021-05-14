@@ -632,14 +632,18 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
   s->is_geodetic = false;
   s->has_srid = false;
   s->has_srid = false;
-  /* If any of the higher bits are set, this is probably an extended type. */
-  if (wkb_type & 0xF0)
-  {
-    if (wkb_type & WKB_ZFLAG) s->has_z = true;
-    if (wkb_type & WKB_GEODETICFLAG) s->is_geodetic = true;
-    if (wkb_type & WKB_SRIDFLAG) s->has_srid = true;
-    if (wkb_type & WKB_LINEAR_INTERP) s->linear = true;
-  }
+  // /* If any of the higher bits are set, this is probably an extended type. */
+  // if (wkb_type & 0xF0)
+  // {
+    if (wkb_type & WKB_ZFLAG)
+      s->has_z = true;
+    if (wkb_type & WKB_GEODETICFLAG)
+      s->is_geodetic = true;
+    if (wkb_type & WKB_SRIDFLAG)
+      s->has_srid = true;
+    if (wkb_type & WKB_LINEAR_INTERP)
+      s->linear = true;
+  // }
   /* Mask off the flags */
   wkb_type = wkb_type & (uint8_t) 0x0F;
 
@@ -920,12 +924,14 @@ PG_FUNCTION_INFO_V1(tpoint_from_hexewkb);
 PGDLLEXPORT Datum
 tpoint_from_hexewkb(PG_FUNCTION_ARGS)
 {
-  char *hexwkb = PG_GETARG_CSTRING(0);
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
   int hexwkb_len = hexwkb_len = strlen(hexwkb);
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
   Temporal *temp = tpoint_from_ewkb_internal(wkb, hexwkb_len/2);
+  pfree(hexwkb);
   pfree(wkb);
-  PG_FREE_IF_COPY(hexwkb, 0);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
   PG_RETURN_POINTER(temp);
 }
 
@@ -942,8 +948,11 @@ Datum tgeompoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   char *wkt = text2cstring(wkt_text);
+  /* Save the address of wkt since it is modified by the parse function */
+  char *wkt_save = wkt;
   Temporal *result = tpoint_parse(&wkt, type_oid(T_GEOMETRY));
-  pfree(wkt);
+  pfree(wkt_save);
+  PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -956,8 +965,11 @@ Datum tgeogpoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   char *wkt = text2cstring(wkt_text);
+  /* Save the address of wkt since it is modified by the parse function */
+  char *wkt_save = wkt;
   Temporal *result = tpoint_parse(&wkt, type_oid(T_GEOGRAPHY));
-  pfree(wkt);
+  pfree(wkt_save);
+  PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);
 }
 

@@ -3584,7 +3584,11 @@ tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
  *
  * This function must take into account the roundoff errors and thus it uses
  * the datum_point_eq_eps for comparing two values so the coordinates of the
- * values may differ by EPSILON.
+ * values may differ by EPSILON. Furthermore, we must drop the Z values since
+ * this function may be called for finding the intersection of a sequence and
+ * a geometry and the Z values given by PostGIS/GEOS are not necessarily correct,
+ * they "are copied, averaged or interpolated" as stated in 
+ * https://postgis.net/docs/ST_Intersection.html
  *
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
@@ -3597,25 +3601,43 @@ static bool
 tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
+  /* We need to do the comparison in 2D since the Z values reported by PostGIS
+   * may not be correct */
+  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst1));
+  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(tinstant_value(inst2));
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  GSERIALIZED *gs1c = gserialized_copy(gs1);
+  GSERIALIZED *gs2c = gserialized_copy(gs2);
+  GSERIALIZED *gsc = gserialized_copy(gs);
+  FLAGS_SET_Z(gs1c->flags, false);
+  FLAGS_SET_Z(gs2c->flags, false);
+  FLAGS_SET_Z(gsc->flags, false);
+  Datum value1 = PointerGetDatum(gs1c);
+  Datum value2 = PointerGetDatum(gs2c);
+  Datum val = PointerGetDatum(gsc);
   /* Is the lower bound the answer? */
-  if (datum_point_eq(value1, value))
+  bool result;
+  if (datum_point_eq(value1, val))
   {
     *t = inst1->t;
-    return true;
+    result = true;
   }
   /* Is the upper bound the answer? */
-  if (datum_point_eq(value2, value))
+  else if (datum_point_eq(value2, value))
   {
     *t = inst2->t;
-    return true;
+    result = true;
   }
-  /* For linear interpolation and not constant segment is the
-   * value in the interior of the segment? */
-  if (! tpointseq_intersection_value(inst1, inst2, value, t))
-    return false;
-  return true;
+  else
+  {
+    /* For linear interpolation and not constant segment is the
+     * value in the interior of the segment? */
+    if (! tpointseq_intersection_value(inst1, inst2, value, t))
+      result = false;
+    result = true;
+  }
+  pfree(gs1c); pfree(gs2c); pfree(gsc);
+  return result;
 }
 
 /**

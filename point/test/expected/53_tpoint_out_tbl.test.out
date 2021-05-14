@@ -190,6 +190,18 @@ SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeogpoint;
  t
 (1 row)
 
+SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeompoint;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT DISTINCT asewkt(tgeompointFromMFJSON(asMFJSON(temp))) = asewkt(temp) FROM tbl_tgeompoint;
  ?column? 
 ----------

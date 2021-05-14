@@ -43,12 +43,24 @@ SELECT k%90, asEWKT(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
 
+-- We need to add asewkt to avoid problems due to floating point precision
+SELECT DISTINCT asText(tgeompointFromText(asText(temp))) = asText(temp) FROM tbl_tgeompoint;
+SELECT DISTINCT asText(tgeompointFromText(asText(temp))) = asText(temp) FROM tbl_tgeogpoint;
+
+-- We need to add asewkt to avoid problems due to floating point precision
+SELECT DISTINCT asEWKT(tgeompointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeompoint;
+SELECT DISTINCT asEWKT(tgeompointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
+
+-- We need to add asewkt to avoid problems due to floating point precision
+SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeompoint;
+-- SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
+
 SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeompoint;
 SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeogpoint;
 
--- We need to add asewkt to avoid problems due to floating point precision
-SELECT DISTINCT asewkt(tgeompointFromMFJSON(asMFJSON(temp))) = asewkt(temp) FROM tbl_tgeompoint;
--- SELECT DISTINCT asewkt(tgeompointFromMFJSON(asMFJSON(temp))) = asewkt(temp) FROM tbl_tgeogpoint;
+SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeompoint;
+SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
+
 
 
 -------------------------------------------------------------------------------

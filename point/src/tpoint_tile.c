@@ -246,7 +246,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     // ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
     int32 srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != 0)
+    if (gs_srid != SRID_UNKNOWN)
       error_if_srid_mismatch(srid, gs_srid);
     POINT3DZ pt;
     if (FLAGS_GET_Z(sorigin->flags))
@@ -333,7 +333,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   ensure_point_type(sorigin);
   int32 srid = gserialized_get_srid(point);
   int32 gs_srid = gserialized_get_srid(sorigin);
-  if (gs_srid != 0)
+  if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid_gs(point, sorigin);
   POINT3DZ pt, ptorig;
   bool hasz = FLAGS_GET_Z(point->flags);
@@ -428,7 +428,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     temporal_bbox(&bounds, temp);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != 0)
+    if (gs_srid != SRID_UNKNOWN)
       error_if_srid_mismatch(srid, gs_srid);
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
@@ -548,7 +548,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     temporal_bbox(&bounds, temp);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
-    if (gs_srid != 0)
+    if (gs_srid != SRID_UNKNOWN)
       error_if_srid_mismatch(srid, gs_srid);
     POINT3DZ pt;
     if (FLAGS_GET_Z(sorigin->flags))
