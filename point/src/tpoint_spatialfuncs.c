@@ -3625,18 +3625,12 @@ tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
     val = value;
   }
   /* Is the lower bound the answer? */
-  bool result;
+  bool result = true;
   if (datum_point_eq(value1, val))
-  {
     *t = inst1->t;
-    result = true;
-  }
   /* Is the upper bound the answer? */
   else if (datum_point_eq(value2, value))
-  {
     *t = inst2->t;
-    result = true;
-  }
   else
   {
     double dist;
@@ -3647,7 +3641,6 @@ tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
     {
       double duration = (inst2->t - inst1->t);
       *t = inst1->t + (TimestampTz) (duration * fraction);
-      result = true;
     }
   }
   if (hasz)

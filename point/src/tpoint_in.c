@@ -507,6 +507,7 @@ tgeogpoint_from_mfjson(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Input in EWKB format
+ * Please refer to the file tpoint_out.c where the binary format is explained
  *****************************************************************************/
 
 /**
@@ -622,8 +623,8 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 
 /**
  * Take in an unknown kind of WKB type number and ensure it comes out as an
- * extended WKB type number (with Z/SRID/LINEAR_INTERP flags masked onto the
- * high bits).
+ * extended WKB type number (with Z/GEOD/SRID/LINEAR_INTERP flags masked onto
+ * the high bits).
  */
 static void
 tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
@@ -632,33 +633,29 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
   s->is_geodetic = false;
   s->has_srid = false;
   s->has_srid = false;
-  // /* If any of the higher bits are set, this is probably an extended type. */
-  // if (wkb_type & 0xF0)
-  // {
-    if (wkb_type & WKB_ZFLAG)
-      s->has_z = true;
-    if (wkb_type & WKB_GEODETICFLAG)
-      s->is_geodetic = true;
-    if (wkb_type & WKB_SRIDFLAG)
-      s->has_srid = true;
-    if (wkb_type & WKB_LINEAR_INTERP)
-      s->linear = true;
-  // }
-  /* Mask off the flags */
+  if (wkb_type & MOBDB_WKB_ZFLAG)
+    s->has_z = true;
+  if (wkb_type & MOBDB_WKB_GEODETICFLAG)
+    s->is_geodetic = true;
+  if (wkb_type & MOBDB_WKB_SRIDFLAG)
+    s->has_srid = true;
+  if (wkb_type & MOBDB_WKB_LINEAR_INTERP)
+    s->linear = true;
+  /* Mask off the upper flags to get the subtype */
   wkb_type = wkb_type & (uint8_t) 0x0F;
 
   switch (wkb_type)
   {
-    case WKB_INSTANT:
+    case MOBDB_WKB_INSTANT:
       s->temptype = INSTANT;
       break;
-    case WKB_INSTANTSET:
+    case MOBDB_WKB_INSTANTSET:
       s->temptype = INSTANTSET;
       break;
-    case WKB_SEQUENCE:
+    case MOBDB_WKB_SEQUENCE:
       s->temptype = SEQUENCE;
       break;
-    case WKB_SEQUENCESET:
+    case MOBDB_WKB_SEQUENCESET:
       s->temptype = SEQUENCESET;
       break;
     default: /* Error! */
@@ -757,11 +754,11 @@ tpointinstset_from_wkb_state(wkb_parse_state *s)
 static void
 tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_inc)
 {
-  if (wkb_bounds & WKB_LOWER_INC)
+  if (wkb_bounds & MOBDB_WKB_LOWER_INC)
     *lower_inc = true;
   else
     *lower_inc = false;
-  if (wkb_bounds & WKB_UPPER_INC)
+  if (wkb_bounds & MOBDB_WKB_UPPER_INC)
     *upper_inc = true;
   else
     *upper_inc = false;

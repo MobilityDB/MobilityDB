@@ -240,7 +240,7 @@ struct temptype_struct
 typedef struct
 {
   int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  int16  temptype;      /**< temptype */
+  int16         temptype;      /**< temptype */
   int16         flags;         /**< flags */
   Oid           valuetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
@@ -252,7 +252,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16  temptype;     /**< temptype */
+  int16         temptype;     /**< temptype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */

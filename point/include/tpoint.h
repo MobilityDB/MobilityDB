@@ -79,24 +79,24 @@
 #define WKB_BYTE_SIZE        1  /* Internal use only */
 
 /* Subtype */
-#define WKB_INSTANT        1
-#define WKB_INSTANTSET     2
-#define WKB_SEQUENCE       3
-#define WKB_SEQUENCESET    4
+#define MOBDB_WKB_INSTANT        1
+#define MOBDB_WKB_INSTANTSET     2
+#define MOBDB_WKB_SEQUENCE       3
+#define MOBDB_WKB_SEQUENCESET    4
 
 /* Period bounds */
-#define WKB_LOWER_INC      0x01
-#define WKB_UPPER_INC      0x02
+#define MOBDB_WKB_LOWER_INC      0x01
+#define MOBDB_WKB_UPPER_INC      0x02
 
 /* Machine endianness */
 #define XDR            0  /* big endian */
 #define NDR            1  /* little endian */
 
 /* Variation flags */
-#define WKB_ZFLAG            0x10
-#define WKB_GEODETICFLAG     0x20
-#define WKB_SRIDFLAG         0x40
-#define WKB_LINEAR_INTERP    0x80
+#define MOBDB_WKB_ZFLAG            0x10
+#define MOBDB_WKB_GEODETICFLAG     0x20
+#define MOBDB_WKB_SRIDFLAG         0x40
+#define MOBDB_WKB_LINEAR_INTERP    0x80
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c
