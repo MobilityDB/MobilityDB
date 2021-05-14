@@ -140,7 +140,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
   result->count = newcount;
   result->totalcount = totalcount;
   result->valuetypid = sequences[0]->valuetypid;
-  result->temptype = SEQUENCESET;
+  result->subtype = SEQUENCESET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -265,9 +265,9 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
   int k = 0;
   for (int i = 0; i < ts->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ts, i);
-  if (temp->temptype == SEQUENCE)
+  if (temp->subtype == SEQUENCE)
     sequences[k++] = (const TSequence *) temp;
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     TSequenceSet *ts1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ts1, 0);

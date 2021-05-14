@@ -518,7 +518,7 @@ typedef struct
   const uint8_t *wkb;  /* Points to start of WKB */
   size_t wkb_size;     /* Expected size of WKB */
   bool swap_bytes;     /* Do an endian flip? */
-  uint8_t temptype;    /* Current temptype we are handling */
+  uint8_t subtype;    /* Current subtype we are handling */
   int32_t srid;        /* Current SRID we are handling */
   bool has_z;          /* Z? */
   bool is_geodetic;    /* Geodetic? */
@@ -647,16 +647,16 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
   switch (wkb_type)
   {
     case MOBDB_WKB_INSTANT:
-      s->temptype = INSTANT;
+      s->subtype = INSTANT;
       break;
     case MOBDB_WKB_INSTANTSET:
-      s->temptype = INSTANTSET;
+      s->subtype = INSTANTSET;
       break;
     case MOBDB_WKB_SEQUENCE:
-      s->temptype = SEQUENCE;
+      s->subtype = SEQUENCE;
       break;
     case MOBDB_WKB_SEQUENCESET:
-      s->temptype = SEQUENCESET;
+      s->subtype = SEQUENCESET;
       break;
     default: /* Error! */
       elog(ERROR, "Unknown WKB temporal type (%d)!", wkb_type);
@@ -863,14 +863,14 @@ tpoint_from_wkb_state(wkb_parse_state *s)
   if (s->has_srid)
     s->srid = integer_from_wkb_state(s);
 
-  ensure_valid_temptype(s->temptype);
-  if (s->temptype == INSTANT)
+  ensure_valid_tempsubtype(s->subtype);
+  if (s->subtype == INSTANT)
     return (Temporal *) tpointinst_from_wkb_state(s);
-  else if (s->temptype == INSTANTSET)
+  else if (s->subtype == INSTANTSET)
     return (Temporal *) tpointinstset_from_wkb_state(s);
-  else if (s->temptype == SEQUENCE)
+  else if (s->subtype == SEQUENCE)
     return (Temporal *) tpointseq_from_wkb_state(s);
-  else /* s->temptype == SEQUENCESET */
+  else /* s->subtype == SEQUENCESET */
     return (Temporal *) tpointseqset_from_wkb_state(s);
   return NULL; /* make compiler quiet */
 }
@@ -884,7 +884,7 @@ tpoint_from_ewkb_internal(uint8_t *wkb, int size)
   s.wkb = wkb;
   s.wkb_size = size;
   s.swap_bytes = false;
-  s.temptype = 0;
+  s.subtype = ANYTEMPSUBTYPE;
   s.srid = SRID_UNKNOWN;
   s.has_z = false;
   s.is_geodetic = false;

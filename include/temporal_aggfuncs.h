@@ -52,7 +52,7 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-extern void ensure_same_temptype_skiplist(SkipList *state, int16 temptype,
+extern void ensure_same_temp_subtype_skiplist(SkipList *state, int16 subtype,
   Temporal *temp);
 extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   TSequence *seq, datum_func2 func, bool interpoint);

@@ -157,8 +157,8 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   Oid valuetypid, Oid restypid)
 {
   LiftedFunctionInfo lfinfo;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
   {
     lfinfo.func = (varfunc) datum_distance;
     lfinfo.numparam = 4;
@@ -169,16 +169,16 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
     lfinfo.tpfunc = NULL;
   }
   Temporal *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, value,
       valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, value,
       valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *)distance_tnumberseq_base((TSequence *)temp, value,
       valuetypid, restypid);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)distance_tnumberseqset_base((TSequenceSet *)temp, value,
       valuetypid, restypid);
   return result;

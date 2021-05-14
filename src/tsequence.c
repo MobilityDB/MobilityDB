@@ -754,7 +754,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc, bool upper
   SET_VARSIZE(result, seqsize);
   result->count = newcount;
   result->valuetypid = instants[0]->valuetypid;
-  result->temptype = SEQUENCE;
+  result->subtype = SEQUENCE;
   period_set(&result->period, norminsts[0]->t, norminsts[newcount - 1]->t,
     lower_inc, upper_inc);
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);

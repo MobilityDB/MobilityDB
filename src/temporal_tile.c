@@ -951,17 +951,17 @@ temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
   assert(count > 0);
   /* Split the temporal value */
   Temporal **fragments;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     fragments = (Temporal **) tinstant_time_split((const TInstant *) temp,
       tunits, torigin, buckets, newcount);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     fragments = (Temporal **) tinstantset_time_split((const TInstantSet *) temp,
       start, end, tunits, count, buckets, newcount);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     fragments = (Temporal **) tsequence_time_split((const TSequence *) temp,
       start, end, tunits, count, buckets, newcount);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     fragments = (Temporal **) tsequenceset_time_split((const TSequenceSet *) temp,
       start, end, tunits, count, buckets, newcount);
   return fragments;
@@ -1728,17 +1728,17 @@ tnumber_value_split_internal(Temporal *temp, Datum start_bucket, Datum size,
   assert(count > 0);
   /* Split the temporal value */
   Temporal **fragments;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     fragments = (Temporal **) tnumberinst_value_split((const TInstant *) temp,
       start_bucket, size, buckets, newcount);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     fragments = (Temporal **) tnumberinstset_value_split((const TInstantSet *) temp,
       start_bucket, size, count, buckets, newcount);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     fragments = (Temporal **) tnumberseq_value_split((const TSequence *) temp,
       start_bucket, size, count, buckets, newcount);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     fragments = (Temporal **) tnumberseqset_value_split((const TSequenceSet *) temp,
       start_bucket, size, count, buckets, newcount);
   return fragments;

@@ -204,12 +204,12 @@ tpoint_stboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result = NULL;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tpointseq_stboxes((TSequence *)temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_stboxes((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

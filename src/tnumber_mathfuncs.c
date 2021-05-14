@@ -500,12 +500,12 @@ tnumber_derivative(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result = NULL;
   ensure_linear_interpolation(temp->flags);
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

@@ -65,8 +65,8 @@
    typmod from POSTGIS we need to shift them to take into account that the 
    first 4 bits are taken for the temporal type */
 
-#define TYPMOD_DEL_TEMPTYPE(typmod) (typmod = typmod >> 4 )
-#define TYPMOD_SET_TEMPTYPE(typmod, temptype) ((typmod) = typmod << 4 | temptype)
+#define TYPMOD_DEL_SUBTYPE(typmod) (typmod = typmod >> 4 )
+#define TYPMOD_SET_SUBTYPE(typmod, subtype) ((typmod) = typmod << 4 | subtype)
 
 /*****************************************************************************
  * Well-Known Binary (WKB)

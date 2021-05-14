@@ -1386,14 +1386,14 @@ Datum
 tpoint_trajectory_internal(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tpointinstset_trajectory((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tpointseq_trajectory((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;
 }
@@ -1405,7 +1405,7 @@ void
 tpoint_trajectory_free(const Temporal *temp, Datum traj)
 {
   /* We do not need to free the trajectory for temporal point sequences */
-  if (temp->temptype != SEQUENCE)
+  if (temp->subtype != SEQUENCE)
     pfree(DatumGetPointer(traj));
 }
 
@@ -1416,14 +1416,14 @@ Datum
 tpoint_trajectory_external(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tpointinstset_trajectory((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tpointseq_trajectory_copy((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;
 }
@@ -1519,14 +1519,14 @@ int
 tpoint_srid_internal(const Temporal *temp)
 {
   int result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tpointinst_srid((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tpointinstset_srid((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tpointseq_srid((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_srid((TSequenceSet *) temp);
   return result;
 }
@@ -1642,13 +1642,13 @@ Temporal *
 tpoint_set_srid_internal(Temporal *temp, int32 srid)
 {
   Temporal *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_set_srid((TInstant *) temp, srid);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_set_srid((TInstantSet *) temp, srid);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_set_srid((TSequence *) temp, srid);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_set_srid((TSequenceSet *) temp, srid);
 
   assert(result != NULL);
@@ -1895,14 +1895,14 @@ tpoint_transform(PG_FUNCTION_ARGS)
   store_fcinfo(fcinfo);
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_transform((TInstant *) temp, srid);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_transform((TInstantSet *) temp, srid);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_transform((TSequence *) temp, srid);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2039,17 +2039,17 @@ Temporal *
 tpoint_convert_tgeom_tgeog(const Temporal *temp, bool oper)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_convert_tgeom_tgeog(
       (TInstant *) temp, oper);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_convert_tgeom_tgeog(
       (TInstantSet *) temp, oper);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_convert_tgeom_tgeog(
       (TSequence *) temp, oper);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_convert_tgeom_tgeog(
       (TSequenceSet *) temp, oper);
   return result;
@@ -2276,13 +2276,13 @@ tpoint_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   double result = 0.0;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tpointseq_length((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_length((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -2411,16 +2411,16 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
+  ensure_valid_tempsubtype(temp->subtype);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_cumulative_length((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_cumulative_length((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_cumulative_length((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2500,12 +2500,12 @@ tpoint_speed(PG_FUNCTION_ARGS)
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   ensure_linear_interpolation(temp->flags);
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_speed((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -2685,14 +2685,14 @@ Datum
 tgeompoint_twcentroid_internal(Temporal *temp)
 {
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tgeompointi_twcentroid((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tgeompointseq_twcentroid((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tgeompoints_twcentroid((TSequenceSet *) temp);
   return result;
 }
@@ -2849,14 +2849,14 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = NULL;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
-    (temp->temptype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->temptype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
+    (temp->subtype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
+    (temp->subtype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_azimuth((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -2977,10 +2977,10 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
 static bool *
 tgeompoint_instarr_find_splits(const Temporal *temp, int *count)
 {
-  assert(temp->temptype == INSTANTSET || temp->temptype == SEQUENCE);
-  if (temp->temptype == SEQUENCE)
+  assert(temp->subtype == INSTANTSET || temp->subtype == SEQUENCE);
+  if (temp->subtype == SEQUENCE)
     assert(! MOBDB_FLAGS_GET_LINEAR(temp->flags));
-  int count1 = (temp->temptype == INSTANTSET) ?
+  int count1 = (temp->subtype == INSTANTSET) ?
     ((TInstantSet *) temp)->count : ((TSequence *) temp)->count;
   assert(count1 > 1);
   /* bitarr is an array of bool for collecting the splits */
@@ -3222,13 +3222,13 @@ tgeompoint_is_simple(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   bool result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = true;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tgeompointi_is_simple((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tgeompointseq_is_simple((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tgeompoints_is_simple((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -3455,13 +3455,13 @@ tgeompoint_make_simple(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = temporalarr_to_array((const Temporal **) &temp, 1);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tgeompointi_make_simple((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tgeompointseq_make_simple((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tgeompoints_make_simple((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -4079,17 +4079,17 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
     return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
       geom, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_restrict_geometry((TInstantSet *) temp,
       geom, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_restrict_geometry((TSequence *) temp,
       geom, atfunc);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *) temp,
       geom, &box2, atfunc);
 

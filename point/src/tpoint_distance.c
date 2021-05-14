@@ -412,8 +412,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
   datum_func2 func = get_distance_fn(temp->flags);
   LiftedFunctionInfo lfinfo;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
   {
     lfinfo.func = (varfunc) func;
     lfinfo.numparam = 2;
@@ -424,15 +424,15 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
     lfinfo.tpfunc = NULL;
   }
   Temporal *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *)distance_tpointseq_geo((TSequence *)temp, geo, func);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp, geo, func);
   return result;
 }
@@ -822,16 +822,16 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   store_fcinfo(fcinfo);
   datum_func2 func = get_distance_fn(temp->flags);
   TInstant *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_copy((TInstant *)temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = NAI_tpointinstset_geo((TInstantSet *)temp, PointerGetDatum(gs), func);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *)temp, PointerGetDatum(gs), func) :
       NAI_tpointseq_step_geo((TSequence *)temp, PointerGetDatum(gs), func);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *)temp, PointerGetDatum(gs), func) :
       NAI_tpointseqset_step_geo((TSequenceSet *)temp, PointerGetDatum(gs), func);
@@ -897,10 +897,10 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     pfree(dist);
     if (result == NULL)
     {
-      if (temp1->temptype == SEQUENCE)
+      if (temp1->subtype == SEQUENCE)
         result = tinstant_copy(tsequence_inst_at_timestamp_excl(
           (TSequence *)temp1, min->t));
-      else /* temp->temptype == SEQUENCESET */
+      else /* temp->subtype == SEQUENCESET */
         result = tinstant_copy(tsequenceset_inst_at_timestamp_excl(
           (TSequenceSet *)temp1, min->t));
     }
