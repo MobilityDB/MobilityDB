@@ -54,6 +54,11 @@ SELECT valueBucket(3.5, 2.5, 1.5);
          1.5
 (1 row)
 
+/* Errors */
+SELECT valueBucket(3, -2);
+ERROR:  The value must be positive: -2
+SELECT valueBucket(3.5, -2.5);
+ERROR:  The value must be positive: -2.500000
 SELECT rangeBucket(3, 2);
  rangebucket 
 -------------
@@ -106,6 +111,9 @@ SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
  2019-12-27 00:00:00+00
 (1 row)
 
+/* Errors */
+SELECT timeBucket('2020-01-01', '1 month', timestamptz '2001-06-01');
+ERROR:  Interval defined in terms of month, year, century etc. not supported
 SELECT periodBucket('2020-01-01', '1 week');
                    periodbucket                   
 --------------------------------------------------

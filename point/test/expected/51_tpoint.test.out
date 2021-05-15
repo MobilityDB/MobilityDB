@@ -273,61 +273,61 @@ SELECT asewkt(tgeompoint '{[SRID=4326;Point(0 1)@2000-01-01], [SRID=4326;Point(0
 (1 row)
 
 /* Errors */
-SELECT tgeompoint '{SRID=4326;Point(0 1)@2000-01-01, SRID=5434;Point(0 1)@2000-01-02}';
-ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
-LINE 2: SELECT tgeompoint '{SRID=4326;Point(0 1)@2000-01-01, SRID=54...
+SELECT tgeompoint '{SRID=5676;Point(0 1)@2000-01-01, SRID=3812;Point(0 1)@2000-01-02}';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 2: SELECT tgeompoint '{SRID=5676;Point(0 1)@2000-01-01, SRID=38...
                           ^
-SELECT tgeompoint 'SRID=4326;{Point(0 1)@2000-01-01, SRID=5434;Point(0 1)@2000-01-02}';
-ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
-LINE 1: SELECT tgeompoint 'SRID=4326;{Point(0 1)@2000-01-01, SRID=54...
+SELECT tgeompoint 'SRID=5676;{Point(0 1)@2000-01-01, SRID=3812;Point(0 1)@2000-01-02}';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;{Point(0 1)@2000-01-01, SRID=38...
                           ^
-SELECT tgeompoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=5434;Point(0 1)@2000-01-02]';
-ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
-LINE 1: SELECT tgeompoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=54...
+SELECT tgeompoint '[SRID=5676;Point(0 1)@2000-01-01, SRID=3812;Point(0 1)@2000-01-02]';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint '[SRID=5676;Point(0 1)@2000-01-01, SRID=38...
                           ^
-SELECT tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, SRID=5434;Point(0 1)@2000-01-02]';
-ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
-LINE 1: SELECT tgeompoint 'SRID=4326;[Point(0 1)@2000-01-01, SRID=54...
+SELECT tgeompoint 'SRID=5676;[Point(0 1)@2000-01-01, SRID=3812;Point(0 1)@2000-01-02]';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;[Point(0 1)@2000-01-01, SRID=38...
                           ^
-SELECT tgeompoint '{[SRID=4326;Point(0 1)@2000-01-01], [SRID=5434;Point(0 1)@2000-01-02]';
-ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
-LINE 1: SELECT tgeompoint '{[SRID=4326;Point(0 1)@2000-01-01], [SRID...
+SELECT tgeompoint '{[SRID=5676;Point(0 1)@2000-01-01], [SRID=3812;Point(0 1)@2000-01-02]';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint '{[SRID=5676;Point(0 1)@2000-01-01], [SRID...
                           ^
-SELECT tgeompoint 'SRID=4326;{[Point(0 1)@2000-01-01], [SRID=5434;Point(0 1)@2000-01-02]}';
-ERROR:  Geometry SRID (5434) does not match temporal type SRID (4326)
-LINE 1: SELECT tgeompoint 'SRID=4326;{[Point(0 1)@2000-01-01], [SRID...
+SELECT tgeompoint 'SRID=5676;{[Point(0 1)@2000-01-01], [SRID=3812;Point(0 1)@2000-01-02]}';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;{[Point(0 1)@2000-01-01], [SRID...
+                          ^
+SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=3812;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00...
+                          ^
+SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=3812;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00...
+                          ^
+SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=3812;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geometry SRID (3812) does not match temporal type SRID (5676)
+LINE 1: SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:0...
                           ^
 SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
 ERROR:  Only lon/lat coordinate systems are supported in geography.
 LINE 1: SELECT tgeogpoint 'SRID=5676;Point(1 1)@2001-01-01';
                           ^
-SELECT tgeogpoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=4283;Point(0 1)@2000-01-02]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (4283)
-LINE 1: SELECT tgeogpoint '[SRID=4326;Point(0 1)@2000-01-01, SRID=42...
+SELECT tgeogpoint '[SRID=7844;Point(0 1)@2000-01-01, SRID=4269;Point(0 1)@2000-01-02]';
+ERROR:  Geography SRID (7844) does not match temporal type SRID (0)
+LINE 1: SELECT tgeogpoint '[SRID=7844;Point(0 1)@2000-01-01, SRID=42...
                           ^
-SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT tgeompoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00...
+SELECT tgeogpoint 'SRID=7844;{Point(1 1)@2001-01-01 08:00:00,SRID=4269;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
+ERROR:  Geography SRID (4269) does not match temporal type SRID (7844)
+LINE 1: SELECT tgeogpoint 'SRID=7844;{Point(1 1)@2001-01-01 08:00:00...
                           ^
-SELECT tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00}';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT tgeogpoint 'SRID=5676;{Point(1 1)@2001-01-01 08:00:00...
+SELECT tgeogpoint 'SRID=7844;[Point(1 1)@2001-01-01 08:00:00,SRID=4269;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geography SRID (4269) does not match temporal type SRID (7844)
+LINE 1: SELECT tgeogpoint 'SRID=7844;[Point(1 1)@2001-01-01 08:00:00...
                           ^
-SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT tgeompoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00...
-                          ^
-SELECT tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00,SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT tgeogpoint 'SRID=5676;[Point(1 1)@2001-01-01 08:00:00...
-                          ^
-SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT tgeompoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:0...
-                          ^
-SELECT tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4326;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
-ERROR:  Geometry SRID (4326) does not match temporal type SRID (5676)
-LINE 1: SELECT tgeogpoint 'SRID=5676;{[Point(1 1)@2001-01-01 08:00:0...
+SELECT tgeogpoint 'SRID=7844;{[Point(1 1)@2001-01-01 08:00:00],[SRID=4269;Point(2 2)@2001-01-01 08:05:00,Point(3 3)@2001-01-01 08:06:00]';
+ERROR:  Geography SRID (4269) does not match temporal type SRID (7844)
+LINE 1: SELECT tgeogpoint 'SRID=7844;{[Point(1 1)@2001-01-01 08:00:0...
                           ^
 SELECT format_type(oid, -1) FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
  format_type 

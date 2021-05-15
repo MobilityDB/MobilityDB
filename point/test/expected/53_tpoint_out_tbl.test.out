@@ -217,7 +217,7 @@ SELECT DISTINCT tgeompointFromBinary(asBinary(temp)) = temp FROM tbl_tgeompoint;
 SELECT DISTINCT tgeompointFromBinary(asBinary(temp)) = temp FROM tbl_tgeogpoint;
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeompoint;

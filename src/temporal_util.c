@@ -503,15 +503,6 @@ datumarr_extract(ArrayType *array, int *count)
 }
 
 /**
- * Extract a C array from a PostgreSQL array containing integers
- */
-int *
-intarr_extract(ArrayType *array, int *count)
-{
-  return (int *) datumarr_extract(array, count);
-}
-
-/**
  * Extract a C array from a PostgreSQL array containing timestamps
  */
 TimestampTz *
@@ -564,17 +555,6 @@ datumarr_to_array(Datum *values, int count, Oid type)
   assert(count > 0);
   get_typlenbyvalalign(type, &elmlen, &elmbyval, &elmalign);
   ArrayType *result = construct_array(values, count, type, elmlen, elmbyval, elmalign);
-  return result;
-}
-
-/**
- * Convert a C array of integers into a PostgreSQL array
- */
-ArrayType *
-intarr_to_array(Datum *integers, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array(integers, count, INT4OID, 4, true, 'i');
   return result;
 }
 

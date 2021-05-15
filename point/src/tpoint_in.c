@@ -862,6 +862,8 @@ tpoint_from_wkb_state(wkb_parse_state *s)
   /* Read the SRID, if necessary */
   if (s->has_srid)
     s->srid = integer_from_wkb_state(s);
+  else if (wkb_type & MOBDB_WKB_GEODETICFLAG)
+    s->srid = SRID_DEFAULT;
 
   ensure_valid_tempsubtype(s->subtype);
   if (s->subtype == INSTANT)

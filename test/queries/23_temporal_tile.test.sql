@@ -38,6 +38,9 @@ SELECT valueBucket(3, 2);
 SELECT valueBucket(3, 2, 1);
 SELECT valueBucket(3.5, 2.5);
 SELECT valueBucket(3.5, 2.5, 1.5);
+/* Errors */
+SELECT valueBucket(3, -2);
+SELECT valueBucket(3.5, -2.5);
 
 SELECT rangeBucket(3, 2);
 SELECT rangeBucket(3, 2, 1);
@@ -51,6 +54,8 @@ SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIM
 
 SELECT timeBucket('2020-01-01', '1 week');
 SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
+/* Errors */
+SELECT timeBucket('2020-01-01', '1 month', timestamptz '2001-06-01');
 
 SELECT periodBucket('2020-01-01', '1 week');
 SELECT periodBucket('2020-01-01', '1 week', timestamptz '2001-06-01');

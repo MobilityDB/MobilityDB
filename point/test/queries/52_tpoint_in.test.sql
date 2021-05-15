@@ -24,8 +24,6 @@
 --
 -------------------------------------------------------------------------------
 
------------------------------------------------------------------------
-
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint 'Point(1 2)@2000-01-01')));
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
 SELECT asEWKT(tgeompointFromMFJSON(asMFJSON(tgeompoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
@@ -68,6 +66,15 @@ SELECT tgeompointFromMFJSON('{"type":"MovingPoint","sequences":[],"interpolation
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":"2000-01-01T00:00:00+01","lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
 
 SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]],"datetimes":[],"lower_inc":true,"upper_inc":true,"interpolations":["Linear"]}');
+
+-----------------------------------------------------------------------
+
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Point(1 2)@2000-01-01')));
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02}')));
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint '[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint '{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02]')));
+SELECT asEWKT(tgeogpointFromMFJSON(asMFJSON(tgeogpoint 'Interp=Stepwise;{[Point(1 2)@2000-01-01, Point(3 4)@2000-01-02],[Point(1 2)@2000-01-03, Point(3 4)@2000-01-04]}')));
 
 -----------------------------------------------------------------------
 

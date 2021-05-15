@@ -229,12 +229,12 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
-  if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN && *tpoint_srid != geo_srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)",
-      geo_srid, *tpoint_srid)));
   if (basetype == type_oid(T_GEOMETRY))
   {
+    if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN && *tpoint_srid != geo_srid)
+      ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+        errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)",
+        geo_srid, *tpoint_srid)));
     if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
       gserialized_set_srid(gs, *tpoint_srid);
     if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
@@ -242,6 +242,10 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
   }
   else
   {
+    if (*tpoint_srid != SRID_DEFAULT && geo_srid != SRID_DEFAULT && *tpoint_srid != geo_srid)
+      ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+        errmsg("Geography SRID (%d) does not match temporal type SRID (%d)",
+        geo_srid, *tpoint_srid)));
     if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_DEFAULT)
       gserialized_set_srid(gs, *tpoint_srid);
     if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_DEFAULT)

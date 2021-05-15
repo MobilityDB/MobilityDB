@@ -2004,7 +2004,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
     if (before_period_period_internal(&seq->period, p2))
     {
       if (!atfunc)
-        /* copy the sequence */
+        /* Copy the sequence */
         sequences[k++] = tsequence_copy(seq);
       i++;
     }

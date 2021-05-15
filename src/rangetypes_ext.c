@@ -108,20 +108,6 @@ upper_inc(const RangeType *range)
  * @param[out] xmin, xmax Lower and upper bounds
  */
 void
-intrange_bounds(const RangeType *range, int *xmin, int *xmax)
-{
-  assert(range->rangetypid == type_oid(T_INTRANGE));
-  *xmin = (double)(DatumGetInt32(lower_datum(range)));
-  *xmax = (double)(DatumGetInt32(upper_datum(range)));
-}
-
-/**
- * Get the bounds of the range as double values.
- *
- * @param[in] range Input ranges
- * @param[out] xmin, xmax Lower and upper bounds
- */
-void
 range_bounds(const RangeType *range, double *xmin, double *xmax)
 {
   ensure_tnumber_range_type(range->rangetypid);

@@ -2286,6 +2286,12 @@ SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((,2000-01-01)
  POINT(1 1)@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT asText(atStbox(tgeompoint '(Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]', 'STBOX T((,2000-01-01),(,2000-01-02))'));
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(minusStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
  astext 
 --------

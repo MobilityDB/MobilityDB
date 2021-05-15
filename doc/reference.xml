@@ -825,6 +825,22 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Input a temporal geometry point from a Well-Known Text (WKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Input a temporal geography point from a Well-Known Text (WKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Input a temporal geometry point from an Extended Well-Known Text (EWKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Input a temporal geography point from an Extended Well-Known Text (EWKT) representation</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Input a temporal geometry point from a Moving Features JSON representation</para>
 				</listitem>
 
@@ -833,11 +849,27 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Input a temporal geometry point from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Input a temporal geography point from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Input a temporal geometry point from an Extended Well-Known Binary (EWKB) representation</para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Input a temporal geography point from an Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Input a temporal geometry point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
 				</listitem>
 
 				<listitem>

@@ -2975,9 +2975,11 @@ tnumberseq_restrict_range1(TSequence **result,
     {
       freei = tfloatseq_intersection_value(inst1, inst2, lower,
         valuetypid, &t1);
-      /* To reduce the roundoff errors we take the bound instead of
+      /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
-      instants[i] = tinstant_make(lower, t1, valuetypid);
+      instants[i] = RANGE_ROUNDOFF ?
+        tinstant_make(lower, t1, valuetypid) :
+        tsequence_at_timestamp1(inst1, inst2, linear, t1);
     }
 
     if (dvalue1 == dupper)
@@ -2988,9 +2990,11 @@ tnumberseq_restrict_range1(TSequence **result,
     {
       freej = tfloatseq_intersection_value(inst1, inst2, upper,
         valuetypid, &t2);
-      /* To reduce the roundoff errors we take the bound instead of
+      /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
-      instants[j] = tinstant_make(upper, t2, valuetypid);
+      instants[j] = RANGE_ROUNDOFF ?
+        tinstant_make(upper, t2, valuetypid) :
+        tsequence_at_timestamp1(inst1, inst2, linear, t2);
     }
 
     /* Create the result */
@@ -3010,16 +3014,20 @@ tnumberseq_restrict_range1(TSequence **result,
   if (dlower != dvalue1 && dlower != dvalue2)
   {
     tfloatseq_intersection_value(inst1, inst2, lower, valuetypid, &t1);
-    /* To reduce the roundoff errors we take the bound instead of
+    /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
-    instbounds[i] = tinstant_make(lower, t1, valuetypid);
+    instbounds[i] = RANGE_ROUNDOFF ?
+      tinstant_make(lower, t1, valuetypid) :
+      tsequence_at_timestamp1(inst1, inst2, linear, t1);
   }
   if (dupper != dvalue1 && dupper != dvalue2)
   {
     tfloatseq_intersection_value(inst1, inst2, upper, valuetypid, &t2);
-    /* To reduce the roundoff errors we take the bound instead of
+    /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
-    instbounds[j] = tinstant_make(upper, t2, valuetypid);
+    instbounds[j] = RANGE_ROUNDOFF ?
+      tinstant_make(upper, t2, valuetypid) :
+      tsequence_at_timestamp1(inst1, inst2, linear, t2);
   }
 
   /* Create the result */

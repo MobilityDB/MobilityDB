@@ -406,7 +406,7 @@ CREATE OPERATOR * (
 );
 
 /*****************************************************************************
- * Extent aggreation
+ * Extent aggregation
  *****************************************************************************/
 
 CREATE OR REPLACE FUNCTION tbox_extent_transfn(tbox, tbox)

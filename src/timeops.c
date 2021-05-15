@@ -3546,11 +3546,6 @@ intersection_period_periodset_internal(const Period *p, const PeriodSet *ps)
     if (p->upper < p1->upper)
       break;
   }
-  if (k == 0)
-  {
-    pfree(periods);
-    return NULL;
-  }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
@@ -3658,11 +3653,6 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
       i++;
     else
       j++;
-  }
-  if (k == 0)
-  {
-    pfree(periods);
-    return NULL;
   }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE);
   return result;
@@ -4126,14 +4116,7 @@ minus_period_periodset_internal(const Period *p, const PeriodSet *ps)
 
   Period **periods = palloc(sizeof(Period *) * (ps->count + 1));
   int count = minus_period_periodset_internal1(periods, p, ps, 0, ps->count);
-  if (count == 0)
-  {
-    pfree(periods);
-    return NULL;
-  }
-
   PeriodSet *result = periodset_make_free(periods, count, false);
-
   return result;
 }
 
@@ -4173,11 +4156,6 @@ minus_periodset_timestamp_internal(const PeriodSet *ps, TimestampTz t)
   {
     p = periodset_per_n(ps, i);
     k += minus_period_timestamp_internal1(&periods[k], p, t);
-  }
-  if (k == 0)
-  {
-    pfree(periods);
-    return NULL;
   }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
@@ -4346,11 +4324,6 @@ minus_periodset_period_internal(const PeriodSet *ps, const Period *p)
     p1 = periodset_per_n(ps, i);
     k += minus_period_period_internal1(&periods[k], p1, p);
   }
-  if (k == 0)
-  {
-    pfree(periods);
-    return NULL;
-  }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }
@@ -4421,11 +4394,6 @@ minus_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
   /* Copy the sequences after the period set */
   while (i < ps1->count)
     periods[k++] = period_copy(periodset_per_n(ps1, i++));
-  if (k == 0)
-  {
-    pfree(periods);
-    return NULL;
-  }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
 }

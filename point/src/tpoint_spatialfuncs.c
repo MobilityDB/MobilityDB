@@ -575,18 +575,6 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
 }
 
 /**
- * Ensure that the temporal point and the geometry/geography have the same dimensionality
- */
-void
-ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  if (FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The geometries must be of the same dimensionality")));
-  return;
-}
-
-/**
  * Ensure that the spatiotemporal boxes have the same spatial dimensionality
  */
 void

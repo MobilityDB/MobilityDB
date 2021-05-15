@@ -103,8 +103,11 @@
 #define WITH_Z          true
 #define NO_Z            false
 
-/** Enumeration for the intersection/synchronization functions */
+/* Determine whether reduce the roundoff errors with the range operations 
+ * by taking the bounds instead of the projected value at the timestamp */
+#define RANGE_ROUNDOFF  false
 
+/** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
   INTERSECT,

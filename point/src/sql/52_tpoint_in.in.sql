@@ -78,7 +78,7 @@ CREATE FUNCTION tgeompointFromHexEWKB(text)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_from_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpointFromEWKB(text)
+CREATE FUNCTION tgeogpointFromHexEWKB(text)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tpoint_from_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

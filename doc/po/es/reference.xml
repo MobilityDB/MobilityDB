@@ -827,6 +827,22 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Entrar un punto temporal geométrico en representación de texto conocido (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Entrar un punto temporal geográfico en representación de texto conocido (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Entrar un punto temporal geométrico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Entrar un punto temporal geográfico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features)</para>
 				</listitem>
 
@@ -835,11 +851,27 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Entrar un punto temporal geométrico en representación binaria conocida (Well-Known Binary o WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Entrar un punto temporal geográfico en representación binaria conocida (Well-Known Binary o WKB)</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Entrar un punto temporal geométrico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
 				</listitem>
 
 				<listitem>
 					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Entrar un punto temporal geográfico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Entrar un punto temporal geométrico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Entrar un punto temporal geográfico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
 				</listitem>
 
 				<listitem>

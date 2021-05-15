@@ -38,6 +38,9 @@ SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-0
  (3,"STBOX ZT((7,3,3,2000-01-15 00:00:00+00),(9,5,5,2000-01-17 00:00:00+00))")
 (3 rows)
 
+/* Errors */
+SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
+ERROR:  The box cannot be geodetic
 SELECT multidimTile(geometry 'Point(3 3)', 2.0);
     multidimtile    
 --------------------
@@ -68,6 +71,11 @@ SELECT multidimTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, inte
  STBOX ZT((3,3,3,2000-01-14 00:00:00+00),(5,5,5,2000-01-16 00:00:00+00))
 (1 row)
 
+/* Errors */
+SELECT multidimTile(geometry 'Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'Point(1 1)', '2020-06-15');
+ERROR:  The geometry must have Z dimension
+SELECT multidimTile(geometry 'SRID=3812;Point(3 3 3)', timestamptz '2000-01-15', 2.0, interval '2 days', geometry 'SRID=2154;Point(1 1)', '2020-06-15');
+ERROR:  The geometries must be in the same SRID
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0) AS sp) t;
    point    |              tpoint               

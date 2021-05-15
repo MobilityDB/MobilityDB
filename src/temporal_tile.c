@@ -869,9 +869,13 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
   }
 
   /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * (ts->count + count));
+  /* Sequences obtained by spliting one composing sequence */
+  TSequence **sequences = palloc(sizeof(TSequence *) * (ts->count * count));
+  /* Start timestamp of buckets obtained by spliting one composing sequence */
   TimestampTz *times = palloc(sizeof(TimestampTz) * (ts->count + count));
-  TSequence **fragments = palloc(sizeof(TSequence *) * (ts->count + count));
+  /* Sequences composing the currently constructed bucket of the sequence set */
+  TSequence **fragments = palloc(sizeof(TSequence *) * (ts->count * count));
+  /* Sequences for the buckets of the sequence set */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
   /* Variable used to adjust the start timestamp passed to the 
    * tsequence_time_split1 function in the loop */
@@ -895,7 +899,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       upper += tunits;
     }
     /* Number of time buckets of the current sequence */
-    int l = tsequence_time_split1(sequences, times, seq, lower, end,
+    int l = tsequence_time_split1(sequences, &times[m], seq, lower, end,
       tunits, count); 
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
@@ -924,7 +928,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
     /* Save the last fragment in case it is necessary to assemble with the
      * first one of the next sequence */
     fragments[k++] = sequences[l - 1];
-    lower = times[l - 1];
+    lower = times[m];
   }
   /* Process the accumulated fragments of the last time bucket */
   if (k > 0)
