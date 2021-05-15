@@ -629,6 +629,15 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tbox t1, tbl_tbox t2;
  108.64587
 (1 row)
 
+WITH test(box) AS (
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02))' UNION ALL 
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' )
+SELECT extent(box) FROM test;
+                           extent                            
+-------------------------------------------------------------
+ TBOX((1,2000-01-01 00:00:00+00),(3,2000-01-03 00:00:00+00))
+(1 row)
+
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((2.0, 2000-01-02), (1.0, 2000-01-02))');
  tbox_cmp 
 ----------
