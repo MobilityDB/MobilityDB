@@ -180,7 +180,7 @@ SET inst = (SELECT inst FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tbool_inst t1
-SET inst = (SELECT tboolinst(random_bool(), getTimestamp(inst))
+SET inst = (SELECT tbool_inst(random_bool(), getTimestamp(inst))
   FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -197,7 +197,7 @@ SET inst = (SELECT inst FROM tbl_tint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tint_inst t1
-SET inst = (SELECT tintinst(random_int(0, 100), getTimestamp(inst))
+SET inst = (SELECT tint_inst(random_int(0, 100), getTimestamp(inst))
   FROM tbl_tint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -214,7 +214,7 @@ SET inst = (SELECT inst FROM tbl_tfloat_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tfloat_inst t1
-SET inst = (SELECT tfloatinst(random_float(1, 100), getTimestamp(inst))
+SET inst = (SELECT tfloat_inst(random_float(1, 100), getTimestamp(inst))
   FROM tbl_tfloat_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 
@@ -231,7 +231,7 @@ SET inst = (SELECT inst FROM tbl_ttext_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_ttext_inst t1
-SET inst = (SELECT ttextinst(random_text(10), getTimestamp(inst))
+SET inst = (SELECT ttext_inst(random_text(10), getTimestamp(inst))
   FROM tbl_ttext_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 

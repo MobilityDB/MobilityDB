@@ -66,16 +66,14 @@ SELECT extent(temp::period) FROM tbl_ttext;
  (2001-01-01 13:49:00+00, 2001-12-03 07:20:00+00]
 (1 row)
 
-SELECT extent(temp::intrange) FROM tbl_tint;
- extent  
----------
- [1,100)
-(1 row)
-
-SELECT extent(temp::floatrange) FROM tbl_tfloat;
-                 extent                 
-----------------------------------------
- [1.0292634703218937,99.91760223731399]
+SELECT extent(setPrecision(temp,6)::intrange) FROM tbl_tint;
+ERROR:  cannot cast type tbox to intrange
+LINE 1: SELECT extent(setPrecision(temp,6)::intrange) FROM tbl_tint;
+                                          ^
+SELECT extent(setPrecision(temp,6)::floatrange) FROM tbl_tfloat;
+        extent        
+----------------------
+ [1.029263,99.917602]
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;

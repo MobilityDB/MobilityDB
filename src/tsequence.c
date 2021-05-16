@@ -92,13 +92,19 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (dvalue - min);
   double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
-  if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
-    return false;
 
   if (t != NULL)
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
+    /* Cope with potential roundoff errors */
+    if (*t <= inst1->t || *t >= inst2->t)
+      return false;
+  }
+  else
+  {
+    if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
+      return false;
   }
   return true;
 }
@@ -352,15 +358,13 @@ tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Returns true if the two segments of the temporal values
- * intersect at the timestamp
+ * Returns true if the two segments of the temporal values intersect at the
+ * timestamp
  *
  * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] linear1 True when the interpolation of the first segment
- * is linear
+ * @param[in] linear1 True if the first segment has linear interpolation
  * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] linear2 True when the interpolation of the second segment
- * is linear
+ * @param[in] linear2 True if the second segment has linear interpolation
  * @param[out] inter1, inter2 Base values taken by the two segments
  * at the timestamp
  * @param[out] t Timestamp
@@ -409,6 +413,18 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
   return result;
 }
 
+/**
+ * Returns true if the two segments of the temporal values intersect at the
+ * timestamp.
+ *
+ * This function is passed to the lifting infrastructure when computing the
+ * temporal distance.
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] linear1 True if the first segment has linear interpolation
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] linear2 True if the second segment has linear interpolation
+ * @param[out] t Timestamp
+ */
 bool
 tsequence_intersection1(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,

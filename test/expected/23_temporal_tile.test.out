@@ -23,11 +23,11 @@ SELECT bucketList(floatrange '(1, 10)', 2.5) LIMIT 3;
 (3 rows)
 
 SELECT bucketList(floatrange '(1, 10)', 2.5, 1.5) LIMIT 3;
-  bucketlist   
----------------
- (1,"[1.5,4)")
- (2,"[4,6.5)")
- (3,"[6.5,9)")
+   bucketlist   
+----------------
+ (1,"[-1,1.5)")
+ (2,"[1.5,4)")
+ (3,"[4,6.5)")
 (3 rows)
 
 SELECT valueBucket(3, 2);
@@ -54,11 +54,51 @@ SELECT valueBucket(3.5, 2.5, 1.5);
          1.5
 (1 row)
 
+SELECT valueBucket(-3, 2, -2);
+ valuebucket 
+-------------
+          -4
+(1 row)
+
+SELECT valueBucket(-3.5, 2, -2);
+ valuebucket 
+-------------
+          -4
+(1 row)
+
+SELECT valueBucket(2147483647, 2);
+ valuebucket 
+-------------
+  2147483647
+(1 row)
+
+SELECT valueBucket(-2147483648, 2);
+ valuebucket 
+-------------
+ -2147483648
+(1 row)
+
+SELECT valueBucket(-1.7976931348623158e+308, 2);
+       valuebucket        
+--------------------------
+ -1.7976931348623157e+308
+(1 row)
+
+SELECT valueBucket(1.7976931348623158e+308, 2);
+       valuebucket       
+-------------------------
+ 1.7976931348623157e+308
+(1 row)
+
 /* Errors */
 SELECT valueBucket(3, -2);
 ERROR:  The value must be positive: -2
 SELECT valueBucket(3.5, -2.5);
 ERROR:  The value must be positive: -2.500000
+SELECT valueBucket(-2147483647, 3, 2);
+ERROR:  value out of range
+SELECT valueBucket(2147483646, 3, -2);
+ERROR:  value out of range
 SELECT rangeBucket(3, 2);
  rangebucket 
 -------------
@@ -109,6 +149,18 @@ SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
        timebucket       
 ------------------------
  2019-12-27 00:00:00+00
+(1 row)
+
+SELECT timeBucket('infinity'::timestamptz, '1 day');
+ timebucket 
+------------
+ infinity
+(1 row)
+
+SELECT timeBucket('-infinity'::timestamptz, '1 day');
+ timebucket 
+------------
+ -infinity
 (1 row)
 
 /* Errors */

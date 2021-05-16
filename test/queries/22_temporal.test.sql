@@ -415,6 +415,20 @@ SELECT ttext_seqset(ARRAY[ttext 'AA@2000-01-01', '[BB@2000-01-02,BB@2000-01-03]'
 -- Cast functions
 -------------------------------------------------------------------------------
 
+SELECT tint '1@2000-01-01'::intrange;
+SELECT tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}'::intrange;
+SELECT tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]'::intrange;
+SELECT tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'::intrange;
+SELECT tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}'::intrange;
+SELECT tfloat '1.5@2000-01-01'::floatrange;
+SELECT tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}'::floatrange;
+SELECT tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]'::floatrange;
+SELECT tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]'::floatrange;
+SELECT tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}'::floatrange;
+SELECT tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}'::floatrange;
+
+SELECT tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}'::floatrange;
+
 SELECT tfloat(tint '1@2001-01-01');
 SELECT tfloat(tint '{1@2001-01-01, 2@2001-01-02}');
 SELECT tfloat(tint '[1@2001-01-01, 1@2001-01-02]');
@@ -1768,7 +1782,7 @@ SELECT atRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY
 SELECT atRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[5,6]']);
 SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
 
-SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', ARRAY[floatrange '[1,2]']);
+SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', ARRAY[floatrange '[1,2]', '[2.5,3]']);
 
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange 'empty']);
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);

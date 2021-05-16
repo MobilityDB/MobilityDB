@@ -146,6 +146,17 @@ CREATE TYPE float_tfloat AS (
   tnumber tfloat
 );
 
+CREATE OR REPLACE FUNCTION valueSplitOld(tint, size integer,
+    origin integer DEFAULT 0)
+  RETURNS SETOF int_tint
+  AS 'MODULE_PATHNAME', 'tnumber_value_split_old'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+CREATE OR REPLACE FUNCTION valueSplit(tfloat, size float,
+    origin float DEFAULT 0.0)
+  RETURNS SETOF float_tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_value_split_old'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
 CREATE OR REPLACE FUNCTION valueSplit(tint, size integer,
     origin integer DEFAULT 0)
   RETURNS SETOF int_tint
@@ -155,17 +166,6 @@ CREATE OR REPLACE FUNCTION valueSplit(tfloat, size float,
     origin float DEFAULT 0.0)
   RETURNS SETOF float_tfloat
   AS 'MODULE_PATHNAME', 'tnumber_value_split'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-
-CREATE OR REPLACE FUNCTION valueSplitNew(tint, size integer,
-    origin integer DEFAULT 0)
-  RETURNS SETOF int_tint
-  AS 'MODULE_PATHNAME', 'tnumber_value_split_new'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION valueSplitNew(tfloat, size float,
-    origin float DEFAULT 0.0)
-  RETURNS SETOF float_tfloat
-  AS 'MODULE_PATHNAME', 'tnumber_value_split_new'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/

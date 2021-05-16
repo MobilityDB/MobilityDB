@@ -405,6 +405,16 @@ SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
 
 -------------------------------------------------------------------------------
+-- Extent aggregation
+-------------------------------------------------------------------------------
+
+WITH test(box) AS (
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))' UNION ALL 
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' )
+SELECT extent(box) FROM test;
+
+
+-------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------
 

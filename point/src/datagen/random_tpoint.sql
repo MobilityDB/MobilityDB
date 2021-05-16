@@ -1509,7 +1509,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeogpointinst(random_geog_point(lowx, highx, lowy, highy, srid),
+  RETURN tgeogpoint_inst(random_geog_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -1543,7 +1543,7 @@ BEGIN
     RAISE EXCEPTION 'lowtime must be less than or equal to hightime: %, %',
       lowtime, hightime;
   END IF;
-  RETURN tgeogpointinst(random_geog_point3D(lowx, highx, lowy, highy, lowz,
+  RETURN tgeogpoint_inst(random_geog_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
@@ -1690,9 +1690,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpointinst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpointinstset(result);
+  RETURN tgeogpoint_instset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1741,9 +1741,9 @@ BEGIN
   INTO tsarr;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpointinst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpointinstset(result);
+  RETURN tgeogpoint_instset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1927,9 +1927,9 @@ BEGIN
   END IF;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpointinst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpointseq(result, lower_inc, upper_inc);
+  RETURN tgeogpoint_seq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -1988,9 +1988,9 @@ BEGIN
   END IF;
   FOR i IN 1..card
   LOOP
-    result[i] = tgeogpointinst(pointarr[i], tsarr[i]);
+    result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpointseq(result, lower_inc, upper_inc);
+  RETURN tgeogpoint_seq(result, lower_inc, upper_inc);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -2173,7 +2173,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tgeogpointseqset(result);
+  RETURN tgeogpoint_seqset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 
@@ -2232,7 +2232,7 @@ BEGIN
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
-  RETURN tgeogpointseqset(result);
+  RETURN tgeogpoint_seqset(result);
 END;
 $$ LANGUAGE 'plpgsql' STRICT;
 

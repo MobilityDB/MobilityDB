@@ -62,8 +62,8 @@ SELECT extent(temp::period) FROM tbl_tint;
 SELECT extent(temp::period) FROM tbl_tfloat;
 SELECT extent(temp::period) FROM tbl_ttext;
 
-SELECT extent(temp::intrange) FROM tbl_tint;
-SELECT extent(temp::floatrange) FROM tbl_tfloat;
+SELECT extent(setPrecision(temp,6)::intrange) FROM tbl_tint;
+SELECT extent(setPrecision(temp,6)::floatrange) FROM tbl_tfloat;
 
 SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;

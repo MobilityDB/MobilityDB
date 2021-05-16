@@ -39,7 +39,11 @@ SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-0
 (3 rows)
 
 /* Errors */
-SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+ERROR:  The spatiotemporal box and the geometry must be of the same dimensionality
+SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
+ERROR:  Operation on mixed SRID geometries
+SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0);
 ERROR:  The box cannot be geodetic
 SELECT multidimTile(geometry 'Point(3 3)', 2.0);
     multidimtile    
@@ -264,6 +268,9 @@ FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, P
  POINT Z (2.5 2.5 2.5) | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-04 00:00:00+00, POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (2 rows)
 
+/* Errors */
+SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, 'SRID=3812;Point(0.5 0.5 0.5)');
+ERROR:  Operation on mixed SRID geometries
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Point(1 1)@2000-01-01', 2.0, '2 days') AS sp) t;
    point    |          time          |              tpoint               
@@ -473,3 +480,6 @@ FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-0
  POINT Z (2.5 2.5 2.5) | 2000-01-05 00:00:00+00 | Interp=Stepwise;{[POINT Z (3 3 3)@2000-01-05 00:00:00+00]}
 (4 rows)
 
+/* Errors */
+SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
+ERROR:  Operation on mixed SRID geometries

@@ -108,6 +108,7 @@ float_bucket_internal(double value, double size, double origin)
   double result;
   /* origin = origin % size, but use FMODULO */
   FMODULO(origin, result, size);
+  origin = fmod(origin, size);
   if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
     (origin < 0 && value > DBL_MAX + origin))
     ereport(ERROR,
@@ -115,21 +116,22 @@ float_bucket_internal(double value, double size, double origin)
          errmsg("value out of range")));
 
   value -= origin;
-  /* result = (value / size) * size */
-  FMODULO(value, result, size);
-  if (result < 0)
-  {
-    /*
-     * need to subtract another size if remainder < 0 this only happens
-     * if value is negative to begin with and there is a remainder
-     * after division. Need to subtract another size since division
-     * truncates toward 0 in C99.
-     */
-    result = (result * size) - size;
-  }
-  else
-    result *= size;
+  result = floor(value / size) * size;
+  // FMODULO(value, result, size);
+  // if (result < 0)
+  // {
+    // /*
+     // * need to subtract another size if remainder < 0 this only happens
+     // * if value is negative to begin with and there is a remainder
+     // * after division. Need to subtract another size since division
+     // * truncates toward 0 in C99.
+     // */
+    // result = (result * size) - size;
+  // }
+  // else
+    // result *= size;
   result += origin;
+  // assert(result <= value);
   return result;
 }
 
@@ -184,6 +186,10 @@ TimestampTz
 timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin)
 {
+  assert(tunits > 0);
+  if (timestamp == DT_NOBEGIN || timestamp == DT_NOEND)
+    return timestamp;
+
   TimestampTz result;
   /* torigin = torigin % tunits, but use TMODULO */
   TMODULO(torigin, result, tunits);
@@ -387,11 +393,11 @@ Datum range_bucket(PG_FUNCTION_ARGS)
  * Range split functions for temporal numbers
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_value_split);
+PG_FUNCTION_INFO_V1(tnumber_value_split_old);
 /**
  * Split a temporal number with respect to value buckets.
  */
-Datum tnumber_value_split(PG_FUNCTION_ARGS)
+Datum tnumber_value_split_old(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   RangeBucketState *state;
@@ -650,8 +656,8 @@ time_split_state_next(TimeSplitState *state)
  * Split a temporal value into an array of fragments according to time buckets.
  *
  * @param[in] inst Temporal value
- * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] torigin Time origin of the tiles
  * @param[out] buckets Start timestamp of the buckets containing a fragment
  * @param[out] newcount Number of values in the output array
  */
@@ -708,8 +714,8 @@ tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end
         result[l++] = tinstantset_make(instants, k, MERGE_NO);
         k = 0;
       }
-      if (upper >= end)
-       break;
+      // if (upper >= end)
+       // break;
       lower = upper;
       upper += tunits;
     }
@@ -946,6 +952,18 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
 
 /*****************************************************************************/
 
+/**
+ * Split a temporal value into fragments with respect to period buckets
+ * (dispatch function).
+ *
+ * @param[in] temp Temporal value
+ * @param[in] start,end Start and end timestamps of the buckets
+ * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] count Number of buckets
+ * @param[out] buckets Start timestamp of the buckets containing a fragment
+ * @param[out] newcount Number of values in the output array
+ */
 Temporal **
 temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
   int64 tunits, TimestampTz torigin, int count, TimestampTz **buckets,
@@ -1486,7 +1504,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   }
 
   /* General case */
-  TInstant **tofree = palloc(sizeof(TInstant *) * count * seq->count);
+  TInstant **tofree = palloc(sizeof(TInstant *) * seq->count * count);
   int l = 0;   /* counter for the instants to free */
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   value1 = tinstant_value(inst1);
@@ -1545,11 +1563,14 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         datum_lt(bucket_upper, max_value, valuetypid))
       {
         TimestampTz t;
-        /* To reduce the roundoff errors we take the bound instead of
+        /* To reduce the roundoff errors we may take the bound instead of
          * projecting the value to the timestamp */
+        Datum projvalue;
         tlinearseq_intersection_value(inst1, inst2, bucket_upper, valuetypid,
-          NULL, &t);
-        tofree[l++] = bounds[last] = tinstant_make(bucket_upper, t, valuetypid);
+          &projvalue, &t);
+        tofree[l++] = bounds[last] =  RANGE_ROUNDOFF ?
+          tinstant_make(bucket_upper, t, valuetypid) :
+          tinstant_make(projvalue, t, valuetypid);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
@@ -1654,7 +1675,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   {
     if (numseqs[i] > 0)
     {
-      result[k] = tsequenceset_make((const TSequence **)(&sequences[i * seq->count]),
+      result[k] = tsequenceset_make((const TSequence **)(&sequences[seq->count * i]),
         numseqs[i], NORMALIZE);
       values[k++] = bucket_value;
     }
@@ -1749,11 +1770,11 @@ tnumber_value_split_internal(Temporal *temp, Datum start_bucket, Datum size,
   return fragments;
 }
 
-PG_FUNCTION_INFO_V1(tnumber_value_split_new);
+PG_FUNCTION_INFO_V1(tnumber_value_split);
 /**
  * Split a temporal value into fragments with respect to period buckets.
  */
-Datum tnumber_value_split_new(PG_FUNCTION_ARGS)
+Datum tnumber_value_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   ValueSplitState *state;

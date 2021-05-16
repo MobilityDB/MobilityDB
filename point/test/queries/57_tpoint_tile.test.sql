@@ -34,7 +34,9 @@ SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-0
 SELECT multidimGrid(tgeompoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3)', '2000-01-15') LIMIT 3;
 SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, '2 days', 'Point(3 3 3)', '2000-01-15') LIMIT 3;
 /* Errors */
-SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0) LIMIT 3;
+SELECT multidimGrid(tgeompoint '[Point(3 3 3)@2000-01-15, Point(15 15 15)@2000-01-25]'::stbox, 2.0, geometry 'Point(3 3)');
+SELECT multidimGrid(tgeompoint 'SRID=3812;[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0, geometry 'SRID=5676;Point(1 1)');
+SELECT multidimGrid(tgeogpoint '[Point(3 3)@2000-01-15, Point(15 15)@2000-01-25]'::stbox, 2.0);
 
 SELECT multidimTile(geometry 'Point(3 3)', 2.0);
 SELECT multidimTile(geometry 'Point(3 3 3)', 2.0);
@@ -106,6 +108,9 @@ FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Po
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, 'Point(0.5 0.5 0.5)') AS sp) t;
 
+/* Errors */
+SELECT spaceSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, 'SRID=3812;Point(0.5 0.5 0.5)');
+
 -------------------------------------------------------------------------------
 -- Space-time split
 -------------------------------------------------------------------------------
@@ -164,5 +169,8 @@ SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', 2.0, '2 days', 'Point(0.5 0.5 0.5)', '2000-01-15') AS sp) t;
+
+/* Errors */
+SELECT spaceTimeSplit(tgeompoint 'SRID=5676;Point(1 1 1)@2000-01-01', 2.0, '2 days', 'SRID=3812;Point(0.5 0.5 0.5)');
 
 -------------------------------------------------------------------------------

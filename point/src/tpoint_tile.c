@@ -243,7 +243,10 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     }
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-    // ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
+    /* Since we pass by default Point(0 0 0) as origin independently of the input 
+     * STBOX, we test the same spatial dimensionality only for STBOX Z */
+    if (MOBDB_FLAGS_GET_Z(bounds->flags))
+      ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
     int32 srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)

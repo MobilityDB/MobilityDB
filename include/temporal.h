@@ -159,10 +159,10 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure GTZXBL, where
- * G:Coordinates are geodetic, T:has T coordinate, Z:has Z coordinate,
- * X:has value or X coordinate, B:base type passed by value,
- * L: Linear interpolation
+ * Macros for manipulating the 'flags' element with structure xxGTZXBL, where
+ * xx:unused bits, G:Coordinates are geodetic, T:has T coordinate, 
+ * Z:has Z coordinate, X:has value or X coordinate,
+ * B:base type passed by value,L: Linear interpolation
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))

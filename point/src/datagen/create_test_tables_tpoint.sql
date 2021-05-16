@@ -275,7 +275,7 @@ SET inst = (SELECT inst FROM tbl_tgeompoint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_inst t1
-SET inst = (SELECT tgeompointinst(random_geom_point(0, 100, 0, 100), getTimestamp(inst))
+SET inst = (SELECT tgeompoint_inst(random_geom_point(0, 100, 0, 100), getTimestamp(inst))
   FROM tbl_tgeompoint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
@@ -289,7 +289,7 @@ SET inst = (SELECT inst FROM tbl_tgeompoint3D_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_inst t1
-SET inst = (SELECT tgeompointinst(random_geom_point3D(0, 100, 0, 100, 0, 100), getTimestamp(inst))
+SET inst = (SELECT tgeompoint_inst(random_geom_point3D(0, 100, 0, 100, 0, 100), getTimestamp(inst))
   FROM tbl_tgeompoint3D_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
@@ -303,7 +303,7 @@ SET inst = (SELECT inst FROM tbl_tgeogpoint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint_inst t1
-SET inst = (SELECT tgeogpointinst(random_geog_point(-10, 32, 35, 72), getTimestamp(inst))
+SET inst = (SELECT tgeogpoint_inst(random_geog_point(-10, 32, 35, 72), getTimestamp(inst))
   FROM tbl_tgeogpoint_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 
@@ -317,7 +317,7 @@ SET inst = (SELECT inst FROM tbl_tgeogpoint3D_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3D_inst t1
-SET inst = (SELECT tgeogpointinst(random_geog_point3D(-10, 32, 35, 72, 0, 1000), getTimestamp(inst))
+SET inst = (SELECT tgeogpoint_inst(random_geog_point3D(-10, 32, 35, 72, 0, 1000), getTimestamp(inst))
   FROM tbl_tgeogpoint3D_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 

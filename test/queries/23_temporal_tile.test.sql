@@ -38,9 +38,20 @@ SELECT valueBucket(3, 2);
 SELECT valueBucket(3, 2, 1);
 SELECT valueBucket(3.5, 2.5);
 SELECT valueBucket(3.5, 2.5, 1.5);
+
+SELECT valueBucket(-3, 2, -2);
+SELECT valueBucket(-3.5, 2, -2);
+-- PG_INT32_MIN or PG_INT32_MAX
+SELECT valueBucket(2147483647, 2);
+SELECT valueBucket(-2147483648, 2);
+-- DBL_MIN or DBL_MAX
+SELECT valueBucket(-1.7976931348623158e+308, 2);
+SELECT valueBucket(1.7976931348623158e+308, 2);
 /* Errors */
 SELECT valueBucket(3, -2);
 SELECT valueBucket(3.5, -2.5);
+SELECT valueBucket(-2147483647, 3, 2);
+SELECT valueBucket(2147483646, 3, -2);
 
 SELECT rangeBucket(3, 2);
 SELECT rangeBucket(3, 2, 1);
@@ -54,6 +65,8 @@ SELECT bucketList(period '[2000-01-01, 2000-01-10]', '1 week', '2020-06-15') LIM
 
 SELECT timeBucket('2020-01-01', '1 week');
 SELECT timeBucket('2020-01-01', '1 week', timestamptz '2001-06-01');
+SELECT timeBucket('infinity'::timestamptz, '1 day');
+SELECT timeBucket('-infinity'::timestamptz, '1 day');
 /* Errors */
 SELECT timeBucket('2020-01-01', '1 month', timestamptz '2001-06-01');
 
