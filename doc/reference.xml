@@ -240,6 +240,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="range_extent"><varname>extent</varname></link>: Bounding range</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tunion"><varname>tunion</varname></link>: Temporal union</para>
 				</listitem>
 			</itemizedlist>

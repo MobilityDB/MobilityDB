@@ -135,6 +135,7 @@ FROM (SELECT oid FROM pg_type WHERE typname = 'tfloat') t;
 /* Errors */
 SELECT temporal_typmod_in(ARRAY[[cstring 'Instant']]);
 SELECT temporal_typmod_in(ARRAY[cstring 'Instant', NULL]);
+SELECT tfloat('') '1@2000-01-01';
 SELECT tfloat(Instant, InstantSet) '1@2000-01-01';
 
 SELECT tbool 'true@2000-01-01';
@@ -1754,6 +1755,7 @@ SELECT atRanges(tfloat '{[1@2000-01-01, 2@2000-01-02), (2@2000-01-02, 3@2000-01-
 SELECT atRanges(tfloat '[1@2000-01-01,10@2000-01-02]', ARRAY[floatrange '[1,2)', '[2,3]', '[4,5]']);
 SELECT atRanges(tfloat '{[1@2000-01-01, 2@2000-01-02], [5@2000-01-03, 6@2000-01-04]}', ARRAY[floatrange '(2,3)','(4,5)']);
 SELECT atRanges(tfloat '{[1@2000-01-01, 2@2000-01-02], [5@2000-01-03, 6@2000-01-04]}', ARRAY[floatrange '[3,4]','[7,8]']);
+SELECT atRanges(tfloat '{[1@2000-01-01, 3@2000-01-03],[4@2000-01-04]}', ARRAY[floatrange '[1,2]', '[3,4]']);
 
 SELECT atRanges(tint '{1@2000-01-01}', '{}'::intrange[]);
 SELECT atRanges(tfloat '{1@2000-01-01}', '{}'::floatrange[]);
@@ -1765,6 +1767,8 @@ SELECT atRanges(tfloat '1.5@2000-01-01', ARRAY[floatrange '[5,6]']);
 SELECT atRanges(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', ARRAY[floatrange '[5,6]']);
 SELECT atRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[5,6]']);
 SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
+
+SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', ARRAY[floatrange '[1,2]']);
 
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange 'empty']);
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);

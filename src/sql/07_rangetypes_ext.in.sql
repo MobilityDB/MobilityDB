@@ -264,4 +264,24 @@ CREATE OPERATOR -|- (
   RESTRICT = contsel, JOIN = contjoinsel
 );
 
+/******************************************************************************
+ * Aggregate functions for range types
+ ******************************************************************************/
+
+CREATE OR REPLACE FUNCTION range_extent_transfn(anyrange, anyrange)
+  RETURNS anyrange
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION range_extent_combinefn(anyrange, anyrange)
+  RETURNS anyrange
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(anyrange) (
+  SFUNC = range_extent_transfn,
+  STYPE = anyrange,
+  COMBINEFUNC = range_extent_combinefn,
+  PARALLEL = safe
+);
+
 /******************************************************************************/

@@ -54,6 +54,23 @@ DROP TABLE tbl_tfloat_tmp;
 DROP TABLE tbl_ttext_tmp;
 
 -------------------------------------------------------------------------------
+-- Cast functions
+-------------------------------------------------------------------------------
+
+SELECT extent(temp::period) FROM tbl_tbool;
+SELECT extent(temp::period) FROM tbl_tint;
+SELECT extent(temp::period) FROM tbl_tfloat;
+SELECT extent(temp::period) FROM tbl_ttext;
+
+SELECT extent(temp::intrange) FROM tbl_tint;
+SELECT extent(temp::floatrange) FROM tbl_tfloat;
+
+SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
+
+-------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
 
@@ -149,15 +166,6 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
 SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tint;
 SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_tfloat;
 SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) FROM tbl_ttext;
-
--------------------------------------------------------------------------------
--- Cast functions
--------------------------------------------------------------------------------
-
-SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
-SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Accessor functions

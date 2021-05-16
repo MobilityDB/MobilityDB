@@ -347,6 +347,10 @@ SELECT tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
 ERROR:  typmod array must not contain nulls
 SELECT tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
 ERROR:  typmod array must be one-dimensional
+SELECT asewkt(tgeompoint('') 'Point(0 1)@2000-01-01');
+ERROR:  Empty temporal type modifier
+LINE 1: SELECT asewkt(tgeompoint('') 'Point(0 1)@2000-01-01');
+                      ^
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1)@2000-01-01');
               asewkt               
 -----------------------------------

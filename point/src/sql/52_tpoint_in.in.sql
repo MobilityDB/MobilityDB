@@ -31,29 +31,29 @@
 
 CREATE FUNCTION tgeompointFromText(text)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tgeompoint_from_ewkt'
+  AS 'MODULE_PATHNAME', 'tpoint_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointFromText(text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'tgeogpoint_from_ewkt'
+  AS 'MODULE_PATHNAME', 'tpoint_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointFromEWKT(text)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tgeompoint_from_ewkt'
+  AS 'MODULE_PATHNAME', 'tpoint_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointFromEWKT(text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'tgeogpoint_from_ewkt'
+  AS 'MODULE_PATHNAME', 'tpoint_from_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointFromMFJSON(text)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tgeompoint_from_mfjson'
+  AS 'MODULE_PATHNAME', 'tpoint_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpointFromMFJSON(text)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'tgeogpoint_from_mfjson'
+  AS 'MODULE_PATHNAME', 'tpoint_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tgeompointFromBinary(bytea)

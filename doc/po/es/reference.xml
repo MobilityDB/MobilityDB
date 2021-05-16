@@ -242,6 +242,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="range_extent"><varname>extent</varname></link>: Extensión del rango delimitador</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="tunion"><varname>tunion</varname></link>: Unión temporal</para>
 				</listitem>
 			</itemizedlist>

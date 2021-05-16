@@ -590,3 +590,68 @@ elem_adjacent_range(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
+
+PG_FUNCTION_INFO_V1(range_extent_transfn);
+/**
+ * Transition function for temporal extent aggregation of period values
+ * with period bounding box
+ */
+PGDLLEXPORT Datum
+range_extent_transfn(PG_FUNCTION_ARGS)
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
+#else
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
+#endif
+  RangeType *result;
+
+  /* Can't do anything with null inputs */
+  if (!r1 && !r2)
+    PG_RETURN_NULL();
+  /* Null period and non-null period, return the period */
+  else if (!r1)
+    result = range_copy(r2);
+  /* Non-null period and null period, return the period */
+  else if (!r2)
+    result = range_copy(r1);
+  else
+  {
+    TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
+    /* Non-strict union */
+    result = range_union_internal(typcache, r1, r2, false);
+  }
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(range_extent_combinefn);
+/**
+ * Combine function for temporal extent aggregation
+ */
+PGDLLEXPORT Datum
+range_extent_combinefn(PG_FUNCTION_ARGS)
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
+#else
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
+#endif
+
+  if (!r2 && !r1)
+    PG_RETURN_NULL();
+  if (r1 && !r2)
+    PG_RETURN_POINTER(r1);
+  if (r2 && !r1)
+    PG_RETURN_POINTER(r2);
+
+  TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
+  /* Non-strict union */
+  RangeType *result = range_union_internal(typcache, r1, r2, false); 
+  PG_RETURN_POINTER(result);
+}
+
+/******************************************************************************/

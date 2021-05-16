@@ -201,44 +201,45 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   int16 temp_subtype = ANYTEMPSUBTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid;
-  char *s;
+  char *s[3] = {0,0,0};
+  for (int i = 0; i < n; i++)
+  {
+    s[i] = DatumGetCString(elem_values[i]);
+    if (strlen(s[i]) == 0)
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Empty temporal type modifier")));
+  }
 
   bool has_geo = false, has_srid = false;
   if (n == 3)
   {
     /* Type_modifier is (TempSubType, Geometry, SRID) */
-    s = DatumGetCString(elem_values[0]);
-    if (tempsubtype_from_string(s, &temp_subtype) == false) 
+    if (tempsubtype_from_string(s[0], &temp_subtype) == false) 
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Invalid temporal type modifier: %s", s)));
-    s = DatumGetCString(elem_values[1]);
-    if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+        errmsg("Invalid temporal type modifier: %s", s[0])));
+    if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Invalid geometry type modifier: %s", s)));
-    s = DatumGetCString(elem_values[2]);
-    srid = pg_atoi(s, sizeof(int32), '\0');
+        errmsg("Invalid geometry type modifier: %s", s[1])));
+    srid = pg_atoi(s[2], sizeof(int32), '\0');
     srid = clamp_srid(srid);
     has_geo = has_srid = true;
   }
   else if (n == 2)
   {
     /* Type modifier is either (TempSubType, Geometry) or (Geometry, SRID) */
-    s = DatumGetCString(elem_values[0]);
-    if (tempsubtype_from_string(s, &temp_subtype))
+    if (tempsubtype_from_string(s[0], &temp_subtype))
     {
-      s = DatumGetCString(elem_values[1]);
-      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+      if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-            errmsg("Invalid geometry type modifier: %s", s)));
+            errmsg("Invalid geometry type modifier: %s", s[1])));
       has_geo = true;
     }
     else
     {
-      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+      if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-            errmsg("Invalid geometry type modifier: %s", s)));
-      s = DatumGetCString(elem_values[1]);
-      srid = pg_atoi(s, sizeof(int32), '\0');
+            errmsg("Invalid geometry type modifier: %s", s[0])));
+      srid = pg_atoi(s[1], sizeof(int32), '\0');
       srid = clamp_srid(srid);
       has_geo = has_srid = true;
     }
@@ -247,10 +248,9 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   {
     /* Type modifier: either (TempSubType) or (Geometry) */
     has_srid = false;
-    s = DatumGetCString(elem_values[0]);
-    if (tempsubtype_from_string(s, &temp_subtype))
+    if (tempsubtype_from_string(s[0], &temp_subtype))
       ;
-    else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM))
+    else if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM))
       has_geo = true;
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),

@@ -1090,25 +1090,29 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
   if (ARR_ELEMTYPE(array) != CSTRINGOID)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-        errmsg("typmod array must be type cstring[]")));
+      errmsg("typmod array must be type cstring[]")));
   if (ARR_NDIM(array) != 1)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
-        errmsg("typmod array must be one-dimensional")));
+      errmsg("typmod array must be one-dimensional")));
   if (ARR_HASNULL(array))
     ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-        errmsg("typmod array must not contain nulls")));
+      errmsg("typmod array must not contain nulls")));
 
   deconstruct_array(array, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
   if (n != 1)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid temporal type modifier")));
+      errmsg("Invalid temporal type modifier")));
 
   /* Temporal Type */
   char *s = DatumGetCString(elem_values[0]);
+  if (strlen(s) == 0)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Empty temporal type modifier")));
+    
   int16 subtype = ANYTEMPSUBTYPE;
   if (!tempsubtype_from_string(s, &subtype))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid temporal type modifier: %s", s)));
+      errmsg("Invalid temporal type modifier: %s", s)));
 
   pfree(elem_values);
   PG_RETURN_INT32((int32) subtype);

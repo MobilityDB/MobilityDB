@@ -42,6 +42,66 @@ DROP TABLE tbl_tfloat_tmp;
 DROP TABLE
 DROP TABLE tbl_ttext_tmp;
 DROP TABLE
+SELECT extent(temp::period) FROM tbl_tbool;
+                      extent                      
+--------------------------------------------------
+ [2001-01-17 16:00:00+00, 2001-12-21 00:03:00+00]
+(1 row)
+
+SELECT extent(temp::period) FROM tbl_tint;
+                      extent                      
+--------------------------------------------------
+ [2001-01-01 08:20:00+00, 2001-12-27 07:03:00+00]
+(1 row)
+
+SELECT extent(temp::period) FROM tbl_tfloat;
+                      extent                      
+--------------------------------------------------
+ (2001-01-02 18:42:00+00, 2001-12-22 08:07:00+00]
+(1 row)
+
+SELECT extent(temp::period) FROM tbl_ttext;
+                      extent                      
+--------------------------------------------------
+ (2001-01-01 13:49:00+00, 2001-12-03 07:20:00+00]
+(1 row)
+
+SELECT extent(temp::intrange) FROM tbl_tint;
+ extent  
+---------
+ [1,100)
+(1 row)
+
+SELECT extent(temp::floatrange) FROM tbl_tfloat;
+                 extent                 
+----------------------------------------
+ [1.0292634703218937,99.91760223731399]
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
+ count 
+-------
+    99
+(1 row)
+
 SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
  tempsubtype 
 -------------
@@ -480,30 +540,6 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
  max 
 -----
   59
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint_inst WHERE tfloat(inst) IS NOT NULL;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint_instset WHERE tfloat(ti) IS NOT NULL;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
- count 
--------
-    99
-(1 row)
-
-SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
- count 
--------
-    99
 (1 row)
 
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tbool ORDER BY 1;

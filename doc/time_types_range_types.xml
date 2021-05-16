@@ -696,25 +696,30 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 		</sect2>
 
 		<sect2>
-				<title>Aggregate Functions</title>
+			<title>Aggregate Functions</title>
 
-				<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
+			<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
 
-				<para>The temporal aggregate functions are the following ones:</para>
-				<itemizedlist>
-					<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
-					<listitem><para>Function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
-				</itemizedlist>
+			<para>The temporal aggregate functions are the following ones:</para>
+			<itemizedlist>
+				<listitem><para>Function <varname>tcount</varname> generalizes the traditional function <varname>count</varname>. The temporal count can be used to compute at each point in time the number of available objects (for example, number of periods). Function <varname>tcount</varname> returns a temporal integer (see <xref linkend="temporal_types" />).</para></listitem>
+				<listitem><para>Function <varname>extent</varname> returns a bounding period that encloses a set of time values.</para></listitem>
+			</itemizedlist>
 
-				<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
-				</para>
+			<para>Similarly, there is an aggregate function for range types:</para>
+			<itemizedlist>
+				<listitem><para>Function <varname>extent</varname> returns a bounding range that encloses a set of integer or float range values.</para></listitem>
+			</itemizedlist>
 
-				<itemizedlist>
-					<listitem id="time_tcount">
-						<indexterm><primary><varname>tcount</varname></primary></indexterm>
-						<para>Temporal count</para>
-						<para><varname>tcount({timestampset,period,periodset}): {tinti,tints}</varname></para>
-						<programlisting>
+			<para>Union is a very useful operation for time types. As we have seen in <xref linkend="time_set_operators" />, we can compute the union of two time values using the <varname>+</varname> operator. However, it is also very useful to have an aggregate version of the union operator for combining an arbitrary number of values. Function <varname>tunion</varname> can be used for this purpose.
+			</para>
+
+			<itemizedlist>
+				<listitem id="time_tcount">
+					<indexterm><primary><varname>tcount</varname></primary></indexterm>
+					<para>Temporal count</para>
+					<para><varname>tcount({timestampset,period,periodset}): {tinti,tints}</varname></para>
+					<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
@@ -731,14 +736,14 @@ WITH periods(ps) AS (
 SELECT tcount(ps) FROM periods;
 -- {[2@2000-01-01, 3@2000-01-02], (2@2000-01-02, 3@2000-01-03, 3@2000-01-04],
    (1@2000-01-04, 2@2000-01-05, 2@2000-01-06]}
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 
-					<listitem id="time_extent">
-						<indexterm><primary><varname>extent</varname></primary></indexterm>
-						<para>Bounding period</para>
-						<para><varname>extent({timestampset,period,periodset}): period</varname></para>
-						<programlisting>
+				<listitem id="time_extent">
+					<indexterm><primary><varname>extent</varname></primary></indexterm>
+					<para>Bounding period</para>
+					<para><varname>extent({timestampset,period,periodset}): period</varname></para>
+					<programlisting>
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
   SELECT timestampset '{2000-01-02, 2000-01-04, 2000-01-06}' UNION
@@ -754,6 +759,21 @@ WITH periods(ps) AS (
 )
 SELECT extent(ps) FROM periods;
 -- "[2000-01-01, 2000-01-06]"
+					</programlisting>
+				</listitem>
+
+				<listitem id="range_extent">
+					<indexterm><primary><varname>extent</varname></primary></indexterm>
+					<para>Bounding range</para>
+					<para><varname>extent(range): range</varname></para>
+					<programlisting>
+WITH ranges(r) AS (
+  SELECT floatrange '[1, 4)' UNION
+  SELECT floatrange '(5, 8)' UNION
+  SELECT floatrange '(7, 9)'
+)
+SELECT extent(r) FROM ranges;
+-- "[1,9)"
 					</programlisting>
 				</listitem>
 
@@ -778,9 +798,9 @@ SELECT tunion(ps) FROM periods;
 -- "{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}"
 						</programlisting>
 					</listitem>
-				</itemizedlist>
-			</sect2>
-</sect1>
+			</itemizedlist>
+		</sect2>
+	</sect1>
 
 	<sect1 id ="indexing_time_types">
 		<title>Indexing of Time Types</title>

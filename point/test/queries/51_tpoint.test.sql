@@ -145,6 +145,7 @@ FROM (SELECT oid FROM pg_type WHERE typname = 'tgeompoint') t;
 /* Errors */
 SELECT tgeompoint_typmod_in(ARRAY[cstring 'Instant', NULL,'5676']);
 SELECT tgeompoint_typmod_in(ARRAY[[cstring 'Instant'],[cstring 'PointZ'],[cstring '5676']]);
+SELECT asewkt(tgeompoint('') 'Point(0 1)@2000-01-01');
 
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1)@2000-01-01');
 SELECT asewkt(tgeompoint(Instant) 'Point(0 1 1)@2000-01-01');

@@ -697,7 +697,12 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 				<listitem><para>La función <varname>extent</varname> devuelve un período delimitador que engloba un conjunto de valores de tiempo.</para></listitem>
 			</itemizedlist>
 
-			<para>La union es una operación a muy útil para los tipos de tiempo. Como hemos visto en la <xref linkend="time_set_operators" />, podemos calcular la unión de dos valores de tiempo usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. La función <varname>tunion</varname> se puede utilizar para este propósito.
+			<para>Del mismo modo, hay una función agregada para los tipos de rango:</para>
+			<itemizedlist>
+				<listitem><para>La función <varname>extent</varname> devuelve un rango delimitador que engloba un conjunto de valores de rango.</para></listitem>
+			</itemizedlist>
+
+			<para>La unión es una operación a muy útil para los tipos de tiempo. Como hemos visto en la <xref linkend="time_set_operators" />, podemos calcular la unión de dos valores de tiempo usando el operador <varname>+</varname>. Sin embargo, también es muy útil tener una versión agregada del operador de unión para combinar un número arbitrario de valores. La función <varname>tunion</varname> se puede utilizar para este propósito.
 			</para>
 
 			<itemizedlist>
@@ -745,6 +750,21 @@ WITH periods(ps) AS (
 )
 SELECT extent(ps) FROM periods;
 -- "[2000-01-01, 2000-01-06]"
+					</programlisting>
+				</listitem>
+
+					<listitem id="range_extent">
+						<indexterm><primary><varname>extent</varname></primary></indexterm>
+						<para>Extensión del rango delimitador</para>
+						<para><varname>extent(range): range</varname></para>
+						<programlisting>
+WITH ranges(r) AS (
+  SELECT floatrange '[1, 4)' UNION
+  SELECT floatrange '(5, 8)' UNION
+  SELECT floatrange '(7, 9)'
+)
+SELECT extent(r) FROM ranges;
+-- "[1,9)"
 					</programlisting>
 				</listitem>
 
