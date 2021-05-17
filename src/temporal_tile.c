@@ -171,9 +171,6 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin)
 {
   assert(tunits > 0);
-  if (timestamp == DT_NOBEGIN || timestamp == DT_NOEND)
-    return timestamp;
-
   TimestampTz result;
   /* torigin = torigin % tunits, but use TMODULO */
   TMODULO(torigin, result, tunits);
@@ -371,81 +368,6 @@ Datum range_bucket(PG_FUNCTION_ARGS)
   Datum value_bucket = number_bucket_internal(value, size, origin, type);
   RangeType *result = range_bucket_get(value_bucket, size, type);
   PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Range split functions for temporal numbers
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(tnumber_value_split_old);
-/**
- * Split a temporal number with respect to value buckets.
- */
-Datum tnumber_value_split_old(PG_FUNCTION_ARGS)
-{
-  FuncCallContext *funcctx;
-  RangeBucketState *state;
-  bool isnull[2] = {0,0}; /* needed to say no value is null */
-  Datum tuple_arr[2]; /* used to construct the composite return value */
-  HeapTuple tuple;
-  Datum result; /* the actual composite return value */
-
-  /* If the function is being called for the first time */
-  if (SRF_IS_FIRSTCALL())
-  {
-    /* Initialize the FuncCallContext */
-    funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-
-    /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
-    Datum size = PG_GETARG_DATUM(1);
-    Datum origin = PG_GETARG_DATUM(2);
-
-    /* Ensure parameter validity */
-    ensure_tnumber_base_type(temp->valuetypid);
-    ensure_positive_datum(size, temp->valuetypid);
-    RangeType *bounds = tnumber_value_range_internal((const Temporal *) temp);
-
-    /* Create function state */
-    funcctx->user_fctx = range_bucket_state_make(temp, bounds, size, origin);
-    /* Build a tuple description for the function output */
-    get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
-    BlessTupleDesc(funcctx->tuple_desc);
-    MemoryContextSwitchTo(oldcontext);
-  }
-
-  /* Stuff done on every call of the function */
-  funcctx = SRF_PERCALL_SETUP();
-  /* Get state */
-  state = funcctx->user_fctx;
-
-  /* We need to loop since the result of the atRange function may be NULL */
-  while (true)
-  {
-    /* Stop when we've used up all fragments */
-    if (state->done)
-      SRF_RETURN_DONE(funcctx);
-
-    /* Generate bucket */
-    RangeType *range = range_bucket_get(state->value, state->size,
-      state->valuetypid);
-    /* Advance state */
-    range_bucket_state_next(state);
-    /* Restrict temporal value to range */
-    Temporal *atrange = tnumber_restrict_range_internal(state->temp, range,
-      REST_AT);
-    if (atrange != NULL)
-    {
-      /* Form tuple and return */
-      tuple_arr[0] = lower_datum(range);
-      tuple_arr[1] = PointerGetDatum(atrange);
-      tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-      result = HeapTupleGetDatum(tuple);
-      SRF_RETURN_NEXT(funcctx, result);
-    }
-  }
 }
 
 /*****************************************************************************

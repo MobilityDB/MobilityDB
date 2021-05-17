@@ -53,8 +53,7 @@ SELECT DISTINCT asEWKT(tgeompointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl
 
 -- We need to add asewkt to avoid problems due to floating point precision
 SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeompoint;
--- The current MF-JSON format does not allow to include the SRID nor whethe the coordinates are geodetic
--- SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
+SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
 
 SELECT DISTINCT tgeompointFromBinary(asBinary(temp)) = temp FROM tbl_tgeompoint;
 SELECT DISTINCT tgeompointFromBinary(asBinary(temp)) = temp FROM tbl_tgeogpoint;

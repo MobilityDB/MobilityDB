@@ -45,6 +45,24 @@
  *
  * The following relationships are supported for two temporal geography points:
  * `tdisjoint`, `tintersects`, `tdwithin`.
+ *
+ * The implementation of most relationships is done as follows
+ * - xxx TO BE DONE
+
+ * The implementation of tintersects and tdisjoint involving a temporal point
+ * and a geometry differs from the other relationships since a faster 
+ * implementation is done by (1) using bounding box tests, and (2) temporal
+ * sequence points are split into an array of simple (that is, not 
+ * self-intersecting) fragments and the answer is computed for each fragment
+ * without any additional call to PostGIS.
+ *
+ * Notice also that twithin has a custom implementation as follows
+ * - In the case of a temporal point and a geometry we (1) call PostGIS to
+ *   compute a buffer of the geometry and the distance parameter d, and
+ *   (2) compute the result from tpointseq_at_geometry(seq, geo_buffer)
+ * - In the case of two temporal points we need to compute the instants 
+ *   at which two temporal sequences have a distance d between each other,
+ *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.
  */
 
 #include "tpoint_tempspatialrels.h"
@@ -115,14 +133,12 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 static TInstant *
-tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter)
+tinterrel_tpointinst_geom(const TInstant *inst, Datum geom,
+  Datum (*func)(Datum, Datum))
 {
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Datum datum_res = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
-  if (DatumGetBool(call_function2(intersects, tinstant_value(inst), geom)))
-    return tinstant_make(datum_res, inst->t, BOOLOID);
-  else
-    return tinstant_make(datum_res, inst->t, BOOLOID);
+  Datum datum_res = func(tinstant_value(inst), geom);
+  return tinstant_make(datum_res, inst->t, BOOLOID);
 }
 
 /**
@@ -133,22 +149,18 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter)
  * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 static TInstantSet *
-tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter)
+tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom,
+  Datum (*func)(Datum, Datum))
 {
   const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Datum datum_yes = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
-  Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    if (DatumGetBool(call_function2(intersects, tinstant_value(inst), geom)))
-      instants[i] = tinstant_make(datum_yes, inst->t, BOOLOID);
-    else
-      instants[i] = tinstant_make(datum_no, inst->t, BOOLOID);
+    Datum datum_res = func(tinstant_value(inst), geom);
+    instants[i] = tinstant_make(datum_res, inst->t, BOOLOID);
   }
   TInstantSet *result = tinstantset_make(instants, ti->count, MERGE_NO);
-  pfree(instants);
+  pfree_array((void **) instants, ti->count);
   return result;
 }
 
@@ -353,11 +365,12 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] tinter Whether we compute tintersects or tdisjoint
+ * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[out] count Number of elements in the output array
  */
 TSequence **
 tinterrel_tpointseq_geom2(const TSequence *seq, Datum geom, const STBOX *box,
-  bool tinter, int *count)
+  bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
   TSequence **result;
 
@@ -365,7 +378,7 @@ tinterrel_tpointseq_geom2(const TSequence *seq, Datum geom, const STBOX *box,
   if (seq->count == 1)
   {
     TInstant *inst = tinterrel_tpointinst_geom(tsequence_inst_n(seq, 0),
-      geom, tinter);
+      geom, func);
     result = palloc(sizeof(TSequence *));
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
@@ -401,16 +414,18 @@ tinterrel_tpointseq_geom2(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
+ * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[in] tinter Whether we compute tintersects or tdisjoint
  */
 TSequenceSet *
 tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
-  bool tinter)
+  bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int count;
-  TSequence **sequences = tinterrel_tpointseq_geom2(seq, geom, box, tinter, &count);
+  TSequence **sequences = tinterrel_tpointseq_geom2(seq, geom, box, tinter, 
+    func, &count);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -421,14 +436,16 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] tinter Whether we compute tintersects or tdisjoint
+ * @param[in] func PostGIS function to be used for instantaneous sequences
  */
 static TSequenceSet *
 tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
-  const STBOX *box, bool tinter)
+  const STBOX *box, bool tinter, Datum (*func)(Datum, Datum))
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tinterrel_tpointseq_geom(tsequenceset_seq_n(ts, 0), geom, box, tinter);
+    return tinterrel_tpointseq_geom(tsequenceset_seq_n(ts, 0), geom, box,
+      tinter, func);
 
   /* palloc0 used due to the bounding box test in the for loop below */
   TSequence ***sequences = palloc0(sizeof(TSequence *) * ts->count);
@@ -437,7 +454,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = tinterrel_tpointseq_geom2(seq, geom, box, tinter,
+    sequences[i] = tinterrel_tpointseq_geom2(seq, geom, box, tinter, func,
         &countseqs[i]);
     totalcount += countseqs[i];
   }
@@ -445,9 +462,6 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
     countseqs, ts->count, totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
-
-#define TINTERSECTS true
-#define TDISJOINT   false
 
 Temporal *
 tinterrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter)
@@ -467,22 +481,29 @@ tinterrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter)
   if (!overlaps_stbox_stbox_internal(&box1, &box2))
     return temporal_from_base(temp, datum_no, BOOLOID, STEP);
 
+  /* 3D only if both arguments are 3D */
+  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) && 
+    FLAGS_GET_Z(gs->flags) ? &geom_intersects3d : &geom_intersects2d;
+
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = (Temporal *) tinterrel_tpointinst_geom((TInstant *) temp,
-      PointerGetDatum(gs), tinter);
+      PointerGetDatum(gs), func);
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinterrel_tpointinstset_geom((TInstantSet *) temp,
-      PointerGetDatum(gs), tinter);
+      PointerGetDatum(gs), func);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tinterrel_tpointseq_geom((TSequence *) temp,
-      PointerGetDatum(gs), &box2, tinter);
+      PointerGetDatum(gs), &box2, tinter, func);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tinterrel_tpointseqset_geom((TSequenceSet *) temp,
-      PointerGetDatum(gs), &box2, tinter);
+      PointerGetDatum(gs), &box2, tinter, func);
   return result;
 }
+
+#define TINTERSECTS true
+#define TDISJOINT   false
 
 PG_FUNCTION_INFO_V1(tintersects_tpoint_geo_new);
 /**
@@ -950,11 +971,9 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
 
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between a temporal sequence
- * and a geometry. These functions are not available for geographies nor for
- * 3D since they are based on the tpointseq_at_geometry1 function.
- * The functions use the st_dwithin function from PostGIS only for
- * instantaneous sequences.
- * This function is not available for geographies since it is based on the
+ * and a geometry. The functions use the st_dwithin function from PostGIS 
+ * only for instantaneous sequences.
+ * These functions are not available for geographies since it is based on the
  * function atGeometry.
  *****************************************************************************/
 
@@ -1113,7 +1132,7 @@ tdwithin_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum dist)
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
  * This requires to determine the instants t1 and t2 at which two temporal
- * periods have a distance d between each other. This amounts to solve the
+ * sequences have a distance d between each other. This amounts to solve the
  * equation
  *     distance(seg1(t), seg2(t)) = d
  * The function assumes that the two segments are synchronized,
@@ -1556,8 +1575,8 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
     ensure_has_not_Z(temp->flags);
     ensure_has_not_Z_gs(gs);
   }
-  /* We only need to fill these parameters for tspatialrel_tpoint_geo2
-   * since lifting is applied only for INSTANT and INSTANTSET types */
+  /* These parameters are only used for INSTANT and INSTANTSET subtypes 
+  *  since lifting is applied only for them */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = func;
   lfinfo.numparam = numparam;

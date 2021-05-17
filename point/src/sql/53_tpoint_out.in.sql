@@ -83,11 +83,13 @@ CREATE FUNCTION asEWKT(geography[])
   AS 'MODULE_PATHNAME', 'geoarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(point tgeompoint, maxdecimaldigits int4 DEFAULT 15, options int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(point tgeompoint, maxdecimaldigits int4 DEFAULT 15,
+    options int4 DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'tpoint_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15, options int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(point tgeogpoint, maxdecimaldigits int4 DEFAULT 15,
+    options int4 DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'tpoint_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

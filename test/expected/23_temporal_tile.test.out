@@ -78,16 +78,16 @@ SELECT valueBucket(-2147483648, 2);
  -2147483648
 (1 row)
 
-SELECT valueBucket(-1.7976931348623158e+308, 2);
-       valuebucket        
---------------------------
- -1.7976931348623157e+308
+SELECT to_char(valueBucket(-1.7976931348623158e+308, 2), '9.999999EEEE');
+    to_char     
+----------------
+ -1.797693e+308
 (1 row)
 
-SELECT valueBucket(1.7976931348623158e+308, 2);
-       valuebucket       
--------------------------
- 1.7976931348623157e+308
+SELECT to_char(valueBucket(1.7976931348623158e+308, 2), '9.999999EEEE');
+    to_char     
+----------------
+  1.797693e+308
 (1 row)
 
 /* Errors */

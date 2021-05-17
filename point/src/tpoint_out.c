@@ -688,6 +688,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 {
   int has_bbox = 0;
   int precision = DBL_DIG;
+  int option = 0;
   char *srs = NULL;
 
   /* Get the temporal point */
@@ -710,31 +711,30 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
    * 4 = long crs
    */
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-  {
-    int option = PG_GETARG_INT32(2);
+    option = PG_GETARG_INT32(2);
 
-    if (option & 2 || option & 4)
+  /* Even if the option does not request to output the crs, we output the
+   * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
+   * it is not possible to reconstruct the temporal point from the output
+   * of this function without loosing the SRID */
+  int32_t srid = tpoint_srid_internal(temp);
+  if (srid != SRID_UNKNOWN && !(option & 2) && !(option & 4))
+    option |= 2;
+  if (srid != SRID_UNKNOWN)
+  {
+    if (option & 2)
+      srs = getSRSbySRID(fcinfo, srid, true);
+    else if (option & 4)
+      srs = getSRSbySRID(fcinfo, srid, false);
+    if (!srs)
     {
-      int32_t srid = tpoint_srid_internal(temp);
-      if (srid != SRID_UNKNOWN)
-      {
-        if (option & 2)
-          srs = getSRSbySRID(fcinfo, srid, true);
-          // srs = getSRSbySRID(srid, true);
-        if (option & 4)
-          srs = getSRSbySRID(fcinfo, srid, false);
-          // srs = getSRSbySRID(srid, false);
-        if (!srs)
-        {
-          elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
-              srid);
-          PG_RETURN_NULL();
-        }
-      }
+      elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
+          srid);
+      PG_RETURN_NULL();
     }
-    if (option & 1)
-      has_bbox = 1;
   }
+  if (option & 1)
+    has_bbox = 1;
 
   /* Get bounding box if needed */
   STBOX *bbox = NULL, tmp;
