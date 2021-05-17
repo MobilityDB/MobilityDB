@@ -106,8 +106,6 @@ float_bucket_internal(double value, double size, double origin)
   if (value == -1 * DBL_MAX || value == DBL_MAX)
     return value;
   double result;
-  /* origin = origin % size, but use FMODULO */
-  FMODULO(origin, result, size);
   origin = fmod(origin, size);
   if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
     (origin < 0 && value > DBL_MAX + origin))
@@ -115,23 +113,9 @@ float_bucket_internal(double value, double size, double origin)
         (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
          errmsg("value out of range")));
 
-  value -= origin;
-  result = floor(value / size) * size;
-  // FMODULO(value, result, size);
-  // if (result < 0)
-  // {
-    // /*
-     // * need to subtract another size if remainder < 0 this only happens
-     // * if value is negative to begin with and there is a remainder
-     // * after division. Need to subtract another size since division
-     // * truncates toward 0 in C99.
-     // */
-    // result = (result * size) - size;
-  // }
-  // else
-    // result *= size;
+  result = floor((value - origin) / size) * size;
   result += origin;
-  // assert(result <= value);
+  assert(result <= value);
   return result;
 }
 
@@ -714,8 +698,6 @@ tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end
         result[l++] = tinstantset_make(instants, k, MERGE_NO);
         k = 0;
       }
-      // if (upper >= end)
-       // break;
       lower = upper;
       upper += tunits;
     }

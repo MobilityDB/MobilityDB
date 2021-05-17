@@ -26,7 +26,7 @@ SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl 
  index | count 
 -------+-------
      1 |    99
-     2 |    91
+     2 |    92
      3 |    63
 (3 rows)
 
@@ -167,7 +167,7 @@ SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 (SELECT * FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10) t2;
                              extent                              
 -----------------------------------------------------------------
- TBOX((11.5,2001-01-22 00:00:00+00),(99,2001-12-10 00:00:00+00))
+ TBOX((11,2001-01-22 00:00:00+00),(98.5,2001-12-10 00:00:00+00))
 (1 row)
 
 SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
@@ -201,6 +201,17 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) 
    66.5 |    48
      54 |    47
 (3 rows)
+
+WITH temp1 AS (
+  SELECT k, temp, (tb).tnumber AS slice
+  FROM (SELECT k, temp, valueSplit(temp, 5) AS tb from tbl_tfloat_big) t ),
+temp2 AS (
+  SELECT k, temp, merge(array_agg(slice ORDER BY  slice)) AS merge
+  FROM temp1 GROUP BY k, temp )
+SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+ k 
+---
+(0 rows)
 
 SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
           time          | count 
@@ -266,6 +277,17 @@ SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001
  2001-09-02 18:00:00+00 |     2
 (3 rows)
 
+WITH temp1 AS (
+  SELECT k, temp, (tb).temp AS slice
+  FROM (SELECT k, temp, timeSplit(temp, '5 min') AS tb FROM tbl_tfloat_big) t ),
+temp2 AS (
+  SELECT k, temp, merge(array_agg(slice ORDER BY  slice)) AS merge
+  FROM temp1 GROUP BY k, temp )
+SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+ k 
+---
+(0 rows)
+
 SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
  number | count 
 --------+-------
@@ -297,4 +319,15 @@ SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '
    66.5 |    49
      54 |    48
 (3 rows)
+
+WITH temp1 AS (
+  SELECT k, temp, (tb).tnumber AS slice
+  FROM (SELECT k, temp, valueTimeSplit(temp, 5, '5 min') AS tb FROM tbl_tfloat_big) t ),
+temp2 AS (
+  SELECT k, temp, merge(array_agg(slice ORDER BY  slice)) AS merge
+  FROM temp1 GROUP BY k, temp )
+SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
+ k 
+---
+(0 rows)
 
