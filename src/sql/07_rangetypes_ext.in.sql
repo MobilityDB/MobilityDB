@@ -50,6 +50,13 @@ CREATE TYPE floatrange AS RANGE (
 
 /******************************************************************************/
 
+CREATE FUNCTION setPrecision(floatrange, int)
+  RETURNS floatrange
+  AS 'MODULE_PATHNAME', 'floatrange_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
 CREATE FUNCTION range_left(intrange, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'range_left_elem'

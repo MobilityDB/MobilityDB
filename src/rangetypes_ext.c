@@ -34,11 +34,13 @@
 #include "rangetypes_ext.h"
 
 #include <assert.h>
+#include <float.h>
 #include <utils/builtins.h>
 
 #include "temporal.h"
 #include "oidcache.h"
 #include "temporal_util.h"
+#include "tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Generic range functions
@@ -587,6 +589,52 @@ PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {
   return elem_func_range(fcinfo, &range_adjacent_elem_internal);
+}
+
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(floatrange_set_precision);
+/**
+ * Set the precision of the float range to the number of decimal places
+ */
+PGDLLEXPORT Datum
+floatrange_set_precision(PG_FUNCTION_ARGS)
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *range = PG_GETARG_RANGE(0);
+#else
+  RangeType *range = PG_GETARG_RANGE_P(0);
+#endif
+  Datum size = PG_GETARG_DATUM(1);
+  RangeBound lower, upper;
+  lower.lower = true;
+  lower.inclusive = lower_inc(range);
+  upper.lower = false;
+  upper.inclusive = upper_inc(range);
+  /* Set precision of bounds if they exist and not infinite */
+  if (! (range_get_flags(range) & RANGE_LB_INF))
+  {
+    lower.val = lower_datum(range);
+    if (DatumGetFloat8(lower.val) != -1 * get_float8_infinity())
+      lower.val = datum_round(lower.val, size);
+    lower.infinite = false;
+  }
+  else
+    lower.infinite = true;
+  if (! (range_get_flags(range) & RANGE_UB_INF))
+  {
+    upper.val = upper_datum(range);
+    if (DatumGetFloat8(upper.val) != get_float8_infinity())
+      upper.val = datum_round(upper.val, size);
+    upper.infinite = false;
+  }
+  else
+    upper.infinite = true;
+  /* Create resulting range */
+  TypeCacheEntry* typcache = lookup_type_cache(type_oid(T_FLOATRANGE),
+    TYPECACHE_RANGE_INFO);
+  RangeType *result = make_range(typcache, &lower, &upper, false);
+  PG_RETURN_POINTER(result);
 }
 
 /******************************************************************************/

@@ -646,10 +646,10 @@ set min_parallel_table_scan_size=0;
 SET
 set max_parallel_workers_per_gather=2;
 SET
-SELECT extent(temp::tbox) FROM tbl_tfloat_big;
-                                            extent                                            
-----------------------------------------------------------------------------------------------
- TBOX((1.004154758527875,2000-12-31 23:36:00+00),(100.99934850819409,2001-12-31 02:50:00+00))
+SELECT setPrecision(extent(temp::tbox),6) FROM tbl_tfloat_big;
+                                setprecision                                 
+-----------------------------------------------------------------------------
+ TBOX((1.004155,2000-12-31 23:36:00+00),(100.999349,2001-12-31 02:50:00+00))
 (1 row)
 
 reset parallel_setup_cost;
