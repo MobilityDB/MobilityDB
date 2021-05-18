@@ -115,9 +115,19 @@
 				<listitem>
 					<para><link linkend="periods"><varname>periods</varname></link>: Obtener los períodos</para>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2>
+			<title>Funciones de modificación</title>
+
+			<itemizedlist>
 				<listitem>
 					<para><link linkend="time_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

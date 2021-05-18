@@ -114,9 +114,19 @@
 				<listitem>
 					<para><link linkend="periods"><varname>periods</varname></link>: Get the periods</para>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2>
+			<title>Modification Functions</title>
+
+			<itemizedlist>
 				<listitem>
 					<para><link linkend="time_shift"><varname>shift</varname></link>: Shift the time value by an interval</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Round the bounds of a float range to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -126,10 +126,10 @@ set min_parallel_table_scan_size=0;
 SET
 set max_parallel_workers_per_gather=2;
 SET
-SELECT extent(temp::floatrange) FROM tbl_tfloat_big;
-                 extent                 
-----------------------------------------
- [1.004154758527875,100.99934850819409]
+SELECT setPrecision(extent(temp::floatrange),6) FROM tbl_tfloat_big;
+     setprecision      
+-----------------------
+ [1.004155,100.999349]
 (1 row)
 
 reset parallel_setup_cost;

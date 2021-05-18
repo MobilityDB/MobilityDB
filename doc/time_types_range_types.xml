@@ -58,7 +58,7 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 	<sect1 id ="functions_operations_time_types">
 		<title>Functions and Operators for Time Types and Range Types</title>
 
-		<para>We present next the functions and operators for time types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
+		<para>We present next the functions and operators for time and range types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
 			<itemizedlist>
 				<listitem>
 					<para>A set of types such as <varname>{period,timestampset,periodset}</varname> represents any of the types listed,</para>
@@ -397,7 +397,13 @@ SELECT periods(periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-04],
 -- "{"[2012-01-01,2012-01-03)", "[2012-01-04,2012-01-04]", "[2012-01-05,2012-01-06)"}"
 					</programlisting>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2 id ="modification_time_tyes">
+			<title>Modification Functions</title>
+
+			<itemizedlist>
 				<listitem id="time_shift">
 					<indexterm><primary><varname>shift</varname></primary></indexterm>
 					<para>Shift the time value by an interval</para>
@@ -410,6 +416,20 @@ SELECT shift(period '[2001-01-01, 2001-01-03]', '1 day'::interval);
 SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
   '1 day'::interval);
 -- "{[2001-01-02, 2001-01-04], [2001-01-05, 2001-01-06]}"
+					</programlisting>
+				</listitem>
+
+				<listitem id="floatrange_setPrecision">
+					<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
+					<para>Round the bounds of a float range to a number of decimal places</para>
+					<para><varname>setPrecision(floatrange,integer): floatrange</varname></para>
+					<programlisting>
+SELECT setPrecision(floatrange '[1.123456789,2.123456789)', 3);
+-- "[1.123,2.123)"
+SELECT setPrecision(floatrange '(,2.123456789]', 3);
+-- "(,2.123]"
+SELECT setPrecision(floatrange '[1.123456789, inf)', 3);
+-- "[1.123,Infinity)"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
