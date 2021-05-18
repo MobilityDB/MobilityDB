@@ -1421,6 +1421,28 @@ SELECT extent(box) FROM test;
  STBOX T((1,1,2000-01-01 00:00:00+00),(3,3,2000-01-03 00:00:00+00))
 (1 row)
 
+set parallel_setup_cost=0;
+SET
+set parallel_tuple_cost=0;
+SET
+set min_parallel_table_scan_size=0;
+SET
+set max_parallel_workers_per_gather=2;
+SET
+SELECT extent(temp::stbox) FROM tbl_tgeompoint3D_big;
+                                                                                      extent                                                                                       
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ STBOX ZT((0.0006115064024925232,0.001565227285027504,0.002635270357131958,2000-12-31 23:00:00+00),(99.99852752685547,99.99910736083984,99.99989318847656,2001-12-31 03:59:00+00))
+(1 row)
+
+reset parallel_setup_cost;
+RESET
+reset parallel_tuple_cost;
+RESET
+reset min_parallel_table_scan_size;
+RESET
+reset max_parallel_workers_per_gather;
+RESET
 SELECT stbox_cmp(stbox 'STBOX ZT((1,2,3,2001-01-04), (1,2,3,2001-01-04))', stbox 'STBOX ZT((2,2,3,2001-01-04), (2,2,3,2001-01-04))');
  stbox_cmp 
 -----------
@@ -1547,37 +1569,37 @@ SELECT stbox_cmp(stbox 'STBOX Z((1,2,3), (1,2,3))', stbox 'STBOX ZT((1,2,3,2001-
         -1
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <> t2.b;
  count 
 -------
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b < t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b < t2.b;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <= t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <= t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b > t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b > t2.b;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
  count 
 -------
   5050

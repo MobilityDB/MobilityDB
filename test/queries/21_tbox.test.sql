@@ -238,6 +238,20 @@ WITH test(box) AS (
   SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' )
 SELECT extent(box) FROM test;
 
+-- encourage use of parallel plans
+set parallel_setup_cost=0;
+set parallel_tuple_cost=0;
+set min_parallel_table_scan_size=0;
+set max_parallel_workers_per_gather=2;
+
+SELECT extent(temp::tbox) FROM tbl_tfloat_big;
+
+-- reset to default values 
+reset parallel_setup_cost;
+reset parallel_tuple_cost;
+reset min_parallel_table_scan_size;
+reset max_parallel_workers_per_gather;
+
 -------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------

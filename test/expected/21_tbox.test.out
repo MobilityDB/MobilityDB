@@ -638,6 +638,28 @@ SELECT extent(box) FROM test;
  TBOX((1,2000-01-01 00:00:00+00),(3,2000-01-03 00:00:00+00))
 (1 row)
 
+set parallel_setup_cost=0;
+SET
+set parallel_tuple_cost=0;
+SET
+set min_parallel_table_scan_size=0;
+SET
+set max_parallel_workers_per_gather=2;
+SET
+SELECT extent(temp::tbox) FROM tbl_tfloat_big;
+                                            extent                                            
+----------------------------------------------------------------------------------------------
+ TBOX((1.004154758527875,2000-12-31 23:36:00+00),(100.99934850819409,2001-12-31 02:50:00+00))
+(1 row)
+
+reset parallel_setup_cost;
+RESET
+reset parallel_tuple_cost;
+RESET
+reset min_parallel_table_scan_size;
+RESET
+reset max_parallel_workers_per_gather;
+RESET
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((2.0, 2000-01-02), (1.0, 2000-01-02))');
  tbox_cmp 
 ----------

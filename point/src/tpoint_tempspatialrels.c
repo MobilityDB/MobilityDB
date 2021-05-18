@@ -593,7 +593,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
 
   /* Each intersection is either a point or a linestring with two points */
   GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-  // int32 srid =  gserialized_get_srid(gsinter);
+  // int32 srid =  gserialized_get_srid(gsinter); //
   LWGEOM *lwinter = lwgeom_from_gserialized(gsinter);
   int countinter;
   LWCOLLECTION *coll = NULL;
@@ -632,7 +632,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       if ((lower_inc || t1 != inst1->t) && (upper_inc || t1 != inst2->t))
       {
         point1 = tsequence_value_at_timestamp1(inst1, inst2, true, t1);
-        // point1 = point_make(p1.x, p1.y, 0.0, false, false, srid);
+        // point1 = point_make(p1.x, p1.y, 0.0, true, false, srid);
         instants[k++] = tinstant_make(point1, t1, type_oid(T_GEOMETRY));
         pfree(DatumGetPointer(point1));
       }
@@ -653,7 +653,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       if ((lower_inc || lower != inst1->t) && (upper_inc || lower != inst2->t))
       {
         point1 = tsequence_value_at_timestamp1(inst1, inst2, true, lower);
-        // point1 = point_make(p1.x, p1.y, 0.0, false, false, srid);
+        // point1 = point_make(p1.x, p1.y, 0.0, true, false, srid);
         instants[k++] = tinstant_make(point1, lower, type_oid(T_GEOMETRY));
         pfree(DatumGetPointer(point1));
       }
@@ -664,7 +664,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
         (lower != upper))
       {
         Datum point2 = tsequence_value_at_timestamp1(inst1, inst2, true, upper);
-        // Datum point2 = point_make(p2.x, p2.y, 0.0, false, false, srid);
+        // Datum point2 = point_make(p2.x, p2.y, 0.0, true, false, srid);
         instants[k++] = tinstant_make(point2, upper, type_oid(T_GEOMETRY));
         pfree(DatumGetPointer(point2));
       }

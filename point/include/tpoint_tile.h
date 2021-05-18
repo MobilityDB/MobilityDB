@@ -59,7 +59,7 @@ typedef struct STboxGridState
 extern Datum stbox_multidim_grid(PG_FUNCTION_ARGS);
 extern Datum stbox_multidim_tile(PG_FUNCTION_ARGS);
 extern Datum tpoint_space_split(PG_FUNCTION_ARGS);
-
+extern Datum tpoint_space_time_split(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
