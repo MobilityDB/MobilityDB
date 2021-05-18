@@ -1355,7 +1355,7 @@
 			<title>Relaciones espaciales para puntos temporales</title>
 
 			<sect3>
-				<title>Relaciones espaciales posibles </title>
+				<title>Relaciones posibles </title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
@@ -1412,7 +1412,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Relaciones espaciales temporales</title>
+				<title>Relaciones temporales</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>

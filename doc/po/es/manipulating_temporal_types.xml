@@ -2907,24 +2907,24 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 	</sect1>
 
 	<sect1 id="topological_relationships_temporal_points">
-		<title>Relaciones topológicas para puntos temporales</title>
+		<title>Relaciones espaciales para puntos temporales</title>
 
-		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y <varname>ST_Relate</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal o un tipo base (es decir, un <varname>geometry</varname> o <varname>geography</varname>), pero estas funciones no permiten un tipo base en ambos argumentos. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten tener un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía) como argumentos.</para>
+		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y las relaciones de distancia como <varname>ST_DWithin</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal o un tipo base (es decir, un <varname>geometry</varname> o <varname>geography</varname>), pero estas funciones no permiten un tipo base en ambos argumentos. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten tener un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía) como argumentos.</para>
 
-		<para>Hay dos versiones de las relaciones topológicas temporales:</para>
+		<para>Hay dos versiones de las relaciones espaciales:</para>
 		<itemizedlist>
 			<listitem>
-				<para>La primera versión aplica la función topológica tradicional a la unión de todos los valores tomados por el punto temporal (que es un <varname>geometry</varname> o <varname>geography</varname>) y resulta en un <varname>boolean</varname> o un <varname>text</varname>. Ejemplos son las funciones <varname>intersects</varname> y <varname>relate</varname>.</para>
+				<para>Las <emphasis>relaciones possibles</emphasis> aplican la función topológica o de distancia tradicional a la unión de todos los valores tomados por el punto temporal (que es un <varname>geometry</varname> o <varname>geography</varname>) y resulta en un <varname>boolean</varname> o un <varname>text</varname>. Ejemplos son las funciones <varname>intersects</varname> y <varname>relate</varname>.</para>
 			</listitem>
 
 			<listitem>
-				<para>La segunda versión se define con la semántica temporal, es decir, la función topológica tradicional se calcula en cada instante y da como resultado un <varname>tbool</varname> o un <varname>ttext</varname>. Ejemplos son las funciones <varname>tintersects</varname> y  <varname>trelate</varname>.</para>
+				<para>Las <emphasis>relaciones temporales</emphasis> se definen con la semántica temporal, es decir, la función topológica o de distancia tradicional se calcula en cada instante y da como resultado un <varname>tbool</varname> o un <varname>ttext</varname>. Ejemplos son las funciones <varname>tintersects</varname> y  <varname>trelate</varname>.</para>
 			</listitem>
 		</itemizedlist>
 
-		<para>Todas las relaciones espaciales en las dos versiones están definidas para puntos de geometría temporal, mientras que sólo cuatro de ellas están definidas para puntos de geografía temporal, a saber, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname> y <varname>dwithin</varname> y las correspondientes versiones temporales.</para>
+		<para>Todas las relaciones en las dos versiones están definidas para puntos de geometría temporal, mientras que sólo cuatro de ellas están definidas para puntos de geografía temporal, a saber, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname> y <varname>dwithin</varname> y las correspondientes versiones temporales.</para>
 
-		<para>La semántica de la primera versión de las relaciones varía según la relación y el tipo de argumentos. Por ejemplo, la siguiente consulta
+		<para>La semántica de las relaciones posibles varía según la relación y el tipo de argumentos. Por ejemplo, la siguiente consulta
 			<programlisting>
 SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
@@ -2950,7 +2950,7 @@ SELECT ST_Intersects('Linestring(0 1,1 0)', 'Linestring(0 0,1 1)');
 			</programlisting>
 		</para>
 
-		<para>Las primeras versiones de las relaciones se utilizan normalmente en combinación con un índice espacio-temporal al calcular las relaciones temporales. Por ejemplo, la siguiente consulta
+		<para>Las relaciones posibles se utilizan normalmente en combinación con un índice espacio-temporal al calcular las relaciones temporales. Por ejemplo, la siguiente consulta
 			<programlisting>
 SELECT T.TripId, R.RegionId, tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
@@ -2978,10 +2978,10 @@ WHERE intersects(T.Trip, R.Geom)
 
 		<para>Las funciones <varname>relate</varname> y <varname>trelate</varname> tienen dos formas con dos o tres argumentos. Las formas de dos argumentos consideran la relación espacial entre el interior, el límite y el exterior de los argumentos y devuelven un valor <varname>text</varname> o <varname>ttext</varname> que representa el patrón de matriz de intersección máxima. Este patrón se define mediante el modelo de 9 intersecciones dimensionalmente extendido o DE-9IM (consulte la documentación de PostGIS para obtener más detalles). Las formas de tres argumentos determinan si los dos primeros argumentos satisfacen el patrón de matriz de intersección dado como tercer argumento (un valor <varname>text</varname>) y devuelve un booleano o un booleano temporal.</para>
 
-		<para>Finalmente, cabe destacar que las relaciónes topológicas permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
+		<para>Finalmente, cabe destacar que las relaciónes temporales permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
 
 		<sect2>
-			<title>Relaciones espaciales posibles</title>
+			<title>Relaciones posibles</title>
 			<itemizedlist>
 				<listitem id="contains">
 					<indexterm><primary><varname>contains</varname></primary></indexterm>
@@ -3139,7 +3139,7 @@ SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 		</sect2>
 
 		<sect2>
-			<title>Relaciones espaciales temporales</title>
+			<title>Relaciones temporales</title>
 			<itemizedlist>
 				<listitem id="tcontains">
 					<indexterm><primary><varname>tcontains</varname></primary></indexterm>

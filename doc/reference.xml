@@ -1344,7 +1344,7 @@
 			<title>Spatial Relationships for Temporal Points</title>
 
 			<sect3>
-				<title>Possible Spatial Relationships</title>
+				<title>Possible Relationships</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="contains"><varname>contains</varname></link>: May contain</para>
@@ -1401,7 +1401,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Temporal Spatial Relationships</title>
+				<title>Temporal Relationships</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>

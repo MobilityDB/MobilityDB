@@ -56,9 +56,9 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 	<para>Además de los tipos de rango nativos proporcionados por PostgreSQL, MobilityDB define dos tipos de rango adicionales: <varname>intrange</varname> (otro nombre para <varname>int4range</varname>) y <varname>floatrange</varname>.</para>
 
 	<sect1 id ="functions_operations_time_types">
-		<title>Funciones y operadores para tipos de tiempo y tipos de rango</title>
+		<title>Funciones y operadores para tipos de tiempo y de rango</title>
 
-		<para>A continuación presentamos las funciones y operadores para tipos de tiempo. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación: <itemizedlist>
+		<para>A continuación presentamos las funciones y operadores para tipos de tiempo y de rango. Estas funciones y operadores son polimórficos, es decir, sus argumentos pueden ser de varios tipos y el tipo de resultado puede depender del tipo de los argumentos. Para expresar esto en la firma de los operadores, utilizamos la siguiente notación: <itemizedlist>
 				<listitem>
 					<para>Un conjunto de tipos como <varname>{period,timestampset,periodset}</varname> representa cualquiera de los tipos enumerados,</para>
 				</listitem>

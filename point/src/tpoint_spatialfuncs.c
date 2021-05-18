@@ -4129,7 +4129,6 @@ tpoint_at_geometry(PG_FUNCTION_ARGS)
   return tpoint_restrict_geometry(fcinfo, REST_AT);
 }
 
-
 PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
 /**
  * Restrict the temporal point to the complement of the geometry
