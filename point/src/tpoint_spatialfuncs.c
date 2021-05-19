@@ -470,7 +470,7 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
   if (MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags) &&
     box1->srid != box2->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The boxes must be in the same SRID")));
+      errmsg("Operation on mixed SRID")));
   return;
 }
 
@@ -482,7 +482,7 @@ ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal points must be in the same SRID")));
+      errmsg("Operation on mixed SRID")));
   return;
 }
 
@@ -494,7 +494,7 @@ ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The geometries must be in the same SRID")));
+      errmsg("Operation on mixed SRID")));
   return;
 }
 
@@ -507,7 +507,7 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tpoint_srid_internal(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the box must be in the same SRID")));
+      errmsg("Operation on mixed SRID")));
   return;
 }
 
@@ -519,7 +519,7 @@ ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
   if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the geometry must be in the same SRID")));
+      errmsg("Operation on mixed SRID")));
   return;
 }
 
@@ -531,7 +531,7 @@ ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 {
   if (box->srid != gserialized_get_srid(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The spatiotemporal box and the geometry must be in the same SRID")));
+      errmsg("Operation on mixed SRID")));
   return;
 }
 
@@ -3261,27 +3261,49 @@ tgeompointi_split(const TInstantSet *ti, bool *splits, int count)
  *
  * @param[in] ti Temporal point
  */
-static ArrayType *
-tgeompointi_make_simple(const TInstantSet *ti)
+TInstantSet **
+tgeompointi_make_simple1(const TInstantSet *ti, int *count)
 {
+  TInstantSet **result;
   /* Special case when the input instant set has 1 instant */
   if (ti->count == 1)
-    return temporalarr_to_array((const Temporal **) &ti, 1);
+  {
+    result = palloc(sizeof(TInstantSet *));
+    result[0] = tinstantset_copy(ti);
+    *count = 1;
+    return result;
+  }
 
   int numsplits;
   bool *splits = tgeompoint_instarr_find_splits((const Temporal *) ti,
     &numsplits);
   if (numsplits == 0)
   {
+    result = palloc(sizeof(TInstantSet *));
+    result[0] = tinstantset_copy(ti);
     pfree(splits);
-    return temporalarr_to_array((const Temporal **) &ti, 1);
+    *count = 1;
+    return result;
   }
 
-  TInstantSet **instsets = tgeompointi_split(ti, splits, numsplits + 1);
-  ArrayType *result = temporalarr_to_array((const Temporal **) instsets,
-    numsplits + 1);
+  result = tgeompointi_split(ti, splits, numsplits + 1);
   pfree(splits);
-  pfree_array((void **) instsets, numsplits + 1);
+  *count = numsplits + 1;
+  return result;
+}
+
+/**
+ * Split a temporal point into an array of non self-intersecting pieces
+ *
+ * @param[in] seq Temporal point
+ */
+static ArrayType *
+tgeompointi_make_simple(const TInstantSet *ti)
+{
+  int count;
+  TInstantSet **instsets = tgeompointi_make_simple1(ti, &count);
+  ArrayType *result = temporalarr_to_array((const Temporal **) instsets, count);
+  pfree_array((void **) instsets, count);
   return result;
 }
 

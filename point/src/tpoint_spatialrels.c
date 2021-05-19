@@ -73,57 +73,12 @@ geom_contains(Datum geom1, Datum geom2)
 }
 
 /**
- * Calls the PostGIS function ST_ContainsProperly with the 2 arguments
- */
-Datum
-geom_containsproperly(Datum geom1, Datum geom2)
-{
-  return call_function2(containsproperly, geom1, geom2);
-}
-
-/**
- * Calls the PostGIS function ST_Covers with the 2 arguments
- */
-Datum
-geom_covers(Datum geom1, Datum geom2)
-{
-  return call_function2(covers, geom1, geom2);
-}
-
-/**
- * Calls the PostGIS function ST_Coveredby with the 2 arguments
- */
-Datum
-geom_coveredby(Datum geom1, Datum geom2)
-{
-  return call_function2(coveredby, geom1, geom2);
-}
-
-/**
- * Calls the PostGIS function ST_Crosses with the 2 arguments
- */
-Datum
-geom_crosses(Datum geom1, Datum geom2)
-{
-  return call_function2(crosses, geom1, geom2);
-}
-
-/**
  * Calls the PostGIS function ST_Disjoint with the 2 arguments
  */
 Datum
 geom_disjoint(Datum geom1, Datum geom2)
 {
   return call_function2(disjoint, geom1, geom2);
-}
-
-/**
- * Calls the PostGIS function ST_Equals with the 2 arguments
- */
-Datum
-geom_equals(Datum geom1, Datum geom2)
-{
-  return call_function2(ST_Equals, geom1, geom2);
 }
 
 /**
@@ -145,30 +100,12 @@ geom_intersects3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Calls the PostGIS function ST_Overlaps with the 2 arguments
- */
-Datum
-geom_overlaps(Datum geom1, Datum geom2)
-{
-  return call_function2(overlaps, geom1, geom2);
-}
-
-/**
  * Calls the PostGIS function ST_Touches with the 2 arguments
  */
 Datum
 geom_touches(Datum geom1, Datum geom2)
 {
   return call_function2(touches, geom1, geom2);
-}
-
-/**
- * Calls the PostGIS function ST_Contains with the 2 arguments inverted
- */
-Datum
-geom_within(Datum geom1, Datum geom2)
-{
-  return call_function2(contains, geom2, geom1);
 }
 
 /**
@@ -205,43 +142,7 @@ geom_dwithin3d(Datum geom1, Datum geom2, Datum dist)
   return call_function3(LWGEOM_dwithin3d, geom1, geom2, dist);
 }
 
-/**
- * Calls the PostGIS function ST_Relate with the 2 arguments
- */
-Datum
-geom_relate(Datum geom1, Datum geom2)
-{
-  return call_function2(relate_full, geom1, geom2);
-}
-
-/**
- * Calls the PostGIS function ST_Relate with the 3 arguments
- */
-Datum
-geom_relate_pattern(Datum geom1, Datum geom2, Datum pattern)
-{
-  return call_function3(relate_pattern, geom1, geom2, pattern);
-}
-
 /*****************************************************************************/
-
-/**
- * Calls the PostGIS function ST_Covers for geographies with the 2 arguments
- */
-Datum
-geog_covers(Datum geog1, Datum geog2)
-{
-  return call_function2(geography_covers, geog1, geog2);
-}
-
-/**
- * Calls the PostGIS function ST_Covers for geographies with the 2 arguments inverted
- */
-Datum
-geog_coveredby(Datum geog1, Datum geog2)
-{
-  return call_function2(geography_covers, geog2, geog1);
-}
 
 /**
  * Calls the PostGIS function ST_Intersects for geographies with the 2 arguments
@@ -564,155 +465,6 @@ contains_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal containsproperly
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(containsproperly_geo_tpoint);
-/**
- * Returns true if the geometry contains properly the trajectory of the
- * temporal point
- */
-PGDLLEXPORT Datum
-containsproperly_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_containsproperly, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(containsproperly_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point contains properly
- * the geometry
- */
-PGDLLEXPORT Datum
-containsproperly_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_containsproperly, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(containsproperly_tpoint_tpoint);
-/**
- * Returns true if the trajectory of the first temporal point contains properly
- * the trajectory the second one
- */
-PGDLLEXPORT Datum
-containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_containsproperly,
-    NULL, 2);
-}
-
-/*****************************************************************************
- * Temporal covers (for both geometry and geography)
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(covers_geo_tpoint);
-/**
- * Returns true if the geometry covers the trajectory of the temporal point
- */
-PGDLLEXPORT Datum
-covers_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_covers,
-    (varfunc) &geog_covers, 2);
-}
-
-PG_FUNCTION_INFO_V1(covers_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point covers the geometry
- */
-PGDLLEXPORT Datum
-covers_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_covers,
-    (varfunc) &geog_covers, 2);
-}
-
-PG_FUNCTION_INFO_V1(covers_tpoint_tpoint);
-/**
- * Returns true if the trajectory of the first temporal point covers the
- * trajectory of the second one
- */
-PGDLLEXPORT Datum
-covers_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_covers,
-    (varfunc) &geog_covers, 2);
-}
-
-/*****************************************************************************
- * Temporal coveredby (for both geometry and geography)
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(coveredby_geo_tpoint);
-/**
- * Returns true if the geometry is covered by the trajectory of the temporal point
- */
-PGDLLEXPORT Datum
-coveredby_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_coveredby,
-    (varfunc) &geog_coveredby, 2);
-}
-
-PG_FUNCTION_INFO_V1(coveredby_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point is covered by the geometry
- */
-PGDLLEXPORT Datum
-coveredby_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_coveredby,
-    (varfunc) &geog_coveredby, 2);
-}
-
-PG_FUNCTION_INFO_V1(coveredby_tpoint_tpoint);
-/**
- * Returns true if the trajectory of the first temporal point is covered by
- * the trajectory of the second one
- */
-PGDLLEXPORT Datum
-coveredby_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_coveredby,
-    (varfunc) &geog_coveredby, 2);
-}
-
-/*****************************************************************************
- * Temporal crosses
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(crosses_geo_tpoint);
-/**
- * Returns true if the geometry and the trajectory of the temporal point cross
- */
-PGDLLEXPORT Datum
-crosses_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_crosses, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(crosses_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point and the geometry cross
- */
-PGDLLEXPORT Datum
-crosses_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_crosses, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(crosses_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points cross
- */
-PGDLLEXPORT Datum
-crosses_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_crosses,
-    NULL, 2);
-}
-
-/*****************************************************************************
  * Temporal disjoint
  *****************************************************************************/
 
@@ -746,41 +498,6 @@ PGDLLEXPORT Datum
 disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_disjoint,
-    NULL, 2);
-}
-
-/*****************************************************************************
- * Temporal equals
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(equals_geo_tpoint);
-/**
- * Returns true if the geometry and the trajectory of the temporal point are equal
- */
-PGDLLEXPORT Datum
-equals_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_equals, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(equals_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point and the geometry are equal
- */
-PGDLLEXPORT Datum
-equals_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_equals, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(equals_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points are equal
- */
-PGDLLEXPORT Datum
-equals_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_equals,
     NULL, 2);
 }
 
@@ -824,41 +541,6 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal overlaps
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(overlaps_geo_tpoint);
-/**
- * Returns true if the geometry and the trajectory of the temporal point overlap
- */
-PGDLLEXPORT Datum
-overlaps_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_overlaps, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point and the geometry overlap
- */
-PGDLLEXPORT Datum
-overlaps_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_overlaps, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points overlap
- */
-PGDLLEXPORT Datum
-overlaps_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_overlaps,
-    NULL, 2);
-}
-
-/*****************************************************************************
  * Temporal touches
  *****************************************************************************/
 
@@ -890,42 +572,6 @@ PGDLLEXPORT Datum
 touches_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_touches,
-    NULL, 2);
-}
-
-/*****************************************************************************
- * Temporal within
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(within_geo_tpoint);
-/**
- * Returns true if the geometry is within the trajectory of the temporal point
- */
-PGDLLEXPORT Datum
-within_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_within, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(within_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point is within the geometry
- */
-PGDLLEXPORT Datum
-within_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_within, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(within_tpoint_tpoint);
-/**
- * Returns true if the trajectory of the first temporal point is within
- * the trajectory of the second one
- */
-PGDLLEXPORT Datum
-within_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_within,
     NULL, 2);
 }
 
@@ -1008,80 +654,4 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-/*****************************************************************************
- * Temporal relate
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(relate_geo_tpoint);
-/**
- * Returns the DE-9IM matrix pattern of the geometry and the trajectory of
- * the temporal point
- */
-PGDLLEXPORT Datum
-relate_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_relate, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(relate_tpoint_geo);
-/**
- * Returns the DE-9IM matrix pattern of the trajectory of the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-relate_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_relate, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(relate_tpoint_tpoint);
-/**
- * Returns the DE-9IM matrix pattern of the trajectories of the temporal points
- */
-PGDLLEXPORT Datum
-relate_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_relate,
-    NULL, 2);
-}
-
-/*****************************************************************************
- * Temporal relate_pattern
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(relate_pattern_geo_tpoint);
-/**
- * Returns true if the geometry and the trajectory of the temporal point
- * satisfy the DE-9IM matrix pattern
- */
-PGDLLEXPORT Datum
-relate_pattern_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_relate_pattern, NULL, 3);
-}
-
-PG_FUNCTION_INFO_V1(relate_pattern_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point and the geometry
- * satisfy the DE-9IM matrix pattern
- */
-PGDLLEXPORT Datum
-relate_pattern_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_relate_pattern, NULL, 3);
-}
-
-PG_FUNCTION_INFO_V1(relate_pattern_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points satisfy the
- * DE-9IM matrix pattern
- */
-PGDLLEXPORT Datum
-relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_relate_pattern,
-    NULL, 3);
-}
-
 /*****************************************************************************/
-

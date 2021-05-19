@@ -183,6 +183,7 @@ extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
   Datum geom, bool atfunc);
 extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
 
+extern TInstantSet **tgeompointi_make_simple1(const TInstantSet *ti, int *count);
 extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
 extern Datum *gsinter_get_points(GSERIALIZED *gsinter, int *count);
 extern Period **tpointseq_geom_interperiods(const TSequence *seq,

@@ -37,36 +37,6 @@ CREATE FUNCTION tcontains(geometry, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tcontains_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcontains(tgeompoint, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tcontains_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * tcovers
- *****************************************************************************/
-
-CREATE FUNCTION tcovers(geometry, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tcovers_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcovers(tgeompoint, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tcovers_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * tcoveredby
- *****************************************************************************/
-
-CREATE FUNCTION tcoveredby(geometry, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tcoveredby_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tcoveredby(tgeompoint, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tcoveredby_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tdisjoint
@@ -91,36 +61,6 @@ CREATE FUNCTION tdisjoint(tgeogpoint, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * tequals
- *****************************************************************************/
-
-CREATE FUNCTION tequals(geometry, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tequals_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tequals(tgeompoint, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tequals_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tequals(tgeompoint, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tequals_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tequals(geography, tgeogpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tequals_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tequals(tgeogpoint, geography)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tequals_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tequals(tgeogpoint, tgeogpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tequals_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
  * tintersects
  *****************************************************************************/
 
@@ -142,6 +82,15 @@ CREATE FUNCTION tintersects(tgeogpoint, tgeogpoint)
   AS 'MODULE_PATHNAME', 'tintersects_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tintersectsNew(tgeompoint, geometry)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tintersects_tpoint_geo_new'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tintersectsNew(geometry, tgeompoint)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tintersects_geo_tpoint_new'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * ttouches
  *****************************************************************************/
@@ -153,19 +102,6 @@ CREATE FUNCTION ttouches(geometry, tgeompoint)
 CREATE FUNCTION ttouches(tgeompoint, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'ttouches_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * twithin
- *****************************************************************************/
-
-CREATE FUNCTION twithin(geometry, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'twithin_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION twithin(tgeompoint, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'twithin_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -188,40 +124,6 @@ CREATE FUNCTION tdwithin(tgeompoint, tgeompoint, dist float8)
 CREATE FUNCTION tdwithin(tgeogpoint, tgeogpoint, dist float8)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * trelate (2 arguments)
- *****************************************************************************/
-
-CREATE FUNCTION trelate(geometry, tgeompoint)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'trelate_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION trelate(tgeompoint, geometry)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'trelate_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION trelate(tgeompoint, tgeompoint)
-  RETURNS ttext
-  AS 'MODULE_PATHNAME', 'trelate_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************
- * trelate (3 arguments)
- *****************************************************************************/
-
-CREATE FUNCTION trelate(geometry, tgeompoint, pattern text)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'trelate_pattern_geo_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION trelate(tgeompoint, geometry, pattern text)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'trelate_pattern_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION trelate(tgeompoint, tgeompoint, pattern text)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'trelate_pattern_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

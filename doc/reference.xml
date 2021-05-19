@@ -1351,43 +1351,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="containsproperly"><varname>containsproperly</varname></link>: May contain properly</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="covers"><varname>covers</varname></link>: May cover</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="coveredby"><varname>coveredby</varname></link>: May be covered by</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="crosses"><varname>crosses</varname></link>: May cross</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="disjoint"><varname>disjoint</varname></link>: May be disjoint</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="equals"><varname>equals</varname></link>: May be equal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: May intersect</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="overlaps"><varname>overlaps</varname></link>: May overlap</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: May touch</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="within"><varname>within</varname></link>: May be within</para>
 					</listitem>
 
 					<listitem>
@@ -1395,7 +1359,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="relate"><varname>relate</varname></link>: May relate</para>
+						<para><link linkend="intersects"><varname>intersects</varname></link>: May intersect</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="touches"><varname>touches</varname></link>: May touch</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1408,19 +1376,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcovers"><varname>tcovers</varname></link>: Temporal covers</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tcoveredby"><varname>tcoveredby</varname></link>: Temporal covered by</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Temporal disjoint</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tequals"><varname>tequals</varname></link>: Temporal equals</para>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
 					</listitem>
 
 					<listitem>
@@ -1430,20 +1390,8 @@
 					<listitem>
 						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Temporal touches</para>
 					</listitem>
-
-					<listitem>
-						<para><link linkend="twithin"><varname>twithin</varname></link>: Temporal within</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Temporal distance within</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="trelate"><varname>trelate</varname></link>: Temporal relate</para>
-					</listitem>
 				</itemizedlist>
-				</sect3>
+			</sect3>
 		</sect2>
 
 		<sect2>
