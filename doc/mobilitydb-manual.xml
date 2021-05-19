@@ -10,29 +10,38 @@
 <!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
 <!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
 <!ENTITY reference SYSTEM "reference.xml">
+<!ENTITY data_generator SYSTEM "data_generator.xml">
 
 <!ENTITY geography_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/world.svg' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/world.png' width='16pt' /></imageobject>
- </inlinemediaobject>
+	<imageobject><imagedata fileref='images/world.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/world.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/world.png' width='10pt'/></imageobject>
+</inlinemediaobject>
 ">
 
 <!ENTITY Z_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/cube.pdf' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/cube.svg' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/cube.png' width='16pt' /></imageobject>
- </inlinemediaobject>
+	<imageobject><imagedata fileref='images/cube.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.png' width='10pt'/></imageobject>
+</inlinemediaobject>
+">
+
+<!ENTITY SRF
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/srf.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/srf.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/srf.png' width='10pt'/></imageobject>
+</inlinemediaobject>
 ">
 
 <!ENTITY python_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/python.pdf' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/python.svg' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/python.png' width='16pt' /></imageobject>
- </inlinemediaobject>
+	<imageobject><imagedata fileref='images/python.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/python.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/python.png' width='10pt'/></imageobject>
+</inlinemediaobject>
 ">
 
 ]>
@@ -92,7 +101,8 @@
 	&temporal_types;
 	&manipulating_box_types;
 	&manipulating_temporal_types;
-	<index />
 	&reference;
+	&data_generator;
+	<index />
 
 </book>

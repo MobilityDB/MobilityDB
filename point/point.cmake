@@ -12,6 +12,7 @@ point/src/tpoint_parser.c
 point/src/tpoint_posops.c
 point/src/tpoint_gist.c
 point/src/tpoint_spgist.c
+point/src/tpoint_tile.c
 point/src/projection_gk.c
 point/src/geography_functions.c
 point/src/tpoint_spatialfuncs.c
@@ -34,6 +35,7 @@ point/src/sql/53_tpoint_out.in.sql
 point/src/sql/54_tpoint_compops.in.sql
 point/src/sql/55_geography_functions.in.sql
 point/src/sql/56_tpoint_spatialfuncs.in.sql
+point/src/sql/57_tpoint_tile.in.sql
 point/src/sql/58_tpoint_boxops.in.sql
 point/src/sql/60_tpoint_posops.in.sql
 point/src/sql/62_tpoint_distance.in.sql

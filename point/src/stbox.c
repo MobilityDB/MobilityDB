@@ -33,7 +33,6 @@
 
 #include <assert.h>
 #include <utils/builtins.h>
-#include <utils/timestamp.h>
 
 #include "period.h"
 #include "timestampset.h"
@@ -196,6 +195,46 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   FLAGS_SET_M(result->flags, hasm);
   FLAGS_SET_GEODETIC(result->flags, geodetic);
   return result;
+}
+
+/*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
+
+/**
+ * Ensure that the temporal value has XY dimension
+ */
+void
+ensure_has_X_stbox(const STBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The box must have XY dimension")));
+  return;
+}
+
+/**
+ * Ensure that the temporal value has T dimension
+ */
+void
+ensure_has_T_stbox(const STBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_T(box->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The box must have time dimension")));
+  return;
+}
+
+/**
+ * Ensure that the temporal value has XY dimension
+ */
+void
+ensure_not_geodetic_stbox(const STBOX *box)
+{
+  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The box cannot be geodetic")));
+  return;
 }
 
 /*****************************************************************************
@@ -580,7 +619,7 @@ PG_FUNCTION_INFO_V1(box2d_to_stbox);
 PGDLLEXPORT Datum
 box2d_to_stbox(PG_FUNCTION_ARGS)
 {
-  GBOX *box = (GBOX *)PG_GETARG_POINTER(0);
+  GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
   STBOX *result = stbox_make(true, false, false, false, 0,
     box->xmin, box->xmax, box->ymin, box->ymax, 0, 0, 0, 0);
   PG_RETURN_POINTER(result);
@@ -593,7 +632,7 @@ PG_FUNCTION_INFO_V1(box3d_to_stbox);
 PGDLLEXPORT Datum
 box3d_to_stbox(PG_FUNCTION_ARGS)
 {
-  BOX3D *box = (BOX3D *)PG_GETARG_POINTER(0);
+  BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
   STBOX *result = stbox_make(true, true, false, false, box->srid, box->xmin,
     box->xmax, box->ymin, box->ymax, box->zmin, box->zmax, 0, 0);
   PG_RETURN_POINTER(result);
@@ -959,7 +998,7 @@ stbox_tmax(PG_FUNCTION_ARGS)
 STBOX *
 stbox_expand_spatial_internal(STBOX *box, double d)
 {
-  ensure_has_X(box->flags);
+  ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
   result->xmin = box->xmin - d;
   result->xmax = box->xmax + d;
@@ -992,7 +1031,7 @@ stbox_expand_spatial(PG_FUNCTION_ARGS)
 STBOX *
 stbox_expand_temporal_internal(STBOX *box, Datum interval)
 {
-  ensure_has_T(box->flags);
+  ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
   result->tmin = DatumGetTimestampTz(call_function2(timestamp_mi_interval,
     TimestampTzGetDatum(box->tmin), interval));
@@ -1022,7 +1061,7 @@ stbox_set_precision(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  ensure_has_X(box->flags);
+  ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
   result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), size));
   result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), size));
@@ -1266,8 +1305,8 @@ pos_stbox_stbox_test(const STBOX *box1, const STBOX *box2)
 bool
 left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->xmax < box2->xmin);
 }
@@ -1291,8 +1330,8 @@ left_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->xmax <= box2->xmax);
 }
@@ -1316,8 +1355,8 @@ overleft_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->xmin > box2->xmax);
 }
@@ -1341,8 +1380,8 @@ right_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->xmin >= box2->xmin);
 }
@@ -1366,8 +1405,8 @@ overright_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->ymax < box2->ymin);
 }
@@ -1391,8 +1430,8 @@ below_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->ymax <= box2->ymax);
 }
@@ -1416,8 +1455,8 @@ overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->ymin > box2->ymax);
 }
@@ -1441,8 +1480,8 @@ above_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_X(box1->flags);
-  ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1);
+  ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->ymin >= box2->ymin);
 }
@@ -1566,8 +1605,8 @@ overback_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmax < box2->tmin);
 }
 
@@ -1590,8 +1629,8 @@ before_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmax <= box2->tmax);
 }
 
@@ -1614,8 +1653,8 @@ overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmin > box2->tmax);
 }
 
@@ -1638,8 +1677,8 @@ after_stbox_stbox(PG_FUNCTION_ARGS)
 bool
 overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
-  ensure_has_T(box1->flags);
-  ensure_has_T(box2->flags);
+  ensure_has_T_stbox(box1);
+  ensure_has_T_stbox(box2);
   return (box1->tmin >= box2->tmin);
 }
 
@@ -1750,6 +1789,65 @@ stbox_intersection(PG_FUNCTION_ARGS)
   STBOX *result = stbox_intersection_internal(box1, box2);
   if (result == NULL)
     PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Extent aggregation
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(stbox_extent_transfn);
+/**
+ * Transition function for extent aggregation for boxes
+ */
+PGDLLEXPORT Datum
+stbox_extent_transfn(PG_FUNCTION_ARGS)
+{
+  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+
+  /* Can't do anything with null inputs */
+  if (!box1 && !box2)
+    PG_RETURN_NULL();
+  STBOX *result = palloc0(sizeof(STBOX));
+  /* One of the boxes is null, return the other one */
+  if (!box1)
+  {
+    memcpy(result, box2, sizeof(STBOX));
+    PG_RETURN_POINTER(result);
+  }
+  if (!box2)
+  {
+    memcpy(result, box1, sizeof(STBOX));
+    PG_RETURN_POINTER(result);
+  }
+
+  /* Both boxes are not null */
+  memcpy(result, box1, sizeof(STBOX));
+  stbox_expand(result, box2);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_extent_combinefn);
+/**
+ * Combine function for extent aggregation for boxes
+ */
+PGDLLEXPORT Datum
+stbox_extent_combinefn(PG_FUNCTION_ARGS)
+{
+  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
+  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
+
+  if (!box2 && !box1)
+    PG_RETURN_NULL();
+  if (box1 && !box2)
+    PG_RETURN_POINTER(box1);
+  if (box2 && !box1)
+    PG_RETURN_POINTER(box2);
+  /* Both boxes are not null */
+  ensure_same_dimensionality(box1->flags, box2->flags);
+  STBOX *result = stbox_copy(box1);
+  stbox_expand(result, box2);
   PG_RETURN_POINTER(result);
 }
 

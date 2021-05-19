@@ -190,7 +190,7 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
       return pos_period_timestamp((Period *) list->elems[cur].value, t);
     else
     {
-      if (((Temporal *) list->elems[cur].value)->temptype == INSTANT)
+      if (((Temporal *) list->elems[cur].value)->subtype == INSTANT)
         return pos_timestamp_timestamp(((TInstant *) list->elems[cur].value)->t, t);
       else
         return pos_period_timestamp(&((TSequence *) list->elems[cur].value)->period, t);
@@ -372,7 +372,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
    */
   assert(list->length > 0);
   Period p;
-  int16 temptype = 0;
+  int16 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
     period_set(&p, (TimestampTz) values[0],
@@ -387,8 +387,8 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   }
   else
   {
-    temptype = ((Temporal *) skiplist_headval(list))->temptype;
-    if (temptype == INSTANT)
+    subtype = ((Temporal *) skiplist_headval(list))->subtype;
+    if (subtype == INSTANT)
       period_set(&p, ((TInstant *)values[0])->t,
         ((TInstant *) values[count - 1])->t, true, true);
     else
@@ -480,7 +480,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
     }
     else
     {
-      if (temptype == INSTANT)
+      if (subtype == INSTANT)
         newtemps = (void **) tinstant_tagg((TInstant **) spliced,
           spliced_count, (TInstant **) values, count, func, &newcount);
       else

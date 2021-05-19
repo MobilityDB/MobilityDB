@@ -360,15 +360,15 @@ SELECT tbox 'TBOX((1,2001-02-01),(2,2001-01-02))' ~= tbox 'TBOX((1,2001-01-01),(
 
 /* Errors */
 SELECT tbox 'TBOX((1),(2))' && tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  The boxes must have at least one common dimension
+ERROR:  The temporal values must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' @> tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  The boxes must have at least one common dimension
+ERROR:  The temporal values must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' <@ tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  The boxes must have at least one common dimension
+ERROR:  The temporal values must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' -|- tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  The boxes must have at least one common dimension
+ERROR:  The temporal values must have at least one common dimension
 SELECT tbox 'TBOX((1),(2))' ~= tbox 'TBOX((,2001-01-01),(,2001-01-02))';
-ERROR:  The boxes must have at least one common dimension
+ERROR:  The temporal values must have at least one common dimension
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
  count 
 -------
@@ -629,6 +629,37 @@ SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tbox t1, tbl_tbox t2;
  108.64587
 (1 row)
 
+WITH test(box) AS (
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02))' UNION ALL 
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' )
+SELECT extent(box) FROM test;
+                           extent                            
+-------------------------------------------------------------
+ TBOX((1,2000-01-01 00:00:00+00),(3,2000-01-03 00:00:00+00))
+(1 row)
+
+set parallel_setup_cost=0;
+SET
+set parallel_tuple_cost=0;
+SET
+set min_parallel_table_scan_size=0;
+SET
+set max_parallel_workers_per_gather=2;
+SET
+SELECT setPrecision(extent(temp::tbox),6) FROM tbl_tfloat_big;
+                                setprecision                                 
+-----------------------------------------------------------------------------
+ TBOX((1.004155,2000-12-31 23:36:00+00),(100.999349,2001-12-31 02:50:00+00))
+(1 row)
+
+reset parallel_setup_cost;
+RESET
+reset parallel_tuple_cost;
+RESET
+reset min_parallel_table_scan_size;
+RESET
+reset max_parallel_workers_per_gather;
+RESET
 SELECT tbox_cmp(tbox 'TBOX((1.0, 2000-01-02), (1.0, 2000-01-02))', tbox 'TBOX((2.0, 2000-01-02), (1.0, 2000-01-02))');
  tbox_cmp 
 ----------

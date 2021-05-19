@@ -42,9 +42,9 @@
 /* Constants defining the behaviour of skip lists which are internal types
    for computing aggregates */
 
-#define SKIPLIST_MAXLEVEL 32  // maximum possible is 47 with current RNG
+#define SKIPLIST_MAXLEVEL 32  /**< maximum possible is 47 with current RNG */
 #define SKIPLIST_INITIAL_CAPACITY 1024
-#define SKIPLIST_GROW 1       // double the capacity to expand the skiplist
+#define SKIPLIST_GROW 1       /**< double the capacity to expand the skiplist */
 #define SKIPLIST_INITIAL_FREELIST 32
 
 /*****************************************************************************/

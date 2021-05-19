@@ -553,8 +553,8 @@ generic_analyze(FunctionCallInfo fcinfo,
    * Ensure temporal type is valid and collect extra information about the
    * temporal type and its base and time types.
    */
-  TemporalType temptype = TYPMOD_GET_TEMPTYPE(stats->attrtypmod);
-  ensure_valid_temptype_all(temptype);
+  int16 subtype = TYPMOD_GET_SUBTYPE(stats->attrtypmod);
+  ensure_valid_tempsubtype_all(subtype);
   temporal_extra_info(stats);
 
   /* Set the callback function to compute statistics. */

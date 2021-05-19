@@ -36,7 +36,6 @@
 #include <access/hash.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-#include <utils/timestamp.h>
 
 #include "periodset.h"
 #include "timeops.h"
@@ -494,9 +493,9 @@ PGDLLEXPORT Datum
 tstzrange_to_period(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   TypeCacheEntry *typcache;
   char flags = range_get_flags(range);

@@ -37,6 +37,7 @@ src/temporal_parser.c
 src/temporal_posops.c
 src/temporal_selfuncs.c
 src/temporal_spgist.c
+src/temporal_tile.c
 src/temporal_util.c
 src/temporal_waggfuncs.c
 src/timeops.c
@@ -67,6 +68,7 @@ src/sql/19_geo_constructors.in.sql
 src/sql/20_doublen.in.sql
 src/sql/21_tbox.in.sql
 src/sql/22_temporal.in.sql
+src/sql/23_temporal_tile.in.sql
 src/sql/24_tnumber_mathfuncs.in.sql
 src/sql/26_tbool_boolops.in.sql
 src/sql/27_ttext_textfuncs.in.sql
@@ -123,7 +125,6 @@ include_directories("include")
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
-	add_definitions(-Wno-misleading-indentation -fshort-enums)
 	if (WITH_COVERAGE)
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")

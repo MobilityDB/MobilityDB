@@ -35,11 +35,9 @@
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <float.h>
+#include <liblwgeom.h>
 
 #include "temporal.h"
-#include <liblwgeom.h>
 #include "tpoint.h"
 
 /*****************************************************************************/
@@ -51,12 +49,12 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
-extern double closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
-  const POINT2D *B, POINT2D *closest);
-extern double closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
-  const POINT3DZ *B, POINT3DZ *closest);
-extern double closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
-  const POINT4D *B, POINT4D *closest, double *dist);
+extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
+  const POINT2D *A, const POINT2D *B, POINT2D *closest);
+extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,
+  const POINT3DZ *A, const POINT3DZ *B, POINT3DZ *closest);
+extern long double closest_point_on_segment_sphere(const POINT4D *p,
+  const POINT4D *A, const POINT4D *B, POINT4D *closest, double *dist);
 extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
   const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
 
@@ -66,6 +64,7 @@ extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
 extern void ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
 extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
@@ -73,13 +72,12 @@ extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box1, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
-extern void ensure_has_X(int16 flags);
 extern void ensure_has_Z(int16 flags);
 extern void ensure_has_not_Z(int16 flags);
+extern void ensure_has_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_Z_gs(const GSERIALIZED *gs);
 extern void ensure_has_M_gs(const GSERIALIZED *gs);
 extern void ensure_has_not_M_gs(const GSERIALIZED *gs);
-extern void ensure_has_T(int16 flags);
 extern void ensure_point_type(const GSERIALIZED *gs);
 extern void ensure_non_empty(const GSERIALIZED *gs);
 
@@ -91,7 +89,9 @@ extern POINT2D datum_get_point2d(Datum value);
 extern const POINT2D *datum_get_point2d_p(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
 extern const POINT3DZ *datum_get_point3dz_p(Datum value);
-extern POINT4D datum_get_point4d(Datum value);
+extern void datum_get_point4d(POINT4D *p, Datum value);
+extern Datum point_make(double x, double y, double z, bool hasz,
+  bool geodetic, int32 srid);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
@@ -106,11 +106,13 @@ extern Datum geog_distance(Datum geog1, Datum geog2);
 extern Datum pt_distance2d(Datum geom1, Datum geom2);
 extern Datum pt_distance3d(Datum geom1, Datum geom2);
 
-extern Datum geoseg_interpolate_point(Datum value1, Datum value2, double ratio);
-extern double geoseg_locate_point(Datum start, Datum end, Datum point, double *dist);
+extern Datum geoseg_interpolate_point(Datum value1, Datum value2,
+  long double ratio);
+extern long double geoseg_locate_point(Datum start, Datum end, Datum point,
+  double *dist);
 
-extern bool tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, TimestampTz *t);
+extern bool tpointseq_intersection_value(const TInstant *inst1,
+  const TInstant *inst2, Datum value, TimestampTz *t);
 
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
@@ -175,10 +177,16 @@ extern Datum tpoint_at_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
-extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo, int *count);
+extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
+  int *count);
+extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
+  Datum geom, bool atfunc);
+extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
 
-extern Temporal *tpoint_at_geometry_internal(const Temporal *temp, Datum geo);
-extern Temporal *tpoint_minus_geometry_internal(const Temporal *temp, Datum geo);
+extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
+extern Datum *gsinter_get_points(GSERIALIZED *gsinter, int *count);
+extern Period **tpointseq_geom_interperiods(const TSequence *seq,
+  GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
 

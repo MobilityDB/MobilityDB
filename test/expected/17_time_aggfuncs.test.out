@@ -79,6 +79,28 @@ SELECT extent(ps) FROM tbl_periodset;
  [2001-01-09 23:14:00+00, 2001-12-30 12:25:00+00]
 (1 row)
 
+set parallel_setup_cost=0;
+SET
+set parallel_tuple_cost=0;
+SET
+set min_parallel_table_scan_size=0;
+SET
+set max_parallel_workers_per_gather=2;
+SET
+SELECT extent(temp::period) FROM tbl_tfloat_big;
+                      extent                      
+--------------------------------------------------
+ [2000-12-31 23:36:00+00, 2001-12-31 02:50:00+00)
+(1 row)
+
+reset parallel_setup_cost;
+RESET
+reset parallel_tuple_cost;
+RESET
+reset min_parallel_table_scan_size;
+RESET
+reset max_parallel_workers_per_gather;
+RESET
 SELECT tcount(temp) FROM (VALUES
 (NULL::timestampset),(NULL::timestampset)) t(temp);
  tcount 

@@ -53,6 +53,7 @@ extern bool get_typbyval_fast(Oid type);
 extern int get_typlen_byref(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid valuetypid);
+extern char *text2cstring(const text *textptr);
 
 /* PostgreSQL call helpers */
 
@@ -76,6 +77,7 @@ extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
 /* Array functions */
 
 extern void pfree_array(void **array, int count);
+extern void pfree_datumarr(Datum *array, int count);
 extern char *stringarr_to_string(char **strings, int count, int outlen,
   char *prefix, char open, char close);
 extern Datum *datumarr_extract(ArrayType *array, int *count);
@@ -113,6 +115,13 @@ extern int tinstantarr_remove_duplicates(const TInstant **instants, int count);
 /* Text functions */
 
 extern int text_cmp(text *arg1, text *arg2, Oid collid);
+
+/* Arithmetic functions */
+
+extern Datum datum_add(Datum l, Datum r, Oid typel, Oid typer); 
+extern Datum datum_sub(Datum l, Datum r, Oid typel, Oid typer); 
+extern Datum datum_mult(Datum l, Datum r, Oid typel, Oid typer); 
+extern Datum datum_div(Datum l, Datum r, Oid typel, Oid typer); 
 
 /* Comparison functions on datums */
 

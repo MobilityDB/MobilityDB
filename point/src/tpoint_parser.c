@@ -225,28 +225,22 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
   /* The next instruction will throw an exception if it fails */
   Datum geo = basetype_parse(str, basetype);
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
-  int geo_srid = gserialized_get_srid(gs);
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
-  if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN && *tpoint_srid != geo_srid)
+  /* If one of the SRID of the temporal point and of the geometry
+   * is SRID_UNKNOWN and the other not, copy the SRID */
+  int geo_srid = gserialized_get_srid(gs);
+  if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
+    *tpoint_srid = geo_srid;
+  else if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
+    gserialized_set_srid(gs, *tpoint_srid);
+  /* If the SRID of the temporal point and of the geometry do not match */
+  else if (*tpoint_srid != SRID_UNKNOWN && geo_srid != SRID_UNKNOWN &&
+    *tpoint_srid != geo_srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Geometry SRID (%d) does not match temporal type SRID (%d)",
       geo_srid, *tpoint_srid)));
-  if (basetype == type_oid(T_GEOMETRY))
-  {
-    if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_UNKNOWN)
-      gserialized_set_srid(gs, *tpoint_srid);
-    if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_UNKNOWN)
-      *tpoint_srid = geo_srid;
-  }
-  else
-  {
-    if (*tpoint_srid != SRID_UNKNOWN && geo_srid == SRID_DEFAULT)
-      gserialized_set_srid(gs, *tpoint_srid);
-    if (*tpoint_srid == SRID_UNKNOWN && geo_srid != SRID_DEFAULT)
-      *tpoint_srid = geo_srid;
-  }
   /* The next instruction will throw an exception if it fails */
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);

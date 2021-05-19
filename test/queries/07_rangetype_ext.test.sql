@@ -29,6 +29,14 @@
 -- File Range.c
 -------------------------------------------------------------------------------
 
+SELECT setPrecision(floatrange '[1.123456789,2.123456789]',6);
+SELECT setPrecision(floatrange '[,2.123456789]',6);
+SELECT setPrecision(floatrange '[-inf,2.123456789]',6);
+select setPrecision(floatrange '[1.123456789,inf]',6);
+SELECT setPrecision(floatrange '[1.123456789,]',6);
+
+-------------------------------------------------------------------------------
+
 SELECT intrange 'empty' << 5;
 SELECT intrange '[3,5)' << 5;
 SELECT 5 << intrange 'empty';

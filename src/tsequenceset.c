@@ -140,7 +140,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
   result->count = newcount;
   result->totalcount = totalcount;
   result->valuetypid = sequences[0]->valuetypid;
-  result->temptype = SEQUENCESET;
+  result->subtype = SEQUENCESET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -265,9 +265,9 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
   int k = 0;
   for (int i = 0; i < ts->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ts, i);
-  if (temp->temptype == SEQUENCE)
+  if (temp->subtype == SEQUENCE)
     sequences[k++] = (const TSequence *) temp;
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     TSequenceSet *ts1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ts1, 0);
@@ -848,6 +848,51 @@ tsequenceset_values(const TSequenceSet *ts)
 }
 
 /**
+ * Cast a temporal float value as a floatrange
+ */
+RangeType *
+tfloatseqset_to_range(const TSequenceSet *ts)
+{
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tfloatseq_range(tsequenceset_seq_n(ts, 0));
+
+  /* General case */
+  TBOX *box = tsequenceset_bbox_ptr(ts);
+  Datum min = Float8GetDatum(box->xmin);
+  Datum max = Float8GetDatum(box->xmax);
+  /* It step interpolation */
+  if(! MOBDB_FLAGS_GET_LINEAR(ts->flags))
+    return range_make(min, max, true, true, FLOAT8OID);
+
+  /* Linear interpolation */
+  RangeType **ranges = palloc(sizeof(RangeType *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    ranges[i] = tfloatseq_range(seq);
+  }
+  int newcount;
+  RangeType **normranges = rangearr_normalize(ranges, ts->count, &newcount);
+  RangeType *result;
+  if (newcount == 1)
+  {
+    result = normranges[0];
+    pfree_array((void **) ranges, ts->count);
+    pfree(normranges);
+    return result;
+  }
+  
+  RangeType *start = normranges[0];
+  RangeType *end = normranges[newcount - 1];
+  result = range_make(lower_datum(start), upper_datum(end),
+    lower_inc(start), upper_inc(end), FLOAT8OID);
+  pfree_array((void **) normranges, newcount);
+  pfree_array((void **) ranges, ts->count);
+  return result;
+}
+
+/**
  * Returns the ranges of base values of the temporal float value
  * as a PostgreSQL array
  */
@@ -1343,11 +1388,9 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
     seq1 = tsequenceset_seq_n(ts, i);
     /* Shift and/or scale the period of the sequence */
     double fraction = (double) (seq1->period.lower - p1.lower) / orig_duration;
-    TimestampTz lower = (TimestampTz) ((long) p2.lower +
-      (long) (new_duration * fraction));
+    TimestampTz lower = p2.lower + (TimestampTz) (new_duration * fraction);
     fraction = (double) (seq1->period.upper - p1.lower) / orig_duration;
-    TimestampTz upper = (TimestampTz) ((long) p2.lower +
-      (long) (new_duration * fraction));
+    TimestampTz upper = p2.lower + (TimestampTz) (new_duration * fraction);
     Interval *startseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
       TimestampTzGetDatum(lower), TimestampTzGetDatum(seq1->period.lower)));
     Interval *durationseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
@@ -1513,7 +1556,7 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_restrict_value1(&sequences[k], seq, value, atfunc) ;
+    k += tsequence_restrict_value2(&sequences[k], seq, value, atfunc) ;
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1593,7 +1636,7 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tnumberseq_restrict_range1(&sequences[k], seq, range, atfunc);
+    k += tnumberseq_restrict_range2(&sequences[k], seq, range, atfunc);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1961,7 +2004,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
     if (before_period_period_internal(&seq->period, p2))
     {
       if (!atfunc)
-        /* copy the sequence */
+        /* Copy the sequence */
         sequences[k++] = tsequence_copy(seq);
       i++;
     }

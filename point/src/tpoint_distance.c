@@ -62,7 +62,7 @@
  */
 static double
 lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
+  long double *fraction)
 {
   DISTPTS thedl;
   thedl.mode = mode;
@@ -86,7 +86,7 @@ lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static double
 lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
+  long double *fraction)
 {
   assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
   DISTPTS3D thedl;
@@ -108,7 +108,7 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 double
 lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  double *fraction)
+  long double *fraction)
 {
   double min_dist = FLT_MAX;
   double max_dist = FLT_MAX;
@@ -175,10 +175,10 @@ distance_tpointseq_geo(const TSequence *seq, Datum point, datum_func2 func)
       long double duration = (long double) (inst2->t - inst1->t);
       double dist;
       long double fraction =
-        (long double) geoseg_locate_point(value1, value2, point, &dist);
+        geoseg_locate_point(value1, value2, point, &dist);
       if (fraction != 0.0 && fraction != 1.0)
       {
-        TimestampTz time = inst1->t + (long) (duration * fraction);
+        TimestampTz time = inst1->t + (TimestampTz) (duration * fraction);
         instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
       }
     }
@@ -294,7 +294,7 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
   }
   if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
     return false;
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -375,7 +375,7 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
   if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
     return false;
   long double duration = (long double) (end1->t - start1->t);
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -412,8 +412,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
   datum_func2 func = get_distance_fn(temp->flags);
   LiftedFunctionInfo lfinfo;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
   {
     lfinfo.func = (varfunc) func;
     lfinfo.numparam = 2;
@@ -424,15 +424,15 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
     lfinfo.tpfunc = NULL;
   }
   Temporal *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, geo,
       temp->valuetypid, (Datum) NULL, lfinfo);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *)distance_tpointseq_geo((TSequence *)temp, geo, func);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)distance_tpointseqset_geo((TSequenceSet *)temp, geo, func);
   return result;
 }
@@ -651,7 +651,8 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   *tofree = false;
-  double dist, fraction;
+  double dist;
+  long double fraction;
 
   /* Constant segment */
   if (datum_point_eq(value1, value2))
@@ -671,13 +672,13 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
       lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
   lwline_free(lwline);
 
-  if (fabs(fraction) < EPSILON)
+  if (fabsl(fraction) < EPSILON)
   {
     *closest = value1;
     *t = inst1->t;
     return 0.0;
   }
-  if (fabs(fraction - 1.0) < EPSILON)
+  if (fabsl(fraction - 1.0) < EPSILON)
   {
     *closest = value2;
     *t = inst2->t;
@@ -685,7 +686,7 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   }
 
   double duration = (inst2->t - inst1->t);
-  *t = inst1->t + (long)(duration * fraction);
+  *t = inst1->t + (TimestampTz) (duration * fraction);
   *tofree = true;
   /* We are sure that it is linear interpolation */
   *closest =  tsequence_value_at_timestamp1(inst1, inst2, true, *t);
@@ -821,16 +822,16 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   store_fcinfo(fcinfo);
   datum_func2 func = get_distance_fn(temp->flags);
   TInstant *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_copy((TInstant *)temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = NAI_tpointinstset_geo((TInstantSet *)temp, PointerGetDatum(gs), func);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *)temp, PointerGetDatum(gs), func) :
       NAI_tpointseq_step_geo((TSequence *)temp, PointerGetDatum(gs), func);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *)temp, PointerGetDatum(gs), func) :
       NAI_tpointseqset_step_geo((TSequenceSet *)temp, PointerGetDatum(gs), func);
@@ -896,11 +897,11 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     pfree(dist);
     if (result == NULL)
     {
-      if (temp1->temptype == SEQUENCE)
-        result = tinstant_copy(tsequence_find_timestamp_excl(
+      if (temp1->subtype == SEQUENCE)
+        result = tinstant_copy(tsequence_inst_at_timestamp_excl(
           (TSequence *)temp1, min->t));
-      else /* temp->temptype == SEQUENCESET */
-        result = tinstant_copy(tsequenceset_find_timestamp_excl(
+      else /* temp->subtype == SEQUENCESET */
+        result = tinstant_copy(tsequenceset_inst_at_timestamp_excl(
           (TSequenceSet *)temp1, min->t));
     }
   }
@@ -1044,7 +1045,7 @@ double
 NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
   /* Test the validity of the arguments */
-  ensure_has_X(box1->flags); ensure_has_X(box2->flags);
+  ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
@@ -1112,7 +1113,7 @@ double
 NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 {
   /* Test the validity of the arguments */
-  ensure_has_X(box->flags);
+  ensure_has_X_stbox(box);
   ensure_same_geodetic(temp->flags, box->flags);
   ensure_same_spatial_dimensionality(temp->flags, box->flags);
   ensure_same_srid_tpoint_stbox(temp, box);

@@ -45,10 +45,29 @@
  *
  * The following relationships are supported for two temporal geography points:
  * `tdisjoint`, `tintersects`, `tdwithin`.
+ *
+ * The implementation of most relationships is done as follows
+ * - xxx TO BE DONE
+
+ * The implementation of tintersects and tdisjoint involving a temporal point
+ * and a geometry differs from the other relationships since a faster 
+ * implementation is done by (1) using bounding box tests, and (2) temporal
+ * sequence points are split into an array of simple (that is, not 
+ * self-intersecting) fragments and the answer is computed for each fragment
+ * without any additional call to PostGIS.
+ *
+ * Notice also that twithin has a custom implementation as follows
+ * - In the case of a temporal point and a geometry we (1) call PostGIS to
+ *   compute a buffer of the geometry and the distance parameter d, and
+ *   (2) compute the result from tpointseq_at_geometry(seq, geo_buffer)
+ * - In the case of two temporal points we need to compute the instants 
+ *   at which two temporal sequences have a distance d between each other,
+ *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.
  */
 
 #include "tpoint_tempspatialrels.h"
 
+#include <assert.h>
 #include <utils/timestamp.h>
 
 #include "period.h"
@@ -137,14 +156,14 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
   const POINT2D *start = datum_get_point2d_p(value1);
   const POINT2D *end = datum_get_point2d_p(value2);
   TInstant **instants = palloc(sizeof(TInstant *) * 2 * countinter);
-  long double duration = (long double)(inst2->t - inst1->t);
+  double duration = inst2->t - inst1->t;
   int k = 0;
   for (int i = 0; i < countinter; i++)
   {
     if (coll != NULL)
       /* Find the i-th intersection */
       lwinter_single = coll->geoms[i];
-    POINT2D p1, p2, closest;
+    POINT2D p1, p2, closest1, closest2;
     double fraction1;
     TimestampTz t1;
     Datum point1;
@@ -152,8 +171,8 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
     if (lwinter_single->type == POINTTYPE)
     {
       lwpoint_getPoint2d_p((LWPOINT *) lwinter_single, &p1);
-      fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-      t1 = inst1->t + (long) (duration * fraction1);
+      fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest1);
+      t1 = inst1->t + (TimestampTz) (duration * fraction1);
       /* If the point intersection is not at an exclusive bound */
       if ((lower_inc || t1 != inst1->t) && (upper_inc || t1 != inst2->t))
       {
@@ -168,14 +187,14 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       LWPOINT *lwpoint2 = lwline_get_lwpoint((LWLINE *) lwinter_single, 1);
       lwpoint_getPoint2d_p(lwpoint1, &p1);
       lwpoint_getPoint2d_p(lwpoint2, &p2);
-      fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest);
-      double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest);
-      t1 = inst1->t + (long) (duration * fraction1);
-      TimestampTz t2 = inst1->t + (long) (duration * fraction2);
+      fraction1 = closest_point2d_on_segment_ratio(&p1, start, end, &closest1);
+      double fraction2 = closest_point2d_on_segment_ratio(&p2, start, end, &closest2);
+      t1 = inst1->t + (TimestampTz) (duration * fraction1);
+      TimestampTz t2 = inst1->t + (TimestampTz) (duration * fraction2);
       TimestampTz lower = Min(t1, t2);
       TimestampTz upper = Max(t1, t2);
       /* If the point intersection is not at an exclusive bound */
-      if ((lower_inc || t1 != lower) && (upper_inc || t2 != lower))
+      if ((lower_inc || lower != inst1->t) && (upper_inc || lower != inst2->t))
       {
         point1 = tsequence_value_at_timestamp1(inst1, inst2, true, lower);
         instants[k++] = tinstant_make(point1, lower, type_oid(T_GEOMETRY));
@@ -184,7 +203,7 @@ tpointseq_intersection_instants(const TInstant *inst1, const TInstant *inst2,
       /* If the point intersection is not at an exclusive bound and
        * lower != upper (this last condition arrives when point1 is
        * at an epsilon distance from point2 */
-      if ((lower_inc || t1 != upper) && (upper_inc || t2 != upper) &&
+      if ((lower_inc || upper != inst1->t) && (upper_inc || upper != inst2->t) &&
         (lower != upper))
       {
         Datum point2 = tsequence_value_at_timestamp1(inst1, inst2, true, upper);
@@ -232,19 +251,21 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   Datum value2 = tinstant_value(inst2);
   bool constant = datum_point_eq(value1, value2);
   TInstant *instants[2];
-  Datum line, intersections;
+  Datum line, inter;
   /* If not constant segment and linear interpolation look for intersections */
   if (! constant && linear)
   {
     line = geopoint_line(value1, value2);
-    intersections = call_function2(intersection, line, geo);
+    inter = call_function2(intersection, line, geo);
   }
 
   /* Constant segment or step interpolation or no intersections */
-  if (constant || ! linear || call_function1(LWGEOM_isempty, intersections))
+  if (constant || ! linear ||
+    DatumGetBool(call_function1(LWGEOM_isempty, inter)))
   {
     TSequence **result = palloc(sizeof(TSequence *));
-    Datum value = lfinfo.invert ? spatialrel(geo, value1, param, lfinfo) :
+    Datum value = lfinfo.invert ?
+      spatialrel(geo, value1, param, lfinfo) :
       spatialrel(value1, geo, param, lfinfo);
     instants[0] = tinstant_make(value, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(value, inst2->t, lfinfo.restypid);
@@ -259,8 +280,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   /* Look for instants of intersections */
   int countinst;
   TInstant **interinstants = tpointseq_intersection_instants(inst1,
-    inst2, lower_inc, upper_inc, intersections, &countinst);
-  pfree(DatumGetPointer(intersections));
+    inst2, lower_inc, upper_inc, inter, &countinst);
+  pfree(DatumGetPointer(inter));
   pfree(DatumGetPointer(line));
 
   /* No intersections were found */
@@ -268,11 +289,12 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   {
     /* There may be an intersection at an exclusive bound.
      * Find the middle time between inst1 and inst2
-     * and compute the func at that point */
+     * and compute the function at that point */
     TimestampTz inttime = inst1->t + ((inst2->t - inst1->t) / 2);
     Datum intvalue = tsequence_value_at_timestamp1(inst1, inst2,
       linear, inttime);
-    Datum intvalue1 = lfinfo.invert ? spatialrel(geo, intvalue, param, lfinfo) :
+    Datum intvalue1 = lfinfo.invert ?
+      spatialrel(geo, intvalue, param, lfinfo) :
       spatialrel(intvalue, geo, param, lfinfo);
     TSequence **result = palloc(sizeof(TSequence *));
     instants[0] = tinstant_make(intvalue1, inst1->t, lfinfo.restypid);
@@ -297,7 +319,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   int k = 0;
   if (before)
   {
-    Datum value = lfinfo.invert ? spatialrel(geo, value1, param, lfinfo) :
+    Datum value = lfinfo.invert ?
+      spatialrel(geo, value1, param, lfinfo) :
       spatialrel(value1, geo, param, lfinfo);
     instants[0] = tinstant_make(value, inst1->t, lfinfo.restypid);
     instants[1] = tinstant_make(value, (interinstants[0])->t, lfinfo.restypid);
@@ -325,7 +348,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
         (interinstants[i + 1]->t - interinstants[i]->t) / 2;
       Datum intvalue = tsequence_value_at_timestamp1(inst1, inst2,
         linear, inttime);
-      Datum intvalue1 = lfinfo.invert ? spatialrel(geo, intvalue, param, lfinfo) :
+      Datum intvalue1 = lfinfo.invert ?
+        spatialrel(geo, intvalue, param, lfinfo) :
         spatialrel(intvalue, geo, param, lfinfo);
       instants[0] = tinstant_make(intvalue1, interinstants[i]->t, lfinfo.restypid);
       instants[1] = tinstant_make(intvalue1, interinstants[i + 1]->t, lfinfo.restypid);
@@ -338,7 +362,8 @@ tspatialrel_tpointseq_geo1(const TInstant *inst1, const TInstant *inst2,
   }
   if (after)
   {
-    Datum value = lfinfo.invert ? spatialrel(geo, value2, param, lfinfo) :
+    Datum value = lfinfo.invert ?
+      spatialrel(geo, value2, param, lfinfo) :
       spatialrel(value2, geo, param, lfinfo);
     instants[0] = tinstant_make(value, (interinstants[countinst - 1])->t,
       lfinfo.restypid);
@@ -470,17 +495,17 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
   LiftedFunctionInfo lfinfo)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       geo, temp->valuetypid, param, lfinfo);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
       geo, temp->valuetypid, param, lfinfo);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tspatialrel_tpointseq_geo((TSequence *) temp,
       geo, param, lfinfo);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tspatialrel_tpointseqset_geo((TSequenceSet *) temp,
       geo, param, lfinfo);
   return result;
@@ -488,11 +513,9 @@ tspatialrel_tpoint_geo2(const Temporal *temp, Datum geo, Datum param,
 
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between a temporal sequence
- * and a geometry. These functions are not available for geographies nor for
- * 3D since they are based on the tpointseq_at_geometry1 function.
- * The functions use the st_dwithin function from PostGIS only for
- * instantaneous sequences.
- * This function is not available for geographies since it is based on the
+ * and a geometry. The functions use the st_dwithin function from PostGIS 
+ * only for instantaneous sequences.
+ * These functions are not available for geographies since it is based on the
  * function atGeometry.
  *****************************************************************************/
 
@@ -651,7 +674,7 @@ tdwithin_tpointseqset_geo(TSequenceSet *ts, Datum geo, Datum dist)
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
  * This requires to determine the instants t1 and t2 at which two temporal
- * periods have a distance d between each other. This amounts to solve the
+ * sequences have a distance d between each other. This amounts to solve the
  * equation
  *     distance(seg1(t), seg2(t)) = d
  * The function assumes that the two segments are synchronized,
@@ -851,7 +874,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     long double t5 = (-1 * b) / (2 * a);
     if (t5 < 0.0 || t5 > 1.0)
       return 0;
-    *t1 = *t2 = lower + (long) (t5 * duration);
+    *t1 = *t2 = lower + (TimestampTz) (t5 * duration);
     return 1;
   }
   /* No solution */
@@ -881,13 +904,13 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     long double t8 = Min(1.0, t6);
     if (fabsl(t7 - t8) < EPSILON)
     {
-      *t1 = *t2 = lower + (long) (t7 * duration);
+      *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
       return 1;
     }
     else
     {
-      *t1 = lower + (long) (t7 * duration);
-      *t2 = lower + (long) (t8 * duration);
+      *t1 = lower + (TimestampTz) (t7 * duration);
+      *t2 = lower + (TimestampTz) (t8 * duration);
       return 2;
     }
   }
@@ -1086,16 +1109,16 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  */
 static Temporal *
 tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*func)(Datum, ...), int numparam, Oid restypid, bool invert, bool withZ)
+  Datum (*func)(Datum, ...), int numparam, Oid restypid, bool invert, bool hasz)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
-  if (! withZ)
+  if (! hasz)
   {
     ensure_has_not_Z(temp->flags);
     ensure_has_not_Z_gs(gs);
   }
-  /* We only need to fill these parameters for tspatialrel_tpoint_geo2
-   * since lifting is applied only for INSTANT and INSTANTSET types */
+  /* These parameters are only used for INSTANT and INSTANTSET subtypes 
+  *  since lifting is applied only for them */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = func;
   lfinfo.numparam = numparam;
@@ -1111,11 +1134,11 @@ tspatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
- * @param[in] withZ True if Z dimension is supported
+ * @param[in] hasz True if Z dimension is supported
  */
 static Datum
 tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
-  int numparam, Oid restypid, bool withZ)
+  int numparam, Oid restypid, bool hasz)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -1123,7 +1146,7 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   Temporal *result = tspatialrel_tpoint_geo1(temp, gs, param, func, numparam,
-    restypid, INVERT, withZ);
+    restypid, INVERT, hasz);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1136,11 +1159,11 @@ tspatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
- * @param[in] withZ True if Z dimension is supported
+ * @param[in] hasz True if Z dimension is supported
  */
 static Datum
 tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
-  int numparam, Oid restypid, bool withZ)
+  int numparam, Oid restypid, bool hasz)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -1148,7 +1171,7 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   Temporal *result = tspatialrel_tpoint_geo1(temp, gs, param, func, numparam,
-    restypid, INVERT_NO, withZ);
+    restypid, INVERT_NO, hasz);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);
@@ -1161,17 +1184,17 @@ tspatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  * @param[in] func Function
  * @param[in] numparam Number of parameters of the functions
  * @param[in] restypid Oid of the resulting base type
- * @param[in] withZ True if Z dimension is supported
+ * @param[in] hasz True if Z dimension is supported
  */
 static Datum
 tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
-  int numparam, Oid restypid, bool withZ)
+  int numparam, Oid restypid, bool hasz)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum param = (numparam == 3) ? PG_GETARG_DATUM(2) : (Datum) NULL;
   ensure_same_srid_tpoint(temp1, temp2);
-  if (! withZ)
+  if (! hasz)
   {
     ensure_has_not_Z(temp1->flags);
     ensure_has_not_Z(temp2->flags);
@@ -1541,17 +1564,17 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
       PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
       PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_geo((TSequence *) temp,
         PointerGetDatum(gs), dist);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_geo((TSequenceSet *) temp,
         PointerGetDatum(gs), dist);
   return result;
@@ -1618,17 +1641,17 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;
   Temporal *result;
-  ensure_valid_temptype(sync1->temptype);
-  if (sync1->temptype == INSTANT)
+  ensure_valid_tempsubtype(sync1->subtype);
+  if (sync1->subtype == INSTANT)
     result = (Temporal *) sync_tfunc_tinstant_tinstant(
       (TInstant *) sync1, (TInstant *) sync2, dist, lfinfo);
-  else if (sync1->temptype == INSTANTSET)
+  else if (sync1->subtype == INSTANTSET)
     result = (Temporal *) sync_tfunc_tinstantset_tinstantset(
       (TInstantSet *) sync1, (TInstantSet *) sync2, dist, lfinfo);
-  else if (sync1->temptype == SEQUENCE)
+  else if (sync1->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_tpointseq(
       (TSequence *) sync1, (TSequence *) sync2, dist, func);
-  else /* sync1->temptype == SEQUENCESET */
+  else /* sync1->subtype == SEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_tpointseqset(
       (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
 

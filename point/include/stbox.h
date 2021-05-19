@@ -48,20 +48,20 @@
  *****************************************************************************/
 
 /**
- * Structure to represent temporal boxes
+ * Structure to represent spatiotemporal boxes
  */
 typedef struct
 {
-  double    xmin;     /**< minimum x value */
-  double    xmax;     /**< maximum x value */
-  double    ymin;     /**< minimum y value */
-  double    ymax;     /**< maximum y value */
-  double    zmin;     /**< minimum z value */
-  double    zmax;     /**< maximum z value */
-  TimestampTz  tmin;  /**< minimum timestamp */
-  TimestampTz  tmax;  /**< maximum timestamp */
-  int32    srid;      /**< SRID */
-  int16    flags;     /**< flags */
+  double      xmin;   /**< minimum x value */
+  double      xmax;   /**< maximum x value */
+  double      ymin;   /**< minimum y value */
+  double      ymax;   /**< maximum y value */
+  double      zmin;   /**< minimum z value */
+  double      zmax;   /**< maximum z value */
+  TimestampTz tmin;   /**< minimum timestamp */
+  TimestampTz tmax;   /**< maximum timestamp */
+  int32       srid;   /**< SRID */
+  int16       flags;  /**< flags */
 } STBOX;
 
 /*****************************************************************************
@@ -84,6 +84,12 @@ extern STBOX *stbox_copy(const STBOX *box);
 extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift_tscale(STBOX *box, const Interval *start,
   const Interval *duration);
+
+/* Parameter tests */
+
+extern void ensure_has_X_stbox(const STBOX *box);
+extern void ensure_has_T_stbox(const STBOX *box);
+extern void ensure_not_geodetic_stbox(const STBOX *box);
 
 /* Input/Ouput functions */
 

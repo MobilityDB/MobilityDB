@@ -55,6 +55,7 @@ SELECT upper_inc(p) FROM tbl_period;
 SELECT duration(p) FROM tbl_period;
 SELECT shift(p, '5 min') FROM tbl_period;
 
+
 SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
 SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
 SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;

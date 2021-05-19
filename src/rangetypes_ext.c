@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -34,11 +34,13 @@
 #include "rangetypes_ext.h"
 
 #include <assert.h>
+#include <float.h>
 #include <utils/builtins.h>
 
 #include "temporal.h"
 #include "oidcache.h"
 #include "temporal_util.h"
+#include "tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Generic range functions
@@ -174,7 +176,7 @@ range_copy(const RangeType *range)
  */
 static RangeType *
 range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
-           bool strict)
+  bool strict)
 {
   RangeBound lower1, lower2;
   RangeBound upper1, upper2;
@@ -319,9 +321,9 @@ PGDLLEXPORT Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
 #if MOBDB_PGSQL_VERSION < 110000
-  RangeType  *range = PG_GETARG_RANGE(0);
+  RangeType *range = PG_GETARG_RANGE(0);
 #else
-  RangeType  *range = PG_GETARG_RANGE_P(0);
+  RangeType *range = PG_GETARG_RANGE_P(0);
 #endif
   TypeCacheEntry *typcache;
   RangeBound lower_bound;
@@ -587,6 +589,117 @@ PGDLLEXPORT Datum
 elem_adjacent_range(PG_FUNCTION_ARGS)
 {
   return elem_func_range(fcinfo, &range_adjacent_elem_internal);
+}
+
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(floatrange_set_precision);
+/**
+ * Set the precision of the float range to the number of decimal places
+ */
+PGDLLEXPORT Datum
+floatrange_set_precision(PG_FUNCTION_ARGS)
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *range = PG_GETARG_RANGE(0);
+#else
+  RangeType *range = PG_GETARG_RANGE_P(0);
+#endif
+  Datum size = PG_GETARG_DATUM(1);
+  RangeBound lower, upper;
+  lower.lower = true;
+  lower.inclusive = lower_inc(range);
+  upper.lower = false;
+  upper.inclusive = upper_inc(range);
+  /* Set precision of bounds if they exist and not infinite */
+  if (! (range_get_flags(range) & RANGE_LB_INF))
+  {
+    lower.val = lower_datum(range);
+    if (DatumGetFloat8(lower.val) != -1 * get_float8_infinity())
+      lower.val = datum_round(lower.val, size);
+    lower.infinite = false;
+  }
+  else
+    lower.infinite = true;
+  if (! (range_get_flags(range) & RANGE_UB_INF))
+  {
+    upper.val = upper_datum(range);
+    if (DatumGetFloat8(upper.val) != get_float8_infinity())
+      upper.val = datum_round(upper.val, size);
+    upper.infinite = false;
+  }
+  else
+    upper.infinite = true;
+  /* Create resulting range */
+  TypeCacheEntry* typcache = lookup_type_cache(type_oid(T_FLOATRANGE),
+    TYPECACHE_RANGE_INFO);
+  RangeType *result = make_range(typcache, &lower, &upper, false);
+  PG_RETURN_POINTER(result);
+}
+
+/******************************************************************************/
+
+PG_FUNCTION_INFO_V1(range_extent_transfn);
+/**
+ * Transition function for temporal extent aggregation of period values
+ * with period bounding box
+ */
+PGDLLEXPORT Datum
+range_extent_transfn(PG_FUNCTION_ARGS)
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
+#else
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
+#endif
+  RangeType *result;
+
+  /* Can't do anything with null inputs */
+  if (!r1 && !r2)
+    PG_RETURN_NULL();
+  /* Null period and non-null period, return the period */
+  else if (!r1)
+    result = range_copy(r2);
+  /* Non-null period and null period, return the period */
+  else if (!r2)
+    result = range_copy(r1);
+  else
+  {
+    TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
+    /* Non-strict union */
+    result = range_union_internal(typcache, r1, r2, false);
+  }
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(range_extent_combinefn);
+/**
+ * Combine function for temporal extent aggregation
+ */
+PGDLLEXPORT Datum
+range_extent_combinefn(PG_FUNCTION_ARGS)
+{
+#if MOBDB_PGSQL_VERSION < 110000
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
+#else
+  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
+  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
+#endif
+
+  if (!r2 && !r1)
+    PG_RETURN_NULL();
+  if (r1 && !r2)
+    PG_RETURN_POINTER(r1);
+  if (r2 && !r1)
+    PG_RETURN_POINTER(r2);
+
+  TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
+  /* Non-strict union */
+  RangeType *result = range_union_internal(typcache, r1, r2, false); 
+  PG_RETURN_POINTER(result);
 }
 
 /******************************************************************************/

@@ -114,9 +114,19 @@
 				<listitem>
 					<para><link linkend="periods"><varname>periods</varname></link>: Get the periods</para>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2>
+			<title>Modification Functions</title>
+
+			<itemizedlist>
 				<listitem>
 					<para><link linkend="time_shift"><varname>shift</varname></link>: Shift the time value by an interval</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Round the bounds of a float range to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -237,6 +247,10 @@
 
 				<listitem>
 					<para><link linkend="time_extent"><varname>extent</varname></link>: Bounding period</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_extent"><varname>extent</varname></link>: Bounding range</para>
 				</listitem>
 
 				<listitem>
@@ -371,6 +385,16 @@
 
 				<listitem>
 					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transform to a different spatial reference</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Aggregate Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Bounding box extent</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -535,19 +559,19 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor for temporal types of instant subtype</para>
+					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor for temporal types of instant subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor for temporal types of instant set subtype</para>
+					<para><link linkend="ttype_instset"><varname>ttype_instset</varname></link>: Constructor for temporal types of instant set subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor for temporal types of sequence subtype</para>
+					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor for temporal types of sequence subtype</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor for temporal types of sequence set subtype</para>
+					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname></link>: Constructor for temporal types of sequence set subtype</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -556,6 +580,22 @@
 			<title>Casting</title>
 
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Cast a temporal value to a period</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Cast a temporal number to a range</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Cast a temporal number to a <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stbox"><varname>ttype::period</varname></link>: Cast a temporal point to an <varname>stbox</varname></para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Cast a temporal integer to a temporal float</para>
 				</listitem>
@@ -587,7 +627,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transform a temporal value to another subtype</para>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_instset, ttype_seq, ttype_seqset</varname></link>: Transform a temporal value to another subtype</para>
 				</listitem>
 
 				<listitem>
@@ -799,11 +839,51 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Input a temporal point from a Moving Features JSON representation</para>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Input a temporal geometry point from a Well-Known Text (WKT) representation</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Input a temporal point from an Extended Well-Known Binary (EWKB) representation</para>
+					<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Input a temporal geography point from a Well-Known Text (WKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Input a temporal geometry point from an Extended Well-Known Text (EWKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Input a temporal geography point from an Extended Well-Known Text (EWKT) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Input a temporal geometry point from a Moving Features JSON representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Input a temporal geography geometry point from a Moving Features JSON representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Input a temporal geometry point from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Input a temporal geography point from a Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Input a temporal geometry point from an Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Input a temporal geography point from an Extended Well-Known Binary (EWKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Input a temporal geometry point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Input a temporal geography point from an Hexadecimal Extended Well-Known Binary (EWKB) representation as text </para>
 				</listitem>
 
 				<listitem>
@@ -1176,6 +1256,77 @@
 		</sect2>
 
 		<sect2>
+			<title>Multidimensional Tiling</title>
+
+			<sect3>
+				<title>Bucket Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Returns a set of couples (index, bucket) that cover the range or period with buckets of the same width or duration aligned with the origin</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Returns the start value of the bucket that contains the input number.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Returns the range in the bucket space that contains the input number</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Returns the start timestamp of the bucket that contains the input timestamp.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Returns a period in the bucket space that contains the input timestamp</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Grid Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Returns a set of couples (index, tile) that covers the box with multidimensional tiles of the same size and duration.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="multidimTile"><varname>multidimTile</varname></link>: Returns the tile of the multidimensional grid that contains the value and the timestamp</para>
+						</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Split Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragment the temporal number with respect to value buckets</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragment the temporal value with respect to time buckets</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragment the temporal number with respect to the tiles in a value-time grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceSlice"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeSlice"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
 			<title>Distance Operators</title>
 
 			<itemizedlist>
@@ -1193,7 +1344,7 @@
 			<title>Spatial Relationships for Temporal Points</title>
 
 			<sect3>
-				<title>Possible Spatial Relationships</title>
+				<title>Possible Relationships</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="contains"><varname>contains</varname></link>: May contain</para>
@@ -1250,7 +1401,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Temporal Spatial Relationships</title>
+				<title>Temporal Relationships</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Temporal contains</para>

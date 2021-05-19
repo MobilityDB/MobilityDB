@@ -50,6 +50,13 @@ CREATE TYPE floatrange AS RANGE (
 
 /******************************************************************************/
 
+CREATE FUNCTION setPrecision(floatrange, int)
+  RETURNS floatrange
+  AS 'MODULE_PATHNAME', 'floatrange_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
 CREATE FUNCTION range_left(intrange, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'range_left_elem'
@@ -262,6 +269,26 @@ CREATE OPERATOR -|- (
   LEFTARG = float, RIGHTARG = floatrange,
   COMMUTATOR = -|-,
   RESTRICT = contsel, JOIN = contjoinsel
+);
+
+/******************************************************************************
+ * Aggregate functions for range types
+ ******************************************************************************/
+
+CREATE OR REPLACE FUNCTION range_extent_transfn(anyrange, anyrange)
+  RETURNS anyrange
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE OR REPLACE FUNCTION range_extent_combinefn(anyrange, anyrange)
+  RETURNS anyrange
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE extent(anyrange) (
+  SFUNC = range_extent_transfn,
+  STYPE = anyrange,
+  COMBINEFUNC = range_extent_combinefn,
+  PARALLEL = safe
 );
 
 /******************************************************************************/

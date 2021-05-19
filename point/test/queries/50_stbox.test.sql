@@ -405,6 +405,29 @@ SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_stbox t1, tbl_stbox t2;
 
 -------------------------------------------------------------------------------
+-- Extent aggregation
+-------------------------------------------------------------------------------
+
+WITH test(box) AS (
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))' UNION ALL 
+  SELECT NULL::stbox UNION ALL SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' )
+SELECT extent(box) FROM test;
+
+-- encourage use of parallel plans
+set parallel_setup_cost=0;
+set parallel_tuple_cost=0;
+set min_parallel_table_scan_size=0;
+set max_parallel_workers_per_gather=2;
+
+SELECT setPrecision(extent(temp::stbox),6) FROM tbl_tgeompoint3D_big;
+
+-- reset to default values 
+reset parallel_setup_cost;
+reset parallel_tuple_cost;
+reset min_parallel_table_scan_size;
+reset max_parallel_workers_per_gather;
+
+-------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------
 
@@ -433,11 +456,11 @@ SELECT stbox_cmp(stbox 'STBOX Z((1,2,3), (1,2,3))', stbox 'STBOX ZT((1,2,3,2001-
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <> t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b < t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <= t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b > t2.b;
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b < t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <= t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b > t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >= t2.b;
 
 -------------------------------------------------------------------------------

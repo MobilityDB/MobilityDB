@@ -103,8 +103,11 @@
 #define WITH_Z          true
 #define NO_Z            false
 
-/** Enumeration for the intersection/synchronization functions */
+/* Determine whether reduce the roundoff errors with the range operations 
+ * by taking the bounds instead of the projected value at the timestamp */
+#define RANGE_ROUNDOFF  false
 
+/** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
   INTERSECT,
@@ -134,35 +137,32 @@ typedef enum
 /**
  * Enumeration for the concrete subtype of temporal types
  */
-typedef enum
-{
-  ANYTEMPORALTYPE,
-  INSTANT,
-  INSTANTSET,
-  SEQUENCE,
-  SEQUENCESET,
-} TemporalType;
+#define ANYTEMPSUBTYPE  0
+#define INSTANT         1
+#define INSTANTSET      2
+#define SEQUENCE        3
+#define SEQUENCESET     4
 
-#define TYPMOD_GET_TEMPTYPE(typmod) ((TemporalType) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
+#define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /**
  * Structure to represent the temporal type array
  */
-struct temptype_struct
+struct tempsubtype_struct
 {
-  char *temptypeName;    /**< string representing the temporal type */
-  TemporalType temptype;    /**< temptype */
+  char *subtypeName;   /**< string representing the temporal type */
+  int16 subtype;       /**< subtype */
 };
 
-#define TEMPORALTYPE_STRUCT_ARRAY_LEN \
-  (sizeof temptype_struct_array/sizeof(struct temptype_struct))
-#define TEMPORALTYPE_MAX_LEN   13
+#define TEMPSUBTYPE_STRUCT_ARRAY_LEN \
+  (sizeof tempsubtype_struct_array/sizeof(struct tempsubtype_struct))
+#define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure GTZXBL, where
- * G:Coordinates are geodetic, T:has T coordinate, Z:has Z coordinate,
- * X:has value or X coordinate, B:base type passed by value,
- * L: Linear interpolation
+ * Macros for manipulating the 'flags' element with structure xxGTZXBL, where
+ * xx:unused bits, G:Coordinates are geodetic, T:has T coordinate, 
+ * Z:has Z coordinate, X:has value or X coordinate,
+ * B:base type passed by value,L: Linear interpolation
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
@@ -188,7 +188,21 @@ struct temptype_struct
   ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
 
 /*****************************************************************************
- * Macros for GiST indexes
+ * Definitions for bucketing and tiling
+ *****************************************************************************/
+
+/*
+ * The default origin is Monday 2000-01-03. We don't use PG epoch since it
+ * starts on a saturday. This makes time-buckets by a week more intuitive and
+ * aligns it with date_trunc.
+ */
+#define JAN_3_2000 (2 * USECS_PER_DAY)
+#define DEFAULT_TIME_ORIGIN (JAN_3_2000)
+#define DEFAULT_FLOATRANGE_ORIGIN (0.0)
+#define DEFAULT_INTRANGE_ORIGIN (0)
+
+/*****************************************************************************
+ * Definitions for GiST indexes
  *****************************************************************************/
 
 /* Minimum accepted ratio of split */
@@ -228,7 +242,7 @@ struct temptype_struct
 typedef struct
 {
   int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;      /**< temptype */
+  int16         subtype;       /**< subtype */
   int16         flags;         /**< flags */
   Oid           valuetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
@@ -240,7 +254,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
@@ -252,8 +266,8 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int32        vl_len_;       /**< varlena header (do not touch directly!) */
+  int16        subtype;       /**< subtype */
   int16        flags;         /**< flags */
   Oid          valuetypid;    /**< base type's OID (4 bytes) */
   int32        count;         /**< number of TInstant elements */
@@ -266,7 +280,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
@@ -280,7 +294,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  TemporalType  temptype;     /**< temptype */
+  int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
   Oid           valuetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
@@ -426,9 +440,9 @@ typedef struct
 
 /* Utility functions */
 
-extern const TInstant *tsequence_find_timestamp_excl(const TSequence *seq,
+extern const TInstant *tsequence_inst_at_timestamp_excl(const TSequence *seq,
   TimestampTz t);
-extern const TInstant *tsequenceset_find_timestamp_excl(const TSequenceSet *ts,
+extern const TInstant *tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts,
   TimestampTz t);
 
 extern Temporal *temporal_copy(const Temporal *temp);
@@ -438,8 +452,10 @@ extern bool intersection_temporal_temporal(const Temporal *temp1,
   Temporal **inter1, Temporal **inter2);
 extern bool continuous_base_type(Oid type);
 
-extern const char *temptype_name(TemporalType temptype);
-extern bool temptype_from_string(const char *str, TemporalType *temptype);
+extern const char *tempsubtype_name(int16 subtype);
+extern bool tempsubtype_from_string(const char *str, int16 *subtype);
+
+extern int64 get_interval_units(Interval *interval);
 
 /* Catalog functions */
 
@@ -472,16 +488,18 @@ extern void ensure_tgeo_base_type(Oid type);
 extern void ensure_temporal_base_type(Oid type);
 extern void ensure_temporal_base_type_all(Oid type);
 
-extern void ensure_valid_temptype(TemporalType type);
-extern void ensure_valid_temptype_all(TemporalType type);
-extern void ensure_sequences_type(TemporalType temptype);
+extern void ensure_positive_datum(Datum size, Oid type);
+extern void ensure_valid_duration(const Interval *duration);
+extern void ensure_valid_tempsubtype(int16 type);
+extern void ensure_valid_tempsubtype_all(int16 type);
+extern void ensure_sequences_type(int16 subtype);
 extern void ensure_non_empty_array(ArrayType *array);
 extern void ensure_continuous_base_type(Oid type);
 extern void ensure_continuous_base_type_all(Oid type);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 
-extern void ensure_same_temptype(const Temporal *temp1,
+extern void ensure_same_temp_subtype(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_same_base_type(const Temporal *temp1,
   const Temporal *temp2);
@@ -510,6 +528,15 @@ extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
 
+/* Tranformation functions */
+
+extern Datum temporal_append_tinstant(PG_FUNCTION_ARGS);
+extern Datum temporal_merge(PG_FUNCTION_ARGS);
+extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
+ 
+extern Temporal *temporal_from_base(Temporal *temp, Datum value,
+  Oid valuetypid, bool linear);
+  
 /* Cast functions */
 
 extern Datum tint_to_tfloat(PG_FUNCTION_ARGS);
@@ -608,6 +635,8 @@ extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
+extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
+ RangeType *range, bool atfunc);
 
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
   TimestampTz t, bool atfunc);

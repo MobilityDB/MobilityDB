@@ -361,16 +361,16 @@ tpoint_to_geo(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tpointinst_to_geo((TInstant *)temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tpointinstset_to_geo((TInstantSet *)temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = segmentize ?
          tpointseq_to_geo_segmentize((TSequence *) temp) :
          tpointseq_to_geo((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = segmentize ?
          tpointseqset_to_geo_segmentize((TSequenceSet *) temp) :
          tpointseqset_to_geo((TSequenceSet *) temp);
@@ -398,13 +398,13 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   if (hasz)
   {
     POINT4D point = getPoint4d(lwpoint->point, 0);
-    t = (long) ((point.m - 946684800) * 1e6);
+    t = (TimestampTz) ((point.m - 946684800) * 1e6);
     lwpoint1 = lwpoint_make3dz(lwpoint->srid, point.x, point.y, point.z);
   }
   else
   {
     POINT3DM point = getPoint3dm(lwpoint->point, 0);
-    t = (long) ((point.m - 946684800) * 1e6);
+    t = (TimestampTz) ((point.m - 946684800) * 1e6);
     lwpoint1 = lwpoint_make2d(lwpoint->srid, point.x, point.y);
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
@@ -940,7 +940,7 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
-     The last parameter crossing must be set to false  */
+   * The operation is synchronization without adding crossings */
   if (!intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE,
     &sync1, &sync2))
   {
@@ -950,20 +950,20 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   }
 
   Temporal *result;
-  ensure_valid_temptype(sync1->temptype);
-  if (sync1->temptype == INSTANT)
+  ensure_valid_tempsubtype(sync1->subtype);
+  if (sync1->subtype == INSTANT)
     result = (Temporal *) tpointinst_to_geo_measure(
       (TInstant *) sync1, (TInstant *) sync2);
-  else if (sync1->temptype == INSTANTSET)
+  else if (sync1->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_to_geo_measure(
       (TInstantSet *) sync1, (TInstantSet *) sync2);
-  else if (sync1->temptype == SEQUENCE)
+  else if (sync1->subtype == SEQUENCE)
     result = segmentize ?
       (Temporal *) tpointseq_to_geo_measure_segmentize(
         (TSequence *) sync1, (TSequence *) sync2) :
       (Temporal *) tpointseq_to_geo_measure(
         (TSequence *) sync1, (TSequence *) sync2);
-  else /* sync1->temptype == SEQUENCESET */
+  else /* sync1->subtype == SEQUENCESET */
     result = segmentize ?
       (Temporal *) tpointseqset_to_geo_measure_segmentize(
         (TSequenceSet *) sync1, (TSequenceSet *) sync2) :
@@ -1152,14 +1152,14 @@ tfloat_simplify(PG_FUNCTION_ARGS)
   double eps_dist = PG_GETARG_FLOAT8(1);
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tfloatseq_simplify((TSequence *)temp,
       eps_dist, 2);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tfloatseqset_simplify((TSequenceSet *)temp,
       eps_dist, 2);
   PG_FREE_IF_COPY(temp, 0);
@@ -1569,14 +1569,14 @@ tpoint_simplify(PG_FUNCTION_ARGS)
   double eps_speed = PG_GETARG_FLOAT8(2);
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET ||
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
     ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
     result = temporal_copy(temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_simplify((TSequence *)temp,
       eps_dist, eps_speed, 2);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp,
       eps_dist, eps_speed, 2);
   PG_FREE_IF_COPY(temp, 0);

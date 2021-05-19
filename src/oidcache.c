@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -32,8 +32,8 @@
  *
  * The selectivity of Boolean operators is essential to determine efficient
  * execution plans for queries. The temporal extension defines several classes
- * of Boolean operators (equal, less than, overlaps, ...), currently 30, each 
- * of which can have as left or right arguments a built-in type (such as 
+ * of Boolean operators (equal, less than, overlaps, ...), currently 30, each
+ * of which can have as left or right arguments a built-in type (such as
  * integer, timestamptz, box, geometry, ...) or a newly defined type (such as
  * period, tint, ...), currently 33.
  *
@@ -43,7 +43,7 @@
  * operator/left argument/right argument (currently 23 * 40 * 40 = 36,800 cells).
  * The invalid combinations will be initialized to 0.
  */
- 
+
 #include "oidcache.h"
 
 #if MOBDB_PGSQL_VERSION >= 120000
@@ -198,7 +198,7 @@ populate_operators()
      * This fetches the pre-computed operator cache from the catalog where
      * it is stored in a table. See the fill_opcache function below.
      */
-    Oid catalog = RelnameGetRelid("pg_temporal_opcache");
+    Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if MOBDB_PGSQL_VERSION < 130000
     Relation rel = heap_open(catalog, AccessShareLock);
 #else
@@ -276,7 +276,7 @@ PG_FUNCTION_INFO_V1(fill_opcache);
 PGDLLEXPORT Datum
 fill_opcache(PG_FUNCTION_ARGS)
 {
-  Oid catalog = RelnameGetRelid("pg_temporal_opcache");
+  Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if MOBDB_PGSQL_VERSION < 130000
   Relation rel = heap_open(catalog, AccessExclusiveLock);
 #else

@@ -103,6 +103,7 @@ extern const TInstant **tinstantset_instants(const TInstantSet *ti);
 extern ArrayType *tinstantset_instants_array(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
+extern TimestampTz *tinstantset_timestamps1(const TInstantSet *ti);
 extern ArrayType *tinstantset_timestamps(const TInstantSet *ti);
 extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
   const Interval *start, const Interval *duration);

@@ -65,8 +65,8 @@
    typmod from POSTGIS we need to shift them to take into account that the 
    first 4 bits are taken for the temporal type */
 
-#define TYPMOD_DEL_TEMPTYPE(typmod) (typmod = typmod >> 4 )
-#define TYPMOD_SET_TEMPTYPE(typmod, temptype) ((typmod) = typmod << 4 | temptype)
+#define TYPMOD_DEL_SUBTYPE(typmod) (typmod = typmod >> 4 )
+#define TYPMOD_SET_SUBTYPE(typmod, subtype) ((typmod) = typmod << 4 | subtype)
 
 /*****************************************************************************
  * Well-Known Binary (WKB)
@@ -78,25 +78,25 @@
 #define WKB_INT_SIZE         4  /* Internal use only */
 #define WKB_BYTE_SIZE        1  /* Internal use only */
 
-/* Duration */
-#define WKB_INSTANT        1
-#define WKB_INSTANTSET     2
-#define WKB_SEQUENCE       3
-#define WKB_SEQUENCESET    4
+/* Subtype */
+#define MOBDB_WKB_INSTANT        1
+#define MOBDB_WKB_INSTANTSET     2
+#define MOBDB_WKB_SEQUENCE       3
+#define MOBDB_WKB_SEQUENCESET    4
 
 /* Period bounds */
-#define WKB_LOWER_INC      0x01
-#define WKB_UPPER_INC      0x02
+#define MOBDB_WKB_LOWER_INC      0x01
+#define MOBDB_WKB_UPPER_INC      0x02
 
 /* Machine endianness */
 #define XDR            0  /* big endian */
 #define NDR            1  /* little endian */
 
 /* Variation flags */
-#define WKB_ZFLAG            0x10
-#define WKB_SRIDFLAG         0x20
-#define WKB_LINEAR_INTERP    0x40
-#define WKB_BBOXFLAG         0x80 /* Currently not used */
+#define MOBDB_WKB_ZFLAG            0x10
+#define MOBDB_WKB_GEODETICFLAG     0x20
+#define MOBDB_WKB_SRIDFLAG         0x40
+#define MOBDB_WKB_LINEAR_INTERP    0x80
 
 /*****************************************************************************
  * Miscellaneous functions defined in TemporalPoint.c

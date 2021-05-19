@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -42,82 +42,8 @@
 #include "lifting.h"
 
 /*****************************************************************************
- * Mathematical functions on datums
- * As functions are static, there is no need to verify the validity of the
- * Oids passed as arguments as this has been done in the calling function.
+ * Miscellaneous functions on datums
  *****************************************************************************/
-
-/**
- * Returns the addition of the two numbers
- */
-static Datum
-datum_add(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
-  return result;
-}
-
-/**
- * Returns the subtraction of the two numbers
- */
-static Datum
-datum_sub(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
-  return result;
-}
-
-/**
- * Returns the multiplication of the two numbers
- */
-static Datum
-datum_mult(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
-  return result;
-}
-
-/**
- * Returns the division of the two numbers
- */
-static Datum
-datum_div(Datum l, Datum r, Oid typel, Oid typer)
-{
-  Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
-  return result;
-}
 
 /**
  * Round the number to the number of decimal places
@@ -176,7 +102,7 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
     /* Minimum/maximum occurs out of the period */
     return false;
 
-  *t = start1->t + (long) (duration * fraction);
+  *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -574,12 +500,12 @@ tnumber_derivative(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result = NULL;
   ensure_linear_interpolation(temp->flags);
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

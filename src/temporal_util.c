@@ -158,6 +158,22 @@ datum_double(Datum d, Oid valuetypid)
   return result;
 }
 
+/**
+ * Convert a text value into a C string
+ *
+ * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
+ * @note Function taken from PostGIS file lwgeom_in_geojson.c
+ */
+char *
+text2cstring(const text *textptr)
+{
+  size_t size = VARSIZE_ANY_EXHDR(textptr);
+  char *str = palloc(size + 1);
+  memcpy(str, VARDATA(textptr), size);
+  str[size]='\0';
+  return str;
+}
+
 /*****************************************************************************
  * Call PostgreSQL functions
  *****************************************************************************/
@@ -408,7 +424,7 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
 
     /* Check for null result, since caller is clearly not expecting one */
     if (fcinfo->isnull)
-        elog(ERROR, "function %p returned NULL", (void *) func);
+      elog(ERROR, "function %p returned NULL", (void *) func);
 
     return result;
 }
@@ -426,6 +442,18 @@ pfree_array(void **array, int count)
 {
   for (int i = 0; i < count; i++)
     pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
+ * Free a C array of Datum pointers
+ */
+void
+pfree_datumarr(Datum *array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(DatumGetPointer(array[i]));
   pfree(array);
   return;
 }
@@ -836,6 +864,107 @@ text_cmp(text *arg1, text *arg2, Oid collid)
 }
 
 /*****************************************************************************
+ * Arithmetic functions on datums
+ * N.B. The validity of the Oids must be done in the calling function.
+ *****************************************************************************/
+
+/**
+ * Returns the addition of the two numbers
+ */
+Datum
+datum_add(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) + DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Returns the subtraction of the two numbers
+ */
+Datum
+datum_sub(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) - DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Returns the multiplication of the two numbers
+ */
+Datum
+datum_mult(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) * DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/**
+ * Returns the division of the two numbers
+ */
+Datum
+datum_div(Datum l, Datum r, Oid typel, Oid typer)
+{
+  Datum result = 0;
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetInt32(l) / DatumGetFloat8(r));
+  }
+  else /* typel == FLOAT8OID */
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetInt32(r));
+    else /* typer == FLOAT8OID */
+      result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+  }
+  return result;
+}
+
+/*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
 
@@ -927,7 +1056,7 @@ datum_ge(Datum l, Datum r, Oid type)
   return datum_eq(l, r, type) || datum_lt(r, l, type);
 }
 */
- 
+
 /*****************************************************************************/
 
 /*

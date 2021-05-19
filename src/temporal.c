@@ -67,7 +67,7 @@
  * Array storing the string representation of the concrete subtypes of
  * temporal types
  */
-static char *temptypeName[] =
+static char *tempsubtypeName[] =
 {
   "AnyDuration",
   "Instant",
@@ -80,9 +80,9 @@ static char *temptypeName[] =
  * Array storing the mapping between the string representation of the
  * subtypes of the temporal types and the corresponding enum value
  */
-struct temptype_struct temptype_struct_array[] =
+struct tempsubtype_struct tempsubtype_struct_array[] =
 {
-  {"ANYTEMPORALTYPE", ANYTEMPORALTYPE},
+  {"ANYTEMPSUBTYPE", ANYTEMPSUBTYPE},
   {"INSTANT", INSTANT},
   {"INSTANTSET", INSTANTSET},
   {"SEQUENCE", SEQUENCE},
@@ -94,9 +94,9 @@ struct temptype_struct temptype_struct_array[] =
  * temporal type corresponding to the enum value
  */
 const char *
-temptype_name(TemporalType temptype)
+tempsubtype_name(int16 subtype)
 {
-  return temptypeName[temptype];
+  return tempsubtypeName[subtype];
 }
 
 /**
@@ -104,14 +104,14 @@ temptype_name(TemporalType temptype)
  * of the concrete subtype of the temporal type.
  */
 bool
-temptype_from_string(const char *str, TemporalType *temptype)
+tempsubtype_from_string(const char *str, int16 *subtype)
 {
   char *tmpstr;
   size_t tmpstartpos, tmpendpos;
   size_t i;
 
   /* Initialize */
-  *temptype = 0;
+  *subtype = 0;
   /* Locate any leading/trailing spaces */
   tmpstartpos = 0;
   for (i = 0; i < strlen(str); i++)
@@ -138,12 +138,12 @@ temptype_from_string(const char *str, TemporalType *temptype)
   tmpstr[i - tmpstartpos] = '\0';
   size_t len = strlen(tmpstr);
   /* Now check for the type */
-  for (i = 0; i < TEMPORALTYPE_STRUCT_ARRAY_LEN; i++)
+  for (i = 0; i < TEMPSUBTYPE_STRUCT_ARRAY_LEN; i++)
   {
-    if (len == strnlen(temptype_struct_array[i].temptypeName, TEMPORALTYPE_MAX_LEN) &&
-      !strncasecmp(tmpstr, temptype_struct_array[i].temptypeName, TEMPORALTYPE_MAX_LEN))
+    if (len == strnlen(tempsubtype_struct_array[i].subtypeName, TEMPSUBTYPE_MAX_LEN) &&
+      !strncasecmp(tmpstr, tempsubtype_struct_array[i].subtypeName, TEMPSUBTYPE_MAX_LEN))
     {
-      *temptype = temptype_struct_array[i].temptype;
+      *subtype = tempsubtype_struct_array[i].subtype;
       pfree(tmpstr);
       return true;
     }
@@ -161,12 +161,12 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
   /* No typmod (-1) */
   if (typmod < 0)
     return temp;
-  TemporalType typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  int16 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
   /* Typmod has a preference */
-  if (typmod_temptype != ANYTEMPORALTYPE && typmod_temptype != temp->temptype)
+  if (typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != temp->subtype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Temporal type (%s) does not match column type (%s)",
-      temptype_name(temp->temptype), temptype_name(typmod_temptype))));
+      tempsubtype_name(temp->subtype), tempsubtype_name(typmod_subtype))));
   return temp;
 }
 
@@ -179,7 +179,7 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
  * are at an exclusive bound
  */
 const TInstant *
-tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz t)
+tsequence_inst_at_timestamp_excl(const TSequence *seq, TimestampTz t)
 {
   const TInstant *result;
   if (t == seq->period.lower)
@@ -194,7 +194,7 @@ tsequence_find_timestamp_excl(const TSequence *seq, TimestampTz t)
  * at an exclusive bound
  */
 const TInstant *
-tsequenceset_find_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
+tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
 {
   const TInstant *result;
   int loc;
@@ -246,57 +246,57 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   TIntersection mode, Temporal **inter1, Temporal **inter2)
 {
   bool result = false;
-  ensure_valid_temptype(temp1->temptype);
-  ensure_valid_temptype(temp2->temptype);
-  if (temp1->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp1->subtype);
+  ensure_valid_tempsubtype(temp2->subtype);
+  if (temp1->subtype == INSTANT)
   {
-    if (temp2->temptype == INSTANT)
+    if (temp2->subtype == INSTANT)
       result = intersection_tinstant_tinstant(
         (TInstant *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->temptype == INSTANTSET)
+    else if (temp2->subtype == INSTANTSET)
       result = intersection_tinstant_tinstantset(
         (TInstant *) temp1, (TInstantSet *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->temptype == SEQUENCE)
+    else if (temp2->subtype == SEQUENCE)
       result = intersection_tinstant_tsequence(
         (TInstant *) temp1, (TSequence *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else /* temp2->temptype == SEQUENCESET */
+    else /* temp2->subtype == SEQUENCESET */
       result = intersection_tinstant_tsequenceset(
         (TInstant *) temp1, (TSequenceSet *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
   }
-  else if (temp1->temptype == INSTANTSET)
+  else if (temp1->subtype == INSTANTSET)
   {
-    if (temp2->temptype == INSTANT)
+    if (temp2->subtype == INSTANT)
       result = intersection_tinstantset_tinstant(
         (TInstantSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->temptype == INSTANTSET)
+    else if (temp2->subtype == INSTANTSET)
       result = intersection_tinstantset_tinstantset(
         (TInstantSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else if (temp2->temptype == SEQUENCE)
+    else if (temp2->subtype == SEQUENCE)
       result = intersection_tinstantset_tsequence(
         (TInstantSet *) temp1, (TSequence *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else /* temp2->temptype == SEQUENCESET */
+    else /* temp2->subtype == SEQUENCESET */
       result = intersection_tinstantset_tsequenceset(
         (TInstantSet *) temp1, (TSequenceSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
   }
-  else if (temp1->temptype == SEQUENCE)
+  else if (temp1->subtype == SEQUENCE)
   {
-    if (temp2->temptype == INSTANT)
+    if (temp2->subtype == INSTANT)
       result = intersection_tsequence_tinstant(
         (TSequence *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->temptype == INSTANTSET)
+    else if (temp2->subtype == INSTANTSET)
       result = intersection_tsequence_tinstantset(
         (TSequence *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else if (temp2->temptype == SEQUENCE)
+    else if (temp2->subtype == SEQUENCE)
       result = (mode == INTERSECT) ?
         intersection_tsequence_tsequence(
           (TSequence *) temp1, (TSequence *) temp2,
@@ -305,26 +305,26 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
           (TSequence *) temp1, (TSequence *) temp2,
           (TSequence **) inter1, (TSequence **) inter2,
             mode == SYNCHRONIZE_CROSS);
-    else /* temp2->temptype == SEQUENCESET */
+    else /* temp2->subtype == SEQUENCESET */
       result = intersection_tsequence_tsequenceset(
           (TSequence *) temp1, (TSequenceSet *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
   }
-  else /* temp1->temptype == SEQUENCESET */
+  else /* temp1->subtype == SEQUENCESET */
   {
-    if (temp2->temptype == INSTANT)
+    if (temp2->subtype == INSTANT)
       result = intersection_tsequenceset_tinstant(
         (TSequenceSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->temptype == INSTANTSET)
+    else if (temp2->subtype == INSTANTSET)
       result = intersection_tsequenceset_tinstantset(
         (TSequenceSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else if (temp2->temptype == SEQUENCE)
+    else if (temp2->subtype == SEQUENCE)
       result = intersection_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
-    else /* temp2->temptype == SEQUENCESET */
+    else /* temp2->subtype == SEQUENCESET */
       result = intersection_tsequenceset_tsequenceset(
         (TSequenceSet *) temp1, (TSequenceSet *) temp2, mode,
         (TSequenceSet **) inter1, (TSequenceSet **) inter2);
@@ -355,7 +355,7 @@ continuous_base_type(Oid type)
 Oid
 temporal_valuetypid(Oid temptypid)
 {
-  Oid catalog = RelnameGetRelid("pg_temporal");
+  Oid catalog = RelnameGetRelid("mobilitydb_typcache");
 #if MOBDB_PGSQL_VERSION < 130000
   Relation rel = heap_open(catalog, AccessShareLock);
 #else
@@ -568,11 +568,38 @@ tgeo_type(Oid typid)
  *****************************************************************************/
 
 /**
- * Ensures that the interval is a positive duration
+ * Ensures that the number is positive
  */
 void
-ensure_positive_interval(const Interval *duration)
+ensure_positive_datum(Datum size, Oid type)
 {
+  ensure_tnumber_base_type(type);
+  if (type == INT4OID)
+  {
+    int isize = DatumGetInt32(size);
+    if (isize <= 0)
+      elog(ERROR, "The value must be positive: %d", isize);
+  }
+  else
+  {
+    double dsize = DatumGetFloat8(size);
+    if (dsize <= 0.0)
+      elog(ERROR, "The value must be positive: %f", dsize);
+  }
+  return;
+}
+
+/**
+ * Ensures that the interval is a positive and absolute duration
+ */
+void
+ensure_valid_duration(const Interval *duration)
+{
+  if (duration->month != 0)
+  {
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("Interval defined in terms of month, year, century etc. not supported")));
+  }
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
   int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
@@ -580,7 +607,7 @@ ensure_positive_interval(const Interval *duration)
   if (cmp <= 0)
   {
     char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The duration must be a positive interval: %s", t);
+    elog(ERROR, "The interval must be positive: %s", t);
   }
   return;
 }
@@ -591,11 +618,11 @@ ensure_positive_interval(const Interval *duration)
  * @note Used for the dispatch functions
  */
 void
-ensure_valid_temptype(TemporalType temptype)
+ensure_valid_tempsubtype(int16 subtype)
 {
-  if (temptype != INSTANT && temptype != INSTANTSET &&
-    temptype != SEQUENCE && temptype != SEQUENCESET)
-    elog(ERROR, "unknown subtype for temporal type: %d", temptype);
+  if (subtype != INSTANT && subtype != INSTANTSET &&
+    subtype != SEQUENCE && subtype != SEQUENCESET)
+    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
   return;
 }
 
@@ -605,12 +632,12 @@ ensure_valid_temptype(TemporalType temptype)
  * @note Used for the analyze and selectivity functions
  */
 void
-ensure_valid_temptype_all(TemporalType temptype)
+ensure_valid_tempsubtype_all(int16 subtype)
 {
-  if (temptype != ANYTEMPORALTYPE &&
-    temptype != INSTANT && temptype != INSTANTSET &&
-    temptype != SEQUENCE && temptype != SEQUENCESET)
-    elog(ERROR, "unknown subtype for temporal type: %d", temptype);
+  if (subtype != ANYTEMPSUBTYPE &&
+    subtype != INSTANT && subtype != INSTANTSET &&
+    subtype != SEQUENCE && subtype != SEQUENCESET)
+    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
   return;
 }
 
@@ -618,9 +645,9 @@ ensure_valid_temptype_all(TemporalType temptype)
  * Ensures that the temporal type is a sequence (set)
  */
 void
-ensure_sequences_type(TemporalType temptype)
+ensure_sequences_type(int16 subtype)
 {
-  if (temptype != SEQUENCE && temptype != SEQUENCESET)
+  if (subtype != SEQUENCE && subtype != SEQUENCESET)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Input must be a temporal sequence (set)")));
   return;
@@ -634,7 +661,7 @@ ensure_tinstantarr(TInstant **instants, int count)
 {
   for (int i = 0; i < count; i++)
   {
-    if (instants[i]->temptype != INSTANT)
+    if (instants[i]->subtype != INSTANT)
     {
       pfree(instants);
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -949,14 +976,14 @@ char *
 temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 {
   char *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_to_string((TInstant *) temp, value_out);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_to_string((TInstantSet *) temp, value_out);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_to_string((TSequence *) temp, false, value_out);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_to_string((TSequenceSet *) temp, value_out);
   return result;
 }
@@ -984,15 +1011,15 @@ temporal_out(PG_FUNCTION_ARGS)
 void
 temporal_write(const Temporal *temp, StringInfo buf)
 {
-  pq_sendbyte(buf, (uint8) temp->temptype);
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  pq_sendbyte(buf, (uint8) temp->subtype);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     tinstant_write((TInstant *) temp, buf);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     tinstantset_write((TInstantSet *) temp, buf);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     tsequence_write((TSequence *) temp, buf);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     tsequenceset_write((TSequenceSet *) temp, buf);
   return;
 }
@@ -1024,7 +1051,7 @@ temporal_read(StringInfo buf, Oid valuetypid)
 {
   int16 type = (int16) pq_getmsgbyte(buf);
   Temporal *result;
-  ensure_valid_temptype(type);
+  ensure_valid_tempsubtype(type);
   if (type == INSTANT)
     result = (Temporal *) tinstant_read(buf, valuetypid);
   else if (type == INSTANTSET)
@@ -1063,28 +1090,32 @@ temporal_typmod_in(PG_FUNCTION_ARGS)
 
   if (ARR_ELEMTYPE(array) != CSTRINGOID)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-        errmsg("typmod array must be type cstring[]")));
+      errmsg("typmod array must be type cstring[]")));
   if (ARR_NDIM(array) != 1)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
-        errmsg("typmod array must be one-dimensional")));
+      errmsg("typmod array must be one-dimensional")));
   if (ARR_HASNULL(array))
     ereport(ERROR, (errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-        errmsg("typmod array must not contain nulls")));
+      errmsg("typmod array must not contain nulls")));
 
   deconstruct_array(array, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
   if (n != 1)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid temporal type modifier")));
+      errmsg("Invalid temporal type modifier")));
 
   /* Temporal Type */
   char *s = DatumGetCString(elem_values[0]);
-  TemporalType temptype = ANYTEMPORALTYPE;
-  if (!temptype_from_string(s, &temptype))
+  if (strlen(s) == 0)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Invalid temporal type modifier: %s", s)));
+      errmsg("Empty temporal type modifier")));
+    
+  int16 subtype = ANYTEMPSUBTYPE;
+  if (!tempsubtype_from_string(s, &subtype))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Invalid temporal type modifier: %s", s)));
 
   pfree(elem_values);
-  PG_RETURN_INT32((int32)temptype);
+  PG_RETURN_INT32((int32) subtype);
 }
 
 PG_FUNCTION_INFO_V1(temporal_typmod_out);
@@ -1097,14 +1128,14 @@ temporal_typmod_out(PG_FUNCTION_ARGS)
   char *s = (char *) palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  TemporalType temptype = TYPMOD_GET_TEMPTYPE(typmod);
+  int16 subtype = TYPMOD_GET_SUBTYPE(typmod);
   /* No type? Then no typmod at all. Return empty string.  */
-  if (typmod < 0 || !temptype)
+  if (typmod < 0 || !subtype)
   {
     *str = '\0';
     PG_RETURN_CSTRING(str);
   }
-  sprintf(str, "(%s)", temptype_name(temptype));
+  sprintf(str, "(%s)", tempsubtype_name(subtype));
   PG_RETURN_CSTRING(s);
 }
 
@@ -1219,7 +1250,7 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
   /* Ensure that all values are of sequence subtype and of the same interpolation */
   for (int i = 0; i < count; i++)
   {
-    if (sequences[i]->temptype != SEQUENCE)
+    if (sequences[i]->subtype != SEQUENCE)
     {
       PG_FREE_IF_COPY(array, 0);
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -1253,7 +1284,7 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *inst = PG_GETARG_TEMPORAL(1);
   /* Validity tests */
-  if (inst->temptype != INSTANT)
+  if (inst->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The second argument must be of instant subtype")));
   ensure_same_base_type(temp, (Temporal *) inst);
@@ -1263,16 +1294,16 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
   ensure_spatial_validity(temp, inst);
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_merge((TInstant *) temp, (TInstant *) inst);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_append_tinstant((TInstantSet *) temp,
       (TInstant *) inst);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_append_tinstant((TSequence *) temp,
       (TInstant *) inst);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
       (TInstant *) inst);
 
@@ -1292,11 +1323,11 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   Temporal **out1, Temporal **out2)
 {
   assert(temp1->valuetypid == temp2->valuetypid);
-  ensure_valid_temptype(temp1->temptype);
-  ensure_valid_temptype(temp2->temptype);
+  ensure_valid_tempsubtype(temp1->subtype);
+  ensure_valid_tempsubtype(temp2->subtype);
 
   /* If both are of the same subtype do nothing */
-  if (temp1->temptype == temp2->temptype)
+  if (temp1->subtype == temp2->subtype)
   {
     *out1 = temporal_copy(temp1);
     *out2 = temporal_copy(temp2);
@@ -1306,7 +1337,7 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   /* Different subtype */
   bool swap = false;
   Temporal *new1, *new2;
-  if (temp1->temptype > temp2->temptype)
+  if (temp1->subtype > temp2->subtype)
   {
     new1 = (Temporal *) temp2;
     new2 = (Temporal *) temp1;
@@ -1319,20 +1350,20 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   }
 
   Temporal *new, *newts = NULL;
-  if (new1->temptype == INSTANT)
+  if (new1->subtype == INSTANT)
   {
-    if (new2->temptype == INSTANTSET)
+    if (new2->subtype == INSTANTSET)
       new = (Temporal *) tinstant_to_tinstantset((TInstant *) new1);
-    else if (new2->temptype == SEQUENCE)
+    else if (new2->subtype == SEQUENCE)
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1,
         MOBDB_FLAGS_GET_LINEAR(new2->flags));
-    else /* new2->temptype == SEQUENCESET */
+    else /* new2->subtype == SEQUENCESET */
       new = (Temporal *) tinstant_to_tsequenceset((TInstant *) new1,
       MOBDB_FLAGS_GET_LINEAR(new2->flags));
   }
-  else if (new1->temptype == INSTANTSET)
+  else if (new1->subtype == INSTANTSET)
   {
-    if (new2->temptype == SEQUENCE)
+    if (new2->subtype == SEQUENCE)
     {
       if (((TInstantSet *) new1)->count == 1)
         new = (Temporal *) tinstantset_to_tsequence((TInstantSet *) new1,
@@ -1344,11 +1375,11 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
         newts = (Temporal *) tsequence_to_tsequenceset((TSequence *) new2);
       }
     }
-    else /* new2->temptype == SEQUENCESET */
+    else /* new2->subtype == SEQUENCESET */
       new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
         MOBDB_FLAGS_GET_LINEAR(new2->flags));
   }
-  else /* new1->temptype == SEQUENCE && new2->temptype == SEQUENCESET */
+  else /* new1->subtype == SEQUENCE && new2->subtype == SEQUENCESET */
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
   if (swap)
   {
@@ -1402,17 +1433,17 @@ temporal_merge(PG_FUNCTION_ARGS)
   Temporal *new1, *new2;
   temporal_convert_same_type(temp1, temp2, &new1, &new2);
 
-  ensure_valid_temptype(new1->temptype);
-  if (new1->temptype == INSTANT)
+  ensure_valid_tempsubtype(new1->subtype);
+  if (new1->subtype == INSTANT)
     result = tinstant_merge(
       (TInstant *) new1, (TInstant *)new2);
-  else if (new1->temptype == INSTANTSET)
+  else if (new1->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_merge(
       (TInstantSet *)new1, (TInstantSet *)new2);
-  else if (new1->temptype == SEQUENCE)
+  else if (new1->subtype == SEQUENCE)
     result = (Temporal *) tsequence_merge((TSequence *)new1,
       (TSequence *)new2);
-  else /* new1->temptype == SEQUENCESET */
+  else /* new1->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_merge((TSequenceSet *)new1,
       (TSequenceSet *)new2);
   if (temp1 != new1)
@@ -1429,38 +1460,38 @@ temporal_merge(PG_FUNCTION_ARGS)
  *
  * @param[in] temparr Array of values
  * @param[in] count Number of values
- * @param[in] temptype common subtype
+ * @param[in] subtype common subtype
  * @result  Array of output values
  */
 static Temporal **
-temporalarr_convert_temptype(Temporal **temparr, int count, TemporalType temptype)
+temporalarr_convert_subtype(Temporal **temparr, int count, int16 subtype)
 {
-  ensure_valid_temptype(temptype);
+  ensure_valid_tempsubtype(subtype);
   Temporal **result = palloc(sizeof(Temporal *) * count);
   for (int i = 0; i < count; i++)
   {
-    assert(temptype >= temparr[i]->temptype);
-    if (temparr[i]->temptype == temptype)
+    assert(subtype >= temparr[i]->subtype);
+    if (temparr[i]->subtype == subtype)
       result[i] = temporal_copy(temparr[i]);
-    else if (temparr[i]->temptype == INSTANT)
+    else if (temparr[i]->subtype == INSTANT)
     {
-      if (temptype == INSTANTSET)
+      if (subtype == INSTANTSET)
         result[i] = (Temporal *) tinstant_to_tinstantset((TInstant *) temparr[i]);
-      else if (temptype == SEQUENCE)
+      else if (subtype == SEQUENCE)
         result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) temparr[i],
           MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
-      else /* temptype == SEQUENCESET */
+      else /* subtype == SEQUENCESET */
         result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) temparr[i],
           MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
     }
-    else if (temparr[i]->temptype == INSTANTSET)
+    else if (temparr[i]->subtype == INSTANTSET)
     {
       /* An instant set can only be converted to a sequence set */
-      assert(temptype == SEQUENCESET);
+      assert(subtype == SEQUENCESET);
       result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
         MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
     }
-    else /* temparr[i]->temptype == SEQUENCE && temptype == SEQUENCESET */
+    else /* temparr[i]->subtype == SEQUENCE && subtype == SEQUENCESET */
       result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
   }
   return result;
@@ -1487,7 +1518,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 
   /* Ensure all values have the same interpolation and determine
    * temporal subtype of the result */
-  TemporalType temptype = temparr[0]->temptype;
+  int16 subtype = temparr[0]->subtype;
   bool interpolation = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags);
   for (int i = 1; i < count; i++)
   {
@@ -1497,48 +1528,165 @@ temporal_merge_array(PG_FUNCTION_ARGS)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Input values must be of the same interpolation")));
     }
-    if (temptype != temparr[i]->temptype)
+    if (subtype != temparr[i]->subtype)
     {
       /* A TInstantSet cannot be converted to a TSequence */
-      TemporalType newtemptype = Max((int16) temptype, (int16) temparr[i]->temptype);
-      if (temptype == INSTANTSET && newtemptype == SEQUENCE)
-        newtemptype = SEQUENCESET;
-      temptype = newtemptype;
+      int16 newsubtype = Max((int16) subtype, (int16) temparr[i]->subtype);
+      if (subtype == INSTANTSET && newsubtype == SEQUENCE)
+        newsubtype = SEQUENCESET;
+      subtype = newsubtype;
     }
   }
   /* Convert all temporal values to a single subtype if needed */
   Temporal **newtemps;
-  if (temptype != temparr[0]->temptype)
-    newtemps = temporalarr_convert_temptype(temparr, count, temptype);
+  if (subtype != temparr[0]->subtype)
+    newtemps = temporalarr_convert_subtype(temparr, count, subtype);
   else
     newtemps = temparr;
 
   Temporal *result;
-  ensure_valid_temptype(temptype);
-  if (temptype == INSTANT)
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_merge_array(
       (const TInstant **) newtemps, count);
-  else if (temptype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_merge_array(
       (const TInstantSet **) newtemps, count);
-  else if (temptype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_merge_array(
       (const TSequence **) newtemps, count);
-  else /* temptype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_merge_array(
       (const TSequenceSet **) newtemps, count);
 
   pfree(temparr);
-  if (temptype != temparr[0]->temptype)
+  if (subtype != temparr[0]->subtype)
     pfree_array((void **) newtemps, count);
 
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Transform a temporal value into a constant value with the same time frame
+ * (internal function)
+ */
+Temporal *
+temporal_from_base(Temporal *temp, Datum value, Oid valuetypid,
+  bool linear)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+  {
+    TInstant *inst = (TInstant *) temp;
+    result = (Temporal *) tinstant_make(value, inst->t, valuetypid);
+  }
+  else if (temp->subtype == INSTANTSET)
+  {
+    TInstantSet *ti = (TInstantSet *) temp;
+    TimestampTz *times = tinstantset_timestamps1(ti);
+    TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+    for (int i = 0; i < ti->count; i++)
+      instants[i] = tinstant_make(value, times[i], valuetypid);
+    result = (Temporal *) tinstantset_make_free(instants, ti->count, MERGE_NO);
+    pfree(times);
+  }
+  else if (temp->subtype == SEQUENCE)
+  {
+    TSequence *seq = (TSequence *) temp;
+    result = (Temporal *) tsequence_from_base_internal(value, valuetypid, 
+      &seq->period, linear);
+  }
+  else /* temp->subtype == SEQUENCESET */
+  {
+    TSequenceSet *ts = (TSequenceSet *) temp;
+    TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
+    for (int i = 0; i < ts->count; i++)
+    {
+      const TSequence *seq = tsequenceset_seq_n(ts, i);
+      sequences[i] = tsequence_from_base_internal(value, valuetypid, 
+        &seq->period, linear);
+    }
+    result = (Temporal *) tsequenceset_make_free(sequences, ts->count,
+      NORMALIZE_NO);
+  }
+  return result;
+}
+
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
+
+/**
+ * Cast a temporal integer to an intrange.
+ * Note that the temporal subtypes having with bounding box are
+ * INSTANTSET, SEQUENCE, and SEQUENCESET
+ */
+RangeType *
+tint_range(const Temporal *temp)
+{
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+  {
+    Datum value = tinstant_value((TInstant *) temp);
+    return range_make(value, value, true, true, temp->valuetypid);
+  }
+
+  TBOX *box;
+  if (temp->subtype == INSTANTSET)
+    box = tinstantset_bbox_ptr((TInstantSet *) temp);
+  else if (temp->subtype == SEQUENCE)
+    box = tsequence_bbox_ptr((TSequence *) temp);
+  else /* temp->subtype == SEQUENCESET */
+    box = tsequenceset_bbox_ptr((TSequenceSet *) temp);
+  Datum min = Int32GetDatum(((int) box->xmin));
+  Datum max = Int32GetDatum(((int) box->xmax));
+  return range_make(min, max, true, true, INT4OID);
+}
+
+PG_FUNCTION_INFO_V1(tint_to_range);
+/**
+ * Cast the temporal integer value as an intrange
+ */
+PGDLLEXPORT Datum
+tint_to_range(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  RangeType *result = tint_range(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tfloat_to_range);
+/**
+ * Cast the temporal integer value as an intrange
+ */
+PGDLLEXPORT Datum
+tfloat_to_range(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  RangeType *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+  {
+    Datum value = tinstant_value((TInstant *) temp);
+    result = range_make(value, value, true, true, temp->valuetypid);
+  }
+  else if (temp->subtype == INSTANTSET)
+  {
+    TBOX *box = tinstantset_bbox_ptr((TInstantSet *) temp);
+    Datum min = Float8GetDatum(box->xmin);
+    Datum max = Float8GetDatum(box->xmax);
+    result = range_make(min, max, true, true, FLOAT8OID);
+  }
+  else if (temp->subtype == SEQUENCE)
+    result = tfloatseq_range((TSequence *) temp);
+  else /* temp->subtype == SEQUENCESET */
+    result = tfloatseqset_to_range((TSequenceSet *) temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
 
 /**
  * Cast the temporal integer value as a temporal float value
@@ -1548,13 +1696,13 @@ Temporal *
 tint_to_tfloat_internal(Temporal *temp)
 {
   Temporal *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tintinst_to_tfloatinst((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tintinstset_to_tfloatinstset((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tintseq_to_tfloatseq((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tintseqset_to_tfloatseqset((TSequenceSet *) temp);
   return result;
 }
@@ -1580,14 +1728,14 @@ Temporal *
 tfloat_to_tint_internal(Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tfloatinst_to_tintinst((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tfloatinstset_to_tintinstset((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tfloatseq_to_tintseq((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tfloatseqset_to_tintseqset((TSequenceSet *) temp);
   return result;
 }
@@ -1612,14 +1760,14 @@ tfloat_to_tint(PG_FUNCTION_ARGS)
 void
 temporal_period(Period *p, const Temporal *temp)
 {
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     tinstant_period(p, (TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     tinstantset_period(p, (TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     tsequence_period(p, (TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     tsequenceset_period(p, (TSequenceSet *) temp);
   return;
 }
@@ -1651,14 +1799,14 @@ temporal_to_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = temporal_copy(temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_to_tinstant((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tinstant((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_to_tinstant((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1673,14 +1821,14 @@ temporal_to_tinstantset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_to_tinstantset((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = temporal_copy(temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tinstantset((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_to_tinstantset((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1696,14 +1844,14 @@ temporal_to_tsequence(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
   bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, linear);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_to_tsequence((TInstantSet *) temp, linear);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = temporal_copy(temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1719,14 +1867,14 @@ temporal_to_tsequenceset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
   bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp, linear);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp, linear);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = temporal_copy(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1741,16 +1889,16 @@ PGDLLEXPORT Datum
 tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
+  ensure_sequences_type(temp->subtype);
   ensure_continuous_base_type(temp->valuetypid);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     PG_RETURN_POINTER(temporal_copy(temp));
 
   Temporal *result;
-  if (temp->temptype == SEQUENCE)
+  if (temp->subtype == SEQUENCE)
     result = (Temporal *) tstepseq_to_linear((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tstepseqset_to_linear((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1768,14 +1916,14 @@ Datum temporal_subtype(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   char str[12];
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     strcpy(str, "Instant");
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     strcpy(str, "InstantSet");
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     strcpy(str, "Sequence");
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     strcpy(str, "SequenceSet");
   text *result = cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -1790,10 +1938,10 @@ Datum temporal_interpolation(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   char str[12];
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     strcpy(str, "Discrete");
-  else if (temp->temptype == SEQUENCE || temp->temptype == SEQUENCESET)
+  else if (temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET)
   {
     if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
       strcpy(str, "Linear");
@@ -1835,14 +1983,14 @@ Datum
 temporal_values(Temporal *temp)
 {
   ArrayType *result;  /* make the compiler quiet */
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_values((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_values((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_values((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_values((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
@@ -1868,14 +2016,14 @@ Datum
 tfloat_ranges(const Temporal *temp)
 {
   ArrayType *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tfloatinst_ranges((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tfloatinstset_ranges((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tfloatseq_ranges((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tfloatseqset_ranges((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
@@ -1902,7 +2050,7 @@ PGDLLEXPORT Datum
 tinstant_get_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  if (temp->temptype != INSTANT)
+  if (temp->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Input must be a temporal instant")));
 
@@ -1920,14 +2068,14 @@ PeriodSet *
 temporal_get_time_internal(const Temporal *temp)
 {
   PeriodSet *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_get_time((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_get_time((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_get_time((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_get_time((TSequenceSet *) temp);
   return result;
 }
@@ -1953,7 +2101,7 @@ PGDLLEXPORT Datum
 tinstant_timestamp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  if (temp->temptype != INSTANT)
+  if (temp->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Input must be a temporal instant")));
 
@@ -1972,11 +2120,11 @@ void *
 temporal_bbox_ptr(const Temporal *temp)
 {
   void *result = NULL;
-  if (temp->temptype == INSTANTSET)
+  if (temp->subtype == INSTANTSET)
     result = tinstantset_bbox_ptr((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_bbox_ptr((TSequence *) temp);
-  else if (temp->temptype == SEQUENCESET)
+  else if (temp->subtype == SEQUENCESET)
     result = tsequenceset_bbox_ptr((TSequenceSet *) temp);
   return result;
 }
@@ -1991,14 +2139,14 @@ temporal_bbox_ptr(const Temporal *temp)
 void
 temporal_bbox(void *box, const Temporal *temp)
 {
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     tinstant_make_bbox(box, (TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     tinstantset_bbox(box, (TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     tsequence_bbox(box, (TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     tsequenceset_bbox(box, (TSequenceSet *) temp);
   return;
 }
@@ -2025,8 +2173,8 @@ RangeType *
 tnumber_value_range_internal(const Temporal *temp)
 {
   RangeType *result = NULL;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
     result = range_make(value, value, true, true, temp->valuetypid);
@@ -2077,14 +2225,14 @@ temporal_start_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstant_value_copy(tinstantset_inst_n((TInstantSet *) temp, 0));
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tinstant_value_copy(tsequence_inst_n((TSequence *) temp, 0));
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_value_copy(tsequence_inst_n(seq, 0));
@@ -2102,16 +2250,16 @@ temporal_end_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstant_value_copy(tinstantset_inst_n((TInstantSet *) temp,
       ((TInstantSet *) temp)->count - 1));
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tinstant_value_copy(tsequence_inst_n((TSequence *) temp,
       ((TSequence *) temp)->count - 1));
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
@@ -2135,14 +2283,14 @@ const TInstant *
 temporal_min_instant(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (TInstant *) temp;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_min_instant((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_min_instant((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_min_instant((TSequenceSet *) temp);
   return result;
 }
@@ -2155,16 +2303,16 @@ Datum
 temporal_min_value_internal(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = datum_copy(tinstantset_min_value((TInstantSet *) temp),
       temp->valuetypid);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = datum_copy(tsequence_min_value((TSequence *) temp),
       temp->valuetypid);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = datum_copy(tsequenceset_min_value((TSequenceSet *) temp),
       temp->valuetypid);
   return result;
@@ -2192,16 +2340,16 @@ temporal_max_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = datum_copy(tinstantset_max_value((TInstantSet *) temp),
       temp->valuetypid);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = datum_copy(tsequence_max_value((TSequence *) temp),
       temp->valuetypid);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = datum_copy(tsequenceset_max_value((TSequenceSet *) temp),
       temp->valuetypid);
   PG_FREE_IF_COPY(temp, 0);
@@ -2217,19 +2365,19 @@ temporal_timespan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
   {
     Interval *interval = (Interval *) palloc(sizeof(Interval));
     interval->month = interval->day =  0;
     interval->time = (TimeOffset) 0;
     result = PointerGetDatum(interval);
   }
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_timespan((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_timespan((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -2244,17 +2392,17 @@ temporal_duration(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
   {
     Interval *interval = (Interval *) palloc(sizeof(Interval));
     interval->month = interval->day = 0;
     interval->time = (TimeOffset) 0;
     result = PointerGetDatum(interval);
   }
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_duration((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -2268,9 +2416,9 @@ PGDLLEXPORT Datum
 temporal_num_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
+  ensure_sequences_type(temp->subtype);
   int result = 1;
-  if (temp->temptype == SEQUENCESET)
+  if (temp->subtype == SEQUENCESET)
     result = ((TSequenceSet *) temp)->count;
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -2284,9 +2432,9 @@ PGDLLEXPORT Datum
 temporal_start_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
+  ensure_sequences_type(temp->subtype);
   TSequence *result;
-  if (temp->temptype == SEQUENCE)
+  if (temp->subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
   else
     result = tsequence_copy(tsequenceset_seq_n((TSequenceSet *) temp, 0));
@@ -2302,9 +2450,9 @@ PGDLLEXPORT Datum
 temporal_end_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
+  ensure_sequences_type(temp->subtype);
   TSequence *result;
-  if (temp->temptype == SEQUENCE)
+  if (temp->subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
   else
   {
@@ -2323,10 +2471,10 @@ PGDLLEXPORT Datum
 temporal_sequence_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->temptype);
+  ensure_sequences_type(temp->subtype);
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
   TSequence *result = NULL;
-  if (temp->temptype == SEQUENCE)
+  if (temp->subtype == SEQUENCE)
   {
     if (i == 1)
       result = tsequence_copy((TSequence *) temp);
@@ -2353,13 +2501,13 @@ temporal_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = tinstant_sequences_array((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_sequences_array((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = temporalarr_to_array((const Temporal **) &temp, 1);
-  else /* temp->temptype == SEQUENCE */
+  else /* temp->subtype == SEQUENCE */
     result = tsequenceset_sequences_array((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2375,11 +2523,11 @@ temporal_segments(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
     result = tinstant_sequences_array((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_sequences_array((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_segments_array((TSequence *) temp);
   else
     result = tsequenceset_segments_array((TSequenceSet *) temp);
@@ -2396,14 +2544,14 @@ temporal_num_instants(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   int result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = 1;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = ((TInstantSet *) temp)->count;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = ((TSequence *) temp)->count;
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_num_instants((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -2418,14 +2566,14 @@ temporal_start_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TInstant *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstant_copy(tinstantset_inst_n((TInstantSet *) temp, 0));
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tinstant_copy(tsequence_inst_n((TSequence *) temp, 0));
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_copy(tsequence_inst_n(seq, 0));
@@ -2443,14 +2591,14 @@ const TInstant *
 temporal_end_instant_internal(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (TInstant *) temp;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_inst_n((TInstantSet *) temp, ((TInstantSet *) temp)->count - 1);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_inst_n((TSequence *) temp, ((TSequence *) temp)->count - 1);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
@@ -2479,8 +2627,8 @@ temporal_end_instant(PG_FUNCTION_ARGS)
 const TInstant *
 tinstarr_inst_n(const Temporal *temp, int n)
 {
-  assert(temp->temptype == INSTANTSET || temp->temptype == SEQUENCE);
-  if (temp->temptype == INSTANTSET)
+  assert(temp->subtype == INSTANTSET || temp->subtype == SEQUENCE);
+  if (temp->subtype == INSTANTSET)
     return tinstantset_inst_n((TInstantSet *) temp, n);
   else
     return tsequence_inst_n((TSequence *) temp, n);
@@ -2496,25 +2644,25 @@ temporal_instant_n(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TInstant *result = NULL;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
   {
     if (n == 1)
       result = tinstant_copy((TInstant *) temp);
   }
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
   {
     if (n >= 1 && n <= ((TInstantSet *) temp)->count)
       result = tinstant_copy(
         tinstantset_inst_n((TInstantSet *) temp, n - 1));
   }
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
   {
     if (n >= 1 && n <= ((TSequence *) temp)->count)
       result = tinstant_copy(
         tsequence_inst_n((TSequence *) temp, n - 1));
   }
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     /* This test is necessary since the n-th DISTINCT instant is requested */
     if (n >= 1 && n <= ((TSequenceSet *) temp)->totalcount)
@@ -2539,14 +2687,14 @@ temporal_instants(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_instants_array((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_instants_array((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_instants_array((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_instants_array((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2560,14 +2708,14 @@ TimestampTz
 temporal_start_timestamp_internal(const Temporal *temp)
 {
   TimestampTz result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = ((TInstant *) temp)->t;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_inst_n((TInstantSet *) temp, 0)->t;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_start_timestamp((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_start_timestamp((TSequenceSet *) temp);
   return result;
 }
@@ -2594,14 +2742,14 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TimestampTz result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = ((TInstant *) temp)->t;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_inst_n((TInstantSet *) temp, ((TInstantSet *) temp)->count - 1)->t;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_end_timestamp((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_end_timestamp((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -2616,14 +2764,14 @@ temporal_num_timestamps(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   int result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = 1;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = ((TInstantSet *) temp)->count;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = ((TSequence *) temp)->count;
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_num_timestamps((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2640,8 +2788,8 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
   bool found = false;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
   {
     if (n == 1)
     {
@@ -2649,7 +2797,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
       result = ((TInstant *) temp)->t;
     }
   }
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
   {
     if (n >= 1 && n <= ((TInstantSet *) temp)->count)
     {
@@ -2657,7 +2805,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
       result = (tinstantset_inst_n((TInstantSet *) temp, n - 1))->t;
     }
   }
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
   {
     if (n >= 1 && n <= ((TSequence *) temp)->count)
     {
@@ -2665,7 +2813,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
       result = (tsequence_inst_n((TSequence *) temp, n - 1))->t;
     }
   }
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     found = tsequenceset_timestamp_n((TSequenceSet *) temp, n, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (!found)
@@ -2682,14 +2830,14 @@ temporal_timestamps(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ArrayType *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_timestamps((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_timestamps((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_timestamps((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_timestamps((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2712,18 +2860,18 @@ temporal_shift_tscale_internal(Temporal *temp, bool shift, bool tscale,
 {
   assert(start != NULL || duration != NULL);
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (start != NULL) ?
       (Temporal *) tinstant_shift((TInstant *) temp, start) :
       (Temporal *) tinstant_copy((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_shift_tscale((TInstantSet *) temp,
     start, duration);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_shift_tscale((TSequence *) temp,
       start, duration);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_shift_tscale((TSequenceSet *) temp,
       start, duration);
   return result;
@@ -2753,7 +2901,7 @@ temporal_tscale(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  ensure_positive_interval(duration);
+  ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale_internal(temp, false, true,
     NULL, duration);
   PG_FREE_IF_COPY(temp, 0);
@@ -2770,7 +2918,7 @@ temporal_shift_tscale(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
-  ensure_positive_interval(duration);
+  ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale_internal(temp, true, true,
     start, duration);
   PG_RETURN_POINTER(result);
@@ -2846,14 +2994,14 @@ bool
 temporal_ever_eq_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_ever_eq((TInstant *) temp, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_ever_eq((TInstantSet *) temp, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_ever_eq((TSequence *) temp, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_ever_eq((TSequenceSet *) temp, value);
   return result;
 }
@@ -2866,14 +3014,14 @@ bool
 temporal_always_eq_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_always_eq((TInstant *) temp, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_always_eq((TInstantSet *) temp, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_always_eq((TSequence *) temp, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_always_eq((TSequenceSet *) temp, value);
   return result;
 }
@@ -2886,14 +3034,14 @@ bool
 temporal_ever_lt_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_ever_lt((TInstant *) temp, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_ever_lt((TInstantSet *) temp, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_ever_lt((TSequence *) temp, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_ever_lt((TSequenceSet *) temp, value);
   return result;
 }
@@ -2906,14 +3054,14 @@ bool
 temporal_always_lt_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_always_lt((TInstant *) temp, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_always_lt((TInstantSet *) temp, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_always_lt((TSequence *) temp, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_always_lt((TSequenceSet *) temp, value);
   return result;
 }
@@ -2926,14 +3074,14 @@ bool
 temporal_ever_le_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_ever_le((TInstant *) temp, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_ever_le((TInstantSet *) temp, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_ever_le((TSequence *) temp, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_ever_le((TSequenceSet *) temp, value);
   return result;
 }
@@ -2946,16 +3094,25 @@ bool
 temporal_always_le_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_always_le((TInstant *) temp, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_always_le((TInstantSet *) temp, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_always_le((TSequence *) temp, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_always_le((TSequenceSet *) temp, value);
   return result;
+}
+
+/**
+ * Returns the interval in the same representation as Postgres timestamps.
+ */
+int64
+get_interval_units(Interval *interval)
+{
+  return interval->time + (interval->day * USECS_PER_DAY);
 }
 
 /*****************************************************************************/
@@ -3146,7 +3303,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     ensure_same_dimensionality_tpoint_gs(temp, gs);
     if (gserialized_is_empty(gs))
       return false;
-    if (temp->temptype != INSTANT)
+    if (temp->subtype != INSTANT)
     {
       STBOX box1, box2;
       memset(&box1, 0, sizeof(STBOX));
@@ -3225,8 +3382,11 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
     pfree(newvalues);
     return NULL;
   }
-  datumarr_sort(newvalues, k, temp->valuetypid);
-  k = datumarr_remove_duplicates(newvalues, k, temp->valuetypid);
+  if (k > 1)
+  {
+    datumarr_sort(newvalues, k, temp->valuetypid);
+    k = datumarr_remove_duplicates(newvalues, k, temp->valuetypid);
+  }
   *newcount = k;
   return newvalues;
 }
@@ -3312,22 +3472,22 @@ temporal_restrict_value_internal(const Temporal *temp, Datum value,
     if (atfunc)
       return NULL;
     else
-      return (temp->temptype != SEQUENCE) ? temporal_copy(temp) :
+      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_value(
       (TInstant *) temp, value, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_value(
       (TInstantSet *) temp, value, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_value((TSequence *) temp,
       value, atfunc);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_value(
       (TSequenceSet *) temp, value, atfunc);
   return result;
@@ -3389,22 +3549,22 @@ temporal_restrict_values_internal(const Temporal *temp, Datum *values,
     if (atfunc)
       return NULL;
     else
-      return (temp->temptype != SEQUENCE) ? temporal_copy(temp) :
+      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_values(
       (TInstant *) temp, newvalues, newcount, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_values(
       (TInstantSet *) temp, newvalues, newcount, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_values((TSequence *) temp,
       newvalues, newcount, atfunc);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_values(
       (TSequenceSet *) temp, newvalues, newcount, atfunc);
 
@@ -3479,7 +3639,7 @@ temporal_minus_values(PG_FUNCTION_ARGS)
  * Restricts the temporal value to the (complement of the) range of base values
  * (dispatch function)
  */
-static Temporal *
+Temporal *
 tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
   bool atfunc)
 {
@@ -3491,22 +3651,22 @@ tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
     if (atfunc)
       return NULL;
     else
-      return (temp->temptype != SEQUENCE) ? temporal_copy(temp) :
+      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tnumberinst_restrict_range(
       (TInstant *) temp, range, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tnumberinstset_restrict_range(
       (TInstantSet *) temp, range, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tnumberseq_restrict_range(
       (TSequence *) temp, range, atfunc);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tnumberseqset_restrict_range(
       (TSequenceSet *) temp, range, atfunc);
   return result;
@@ -3568,22 +3728,24 @@ tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
     if (atfunc)
       return NULL;
     else
-      return (temp->temptype != SEQUENCE) ? temporal_copy(temp) :
+      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
+  if (newcount == 1)
+    return tnumber_restrict_range_internal(temp, newranges[0], atfunc);
 
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tnumberinst_restrict_ranges((TInstant *) temp,
       newranges, newcount, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tnumberinstset_restrict_ranges((TInstantSet *) temp,
       newranges, newcount, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tnumberseq_restrict_ranges((TSequence *) temp,
         newranges, newcount, atfunc, BBOX_TEST_NO);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tnumberseqset_restrict_ranges((TSequenceSet *) temp,
       newranges, newcount, atfunc);
 
@@ -3661,16 +3823,16 @@ Temporal *
 temporal_restrict_minmax_internal(const Temporal *temp, bool min, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = atfunc ? (Temporal *) tinstant_copy((TInstant *) temp) : NULL;
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_minmax((TInstantSet *) temp,
       min, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_minmax((TSequence *) temp,
       min, atfunc);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_minmax((TSequenceSet *) temp,
       min, atfunc);
   return result;
@@ -3741,17 +3903,17 @@ temporal_restrict_timestamp_internal(const Temporal *temp, TimestampTz t,
   bool atfunc)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_timestamp((TInstantSet *) temp,
     t, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = atfunc ?
       (Temporal *) tsequence_at_timestamp((TSequence *) temp, t) :
       (Temporal *) tsequence_minus_timestamp((TSequence *) temp, t);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp,
       t, atfunc);
   return result;
@@ -3802,14 +3964,14 @@ bool
 temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *value)
 {
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_value_at_timestamp((TInstant *) temp, t, value);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_value_at_timestamp((TInstantSet *) temp, t, value);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_value_at_timestamp_inc((TSequence *) temp, t, value);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_value_at_timestamp_inc((TSequenceSet *) temp, t, value);
   return result;
 }
@@ -3827,14 +3989,14 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool found = false;
   Datum result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     found = tinstant_value_at_timestamp((TInstant *) temp, t, &result);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     found = tinstantset_value_at_timestamp((TInstantSet *) temp, t, &result);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     found = tsequence_value_at_timestamp((TSequence *) temp, t, &result);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     found = tsequenceset_value_at_timestamp((TSequenceSet *) temp, t, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (!found)
@@ -3853,18 +4015,18 @@ temporal_restrict_timestampset(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_timestampset(
       (TInstant *) temp, ts, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_timestampset(
       (TInstantSet *) temp, ts, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = atfunc ?
       (Temporal *) tsequence_at_timestampset((TSequence *) temp, ts) :
       (Temporal *) tsequence_minus_timestampset((TSequence *) temp, ts);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_timestampset(
       (TSequenceSet *) temp, ts, atfunc);
   PG_FREE_IF_COPY(temp, 0);
@@ -3904,18 +4066,18 @@ temporal_restrict_period_internal(const Temporal *temp, const Period *p,
   bool atfunc)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_period(
       (TInstant *) temp, p, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_period(
       (TInstantSet *) temp, p, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = atfunc ?
       (Temporal *) tsequence_at_period((TSequence *) temp, p) :
       (Temporal *) tsequence_minus_period((TSequence *) temp, p);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_period(
       (TSequenceSet *) temp, p, atfunc);
   return result;
@@ -3971,17 +4133,17 @@ temporal_restrict_periodset_internal(const Temporal *temp,
   const PeriodSet *ps, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_periodset(
       (TInstant *) temp, ps, atfunc);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_periodset(
       (TInstantSet *) temp, ps, atfunc);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_periodset(
       (TSequence *) temp, ps, atfunc);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_periodset(
       (TSequenceSet *) temp, ps, atfunc);
   return result;
@@ -4044,8 +4206,11 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
   {
     Period p;
     period_set(&p, box->tmin, box->tmax, true, true);
-    /* Due to the bounding box test above temp is never NULL */
     temp1 = temporal_at_period_internal(temp, &p);
+    /* Despite the bounding box test above, temp1 may be NULL due to 
+     * exclusive bounds */
+    if (temp1 == NULL)
+      return NULL;
   }
   else
     temp1 = temporal_copy(temp);
@@ -4158,14 +4323,14 @@ temporal_intersects_timestamp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_intersects_timestamp((TInstant *) temp, t);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_intersects_timestamp((TInstantSet *) temp, t);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_intersects_timestamp((TSequence *) temp, t);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_intersects_timestamp((TSequenceSet *) temp, t);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -4181,14 +4346,14 @@ temporal_intersects_timestampset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_intersects_timestampset((TInstant *) temp, ts);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_intersects_timestampset((TInstantSet *) temp, ts);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_intersects_timestampset((TSequence *) temp, ts);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_intersects_timestampset((TSequenceSet *) temp, ts);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -4205,14 +4370,14 @@ temporal_intersects_period(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Period *p = PG_GETARG_PERIOD(1);
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_intersects_period((TInstant *) temp, p);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_intersects_period((TInstantSet *) temp, p);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_intersects_period((TSequence *) temp, p);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_intersects_period((TSequenceSet *) temp, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -4228,14 +4393,14 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   PeriodSet *ps = PG_GETARG_PERIODSET(1);
   bool result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_intersects_periodset((TInstant *) temp, ps);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_intersects_periodset((TInstantSet *) temp, ps);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_intersects_periodset((TSequence *) temp, ps);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_intersects_periodset((TSequenceSet *) temp, ps);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -4256,12 +4421,12 @@ tnumber_integral(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   double result = 0.0;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT || temp->temptype == INSTANTSET)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tnumberseq_integral((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tnumberseqset_integral((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -4276,15 +4441,15 @@ tnumber_twavg(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   double result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = datum_double(tinstant_value((TInstant *) temp),
       temp->valuetypid);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tnumberinstset_twavg((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tnumberseq_twavg((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tnumberseqset_twavg((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -4327,16 +4492,16 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
     return result;
 
   /* If both are of the same temporal type use the specific comparison */
-  if (temp1->temptype == temp2->temptype)
+  if (temp1->subtype == temp2->subtype)
   {
-    ensure_valid_temptype(temp1->temptype);
-    if (temp1->temptype == INSTANT)
+    ensure_valid_tempsubtype(temp1->subtype);
+    if (temp1->subtype == INSTANT)
       return tinstant_cmp((TInstant *) temp1, (TInstant *) temp2);
-    else if (temp1->temptype == INSTANTSET)
+    else if (temp1->subtype == INSTANTSET)
       return tinstantset_cmp((TInstantSet *) temp1, (TInstantSet *) temp2);
-    else if (temp1->temptype == SEQUENCE)
+    else if (temp1->subtype == SEQUENCE)
       return tsequence_cmp((TSequence *) temp1, (TSequence *) temp2);
-    else /* temp1->temptype == SEQUENCESET */
+    else /* temp1->subtype == SEQUENCESET */
       return tsequenceset_cmp((TSequenceSet *) temp1, (TSequenceSet *) temp2);
   }
 
@@ -4363,9 +4528,9 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
     return 1;
 
   /* Finally compare temporal type */
-  if (temp1->temptype < temp2->temptype)
+  if (temp1->subtype < temp2->subtype)
     return -1;
-  else if (temp1->temptype > temp2->temptype)
+  else if (temp1->subtype > temp2->subtype)
     return 1;
   else
     return 0;
@@ -4399,37 +4564,37 @@ static bool
 temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1->valuetypid == temp2->valuetypid);
-  ensure_valid_temptype(temp1->temptype);
-  ensure_valid_temptype(temp2->temptype);
+  ensure_valid_tempsubtype(temp1->subtype);
+  ensure_valid_tempsubtype(temp2->subtype);
 
   const TInstant *inst1, *inst2;
   const TInstantSet *ti;
   const TSequence *seq;
   const TSequenceSet *ts;
   /* If both are of the same temporal type use the specific equality */
-  if (temp1->temptype == temp2->temptype)
+  if (temp1->subtype == temp2->subtype)
   {
-    if (temp1->temptype == INSTANT)
+    if (temp1->subtype == INSTANT)
       return tinstant_eq((TInstant *) temp1, (TInstant *) temp2);
-    else if (temp1->temptype == INSTANTSET)
+    else if (temp1->subtype == INSTANTSET)
       return tinstantset_eq((TInstantSet *) temp1, (TInstantSet *) temp2);
-    else if (temp1->temptype == SEQUENCE)
+    else if (temp1->subtype == SEQUENCE)
       return tsequence_eq((TSequence *) temp1, (TSequence *) temp2);
-    else /* temp1->temptype == SEQUENCESET */
+    else /* temp1->subtype == SEQUENCESET */
       return tsequenceset_eq((TSequenceSet *) temp1, (TSequenceSet *) temp2);
   }
 
   /* Different temporal type */
-  if (temp1->temptype > temp2->temptype)
+  if (temp1->subtype > temp2->subtype)
   {
     const Temporal *temp = (Temporal *) temp1;
     temp1 = temp2;
     temp2 = temp;
   }
-  if (temp1->temptype == INSTANT)
+  if (temp1->subtype == INSTANT)
   {
     const TInstant *inst = (TInstant *) temp1;
-    if (temp2->temptype == INSTANTSET)
+    if (temp2->subtype == INSTANTSET)
     {
       ti = (TInstantSet *) temp2;
       if (ti->count != 1)
@@ -4437,7 +4602,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       inst1 = tinstantset_inst_n(ti, 0);
       return tinstant_eq(inst, inst1);
     }
-    if (temp2->temptype == SEQUENCE)
+    if (temp2->subtype == SEQUENCE)
     {
       seq = (TSequence *) temp2;
       if (seq->count != 1)
@@ -4445,7 +4610,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       inst1 = tsequence_inst_n(seq, 0);
       return tinstant_eq(inst, inst1);
     }
-    if (temp2->temptype == SEQUENCESET)
+    if (temp2->subtype == SEQUENCESET)
     {
       ts = (TSequenceSet *) temp2;
       if (ts->count != 1)
@@ -4458,10 +4623,10 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
     }
 
   }
-  else if (temp1->temptype == INSTANTSET)
+  else if (temp1->subtype == INSTANTSET)
   {
     ti = (TInstantSet *) temp1;
-    if (temp2->temptype == SEQUENCE)
+    if (temp2->subtype == SEQUENCE)
     {
       seq = (TSequence *) temp2;
       if (ti->count != 1 || seq->count != 1)
@@ -4470,7 +4635,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       inst2 = tsequence_inst_n(seq, 0);
       return tinstant_eq(inst1, inst2);
     }
-    if (temp2->temptype == SEQUENCESET)
+    if (temp2->subtype == SEQUENCESET)
     {
       ts = (TSequenceSet *) temp2;
       for (int i = 0; i < ti->count; i ++)
@@ -4486,7 +4651,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       return true;
     }
   }
-  /* temp1->temptype == SEQUENCE && temp2->temptype == SEQUENCESET */
+  /* temp1->subtype == SEQUENCE && temp2->subtype == SEQUENCESET */
   seq = (TSequence *) temp1;
   ts = (TSequenceSet *) temp2;
   if (ts->count != 1)
@@ -4623,14 +4788,14 @@ uint32
 temporal_hash_internal(const Temporal *temp)
 {
   uint32 result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_hash((TInstant *) temp);
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_hash((TInstantSet *) temp);
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_hash((TSequence *) temp);
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_hash((TSequenceSet *) temp);
   return result;
 }

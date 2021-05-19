@@ -188,24 +188,24 @@ static Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;
-  if (temp->temptype == INSTANT)
+  if (temp->subtype == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
     *count = 1;
   }
-  else if (temp->temptype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
   {
     result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
     *count = ((TInstantSet *)temp)->count;
   }
-  else if (temp->temptype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
     *count = 1;
   }
-  else /* temp->temptype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
     *count = ((TSequenceSet *)temp)->count;
@@ -311,7 +311,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
   if (state)
   {
-    ensure_same_temptype_skiplist(state, temparr[0]->temptype, temparr[0]);
+    ensure_same_temp_subtype_skiplist(state, temparr[0]->subtype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else
@@ -459,12 +459,12 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
   Temporal **values = (Temporal **) skiplist_values(state);
   int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
   Temporal *result = NULL;
-  assert(values[0]->temptype == INSTANT ||
-    values[0]->temptype == SEQUENCE);
-  if (values[0]->temptype == INSTANT)
+  assert(values[0]->subtype == INSTANT ||
+    values[0]->subtype == SEQUENCE);
+  if (values[0]->subtype == INSTANT)
     result = (Temporal *)tpointinst_tcentroid_finalfn(
       (TInstant **)values, state->length, srid);
-  else if (values[0]->temptype == SEQUENCE)
+  else if (values[0]->subtype == SEQUENCE)
     result = (Temporal *)tpointseq_tcentroid_finalfn(
       (TSequence **)values, state->length, srid);
 

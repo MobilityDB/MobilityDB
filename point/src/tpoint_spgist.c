@@ -718,7 +718,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   CubeSTbox *cube_box;
   uint16 octant;
-  STBOX *queries, *orderbys, *centroid = DatumGetSTboxP(in->prefixDatum);
+  STBOX *queries, *centroid = DatumGetSTboxP(in->prefixDatum);
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -736,7 +736,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    * This transformation is done here to avoid doing it for all octants
    * in the loop below.
    */
-  orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
+  STBOX *orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
   for (i = 0; i < in->norderbys; i++)
     stbox_spgist_get_stbox(&orderbys[i], in->orderbys[i]);
 #endif

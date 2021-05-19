@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -62,7 +62,7 @@
 static char *
 wkt_out(Oid type, Datum value)
 {
-  GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
   char *wkt = lwgeom_to_wkt(geom, WKT_ISO, DBL_DIG, &len);
@@ -102,15 +102,15 @@ static char *
 tpoint_as_text_internal1(const Temporal *temp)
 {
   char *result;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
-    result = tinstant_to_string((TInstant *)temp, &wkt_out);
-  else if (temp->temptype == INSTANTSET)
-    result = tinstantset_to_string((TInstantSet *)temp, &wkt_out);
-  else if (temp->temptype == SEQUENCE)
-    result = tsequence_to_string((TSequence *)temp, false, &wkt_out);
-  else /* temp->temptype == SEQUENCESET */
-    result = tsequenceset_to_string((TSequenceSet *)temp, &wkt_out);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tinstant_to_string((TInstant *) temp, &wkt_out);
+  else if (temp->subtype == INSTANTSET)
+    result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
+  else if (temp->subtype == SEQUENCE)
+    result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
+  else /* temp->subtype == SEQUENCESET */
+    result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
   return result;
 }
 
@@ -198,7 +198,7 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   for (int i = 0; i < count; i++)
   {
     /* The wkt_out and ewkt_out functions do not use the first argument */
-    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) : 
+    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) :
       wkt_out(ANYOID, geoarr[i]);
     textarr[i] = cstring_to_text(str);
     pfree(str);
@@ -688,6 +688,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 {
   int has_bbox = 0;
   int precision = DBL_DIG;
+  int option = 0;
   char *srs = NULL;
 
   /* Get the temporal point */
@@ -710,31 +711,30 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
    * 4 = long crs
    */
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-  {
-    int option = PG_GETARG_INT32(2);
+    option = PG_GETARG_INT32(2);
 
-    if (option & 2 || option & 4)
+  /* Even if the option does not request to output the crs, we output the
+   * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
+   * it is not possible to reconstruct the temporal point from the output
+   * of this function without loosing the SRID */
+  int32_t srid = tpoint_srid_internal(temp);
+  if (srid != SRID_UNKNOWN && !(option & 2) && !(option & 4))
+    option |= 2;
+  if (srid != SRID_UNKNOWN)
+  {
+    if (option & 2)
+      srs = getSRSbySRID(fcinfo, srid, true);
+    else if (option & 4)
+      srs = getSRSbySRID(fcinfo, srid, false);
+    if (!srs)
     {
-      int32_t srid = tpoint_srid_internal(temp);
-      if (srid != SRID_UNKNOWN)
-      {
-        if (option & 2)
-          srs = getSRSbySRID(fcinfo, srid, true);
-          // srs = getSRSbySRID(srid, true);
-        if (option & 4)
-          srs = getSRSbySRID(fcinfo, srid, false);
-          // srs = getSRSbySRID(srid, false);
-        if (!srs)
-        {
-          elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
-              srid);
-          PG_RETURN_NULL();
-        }
-      }
+      elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
+          srid);
+      PG_RETURN_NULL();
     }
-    if (option & 1)
-      has_bbox = 1;
   }
+  if (option & 1)
+    has_bbox = 1;
 
   /* Get bounding box if needed */
   STBOX *bbox = NULL, tmp;
@@ -746,22 +746,32 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
   }
 
   char *mfjson;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
-    mfjson = tpointinst_as_mfjson((TInstant *)temp, precision, bbox, srs);
-  else if (temp->temptype == INSTANTSET)
-    mfjson = tpointinstset_as_mfjson((TInstantSet *)temp, precision, bbox, srs);
-  else if (temp->temptype == SEQUENCE)
-    mfjson = tpointseq_as_mfjson((TSequence *)temp, precision, bbox, srs);
-  else /* temp->temptype == SEQUENCESET */
-    mfjson = tpointseqset_as_mfjson((TSequenceSet *)temp, precision, bbox, srs);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    mfjson = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
+  else if (temp->subtype == INSTANTSET)
+    mfjson = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
+  else if (temp->subtype == SEQUENCE)
+    mfjson = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
+  else /* temp->subtype == SEQUENCESET */
+    mfjson = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
   text *result = cstring_to_text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************
- * Output in WKB format
+ * Output in WKB or EWKB format
+ *
+ * The format of the MobilityDB binary format builds upon the one of PostGIS.
+ * In particular, many of the flags defined in liblwgeom.h such as  WKB_NDR vs
+ * WKB_XDR (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc. 
+ * In addition, we need additional flags such as MOBDB_WKB_LINEAR_INTERP for
+ * linear interporation, etc.
+ * 
+ * The binary format obviously depends on the subtype of the temporal type 
+ * (instant, instant set, ...). The specific binary format is specified in 
+ * the function corresponding to the subtype below.
  *****************************************************************************/
 
 /**
@@ -972,7 +982,7 @@ tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
   /* Endian flag + temporal flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     size += WKB_INT_SIZE;
   /* TInstant */
   size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags),
@@ -990,7 +1000,7 @@ tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
   /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
     size += WKB_INT_SIZE;
   /* Include the number of instants */
   size += WKB_INT_SIZE;
@@ -1010,7 +1020,7 @@ tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
   /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
     size += WKB_INT_SIZE;
   /* Include the number of instants and the period bounds flag */
   size += WKB_INT_SIZE + WKB_BYTE_SIZE;
@@ -1030,7 +1040,7 @@ tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
   /* Endian flag + temporal type flag */
   size_t size = WKB_BYTE_SIZE * 2;
   /* Extended WKB needs space for optional SRID integer */
-  if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
     size += WKB_INT_SIZE;
   /* Include the number of sequences */
   size += WKB_INT_SIZE;
@@ -1050,54 +1060,59 @@ static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
   size_t size = 0;
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
-    size = tpointinst_to_wkb_size((TInstant *)temp, variant);
-  else if (temp->temptype == INSTANTSET)
-    size = tpointinstset_to_wkb_size((TInstantSet *)temp, variant);
-  else if (temp->temptype == SEQUENCE)
-    size = tpointseq_to_wkb_size((TSequence *)temp, variant);
-  else /* temp->temptype == SEQUENCESET */
-    size = tpointseqset_to_wkb_size((TSequenceSet *)temp, variant);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    size = tpointinst_to_wkb_size((TInstant *) temp, variant);
+  else if (temp->subtype == INSTANTSET)
+    size = tpointinstset_to_wkb_size((TInstantSet *) temp, variant);
+  else if (temp->subtype == SEQUENCE)
+    size = tpointseq_to_wkb_size((TSequence *) temp, variant);
+  else /* temp->subtype == SEQUENCESET */
+    size = tpointseqset_to_wkb_size((TSequenceSet *) temp, variant);
   return size;
 }
 
 /**
- * Writes into the buffer the flag containing the temporal type and 
- * the variant represented in Well-Known Binary (WKB) format
+ * Writes into the buffer the flag containing the temporal type and
+ * other characteristics represented in Well-Known Binary (WKB) format.
+ * In binary format it is a byte as follows 
+ * LSGZxTTT
+ * L = Linear, S = SRID, G = Geodetic, Z = has Z, x = unused bit
+ * TTT = Temporal subtype with values 1 to 4
  */
 static uint8_t *
 tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
-  if (variant & WKB_EXTENDED)
-  {
-    if (MOBDB_FLAGS_GET_Z(temp->flags))
-      wkb_flags |= WKB_ZFLAG;
-    if (tpoint_wkb_needs_srid(temp, variant))
-      wkb_flags |= WKB_SRIDFLAG;
-    if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
-      wkb_flags |= WKB_LINEAR_INTERP;
-  }
+  if (MOBDB_FLAGS_GET_Z(temp->flags))
+    wkb_flags |= MOBDB_WKB_ZFLAG;
+  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
+    wkb_flags |= MOBDB_WKB_GEODETICFLAG;
+  if (tpoint_wkb_needs_srid(temp, variant))
+    wkb_flags |= MOBDB_WKB_SRIDFLAG;
+  if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    wkb_flags |= MOBDB_WKB_LINEAR_INTERP;
   if (variant & WKB_HEX)
   {
     buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
-    buf[1] = (uint8_t) hexchr[temp->temptype];
+    buf[1] = (uint8_t) hexchr[temp->subtype];
     return buf + 2;
   }
   else
   {
-    buf[0] = (uint8_t) temp->temptype + wkb_flags;
+    buf[0] = (uint8_t) temp->subtype + wkb_flags;
     return buf + 1;
   }
 }
 
 /**
  * Writes into the buffer the coordinates of the temporal instant point
- * represented in Well-Known Binary (WKB) format
+ * represented in Well-Known Binary (WKB) format as follows
+ * - 2 or 3 doubles for the coordinates depending on whether there is Z
+ * - 1 timestamp
  */
 static uint8_t *
-coordinates_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
+coords_ts_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
@@ -1118,7 +1133,11 @@ coordinates_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 
 /**
  * Writes into the buffer the temporal instant point represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) format as follows
+ * - Endian 
+ * - Linear, SRID, Geodetic, Z, Temporal Subtype
+ * - SRID (if requested)
+ * - Output of a single instant by function coords_ts_to_wkb_buf
  */
 static uint8_t *
 tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
@@ -1126,16 +1145,21 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_type((Temporal *)inst, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) inst, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)inst, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     buf = integer_to_wkb_buf(tpointinst_srid(inst), buf, variant);
-  return coordinates_to_wkb_buf(inst, buf, variant);
+  return coords_ts_to_wkb_buf(inst, buf, variant);
 }
 
 /**
  * Writes into the buffer the temporal instant set point represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) format as follows
+ * - Endian 
+ * - Linear, SRID, Geodetic, Z, Temporal Subtype
+ * - SRID (if requested)
+ * - Number of instants
+ * - Output of the instants by function coords_ts_to_wkb_buf
  */
 static uint8_t *
 tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
@@ -1143,9 +1167,9 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags */
-  buf = tpoint_wkb_type((Temporal *)ti, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) ti, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)ti, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ti, variant))
     buf = integer_to_wkb_buf(tpointinstset_srid(ti), buf, variant);
   /* Set the count */
   buf = integer_to_wkb_buf(ti->count, buf, variant);
@@ -1153,23 +1177,25 @@ tpointinstset_to_wkb_buf(const TInstantSet *ti, uint8_t *buf, uint8_t variant)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    buf = coordinates_to_wkb_buf(inst, buf, variant);
+    buf = coords_ts_to_wkb_buf(inst, buf, variant);
   }
   return buf;
 }
 
 /**
  * Writes into the buffer the flag containing the bounds represented
- * in Well-Known Binary (WKB) format
+ * in Well-Known Binary (WKB) format as follows
+ * xxxxxxUL
+ * x = Unused bits, U = Upper inclusive, L = Lower inclusive
  */
 static uint8_t *
 tpointseq_wkb_bounds(const TSequence *seq, uint8_t *buf, uint8_t variant)
 {
   uint8_t wkb_flags = 0;
   if (seq->period.lower_inc)
-    wkb_flags |= WKB_LOWER_INC;
+    wkb_flags |= MOBDB_WKB_LOWER_INC;
   if (seq->period.upper_inc)
-    wkb_flags |= WKB_UPPER_INC;
+    wkb_flags |= MOBDB_WKB_UPPER_INC;
   if (variant & WKB_HEX)
   {
     buf[0] = '0';
@@ -1185,7 +1211,14 @@ tpointseq_wkb_bounds(const TSequence *seq, uint8_t *buf, uint8_t variant)
 
 /**
  * Writes into the buffer the temporal sequence point represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) format as follows
+ * - Endian 
+ * - Linear, SRID, Geodetic, Z, Temporal Subtype
+ * - SRID (if requested)
+ * - Number of instants
+ * - Lower/upper inclusive
+ * - For each instant
+ *   - Output of the instant by function coords_ts_to_wkb_buf
  */
 static uint8_t *
 tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
@@ -1193,9 +1226,9 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal flags and interpolation */
-  buf = tpoint_wkb_type((Temporal *)seq, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) seq, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)seq, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) seq, variant))
     buf = integer_to_wkb_buf(tpointseq_srid(seq), buf, variant);
   /* Set the count */
   buf = integer_to_wkb_buf(seq->count, buf, variant);
@@ -1205,14 +1238,23 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    buf = coordinates_to_wkb_buf(inst, buf, variant);
+    buf = coords_ts_to_wkb_buf(inst, buf, variant);
   }
   return buf;
 }
 
 /**
  * Writes into the buffer the temporal sequence set point represented in
- * Well-Known Binary (WKB) format
+ * Well-Known Binary (WKB) format as follows
+ * - Endian 
+ * - Linear, SRID, Geodetic, Z, Temporal Subtype
+ * - SRID (if requested)
+ * - Number of sequences
+ * - For each sequence
+ *   - Number or instants
+ *   - Lower/upper inclusive
+ *   - For each instant of the sequence
+ *      - Output of the instant by function coords_ts_to_wkb_buf
  */
 static uint8_t *
 tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
@@ -1220,9 +1262,9 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
   /* Set the endian flag */
   buf = endian_to_wkb_buf(buf, variant);
   /* Set the temporal and interpolation flags */
-  buf = tpoint_wkb_type((Temporal *)ts, buf, variant);
+  buf = tpoint_wkb_type((Temporal *) ts, buf, variant);
   /* Set the optional SRID for extended variant */
-  if (tpoint_wkb_needs_srid((Temporal *)ts, variant))
+  if (tpoint_wkb_needs_srid((Temporal *) ts, variant))
     buf = integer_to_wkb_buf(tpointseqset_srid(ts), buf, variant);
   /* Set the count */
   buf = integer_to_wkb_buf(ts->count, buf, variant);
@@ -1238,7 +1280,7 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
-      buf = coordinates_to_wkb_buf(inst, buf, variant);
+      buf = coords_ts_to_wkb_buf(inst, buf, variant);
     }
   }
   return buf;
@@ -1251,19 +1293,19 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-  ensure_valid_temptype(temp->temptype);
-  if (temp->temptype == INSTANT)
-    return tpointinst_to_wkb_buf((TInstant *)temp, buf, variant);
-  else if (temp->temptype == INSTANTSET)
-    return tpointinstset_to_wkb_buf((TInstantSet *)temp, buf, variant);
-  else if (temp->temptype == SEQUENCE)
-    return tpointseq_to_wkb_buf((TSequence *)temp, buf, variant);
-  else /* temp->temptype == SEQUENCESET */
-    return tpointseqset_to_wkb_buf((TSequenceSet *)temp, buf, variant);
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    return tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
+  else if (temp->subtype == INSTANTSET)
+    return tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
+  else if (temp->subtype == SEQUENCE)
+    return tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
+  else /* temp->subtype == SEQUENCESET */
+    return tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
 }
 
 /**
- * Convert the temporal value to a char* in WKB format. Caller is responsible for freeing
+ * Convert the temporal value to a char * in WKB format. Caller is responsible for freeing
  * the returned array.
  *
  * @param[in] temp Temporal value
@@ -1340,7 +1382,8 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   }
 
   /* Report output size */
-  if (size_out) *size_out = buf_size;
+  if (size_out)
+    *size_out = buf_size;
 
   return wkb_out;
 }
@@ -1372,7 +1415,7 @@ tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
   if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
   {
     text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text_to_cstring(type);
+    const char *endian = text2cstring(type);
     ensure_valid_endian_flag(endian);
     if (strncasecmp(endian, "ndr", 3) == 0)
       variant = variant | (uint8_t) WKB_NDR;
@@ -1436,7 +1479,7 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
   if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
   {
     text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text_to_cstring(type);
+    const char *endian = text2cstring(type);
     ensure_valid_endian_flag(endian);
     if (strncasecmp(endian, "ndr", 3) == 0)
       variant = variant | (uint8_t) WKB_NDR;
@@ -1445,7 +1488,7 @@ tpoint_as_hexewkb(PG_FUNCTION_ARGS)
   }
 
   /* Create WKB hex string */
-  hexwkb = (char *)tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED |
+  hexwkb = (char *) tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED |
     (uint8_t) WKB_HEX, &hexwkb_size);
 
   /* Prepare the PgSQL text return type */

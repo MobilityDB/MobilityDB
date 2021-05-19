@@ -230,6 +230,29 @@ SELECT MAX(xmax(t1.b + t2.b)) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
 SELECT MAX(xmax(t1.b * t2.b)) FROM tbl_tbox t1, tbl_tbox t2;
 
 -------------------------------------------------------------------------------
+-- Extent aggregation
+-------------------------------------------------------------------------------
+
+WITH test(box) AS (
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02))' UNION ALL 
+  SELECT NULL::tbox UNION ALL SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' )
+SELECT extent(box) FROM test;
+
+-- encourage use of parallel plans
+set parallel_setup_cost=0;
+set parallel_tuple_cost=0;
+set min_parallel_table_scan_size=0;
+set max_parallel_workers_per_gather=2;
+
+SELECT setPrecision(extent(temp::tbox),6) FROM tbl_tfloat_big;
+
+-- reset to default values 
+reset parallel_setup_cost;
+reset parallel_tuple_cost;
+reset min_parallel_table_scan_size;
+reset max_parallel_workers_per_gather;
+
+-------------------------------------------------------------------------------
 -- Comparison functions
 -------------------------------------------------------------------------------
 

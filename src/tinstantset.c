@@ -120,7 +120,7 @@ tinstantset_make1(const TInstant **instants, int count)
   SET_VARSIZE(result, pdata + memsize);
   result->count = count;
   result->valuetypid = instants[0]->valuetypid;
-  result->temptype = INSTANTSET;
+  result->subtype = INSTANTSET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -460,10 +460,10 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
  * @param[in] value_out Function called to output the base value depending on
  * its Oid
  */
-char*
+char *
 tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
 {
-  char** strings = palloc(sizeof(char *) * ti->count);
+  char **strings = palloc(sizeof(char *) * ti->count);
   size_t outlen = 0;
 
   for (int i = 0; i < ti->count; i++)
@@ -669,8 +669,7 @@ tinstantset_get_time(const TInstantSet *ti)
     const TInstant *inst = tinstantset_inst_n(ti, i);
     periods[i] = period_make(inst->t, inst->t, true, true);
   }
-  PeriodSet *result = periodset_make((const Period **) periods, ti->count, NORMALIZE_NO);
-  pfree_array((void **) periods, ti->count);
+  PeriodSet *result = periodset_make_free(periods, ti->count, NORMALIZE_NO);
   return result;
 }
 
@@ -841,14 +840,24 @@ tinstantset_end_timestamp(const TInstantSet *ti)
 }
 
 /**
- * Returns the distinct timestamps of the temporal value as an array
+ * Returns the distinct timestamps of the temporal value
+ */
+TimestampTz *
+tinstantset_timestamps1(const TInstantSet *ti)
+{
+  TimestampTz *result = palloc(sizeof(TimestampTz) * ti->count);
+  for (int i = 0; i < ti->count; i++)
+    result[i] = (tinstantset_inst_n(ti, i))->t;
+  return result;
+}
+
+/**
+ * Returns the distinct timestamps of the temporal value as a C array
  */
 ArrayType *
 tinstantset_timestamps(const TInstantSet *ti)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ti->count);
-  for (int i = 0; i < ti->count; i++)
-    times[i] = (tinstantset_inst_n(ti, i))->t;
+  TimestampTz *times = tinstantset_timestamps1(ti);
   ArrayType *result = timestamparr_to_array(times, ti->count);
   pfree(times);
   return result;
@@ -884,7 +893,7 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
     {
       inst = (TInstant *) tinstantset_inst_n(result, i);
       double fraction = (double) (inst->t - p1.lower) / orig_duration;
-      inst->t = (TimestampTz) ((long) p2.lower + (long) (new_duration * fraction));
+      inst->t = p2.lower + (TimestampTz) (new_duration * fraction);
     }
     /* Set the last instant */
     inst = (TInstant *) tinstantset_inst_n(result, ti->count - 1);
@@ -1300,7 +1309,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
   {
     Temporal *temp = tinstantset_restrict_timestamp(ti,
       timestampset_time_n(ts, 0), atfunc);
-    if (temp == NULL || temp->temptype == INSTANTSET)
+    if (temp == NULL || temp->subtype == INSTANTSET)
       return (TInstantSet *) temp;
     TInstant *inst1 = (TInstant *) temp;
     result = tinstantset_make((const TInstant **) &inst1, 1, MERGE_NO);

@@ -26,16 +26,22 @@ Benefits
 
 *   Compatible with the PostgreSQL ecosystem
 
-*   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC).
+*   Compliant with the [Moving Features](https://www.opengeospatial.org/standards/movingfeatures) standards from the [Open Geospatial Consortium](https://www.opengeospatial.org/) (OGC)
+
+*   Adopted by the [Open Source Geospatial Foundation](https://www.osgeo.org/) (OSGeo) as a [community project](https://www.osgeo.org/projects/mobilitydb/)
 
 *   Database adapters to access MobilityDB from Python are also available
 
-    *    [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
-    *    [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB.
+   *   [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+
+   *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB
 
 *   Data generator and benchmark tool based on the [BerlinMOD](http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html) benchmark. The data generator takes input data from [Open Street Map](https://www.openstreetmap.org/) and uses [pgRouting](https://pgrouting.org/) to generate routes between pairs of source and target locations.
 
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
+
+*   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
+
 
 Mailing Lists
 ------------
@@ -161,7 +167,7 @@ In addition, a pregenerated version of the documentation is available.
 ### Publications
 
 *   Giulia Rovinelli, Stan Matwin, Fabio Pranovi, Elisabetta Russo, Claudio Silvestri, Marta Simeoni, Alessandra Raffaetà, [Multiple aspect trajectories: a case study on fishing vessels in the Northern Adriatic sea](https://docs.mobilitydb.com/pub/BMDA-EDBT-ICDT-2021.pdf). In [Proc. of the Workshops of the EDBT/ICDT 2021 Joint Conference](https://db.cs.pitt.edu/edbtidct2021wsproceedings/), 2021.
-*   Maxime Schoemans, Mahmoud Sakr, Esteban Zimányi, [Implementing Rigid Temporal Geometries in Moving Object Databases](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021.pdf). To appear in Proc. of the 37th IEEE International Conference in Data Engineering, 2021.
+*   Maxime Schoemans, Mahmoud Sakr, Esteban Zimányi, [Implementing Rigid Temporal Geometries in Moving Object Databases](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021.pdf). In Proc. of the 37th IEEE International Conference in Data Engineering, 2021, [Slides](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021_slides.pdf). [Video](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021.mp4).
 *   Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Spatiotemporal Trajectory Query Processing in SQL](https://docs.mobilitydb.com/pub/SigSpatial2020.pdf). In [Proc. of the 28th International Conference on Advances in Geographic Information Systems, SIGSPATIAL' 20, pages 87-98, 2020](https://dl.acm.org/doi/10.1145/3397536.3422262).
 *   Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, [From Simple Features to Moving Features and Beyond?](https://arxiv.org/abs/2006.16900), arXiv 2006.16900, 2020.
 *   Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, [MobilityDB: A Mobility Database based on PostgreSQL and PostGIS](https://docs.mobilitydb.com/pub/TODS.pdf). [ACM Transactions on Database Systems, 45(4), 2020](https://dl.acm.org/doi/10.1145/3406534).
@@ -172,7 +178,9 @@ In addition, a pregenerated version of the documentation is available.
 
 ### Presentations
 
+* [Managing Moving Objects Data with MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB_PGConf2021_Tutorial.pdf), [PGConf.Russia](https://pgconf.ru/en/2021/291542) March, 2021, Online. [Video](https://youtu.be/RQN0gqQvH4M)
 *   [2D and 3D Rigid Temporal Geometries in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-slides.pdf), Talk given in the 117th OGC Member Meeting, in the Moving Features Standard Working Group meeting, December 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-video.mp4)
+*   [Towards a Distributed Mobility Database System](https://docs.mobilitydb.com/pub/MobilityDB_LATAM2020.pdf) Talk given in Primera Reunión Latinoamericana de Usuarios de QGIS (LATAM 2020), November 2020. [Video](https://www.youtube.com/watch?v=gja9yTzK77g) (in Spanish)
 *   [MobilityDB: A Moving Object Database Extension of PostgreSQL-PostGIS](https://docs.mobilitydb.com/pub/MobilityDB@Venice.mp4), Seminar given in Ca' Foscari University of Venice, November 2020.
 *   [From Simple Features to Moving Features and Beyond?](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-September-slides.pdf), Talk given in the 116th OGC Member Meeting, in the Moving Features Standard Working Group meeting, September 15th 2020.
 *   [A Moving Feature Data Generator in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-slides.pdf), Talk given in the 115th OGC Member Meeting, in the Moving Features Standard Working Group meeting, June 19th 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-video.mp4)

@@ -96,9 +96,9 @@ static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
   int32 tpoint_srid = tpoint_srid_internal(temp);
-  TemporalType tpoint_temptype = temp->temptype;
-  TemporalType typmod_temptype = TYPMOD_GET_TEMPTYPE(typmod);
-  TYPMOD_DEL_TEMPTYPE(typmod);
+  int16 tpoint_subtype = temp->subtype;
+  int16 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
+  TYPMOD_DEL_SUBTYPE(typmod);
   /* If there is no geometry type */
   if (typmod == 0)
     typmod = -1;
@@ -108,7 +108,7 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
   int32 typmod_z = TYPMOD_GET_Z(typmod);
 
   /* No typmod (-1) */
-  if (typmod < 0 && typmod_temptype == ANYTEMPORALTYPE)
+  if (typmod < 0 && typmod_subtype == ANYTEMPSUBTYPE)
     return temp;
   /* Typmod has a preference for SRID? Geometry SRID had better match */
   if (typmod_srid > 0 && typmod_srid != tpoint_srid)
@@ -116,10 +116,10 @@ tpoint_valid_typmod(Temporal *temp, int32_t typmod)
       errmsg("Temporal point SRID (%d) does not match column SRID (%d)",
         tpoint_srid, typmod_srid) ));
   /* Typmod has a preference for temporal type */
-  if (typmod_type > 0 && typmod_temptype != ANYTEMPORALTYPE && typmod_temptype != tpoint_temptype)
+  if (typmod_type > 0 && typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != tpoint_subtype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Temporal type (%s) does not match column type (%s)",
-        temptype_name(tpoint_temptype), temptype_name(typmod_temptype)) ));
+        tempsubtype_name(tpoint_subtype), tempsubtype_name(typmod_subtype)) ));
   /* Mismatched Z dimensionality.  */
   if (typmod > 0 && typmod_z && ! tpoint_z)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -187,70 +187,70 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
 
   /*
    * There are several ways to define a column wrt type modifiers:
-   *   column_type(TempType, Geometry, SRID) => All modifiers are determined.
-   *    column_type(TempType, Geometry) => The SRID is generic.
+   *   column_type(TempSubType, Geometry, SRID) => All modifiers are determined.
+   *    column_type(TempSubType, Geometry) => The SRID is generic.
    *    column_type(Geometry, SRID) => The temporal type is generic.
    *    column_type(Geometry) => The temporal type and SRID are generic.
-   *   column_type(TempType) => The geometry type and SRID are generic.
+   *   column_type(TempSubType) => The geometry type and SRID are generic.
    *   column_type => The temporal type, geometry type, and SRID are generic.
    *
    * For example, if the user did not set the temporal type, we can use any 
    * temporal type in the same column. Similarly for all generic modifiers.
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-  TemporalType temptype = ANYTEMPORALTYPE;
+  int16 temp_subtype = ANYTEMPSUBTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid;
-  char *s;
+  char *s[3] = {0,0,0};
+  for (int i = 0; i < n; i++)
+  {
+    s[i] = DatumGetCString(elem_values[i]);
+    if (strlen(s[i]) == 0)
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Empty temporal type modifier")));
+  }
 
   bool has_geo = false, has_srid = false;
   if (n == 3)
   {
-    /* Type_modifier is (TempType, Geometry, SRID) */
-    s = DatumGetCString(elem_values[0]);
-    if (temptype_from_string(s, &temptype) == false) 
+    /* Type_modifier is (TempSubType, Geometry, SRID) */
+    if (tempsubtype_from_string(s[0], &temp_subtype) == false) 
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Invalid temporal type modifier: %s", s)));
-    s = DatumGetCString(elem_values[1]);
-    if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+        errmsg("Invalid temporal type modifier: %s", s[0])));
+    if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-          errmsg("Invalid geometry type modifier: %s", s)));
-    s = DatumGetCString(elem_values[2]);
-    srid = pg_atoi(s, sizeof(int32), '\0');
+        errmsg("Invalid geometry type modifier: %s", s[1])));
+    srid = pg_atoi(s[2], sizeof(int32), '\0');
     srid = clamp_srid(srid);
     has_geo = has_srid = true;
   }
   else if (n == 2)
   {
-    /* Type modifier is either (TempType, Geometry) or (Geometry, SRID) */
-    s = DatumGetCString(elem_values[0]);
-    if (temptype_from_string(s, &temptype))
+    /* Type modifier is either (TempSubType, Geometry) or (Geometry, SRID) */
+    if (tempsubtype_from_string(s[0], &temp_subtype))
     {
-      s = DatumGetCString(elem_values[1]);
-      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+      if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-            errmsg("Invalid geometry type modifier: %s", s)));
+            errmsg("Invalid geometry type modifier: %s", s[1])));
       has_geo = true;
     }
     else
     {
-      if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM) == LW_FAILURE)
+      if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-            errmsg("Invalid geometry type modifier: %s", s)));
-      s = DatumGetCString(elem_values[1]);
-      srid = pg_atoi(s, sizeof(int32), '\0');
+            errmsg("Invalid geometry type modifier: %s", s[0])));
+      srid = pg_atoi(s[1], sizeof(int32), '\0');
       srid = clamp_srid(srid);
       has_geo = has_srid = true;
     }
   }
   else if (n == 1)
   {
-    /* Type modifier: either (TempType) or (Geometry) */
+    /* Type modifier: either (TempSubType) or (Geometry) */
     has_srid = false;
-    s = DatumGetCString(elem_values[0]);
-    if (temptype_from_string(s, &temptype))
+    if (tempsubtype_from_string(s[0], &temp_subtype))
       ;
-    else if (geometry_type_from_string(s, &geometry_type, &hasZ, &hasM))
+    else if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM))
       has_geo = true;
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -261,7 +261,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
         errmsg("Invalid temporal point type modifier:")));
 
   /* Shift to remove the 4 bits of the temporal type */
-  TYPMOD_DEL_TEMPTYPE(typmod);
+  TYPMOD_DEL_SUBTYPE(typmod);
   /* Set default values */
   if (is_geography)
     TYPMOD_SET_SRID(typmod, SRID_DEFAULT);
@@ -287,7 +287,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   }
 
   /* Shift to restore the 4 bits of the temporal type */
-  TYPMOD_SET_TEMPTYPE(typmod, temptype);
+  TYPMOD_SET_SUBTYPE(typmod, temp_subtype);
 
   pfree(elem_values);
   return typmod;
@@ -330,15 +330,15 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
   char *s = (char *) palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  TemporalType temptype = TYPMOD_GET_TEMPTYPE(typmod);
-  TYPMOD_DEL_TEMPTYPE(typmod);
+  int16 temp_subtype = TYPMOD_GET_SUBTYPE(typmod);
+  TYPMOD_DEL_SUBTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
   int32 hasz = TYPMOD_GET_Z(typmod);
 
   /* No temporal type or geometry type? Then no typmod at all. 
     Return empty string. */
-  if (typmod < 0 || (temptype == ANYTEMPORALTYPE && !geometry_type))
+  if (typmod < 0 || (temp_subtype == ANYTEMPSUBTYPE && !geometry_type))
   {
     *str = '\0';
     PG_RETURN_CSTRING(str);
@@ -346,11 +346,11 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
   /* Opening bracket */
   str += sprintf(str, "(");
   /* Has temporal type?  */
-  if (temptype != ANYTEMPORALTYPE)
-    str += sprintf(str, "%s", temptype_name(temptype));
+  if (temp_subtype != ANYTEMPSUBTYPE)
+    str += sprintf(str, "%s", tempsubtype_name(temp_subtype));
   if (geometry_type)
   {
-    if (temptype != ANYTEMPORALTYPE) str += sprintf(str, ",");
+    if (temp_subtype != ANYTEMPSUBTYPE) str += sprintf(str, ",");
     str += sprintf(str, "%s", lwtype_name(geometry_type));
     /* Has Z?  */
     if (hasz) str += sprintf(str, "Z");
@@ -395,8 +395,8 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Oid  valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *result = (Temporal *)tinstant_make(PointerGetDatum(gs),
-    t, valuetypid);
+  Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
+    valuetypid);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }

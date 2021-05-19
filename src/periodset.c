@@ -78,7 +78,7 @@ periodset_bbox(Period *p, const PeriodSet *ps)
 /**
  * Construct a period set from an array of periods
  *
- * For example, the memory structure of a PeriodSet with 3 periods is as 
+ * For example, the memory structure of a PeriodSet with 3 periods is as
  * follows
  * @code
  * ---------------------------------------------------------------------------------
@@ -125,6 +125,28 @@ periodset_make(const Period **periods, int count, bool normalize)
   /* Free after normalization */
   if (normalize && count > 1)
     pfree_array((void **) newperiods, newcount);
+  return result;
+}
+
+/**
+ * Construct a period set from an array of periods and free the array and the
+ * periods after the creation
+ *
+ * @param[in] periods Array of periods
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized.
+ */
+PeriodSet *
+periodset_make_free(Period **periods, int count, bool normalize)
+{
+  if (count == 0)
+  {
+    pfree(periods);
+    return NULL;
+  }
+  PeriodSet *result = periodset_make((const Period **) periods,
+    count, normalize);
+  pfree_array((void **) periods, count);
   return result;
 }
 
@@ -281,14 +303,13 @@ periodset_recv(PG_FUNCTION_ARGS)
   Period **periods = palloc(sizeof(Period *) * count);
   for (int i = 0; i < count; i++)
     periods[i] = period_read(buf);
-  PeriodSet *result = periodset_make((const Period **) periods, count, NORMALIZE_NO);
-  pfree_array((void **) periods, count);
+  PeriodSet *result = periodset_make_free(periods, count, NORMALIZE_NO);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
  * Constructor function
- ******************************************  **********************************/
+ ****************************************************************************/
 
 PG_FUNCTION_INFO_V1(periodset_constructor);
 /**
@@ -349,7 +370,7 @@ timestampset_to_periodset_internal(const TimestampSet *ts)
     TimestampTz t = timestampset_time_n(ts, i);
     periods[i] = period_make(t, t, true, true);
   }
-  PeriodSet *result = periodset_make((const Period **) periods, ts->count, NORMALIZE_NO);
+  PeriodSet *result = periodset_make_free(periods, ts->count, NORMALIZE_NO);
   return result;
 }
 
@@ -720,7 +741,7 @@ periodset_shift_internal(const PeriodSet *ps, const Interval *interval)
     const Period *p = periodset_per_n(ps, i);
     periods[i] = period_shift_internal(p, interval);
   }
-  PeriodSet *result = periodset_make((const Period **) periods, ps->count, NORMALIZE_NO);
+  PeriodSet *result = periodset_make_free(periods, ps->count, NORMALIZE_NO);
   return result;
 }
 

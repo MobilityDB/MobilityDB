@@ -115,9 +115,19 @@
 				<listitem>
 					<para><link linkend="periods"><varname>periods</varname></link>: Obtener los períodos</para>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2>
+			<title>Funciones de modificación</title>
+
+			<itemizedlist>
 				<listitem>
 					<para><link linkend="time_shift"><varname>shift</varname></link>: Desplazar el valor de tiempo con un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -228,6 +238,7 @@
 			</itemizedlist>
 		</sect2>
 
+
 		<sect2>
 			<title>Funciones agregadas</title>
 
@@ -238,6 +249,10 @@
 
 				<listitem>
 					<para><link linkend="time_extent"><varname>extent</varname></link>: Extensión del período delimitador</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="range_extent"><varname>extent</varname></link>: Extensión del rango delimitador</para>
 				</listitem>
 
 				<listitem>
@@ -372,6 +387,16 @@
 
 				<listitem>
 					<para><link linkend="stbox_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Funciones aggregadas</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="box_extent"><varname>extent</varname></link>: Extensión del cuadro delimitador</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -536,19 +561,19 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttypeinst"><varname>ttypeinst</varname></link>: Constructor para tipos temporales de subtipo instante</para>
+					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor para tipos temporales de subtipo instante</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypei"><varname>ttypei</varname></link>: Constructor para tipos temporales de subtipo conjunto de instantes</para>
+					<para><link linkend="ttype_instset"><varname>ttype_instset</varname></link>: Constructor para tipos temporales de subtipo conjunto de instantes</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeseq"><varname>ttypeseq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
+					<para><link linkend="ttype_seq"><varname>ttype_seq</varname></link>: Constructor para tipos temporales de subtipo secuencia</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypes"><varname>ttypes</varname></link>: Constructor para tipos temporales de subtipo conjunto de secuencias</para>
+					<para><link linkend="ttype_seqset"><varname>ttype_seqset</varname></link>: Constructor para tipos temporales de subtipo conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -557,6 +582,22 @@
 			<title>Conversión de tipos</title>
 
 			<itemizedlist>
+				<listitem>
+					<para><link linkend="temporal_period"><varname>ttype::period</varname></link>: Convertir un valor temporal a un período</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_range"><varname>tnumber::range</varname></link>: Convertir un número temporal a un rango</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tnumber_tbox"><varname>tnumber::tbox</varname></link>: Convertir un número temporal number a un <varname>tbox</varname></para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tpoint_stbox"><varname>tpoint::stbox</varname></link>: Convertir un punto temporal a un <varname>stbox</varname></para>
+				</listitem>
+
 				<listitem>
 					<para><link linkend="tint_tfloat"><varname>tint::tfloat</varname></link>: Convertir un entero temporal en un flotante temporal</para>
 				</listitem>
@@ -588,7 +629,7 @@
 
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="ttype_transform"><varname>ttypeinst, ttypei, ttypeseq, ttypes</varname></link>: Transformar un valor temporal en otro subtipo</para>
+				<para><link linkend="ttype_transform"><varname>ttype_inst, ttype_instset, ttype_seq, ttype_seqset</varname></link>: Transformar un valor temporal en otro subtipo</para>
 				</listitem>
 
 				<listitem>
@@ -800,11 +841,51 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromMFJSON"><varname>fromMFJSON</varname></link>: Entrar un punto temporal en una representación JSON de características móviles (Moving Features)</para>
+					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Entrar un punto temporal geométrico en representación de texto conocido (Well-Known Text o WKT)</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="fromEWKB"><varname>fromEWKB</varname></link>: Entrar un punto temporal en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+					<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Entrar un punto temporal geográfico en representación de texto conocido (Well-Known Text o WKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Entrar un punto temporal geométrico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Entrar un punto temporal geográfico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Entrar un punto temporal geográfico en una representación JSON de características móviles (Moving Features)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Entrar un punto temporal geométrico en representación binaria conocida (Well-Known Binary o WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Entrar un punto temporal geográfico en representación binaria conocida (Well-Known Binary o WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Entrar un punto temporal geométrico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Entrar un punto temporal geográfico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Entrar un punto temporal geométrico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Entrar un punto temporal geográfico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
 				</listitem>
 
 				<listitem>
@@ -1185,6 +1266,78 @@
 		</sect2>
 
 		<sect2>
+			<title>Mosaicos multidimensionales</title>
+
+			<sect3>
+				<title>Operaciones de intervalos</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="bucketList"><varname>bucketList</varname></link>: Obtener un conjunto de parejas (índice, intervalo) que cubre el rango o el período con intervalos de la misma amplitud alineados con el origen</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="valueBucket"><varname>valueBucket</varname></link>: Obtener el valor inicial del intervalo que contiene el número de entrada.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="rangeBucket"><varname>rangeBucket</varname></link>: Obtener el rango en el espacio de intervalos contiene el número de entrada.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="timeBucket"><varname>timeBucket</varname></link>: Obtener el valor inicial del intervalo que contiene la marca de tiempo de entrada.</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="periodBucket"><varname>periodBucket</varname></link>: Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
+					</listitem>
+
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de malla</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="multidimGrid"><varname>multidimGrid</varname></link>: Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="multidimTile"><varname>multidimTile</varname></link>: Obtener el mosaico de la malla multidimensional que contiene el valor y la marca de tiempo</para>
+						</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operaciones de fragmentación</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="valueSplit"><varname>valueSplit</varname></link>: Fragmentar el número temporal con respecto a intervalos de valores</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="timeSplit"><varname>timeSplit</varname></link>: Fragmentar el valor temporal con respecto a intervalos de tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="valueTimeSplit"><varname>valueTimeSplit</varname></link>: Fragmentar el número temporal con respecto a los mosaicos de una malla de valores y de tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragmentar el punto temporal con respecto a los mosaicos de una malla espacio-temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+		</sect2>
+
+		<sect2>
 			<title>Operadores de distancia</title>
 
 			<itemizedlist>
@@ -1202,7 +1355,7 @@
 			<title>Relaciones espaciales para puntos temporales</title>
 
 			<sect3>
-				<title>Relaciones espaciales posibles </title>
+				<title>Relaciones posibles </title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
@@ -1259,7 +1412,7 @@
 			</sect3>
 
 			<sect3>
-				<title>Relaciones espaciales temporales</title>
+				<title>Relaciones temporales</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
