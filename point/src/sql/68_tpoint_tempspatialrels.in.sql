@@ -82,15 +82,6 @@ CREATE FUNCTION tintersects(tgeogpoint, tgeogpoint)
   AS 'MODULE_PATHNAME', 'tintersects_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tintersectsNew(tgeompoint, geometry)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tintersects_tpoint_geo_new'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tintersectsNew(geometry, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tintersects_geo_tpoint_new'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /*****************************************************************************
  * ttouches
  *****************************************************************************/

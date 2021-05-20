@@ -80,7 +80,7 @@ BEGIN
   RETURN stbox_t(xmin, ymin, tmin, xmin + random_float(1, maxdelta),
     ymin + random_float(1, maxdelta), tmin + random_minutes(1, maxminutes), srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_stbox(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
@@ -153,7 +153,7 @@ BEGIN
       tmin + random_minutes(1, maxminutes), srid);
   END IF;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_stbox3D(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
@@ -185,7 +185,7 @@ BEGIN
   RETURN random_stbox3D(lowx, highx, lowy, highy, lowz, highz, lowtime,
     hightime, maxdelta, maxminutes, true, false, srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_geodstbox(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
@@ -217,7 +217,7 @@ BEGIN
   RETURN random_stbox3D(lowx, highx, lowy, highy, lowz, highz, lowtime,
     hightime, maxdelta, maxminutes, true, true, srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_geodstbox3D(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
@@ -253,7 +253,7 @@ BEGIN
   RETURN st_setsrid(st_point(random_float(lowx, highx),
     random_float(lowy, highy)), srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_point(-100, 100, -100, 100))
@@ -296,7 +296,7 @@ BEGIN
   RETURN st_setsrid(st_makepoint(random_float(lowx, highx), random_float(lowy, highy),
     random_float(lowz, highz)), srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_point3D(-100, 100, -100, 100, 0, 100))
@@ -328,7 +328,7 @@ BEGIN
   END IF;
   RETURN random_geom_point(lowx, highx, lowy, highy, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_point(-180, 180, 90, 90))
@@ -361,7 +361,7 @@ BEGIN
   END IF;
   RETURN random_geom_point3D(lowx, highx, lowy, highy, lowz, highz, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_point3D(0, 90, 0, 90, 0, 90))
@@ -433,7 +433,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_geom_point_array(-100, 100, -100, 100, 10, 5, 10)) AS g
@@ -518,7 +518,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_geom_point3D_array(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
@@ -564,7 +564,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_geog_point_array(-180, 180, -90, 90, 10, 5, 10)) AS g
@@ -612,7 +612,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_geog_point3D_array(-180, 180, -90, 90, 0, 10000, 10, 5, 10)) AS g
@@ -641,7 +641,7 @@ BEGIN
   RETURN st_setsrid(st_makeline(random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
     minvertices, maxvertices)), srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_linestring(-100, 100, -100, 100, 10, 5, 10)) AS g
@@ -681,7 +681,7 @@ BEGIN
   RETURN st_setsrid(st_makeline(random_geom_point3D_array(lowx, highx, lowy,
     highy, lowz, highz, maxdelta, minvertices, maxvertices)), srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_linestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
@@ -723,7 +723,7 @@ BEGIN
   RETURN random_geom_linestring(lowx, highx, lowy, highy, maxdelta,
     minvertices, maxvertices, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_linestring(0, 80, 0, 80, 10, 5, 10)) AS g
@@ -763,7 +763,7 @@ BEGIN
   RETURN random_geom_linestring3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, minvertices, maxvertices, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_linestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
@@ -810,7 +810,7 @@ BEGIN
   pointarr[noVertices + 1] = pointarr[1];
   RETURN st_setsrid(st_makepolygon(st_makeline(pointarr)), srid);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_polygon(-100, 100, -100, 100, 10, 5, 10)) AS g
@@ -859,7 +859,7 @@ BEGIN
   pointarr[noVertices + 1] = pointarr[1];
   RETURN st_makepolygon(st_makeline(pointarr));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_polygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10)) AS g
@@ -898,7 +898,7 @@ BEGIN
   RETURN random_geom_polygon(lowx, highx, lowy, highy, maxdelta, minvertices,
     maxvertices, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_polygon(0, 80, 0, 80, 10, 5, 10)) AS g
@@ -938,7 +938,7 @@ BEGIN
   RETURN random_geom_polygon3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, minvertices, maxvertices, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_polygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
@@ -973,7 +973,7 @@ BEGIN
   RETURN st_collect(random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
     mincard, maxcard, srid));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_multipoint(-100, 100, -100, 100, 10, 5, 10)) AS g
@@ -1007,7 +1007,7 @@ BEGIN
   RETURN st_collect(random_geom_point3D_array(lowx, highx, lowy, highy, lowz,
     highz, maxdelta, mincard, maxcard, srid));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_multipoint3D(-100, 100, -100, 100, -100, 100, 10, 5, 10)) AS g
@@ -1044,7 +1044,7 @@ BEGIN
   RETURN random_geom_multipoint(lowx, highx, lowy, highy, maxdelta, mincard,
     maxcard, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_multipoint(0, 80, 0, 80, 10, 5, 10)) AS g
@@ -1081,7 +1081,7 @@ BEGIN
   RETURN random_geom_multipoint3D(lowx, highx, lowy, highy, lowz, highz, maxdelta, mincard,
     maxcard, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_multipoint3D(0, 80, 0, 80, 0, 80, 10, 5, 10)) AS g
@@ -1119,7 +1119,7 @@ BEGIN
   FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_unaryunion(st_collect(result));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_multilinestring(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
@@ -1161,7 +1161,7 @@ BEGIN
   FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_unaryunion(st_collect(result));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_multilinestring3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
@@ -1201,7 +1201,7 @@ BEGIN
   RETURN random_geom_multilinestring(lowx, highx, lowy, highy, maxdelta,
     minvertices, maxvertices, mincard, maxcard, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_multilinestring(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1242,7 +1242,7 @@ BEGIN
   RETURN random_geom_multilinestring3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, minvertices, maxvertices, mincard, maxcard, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_multilinestring3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1283,7 +1283,7 @@ BEGIN
   FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_collect(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_multipolygon(-100, 100, -100, 100, 10, 5, 10, 5, 10)) AS g
@@ -1325,7 +1325,7 @@ BEGIN
   FROM generate_series(mincard, random_int(mincard, maxcard)) AS x;
   RETURN st_collect(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geom_multipolygon3D(-100, 100, -100, 100, 0, 100, 10, 5, 10, 5, 10)) AS g
@@ -1365,7 +1365,7 @@ BEGIN
   RETURN random_geom_multipolygon(lowx, highx, lowy, highy, maxdelta,
     minvertices, maxvertices, mincard, maxcard, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_multipolygon(0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1406,7 +1406,7 @@ BEGIN
   RETURN random_geom_multipolygon3D(lowx, highx, lowy, highy, lowz, highz,
     maxdelta, minvertices, maxvertices, mincard, maxcard, srid)::geography;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, st_asewkt(random_geog_multipolygon3D(0, 80, 0, 80, 0, 80, 10, 5, 10, 5, 10)) AS g
@@ -1446,7 +1446,7 @@ BEGIN
   RETURN tgeompoint_inst(random_geom_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_inst(-100, 100, -100, 100, '2001-01-01', '2002-01-01')) AS inst
@@ -1480,7 +1480,7 @@ BEGIN
   RETURN tgeompoint_inst(random_geom_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint3D_inst(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01')) AS inst
@@ -1512,7 +1512,7 @@ BEGIN
   RETURN tgeogpoint_inst(random_geog_point(lowx, highx, lowy, highy, srid),
     random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_inst(0, 80, 0, 80, '2001-01-01', '2002-01-01')) AS inst
@@ -1546,7 +1546,7 @@ BEGIN
   RETURN tgeogpoint_inst(random_geog_point3D(lowx, highx, lowy, highy, lowz,
     highz, srid), random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint3D_inst(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01')) AS inst
@@ -1594,7 +1594,7 @@ BEGIN
   END LOOP;
   RETURN tgeompoint_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_instset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -1645,7 +1645,7 @@ BEGIN
   END LOOP;
   RETURN tgeompoint_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint3D_instset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10)) AS ti
@@ -1694,7 +1694,7 @@ BEGIN
   END LOOP;
   RETURN tgeogpoint_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_instset(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -1745,7 +1745,7 @@ BEGIN
   END LOOP;
   RETURN tgeogpoint_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint3D_instset(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -1778,8 +1778,8 @@ FROM generate_series(1,10) k;
 DROP FUNCTION IF EXISTS random_tgeompoint_seq;
 CREATE FUNCTION random_tgeompoint_seq(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, mincard int, maxcard int, srid int DEFAULT 0,
-  fixstart bool DEFAULT false)
+  maxminutes int, mincard int, maxcard int, linear bool DEFAULT true,
+  srid int DEFAULT 0, fixstart bool DEFAULT false)
   RETURNS tgeompoint AS $$
 DECLARE
   pointarr geometry[];
@@ -1802,13 +1802,20 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  FOR i IN 1..card
+  FOR i IN 1..card - 1
   LOOP
     result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_seq(result, lower_inc, upper_inc);
+  -- Sequences with step interpolation and exclusive upper bound must have
+  -- the same value in the last two instants
+  IF card <> 1 AND NOT upper_inc AND NOT linear THEN
+    result[card] = tgeompoint_inst(pointarr[card - 1], tsarr[card]);
+  ELSE
+    result[card] = tgeompoint_inst(pointarr[card], tsarr[card]);
+  END IF;
+  RETURN tgeompoint_seq(result, lower_inc, upper_inc, linear);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_seq(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -1841,7 +1848,7 @@ DROP FUNCTION IF EXISTS random_tgeompoint3D_seq;
 CREATE FUNCTION random_tgeompoint3D_seq(lowx float, highx float,
   lowy float, highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int, mincard int, maxcard int,
-  srid int DEFAULT 0, fixstart bool DEFAULT false)
+  linear bool DEFAULT true, srid int DEFAULT 0, fixstart bool DEFAULT false)
   RETURNS tgeompoint AS $$
 DECLARE
   pointarr geometry[];
@@ -1864,13 +1871,20 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  FOR i IN 1..card
+  FOR i IN 1..card - 1
   LOOP
     result[i] = tgeompoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeompoint_seq(result, lower_inc, upper_inc);
+  -- Sequences with step interpolation and exclusive upper bound must have
+  -- the same value in the last two instants
+  IF card <> 1 AND NOT upper_inc AND NOT linear THEN
+    result[card] = tgeompoint_inst(pointarr[card - 1], tsarr[card]);
+  ELSE
+    result[card] = tgeompoint_inst(pointarr[card], tsarr[card]);
+  END IF;
+  RETURN tgeompoint_seq(result, lower_inc, upper_inc, linear);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint3D_seq(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -1901,8 +1915,8 @@ FROM generate_series(1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tgeogpoint_seq;
 CREATE FUNCTION random_tgeogpoint_seq(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
-  maxminutes int, mincard int, maxcard int, srid int DEFAULT 4326,
-  fixstart bool DEFAULT false)
+  maxminutes int, mincard int, maxcard int, linear bool DEFAULT true,
+  srid int DEFAULT 4326, fixstart bool DEFAULT false)
   RETURNS tgeogpoint AS $$
 DECLARE
   pointarr geography[];
@@ -1925,13 +1939,20 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  FOR i IN 1..card
+  FOR i IN 1..card - 1
   LOOP
     result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
-  RETURN tgeogpoint_seq(result, lower_inc, upper_inc);
+  -- Sequences with step interpolation and exclusive upper bound must have
+  -- the same value in the last two instants
+  IF card <> 1 AND NOT upper_inc AND NOT linear THEN
+    result[card] = tgeogpoint_inst(pointarr[card - 1], tsarr[card]);
+  ELSE
+    result[card] = tgeogpoint_inst(pointarr[card], tsarr[card]);
+  END IF;
+  RETURN tgeogpoint_seq(result, lower_inc, upper_inc, linear);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_seq(0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -1964,7 +1985,8 @@ DROP FUNCTION IF EXISTS random_tgeogpoint3D_seq;
 CREATE FUNCTION random_tgeogpoint3D_seq(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int, mincard int,
-  maxcard int, srid int DEFAULT 4326, fixstart bool DEFAULT false)
+  maxcard int, linear bool DEFAULT true, srid int DEFAULT 4326,
+  fixstart bool DEFAULT false)
   RETURNS tgeogpoint AS $$
 DECLARE
   pointarr geography[];
@@ -1986,13 +2008,20 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  FOR i IN 1..card
+  FOR i IN 1..card - 1
   LOOP
     result[i] = tgeogpoint_inst(pointarr[i], tsarr[i]);
   END LOOP;
+  -- Sequences with step interpolation and exclusive upper bound must have
+  -- the same value in the last two instants
+  IF card <> 1 AND NOT upper_inc AND NOT linear THEN
+    result[card] = tgeogpoint_inst(pointarr[card - 1], tsarr[card]);
+  ELSE
+    result[card] = tgeogpoint_inst(pointarr[card], tsarr[card]);
+  END IF;
   RETURN tgeogpoint_seq(result, lower_inc, upper_inc);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint3D_seq(0, 80, 0, 80, 0, 80, '2001-01-01', '2002-01-01', 10, 10, 5, 10))
@@ -2025,7 +2054,7 @@ DROP FUNCTION IF EXISTS random_tgeompoint_seqset;
 CREATE FUNCTION random_tgeompoint_seqset(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
   maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int,
-  srid int DEFAULT 0)
+  linear bool DEFAULT true, srid int DEFAULT 0)
   RETURNS tgeompoint AS $$
 DECLARE
   result tgeompoint[];
@@ -2045,14 +2074,14 @@ BEGIN
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeompoint_seq(lowx, highx, lowy, highy, t1, t2, maxdelta,
-      maxminutes, mincardseq, maxcardseq, srid, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeompoint_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint_seqset(-100, 100, -100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
@@ -2084,7 +2113,8 @@ DROP FUNCTION IF EXISTS random_tgeompoint3D_seqset;
 CREATE FUNCTION random_tgeompoint3D_seqset(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int, mincardseq int,
-  maxcardseq int, mincard int, maxcard int, srid int DEFAULT 0)
+  maxcardseq int, mincard int, maxcard int, linear bool DEFAULT true,
+  srid int DEFAULT 0)
   RETURNS tgeompoint AS $$
 DECLARE
   result tgeompoint[];
@@ -2104,14 +2134,14 @@ BEGIN
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeompoint3D_seq(lowx, highx, lowy, highy, lowz, highz,
-      t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, srid, i > 1) INTO seq;
+      t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeompoint_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asewkt(random_tgeompoint3D_seqset(-100, 100, -100, 100, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
@@ -2148,7 +2178,7 @@ DROP FUNCTION IF EXISTS random_tgeogpoint_seqset;
 CREATE FUNCTION random_tgeogpoint_seqset(lowx float, highx float, lowy float,
   highy float, lowtime timestamptz, hightime timestamptz, maxdelta float,
   maxminutes int, mincardseq int, maxcardseq int, mincard int, maxcard int,
-  srid int DEFAULT 4326)
+  linear bool DEFAULT true, srid int DEFAULT 4326)
   RETURNS tgeogpoint AS $$
 DECLARE
   result tgeogpoint[];
@@ -2168,14 +2198,14 @@ BEGIN
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeogpoint_seq(lowx, highx, lowy, highy, t1, t2, maxdelta,
-      maxminutes, mincardseq, maxcardseq, srid, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeogpoint_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint_seqset(-180, 180, -90, 90, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts
@@ -2207,7 +2237,8 @@ DROP FUNCTION IF EXISTS random_tgeogpoint3D_seqset;
 CREATE FUNCTION random_tgeogpoint3D_seqset(lowx float, highx float, lowy float,
   highy float, lowz float, highz float, lowtime timestamptz,
   hightime timestamptz, maxdelta float, maxminutes int, mincardseq int,
-  maxcardseq int, mincard int, maxcard int, srid int DEFAULT 4326)
+  maxcardseq int, mincard int, maxcard int, linear bool DEFAULT true,
+  srid int DEFAULT 4326)
   RETURNS tgeogpoint AS $$
 DECLARE
   result tgeogpoint[];
@@ -2227,14 +2258,14 @@ BEGIN
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tgeogpoint3D_seq(lowx, highx, lowy, highy, lowz, highz,
-      t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, srid, i > 1) INTO seq;
+      t1, t2, maxdelta, maxminutes, mincardseq, maxcardseq, linear, srid, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tgeogpoint_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, asEwkt(random_tgeogpoint3D_seqset(-180, 180, -90, 90, 0, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10)) AS ts

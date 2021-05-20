@@ -77,7 +77,9 @@
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_spatialrels.h"
 
-static Temporal * tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs);
+/* Compute either the tintersects or the tdisjoint relationship */
+#define TINTERSECTS true
+#define TDISJOINT   false
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships
@@ -160,118 +162,6 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal instant set point and a geometry
- *
- * @param[out] result Array on which the pointers of the instants are stored
- * @param[in] ti Temporal point
- * @param[in] geom Intersection of the trajectory of the temporal point
- *   and the geometry
- * @param[in] box Bounding box of the geometry
- * @param[in] tinter Whether we compute tintersects or tdisjoint
- * @pre The temporal point is simple, that is, non self-intersecting
- */
-static void
-tinterrel_tpointinstset_geom1(TInstant **result, const TInstantSet *ti,
-  Datum geom, const STBOX *box, bool tinter)
-{
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Datum datum_yes = tinter ? BoolGetDatum(true) : BoolGetDatum(false);
-  Datum datum_no = tinter ? BoolGetDatum(false) : BoolGetDatum(true);
-
-  /* Bounding box test */
-  STBOX *box1 = tinstantset_bbox_ptr(ti);
-  if (! overlaps_stbox_stbox_internal(box1, box))
-  {
-    for (int i = 0; i < ti->count; i++)
-    {
-      const TInstant *inst = tinstantset_inst_n(ti, i);
-      result[i] = tinstant_make(datum_no, inst->t, BOOLOID);
-    }
-    return;
-  }
-
-  Datum traj = tpointinstset_trajectory(ti);
-  Datum inter = call_function2(intersection, traj, geom);
-  GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
-  if (gserialized_is_empty(gsinter))
-  {
-    for (int i = 0; i < ti->count; i++)
-    {
-      const TInstant *inst = tinstantset_inst_n(ti, i);
-      result[i] = tinstant_make(datum_no, inst->t, BOOLOID);
-    }
-    pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(inter));
-    return;
-  }
-
-  /* Get the intersection points */
-  int countinter;
-  Datum *points = gsinter_get_points(gsinter, &countinter);
-  for (int i = 0; i < ti->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
-    Datum value = tinstant_value(inst);
-    bool found = false;
-    for (int j = 0; j < countinter; j++)
-    {
-      if (datum_point_eq(value, points[j]))
-      {
-        found = true;
-        break;
-      }
-    }
-    result[i] = found ?
-      tinstant_make(datum_yes, inst->t, BOOLOID) :
-      tinstant_make(datum_no, inst->t, BOOLOID);
-  }
-  pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(inter));
-  pfree_datumarr(points, countinter);
-  return;
-}
-
-/**
- * Evalues tintersects/tdisjoint for a temporal instant set point and a geometry
- *
- * @param[in] ti Temporal point
- * @param[in] geom Intersection of the trajectory of the temporal point
- *   and the geometry
- * @param[in] box Bounding box of the geometry
- * @param[in] tinter Whether we compute tintersects or tdisjoint
- * @param[in] func PostGIS function to be used for instantaneous sequences
- */
-TInstantSet *
-tinterrel_tpointinstset_geom_new(const TInstantSet *ti, Datum geom, const STBOX *box,
-  bool tinter, Datum (*func)(Datum, Datum))
-{
-  TInstantSet *result;
-  /* Instantaneous sequence */
-  if (ti->count == 1)
-  {
-    TInstant *inst = tinterrel_tpointinst_geom(tinstantset_inst_n(ti, 0),
-      geom, func);
-    result = tinstant_to_tinstantset(inst);
-    pfree(inst);
-    return result;
-  }
-
-  /* Split the temporal point in an array of non self-intersecting
-   * temporal points */
-  int newcount;
-  TInstantSet **instsets = tgeompointi_make_simple1(ti, &newcount);
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  int k = 0;
-  for (int i = 0; i < newcount; i++)
-  {
-    tinterrel_tpointinstset_geom1(&instants[k], instsets[i], geom, box, tinter);
-    k += instsets[i]->count;
-  }
-  result = tinstantset_make((const TInstant**) instants, k, MERGE_NO);
-  pfree_array((void **) instsets, newcount);
-  pfree_array((void **) instants, ti->count);
-  return result;
-}
-
-/**
  * Evalues tintersects/tdisjoint for a temporal sequence point with step
  * interpolation and a geometry
  *
@@ -324,6 +214,42 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, GSERIALIZED *gsinter,
   }
   pfree_datumarr(points, countinter);
   *count = seq->count;
+  return result;
+}
+
+static TSequence **
+tinterrel_tpointseq_step_geom_new(const TSequence *seq, Datum geom,
+  Datum (*func)(Datum, Datum), int *count)
+{
+  TSequence **result = palloc(sizeof(TSequence *) * seq->count);
+  bool lower_inc1 = seq->period.lower_inc;
+  int k = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst1 = tsequence_inst_n(seq, i);
+    const TInstant *inst2 = (i < seq->count - 1) ?
+      tsequence_inst_n(seq, i + 1) : NULL;
+    /* If last instant exclusive upper bound */
+    if (inst2 == NULL && ! seq->period.upper_inc)
+      break;
+    Datum datum_res = func(tinstant_value(inst1), geom);
+    TInstant *instants[2];
+    instants[0] = tinstant_make(datum_res, inst1->t, BOOLOID);
+    int l = 1;
+    bool upper_inc1 = false;
+    if (inst2 != NULL)
+      instants[l++] = tinstant_make(datum_res, inst2->t, BOOLOID);
+    else
+      upper_inc1 = true;
+    result[k++] = tsequence_make((const TInstant **) instants, l,
+      lower_inc1, upper_inc1, STEP, NORMALIZE_NO);
+    pfree(instants[0]);
+    if (inst2 != NULL)
+      pfree(instants[1]);
+    lower_inc1 = true;
+    inst1 = inst2;
+  }
+  *count = k;
   return result;
 }
 
@@ -494,6 +420,10 @@ tinterrel_tpointseq_geom2(const TSequence *seq, Datum geom, const STBOX *box,
     return result;
   }
 
+  /* Step interpolation */
+  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+    return tinterrel_tpointseq_step_geom_new(seq, geom, func, count);
+
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int newcount;
@@ -601,8 +531,6 @@ tinterrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter)
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tinterrel_tpointinstset_geom((TInstantSet *) temp,
       PointerGetDatum(gs), func);
-    // result = (Temporal *) tinterrel_tpointinstset_geom_new((TInstantSet *) temp,
-      // PointerGetDatum(gs), &box2, tinter, func);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tinterrel_tpointseq_geom((TSequence *) temp,
       PointerGetDatum(gs), &box2, tinter, func);
@@ -610,77 +538,6 @@ tinterrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter)
     result = (Temporal *) tinterrel_tpointseqset_geom((TSequenceSet *) temp,
       PointerGetDatum(gs), &box2, tinter, func);
   return result;
-}
-
-#define TINTERSECTS true
-#define TDISJOINT   false
-
-PG_FUNCTION_INFO_V1(tintersects_tpoint_geo_new);
-/**
- * Returns the temporal intersects relationship between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-tintersects_tpoint_geo_new(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tintersects_geo_tpoint_new);
-/**
- * Returns the temporal intersects relationship between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-tintersects_geo_tpoint_new(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tdisjoint_tpoint_geo_new);
-/**
- * Returns the temporal intersects relationship between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-tdisjoint_tpoint_geo_new(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(temp, gs, TDISJOINT);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint_new);
-/**
- * Returns the temporal intersects relationship between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-tdisjoint_geo_tpoint_new(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(temp, gs, TDISJOINT);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
@@ -1813,43 +1670,38 @@ tcontains_tpoint_geo(PG_FUNCTION_ARGS)
  * ST_3DIntersects and negate the result
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint);
-/**
- * Returns the temporal disjoint relationship between the geometry and the
- * temporal point
- */
-PGDLLEXPORT Datum
-tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Temporal *negresult = tintersects_tpoint_geo1(temp, gs);
-  Temporal *result = tnot_tbool_internal(negresult);
-  pfree(negresult);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
 
 PG_FUNCTION_INFO_V1(tdisjoint_tpoint_geo);
 /**
- * Returns the temporal disjoint relationship between the temporal point
+ * Returns the temporal intersects relationship between the temporal point
  * and the geometry
  */
 PGDLLEXPORT Datum
 tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Temporal *negresult = tintersects_tpoint_geo1(temp, gs);
-  Temporal *result = tnot_tbool_internal(negresult);
-  pfree(negresult);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Result depends on whether we are computing tintersects or tdisjoint */
+  Temporal *result = tinterrel_tpoint_geo(temp, gs, TDISJOINT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tdisjoint_geo_tpoint);
+/**
+ * Returns the temporal intersects relationship between the temporal point
+ * and the geometry
+ */
+PGDLLEXPORT Datum
+tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  /* Result depends on whether we are computing tintersects or tdisjoint */
+  Temporal *result = tinterrel_tpoint_geo(temp, gs, TDISJOINT);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -1869,46 +1721,6 @@ tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Available for temporal geography points
  *****************************************************************************/
 
-/**
- * Returns the temporal intersects relationship between the temporal point
- * and the geometry
- */
-static Temporal *
-tintersects_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
-{
-  ensure_same_srid_tpoint_gs(temp, gs);
-  /* We only need to fill these parameters for tspatialrel_tpoint_geo2
-   * since lifting is applied only for INSTANT and INSTANTSET types */
-  LiftedFunctionInfo lfinfo;
-  /* 3D only if both arguments are 3D */
-  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags) ?
-    (varfunc) &geom_intersects3d : (varfunc) &geom_intersects2d;
-  lfinfo.numparam = 2;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.invert = INVERT_NO;
-  Temporal *result = tspatialrel_tpoint_geo2(temp, PointerGetDatum(gs),
-    (Datum) NULL, lfinfo);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(tintersects_geo_tpoint);
-/**
- * Returns the temporal intersects relationship between the geometry and the
- * temporal point
- */
-PGDLLEXPORT Datum
-tintersects_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Temporal *result = tintersects_tpoint_geo1(temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
 PG_FUNCTION_INFO_V1(tintersects_tpoint_geo);
 /**
  * Returns the temporal intersects relationship between the temporal point
@@ -1917,13 +1729,29 @@ PG_FUNCTION_INFO_V1(tintersects_tpoint_geo);
 PGDLLEXPORT Datum
 tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Temporal *result = tintersects_tpoint_geo1(temp, gs);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Result depends on whether we are computing tintersects or tdisjoint */
+  Temporal *result = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tintersects_geo_tpoint);
+/**
+ * Returns the temporal intersects relationship between the temporal point
+ * and the geometry
+ */
+PGDLLEXPORT Datum
+tintersects_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  /* Result depends on whether we are computing tintersects or tdisjoint */
+  Temporal *result = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 
