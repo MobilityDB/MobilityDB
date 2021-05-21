@@ -48,16 +48,16 @@
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
 double awgs = 6378137.0;
 double bwgs =  6356752.314;
-double abes = 6377397.155;    /* Bessel Semi-Major Axis = Equatorial Radius in meters */
-double bbes = 6356078.962;    /* Bessel Semi-Minor Axis = Polar Radius in meters */
-double cbes = 111120.6196;    /* Bessel latitude to Gauss-Krueger meters */
-double dx   = -585.7;      /* Translation Parameter 1 */
-double dy   = -87.0;      /* Translation Parameter 2 */
-double dz   = -409.2;      /* Translation Parameter 3 */
+double abes = 6377397.155;     /* Bessel Semi-Major Axis = Equatorial Radius in meters */
+double bbes = 6356078.962;     /* Bessel Semi-Minor Axis = Polar Radius in meters */
+double cbes = 111120.6196;     /* Bessel latitude to Gauss-Krueger meters */
+double dx   = -585.7;          /* Translation Parameter 1 */
+double dy   = -87.0;           /* Translation Parameter 2 */
+double dz   = -409.2;          /* Translation Parameter 3 */
 double rotx = 2.540423689E-6;  /* Rotation Parameter 1 */
 double roty = 7.514612057E-7;  /* Rotation Parameter 2 */
-double rotz = -1.368144208E-5;  /* Rotation Parameter 3 */
-double sc   = 0.99999122;    /* Scaling Factor */
+double rotz = -1.368144208E-5; /* Rotation Parameter 3 */
+double sc   = 0.99999122;      /* Scaling Factor */
 double h1   = 0;
 double eqwgs = 0;
 double eqbes = 0;

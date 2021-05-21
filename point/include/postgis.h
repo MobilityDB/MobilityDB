@@ -235,6 +235,7 @@ extern Datum centroid(PG_FUNCTION_ARGS);
 extern Datum geography_from_geometry(PG_FUNCTION_ARGS);
 extern Datum geometry_from_geography(PG_FUNCTION_ARGS);
 
+extern Datum boundary(PG_FUNCTION_ARGS);
 extern Datum contains(PG_FUNCTION_ARGS);
 extern Datum containsproperly(PG_FUNCTION_ARGS);
 extern Datum covers(PG_FUNCTION_ARGS);

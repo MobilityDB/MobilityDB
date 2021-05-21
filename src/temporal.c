@@ -1572,7 +1572,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
  * (internal function)
  */
 Temporal *
-temporal_from_base(Temporal *temp, Datum value, Oid valuetypid,
+temporal_from_base(const Temporal *temp, Datum value, Oid valuetypid,
   bool linear)
 {
   Temporal *result;

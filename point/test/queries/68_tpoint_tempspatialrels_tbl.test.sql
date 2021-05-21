@@ -33,6 +33,10 @@
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tcontains(g, temp) IS NOT NULL;
 
+-- 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tcontains(g, temp) IS NOT NULL;
+
 -------------------------------------------------------------------------------
 -- tdisjoint
 -------------------------------------------------------------------------------
@@ -41,12 +45,13 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tdisjoint(g, temp) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tdisjoint(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
-
+-- 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tdisjoint(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tdisjoint(temp, g) IS NOT NULL;
+  
 -------------------------------------------------------------------------------
 -- tintersects
 -------------------------------------------------------------------------------
@@ -55,11 +60,12 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tintersects(g, temp) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tintersects(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
+-- 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tintersects(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tintersects(temp, g) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- ttouches
@@ -68,6 +74,12 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE ttouches(g, temp) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
+  WHERE ttouches(temp, g) IS NOT NULL;
+
+--3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE ttouches(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
   WHERE ttouches(temp, g) IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -81,12 +93,30 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+--3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tdwithin(g, temp, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tdwithin(temp, g, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+
+-- Mixed 2D/3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint
+  WHERE tdwithin(g, temp, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point3D
+  WHERE tdwithin(temp, g, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- END;
--- $$ LANGUAGE 'plpgsql';
+-- $$ LANGUAGE plpgsql;
 
 -- SELECT pg_backend_pid()
 

@@ -50,15 +50,6 @@ CREATE FUNCTION tdisjoint(tgeompoint, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdisjoint_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tdisjoint(tgeompoint, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tdisjoint_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tdisjoint(tgeogpoint, tgeogpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tdisjoint_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tintersects
@@ -71,15 +62,6 @@ CREATE FUNCTION tintersects(geometry, tgeompoint)
 CREATE FUNCTION tintersects(tgeompoint, geometry)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tintersects_tpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tintersects(tgeompoint, tgeompoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tintersects_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tintersects(tgeogpoint, tgeogpoint)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tintersects_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

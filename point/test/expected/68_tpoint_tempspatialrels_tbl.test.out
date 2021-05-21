@@ -5,60 +5,67 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   9900
 (1 row)
 
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tcontains(g, temp) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tdisjoint(g, temp) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tdisjoint(temp, g) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tdisjoint(g, temp) IS NOT NULL;
  count 
 -------
-   152
+ 10000
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tdisjoint(temp, g) IS NOT NULL;
  count 
 -------
-   148
+ 10000
 (1 row)
 
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tintersects(g, temp) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tintersects(temp, g) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tintersects(g, temp) IS NOT NULL;
  count 
 -------
-   152
+ 10000
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tintersects(temp, g) IS NOT NULL;
  count 
 -------
-   148
+ 10000
 (1 row)
 
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
@@ -69,6 +76,20 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
+  WHERE ttouches(temp, g) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE ttouches(g, temp) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
   WHERE ttouches(temp, g) IS NOT NULL;
  count 
 -------
@@ -96,10 +117,59 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
    152
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tdwithin(g, temp, 10) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tdwithin(temp, g, 10) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
-   148
+   150
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+ count 
+-------
+   150
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint
+  WHERE tdwithin(g, temp, 10) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point3D
+  WHERE tdwithin(temp, g, 10) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+ count 
+-------
+     0
 (1 row)
 
