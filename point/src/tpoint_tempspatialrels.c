@@ -334,14 +334,12 @@ TSequence **
 tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
   bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
-  TSequence **result;
-
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
     TInstant *inst = tinterrel_tpointinst_geom(tsequence_inst_n(seq, 0),
       geom, func);
-    result = palloc(sizeof(TSequence *));
+    TSequence **result = palloc(sizeof(TSequence *));
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     *count = 1;
