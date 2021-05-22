@@ -368,6 +368,7 @@ SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', tgeo
 SELECT dwithin(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-02]', tgeompoint '[Point(0 2)@2000-01-01, Point(1 1)@2000-01-02]', 2);
 SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-05]}', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-04}', 10);
 SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-06]}', tgeompoint '[Point(1 1)@2000-01-04, Point(2 2)@2000-01-05]', 10);
+SELECT dwithin(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-06]}', tgeompoint '{[Point(1 1)@2000-01-01],[Point(1 1)@2000-01-04, Point(2 2)@2000-01-05]}', 10);
 
 SELECT dwithin(tgeompoint 'Point(1 1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-01', 2);
 SELECT dwithin(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}', tgeompoint 'Point(1 1 1)@2000-01-01', 2);

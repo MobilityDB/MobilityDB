@@ -95,6 +95,9 @@ SELECT tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 
 SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-03]' #= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
 SELECT tgeompoint '[Point(1.5 1.5)@2000-01-01, Point(1.5 1.5)@2000-01-03]' #= tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(1 2 2)@2000-01-02]' #= tgeompoint '[Point(1 2 1)@2000-01-01, Point(1 1 2)@2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 1 2)@2000-01-02]' #= tgeompoint '[Point(2 1 1)@2000-01-01, Point(1 1 2)@2000-01-02]';
+SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 1)@2000-01-02]' #= tgeompoint '[Point(2 1 1)@2000-01-01, Point(1 2 1)@2000-01-02]';
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' #= tgeompoint 'Point(1 1 1)@2000-01-01';
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' #= tgeompoint 'Point(1 1 1)@2000-01-01';
