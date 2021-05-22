@@ -200,7 +200,7 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
   double duration = (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* Cope with potential roundoff errors */
-  if (*t <= start1->t || *t >= start2->t)
+  if (*t <= start1->t || *t >= end1->t)
       return false;
 
   return true;
