@@ -235,14 +235,14 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
     {
       xfraction = (p3->x - p1->x) / xdenum;
       /* If intersection occurs out of the period */
-      if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+      if (fabsl(xfraction) < EPSILON || fabsl(xfraction - 1.0) < EPSILON)
         return false;
     }
     if (ydenum != 0)
     {
       yfraction = (p3->y - p1->y) / ydenum;
       /* If intersection occurs out of the period */
-      if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+      if (fabsl(yfraction) < EPSILON || fabsl(yfraction - 1.0) < EPSILON)
         return false;
     }
     if (zdenum != 0)
@@ -250,7 +250,7 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
       /* If intersection occurs out of the period or intersect
        * at different timestamps */
       zfraction = (p3->z - p1->z) / zdenum;
-      if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
+      if (fabsl(zfraction) < EPSILON || fabsl(zfraction - 1.0) < EPSILON)
         return false;
     }
     /* If intersect at different timestamps on each dimension */
@@ -287,14 +287,14 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
     {
       xfraction = (p3->x - p1->x) / xdenum;
       /* If intersection occurs out of the period */
-      if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
+      if (fabsl(xfraction) < EPSILON || fabsl(xfraction - 1.0) < EPSILON)
         return false;
     }
     if (ydenum != 0)
     {
       yfraction = (p3->y - p1->y) / ydenum;
       /* If intersection occurs out of the period */
-      if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
+      if (fabsl(yfraction) < EPSILON || fabsl(yfraction - 1.0) < EPSILON)
         return false;
     }
     /* If intersect at different timestamps on each dimension */
