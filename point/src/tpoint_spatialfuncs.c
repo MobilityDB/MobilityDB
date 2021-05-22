@@ -3648,6 +3648,8 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
       return true;
     inst1 = inst2;
   }
+  /* We should never arrive here */
+  elog(ERROR, "The value has not been found due to roundoff errors");
   return false;
 }
 
@@ -3715,9 +3717,7 @@ tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
     if (type == POINTTYPE)
     {
       gspoint = geo_serialize((LWGEOM *) lwpoint_inter);
-      if (! tgeompointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1))
-        /* We should never arrive here */
-        elog(ERROR, "The value has not been found due to roundoff errors");
+      tgeompointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* If the intersection is not at an exclusive bound */
       if ((seq->period.lower_inc || t1 > start->t) &&
@@ -3731,16 +3731,12 @@ tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
       /* Get the fraction of the start point of the intersecting line */
       LWPOINT *lwpoint = lwline_get_lwpoint(lwline_inter, 0);
       gspoint = geo_serialize((LWGEOM *) lwpoint);
-      if (! tgeompointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1))
-        /* We should never arrive here */
-        elog(ERROR, "The value has not been found due to roundoff errors");
+      tgeompointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t1);
       pfree(gspoint);
       /* Get the fraction of the end point of the intersecting line */
       lwpoint = lwline_get_lwpoint(lwline_inter, lwline_inter->points->npoints - 1);
       gspoint = geo_serialize((LWGEOM *) lwpoint);
-      if (! tgeompointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t2))
-        /* We should never arrive here */
-        elog(ERROR, "The value has not been found due to roundoff errors");
+      tgeompointseq_timestamp_at_value(seq, PointerGetDatum(gspoint), &t2);
       pfree(gspoint);
       /* If t1 == t2 and the intersection is not at an exclusive bound */
       if (t1 == t2 && (seq->period.lower_inc || t1 > start->t) &&

@@ -103,7 +103,7 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   }
   else
   {
-    if (fraction < -1* EPSILON || (fraction - 1.0) > EPSILON)
+    if (fraction < -1 * EPSILON || (fraction - 1.0) > EPSILON)
       return false;
   }
   return true;
