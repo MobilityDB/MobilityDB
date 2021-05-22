@@ -32,30 +32,34 @@
  * Boolean.
  *
  * The following relationships are supported for a temporal geometry point
- * and a geometry: `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and 
+ * and a geometry: `tcontains`, `tdisjoint`, `tintersects`, `ttouches`, and
  * `tdwithin`.
  *
  * The following relationships are supported for two temporal geometry points:
- * `tdisjoint`, `tequals`, `tintersects`, and `tdwithin`.
+ * `tdwithin`.
  *
  * The following relationships are supported for two temporal geography points:
  * `tdisjoint`, `tintersects`, `tdwithin`.
  *
- * The implementation of most relationships is done as follows
- * - xxx TO BE DONE
-
- * The implementation of tintersects and tdisjoint involving a temporal point
- * and a geometry differs from the other relationships since a faster 
- * implementation is done by (1) using bounding box tests, and (2) temporal
- * sequence points are split into an array of simple (that is, not 
- * self-intersecting) fragments and the answer is computed for each fragment
- * without any additional call to PostGIS.
+ * tintersects and tdisjoint for a temporal point and a geometry allow a fast
+ * implementation by (1) using bounding box tests, and (2) splitting temporal
+ * sequence points into an array of simple (that is, not self-intersecting)
+ * fragments and the answer is computed for each fragment without any
+ * additional call to PostGIS.
+ *
+ * The implementation of tcontains and ttouches involving a temporal point
+ * and a geometry is derived from the above by computing the boundary of the
+ * geometry and
+ * (1) tcontains(geo, tpoint) = tintersects(geo, tpoint) &
+ *     ~ tintersects(st_boundary(geo), tpoint)
+ *     where & and ~ are the temporal boolean operators and and not
+ * (2) ttouches(geo, tpoint) = tintersects(st_boundary(geo), tpoint)
  *
  * Notice also that twithin has a custom implementation as follows
  * - In the case of a temporal point and a geometry we (1) call PostGIS to
  *   compute a buffer of the geometry and the distance parameter d, and
  *   (2) compute the result from tpointseq_at_geometry(seq, geo_buffer)
- * - In the case of two temporal points we need to compute the instants 
+ * - In the case of two temporal points we need to compute the instants
  *   at which two temporal sequences have a distance d between each other,
  *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.
  */
@@ -264,7 +268,6 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_from_base_internal(datum_yes, BOOLOID,
       &seq->period, STEP);
-    pfree(DatumGetPointer(traj)); 
     POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
     *count = 1;
@@ -388,7 +391,7 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int count;
-  TSequence **sequences = tinterrel_tpointseq_geom1(seq, geom, box, tinter, 
+  TSequence **sequences = tinterrel_tpointseq_geom1(seq, geom, box, tinter,
     func, &count);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
@@ -453,7 +456,7 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter)
     return temporal_from_base(temp, datum_no, BOOLOID, STEP);
 
   /* 3D only if both arguments are 3D */
-  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) && 
+  Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
     FLAGS_GET_Z(gs->flags) ? &geom_intersects3d : &geom_intersects2d;
 
   Temporal *result = NULL;
@@ -475,7 +478,7 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter)
 
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between a temporal sequence
- * and a geometry. The functions use the st_dwithin function from PostGIS 
+ * and a geometry. The functions use the st_dwithin function from PostGIS
  * only for instantaneous sequences.
  * These functions are not available for geographies since it is based on the
  * function atGeometry.

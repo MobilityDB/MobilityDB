@@ -58,6 +58,12 @@ SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
  t@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT tcontains(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+                                     tcontains                                      
+------------------------------------------------------------------------------------
+ {[f@2000-01-01 00:00:00+00], (t@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
 /* Errors */
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
@@ -510,6 +516,18 @@ SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
  t@2000-01-01 00:00:00+00
 (1 row)
 
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Linestring(1 1,2 2)');
+                      tintersects                       
+--------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(4 1)@2000-01-02]', geometry 'Linestring(1 2,1 0,2 0,2 2)');
+                                                               tintersects                                                                
+------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-01 08:00:00+00], (f@2000-01-01 08:00:00+00, f@2000-01-02 00:00:00+00]}
+(1 row)
+
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
@@ -633,6 +651,12 @@ SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
          ttouches         
 --------------------------
  f@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT ttouches(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+                                      ttouches                                      
+------------------------------------------------------------------------------------
+ {[t@2000-01-01 00:00:00+00], (f@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00]}
 (1 row)
 
 /* Errors */

@@ -42,6 +42,8 @@ SELECT tcontains(geometry 'Point empty', tgeompoint '{[Point(1 1)@2000-01-01, Po
 SELECT tcontains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tcontains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 
+SELECT tcontains(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+
 /* Errors */
 SELECT tcontains(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 
@@ -153,6 +155,9 @@ SELECT tintersects(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-0
 SELECT tintersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tintersects(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Linestring(1 1,2 2)');
+SELECT tintersects(tgeompoint '[Point(1 1)@2000-01-01, Point(4 1)@2000-01-02]', geometry 'Linestring(1 2,1 0,2 0,2 2)');
+
 /* Errors */
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tintersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
@@ -186,6 +191,8 @@ SELECT ttouches(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT ttouches(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 SELECT ttouches(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Point(1 1)');
 SELECT ttouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+
+SELECT ttouches(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
 
 /* Errors */
 SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
