@@ -376,55 +376,6 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
   PG_RETURN_DATUM(result);
 }
 
-/**
- * Generic spatial relationships for temporal points
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] geomfunc Function for geometries
- * @param[in] geogfunc Function for geographies
- * @param[in] numparam Number of parameters of the functions
- */
-Datum
-spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
-  Datum (*geogfunc)(Datum, ...), int numparam)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
-  ensure_same_srid_tpoint(temp1, temp2);
-  Temporal *inter1, *inter2;
-  /* Returns false if the temporal points do not intersect in time */
-  if (!intersection_temporal_temporal(temp1, temp2, INTERSECT,
-    &inter1, &inter2))
-  {
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_FREE_IF_COPY(temp2, 1);
-    PG_RETURN_NULL();
-  }
-  Datum traj1 = tpoint_trajectory_internal(inter1);
-  Datum traj2 = tpoint_trajectory_internal(inter2);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-
-  bool isgeod = MOBDB_FLAGS_GET_GEODETIC(temp1->flags);
-  if (isgeod)
-     assert (geogfunc != NULL);
-  else
-     assert (geomfunc != NULL);
-  /* We only need to fill these parameters for function spatialrel */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = isgeod ? geogfunc : geomfunc;
-  lfinfo.numparam = numparam;
-  lfinfo.invert = INVERT_NO;
-  Datum result = spatialrel(traj1, traj2, param, lfinfo);
-  tpoint_trajectory_free(inter1, traj1);
-  tpoint_trajectory_free(inter2, traj2);
-  pfree(inter1); pfree(inter2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_DATUM(result);
-}
-
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/

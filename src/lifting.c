@@ -114,7 +114,7 @@
  *   [...]
  * }
  * @endcode
- * Examples of use of the lifting functions are given next.
+ * An example of use of the lifting functions is given next.
  * @code
  * // Transform the geometry to a geography
  * PGDLLEXPORT Datum
@@ -128,32 +128,6 @@
  *   lfinfo.restypid = type_oid(T_GEOGRAPHY);
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
- *   PG_RETURN_POINTER(result);
- * }
- *
- * // Compute the temporal spatial relationship between two temporal points
- * static Datum
- * tspatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, datum_func2 func,
- *   Oid restypid)
- * {
- *   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
- *   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
- *   ...
- *   LiftedFunctionInfo lfinfo;
- *   lfinfo.func = (varfunc) func;
- *   lfinfo.numparam = 2;
- *   lfinfo.restypid = restypid;
- *   lfinfo.reslinear = STEP;
- *   lfinfo.invert = INVERT_NO;
- *   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
- *     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
- *   lfinfo.tpfunc = NULL;
- *   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2,
- *     (Datum) NULL, lfinfo);
- *   PG_FREE_IF_COPY(temp1, 0);
- *   PG_FREE_IF_COPY(temp2, 1);
- *   if (result == NULL)
- *     PG_RETURN_NULL();
  *   PG_RETURN_POINTER(result);
  * }
  * @endcode

@@ -828,24 +828,6 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /**
- * Returns true encoded as a datum if the two points are equal
- */
-Datum
-datum2_point_eq(Datum geopoint1, Datum geopoint2)
-{
-  return BoolGetDatum(datum_point_eq(geopoint1, geopoint2));
-}
-
-/**
- * Returns true encoded as a datum if the two points are different
- */
-Datum
-datum2_point_ne(Datum geopoint1, Datum geopoint2)
-{
-  return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
-}
-
-/**
  * Serialize a geometry/geography
  *
  *@pre It is supposed that the flags such as Z and geodetic have been
@@ -971,7 +953,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 /**
  * Assemble the set of points of a temporal instant set geometry point as a
  * single geometry.
- * @note Duplicate points are removed.
+ * @note Duplicate points are NOT removed.
  */
 static Datum
 tgeompointi_trajectory(const TInstantSet *ti)
@@ -981,41 +963,17 @@ tgeompointi_trajectory(const TInstantSet *ti)
     return tinstant_value_copy(tinstantset_inst_n(ti, 0));
 
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
-  /* Remove all duplicate points */
-  const TInstant *inst = tinstantset_inst_n(ti, 0);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-  LWPOINT *value = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  points[0] = value;
-  int k = 1;
-  for (int i = 1; i < ti->count; i++)
+  for (int i = 0; i < ti->count; i++)
   {
-    inst = tinstantset_inst_n(ti, i);
-    gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-    value = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    bool found = false;
-    for (int j = 0; j < k; j++)
-    {
-      if (lwpoint_same(value, points[j]) == LW_TRUE)
-      {
-        found = true;
-        break;
-      }
-    }
-    if (!found)
-      points[k++] = value;
+    const TInstant *inst = tinstantset_inst_n(ti, i);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
+    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   }
-  LWGEOM *lwresult;
-  if (k == 1)
-  {
-    lwresult = (LWGEOM *) points[0];
-  }
-  else
-  {
-    lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      points[0]->srid, NULL, (uint32_t) k, (LWGEOM **) points);
-    for (int i = 0; i < k; i++)
-      lwpoint_free(points[i]);
-  }
+  /* ti->count >= 2 and thus the resulting geometry is a multipoint */
+  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
+      points[0]->srid, NULL, (uint32_t) ti->count, (LWGEOM **) points);
+  for (int i = 0; i < ti->count; i++)
+    lwpoint_free(points[i]);
   Datum result = PointerGetDatum(geo_serialize(lwresult));
   pfree(points);
   return result;

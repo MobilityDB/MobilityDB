@@ -93,8 +93,6 @@ extern void datum_get_point4d(POINT4D *p, Datum value);
 extern Datum point_make(double x, double y, double z, bool hasz,
   bool geodetic, int32 srid);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED *geo_serialize(LWGEOM *geom);
 extern Datum datum_transform(Datum value, Datum srid);
 
