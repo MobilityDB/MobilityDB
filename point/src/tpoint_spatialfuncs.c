@@ -307,9 +307,9 @@ geoseg_interpolate_point(Datum start, Datum end, long double ratio)
   }
   else
   {
-    // interpolate_point4d(&p1, &p2, &p, ratio);
-    /* We cannot call the PostGIS function interpolate_point4d since
-     * it uses a double and not a long double for the interpolation */
+    /* We cannot call the PostGIS function 
+     * interpolate_point4d(&p1, &p2, &p, ratio);
+     * since it uses a double and not a long double for the interpolation */
     p.x = p1.x + ((long double) (p2.x - p1.x) * ratio);
     p.y = p1.y + ((long double) (p2.y - p1.y) * ratio);
     p.z = p1.z + ((long double) (p2.z - p1.z) * ratio);

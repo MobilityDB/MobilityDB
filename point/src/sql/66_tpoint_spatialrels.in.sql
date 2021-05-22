@@ -64,11 +64,6 @@ CREATE FUNCTION disjoint(tgeompoint, geometry)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'disjoint_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /*****************************************************************************
  * intersects
  *****************************************************************************/
@@ -91,11 +86,6 @@ CREATE FUNCTION intersects(tgeompoint, geometry)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION intersects(tgeompoint, tgeompoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /*****************************************************************************/
 
 CREATE FUNCTION _intersects(geography, tgeogpoint)
@@ -115,11 +105,6 @@ CREATE FUNCTION intersects(tgeogpoint, geography)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * touches
@@ -142,11 +127,6 @@ CREATE FUNCTION touches(tgeompoint, geometry)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION touches(tgeompoint, tgeompoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * dwithin

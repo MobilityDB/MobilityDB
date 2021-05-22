@@ -36,13 +36,10 @@
  * spatial relationship.
  *
  * The following relationships are supported for geometries: `contains`,
- * `containsproperly`, `covers`, `coveredby`, `crosses`, `disjoint`,
- * `contains`, `containsproperly`, `covers`, `coveredby`, `crosses`,
- * `disjoint`, `equals`, `intersects`, `overlaps`, `touches`, `within`,
- * `dwithin`, and `relate` (with 2 and 3 arguments).
+ * `disjoint`, `intersects`, `touches`, and `dwithin`.
  *
- * The following relationships are supported for geographies: `covers`,
- * `coveredby`, `intersects`, `dwithin`.
+ * The following relationships are supported for geographies: `intersects`,
+ * `dwithin`.
  *
  * Only `dwithin` and `intersects` are supported for 3D geometries.
  */
@@ -442,28 +439,6 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
   return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_contains, NULL, 2);
 }
 
-PG_FUNCTION_INFO_V1(contains_tpoint_geo);
-/**
- * Returns true if the trajectory of the temporal point contains the geometry
- */
-PGDLLEXPORT Datum
-contains_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_contains, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(contains_tpoint_tpoint);
-/**
- * Returns true if the trajectory of the first temporal point contains the
- * trajectory of the second one
- */
-PGDLLEXPORT Datum
-contains_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_contains,
-    NULL, 2);
-}
-
 /*****************************************************************************
  * Temporal disjoint
  *****************************************************************************/
@@ -488,17 +463,6 @@ PGDLLEXPORT Datum
 disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_disjoint, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(disjoint_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points are disjoint
- */
-PGDLLEXPORT Datum
-disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_disjoint,
-    NULL, 2);
 }
 
 /*****************************************************************************
@@ -529,17 +493,6 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
     (varfunc) geog_intersects, 2);
 }
 
-PG_FUNCTION_INFO_V1(intersects_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points intersect
- */
-PGDLLEXPORT Datum
-intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_intersects2d,
-    (varfunc) &geog_intersects, 2);
-}
-
 /*****************************************************************************
  * Temporal touches
  *****************************************************************************/
@@ -562,17 +515,6 @@ PGDLLEXPORT Datum
 touches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_touches, NULL, 2);
-}
-
-PG_FUNCTION_INFO_V1(touches_tpoint_tpoint);
-/**
- * Returns true if the trajectories of the temporal points touch each other
- */
-PGDLLEXPORT Datum
-touches_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  return spatialrel_tpoint_tpoint(fcinfo, (varfunc) &geom_touches,
-    NULL, 2);
 }
 
 /*****************************************************************************
