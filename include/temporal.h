@@ -110,7 +110,6 @@
 /** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
-  INTERSECT,
   SYNCHRONIZE,
   SYNCHRONIZE_CROSS,
 } TIntersection;
@@ -167,10 +166,10 @@ struct tempsubtype_struct
 
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)     ((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_X(flags)      ((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_Z(flags)       ((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_T(flags)       ((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x10)>>4))
 #define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x20)>>5))
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \

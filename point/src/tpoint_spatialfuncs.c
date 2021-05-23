@@ -36,14 +36,10 @@
 #include "period.h"
 #include "periodset.h"
 #include "timeops.h"
-#include "doublen.h"
 #include "temporaltypes.h"
 #include "oidcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
 #include "tnumber_mathfuncs.h"
 #include "postgis.h"
-#include "geography_funcs.h"
 #include "stbox.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
@@ -53,7 +49,7 @@
 
 /**
  * Global variable to save the fcinfo when PostGIS functions need to access
- * the cache such as transform, geography_distance, or geography_azimuth
+ * the proj cache such as transform, geography_distance, or geography_azimuth
  */
 FunctionCallInfo _FCINFO;
 
@@ -66,7 +62,6 @@ fetch_fcinfo()
   assert(_FCINFO);
   return _FCINFO;
 }
-
 
 /**
  * Store in the cache the fcinfo of the external function
@@ -307,7 +302,7 @@ geoseg_interpolate_point(Datum start, Datum end, long double ratio)
   }
   else
   {
-    /* We cannot call the PostGIS function 
+    /* We cannot call the PostGIS function
      * interpolate_point4d(&p1, &p2, &p, ratio);
      * since it uses a double and not a long double for the interpolation */
     p.x = p1.x + ((long double) (p2.x - p1.x) * ratio);
@@ -394,6 +389,10 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
   return result;
 }
 
+/*****************************************************************************
+ * Interpolation functions defining functionality required by tsequence.c
+ *****************************************************************************/
+
 /**
  * Returns true if the segment of the temporal point value intersects
  * the base value at the timestamp
@@ -425,8 +424,209 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
+    /* Cope with potential roundoff errors */
+    if (*t <= inst1->t || *t >= inst2->t)
+      return false;
   }
   return true;
+}
+
+/**
+ * Returns true if the two segments of the temporal geometric point
+ * values intersect at the timestamp
+ *
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[out] t Timestamp
+ * @pre The instants are synchronized, i.e., start1->t = start2->t and
+ * end1->t = end2->t
+ */
+bool
+tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+{
+  long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
+  if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+  {
+    long double zfraction = 0, zdenum;
+    const POINT3DZ *p1 = datum_get_point3dz_p(tinstant_value(start1));
+    const POINT3DZ *p2 = datum_get_point3dz_p(tinstant_value(end1));
+    const POINT3DZ *p3 = datum_get_point3dz_p(tinstant_value(start2));
+    const POINT3DZ *p4 = datum_get_point3dz_p(tinstant_value(end2));
+    xdenum = p2->x - p1->x - p4->x + p3->x;
+    ydenum = p2->y - p1->y - p4->y + p3->y;
+    zdenum = p2->z - p1->z - p4->z + p3->z;
+    if (xdenum == 0 && ydenum == 0 && zdenum == 0)
+      /* Parallel segments */
+      return false;
+
+    if (xdenum != 0)
+    {
+      xfraction = (p3->x - p1->x) / xdenum;
+      if (xfraction < -1 * EPSILON || 1.0 + EPSILON < xfraction)
+        /* Intersection occurs out of the period */
+        return false;
+    }
+    if (ydenum != 0)
+    {
+      yfraction = (p3->y - p1->y) / ydenum;
+      if (yfraction < -1 * EPSILON || 1.0 + EPSILON < yfraction)
+        /* Intersection occurs out of the period */
+        return false;
+    }
+    if (zdenum != 0)
+    {
+      zfraction = (p3->z - p1->z) / zdenum;
+      if (zfraction < -1 * EPSILON || 1.0 + EPSILON < zfraction)
+        /* Intersection occurs out of the period */
+        return false;
+    }
+    /* If intersection occurs at different timestamps on each dimension */
+    if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
+      fabsl(xfraction - yfraction) > EPSILON &&
+      fabsl(xfraction - zfraction) > EPSILON) ||
+      (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
+      fabsl(yfraction - zfraction) > EPSILON) ||
+      (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
+      fabsl(xfraction - zfraction) > EPSILON) ||
+      (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
+      fabsl(xfraction - yfraction) > EPSILON))
+      return false;
+    if (xdenum != 0)
+      fraction = xfraction;
+    else if (ydenum != 0)
+      fraction = yfraction;
+    else
+      fraction = zfraction;
+  }
+  else /* 2D */
+  {
+    const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
+    const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
+    const POINT2D *p3 = datum_get_point2d_p(tinstant_value(start2));
+    const POINT2D *p4 = datum_get_point2d_p(tinstant_value(end2));
+    xdenum = p2->x - p1->x - p4->x + p3->x;
+    ydenum = p2->y - p1->y - p4->y + p3->y;
+    if (xdenum == 0 && ydenum == 0)
+      /* Parallel segments */
+      return false;
+
+    if (xdenum != 0)
+    {
+      xfraction = (p3->x - p1->x) / xdenum;
+      if (xfraction < -1 * EPSILON || 1.0 + EPSILON < xfraction)
+        /* Intersection occurs out of the period */
+        return false;
+    }
+    if (ydenum != 0)
+    {
+      yfraction = (p3->y - p1->y) / ydenum;
+      if (yfraction < -1 * EPSILON || 1.0 + EPSILON < yfraction)
+        /* Intersection occurs out of the period */
+        return false;
+    }
+    /* If intersection occurs at different timestamps on each dimension */
+    if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > EPSILON)
+      return false;
+    fraction = xdenum != 0 ? xfraction : yfraction;
+  }
+  double duration = (end1->t - start1->t);
+  *t = start1->t + (TimestampTz) (duration * fraction);
+  /* Cope with potential roundoff errors */
+  if (*t <= start1->t || *t >= end1->t)
+    return false;
+  return true;
+}
+
+/**
+ * Returns true if the two segments of the temporal geographic point
+ * values intersect at the timestamp
+ *
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[out] t Timestamp
+ * @pre The instants are synchronized, i.e., start1->t = start2->t and
+ * end1->t = end2->t
+ */
+bool
+tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+{
+  GEOGRAPHIC_EDGE e1, e2;
+  POINT3D A1, A2, B1, B2;
+  POINT4D p1, p2, p3, p4;
+
+  datum_get_point4d(&p1, tinstant_value(start1));
+  geographic_point_init(p1.x, p1.y, &(e1.start));
+  geog2cart(&(e1.start), &A1);
+
+  datum_get_point4d(&p2, tinstant_value(end1));
+  geographic_point_init(p2.x, p2.y, &(e1.end));
+  geog2cart(&(e1.end), &A2);
+
+  datum_get_point4d(&p3, tinstant_value(start2));
+  geographic_point_init(p3.x, p3.y, &(e2.start));
+  geog2cart(&(e2.start), &B1);
+
+  datum_get_point4d(&p4, tinstant_value(end2));
+  geographic_point_init(p4.x, p4.y, &(e2.end));
+  geog2cart(&(e2.end), &B2);
+
+  if (! edge_intersects(&A1, &A2, &B1, &B2))
+    return false;
+
+  /* Compute the intersection point */
+  GEOGRAPHIC_POINT inter;
+  edge_intersection(&e1, &e2, &inter);
+  /* Compute distance from beginning of the segment to closest point */
+  long double seglength = sphere_distance(&(e1.start), &(e1.end));
+  long double length = sphere_distance(&(e1.start), &inter);
+  long double fraction = length / seglength;
+
+  long double duration = (end1->t - start1->t);
+  *t = start1->t + (int64) (duration * fraction);
+  /* Cope with potential roundoff errors */
+  if (*t <= start1->t || *t >= end1->t)
+    return false;
+  return true;
+}
+
+/**
+ * Returns true if the three values are collinear
+ *
+ * @param[in] value1,value2,value3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the
+ * timestamps associated to `value1` and `value2` divided by the duration
+ * of the timestamps associated to `value1` and `value3`
+ * @param[in] hasz True when the points have Z coordinates
+ * @param[in] geodetic True for geography, false for geometry
+ */
+bool
+geopoint_collinear(Datum value1, Datum value2, Datum value3,
+  double ratio, bool hasz, bool geodetic)
+{
+  POINT4D p1, p2, p3, p;
+  datum_get_point4d(&p1, value1);
+  datum_get_point4d(&p2, value2);
+  datum_get_point4d(&p3, value3);
+  if (geodetic)
+  {
+    POINT3D q1, q3;
+    GEOGRAPHIC_POINT g1, g3;
+    geographic_point_init(p1.x, p1.y, &g1);
+    geographic_point_init(p3.x, p3.y, &g3);
+    geog2cart(&g1, &q1);
+    geog2cart(&g3, &q3);
+    interpolate_point4d_sphere(&q1, &q3, &p1, &p3, ratio, &p);
+  }
+  else
+    interpolate_point4d(&p1, &p3, &p, ratio);
+
+  bool result = hasz ?
+    fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON &&
+      fabs(p2.z - p.z) <= EPSILON :
+    fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON;
+  return result;
 }
 
 /*****************************************************************************
@@ -951,63 +1151,6 @@ pt_distance3d(Datum geom1, Datum geom2)
  *****************************************************************************/
 
 /**
- * Assemble the set of points of a temporal instant set geometry point as a
- * single geometry.
- * @note Duplicate points are NOT removed.
- */
-static Datum
-tgeompointi_trajectory(const TInstantSet *ti)
-{
-  /* Singleton instant set */
-  if (ti->count == 1)
-    return tinstant_value_copy(tinstantset_inst_n(ti, 0));
-
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
-    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
-    points[i] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  }
-  /* ti->count >= 2 and thus the resulting geometry is a multipoint */
-  LWGEOM *lwresult = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
-      points[0]->srid, NULL, (uint32_t) ti->count, (LWGEOM **) points);
-  for (int i = 0; i < ti->count; i++)
-    lwpoint_free(points[i]);
-  Datum result = PointerGetDatum(geo_serialize(lwresult));
-  pfree(points);
-  return result;
-}
-
-/**
- * Assemble the set of points of a temporal instant set as a
- * single geography/geography.
- */
-Datum
-tpointinstset_trajectory(const TInstantSet *ti)
-{
-  Datum result;
-  if (MOBDB_FLAGS_GET_GEODETIC(ti->flags))
-  {
-    /* We only need to fill these parameters for tfunc_tinstantset */
-    LiftedFunctionInfo lfinfo;
-    lfinfo.func = (varfunc) &geog_to_geom;
-    lfinfo.numparam = 1;
-    lfinfo.restypid = type_oid(T_GEOMETRY);
-    TInstantSet *tigeom = tfunc_tinstantset(ti, (Datum) NULL, lfinfo);
-    Datum geomtraj = tgeompointi_trajectory(tigeom);
-    result = call_function1(geography_from_geometry, geomtraj);
-    pfree(DatumGetPointer(geomtraj));
-  }
-  else
-    result = tgeompointi_trajectory(ti);
-  return result;
-}
-
-////////////// REDUNDANT FUNCTION WRT PREVIOUS ONES ///////////////////
-////////////// WHICH VERSION SHOULD WE KEEP ????    ///////////////////
-
-/**
  * Compute a trajectory from a set of points. The result is either a line or
  * a multipoint depending on whether the interpolation is step or linear
  *
@@ -1018,9 +1161,12 @@ tpointinstset_trajectory(const TInstantSet *ti)
 static Datum
 lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 {
+  if (count == 1)
+    return PointerGetDatum(geo_serialize((LWGEOM *) lwpoints[0]));
+  
   LWGEOM *lwgeom = linear ?
-    (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid,
-      (uint32_t) count, lwpoints) :
+    (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count,
+      lwpoints) :
     (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, lwpoints[0]->srid,
       NULL, (uint32_t) count, lwpoints);
   FLAGS_SET_Z(lwgeom->flags, FLAGS_GET_Z(lwpoints[0]->flags));
@@ -1033,14 +1179,16 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 /**
  * Compute the trajectory of a temporal instant set point.
  *
- * @note Notice that, contrary to what it is done in function
- * tpointseq_make_trajectory, we do not remove the potential duplicate points.
- * It remains to determine whether this is sufficient or not.
  * @param[in] ti Temporal value
+ * @note Notice that this function does not remove duplicate points.
  */
 Datum
-tpointi_trajectory(const TInstantSet *ti)
+tpointinstset_trajectory(const TInstantSet *ti)
 {
+  /* Singleton instant set */
+  if (ti->count == 1)
+    return tinstant_value_copy(tinstantset_inst_n(ti, 0));
+
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
@@ -1048,7 +1196,7 @@ tpointi_trajectory(const TInstantSet *ti)
     GSERIALIZED *gsvalue = (GSERIALIZED *) DatumGetPointer(value);
     points[i] = lwgeom_from_gserialized(gsvalue);
   }
-  Datum result = lwpointarr_make_trajectory(points, ti->count, false);
+  Datum result = lwpointarr_make_trajectory(points, ti->count, STEP);
   for (int i = 0; i < ti->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);
@@ -1094,8 +1242,6 @@ geopoint_line(Datum value1, Datum value2)
   return PointerGetDatum(result);
 }
 
-/*****************************************************************************/
-
 /**
  * Compute the trajectory of an array of instants.
  *
@@ -1112,52 +1258,29 @@ geopoint_line(Datum value1, Datum value2)
 Datum
 tpointseq_make_trajectory(const TInstant **instants, int count, bool linear)
 {
+  /* Instantaneous sequence */
+  if (count == 1)
+    return tinstant_value_copy(instants[0]);
+
   LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
   LWPOINT *lwpoint;
   Datum value;
   GSERIALIZED *gs;
   int k;
-  if (linear)
+  /* Remove two consecutive points if they are equal */
+  value = tinstant_value(instants[0]);
+  gs = (GSERIALIZED *) DatumGetPointer(value);
+  points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  k = 1;
+  for (int i = 1; i < count; i++)
   {
-    /* Remove two consecutive points if they are equal */
-    value = tinstant_value(instants[0]);
+    value = tinstant_value(instants[i]);
     gs = (GSERIALIZED *) DatumGetPointer(value);
-    points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    k = 1;
-    for (int i = 1; i < count; i++)
-    {
-      value = tinstant_value(instants[i]);
-      gs = (GSERIALIZED *) DatumGetPointer(value);
-      lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-      if (! lwpoint_same(lwpoint, points[k - 1]))
-        points[k++] = lwpoint;
-    }
+    lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+    if (! lwpoint_same(lwpoint, points[k - 1]))
+      points[k++] = lwpoint;
   }
-  else
-  {
-     /* Remove all duplicate points */
-    k = 0;
-    for (int i = 0; i < count; i++)
-    {
-      value = tinstant_value(instants[i]);
-      gs = (GSERIALIZED *) DatumGetPointer(value);
-      lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-      bool found = false;
-      for (int j = 0; j < k; j++)
-      {
-        if (lwpoint_same(lwpoint, points[j]) == LW_TRUE)
-        {
-          found = true;
-          break;
-        }
-      }
-      if (!found)
-        points[k++] = lwpoint;
-    }
-  }
-  Datum result = (k == 1) ?
-    PointerGetDatum(geo_serialize((LWGEOM *) points[0])) :
-    lwpointarr_make_trajectory((LWGEOM **) points, k, linear);
+  Datum result = lwpointarr_make_trajectory((LWGEOM **) points, k, linear);
   for (int i = 0; i < k; i++)
     lwpoint_free(points[i]);
   pfree(points);
@@ -1694,7 +1817,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
   }
 
   /* General case */
-  Datum multipoint = tpointi_trajectory(ti);
+  Datum multipoint = tpointinstset_trajectory(ti);
   Datum transf = datum_transform(multipoint, srid);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(transf);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
@@ -3554,8 +3677,8 @@ tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
  * the datum_point_eq_eps for comparing two values so the coordinates of the
  * values may differ by EPSILON. Furthermore, we must drop the Z values since
  * this function may be called for finding the intersection of a sequence and
- * a geometry and the Z values given by PostGIS/GEOS are not necessarily correct,
- * they "are copied, averaged or interpolated" as stated in 
+ * a geometry and the Z values crrently given by PostGIS/GEOS are not necessarily 
+ * extact, they "are copied, averaged or interpolated" as stated in
  * https://postgis.net/docs/ST_Intersection.html
  *
  * @param[in] inst1,inst2 Temporal values
@@ -3622,7 +3745,10 @@ tgeompointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * Returns the timestamp at which the temporal value takes the base value.
  *
  * This function is called by the atGeometry function to find the timestamp
- * at which an intersection point found by PostGIS is located.
+ * at which an intersection point found by PostGIS is located. This function
+ * differs from function tpointseq_intersection_value in particular since the
+ * latter is used for finding crossings during synchronization and thus it is
+ * required that the timestamp in strictly between the timestamps of a segment.
  *
  * @param[in] seq Temporal value
  * @param[in] value Base value
@@ -4144,7 +4270,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
     Period p;
     period_set(&p, box->tmin, box->tmax, true, true);
     temp1 = temporal_at_period_internal(temp, &p);
-    /* Despite the bounding box test above, temp1 may be NULL due to 
+    /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */
     if (temp1 == NULL)
       return NULL;

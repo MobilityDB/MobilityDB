@@ -111,7 +111,14 @@ extern long double geoseg_locate_point(Datum start, Datum end, Datum point,
 
 extern bool tpointseq_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t);
-
+extern bool tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t);
+extern bool tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t);
+  
+extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
+  double ratio, bool hasz, bool geodetic);
+  
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
   const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
