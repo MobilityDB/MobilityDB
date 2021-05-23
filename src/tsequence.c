@@ -1233,29 +1233,6 @@ intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
   return intersection_tsequence_tinstantset(seq, ti, inter2, inter1);
 }
 
-/**
- * Temporally intersect the two temporal values
- *
- * @param[in] seq1,seq2 Input values
- * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time.
- */
-bool
-intersection_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
-  TSequence **inter1, TSequence **inter2)
-{
-  /* Test whether the bounding period of the two temporal values overlap */
-  Period *inter = intersection_period_period_internal(&seq1->period,
-    &seq2->period);
-  if (inter == NULL)
-    return false;
-
-  *inter1 = tsequence_at_period(seq1, inter);
-  *inter2 = tsequence_at_period(seq2, inter);
-  pfree(inter);
-  return true;
-}
-
 /*****************************************************************************
  * Synchronize two TSequence values. The values are split into (redundant)
  * segments defined over the same set of instants covering the intersection

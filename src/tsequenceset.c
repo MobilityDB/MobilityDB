@@ -495,7 +495,7 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
  * @result Returns false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
+synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -551,7 +551,7 @@ bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
   TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
-  return intersection_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
+  return synchronize_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
 }
 
 /**
@@ -563,7 +563,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  * @result Returns false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
+synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
   TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */

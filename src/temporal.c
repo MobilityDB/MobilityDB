@@ -317,11 +317,11 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TSequenceSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else if (temp2->subtype == SEQUENCE)
-      result = intersection_tsequenceset_tsequence(
+      result = synchronize_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
     else /* temp2->subtype == SEQUENCESET */
-      result = intersection_tsequenceset_tsequenceset(
+      result = synchronize_tsequenceset_tsequenceset(
         (TSequenceSet *) temp1, (TSequenceSet *) temp2, mode,
         (TSequenceSet **) inter1, (TSequenceSet **) inter2);
   }
