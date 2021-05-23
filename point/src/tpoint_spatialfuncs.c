@@ -424,7 +424,7 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
-    /* Note that due to roundoff errors it may be the case that the 
+    /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
   }
   return true;
@@ -531,8 +531,10 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
   }
   double duration = (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the 
+  /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  if (*t <= start1->t || *t >= end1->t)
+    return false;
   return true;
 }
 
@@ -583,8 +585,10 @@ tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
 
   long double duration = (end1->t - start1->t);
   *t = start1->t + (int64) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the 
+  /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  if (*t <= start1->t || *t >= end1->t)
+    return false;
   return true;
 }
 
@@ -1160,7 +1164,7 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 {
   if (count == 1)
     return PointerGetDatum(geo_serialize((LWGEOM *) lwpoints[0]));
-  
+
   LWGEOM *lwgeom = linear ?
     (LWGEOM *) lwline_from_lwgeom_array(lwpoints[0]->srid, (uint32_t) count,
       lwpoints) :
@@ -3674,7 +3678,7 @@ tpointseq_step_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
  * the datum_point_eq_eps for comparing two values so the coordinates of the
  * values may differ by EPSILON. Furthermore, we must drop the Z values since
  * this function may be called for finding the intersection of a sequence and
- * a geometry and the Z values crrently given by PostGIS/GEOS are not necessarily 
+ * a geometry and the Z values crrently given by PostGIS/GEOS are not necessarily
  * extact, they "are copied, averaged or interpolated" as stated in
  * https://postgis.net/docs/ST_Intersection.html
  *

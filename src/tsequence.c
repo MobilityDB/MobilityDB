@@ -98,7 +98,7 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
-    /* Note that due to roundoff errors it may be the case that the 
+    /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
   }
   return true;
@@ -135,7 +135,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
 
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
-    *inter = tsequence_value_at_timestamp1(inst1, inst2, true, *t);
+    *inter = tsequence_value_at_timestamp1(inst1, inst2, LINEAR, *t);
   return result;
 }
 
@@ -193,8 +193,10 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
 
   double duration = (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
-  /* Note that due to roundoff errors it may be the case that the 
+  /* Note that due to roundoff errors it may be the case that the
    * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  if (*t <= start1->t || *t >= end1->t)
+    return false;
   return true;
 }
 
@@ -247,9 +249,9 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
       result = tgeogpointseq_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
     if (result && inter1 != NULL)
-      *inter1 = tsequence_value_at_timestamp1(start1, end1, true, *t);
+      *inter1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
     if (result && inter2 != NULL)
-      *inter2 = tsequence_value_at_timestamp1(start2, end2, true, *t);
+      *inter2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
   }
   return result;
 }
@@ -2441,7 +2443,7 @@ tsequence_restrict_value1(TSequence **result,
       DATUM_FREE(projvalue, valuetypid);
       if (! upper_inc)
         return 0;
-      
+
       instants[0] = (TInstant *) inst1;
       instants[1] = (TInstant *) inst2;
       result[0] = tsequence_make((const TInstant **) instants, 2,
