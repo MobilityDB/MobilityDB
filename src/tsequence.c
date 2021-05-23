@@ -98,9 +98,8 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
-    /* Cope with potential roundoff errors */
-    // if (*t <= inst1->t || *t >= inst2->t)
-      // return false;
+    /* Note that due to roundoff errors it may be the case that the 
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
   }
   return true;
 }
@@ -194,10 +193,8 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
 
   double duration = (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
-  /* Cope with potential roundoff errors */
-  if (*t <= start1->t || *t >= end1->t)
-      return false;
-
+  /* Note that due to roundoff errors it may be the case that the 
+   * resulting timestamp t may be equal to inst1->t or to inst2->t */
   return true;
 }
 
