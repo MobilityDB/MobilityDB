@@ -1016,6 +1016,11 @@ SELECT asText(atValue(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
 SELECT asText(atValue(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point empty'));
 SELECT asText(atValue(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point empty'));
 
+/* Roundoff errors */
+SELECT asText(atValue(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-16, 1.0 - 1e-16)));
+SELECT asText(atValue(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-17, 1.0 - 1e-17)));
+SELECT asText(atValue(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 + 1e-16, 1.0 + 1e-16)));
+
 /* Errors */
 SELECT atValue(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)');
 SELECT atValue(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
@@ -1041,6 +1046,11 @@ SELECT asText(minusValue(tgeogpoint 'Point(1 1)@2000-01-01', geography 'Point em
 SELECT asText(minusValue(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point empty'));
 SELECT asText(minusValue(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point empty'));
 SELECT asText(minusValue(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point empty'));
+
+/* Roundoff errors */
+SELECT asText(minusValue(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-16, 1.0 - 1e-16)));
+SELECT asText(minusValue(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-17, 1.0 - 1e-17)));
+SELECT asText(minusValue(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 + 1e-16, 1.0 + 1e-16)));
 
 /* Errors */
 SELECT minusValue(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)');

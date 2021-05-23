@@ -6951,6 +6951,37 @@ SELECT atValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@200
  {["AAA"@2000-01-01 00:00:00+00, "AAA"@2000-01-02 00:00:00+00), ["AAA"@2000-01-03 00:00:00+00]}
 (1 row)
 
+/* Roundoff errors */
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+ atvalue 
+---------
+ 
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+           atvalue            
+------------------------------
+ {[1@2000-01-01 00:00:00+00]}
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
+           atvalue            
+------------------------------
+ {[1@2000-01-01 00:00:00+00]}
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+           atvalue            
+------------------------------
+ {[2@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+           atvalue            
+------------------------------
+ {[2@2000-01-02 00:00:00+00]}
+(1 row)
+
 SELECT minusValue(tbool 't@2000-01-01', true);
  minusvalue 
 ------------
@@ -7123,6 +7154,45 @@ SELECT minusValue(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000
  minusvalue 
 ------------
  
+(1 row)
+
+/* Roundoff errors */
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+ atvalue 
+---------
+ 
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+           atvalue            
+------------------------------
+ {[1@2000-01-01 00:00:00+00]}
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
+           atvalue            
+------------------------------
+ {[1@2000-01-01 00:00:00+00]}
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+           atvalue            
+------------------------------
+ {[2@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+           atvalue            
+------------------------------
+ {[2@2000-01-02 00:00:00+00]}
+(1 row)
+
+WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-16, 2 - 1e-16, 2 + 1e-16])),
+  temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
+SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT atValues(tbool 't@2000-01-01', ARRAY[true]);

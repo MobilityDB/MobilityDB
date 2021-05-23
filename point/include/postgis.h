@@ -204,14 +204,6 @@ extern void circ_tree_free(CIRC_NODE* node);
 #define FP_CONTAINS_EXCL(A, X, B) (FP_LT(A, X) && FP_LT(X, B))
 #define FP_CONTAINS(A, X, B) FP_CONTAINS_EXCL(A, X, B)
 
-/*
-* this will change to NaN when I figure out how to
-* get NaN in a platform-independent way
-*/
-#define NO_VALUE 0.0
-#define NO_Z_VALUE NO_VALUE
-#define NO_M_VALUE NO_VALUE
-
 extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);

@@ -91,19 +91,16 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (dvalue - min);
   double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
+  if (fraction < -1 * EPSILON || 1.0 + EPSILON < fraction)
+    return false;
 
   if (t != NULL)
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
     /* Cope with potential roundoff errors */
-    if (*t <= inst1->t || *t >= inst2->t)
-      return false;
-  }
-  else
-  {
-    if (fraction < -1 * EPSILON || 1.0 + EPSILON < fraction)
-      return false;
+    // if (*t <= inst1->t || *t >= inst2->t)
+      // return false;
   }
   return true;
 }
@@ -126,8 +123,8 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  if (datum_eq(value, value1, inst1->valuetypid) ||
-    datum_eq(value, value2, inst1->valuetypid))
+  if (datum_eq2(value, value1, valuetypid, inst1->valuetypid) ||
+    datum_eq2(value, value2, valuetypid, inst1->valuetypid))
     return false;
 
   ensure_continuous_base_type(inst1->valuetypid);
@@ -2429,17 +2426,45 @@ tsequence_restrict_value1(TSequence **result,
   }
   else
   {
-    instants[0] = (TInstant *) inst1;
-    instants[1] = tinstant_make(projvalue, t, valuetypid);
-    result[0] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, false, LINEAR, NORMALIZE_NO);
-    instants[0] = instants[1];
-    instants[1] = (TInstant *) inst2;
-    result[1] = tsequence_make((const TInstant **) instants, 2,
-      false, upper_inc, LINEAR, NORMALIZE_NO);
-    pfree(instants[0]);
-    DATUM_FREE(projvalue, valuetypid);
-    return 2;
+    /* Due to roundoff errors t may be equal to inst1-> or ins2->t */
+    if (t == inst1->t)
+    {
+      DATUM_FREE(projvalue, valuetypid);
+      if (! lower_inc)
+        return 0;
+
+      instants[0] = (TInstant *) inst1;
+      instants[1] = (TInstant *) inst2;
+      result[0] = tsequence_make((const TInstant **) instants, 2,
+        ! lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+      return 1;
+    }
+    else if (t == inst2->t)
+    {
+      DATUM_FREE(projvalue, valuetypid);
+      if (! upper_inc)
+        return 0;
+      
+      instants[0] = (TInstant *) inst1;
+      instants[1] = (TInstant *) inst2;
+      result[0] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, ! upper_inc, LINEAR, NORMALIZE_NO);
+      return 1;
+    }
+    else
+    {
+      instants[0] = (TInstant *) inst1;
+      instants[1] = tinstant_make(projvalue, t, valuetypid);
+      result[0] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, false, LINEAR, NORMALIZE_NO);
+      instants[0] = instants[1];
+      instants[1] = (TInstant *) inst2;
+      result[1] = tsequence_make((const TInstant **) instants, 2,
+        false, upper_inc, LINEAR, NORMALIZE_NO);
+      pfree(instants[0]);
+      DATUM_FREE(projvalue, valuetypid);
+      return 2;
+    }
   }
 }
 

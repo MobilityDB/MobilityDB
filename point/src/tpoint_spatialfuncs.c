@@ -425,8 +425,8 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
     /* Cope with potential roundoff errors */
-    if (*t <= inst1->t || *t >= inst2->t)
-      return false;
+    // if (*t <= inst1->t || *t >= inst2->t)
+      // return false;
   }
   return true;
 }

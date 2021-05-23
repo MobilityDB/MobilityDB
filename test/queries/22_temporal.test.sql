@@ -1611,6 +1611,13 @@ SELECT atValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
 SELECT atValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
 SELECT atValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
 
+/* Roundoff errors */
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+
 SELECT minusValue(tbool 't@2000-01-01', true);
 SELECT minusValue(tbool '{t@2000-01-01}', true);
 SELECT minusValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
@@ -1641,6 +1648,16 @@ SELECT minusValue(tint '{[1@2000-01-01, 1@2000-01-03],[1@2000-01-04, 1@2000-01-0
 SELECT minusValue(tfloat '[1@2000-01-01, 1@2000-01-02, 3@2000-01-03]', 2);
 SELECT minusValue(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[1.5@2000-01-04, 1.5@2000-01-05]}', 1.5);
 SELECT minusValue(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000-01-05]}', text 'AA');
+
+/* Roundoff errors */
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-16, 2 - 1e-16, 2 + 1e-16])),
+  temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
+SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
 
 SELECT atValues(tbool 't@2000-01-01', ARRAY[true]);
 SELECT atValues(tbool '{t@2000-01-01}', ARRAY[true]);

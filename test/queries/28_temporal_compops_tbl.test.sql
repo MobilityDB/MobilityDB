@@ -52,6 +52,9 @@ SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp #= f IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp #= t2.temp IS NOT NULL;
 SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp #= t2.temp IS NOT NULL;
 
+/* Roundoff errors */
+SELECT DISTINCT (temp #= temp) = (temp #= temp + 1e-16) FROM tbl_tfloat WHERE temp IS NOT NULL;
+ 
 -------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_ttext, tbl_text WHERE t #= temp IS NOT NULL;
