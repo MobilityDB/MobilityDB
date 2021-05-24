@@ -183,7 +183,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><varname>random_tbool_inst</varname>: Generate a random temporal boolean of instant subtype</para>
+					<para><varname>random_tbool_inst</varname>: Generate a random temporal Boolean of instant subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tint_inst</varname>: Generate a random temporal integer of instant subtype</para>
@@ -207,7 +207,7 @@
 					<para><varname>random_tgeogpoint3D_inst</varname>: Generate a random temporal geographic 3D point of instant subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tbool_instset</varname>: Generate a random temporal boolean of instant set subtype</para>
+					<para><varname>random_tbool_instset</varname>: Generate a random temporal Boolean of instant set subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tint_instset</varname>: Generate a random temporal integer of instant set subtype</para>
@@ -231,7 +231,7 @@
 					<para><varname>random_tgeogpoint3D_instset</varname>: Generate a random temporal geographic 3D point of instant set subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tbool_seq</varname>: Generate a random temporal boolean of sequence subtype</para>
+					<para><varname>random_tbool_seq</varname>: Generate a random temporal Boolean of sequence subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tint_seq</varname>: Generate a random temporal integer of sequence subtype</para>
@@ -255,7 +255,7 @@
 					<para><varname>random_tgeogpoint3D_seq</varname>: Generate a random temporal geographic 3D point of sequence subtype</para>
 				</listitem>
 				<listitem>
-					<para><varname>random_tbool_seqset</varname>: Generate a random temporal boolean of sequence set subtype</para>
+					<para><varname>random_tbool_seqset</varname>: Generate a random temporal Boolean of sequence set subtype</para>
 				</listitem>
 				<listitem>
 					<para><varname>random_tint_seqset</varname>: Generate a random temporal integer of sequence set subtype</para>

@@ -88,6 +88,13 @@ SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp #= t2.temp IS NO
    124
 (1 row)
 
+/* Roundoff errors */
+SELECT DISTINCT (temp #= temp) = (temp #= temp + 1e-16) FROM tbl_tfloat WHERE temp IS NOT NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT count(*) FROM tbl_ttext, tbl_text WHERE t #= temp IS NOT NULL;
  count 
 -------

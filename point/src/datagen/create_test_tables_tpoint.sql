@@ -625,6 +625,188 @@ CREATE TABLE tbl_tgeogpoint3D(k, temp) AS
 (SELECT k + size / 2, seq FROM tbl_tgeogpoint3D_seq ORDER BY k LIMIT size / 4) UNION ALL
 (SELECT k + size / 4 * 3, ts FROM tbl_tgeogpoint3D_seqset ORDER BY k LIMIT size / 4);
 
+------------------------------------------------------------------------------
+-- Temporal Point Types with Step Interpolation
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tgeompoint_step_seq;
+CREATE TABLE tbl_tgeompoint_step_seq AS
+SELECT k, random_tgeompoint_seq(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, linear:=false) AS seq
+FROM generate_series(1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tgeompoint_step_seq t1
+SET seq = (SELECT seq FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeompoint_step_seq t1
+SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeompoint_step_seq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeompoint_step_seq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+  FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+DROP TABLE IF EXISTS tbl_tgeompoint3D_step_seq;
+CREATE TABLE tbl_tgeompoint3D_step_seq AS
+SELECT k, random_tgeompoint3D_seq(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, linear:=false) AS seq
+FROM generate_series(1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tgeompoint3D_step_seq t1
+SET seq = (SELECT seq FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeompoint3D_step_seq t1
+SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeompoint3D_step_seq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeompoint3D_step_seq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+  FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+DROP TABLE IF EXISTS tbl_tgeogpoint_step_seq;
+CREATE TABLE tbl_tgeogpoint_step_seq AS
+SELECT k, random_tgeogpoint_seq(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10, linear:=false) AS seq
+FROM generate_series(1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tgeogpoint_step_seq t1
+SET seq = (SELECT seq FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeogpoint_step_seq t1
+SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeogpoint_step_seq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeogpoint_step_seq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+  FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+DROP TABLE IF EXISTS tbl_tgeogpoint3D_step_seq;
+CREATE TABLE tbl_tgeogpoint3D_step_seq AS
+SELECT k, random_tgeogpoint3D_seq(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10, linear:=false) AS seq
+FROM generate_series(1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tgeogpoint3D_step_seq t1
+SET seq = (SELECT seq FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeogpoint3D_step_seq t1
+SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeogpoint3D_step_seq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeogpoint3D_step_seq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+  FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tgeompoint_step_seqset;
+CREATE TABLE tbl_tgeompoint_step_seqset AS
+SELECT k, random_tgeompoint_seqset(0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10, linear:=false) AS ts
+FROM generate_series(1, size) AS k;
+/* Add perc duplicates */
+UPDATE tbl_tgeompoint_step_seqset t1
+SET ts = (SELECT ts FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeompoint_step_seqset t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeompoint_step_seqset t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeompoint_step_seqset t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+  FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+DROP TABLE IF EXISTS tbl_tgeompoint3D_step_seqset;
+CREATE TABLE tbl_tgeompoint3D_step_seqset AS
+SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10, linear:=false) AS ts
+FROM generate_series(1, size) AS k;
+/* Add perc duplicates */
+UPDATE tbl_tgeompoint3D_step_seqset t1
+SET ts = (SELECT ts FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeompoint3D_step_seqset t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeompoint3D_step_seqset t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeompoint3D_step_seqset t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+  FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+DROP TABLE IF EXISTS tbl_tgeogpoint_step_seqset;
+CREATE TABLE tbl_tgeogpoint_step_seqset AS
+SELECT k, random_tgeogpoint_seqset(-10, 32, 35, 72, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10, linear:=false) AS ts
+FROM generate_series(1, size) AS k;
+/* Add perc duplicates */
+UPDATE tbl_tgeogpoint_step_seqset t1
+SET ts = (SELECT ts FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeogpoint_step_seqset t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeogpoint_step_seqset t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeogpoint_step_seqset t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+  FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
+DROP TABLE IF EXISTS tbl_tgeogpoint3D_step_seqset;
+CREATE TABLE tbl_tgeogpoint3D_step_seqset AS
+SELECT k, random_tgeogpoint3D_seqset(-10, 32, 35, 72, 0, 1000, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10, linear:=false) AS ts
+FROM generate_series(1, size) AS k;
+/* Add perc duplicates */
+UPDATE tbl_tgeogpoint3D_step_seqset t1
+SET ts = (SELECT ts FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tgeogpoint3D_step_seqset t1
+SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tgeogpoint3D_step_seqset t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tgeogpoint3D_step_seqset t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+  FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+
 -------------------------------------------------------------------------------
 RETURN 'The End';
 END;

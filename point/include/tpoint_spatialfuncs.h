@@ -93,8 +93,6 @@ extern void datum_get_point4d(POINT4D *p, Datum value);
 extern Datum point_make(double x, double y, double z, bool hasz,
   bool geodetic, int32 srid);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
-extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
 extern GSERIALIZED *geo_serialize(LWGEOM *geom);
 extern Datum datum_transform(Datum value, Datum srid);
 
@@ -113,7 +111,14 @@ extern long double geoseg_locate_point(Datum start, Datum end, Datum point,
 
 extern bool tpointseq_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t);
-
+extern bool tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t);
+extern bool tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, TimestampTz *t);
+  
+extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
+  double ratio, bool hasz, bool geodetic);
+  
 extern void spheroid_init(SPHEROID *s, double a, double b);
 extern void geography_interpolate_point4d(const POINT3D *p1, const POINT3D *p2,
   const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p);
@@ -183,6 +188,7 @@ extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
   Datum geom, bool atfunc);
 extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
 
+extern TInstantSet **tgeompointi_make_simple1(const TInstantSet *ti, int *count);
 extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
 extern Datum *gsinter_get_points(GSERIALIZED *gsinter, int *count);
 extern Period **tpointseq_geom_interperiods(const TSequence *seq,

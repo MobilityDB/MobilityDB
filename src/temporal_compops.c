@@ -36,7 +36,6 @@
 #include "temporaltypes.h"
 #include "temporal_util.h"
 #include "lifting.h"
-#include "oidcache.h"
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************

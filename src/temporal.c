@@ -297,11 +297,7 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TSequence *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else if (temp2->subtype == SEQUENCE)
-      result = (mode == INTERSECT) ?
-        intersection_tsequence_tsequence(
-          (TSequence *) temp1, (TSequence *) temp2,
-          (TSequence **) inter1, (TSequence **) inter2) :
-        synchronize_tsequence_tsequence(
+      result = synchronize_tsequence_tsequence(
           (TSequence *) temp1, (TSequence *) temp2,
           (TSequence **) inter1, (TSequence **) inter2,
             mode == SYNCHRONIZE_CROSS);
@@ -321,11 +317,11 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
         (TSequenceSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
     else if (temp2->subtype == SEQUENCE)
-      result = intersection_tsequenceset_tsequence(
+      result = synchronize_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
     else /* temp2->subtype == SEQUENCESET */
-      result = intersection_tsequenceset_tsequenceset(
+      result = synchronize_tsequenceset_tsequenceset(
         (TSequenceSet *) temp1, (TSequenceSet *) temp2, mode,
         (TSequenceSet **) inter1, (TSequenceSet **) inter2);
   }
@@ -1572,7 +1568,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
  * (internal function)
  */
 Temporal *
-temporal_from_base(Temporal *temp, Datum value, Oid valuetypid,
+temporal_from_base(const Temporal *temp, Datum value, Oid valuetypid,
   bool linear)
 {
   Temporal *result;

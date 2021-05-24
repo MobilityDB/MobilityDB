@@ -561,7 +561,7 @@
 			<title>Funciones de constructor</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor para tipos temporales de subtipo instante</para>
+					<para><link linkend="ttype"><varname>ttype_inst</varname></link>: Constructor para tipos temporales a partir de un tipo de base</para>
 				</listitem>
 
 				<listitem>
@@ -1362,43 +1362,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="containsproperly"><varname>containsproperly</varname></link>: Puede contener estrictamente</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="covers"><varname>covers</varname></link>: Puede cubrir</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="coveredby"><varname>coveredby</varname></link>: Puede estar cubierto por</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="crosses"><varname>crosses</varname></link>: Puede cruzar</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Puede ser disjunto</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="equals"><varname>equals</varname></link>: Puede ser igual</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="overlaps"><varname>overlaps</varname></link>: Puede superponerse</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="within"><varname>within</varname></link>: Puede estar dentro</para>
 					</listitem>
 
 					<listitem>
@@ -1406,7 +1370,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="relate"><varname>relate</varname></link>: Puede estar relacionado</para>
+						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1419,19 +1387,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcovers"><varname>tcovers</varname></link>: Cubrir temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tcoveredby"><varname>tcoveredby</varname></link>: Cubierto por temporal</para>
-					</listitem>
-
-					<listitem>
 						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tequals"><varname>tequals</varname></link>: Igual temporal</para>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
 					</listitem>
 
 					<listitem>
@@ -1440,18 +1400,6 @@
 
 					<listitem>
 						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="twithin"><varname>twithin</varname></link>: Dentro temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="trelate"><varname>trelate</varname></link>: Estar relacionado temporal</para>
 					</listitem>
 				</itemizedlist>
 				</sect3>

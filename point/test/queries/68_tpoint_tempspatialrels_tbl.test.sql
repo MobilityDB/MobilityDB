@@ -32,26 +32,22 @@
 
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tcontains(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tcontains(temp, g) IS NOT NULL;
 
--------------------------------------------------------------------------------
--- tcovers
--------------------------------------------------------------------------------
+-- 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tcontains(g, temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE tcovers(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tcovers(temp, g) IS NOT NULL;
+-- Step interpolation
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
+  WHERE tcontains(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
+  WHERE tcontains(g, ts) IS NOT NULL;
 
--------------------------------------------------------------------------------
--- tcoveredby
--------------------------------------------------------------------------------
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE tcoveredby(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tcoveredby(temp, g) IS NOT NULL;
+-- Step interpolation 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seq
+  WHERE tcontains(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seqset
+  WHERE tcontains(g, ts) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- tdisjoint
@@ -61,22 +57,24 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tdisjoint(g, temp) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tdisjoint(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE tdisjoint(t1.temp, t2.temp) IS NOT NULL;
+-- 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tdisjoint(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tdisjoint(temp, g) IS NOT NULL;
 
--------------------------------------------------------------------------------
--- tequals
--------------------------------------------------------------------------------
+-- Step interpolation
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
+  WHERE tdisjoint(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
+  WHERE tdisjoint(g, ts) IS NOT NULL;
 
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE tequals(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE tequals(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tequals(t1.temp, t2.temp) IS NOT NULL;
+-- Step interpolation 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seq
+  WHERE tdisjoint(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seqset
+  WHERE tdisjoint(g, ts) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- tintersects
@@ -86,11 +84,24 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tintersects(g, temp) IS NOT NULL;
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tintersects(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE tintersects(t1.temp, t2.temp) IS NOT NULL;
+-- 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tintersects(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tintersects(temp, g) IS NOT NULL;
+
+-- Step interpolation
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
+  WHERE tintersects(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
+  WHERE tintersects(g, ts) IS NOT NULL;
+
+-- Step interpolation 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seq
+  WHERE tintersects(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seqset
+  WHERE tintersects(g, ts) IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- ttouches
@@ -101,14 +112,24 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE ttouches(temp, g) IS NOT NULL;
 
--------------------------------------------------------------------------------
--- twithin
--------------------------------------------------------------------------------
+--3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE ttouches(g, temp) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE ttouches(temp, g) IS NOT NULL;
 
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE twithin(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE twithin(temp, g) IS NOT NULL;
+-- Step interpolation
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
+  WHERE ttouches(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
+  WHERE ttouches(g, ts) IS NOT NULL;
+
+-- Step interpolation 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seq
+  WHERE ttouches(g, seq) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seqset
+  WHERE ttouches(g, ts) IS NOT NULL;
+
 
 -------------------------------------------------------------------------------
 -- tdwithin
@@ -121,34 +142,43 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+--3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE tdwithin(g, temp, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE tdwithin(temp, g, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+
+-- Geography
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+
+-- Step interpolation
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
+  WHERE tdwithin(g, seq, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
+  WHERE tdwithin(g, ts, 10) IS NOT NULL;
+
+-- Step interpolation 3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seq
+  WHERE tdwithin(g, seq, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D_step_seqset
+  WHERE tdwithin(g, ts, 10) IS NOT NULL;
+
+-- Mixed 2D/3D
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint
+  WHERE tdwithin(g, temp, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point3D
+  WHERE tdwithin(temp, g, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
+SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
 -------------------------------------------------------------------------------
--- trelate (2 arguments returns text)
--------------------------------------------------------------------------------
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE trelate(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE trelate(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE trelate(t1.temp, t2.temp) IS NOT NULL;
-
--------------------------------------------------------------------------------
--- trelate (3 arguments returns boolean)
--------------------------------------------------------------------------------
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE trelate(g, temp, 'T*****FF*') IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE trelate(temp, g, 'T*****FF*') IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE trelate(t1.temp, t2.temp, 'T*****FF*') IS NOT NULL;
-
--------------------------------------------------------------------------------
 -- END;
--- $$ LANGUAGE 'plpgsql';
+-- $$ LANGUAGE plpgsql;
 
 -- SELECT pg_backend_pid()
 

@@ -65,16 +65,12 @@ extern bool intersection_tsequence_tinstantset(const TSequence *seq, const TInst
   TInstantSet **inter1, TInstantSet **inter2);
 extern bool intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
   TInstantSet **inter1, TInstantSet **inter2);
-extern bool intersection_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
-  TSequence **inter1, TSequence **inter2);
 
 extern bool synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TSequence **sync1, TSequence **sync2, bool interpoint);
 
 extern bool tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, Oid valuetypid, Datum *inter, TimestampTz *t);
-extern bool tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t);
 extern bool tsequence_intersection(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   Datum *inter1, Datum *inter2, TimestampTz *t);

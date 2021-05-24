@@ -110,10 +110,34 @@
 /** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
-  INTERSECT,
   SYNCHRONIZE,
   SYNCHRONIZE_CROSS,
 } TIntersection;
+
+/*****************************************************************************
+ * Floating comparators
+ * Definitions copied from liblwgeom_internal.h
+ *****************************************************************************/
+
+/**
+* Floating point comparators.
+*/
+#define FP_TOLERANCE 1e-12
+#define FP_IS_ZERO(A) (fabs(A) <= FP_TOLERANCE)
+#define FP_MAX(A, B) (((A) > (B)) ? (A) : (B))
+#define FP_MIN(A, B) (((A) < (B)) ? (A) : (B))
+#define FP_ABS(a)   ((a) <  (0) ? -(a) : (a))
+#define FP_EQUALS(A, B) (fabs((A)-(B)) <= FP_TOLERANCE)
+#define FP_NEQUALS(A, B) (fabs((A)-(B)) > FP_TOLERANCE)
+#define FP_LT(A, B) (((A) + FP_TOLERANCE) < (B))
+#define FP_LTEQ(A, B) (((A) - FP_TOLERANCE) <= (B))
+#define FP_GT(A, B) (((A) - FP_TOLERANCE) > (B))
+#define FP_GTEQ(A, B) (((A) + FP_TOLERANCE) >= (B))
+#define FP_CONTAINS_TOP(A, X, B) (FP_LT(A, X) && FP_LTEQ(X, B))
+#define FP_CONTAINS_BOTTOM(A, X, B) (FP_LTEQ(A, X) && FP_LT(X, B))
+#define FP_CONTAINS_INCL(A, X, B) (FP_LTEQ(A, X) && FP_LTEQ(X, B))
+#define FP_CONTAINS_EXCL(A, X, B) (FP_LT(A, X) && FP_LT(X, B))
+#define FP_CONTAINS(A, X, B) FP_CONTAINS_EXCL(A, X, B)
 
 /*****************************************************************************
  * Compatibility with older versions of PostgreSQL
@@ -167,10 +191,10 @@ struct tempsubtype_struct
 
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)     ((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_X(flags)      ((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_Z(flags)       ((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_T(flags)       ((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x10)>>4))
 #define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x20)>>5))
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
@@ -534,7 +558,7 @@ extern Datum temporal_append_tinstant(PG_FUNCTION_ARGS);
 extern Datum temporal_merge(PG_FUNCTION_ARGS);
 extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
  
-extern Temporal *temporal_from_base(Temporal *temp, Datum value,
+extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
   Oid valuetypid, bool linear);
   
 /* Cast functions */

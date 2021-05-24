@@ -72,7 +72,6 @@
  *
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
- * @param[in] valuetypid Oid of the base type
  * @param[out] t Timestamp
  */
 static bool
@@ -92,19 +91,15 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (dvalue - min);
   double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
+  if (fraction < -1 * EPSILON || 1.0 + EPSILON < fraction)
+    return false;
 
   if (t != NULL)
   {
     double duration = (inst2->t - inst1->t);
     *t = inst1->t + (TimestampTz) (duration * fraction);
-    /* Cope with potential roundoff errors */
-    if (*t <= inst1->t || *t >= inst2->t)
-      return false;
-  }
-  else
-  {
-    if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
-      return false;
+    /* Note that due to roundoff errors it may be the case that the
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
   }
   return true;
 }
@@ -127,21 +122,20 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  if (datum_eq(value, value1, inst1->valuetypid) ||
-    datum_eq(value, value2, inst1->valuetypid))
+  if (datum_eq2(value, value1, valuetypid, inst1->valuetypid) ||
+    datum_eq2(value, value2, valuetypid, inst1->valuetypid))
     return false;
 
   ensure_continuous_base_type(inst1->valuetypid);
   bool result = false; /* make compiler quiet */
   if (inst1->valuetypid == FLOAT8OID)
-    result = tfloatseq_intersection_value(inst1, inst2, value,
-      valuetypid, t);
+    result = tfloatseq_intersection_value(inst1, inst2, value, valuetypid, t);
   else if (tgeo_base_type(inst1->valuetypid))
     result = tpointseq_intersection_value(inst1, inst2, value, t);
 
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
-    *inter = tsequence_value_at_timestamp1(inst1, inst2, true, *t);
+    *inter = tsequence_value_at_timestamp1(inst1, inst2, LINEAR, *t);
   return result;
 }
 
@@ -193,167 +187,16 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
     return false;
 
   long double fraction = ((long double) (x3 - x1)) / denum;
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+  if (fraction < -1 * EPSILON || 1.0 + EPSILON < fraction )
     /* Intersection occurs out of the period */
     return false;
 
   double duration = (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
-  return true;
-}
-
-/**
- * Returns true if the two segments of the temporal geometric point
- * values intersect at the timestamp
- *
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[out] t Timestamp
- * @pre The instants are synchronized, i.e., start1->t = start2->t and
- * end1->t = end2->t
- */
-bool
-tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
-{
-  long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
-  if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
-  {
-    long double zfraction = 0, zdenum;
-    const POINT3DZ *p1 = datum_get_point3dz_p(tinstant_value(start1));
-    const POINT3DZ *p2 = datum_get_point3dz_p(tinstant_value(end1));
-    const POINT3DZ *p3 = datum_get_point3dz_p(tinstant_value(start2));
-    const POINT3DZ *p4 = datum_get_point3dz_p(tinstant_value(end2));
-    xdenum = p2->x - p1->x - p4->x + p3->x;
-    ydenum = p2->y - p1->y - p4->y + p3->y;
-    zdenum = p2->z - p1->z - p4->z + p3->z;
-    if (xdenum == 0 && ydenum == 0 && zdenum == 0)
-      /* Parallel segments */
-      return false;
-
-    if (xdenum != 0)
-    {
-      xfraction = (p3->x - p1->x) / xdenum;
-      /* If intersection occurs out of the period */
-      if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
-        return false;
-    }
-    if (ydenum != 0)
-    {
-      yfraction = (p3->y - p1->y) / ydenum;
-      /* If intersection occurs out of the period */
-      if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
-        return false;
-    }
-    if (zdenum != 0)
-    {
-      /* If intersection occurs out of the period or intersect
-       * at different timestamps */
-      zfraction = (p3->z - p1->z) / zdenum;
-      if (zfraction <= EPSILON || zfraction >= (1.0 - EPSILON))
-        return false;
-    }
-    /* If intersect at different timestamps on each dimension */
-    if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-      fabsl(xfraction - yfraction) > EPSILON &&
-      fabsl(xfraction - zfraction) > EPSILON) ||
-      (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-      fabsl(yfraction - zfraction) > EPSILON) ||
-      (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-      fabsl(xfraction - zfraction) > EPSILON) ||
-      (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-      fabsl(xfraction - yfraction) > EPSILON))
-      return false;
-    if (xdenum != 0)
-      fraction = xfraction;
-    else if (ydenum != 0)
-      fraction = yfraction;
-    else
-      fraction = zfraction;
-  }
-  else /* 2D */
-  {
-    const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
-    const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
-    const POINT2D *p3 = datum_get_point2d_p(tinstant_value(start2));
-    const POINT2D *p4 = datum_get_point2d_p(tinstant_value(end2));
-    xdenum = p2->x - p1->x - p4->x + p3->x;
-    ydenum = p2->y - p1->y - p4->y + p3->y;
-    if (xdenum == 0 && ydenum == 0)
-      /* Parallel segments */
-      return false;
-
-    if (xdenum != 0)
-    {
-      xfraction = (p3->x - p1->x) / xdenum;
-      /* If intersection occurs out of the period */
-      if (xfraction <= EPSILON || xfraction >= (1.0 - EPSILON))
-        return false;
-    }
-    if (ydenum != 0)
-    {
-      yfraction = (p3->y - p1->y) / ydenum;
-      /* If intersection occurs out of the period */
-      if (yfraction <= EPSILON || yfraction >= (1.0 - EPSILON))
-        return false;
-    }
-    /* If intersect at different timestamps on each dimension */
-    if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > EPSILON)
-      return false;
-    fraction = xdenum != 0 ? xfraction : yfraction;
-  }
-  double duration = (end1->t - start1->t);
-  *t = start1->t + (TimestampTz) (duration * fraction);
-  return true;
-}
-
-/**
- * Returns true if the two segments of the temporal geographic point
- * values intersect at the timestamp
- *
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[out] t Timestamp
- * @pre The instants are synchronized, i.e., start1->t = start2->t and
- * end1->t = end2->t
- */
-bool
-tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
-{
-  GEOGRAPHIC_EDGE e1, e2;
-  POINT3D A1, A2, B1, B2;
-  POINT4D p1, p2, p3, p4;
-
-  datum_get_point4d(&p1, tinstant_value(start1));
-  geographic_point_init(p1.x, p1.y, &(e1.start));
-  geog2cart(&(e1.start), &A1);
-
-  datum_get_point4d(&p2, tinstant_value(end1));
-  geographic_point_init(p2.x, p2.y, &(e1.end));
-  geog2cart(&(e1.end), &A2);
-
-  datum_get_point4d(&p3, tinstant_value(start2));
-  geographic_point_init(p3.x, p3.y, &(e2.start));
-  geog2cart(&(e2.start), &B1);
-
-  datum_get_point4d(&p4, tinstant_value(end2));
-  geographic_point_init(p4.x, p4.y, &(e2.end));
-  geog2cart(&(e2.end), &B2);
-
-  if (! edge_intersects(&A1, &A2, &B1, &B2))
+  /* Note that due to roundoff errors it may be the case that the
+   * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  if (*t <= start1->t || *t >= end1->t)
     return false;
-
-  /* Compute the intersection point */
-  GEOGRAPHIC_POINT inter;
-  edge_intersection(&e1, &e2, &inter);
-  /* Compute distance from beginning of the segment to closest point */
-  long double seglength = sphere_distance(&(e1.start), &(e1.end));
-  long double length = sphere_distance(&(e1.start), &inter);
-  long double fraction = length / seglength;
-
-  long double duration = (end1->t - start1->t);
-  *t = start1->t + (int64) (duration * fraction);
   return true;
 }
 
@@ -406,9 +249,9 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
       result = tgeogpointseq_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
     if (result && inter1 != NULL)
-      *inter1 = tsequence_value_at_timestamp1(start1, end1, true, *t);
+      *inter1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
     if (result && inter2 != NULL)
-      *inter2 = tsequence_value_at_timestamp1(start2, end2, true, *t);
+      *inter2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
   }
   return result;
 }
@@ -470,44 +313,6 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
   x.a = x1->a + (x3->a - x1->a) * ratio;
   x.b = x1->b + (x3->b - x1->b) * ratio;
   bool result = (fabs(x2->a - x.a) <= EPSILON && fabs(x2->b - x.b) <= EPSILON);
-  return result;
-}
-
-/**
- * Returns true if the three values are collinear
- *
- * @param[in] value1,value2,value3 Input values
- * @param[in] ratio Value in [0,1] representing the duration of the
- * timestamps associated to `value1` and `value2` divided by the duration
- * of the timestamps associated to `value1` and `value3`
- * @param[in] hasz True when the points have Z coordinates
- * @param[in] geodetic True for geography, false for geometry
- */
-static bool
-geopoint_collinear(Datum value1, Datum value2, Datum value3,
-  double ratio, bool hasz, bool geodetic)
-{
-  POINT4D p1, p2, p3, p;
-  datum_get_point4d(&p1, value1);
-  datum_get_point4d(&p2, value2);
-  datum_get_point4d(&p3, value3);
-  if (geodetic)
-  {
-    POINT3D q1, q3;
-    GEOGRAPHIC_POINT g1, g3;
-    geographic_point_init(p1.x, p1.y, &g1);
-    geographic_point_init(p3.x, p3.y, &g3);
-    geog2cart(&g1, &q1);
-    geog2cart(&g3, &q3);
-    interpolate_point4d_sphere(&q1, &q3, &p1, &p3, ratio, &p);
-  }
-  else
-    interpolate_point4d(&p1, &p3, &p, ratio);
-
-  bool result = hasz ?
-    fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON &&
-      fabs(p2.z - p.z) <= EPSILON :
-    fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON;
   return result;
 }
 
@@ -1426,29 +1231,6 @@ intersection_tinstantset_tsequence(const TInstantSet *ti, const TSequence *seq,
   TInstantSet **inter1, TInstantSet **inter2)
 {
   return intersection_tsequence_tinstantset(seq, ti, inter2, inter1);
-}
-
-/**
- * Temporally intersect the two temporal values
- *
- * @param[in] seq1,seq2 Input values
- * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time.
- */
-bool
-intersection_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
-  TSequence **inter1, TSequence **inter2)
-{
-  /* Test whether the bounding period of the two temporal values overlap */
-  Period *inter = intersection_period_period_internal(&seq1->period,
-    &seq2->period);
-  if (inter == NULL)
-    return false;
-
-  *inter1 = tsequence_at_period(seq1, inter);
-  *inter2 = tsequence_at_period(seq2, inter);
-  pfree(inter);
-  return true;
 }
 
 /*****************************************************************************
@@ -2620,17 +2402,45 @@ tsequence_restrict_value1(TSequence **result,
   }
   else
   {
-    instants[0] = (TInstant *) inst1;
-    instants[1] = tinstant_make(projvalue, t, valuetypid);
-    result[0] = tsequence_make((const TInstant **) instants, 2,
-      lower_inc, false, LINEAR, NORMALIZE_NO);
-    instants[0] = instants[1];
-    instants[1] = (TInstant *) inst2;
-    result[1] = tsequence_make((const TInstant **) instants, 2,
-      false, upper_inc, LINEAR, NORMALIZE_NO);
-    pfree(instants[0]);
-    DATUM_FREE(projvalue, valuetypid);
-    return 2;
+    /* Due to roundoff errors t may be equal to inst1-> or ins2->t */
+    if (t == inst1->t)
+    {
+      DATUM_FREE(projvalue, valuetypid);
+      if (! lower_inc)
+        return 0;
+
+      instants[0] = (TInstant *) inst1;
+      instants[1] = (TInstant *) inst2;
+      result[0] = tsequence_make((const TInstant **) instants, 2,
+        ! lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
+      return 1;
+    }
+    else if (t == inst2->t)
+    {
+      DATUM_FREE(projvalue, valuetypid);
+      if (! upper_inc)
+        return 0;
+
+      instants[0] = (TInstant *) inst1;
+      instants[1] = (TInstant *) inst2;
+      result[0] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, ! upper_inc, LINEAR, NORMALIZE_NO);
+      return 1;
+    }
+    else
+    {
+      instants[0] = (TInstant *) inst1;
+      instants[1] = tinstant_make(projvalue, t, valuetypid);
+      result[0] = tsequence_make((const TInstant **) instants, 2,
+        lower_inc, false, LINEAR, NORMALIZE_NO);
+      instants[0] = instants[1];
+      instants[1] = (TInstant *) inst2;
+      result[1] = tsequence_make((const TInstant **) instants, 2,
+        false, upper_inc, LINEAR, NORMALIZE_NO);
+      pfree(instants[0]);
+      DATUM_FREE(projvalue, valuetypid);
+      return 2;
+    }
   }
 }
 
@@ -2989,8 +2799,7 @@ tnumberseq_restrict_range1(TSequence **result,
       instants[i] = (TInstant *) inst2;
     else
     {
-      freei = tfloatseq_intersection_value(inst1, inst2, lower,
-        valuetypid, &t1);
+      freei = tfloatseq_intersection_value(inst1, inst2, lower, valuetypid, &t1);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
       instants[i] = RANGE_ROUNDOFF ?
@@ -3004,8 +2813,7 @@ tnumberseq_restrict_range1(TSequence **result,
       instants[j] = (TInstant *) inst2;
     else
     {
-      freej = tfloatseq_intersection_value(inst1, inst2, upper,
-        valuetypid, &t2);
+      freej = tfloatseq_intersection_value(inst1, inst2, upper, valuetypid, &t2);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
       instants[j] = RANGE_ROUNDOFF ?
@@ -3274,84 +3082,31 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
     /*
      * MINUS function
      * Compute first the tnumberseq_at_ranges, then compute its complement
-     * We do not compute the timespan of the atRanges and use the function 
-     * minus_period_periodset_internal since we kept the range values
-     * instead of the projected values when computing atRanges
+     * Notice that in this case due to rounoff errors it may be the case
+     * that temp is not equal to merge(atRanges(temp, .),minusRanges(temp, .),
+     * since we kept the range values instead of the projected values when 
+     * computing atRanges
      */
-    TSequence **atseqs1 = palloc(sizeof(TSequence *) * seq->count * count);
-    int atcount1 = tnumberseq_restrict_ranges1(atseqs1, seq, newranges,
-      newcount, REST_AT, bboxtest);
-    if (atcount1 == 0)
+    TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, newcount,
+      REST_AT, bboxtest);
+    if (ts == NULL)
     {
       result[0] = tsequence_copy(seq);
       return 1;
     }
-    int atcount;
-    TSequence **atseqs = tsequencearr_normalize((const TSequence **) atseqs1,
-      atcount1, &atcount);
-    pfree_array((void **) atseqs1, atcount1);
-    const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-    int i = 0, /* counter for the instants in seq */
-        j = 0, /* counter for the sequences in atseqs */
-        k = 0, /* counter for the instants of current resulting sequence */
-        l = 0; /* counter for the sequences in the result */
-    bool lower_inc1 = seq->period.lower_inc;
-    while (i < seq->count && j < atcount)
+
+    PeriodSet *ps1 = tsequenceset_get_time(ts);
+    PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
+    int newcount = 0;
+    if (ps2 != NULL)
     {
-      const TInstant *inst = tsequence_inst_n(seq, i);
-      const TInstant *first = tsequence_inst_n(atseqs[j], 0);
-      const TInstant *last = tsequence_inst_n(atseqs[j], atseqs[j]->count - 1);
-      TimestampTz t1 = first->t;
-      if (inst->t < t1)
-      {
-        instants[k++] = inst;
-        i++;
-      }
-      else 
-      {
-        /* If not the first instant */
-        if (k > 0)
-        {
-          TInstant *tofree = NULL;
-          bool upper_inc1 = ! atseqs[j]->period.lower_inc;
-          /* The last two values of sequences with step interpolation and
-             exclusive upper bound must be equal */
-          if (!linear && ! upper_inc1)
-          {
-            tofree = tinstant_make(tinstant_value(instants[k - 1]), first->t,
-              seq->valuetypid);
-            instants[k++] = tofree;
-          }
-          else
-            instants[k++] = first;
-          result[l++] = tsequence_make(instants, k, lower_inc1, upper_inc1,
-            linear, NORMALIZE_NO);
-          if (tofree != NULL)
-            pfree(tofree);
-        }
-        lower_inc1 = ! atseqs[j]->period.upper_inc;
-        /* We cannot take last since for step interpolation and exclusive upper
-         * bound it is has previous value at the timestamp */
-        i = tsequence_find_timestamp(seq, last->t);
-        instants[0] = tsequence_inst_n(seq, i);
-        i++;
-        j++;
-        k = 1;
-      }
+      newcount = tsequence_at_periodset(result, seq, ps2);
+      pfree(ps2);
     }
-    /* Construct last resulting sequence */
-    if (i < seq->count)
-    {
-      for (int j = i; j < seq->count; j++)
-        instants[k++] = tsequence_inst_n(seq, j);
-      result[l++] = tsequence_make(instants, k, lower_inc1, 
-        seq->period.upper_inc, linear, NORMALIZE_NO);
-    }
-    pfree_array((void **) atseqs, atcount);
-    pfree(instants);
+    pfree(ts); pfree(ps1);
     if (bboxtest)
       pfree(newranges);
-    return l;
+    return newcount;
   }
 }
 

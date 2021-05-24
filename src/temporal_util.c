@@ -149,7 +149,7 @@ datum_copy(Datum value, Oid type)
 double
 datum_double(Datum d, Oid valuetypid)
 {
-  double result = 0.0;
+  double result;
   ensure_tnumber_base_type(valuetypid);
   if (valuetypid == INT4OID)
     result = (double)(DatumGetInt32(d));
@@ -978,8 +978,11 @@ datum_eq(Datum l, Datum r, Oid type)
 {
   ensure_temporal_base_type_all(type);
   bool result = false;
-  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID)
+  if (type == BOOLOID || type == INT4OID)
     result = l == r;
+  else if (type == FLOAT8OID)
+    result = l == r;
+    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
   else if (type == TEXTOID)
     result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
   else if (type == type_oid(T_DOUBLE2))
@@ -1020,6 +1023,7 @@ datum_lt(Datum l, Datum r, Oid type)
     result = DatumGetInt32(l) < DatumGetInt32(r);
   else if (type == FLOAT8OID)
     result = DatumGetFloat8(l) < DatumGetFloat8(r);
+    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
   else if (type == TEXTOID)
     result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
   else if (type == type_oid(T_GEOMETRY))
@@ -1074,13 +1078,17 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
   ensure_temporal_base_type_all(typer);
   bool result = false;
   if ((typel == BOOLOID && typer == BOOLOID) ||
-    (typel == INT4OID && typer == INT4OID) ||
-    (typel == FLOAT8OID && typer == FLOAT8OID))
+    (typel == INT4OID && typer == INT4OID))
     result = l == r;
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = l == r;
+    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
   else if (typel == INT4OID && typer == FLOAT8OID)
-    result = DatumGetInt32(l) == DatumGetFloat8(r);
+    result = (double) DatumGetInt32(l) == DatumGetFloat8(r);
+    // result = FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
   else if (typel == FLOAT8OID && typer == INT4OID)
-    result = DatumGetFloat8(l) == DatumGetInt32(r);
+    result = DatumGetFloat8(l) == (double) DatumGetInt32(r);
+    // result = FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
   else if (typel == TEXTOID && typer == TEXTOID)
     result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
     /* This function is never called with doubleN */
@@ -1114,11 +1122,14 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
   if (typel == INT4OID && typer == INT4OID)
     result = DatumGetInt32(l) < DatumGetInt32(r);
   else if (typel == INT4OID && typer == FLOAT8OID)
-    result = DatumGetInt32(l) < DatumGetFloat8(r);
+    result = (double) DatumGetInt32(l) < DatumGetFloat8(r);
+    // result = FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
   else if (typel == FLOAT8OID && typer == INT4OID)
-    result = DatumGetFloat8(l) < DatumGetInt32(r);
+    result = DatumGetFloat8(l) < (double) DatumGetInt32(r);
+    // result = FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
   else if (typel == FLOAT8OID && typer == FLOAT8OID)
     result = DatumGetFloat8(l) < DatumGetFloat8(r);
+    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
   else if (typel == TEXTOID && typer == TEXTOID)
     result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
   return result;

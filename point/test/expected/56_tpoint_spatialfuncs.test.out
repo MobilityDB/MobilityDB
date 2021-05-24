@@ -811,9 +811,9 @@ SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1)@2000-01-01'));
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-      st_astext      
----------------------
- MULTIPOINT(1 1,2 2)
+        st_astext        
+-------------------------
+ MULTIPOINT(1 1,2 2,1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
@@ -829,15 +829,15 @@ SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-      st_astext      
----------------------
- MULTIPOINT(1 1,2 2)
+        st_astext        
+-------------------------
+ MULTIPOINT(1 1,2 2,1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-        st_astext        
--------------------------
- MULTIPOINT(1 1,2 2,3 3)
+          st_astext          
+-----------------------------
+ MULTIPOINT(1 1,2 2,1 1,3 3)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
@@ -847,9 +847,9 @@ SELECT ST_AsText(trajectory(tgeogpoint 'Point(1.5 1.5)@2000-01-01'));
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-          st_astext          
------------------------------
- MULTIPOINT(1.5 1.5,2.5 2.5)
+              st_astext              
+-------------------------------------
+ MULTIPOINT(1.5 1.5,2.5 2.5,1.5 1.5)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
@@ -865,15 +865,15 @@ SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-          st_astext          
------------------------------
- MULTIPOINT(1.5 1.5,2.5 2.5)
+              st_astext              
+-------------------------------------
+ MULTIPOINT(1.5 1.5,2.5 2.5,1.5 1.5)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
-              st_astext              
--------------------------------------
- MULTIPOINT(1.5 1.5,2.5 2.5,3.5 3.5)
+                  st_astext                  
+---------------------------------------------
+ MULTIPOINT(1.5 1.5,2.5 2.5,1.5 1.5,3.5 3.5)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1 1)@2000-01-01'));
@@ -883,9 +883,9 @@ SELECT ST_AsText(trajectory(tgeompoint 'Point(1 1 1)@2000-01-01'));
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
-         st_astext          
-----------------------------
- MULTIPOINT Z (1 1 1,2 2 2)
+            st_astext             
+----------------------------------
+ MULTIPOINT Z (1 1 1,2 2 2,1 1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
@@ -907,9 +907,9 @@ SELECT ST_AsText(trajectory(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01'));
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}'));
-               st_astext                
-----------------------------------------
- MULTIPOINT Z (1.5 1.5 1.5,2.5 2.5 2.5)
+                     st_astext                      
+----------------------------------------------------
+ MULTIPOINT Z (1.5 1.5 1.5,2.5 2.5 2.5,1.5 1.5 1.5)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]'));
@@ -925,21 +925,21 @@ SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
- st_astext  
-------------
- POINT(1 1)
+        st_astext        
+-------------------------
+ MULTIPOINT(1 1,1 1,1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeogpoint '{[Point(1 1)@2001-01-01], [Point(1 1)@2001-02-01], [Point(1 1)@2001-03-01]}'));
- st_astext  
-------------
- POINT(1 1)
+        st_astext        
+-------------------------
+ MULTIPOINT(1 1,1 1,1 1)
 (1 row)
 
 SELECT ST_AsText(trajectory(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}'));
-      st_astext      
----------------------
- MULTIPOINT(1 1,2 2)
+          st_astext          
+-----------------------------
+ MULTIPOINT(1 1,2 2,1 1,2 2)
 (1 row)
 
 SELECT round(length(tgeompoint 'Point(1 1)@2000-01-01')::numeric, 6);
@@ -2054,7 +2054,7 @@ SELECT asText(atGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Linestr
 
 /* Errors */
 SELECT atGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The temporal point and the geometry must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT asText(minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Linestring(0 0,3 3)'));
  astext 
 --------
@@ -2237,7 +2237,7 @@ SELECT asText(minusGeometry(tgeompoint 'Point(1 1 1)@2000-01-01', geometry 'Line
 
 /* Errors */
 SELECT minusGeometry(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Linestring(1 1,2 2)');
-ERROR:  The temporal point and the geometry must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
               astext               
 -----------------------------------
@@ -2332,6 +2332,6 @@ SELECT asText(minusStbox(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Po
 SELECT asText(atStbox(tgeompoint 'SRID=4326;Point(1 1)@2000-01-01', 'GEODSTBOX T((1,1,1,2000-01-01),(2,2,2,2000-01-02))'));
 ERROR:  The values must be both planar or both geodetic
 SELECT asText(atStbox(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))'));
-ERROR:  The temporal point and the box must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT asText(atStbox(tgeompoint 'Point(1 1)@2000-01-01', 'STBOX ZT((1,1,1,2000-01-01),(2,2,2,2000-01-02))'));
 ERROR:  Unknown geometry type: 13 - PolyhedralSurface

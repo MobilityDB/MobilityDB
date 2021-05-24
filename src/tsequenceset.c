@@ -495,7 +495,7 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
  * @result Returns false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
+synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -515,12 +515,9 @@ intersection_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq
     const TSequence *seq1 = tsequenceset_seq_n(ts, i);
     TSequence *interseq1, *interseq2;
     bool hasinter;
-    if (mode == INTERSECT)
-      hasinter = intersection_tsequence_tsequence(seq, seq1,
-        &interseq1, &interseq2);
-    else /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
-      hasinter = synchronize_tsequence_tsequence(seq, seq1,
-        &interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
+    /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
+    hasinter = synchronize_tsequence_tsequence(seq, seq1,
+      &interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
     if (hasinter)
     {
       sequences1[k] = interseq1;
@@ -554,7 +551,7 @@ bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
   TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
-  return intersection_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
+  return synchronize_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
 }
 
 /**
@@ -566,7 +563,7 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  * @result Returns false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
+synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
   TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
@@ -587,12 +584,9 @@ intersection_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceS
     const TSequence *seq2 = tsequenceset_seq_n(ts2, j);
     TSequence *interseq1, *interseq2;
     bool hasinter;
-    if (mode == INTERSECT)
-      hasinter = intersection_tsequence_tsequence(seq1, seq2,
-        &interseq1, &interseq2);
-    else /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
-      hasinter = synchronize_tsequence_tsequence(seq1, seq2,
-        &interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
+    /* mode == SYNCHRONIZE or SYNCHRONIZE_CROSS */
+    hasinter = synchronize_tsequence_tsequence(seq1, seq2,
+      &interseq1, &interseq2, mode == SYNCHRONIZE_CROSS);
     if (hasinter)
     {
       sequences1[k] = interseq1;

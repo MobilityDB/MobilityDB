@@ -199,7 +199,7 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 	<sect1 id="constructor_temporal_tyes">
 		<title>Constructor Functions</title>
 
-		<para>Each temporal type has constructor functions with the same name as the type and with a suffix for the subtype, where the suffix &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo;, and &lsquo;<varname>_seqset</varname>&rsquo; correspond, respectively, to the subtypes instant, instant set, sequence, and sequence set. Examples are <varname>tint_seq</varname> or <varname>tgeompoint_seqset</varname>. Using the constructor function is frequently more convenient than writing a literal constant.
+		<para>Each temporal type has a constructor function with the same name as the type. Examples are <varname>tint</varname> or <varname>tgeompoint</varname>. In addition, each temporal type has a constructor function with the same name as the type and a suffix for a subtype, where the suffix &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo;, and &lsquo;<varname>_seqset</varname>&rsquo; correspond, respectively, to the subtypes instant set, sequence, and sequence set. Examples are <varname>tint_seq</varname> or <varname>tgeompoint_seqset</varname>. Using the constructor function is frequently more convenient than writing a literal constant.
 		</para>
 
 		<itemizedlist>
@@ -223,25 +223,33 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 		<para>We give next the constructor functions for the various subtypes.</para>
 
 		<itemizedlist>
-			<listitem id="ttype_inst">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<para>Constructor for temporal types of instant subtype</para>
-				<para><varname>ttype_inst(base,timestamptz): ttype_inst</varname></para>
+			<listitem id="ttype">
+				<indexterm><primary><varname>ttype</varname></primary></indexterm>
+				<para>Constructor for temporal types from a base type</para>
+				<para><varname>ttype(base,timestamptz): ttype_inst</varname></para>
+				<para><varname>ttype(base,timestampset): ttype_instset</varname></para>
+				<para><varname>tdisc(base,period): tdisc_seq</varname></para>
+				<para><varname>tcont(base,period,linear=true): tcont_seq</varname></para>
+				<para><varname>tdisc(base,periodset): tdisc_seqset</varname></para>
+				<para><varname>tcont(base,periodset,linear=true): tcont_seqset</varname></para>
 				<programlisting>
-SELECT tbool_inst(true, '2001-01-01');
-SELECT tfloat_inst(1.5, '2001-01-01');
-SELECT tgeompoint_inst('Point(0 0)', '2001-01-01');
+SELECT tbool(true, '2001-01-01');
+SELECT tint(1, '2001-01-01');
+SELECT tfloat(1.5, '{2001-01-01, 2001-01-02}');
+SELECT ttext('AAA', '{2001-01-01, 2001-01-02}');
+SELECT tfloat(1.5, '[2001-01-01, 2001-01-02]');
+SELECT tgeompoint('Point(0 0)', '[2001-01-01, 2001-01-02]', false);
+SELECT ttext('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tgeogpoint('Point(0 0)', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}',
+  false);
 				</programlisting>
 			</listitem>
 
 			<listitem id="ttype_instset">
 				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
 				<para>Constructor for temporal types of instant set subtype</para>
-				<para><varname>ttype_instset(base,timestampset): ttype_instset</varname></para>
 				<para><varname>ttype_instset(ttype_inst[]): ttype_instset</varname></para>
 				<programlisting>
-SELECT tint_instset(2, '{2001-01-01, 2001-01-02, 2001-01-03}');
-SELECT tgeompoint_instset('Point(0 0)', '{2001-01-01, 2001-01-02}');
 SELECT tbool_instset(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
 SELECT tint_instset(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
 SELECT tfloat_instset(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00']);
@@ -256,23 +264,19 @@ SELECT tgeogpoint_instset(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			<listitem id="ttype_seq">
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
 				<para>Constructor for temporal types of sequence subtype</para>
-				<para><varname>tdisc_seq(base,period): tdisc_seq</varname></para>
 				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
-				<para><varname>tcont_seq(base,period,linear=true): tcont_seq</varname></para>
 				<para><varname>tcont_seq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): tcont_seq</varname></para>
 				<programlisting>
-SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]');
-SELECT tfloat_seq(2.0, '[2001-01-01, 2001-01-02]', false);
 SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
-SELECT tint_seq(ARRAY[tint_inst(2,'2001-01-01 08:00:00'),
-  tint_inst(2,'2001-01-01 08:10:00')], true, false);
+SELECT tint_seq(ARRAY[tint(2,'2001-01-01 08:00:00'), tint(2,'2001-01-01 08:10:00')],
+  true, false);
 SELECT tfloat_seq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
   '1@2001-01-03 08:10:00'], true, false);
 SELECT tfloat_seq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
   '1@2001-01-03 08:10:00'], true, true, false);
-SELECT ttext_seq(ARRAY[ttext_inst('AAA', '2001-01-01 08:00:00'),
-  ttext_inst('BBB', '2001-01-03 08:05:00'), ttext_inst('BBB', '2001-01-03 08:10:00')]);
+SELECT ttext_seq(ARRAY[ttext('AAA', '2001-01-01 08:00:00'),
+  ttext('BBB', '2001-01-03 08:05:00'), ttext('BBB', '2001-01-03 08:10:00')]);
 SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
 SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
@@ -283,12 +287,8 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 			<listitem id="ttype_seqset">
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence set subtype</para>
-				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
-				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
 				<programlisting>
-SELECT ttext_seqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
-SELECT tgeogpoint_seqset('Point(1 1)', '[2001-01-01, 2001-01-02]', false);
 SELECT tboolseqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
 SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,
@@ -2920,20 +2920,18 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 	<sect1 id="topological_relationships_temporal_points">
 		<title>Spatial Relationships for Temporal Points</title>
 
-		<para>The topological relationships such as <varname>ST_Intersects</varname> and the distance relationships such as <varname>ST_DWithin</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point or a base type (that is, a <varname>geometry</varname> or <varname>geography</varname>), but these functions do not allow a base type in both arguments. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to have a temporal geometry point (or a geometry) and a temporal geography point (or a geography) as arguments.</para>
+		<para>The topological relationships such as <varname>ST_Intersects</varname> and the distance relationships such as <varname>ST_DWithin</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point and a base type (that is, a <varname>geometry</varname> or a <varname>geography</varname>) or two temporal points. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to mix a temporal geometry point (or a geometry) and a temporal geography point (or a geography).</para>
 
 		<para>There are two versions of the spatial relationships:</para>
 		<itemizedlist>
 			<listitem>
-				<para>The <emphasis>possible relationships</emphasis> apply the traditional topological or distance relationship to the union of all values taken by the temporal point (which is a <varname>geometry</varname> or <varname>geography</varname>) and returns a <varname>boolean</varname> or a <varname>text</varname>. Examples are the <varname>intersects</varname> and <varname>relate</varname> functions.</para>
+				<para>The <emphasis>possible relationships</emphasis> apply the traditional topological or distance relationship to the union of all values taken by the temporal point (which is a <varname>geometry</varname> or <varname>geography</varname>) and returns a <varname>boolean</varname>. Examples are the <varname>intersects</varname> and <varname>dwithin</varname> functions.</para>
 			</listitem>
 
 			<listitem>
-				<para>The <emphasis>temporal relationships</emphasis> are defined with the temporal semantics, that is, the traditional topological or distance relationship is computed at each instant and results in a <varname>tbool</varname> or a <varname>ttext</varname>. Examples are the <varname>tintersects</varname> and <varname>trelate</varname> functions.</para>
+				<para>The <emphasis>temporal relationships</emphasis> are defined with the temporal semantics, that is, the traditional topological or distance relationship is computed at each instant and results in a <varname>tbool</varname>. Examples are the <varname>tintersects</varname> and <varname>tdwithin</varname> functions.</para>
 			</listitem>
 		</itemizedlist>
-
-		<para>All relationships in the two versions are defined for temporal geometry points, while only four of them are defined for temporal geography points, namely, <varname>covers</varname>, <varname>coveredby</varname>, <varname>intersects</varname>, and <varname>dwithin</varname>, and the corresponding temporal versions.</para>
 
 		<para>The semantics of the possible relationships varies depending on the relationship and the type of the arguments. For example, the following query
 			<programlisting>
@@ -2955,7 +2953,7 @@ SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
   tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 			</programlisting>
-			tests whether the temporal points may intersect, since the query above is conceptually equivalent to the following one
+			tests whether the temporal points may intersect in space independently of time, since the query above is conceptually equivalent to the following one
 			<programlisting>
 SELECT ST_Intersects('Linestring(0 1,1 0)', 'Linestring(0 0,1 1)');
 			</programlisting>
@@ -2970,25 +2968,7 @@ WHERE intersects(T.Trip, R.Geom)
 		which verifies whether a trip <varname>T</varname> (which is a temporal point) intersects a region <varname>R</varname> (which is a geometry), will benefit from a spatiotemporal index on the column <varname>T.Trip</varname> since the <varname>intersects</varname> function will automatically perform the bounding box comparison <varname>T.Trip &amp;&amp; R.Geom</varname>. This is further explained later in this document.
 		</para>
 
-		<para>Three topological relationships available in PostGIS are not provided in the temporal version.
-			<itemizedlist>
-				<listitem>
-					<para><varname>tcontainsproperly</varname> since it would always be equal to <varname>tcontains</varname>: <varname>ST_Contains</varname> returns true if and only if no points of B lie in the exterior of A, and at least one point of the interior of B lies in the interior of A. <varname>ST_ContainsProperly</varname> returns true if B intersects the interior of A but not the boundary (or exterior).</para>
-				</listitem>
-
-				<listitem>
-					<para><varname>tcrosses</varname> since it would always returns false: <varname>ST_Crosses</varname> returns true if the supplied geometries have some, but not all, interior points in common.</para>
-				</listitem>
-
-				<listitem>
-					<para><varname>toverlaps</varname> since it would always returns false: <varname>ST_Overlaps</varname> returns true if the geometries share space, are of the same dimension, but are not completely contained by each other.</para>
-				</listitem>
-			</itemizedlist>
-			</para>
-
-		<para>Similarly, only a few temporal relationships are meaningful when the two arguments are temporal points. Therefore, the relationships supported for two temporal geometry points are <varname>tdisjoint</varname>, <varname>tequals</varname>, <varname>tintersects</varname>, <varname>tdwithin</varname>, and <varname>trelate</varname> (with 2 and 3 arguments), while only <varname>tintersects</varname> and <varname>tdwithin</varname> are supported for two temporal geography points.</para>
-
-		<para>The <varname>relate</varname> and the <varname>trelate</varname> functions have two forms with either two or three arguments. The two-argument forms consider the spatial relationship between the interior, the boundary, and the exterior of the arguments and return a <varname>text</varname> or a <varname>ttext</varname> value representing the maximum intersection matrix pattern. This pattern is defined using the Dimensionally Extended 9 Intersection Model or DE-9IM (see the PostGIS documentation for more details). The three-argument forms determine whether the first two arguments satisfy the intersection matrix pattern given as third argument (a <varname>text</varname> value) and return a Boolean or a temporal Boolean.</para>
+		<para>Not all spatial relationships available in PostGIS have a meaningful generalization for temporal points. A generalized version of the following relationships are defined for temporal geometric points: <varname>intersects</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>contains</varname>, and <varname>touches</varname>, while for temporal geographic points only the three first ones are defined. Furthermore, not all combinations of parameters are meaningful for a given generalized function. For example, while <varname>tcontains(geometry, tpoint)</varname> is meaningful, <varname>tcontains(tpoint, geometry)</varname> is meaningful only when the geometry is a single point, and <varname>tcontains(tpoint, tpoint)</varname> is equivalent to <varname>tintersects(tpoint, geometry)</varname>. For this reason, only the first combination of parameters is defined for <varname>contains</varname> and <varname>tcontains</varname>.</para>
 
 		<para>Finally, it is worth noting that the temporal relationships allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
 
@@ -3006,50 +2986,6 @@ SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 					</programlisting>
 				</listitem>
 
-				<listitem id="containsproperly">
-					<indexterm><primary><varname>containsproperly</varname></primary></indexterm>
-					<para>May contain properly</para>
-					<para><varname>containsproperly({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting>
-SELECT containsproperly(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- false
-					</programlisting>
-				</listitem>
-
-				<listitem id="covers">
-					<indexterm><primary><varname>covers</varname></primary></indexterm>
-					<para>May cover</para>
-					<para><varname>covers({geo,tpoint},{geo,tpoint}): boolean</varname></para>
-					<programlisting>
-SELECT covers(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="coveredby">
-					<indexterm><primary><varname>coveredby</varname></primary></indexterm>
-					<para>May be covered by</para>
-					<para><varname>coveredby({geo,tpoint},{geo,tpoint}): boolean</varname></para>
-					<programlisting>
-SELECT coveredby(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- false
-					</programlisting>
-				</listitem>
-
-				<listitem id="crosses">
-					<indexterm><primary><varname>crosses</varname></primary></indexterm>
-					<para>May cross</para>
-					<para><varname>crosses({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting>
-SELECT crosses(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
--- true
-					</programlisting>
-				</listitem>
-
 				<listitem id="disjoint">
 					<indexterm><primary><varname>disjoint</varname></primary></indexterm>
 					<para>May be disjoint</para>
@@ -3058,64 +2994,6 @@ SELECT crosses(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 -- false
-					</programlisting>
-				</listitem>
-
-				<listitem id="equals">
-					<indexterm><primary><varname>equals</varname></primary></indexterm>
-					<para>May be equal</para>
-					<para><varname>equals({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting>
-SELECT equals(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- false
-					</programlisting>
-				</listitem>
-
-				<listitem id="intersects">
-					<indexterm><primary><varname>intersects</varname></primary></indexterm>
-					<para>May intersect &Z_support;</para>
-					<para><varname>intersects({geo,tpoint},{geo,tpoint}): boolean</varname></para>
-					<programlisting>
-SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
--- false
-SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="overlaps">
-					<indexterm><primary><varname>overlaps</varname></primary></indexterm>
-					<para>May overlap</para>
-					<para><varname>overlaps({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting>
-SELECT overlaps(geometry 'Linestring(1 1,3 3)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="touches">
-					<indexterm><primary><varname>touches</varname></primary></indexterm>
-					<para>May touch</para>
-					<para><varname>touches({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting>
-SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(0 1)@2012-01-03)');
--- true
-					</programlisting>
-				</listitem>
-
-				<listitem id="within">
-					<indexterm><primary><varname>within</varname></primary></indexterm>
-					<para>May be within</para>
-					<para><varname>within({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting>
-SELECT within(geometry 'LineString(1 1,2 2)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-03)');
--- true
 					</programlisting>
 				</listitem>
 
@@ -3133,20 +3011,31 @@ SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 					</programlisting>
 				</listitem>
 
-				<listitem id="relate">
-					<indexterm><primary><varname>relate</varname></primary></indexterm>
-					<para>May relate</para>
-					<para><varname>relate({geo,tgeompoint},{geo,tgeompoint}): text</varname></para>
-					<para><varname>relate({geo,tgeompoint},{geo,tgeompoint},text): boolean</varname></para>
+				<listitem id="intersects">
+					<indexterm><primary><varname>intersects</varname></primary></indexterm>
+					<para>May intersect &Z_support;</para>
+					<para><varname>intersects({geo,tpoint},{geo,tpoint}): boolean</varname></para>
 					<programlisting>
-SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- "1F2F01FF2"
-SELECT relate(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)','1F2F01FF2');
+SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
+-- false
+SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
 -- true
 					</programlisting>
 				</listitem>
+
+				<listitem id="touches">
+					<indexterm><primary><varname>touches</varname></primary></indexterm>
+					<para>May touch</para>
+					<para><varname>touches({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
+					<programlisting>
+SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
+  tgeompoint '[Point(0 0)@2012-01-01, Point(0 1)@2012-01-03)');
+-- true
+					</programlisting>
+				</listitem>
+
 			</itemizedlist>
 		</sect2>
 
@@ -3164,28 +3053,6 @@ SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 					</programlisting>
 				</listitem>
 
-				<listitem id="tcovers">
-					<indexterm><primary><varname>tcovers</varname></primary></indexterm>
-					<para>Temporal covers &geography_support;</para>
-					<para><varname>tcovers({geo,tpoint},{geo,tpoint}): tbool</varname></para>
-					<programlisting>
-SELECT tcovers(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04]}"
-					</programlisting>
-				</listitem>
-
-				<listitem id="tcoveredby">
-					<indexterm><primary><varname>tcoveredby</varname></primary></indexterm>
-					<para>Temporal covered by &geography_support;</para>
-					<para><varname>tcoveredby({geo,tpoint},{geo,tpoint}): tbool</varname></para>
-					<programlisting>
-SELECT tcoveredby(geometry 'Point(1 1)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-04)}"
-					</programlisting>
-				</listitem>
-
 				<listitem id="tdisjoint">
 					<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
 					<para>Temporal disjoint &Z_support; &geography_support;</para>
@@ -3200,17 +3067,17 @@ SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 					</programlisting>
 				</listitem>
 
-				<listitem id="tequals">
-					<indexterm><primary><varname>tequals</varname></primary></indexterm>
-					<para>Temporal equals &Z_support; &geography_support;</para>
-					<para><varname>tequals({point,tgeompoint},{point,tgeompoint}): tbool</varname></para>
+				<listitem id="tdwithin">
+					<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
+					<para>Temporal distance within &Z_support; &geography_support;</para>
+					<para><varname>tdwithin({geo,tpoint},{geo,tpoint},float): tbool</varname></para>
 					<programlisting>
-SELECT tequals(geometry 'Point(1 1)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-04]}"
-SELECT tequals(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
--- "{[f@2012-01-01, t@2012-01-03], (f@2012-01-03, f@2012-01-05)}"
+SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
+  tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 1);
+-- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04)}"
+SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
+  tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
+-- "{[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}"
 					</programlisting>
 				</listitem>
 
@@ -3237,48 +3104,6 @@ SELECT tintersects(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 SELECT ttouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)');
 -- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04]}"
-					</programlisting>
-				</listitem>
-
-				<listitem id="twithin">
-					<indexterm><primary><varname>twithin</varname></primary></indexterm>
-					<para>Temporal within</para>
-					<para><varname>twithin({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
-					<programlisting>
-SELECT twithin(geometry 'Point(1 1)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)');
--- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03]}"
-					</programlisting>
-				</listitem>
-
-				<listitem id="tdwithin">
-					<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
-					<para>Temporal distance within &Z_support; &geography_support;</para>
-					<para><varname>tdwithin({geo,tpoint},{geo,tpoint},float): tbool</varname></para>
-					<programlisting>
-SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 1);
--- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04)}"
-SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
-  tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
--- "{[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}"
-					</programlisting>
-				</listitem>
-
-				<listitem id="trelate">
-					<indexterm><primary><varname>trelate</varname></primary></indexterm>
-					<para>Temporal relate</para>
-					<para><varname>trelate({geo,tgeompoint},{geo,tgeompoint},text): tbool</varname></para>
-					<para><varname>trelate({geo,tgeompoint},{geo,tgeompoint}): ttext</varname></para>
-					<programlisting>
-SELECT trelate(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)');
--- "{[FF2FF10F2@2012-01-01, FF20F1FF2@2012-01-02, FF20F1FF2@2012-01-03],
-  (FF2FF10F2@2012-01-03, FF2FF10F2@2012-01-04]}"
-SELECT trelate(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 'FF20F1FF2');
--- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04]}"
-  2012-01-04)}"
 					</programlisting>
 				</listitem>
 			</itemizedlist>
@@ -3567,7 +3392,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 			</programlisting>
 		</para>
 
-		<para>In the case of temporal points, all spatial relationships with the possible semantics (see <xref linkend="topological_relationships_temporal_points" />), excepted <varname>disjoint</varname>and <varname>relate</varname>, automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		<para>In the case of temporal points, all spatial relationships with the possible semantics (see <xref linkend="topological_relationships_temporal_points" />) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R

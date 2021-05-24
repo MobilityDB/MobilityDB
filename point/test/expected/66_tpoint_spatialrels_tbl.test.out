@@ -5,329 +5,140 @@ SET
 set force_parallel_mode=regress;
 SET
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND contains(g, temp);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND contains(g, temp);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND contains(temp, g);
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND contains(g, temp);
  count 
 -------
      0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND contains(t1.temp, t2.temp);
- count 
--------
-    67
 (1 row)
 
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND containsproperly(g, temp);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(g, temp);
  count 
 -------
-     0
+  1186
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND containsproperly(temp, g);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(temp, g);
  count 
 -------
-     0
+  1186
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND containsproperly(t1.temp, t2.temp);
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(g, temp);
  count 
 -------
-    37
+   797
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(temp, g);
+ count 
+-------
+   797
 (1 row)
 
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND covers(g, temp);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND covers(temp, g);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(temp, g);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND covers(t1.temp, t2.temp);
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(g, temp);
  count 
 -------
-    67
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(temp, g);
+ count 
+-------
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND covers(g, temp);
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND covers(temp, g);
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(temp, g);
  count 
 -------
      0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)::geometry) AND NOT ST_IsCollection(trajectory(t2.temp)::geometry) AND covers(t1.temp, t2.temp);
- count 
--------
-    65
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND coveredby(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND coveredby(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND coveredby(t1.temp, t2.temp);
- count 
--------
-    67
-(1 row)
-
-SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND coveredby(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND coveredby(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)::geometry) AND NOT ST_IsCollection(trajectory(t2.temp)::geometry) AND coveredby(t1.temp, t2.temp);
- count 
--------
-    65
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND crosses(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND crosses(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND crosses(t1.temp, t2.temp);
- count 
--------
-     4
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND disjoint(g, temp);
- count 
--------
-  5643
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND disjoint(temp, g);
- count 
--------
-  5643
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND disjoint(t1.temp, t2.temp);
- count 
--------
-     4
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND equals(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND equals(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND equals(t1.temp, t2.temp);
- count 
--------
-    67
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND intersects(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND intersects(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND intersects(t1.temp, t2.temp);
- count 
--------
-    75
-(1 row)
-
-SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND intersects(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND intersects(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)::geometry) AND NOT ST_IsCollection(trajectory(t2.temp)::geometry) AND intersects(t1.temp, t2.temp);
- count 
--------
-    74
 (1 row)
 
 SELECT count(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND intersects(g, temp);
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND intersects(temp, g);
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(temp, g);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)::geometry) AND NOT ST_IsCollection(trajectory(t2.temp)::geometry) AND intersects(t1.temp, t2.temp);
- count 
--------
-    79
-(1 row)
-
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND overlaps(g, temp);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(g, temp);
  count 
 -------
      0
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND overlaps(temp, g);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(temp, g);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND overlaps(t1.temp, t2.temp);
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(g, temp);
  count 
 -------
-     2
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(temp, g);
+ count 
+-------
+     0
 (1 row)
 
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND touches(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND touches(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND touches(t1.temp, t2.temp);
- count 
--------
-     2
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND within(g, temp);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND within(temp, g);
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND within(t1.temp, t2.temp);
- count 
--------
-    67
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND dwithin(g, temp, 10);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND dwithin(g, temp, 10);
  count 
 -------
   1013
 (1 row)
 
 SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND dwithin(temp, g, 10);
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND dwithin(temp, g, 10);
  count 
 -------
   1013
@@ -341,14 +152,14 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 (1 row)
 
 SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND dwithin(g, temp, 10);
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND dwithin(g, temp, 10);
  count 
 -------
      2
 (1 row)
 
 SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point
-  WHERE NOT ST_IsCollection(trajectory(temp)::geometry)  AND dwithin(temp, g, 10);
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND dwithin(temp, g, 10);
  count 
 -------
      2
@@ -359,50 +170,6 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
  count 
 -------
     68
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp)) AND tempSubtype(temp) <> 'SequenceSet' AND 
-  relate(g, temp) IS NOT NULL;
- count 
--------
-  5346
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp)) AND tempSubtype(temp) <> 'SequenceSet' AND 
-  relate(temp, g) IS NOT NULL;
- count 
--------
-  5346
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND tempSubtype(t1.temp) <> 'SequenceSet' AND tempSubtype(t2.temp) <> 'SequenceSet' AND relate(t1.temp, t2.temp) IS NOT NULL;
- count 
--------
-    76
-(1 row)
-
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND relate(g, temp, 'T*****FF*');
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
-  WHERE NOT ST_IsCollection(trajectory(temp))  AND relate(temp, g, 'T*****FF*');
- count 
--------
-     0
-(1 row)
-
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
-  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND relate(t1.temp, t2.temp, 'T*****FF*');
- count 
--------
-    67
 (1 row)
 
 set parallel_tuple_cost=100;

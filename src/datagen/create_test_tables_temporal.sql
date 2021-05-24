@@ -575,6 +575,60 @@ CREATE TABLE tbl_ttext(k, temp) AS
 (SELECT k + size / 2, seq FROM tbl_ttext_seq order by k limit size / 4) UNION all
 (SELECT k + size / 4 * 3, ts FROM tbl_ttext_seqset order by k limit size / 4);
 
+------------------------------------------------------------------------------
+-- Temporal Float Types with Step Interpolation
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tfloat_step_seq;
+CREATE TABLE tbl_tfloat_step_seq AS
+/* Add perc NULL values */
+SELECT k, NULL AS seq
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tfloat_seq(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, linear:=false) AS seq
+FROM generate_series(perc+1, size) k;
+/* Add perc duplicates */
+UPDATE tbl_tfloat_step_seq t1
+SET seq = (SELECT seq FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tfloat_step_seq t1
+SET seq = (SELECT seq + random_int(1, 2) FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tfloat_step_seq t1
+SET seq = (SELECT shift(seq, timespan(seq)) FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tfloat_step_seq t1
+SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
+  FROM tbl_tfloat_step_seq t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
+
+DROP TABLE IF EXISTS tbl_tfloat_step_seqset;
+CREATE TABLE tbl_tfloat_step_seqset AS
+/* Add perc NULL values */
+SELECT k, NULL AS ts
+FROM generate_series(1, perc) AS k UNION
+SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2001-12-31', 10, 10, 5, 10, 5, 10, linear:=false) AS ts
+FROM generate_series(perc+1, size) AS k;
+/* Add perc duplicates */
+UPDATE tbl_tfloat_step_seqset t1
+SET ts = (SELECT ts FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
+/* Add perc tuples with the same timestamp */
+UPDATE tbl_tfloat_step_seqset t1
+SET ts = (SELECT ts + random_int(1, 2) FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
+/* Add perc tuples that meet */
+UPDATE tbl_tfloat_step_seqset t1
+SET ts = (SELECT shift(ts, timespan(ts)) FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
+/* Add perc tuples that overlap */
+UPDATE tbl_tfloat_step_seqset t1
+SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
+  FROM tbl_tfloat_step_seqset t2 WHERE t2.k = t1.k+perc)
+WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
+
 -------------------------------------------------------------------------------
 RETURN 'The End';
 END;

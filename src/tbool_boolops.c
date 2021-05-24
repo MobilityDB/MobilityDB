@@ -62,7 +62,7 @@ datum_or(Datum l, Datum r)
  *****************************************************************************/
 
 Temporal *
-boolop_tbool_bool(Temporal *temp, Datum b, datum_func2 func, bool invert)
+boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;
@@ -75,7 +75,8 @@ boolop_tbool_bool(Temporal *temp, Datum b, datum_func2 func, bool invert)
 }
 
 Temporal *
-boolop_tbool_tbool(Temporal *temp1, Temporal *temp2, datum_func2 func)
+boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
+  datum_func2 func)
 {
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) func;

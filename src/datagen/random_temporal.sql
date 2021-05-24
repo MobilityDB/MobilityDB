@@ -51,7 +51,7 @@ CREATE FUNCTION random_bool()
 BEGIN
   IF random() > 0.5 THEN RETURN TRUE; ELSE RETURN FALSE; END IF;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_bool() AS i
@@ -75,7 +75,7 @@ BEGIN
   END IF;
   RETURN floor(random() * (highvalue - lowvalue + 1) + lowvalue);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT random_int(1,7), count(*)
@@ -123,7 +123,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_int_array(-100, 100, 10, 5, 10) AS iarr
@@ -151,7 +151,7 @@ BEGIN
   v = random_int(lowvalue, highvalue - maxdelta);
   RETURN intrange(v, v + random_int(1, maxdelta));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_intrange(-100, 100, 10) AS ir
@@ -175,7 +175,7 @@ BEGIN
   END IF;
   RETURN random() * (highvalue - lowvalue) + lowvalue;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_float(-100, 100) AS f
@@ -221,7 +221,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_float_array(-100, 100, 10, 5, 10) AS farr
@@ -249,7 +249,7 @@ BEGIN
   v = random_float(lowvalue, highvalue - maxdelta);
   RETURN floatrange(v, v + random_float(1, maxdelta));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_floatrange(-100, 100, 10) AS fr
@@ -268,7 +268,7 @@ BEGIN
   -- ascii('A') = 65, ascii('Z') = 90,
   RETURN chr(random_int(65, 90));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_ascii() AS m
@@ -293,7 +293,7 @@ BEGIN
   result = replace(result, '"', '\"');
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_text(20) AS text
@@ -318,7 +318,7 @@ BEGIN
   FROM generate_series(mincard, random_int(mincard, maxcard)) AS t;
   RETURN textarr;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_text_array(20, 5, 10) AS text
@@ -345,7 +345,7 @@ BEGIN
   RETURN date_trunc('minute',
     (lowtime + random() * (hightime - lowtime)))::timestamptz(0);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_timestamptz('2001-01-01', '2002-01-01') AS t
@@ -365,7 +365,7 @@ CREATE FUNCTION random_minutes(lowvalue int, highvalue int)
 BEGIN
   RETURN random_int(lowvalue, highvalue) * interval '1 minute';
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_minutes(1, 20) AS m
@@ -419,7 +419,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_timestamptz_array('2001-01-01', '2002-01-01', 10, 5, 10) AS tarr
@@ -463,7 +463,7 @@ BEGIN
     RETURN period(t, t + random_minutes(1, maxminutes), lower_inc, upper_inc);
   END IF;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_period('2001-01-01', '2002-01-01', 10) AS p
@@ -506,7 +506,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_period_array('2001-01-01', '2002-01-01', 10, 5, 10) AS parr
@@ -528,7 +528,7 @@ CREATE FUNCTION random_tstzrange(lowtime timestamptz, hightime timestamptz,
 BEGIN
   RETURN random_period(lowtime, hightime, maxminutes)::tstzrange;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tstzrange('2001-01-01', '2002-01-01', 10) AS r
@@ -562,7 +562,7 @@ BEGIN
   END LOOP;
   RETURN result;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tstzrange_array('2001-01-01', '2002-01-01', 10, 5, 10) AS rarr
@@ -586,7 +586,7 @@ BEGIN
   RETURN timestampset(random_timestamptz_array(lowtime, hightime, maxminutes,
     mincard, maxcard));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_timestampset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
@@ -610,7 +610,7 @@ BEGIN
   RETURN periodset(random_period_array(lowtime, hightime, maxminutes, mincard,
     maxcard));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_periodset('2001-01-01', '2002-01-01', 10, 5, 10) AS ps
@@ -650,7 +650,7 @@ BEGIN
   RETURN tbox(xmin, tmin, xmin + random_float(1, maxdelta),
     tmin + random_minutes(1, maxminutes));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tbox(-100, 100, '2001-01-01', '2002-01-01', 10, 10) AS b
@@ -676,7 +676,7 @@ BEGIN
   END IF;
   RETURN tbool_inst(random_bool(), random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tbool_inst('2001-01-01', '2002-01-01') AS inst
@@ -707,7 +707,7 @@ BEGIN
   RETURN tint_inst(random_int(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_inst(1, 20, '2001-01-01', '2002-01-01') AS inst
@@ -738,7 +738,7 @@ BEGIN
   RETURN tfloat_inst(random_float(lowvalue, highvalue),
     random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tfloat_inst(1, 20, '2001-01-01', '2002-01-01') AS inst
@@ -764,7 +764,7 @@ BEGIN
   END IF;
   RETURN ttext_inst(random_text(maxlength), random_timestamptz(lowtime, hightime));
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_ttext_inst('2001-01-01', '2002-01-01', 20) AS inst
@@ -800,7 +800,7 @@ BEGIN
   END LOOP;
   RETURN tbool_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tbool_instset('2001-01-01', '2002-01-01', 10, 5, 10) AS ti
@@ -838,7 +838,7 @@ BEGIN
   END LOOP;
   RETURN tint_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_instset(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
@@ -878,7 +878,7 @@ BEGIN
   END LOOP;
   RETURN tfloat_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tfloat_instset(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
@@ -913,7 +913,7 @@ BEGIN
   END LOOP;
   RETURN ttext_instset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_ttext_instset('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS ti
@@ -969,7 +969,7 @@ BEGIN
   result[card] = tbool_inst(v, tsarr[card]);
   RETURN tbool_seq(result, lower_inc, upper_inc);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tbool_seq('2001-01-01', '2002-01-01', 10, 5, 10) AS seq
@@ -1019,7 +1019,7 @@ BEGIN
     result[i] = tint_inst(intarr[i], tsarr[i]);
   END LOOP;
   -- Sequences with step interpolation and exclusive upper bound must have
-  -- the same value IN the last two instants
+  -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc THEN
     result[card] = tint_inst(intarr[card - 1], tsarr[card]);
   ELSE
@@ -1027,7 +1027,7 @@ BEGIN
   END IF;
   RETURN tint_seq(result, lower_inc, upper_inc);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -1050,7 +1050,7 @@ FROM generate_series(1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tfloat_seq;
 CREATE FUNCTION random_tfloat_seq(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
-  mincard int, maxcard int, fixstart bool DEFAULT false)
+  mincard int, maxcard int, linear bool DEFAULT true, fixstart bool DEFAULT false)
   RETURNS tfloat AS $$
 DECLARE
   floatarr float[];
@@ -1072,13 +1072,20 @@ BEGIN
     lower_inc = random() > 0.5;
     upper_inc = random() > 0.5;
   END IF;
-  FOR i IN 1..card
+  FOR i IN 1..card - 1
   LOOP
     result[i] = tfloat_inst(floatarr[i], tsarr[i]);
   END LOOP;
-  RETURN tfloat_seq(result, lower_inc, upper_inc);
+  -- Sequences with step interpolation and exclusive upper bound must have
+  -- the same value in the last two instants
+  IF card <> 1 AND NOT upper_inc AND NOT linear THEN
+    result[card] = tfloat_inst(floatarr[card - 1], tsarr[card]);
+  ELSE
+    result[card] = tfloat_inst(floatarr[card], tsarr[card]);
+  END IF;
+  RETURN tfloat_seq(result, lower_inc, upper_inc, linear);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tfloat_seq(-100, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -1133,7 +1140,7 @@ BEGIN
   result[card] = ttext_inst(v, tsarr[card]);
   RETURN ttext_seq(result, lower_inc, upper_inc);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_ttext_seq('2001-01-01', '2002-01-01', 10, 10, 5, 10) AS seq
@@ -1179,7 +1186,7 @@ BEGIN
       'The duration between lowtime and hightime is not enough for generating the temporal sequence set';
   END IF;
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 -------------------------------------------------------------------------------
 
@@ -1220,7 +1227,7 @@ BEGIN
   END LOOP;
   RETURN tbool_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tbool_seqset('2001-01-01', '2002-01-01', 10, 5, 10, 5, 10) AS ts
@@ -1273,7 +1280,7 @@ BEGIN
   END LOOP;
   RETURN tint_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tint_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
@@ -1295,7 +1302,8 @@ FROM generate_series(1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tfloat_seqset;
 CREATE FUNCTION random_tfloat_seqset(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
-  mincardseq int, maxcardseq int, mincard int, maxcard int)
+  mincardseq int, maxcardseq int, mincard int, maxcard int, 
+  linear bool DEFAULT true)
   RETURNS tfloat AS $$
 DECLARE
   result tfloat[];
@@ -1319,14 +1327,14 @@ BEGIN
   LOOP
     -- the last parameter (fixstart) is set to true for all i except 1
     SELECT random_tfloat_seq(lowvalue, highvalue, t1, t2, maxdelta,
-      maxminutes, mincardseq, maxcardseq, i > 1) INTO seq;
+      maxminutes, mincardseq, maxcardseq, linear, i > 1) INTO seq;
     result[i] = seq;
     t1 = endTimestamp(seq) + random_minutes(1, maxminutes);
     t2 = t2 + interval '1 minute' * maxminutes * (1 + maxcardseq - mincardseq);
   END LOOP;
   RETURN tfloat_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_tfloat_seqset(1, 100, '2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
@@ -1375,7 +1383,7 @@ BEGIN
   END LOOP;
   RETURN ttext_seqset(result);
 END;
-$$ LANGUAGE 'plpgsql' STRICT;
+$$ LANGUAGE PLPGSQL STRICT;
 
 /*
 SELECT k, random_ttext_seqset('2001-01-01', '2002-01-01', 10, 10, 5, 10, 5, 10) AS ts
