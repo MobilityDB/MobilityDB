@@ -199,7 +199,7 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 	<sect1 id="constructor_temporal_tyes">
 		<title>Constructor Functions</title>
 
-		<para>Each temporal type has constructor functions with the same name as the type and with a suffix for the subtype, where the suffix &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo;, and &lsquo;<varname>_seqset</varname>&rsquo; correspond, respectively, to the subtypes instant, instant set, sequence, and sequence set. Examples are <varname>tint_seq</varname> or <varname>tgeompoint_seqset</varname>. Using the constructor function is frequently more convenient than writing a literal constant.
+		<para>Each temporal type has a constructor function with the same name as the type. Examples are <varname>tint</varname> or <varname>tgeompoint</varname>. In addition, each temporal type has a constructor function with the same name as the type and a suffix for a subtype, where the suffix &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo;, and &lsquo;<varname>_seqset</varname>&rsquo; correspond, respectively, to the subtypes instant set, sequence, and sequence set. Examples are <varname>tint_seq</varname> or <varname>tgeompoint_seqset</varname>. Using the constructor function is frequently more convenient than writing a literal constant.
 		</para>
 
 		<itemizedlist>
@@ -242,7 +242,6 @@ SELECT tgeompoint('Point(0 0)', '[2001-01-01, 2001-01-02]', false);
 SELECT ttext('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
 SELECT tgeogpoint('Point(0 0)', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}',
   false);
-
 				</programlisting>
 			</listitem>
 

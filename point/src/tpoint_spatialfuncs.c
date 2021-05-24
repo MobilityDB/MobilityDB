@@ -1334,10 +1334,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
   if (k == 0)
   {
     /* Only points */
-    if (l == 1)
-      result = PointerGetDatum(geo_serialize((LWGEOM *) points[0]));
-    else
-      result = lwpointarr_make_trajectory((LWGEOM **) points, l, false);
+    result = lwpointarr_make_trajectory((LWGEOM **) points, l, false);
   }
   else if (l == 0)
   {

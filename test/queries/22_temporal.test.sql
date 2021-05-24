@@ -1652,10 +1652,11 @@ SELECT minusValue(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000
 /* Roundoff errors */
 SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
 SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
-SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
-SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
+SELECT minusValue(tfloat '(1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02)', 2 - 1e-15);
 SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
-WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-16, 2 - 1e-16, 2 + 1e-16])),
+WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-12, 2 - 1e-15, 2 + 1e-16])),
   temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
 SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
 
@@ -1801,6 +1802,7 @@ SELECT atRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY
 SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
 
 SELECT atRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', ARRAY[floatrange '[1,2]', '[2.5,3]']);
+SELECT atRanges(tfloat'{[1@2000-01-01, 2@2000_01-02],[7@2000-01-03, 8@2000_01-04]}',ARRAY[floatrange '[3,4]','[5,6]']);
 
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange 'empty']);
 SELECT minusRanges(tint '1@2000-01-01', ARRAY[intrange '[1,3]']);
@@ -1831,6 +1833,7 @@ SELECT minusRanges(tfloat '[1@2000-01-01]', ARRAY[floatrange '(1, 3]']);
 SELECT minusRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', ARRAY[floatrange '[5,6]']);
 SELECT minusRanges(tfloat '{[1@2000-01-01, 4@2000-01-02],[2@2000-01-03, 3@2000-01-04]}', ARRAY[floatrange '[1,1]', '[4,4]']);
 SELECT minusRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
+SELECT minusRanges(tfloat'[1@2000-01-01, 2@2000_01-03]',ARRAY[floatrange '[1,1.1]','[1.5,2]']);
 
 SELECT atMin(tint '1@2000-01-01');
 SELECT atMin(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');

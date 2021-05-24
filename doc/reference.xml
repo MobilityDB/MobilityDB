@@ -559,7 +559,7 @@
 			<title>Constructor Functions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_inst"><varname>ttype_inst</varname></link>: Constructor for temporal types of instant subtype</para>
+					<para><link linkend="ttype"><varname>ttype</varname></link>: Constructor for temporal types from a base type</para>
 				</listitem>
 
 				<listitem>
