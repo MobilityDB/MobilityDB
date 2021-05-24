@@ -223,25 +223,34 @@ SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
 		<para>We give next the constructor functions for the various subtypes.</para>
 
 		<itemizedlist>
-			<listitem id="ttype_inst">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<para>Constructor for temporal types of instant subtype</para>
-				<para><varname>ttype_inst(base,timestamptz): ttype_inst</varname></para>
+			<listitem id="ttype">
+				<indexterm><primary><varname>ttype</varname></primary></indexterm>
+				<para>Constructor for temporal types from a base type</para>
+				<para><varname>ttype(base,timestamptz): ttype_inst</varname></para>
+				<para><varname>ttype(base,timestampset): ttype_instset</varname></para>
+				<para><varname>tdisc(base,period): tdisc_seq</varname></para>
+				<para><varname>tcont(base,period,linear=true): tcont_seq</varname></para>
+				<para><varname>tdisc(base,periodset): tdisc_seqset</varname></para>
+				<para><varname>tcont(base,periodset,linear=true): tcont_seqset</varname></para>
 				<programlisting>
-SELECT tbool_inst(true, '2001-01-01');
-SELECT tfloat_inst(1.5, '2001-01-01');
-SELECT tgeompoint_inst('Point(0 0)', '2001-01-01');
+SELECT tbool(true, '2001-01-01');
+SELECT tint(1, '2001-01-01');
+SELECT tfloat(1.5, '{2001-01-01, 2001-01-02}');
+SELECT ttext('AAA', '{2001-01-01, 2001-01-02}');
+SELECT tfloat(1.5, '[2001-01-01, 2001-01-02]');
+SELECT tgeompoint('Point(0 0)', '[2001-01-01, 2001-01-02]', false);
+SELECT ttext('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
+SELECT tgeogpoint('Point(0 0)', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}',
+  false);
+
 				</programlisting>
 			</listitem>
 
 			<listitem id="ttype_instset">
 				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
 				<para>Constructor for temporal types of instant set subtype</para>
-				<para><varname>ttype_instset(base,timestampset): ttype_instset</varname></para>
 				<para><varname>ttype_instset(ttype_inst[]): ttype_instset</varname></para>
 				<programlisting>
-SELECT tint_instset(2, '{2001-01-01, 2001-01-02, 2001-01-03}');
-SELECT tgeompoint_instset('Point(0 0)', '{2001-01-01, 2001-01-02}');
 SELECT tbool_instset(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00']);
 SELECT tint_instset(ARRAY[tint '1@2001-01-01 08:00:00', '2@2001-01-01 08:05:00']);
 SELECT tfloat_instset(ARRAY[tfloat '1.0@2001-01-01 08:00:00', '2.0@2001-01-01 08:05:00']);
@@ -256,23 +265,19 @@ SELECT tgeogpoint_instset(ARRAY[tgeogpoint 'Point(1 1)@2001-01-01 08:00:00',
 			<listitem id="ttype_seq">
 				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
 				<para>Constructor for temporal types of sequence subtype</para>
-				<para><varname>tdisc_seq(base,period): tdisc_seq</varname></para>
 				<para><varname>tdisc_seq(ttype_inst[],left_inc=true,right_inc=true}): tdisc_seq</varname></para>
-				<para><varname>tcont_seq(base,period,linear=true): tcont_seq</varname></para>
 				<para><varname>tcont_seq(ttype_inst[],left_inc=true,right_inc=true,linear=true}): tcont_seq</varname></para>
 				<programlisting>
-SELECT tfloat_seq(1.5, '[2001-01-01, 2001-01-02]');
-SELECT tfloat_seq(2.0, '[2001-01-01, 2001-01-02]', false);
 SELECT tbool_seq(ARRAY[tbool 'true@2001-01-01 08:00:00', 'true@2001-01-03 08:05:00'],
   true, true);
-SELECT tint_seq(ARRAY[tint_inst(2,'2001-01-01 08:00:00'),
-  tint_inst(2,'2001-01-01 08:10:00')], true, false);
+SELECT tint_seq(ARRAY[tint(2,'2001-01-01 08:00:00'), tint(2,'2001-01-01 08:10:00')],
+  true, false);
 SELECT tfloat_seq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
   '1@2001-01-03 08:10:00'], true, false);
 SELECT tfloat_seq(ARRAY[tfloat '2.0@2001-01-01 08:00:00', '3@2001-01-03 08:05:00',
   '1@2001-01-03 08:10:00'], true, true, false);
-SELECT ttext_seq(ARRAY[ttext_inst('AAA', '2001-01-01 08:00:00'),
-  ttext_inst('BBB', '2001-01-03 08:05:00'), ttext_inst('BBB', '2001-01-03 08:10:00')]);
+SELECT ttext_seq(ARRAY[ttext('AAA', '2001-01-01 08:00:00'),
+  ttext('BBB', '2001-01-03 08:05:00'), ttext('BBB', '2001-01-03 08:10:00')]);
 SELECT tgeompoint_seq(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 08:00:00',
   'Point(0 1)@2001-01-03 08:05:00', 'Point(1 1)@2001-01-03 08:10:00']);
 SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
@@ -283,12 +288,8 @@ SELECT tgeogpoint_seq(ARRAY[tgeogpoint 'Point(0 0)@2001-01-01 08:00:00',
 			<listitem id="ttype_seqset">
 				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence set subtype</para>
-				<para><varname>tdisc_seqset(base,periodset): tdisc_seqset</varname></para>
-				<para><varname>tcont_seqset(base,periodset,linear=true): tcont_seqset</varname></para>
 				<para><varname>ttype_seqset(ttype_seq[]): ttype_seqset</varname></para>
 				<programlisting>
-SELECT ttext_seqset('AAA', '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}');
-SELECT tgeogpoint_seqset('Point(1 1)', '[2001-01-01, 2001-01-02]', false);
 SELECT tboolseqset(ARRAY[tbool '[false@2001-01-01 08:00:00, false@2001-01-01 08:05:00)',
   '[true@2001-01-01 08:05:00]','(false@2001-01-01 08:05:00, false@2001-01-01 08:10:00)']);
 SELECT tint_seqset(ARRAY[tint '[1@2001-01-01 08:00:00, 2@2001-01-01 08:05:00,

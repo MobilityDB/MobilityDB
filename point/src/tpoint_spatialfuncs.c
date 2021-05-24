@@ -1308,6 +1308,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
   if (ts->count == 1)
     return tpointseq_trajectory_copy(tsequenceset_seq_n(ts, 0));
 
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ts->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
   int k = 0, l = 0;
@@ -1347,6 +1348,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
     // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *coll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t) k, geoms);
+    FLAGS_SET_GEODETIC(coll->flags, geodetic);
     result = PointerGetDatum(geo_serialize(coll));
     /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
   }
@@ -1366,6 +1368,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
     // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *coll = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE,
       geoms[0]->srid, NULL, (uint32_t) k, geoms);
+    FLAGS_SET_GEODETIC(coll->flags, geodetic);
     result = PointerGetDatum(geo_serialize(coll));
   }
   pfree(points); pfree(geoms);
