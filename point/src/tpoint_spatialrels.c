@@ -271,26 +271,6 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2,
  *****************************************************************************/
 
 /**
- * Apply the variadic function to the values
- *
- * @param[in] value1,value2 Values
- * @param[in] param Parameter for ternary relationships
- * @param[in] lfinfo Information about the lifted function
- */
-Datum
-spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
-{
-  /* Spatial relationships in PostGIS accept 2 or 3 arguments */
-  assert(lfinfo.numparam == 2 || lfinfo.numparam == 3);
-  if (lfinfo.numparam == 2)
-    return lfinfo.invert ? (*lfinfo.func)(value2, value1) :
-      (*lfinfo.func)(value1, value2);
-  else /* lfinfo.numparam == 3 */
-    return lfinfo.invert ? (*lfinfo.func)(value2, value1, param) :
-      (*lfinfo.func)(value1, value2, param);
-}
-
-/**
  * Generic spatial relationships for a temporal point and a geometry
  *
  * @param[in] temp Temporal point
@@ -302,24 +282,16 @@ spatialrel(Datum value1, Datum value2, Datum param, LiftedFunctionInfo lfinfo)
  * @param[in] invert True if the arguments should be inverted
  */
 Datum
-spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*geomfunc)(Datum, ...), Datum (*geogfunc)(Datum, ...),
-  int numparam, bool invert)
+spatialrel_tpoint_geo1(Temporal *temp, Datum geo, Datum param,
+  Datum (*func)(Datum, ...), int numparam, bool invert)
 {
-  ensure_same_srid_tpoint_gs(temp, gs);
-  bool isgeod = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
-  if (isgeod)
-     assert (geogfunc != NULL);
-  else
-     assert (geomfunc != NULL);
-  Datum traj = tpoint_trajectory_internal(temp);
-  /* We only need to fill these parameters for function spatialrel */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = isgeod ? geogfunc : geomfunc;
-  lfinfo.numparam = numparam;
-  lfinfo.invert = invert;
-  lfinfo.discont = DISCONTINUOUS;
-  Datum result = spatialrel(traj, PointerGetDatum(gs), param, lfinfo);
+  Datum traj = tpoint_trajectory_internal(temp);  
+  Datum result;
+  assert(numparam == 2 || numparam == 3);
+  if (numparam == 2)
+    result = invert ? func(geo, traj) : func(traj, geo);
+  else /* lfinfo.numparam == 3 */
+    result = invert ? func(geo, traj, param) : func(traj, geo, param);
   tpoint_trajectory_free(temp, traj);
   return result;
 }
@@ -332,18 +304,19 @@ spatialrel_tpoint_geo1(Temporal *temp, GSERIALIZED *gs, Datum param,
  * @param[in] geogfunc Function for geographies
  * @param[in] numparam Number of parameters of the functions
  */
-Datum
-spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
-  Datum (*geogfunc)(Datum, ...), int numparam)
+static Datum
+spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
+  int numparam)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
+  ensure_same_srid_tpoint_gs(temp, gs);
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = spatialrel_tpoint_geo1(temp, gs, param, geomfunc, geogfunc,
+  Datum result = spatialrel_tpoint_geo1(temp, PointerGetDatum(gs), param, func,
     numparam, INVERT);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -359,17 +332,18 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
  * @param[in] numparam Number of parameters of the functions
  */
 Datum
-spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*geomfunc)(Datum, ...),
-  Datum (*geogfunc)(Datum, ...), int numparam)
+spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
+  int numparam)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ensure_same_srid_tpoint_gs(temp, gs);
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result = spatialrel_tpoint_geo1(temp, gs, param, geomfunc, geogfunc,
+  Datum result = spatialrel_tpoint_geo1(temp, PointerGetDatum(gs), param, func,
     numparam, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -387,7 +361,7 @@ PG_FUNCTION_INFO_V1(contains_geo_tpoint);
 PGDLLEXPORT Datum
 contains_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_contains, NULL, 2);
+  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_contains, 2);
 }
 
 /*****************************************************************************
@@ -402,7 +376,7 @@ PG_FUNCTION_INFO_V1(disjoint_geo_tpoint);
 PGDLLEXPORT Datum
 disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_disjoint, NULL, 2);
+  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_disjoint, 2);
 }
 
 PG_FUNCTION_INFO_V1(disjoint_tpoint_geo);
@@ -413,7 +387,7 @@ PG_FUNCTION_INFO_V1(disjoint_tpoint_geo);
 PGDLLEXPORT Datum
 disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_disjoint, NULL, 2);
+  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_disjoint, 2);
 }
 
 /*****************************************************************************
@@ -428,8 +402,10 @@ PG_FUNCTION_INFO_V1(intersects_geo_tpoint);
 PGDLLEXPORT Datum
 intersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_intersects2d,
-    (varfunc) geog_intersects, 2);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  return spatialrel_geo_tpoint(fcinfo, geod ?
+    (varfunc) &geog_intersects : (varfunc) &geom_intersects2d, 2);
 }
 
 PG_FUNCTION_INFO_V1(intersects_tpoint_geo);
@@ -440,8 +416,10 @@ PG_FUNCTION_INFO_V1(intersects_tpoint_geo);
 PGDLLEXPORT Datum
 intersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_intersects2d,
-    (varfunc) geog_intersects, 2);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  return spatialrel_tpoint_geo(fcinfo, geod ?
+    (varfunc) &geog_intersects : (varfunc) &geom_intersects2d, 2);
 }
 
 /*****************************************************************************
@@ -455,7 +433,7 @@ PG_FUNCTION_INFO_V1(touches_geo_tpoint);
 PGDLLEXPORT Datum
 touches_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_touches, NULL, 2);
+  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_touches, 2);
 }
 
 PG_FUNCTION_INFO_V1(touches_tpoint_geo);
@@ -465,7 +443,7 @@ PG_FUNCTION_INFO_V1(touches_tpoint_geo);
 PGDLLEXPORT Datum
 touches_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_touches, NULL, 2);
+  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_touches, 2);
 }
 
 /*****************************************************************************
@@ -480,8 +458,10 @@ PG_FUNCTION_INFO_V1(dwithin_geo_tpoint);
 PGDLLEXPORT Datum
 dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_geo_tpoint(fcinfo, (varfunc) &geom_dwithin2d,
-    (varfunc) geog_dwithin, 3);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  return spatialrel_geo_tpoint(fcinfo, geod ?
+    (varfunc) &geog_dwithin : (varfunc) &geom_dwithin2d, 3);
 }
 
 PG_FUNCTION_INFO_V1(dwithin_tpoint_geo);
@@ -492,8 +472,10 @@ PG_FUNCTION_INFO_V1(dwithin_tpoint_geo);
 PGDLLEXPORT Datum
 dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_geo(fcinfo, (varfunc) &geom_dwithin2d,
-    (varfunc) geog_dwithin, 3);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  return spatialrel_tpoint_geo(fcinfo, geod ?
+    (varfunc) &geog_dwithin : (varfunc) &geom_dwithin2d, 3);
 }
 
 PG_FUNCTION_INFO_V1(dwithin_tpoint_tpoint);

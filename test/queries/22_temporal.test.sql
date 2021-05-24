@@ -1650,11 +1650,11 @@ SELECT minusValue(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[1.5@2000-01-04, 1.5
 SELECT minusValue(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000-01-05]}', text 'AA');
 
 /* Roundoff errors */
-SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
-SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
-SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
-SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
-SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
 WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-16, 2 - 1e-16, 2 + 1e-16])),
   temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
 SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
