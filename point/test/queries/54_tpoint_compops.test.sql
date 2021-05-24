@@ -124,8 +124,8 @@ SELECT tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-0
 SELECT tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #= tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 
 /* Roundoff errors  */
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #=  tgeompoint_seq(ST_MakePoint(1+1e-12, 1+1e-12), period '[2000-01-01, 2000-01-02]');
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #=  tgeompoint_seq(ST_MakePoint(1+1e-13, 1+1e-13), period '[2000-01-01, 2000-01-02]');
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #=  tgeompoint(ST_MakePoint(1+1e-12, 1+1e-12), period '[2000-01-01, 2000-01-02]');
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #=  tgeompoint(ST_MakePoint(1+1e-13, 1+1e-13), period '[2000-01-01, 2000-01-02]');
 
 -------------------------------------------------------------------------------
 
