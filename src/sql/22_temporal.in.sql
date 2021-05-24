@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -220,19 +220,19 @@ CREATE CAST (ttext AS ttext) WITH FUNCTION ttext(ttext, integer) AS IMPLICIT;
 
 /* Temporal instant */
 
-CREATE FUNCTION tbool(val boolean, t timestamptz)
+CREATE FUNCTION tbool_inst(val boolean, t timestamptz)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(val integer, t timestamptz)
+CREATE FUNCTION tint_inst(val integer, t timestamptz)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(val float, t timestamptz)
+CREATE FUNCTION tfloat_inst(val float, t timestamptz)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(val text, t timestamptz)
+CREATE FUNCTION ttext_inst(val text, t timestamptz)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -300,51 +300,51 @@ CREATE FUNCTION ttext_seqset(ttext[])
 
 /******************************************************************************/
 
-CREATE FUNCTION tbool(bool, timestampset)
+CREATE FUNCTION tbool_instset(bool, timestampset)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tinstantset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool(bool, period)
+CREATE FUNCTION tbool_seq(bool, period)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tsequence_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool(bool, periodset)
+CREATE FUNCTION tbool_seqset(bool, periodset)
   RETURNS tbool AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tint(integer, timestampset)
+CREATE FUNCTION tint_instset(integer, timestampset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'tinstantset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(integer, period)
+CREATE FUNCTION tint_seq(integer, period)
   RETURNS tint AS 'MODULE_PATHNAME', 'tsequence_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint(integer, periodset)
+CREATE FUNCTION tint_seqset(integer, periodset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tfloat(float, timestampset)
+CREATE FUNCTION tfloat_instset(float, timestampset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tinstantset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(float, period, boolean DEFAULT true)
+CREATE FUNCTION tfloat_seq(float, period, boolean DEFAULT true)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tsequence_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat(float, periodset, boolean DEFAULT true)
+CREATE FUNCTION tfloat_seqset(float, periodset, boolean DEFAULT true)
   RETURNS tfloat AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION ttext(text, timestampset)
+CREATE FUNCTION ttext_instset(text, timestampset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'tinstantset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(text, period)
+CREATE FUNCTION ttext_seq(text, period)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'tsequence_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext(text, periodset)
+CREATE FUNCTION ttext_seqset(text, periodset)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
