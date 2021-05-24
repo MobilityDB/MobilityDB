@@ -1654,7 +1654,7 @@ SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
 SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
 SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
 SELECT minusValue(tfloat '(1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
-SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02)', 2 - 1e-15);
+SELECT round(minusValue(tfloat '[1@2000-01-01, 2@2000-01-02)', 2 - 1e-15), 12);
 SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
 WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-12, 2 - 1e-15, 2 + 1e-16])),
   temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
