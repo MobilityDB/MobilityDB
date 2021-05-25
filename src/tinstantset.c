@@ -615,7 +615,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * @param[out] result Array of base values
  * @result Number of elements in the output array
  */
-static int
+int
 tinstantset_values1(Datum *result, const TInstantSet *ti)
 {
   for (int i = 0; i < ti->count; i++)

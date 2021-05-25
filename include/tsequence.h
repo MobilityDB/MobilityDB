@@ -112,6 +112,7 @@ extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 
 /* Accessor functions */
 
+extern int tsequence_values1(Datum *result, const TSequence *seq);
 extern ArrayType *tsequence_values(const TSequence *seq);
 extern int tfloatseq_ranges1(RangeType **result, const TSequence *seq);
 extern PeriodSet *tsequence_get_time(const TSequence *seq);

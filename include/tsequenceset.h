@@ -113,6 +113,7 @@ extern TSequenceSet *tstepseqset_to_linear(const TSequenceSet *ts);
 
 /* Accessor functions */
 
+extern int tsequenceset_values1(Datum *result, const TSequenceSet *ts);
 extern ArrayType *tsequenceset_values(const TSequenceSet *ts);
 extern ArrayType *tfloatseqset_ranges(const TSequenceSet *ts);
 extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);

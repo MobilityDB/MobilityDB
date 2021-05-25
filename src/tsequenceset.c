@@ -809,7 +809,7 @@ tstepseqset_to_linear(const TSequenceSet *ts)
  * @param[out] result Array of Datums
  * @result Number of elements in the output array
  */
-static int
+int
 tsequenceset_values1(Datum *result, const TSequenceSet *ts)
 {
   int k = 0;

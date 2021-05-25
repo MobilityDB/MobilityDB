@@ -71,6 +71,9 @@ typedef enum
   T_GEOGRAPHY,
   T_TGEOMPOINT,
   T_TGEOGPOINT,
+  T_NPOINT,
+  T_NSEGMENT,
+  T_TNPOINT,
 } CachedType;
 
 /**
