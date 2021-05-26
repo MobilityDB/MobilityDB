@@ -36,6 +36,24 @@
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 
+#include "temporal.h"
+#include "skiplist.h"
+
+/*****************************************************************************/
+
+/**
+ * Structure storing the SRID and the dimensionality of the temporal point
+ * values for aggregation. Notice that for the moment we do not aggregate
+ * temporal geographic points.
+ */
+struct GeoAggregateState
+{
+  int32_t srid;
+  bool hasz;
+};
+
+extern void geoaggstate_check_t(const SkipList *state, const Temporal *t);
+
 /*****************************************************************************/
 
 extern Datum tpoint_extent_transfn(PG_FUNCTION_ARGS);
@@ -44,6 +62,8 @@ extern Datum tpoint_extent_combinefn(PG_FUNCTION_ARGS);
 extern Datum tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 extern Datum tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 extern Datum tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
+
+extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
 
 /*****************************************************************************/
 
