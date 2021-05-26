@@ -173,6 +173,7 @@ extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 extern Datum tgeompointi_twcentroid(const TInstantSet *ti);
 extern Datum tgeompointseq_twcentroid(const TSequence *seq);
 extern Datum tgeompoints_twcentroid(const TSequenceSet *ts);
+extern Datum tgeompoint_twcentroid_internal(Temporal *temp);
 
 /* Restriction functions */
 

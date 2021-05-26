@@ -198,8 +198,9 @@ ensure_temporal_base_type(Oid basetypid)
   if (basetypid != BOOLOID && basetypid != INT4OID &&
     basetypid != FLOAT8OID && basetypid != TEXTOID &&
     basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown base type: %d", basetypid);
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    valuetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown base type: %d", valuetypid);
   return;
 }
 
@@ -216,7 +217,8 @@ ensure_temporal_base_type_all(Oid basetypid)
     basetypid != type_oid(T_GEOMETRY) &&
     basetypid != type_oid(T_GEOGRAPHY) &&
     basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4))
+    basetypid != type_oid(T_DOUBLE4) &&
+    basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown base type: %d", basetypid);
   return;
 }
