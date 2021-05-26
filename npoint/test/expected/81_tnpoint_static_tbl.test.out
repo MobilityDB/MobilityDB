@@ -72,13 +72,21 @@ SELECT count(*) FROM tbl_nsegment WHERE ns = (ns::geometry)::nsegment;
    100
 (1 row)
 
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_point WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
+=======
+SELECT count(*) FROM tbl_geompoint WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
+>>>>>>> Synchronize npoint with latest MobilityDB version
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_linestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;
+=======
+SELECT count(*) FROM tbl_geomlinestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;
+>>>>>>> Synchronize npoint with latest MobilityDB version
  count 
 -------
      0

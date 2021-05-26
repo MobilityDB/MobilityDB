@@ -3,6 +3,7 @@ add_definitions(-DWITH_POSTGIS)
 
 include_directories("npoint/include")
 
+<<<<<<< HEAD
 set(SRCNPOINT
 npoint/src/tnpoint.c
 npoint/src/tnpoint_aggfuncs.c
@@ -40,3 +41,14 @@ set(CONTROLIN "${CONTROLIN};npoint/control.in")
 
 include("npoint/test/scripts/test.cmake")
 
+=======
+file(GLOB SRCNPOINT "npoint/src/*.c")
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCNPOINT})
+
+file(GLOB SQLNPOINT "npoint/src/sql/*.in.sql")
+list(SORT SQLNPOINT)
+set(SQL "${SQL};${SQLNPOINT}")
+set(CONTROLIN "${CONTROLIN};point/control.in;npoint/control.in")
+
+include("npoint/test/scripts/test.cmake")
+>>>>>>> Synchronize npoint with latest MobilityDB version

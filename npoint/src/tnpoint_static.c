@@ -52,7 +52,6 @@
 /** Buffer size for input and output of npoint values */
 #define MAXNPOINTLEN    128
 
-
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
