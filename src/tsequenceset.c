@@ -810,7 +810,7 @@ tstepseqset_to_linear(const TSequenceSet *ts)
  * @result Number of elements in the output array
  */
 int
-tsequenceset_values1(Datum *result, const TSequenceSet *ts)
+tsequenceset_values(Datum *result, const TSequenceSet *ts)
 {
   int k = 0;
   for (int i = 0; i < ts->count; i++)
@@ -832,10 +832,10 @@ tsequenceset_values1(Datum *result, const TSequenceSet *ts)
  * interpolation as a PostgreSQL array
  */
 ArrayType *
-tsequenceset_values(const TSequenceSet *ts)
+tsequenceset_values_array(const TSequenceSet *ts)
 {
   Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
-  int count = tsequenceset_values1(values, ts);
+  int count = tsequenceset_values(values, ts);
   ArrayType *result = datumarr_to_array(values, count, ts->valuetypid);
   pfree(values);
   return result;

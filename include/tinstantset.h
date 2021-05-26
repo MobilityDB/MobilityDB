@@ -89,8 +89,8 @@ extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
 
 /* Accessor functions */
 
-extern int tinstantset_values1(Datum *result, const TInstantSet *ti);
-extern ArrayType *tinstantset_values(const TInstantSet *ti);
+extern int tinstantset_values(Datum *result, const TInstantSet *ti);
+extern ArrayType *tinstantset_values_array(const TInstantSet *ti);
 extern ArrayType *tfloatinstset_ranges(const TInstantSet *ti);
 extern PeriodSet *tinstantset_get_time(const TInstantSet *ti);
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);

@@ -79,10 +79,6 @@
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_spatialrels.h"
 
-/* Compute either the tintersects or the tdisjoint relationship */
-#define TINTERSECTS true
-#define TDISJOINT   false
-
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships
  * with arbitrary geometries
@@ -1069,18 +1065,9 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  * Temporal contains
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
-/**
- * Returns the temporal contains relationship between the geometry and the
- * temporal point
- */
-PGDLLEXPORT Datum
-tcontains_geo_tpoint(PG_FUNCTION_ARGS)
+Temporal *
+tcontains_geo_tpoint_internal(GSERIALIZED *gs, Temporal *temp)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_same_srid_tpoint_gs(temp, gs);
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
   Datum bound = call_function1(boundary, PointerGetDatum(gs));
@@ -1098,6 +1085,22 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
   }
   else
     result = inter;
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
+/**
+ * Returns the temporal contains relationship between the geometry and the
+ * temporal point
+ */
+PGDLLEXPORT Datum
+tcontains_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *result = tcontains_geo_tpoint_internal(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1105,10 +1108,7 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Temporal disjoint
- * Since the ST_Disjoint function in PostGIS does not support 3D, we use
- * ST_3DIntersects and negate the result
  *****************************************************************************/
-
 
 PG_FUNCTION_INFO_V1(tdisjoint_tpoint_geo);
 /**
@@ -1191,7 +1191,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
  * Temporal touches
  *****************************************************************************/
 
-static Temporal *
+Temporal *
 ttouches_tpoint_geo1(Temporal *temp, GSERIALIZED *gs)
 {
   Datum bound = call_function1(boundary, PointerGetDatum(gs));
@@ -1255,7 +1255,7 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
  * Returns a temporal Boolean that states whether the temporal point and
  * the geometry are within the given distance (dispatch function)
  */
-static Temporal *
+Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
   ensure_same_srid_tpoint_gs(temp, gs);
@@ -1329,7 +1329,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
  * Returns a temporal Boolean that states whether the temporal points
  * are within the given distance (internal function)
  */
-static Temporal *
+Temporal *
 tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   Datum dist)
 {

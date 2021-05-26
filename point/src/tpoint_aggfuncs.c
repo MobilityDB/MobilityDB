@@ -49,17 +49,6 @@
  *****************************************************************************/
 
 /**
- * Structure storing the SRID and the dimensionality of the temporal point
- * values for aggregation. Notice that for the moment we do not aggregate
- * temporal geographic points.
- */
-struct GeoAggregateState
-{
-  int32_t srid;
-  bool hasz;
-};
-
-/**
  * Check the validity of the temporal point values for aggregation
  */
 static void
@@ -92,9 +81,9 @@ geoaggstate_check_as(const SkipList *state1, const SkipList *state2)
 }
 
 /**
- * Chech the validity of the temporal point values for aggregation
+ * Check the validity of the temporal point values for aggregation
  */
-static void
+void
 geoaggstate_check_t(const SkipList *state, const Temporal *t)
 {
   geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
@@ -184,7 +173,7 @@ tpointseqset_transform_tcentroid(const TSequenceSet *ts)
  * Transform a temporal point value for performing temporal centroid aggregation
  * (dispatch function)
  */
-static Temporal **
+Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;

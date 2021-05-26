@@ -676,7 +676,8 @@ ensure_temporal_base_type(Oid valuetypid)
   if (valuetypid != BOOLOID && valuetypid != INT4OID &&
     valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
     valuetypid != type_oid(T_GEOMETRY) &&
-    valuetypid != type_oid(T_GEOGRAPHY))
+    valuetypid != type_oid(T_GEOGRAPHY) &&
+    valuetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown base type: %d", valuetypid);
   return;
 }
@@ -694,7 +695,8 @@ ensure_temporal_base_type_all(Oid valuetypid)
     valuetypid != type_oid(T_GEOMETRY) &&
     valuetypid != type_oid(T_GEOGRAPHY) &&
     valuetypid != type_oid(T_DOUBLE3) &&
-    valuetypid != type_oid(T_DOUBLE4))
+    valuetypid != type_oid(T_DOUBLE4) &&
+    valuetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown base type: %d", valuetypid);
   return;
 }
@@ -1983,11 +1985,11 @@ temporal_values(Temporal *temp)
   if (temp->subtype == INSTANT)
     result = tinstant_values((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_values((TInstantSet *) temp);
+    result = tinstantset_values_array((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_values((TSequence *) temp);
+    result = tsequence_values_array((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_values((TSequenceSet *) temp);
+    result = tsequenceset_values_array((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
 
