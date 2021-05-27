@@ -573,12 +573,9 @@ tnpointinstset_set_zero(const TInstantSet *ti)
   return result;
 }
 
-<<<<<<< HEAD
 /**
  * Cumulative length traversed by the temporal npoint
  */
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
@@ -634,16 +631,11 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   return result;
 }
 
-<<<<<<< HEAD
 /**
  * Cumulative length traversed by the temporal npoint
  */
 static TSequenceSet *
 tnpointseqset_cumulative_length(const TSequenceSet *ts)
-=======
-static TSequenceSet *
-tnpoints_cumulative_length(const TSequenceSet *ts)
->>>>>>> Synchronize npoint with latest MobilityDB version
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   double length = 0;
@@ -664,13 +656,9 @@ tnpoints_cumulative_length(const TSequenceSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_cumulative_length);
-<<<<<<< HEAD
 /**
  * Cumulative length traversed by the temporal npoint
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 tnpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
@@ -680,19 +668,11 @@ tnpoint_cumulative_length(PG_FUNCTION_ARGS)
   if (temp->subtype == INSTANT)
     result = (Temporal *)tnpointinst_set_zero((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-<<<<<<< HEAD
     result = (Temporal *)tnpointinstset_set_zero((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)tnpointseqset_cumulative_length((TSequenceSet *) temp);
-=======
-    result = (Temporal *)tnpointi_set_zero((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnpointseq_cumulative_length((TSequence *) temp, 0);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpoints_cumulative_length((TSequenceSet *) temp);
->>>>>>> Synchronize npoint with latest MobilityDB version
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -701,12 +681,9 @@ tnpoint_cumulative_length(PG_FUNCTION_ARGS)
  * Speed functions
  *****************************************************************************/
 
-<<<<<<< HEAD
 /**
  * Speed of the temporal network point
  */
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
 static TSequence *
 tnpointseq_speed(const TSequence *seq)
 {
@@ -753,16 +730,11 @@ tnpointseq_speed(const TSequence *seq)
   return result;
 }
 
-<<<<<<< HEAD
 /**
  * Speed of the temporal network point
  */
 static TSequenceSet *
 tnpointseqset_speed(const TSequenceSet *ts)
-=======
-static TSequenceSet *
-tnpoints_speed(const TSequenceSet *ts)
->>>>>>> Synchronize npoint with latest MobilityDB version
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   int k = 0;
@@ -784,13 +756,9 @@ tnpoints_speed(const TSequenceSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_speed);
-<<<<<<< HEAD
 /**
  * Speed of the temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 tnpoint_speed(PG_FUNCTION_ARGS)
 {
@@ -800,19 +768,11 @@ tnpoint_speed(PG_FUNCTION_ARGS)
   if (temp->subtype == INSTANT)
     result = (Temporal *)tnpointinst_set_zero((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-<<<<<<< HEAD
     result = (Temporal *)tnpointinstset_set_zero((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnpointseq_speed((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)tnpointseqset_speed((TSequenceSet *) temp);
-=======
-    result = (Temporal *)tnpointi_set_zero((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnpointseq_speed((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpoints_speed((TSequenceSet *) temp);
->>>>>>> Synchronize npoint with latest MobilityDB version
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -820,7 +780,6 @@ tnpoint_speed(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
-<<<<<<< HEAD
  * Time-weighed centroid for temporal network points
  *****************************************************************************/
 
@@ -828,13 +787,6 @@ PG_FUNCTION_INFO_V1(tnpoint_twcentroid);
 /**
  * Time-weighed centroid of the temporal network point
  */
-=======
- * Time-weighed centroid for temporal geometry points
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(tnpoint_twcentroid);
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 tnpoint_twcentroid(PG_FUNCTION_ARGS)
 {
@@ -850,12 +802,9 @@ tnpoint_twcentroid(PG_FUNCTION_ARGS)
  * Temporal azimuth
  *****************************************************************************/
 
-<<<<<<< HEAD
 /**
  * Temporal azimuth of two temporal network point instants
  */
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
 static TInstant **
 tnpointseq_azimuth1(const TInstant *inst1, const TInstant *inst2,
   int *count)
@@ -897,12 +846,9 @@ tnpointseq_azimuth1(const TInstant *inst1, const TInstant *inst2,
   return result;
 }
 
-<<<<<<< HEAD
 /**
  * Temporal azimuth of the temporal network point of sequence subtype
  */
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
 static int
 tnpointseq_azimuth2(TSequence **result, const TSequence *seq)
 {
@@ -982,12 +928,9 @@ tnpointseq_azimuth2(TSequence **result, const TSequence *seq)
   return l;
 }
 
-<<<<<<< HEAD
 /**
  * Temporal azimuth of the temporal network point of sequence subtype
  */
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
 static TSequenceSet *
 tnpointseq_azimuth(const TSequence *seq)
 {
@@ -1005,11 +948,7 @@ tnpointseq_azimuth(const TSequence *seq)
 }
 
 static TSequenceSet *
-<<<<<<< HEAD
 tnpointseqset_azimuth(const TSequenceSet *ts)
-=======
-tnpoints_azimuth(const TSequenceSet *ts)
->>>>>>> Synchronize npoint with latest MobilityDB version
 {
   if (ts->count == 1)
     return tnpointseq_azimuth(tsequenceset_seq_n(ts, 0));
@@ -1031,13 +970,9 @@ tnpoints_azimuth(const TSequenceSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_azimuth);
-<<<<<<< HEAD
 /**
  * Temporal azimuth of the temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 tnpoint_azimuth(PG_FUNCTION_ARGS)
 {
@@ -1051,11 +986,7 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnpointseq_azimuth((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-<<<<<<< HEAD
     result = (Temporal *)tnpointseqset_azimuth((TSequenceSet *) temp);
-=======
-    result = (Temporal *)tnpoints_azimuth((TSequenceSet *) temp);
->>>>>>> Synchronize npoint with latest MobilityDB version
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -1066,14 +997,9 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
  * Restriction functions
  *****************************************************************************/
 
-<<<<<<< HEAD
 /**
  * Restrict a temporal network point to a geometry
  */
-=======
-/* Restrict a temporal npoint to a geometry */
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PG_FUNCTION_INFO_V1(tnpoint_at_geometry);
 
 PGDLLEXPORT Datum
@@ -1107,17 +1033,10 @@ tnpoint_at_geometry(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-<<<<<<< HEAD
 PG_FUNCTION_INFO_V1(tnpoint_minus_geometry);
 /**
  * Restrict a temporal network point to the complement of a geometry
  */
-=======
-/* Restrict a temporal point to the complement of a geometry */
-
-PG_FUNCTION_INFO_V1(tnpoint_minus_geometry);
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 tnpoint_minus_geometry(PG_FUNCTION_ARGS)
 {
@@ -1155,13 +1074,9 @@ tnpoint_minus_geometry(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(NAI_geometry_tnpoint);
-<<<<<<< HEAD
 /**
  * Nearest approach instant of a geometry and a temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAI_geometry_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1184,13 +1099,9 @@ NAI_geometry_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
-<<<<<<< HEAD
 /**
  * Nearest approach instant of a network point and a temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1209,13 +1120,9 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAI_tnpoint_geometry);
-<<<<<<< HEAD
 /**
  * Nearest approach instant of a temporal network point and a geometry
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAI_tnpoint_geometry(PG_FUNCTION_ARGS)
 {
@@ -1238,13 +1145,9 @@ NAI_tnpoint_geometry(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAI_tnpoint_npoint);
-<<<<<<< HEAD
 /**
  * Nearest approach instant of a temporal network point and a network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -1263,13 +1166,9 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAI_tnpoint_tnpoint);
-<<<<<<< HEAD
 /**
  * Nearest approach instant of two temporal network points
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1304,13 +1203,9 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(NAD_geometry_tnpoint);
-<<<<<<< HEAD
 /**
  * Nearest approach distance of a geometry and a temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAD_geometry_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1332,13 +1227,9 @@ NAD_geometry_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
-<<<<<<< HEAD
 /**
  * Nearest approach distance of a network point and a temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1356,13 +1247,9 @@ NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAD_tnpoint_geometry);
-<<<<<<< HEAD
 /**
  * Nearest approach distance of a temporal network point and a geometry
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAD_tnpoint_geometry(PG_FUNCTION_ARGS)
 {
@@ -1384,13 +1271,9 @@ NAD_tnpoint_geometry(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAD_tnpoint_npoint);
-<<<<<<< HEAD
 /**
  * Nearest approach distance of a temporal network point and a network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -1408,13 +1291,9 @@ NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(NAD_tnpoint_tnpoint);
-<<<<<<< HEAD
 /**
  * Nearest approach distance of two temporal network points
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1440,13 +1319,9 @@ NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(shortestline_geometry_tnpoint);
-<<<<<<< HEAD
 /**
  * Shortest line of a geometry and a temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 shortestline_geometry_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1468,13 +1343,9 @@ shortestline_geometry_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(shortestline_npoint_tnpoint);
-<<<<<<< HEAD
 /**
  * Shortest line of a network point and a temporal network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -1492,13 +1363,9 @@ shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(shortestline_tnpoint_geometry);
-<<<<<<< HEAD
 /**
  * Shortest line of a temporal network point and a geometry
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 shortestline_tnpoint_geometry(PG_FUNCTION_ARGS)
 {
@@ -1520,13 +1387,9 @@ shortestline_tnpoint_geometry(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(shortestline_tnpoint_npoint);
-<<<<<<< HEAD
 /**
  * Shortest line of a temporal network point and a network point
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -1546,13 +1409,9 @@ shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(shortestline_tnpoint_tnpoint);
-<<<<<<< HEAD
 /**
  * Shortest line of two temporal network points
  */
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
 PGDLLEXPORT Datum
 shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {

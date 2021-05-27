@@ -76,6 +76,7 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 		</programlisting>
 		<para>We give next the functions and operators for the static network types.</para>
 
+<<<<<<< HEAD
 
 		<sect2 id="constructor_functions">
 			<title>Constructor Functions</title>
@@ -101,6 +102,8 @@ SELECT nsegment(76, 0.3, 0.5);
 			</itemizedlist>
 		</sect2>
 
+=======
+>>>>>>> Synchronize npoint with latest MobilityDB version
 		<sect2 id="accessor_functions">
 			<title>Accessor Functions</title>
 
@@ -146,6 +149,7 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
 					</programlisting>
 				</listitem>
+<<<<<<< HEAD
 
 				<listitem id="npoint_srid">
 					<indexterm><primary><varname>srid</varname></primary></indexterm>
@@ -158,6 +162,8 @@ SELECT srid(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 5676
 					</programlisting>
 				</listitem>
+=======
+>>>>>>> Synchronize npoint with latest MobilityDB version
 			</itemizedlist>
 		</sect2>
 
@@ -165,6 +171,7 @@ SELECT srid(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<title>Conversion between Network and Space</title>
 
 			<para>Values of the <varname>npoint</varname> and <varname>nsegment</varname> types can be converted to the <varname>geometry</varname> type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown next.</para>
+<<<<<<< HEAD
 			<itemizedlist>
 				<listitem id="npoint_geometry">
 					<indexterm><primary><varname>::</varname></primary></indexterm>
@@ -188,6 +195,19 @@ SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);
 					<para>Cast a geometry to a network point</para>
 					<para><varname>geometry::{npoint,nsegment}</varname></para>
 					<programlisting>
+=======
+			<programlisting>
+SELECT st_astext(npoint(76, 0.33)::geometry);
+-- "POINT(21.6338731332283 50.0545869554067)"
+SELECT st_astext(nsegment(76, 0.33, 0.66)::geometry);
+-- "LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 53.9185062927473)"
+SELECT st_astext(nsegment(76, 0.33, 0.33)::geometry);
+-- "POINT(21.6338731332283 50.0545869554067)"
+			</programlisting>
+
+			<para>Similarly, <varname>geometry</varname> values of type <varname>point</varname> or <varname>linestring</varname> (restricted to two points) can be converted, respectively, to <varname>npoint</varname> and <varname>nsegment</varname> values using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. For this, the route that intersects the given points must be found, where a tolerance of 0.00001 units (depending on the coordinate system) is assumed so a point and a route that are close are considered to intersect. If no such route is found, a null value is returned.</para>
+			<programlisting>
+>>>>>>> Synchronize npoint with latest MobilityDB version
 SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;
 -- "NPoint(3,0.781413)"
 SELECT geometry 'LINESTRING(406.729536784738 702.58583437902,
@@ -197,9 +217,13 @@ SELECT geometry 'Point(279.3 811.5)'::npoint;
 -- NULL
 SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 -- NULL
+<<<<<<< HEAD
 				</programlisting>
 				</listitem>
 			</itemizedlist>
+=======
+			</programlisting>
+>>>>>>> Synchronize npoint with latest MobilityDB version
 		</sect2>
 
 		<sect2 id="static_operators">
@@ -329,6 +353,7 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 		</programlisting>
 	</sect1>
 
+<<<<<<< HEAD
 	<sect1 id="constructors_temporal_network_points">
 		<title>Constructors for Temporal Network Points</title>
 
@@ -387,6 +412,8 @@ SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@
 			</itemizedlist>
 	</sect1>
 
+=======
+>>>>>>> Synchronize npoint with latest MobilityDB version
 	<sect1 id="casting_temporal_network_types">
 		<title>Casting for Temporal Network Points</title>
 
@@ -418,7 +445,10 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 				</programlisting>
 			</listitem>
 		</itemizedlist>
+<<<<<<< HEAD
 		<para>We give next the functions and operators for network point types.</para>
+=======
+>>>>>>> Synchronize npoint with latest MobilityDB version
 	</sect1>
 
 	<sect1 id="functions_temporal_network_points">
@@ -822,6 +852,7 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)'
 			</listitem>
 		</itemizedlist>
 	</sect1>
+<<<<<<< HEAD
 
 	<sect1 id="aggregate_temporal_network_points">
 		<title>Aggregate Functions for Temporal Network Points</title>
@@ -901,4 +932,6 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		</itemizedlist>
 		<para>These operators work on bounding boxes, not the entire values. In addition, a GiST index can accelerate nearest neighbor queries involving the <varname>|=|</varname> operator.</para>
 	</sect1>
+=======
+>>>>>>> Synchronize npoint with latest MobilityDB version
 </chapter>
