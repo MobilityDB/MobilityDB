@@ -501,6 +501,7 @@ extern bool talpha_base_type(Oid type);
 extern bool tnumber_base_type(Oid type);
 extern bool tnumber_range_type(Oid type);
 extern bool tgeo_base_type(Oid type);
+extern bool tspatial_base_type(Oid type);
 extern bool temporal_type(Oid type);
 extern bool tnumber_type(Oid type);
 extern bool tgeo_type(Oid type);
@@ -532,7 +533,7 @@ extern void ensure_same_interpolation(const Temporal *temp1,
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
-  bool merge);
+  bool merge, bool isseq);
 extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
 
 /* Input/output functions */

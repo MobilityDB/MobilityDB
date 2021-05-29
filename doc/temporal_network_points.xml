@@ -76,6 +76,31 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 		</programlisting>
 		<para>We give next the functions and operators for the static network types.</para>
 
+
+		<sect2 id="constructor_functions">
+			<title>Constructor Functions</title>
+
+			<itemizedlist>
+				<listitem id="npoint">
+					<indexterm><primary><varname>npoint</varname></primary></indexterm>
+					<para>Constructor for network points</para>
+					<para><varname>npoint(bigint,double precision): npoint</varname></para>
+					<programlisting>
+SELECT npoint(76, 0.3);
+					</programlisting>
+				</listitem>
+
+				<listitem id="nsegment">
+					<indexterm><primary><varname>nsegment</varname></primary></indexterm>
+					<para>Constructor for network segments</para>
+					<para><varname>nsegment(bigint,double precision,double precision): nsegment</varname></para>
+					<programlisting>
+SELECT nsegment(76, 0.3, 0.5);
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 id="accessor_functions">
 			<title>Accessor Functions</title>
 
@@ -121,6 +146,18 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
 					</programlisting>
 				</listitem>
+
+				<listitem id="npoint_srid">
+					<indexterm><primary><varname>srid</varname></primary></indexterm>
+					<para>Get the SRID</para>
+					<para><varname>srid({npoint,nsegment}): int</varname></para>
+					<programlisting>
+SELECT srid(nspoint 'Npoint(76, 0.3)');
+-- 5676
+SELECT srid(nsegment 'Nsegment(76, 0.3, 0.5)');
+-- 5676
+					</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -128,17 +165,29 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 			<title>Conversion between Network and Space</title>
 
 			<para>Values of the <varname>npoint</varname> and <varname>nsegment</varname> types can be converted to the <varname>geometry</varname> type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown next.</para>
-			<programlisting>
-SELECT st_astext(npoint(76, 0.33)::geometry);
+			<itemizedlist>
+				<listitem id="npoint_geometry">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Cast a network point to a geometry</para>
+					<para><varname>{npoint,nsegment}::geometry</varname></para>
+					<programlisting>
+SELECT ST_AsText(npoint(76, 0.33)::geometry);
 -- "POINT(21.6338731332283 50.0545869554067)"
-SELECT st_astext(nsegment(76, 0.33, 0.66)::geometry);
+SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry);
 -- "LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 53.9185062927473)"
-SELECT st_astext(nsegment(76, 0.33, 0.33)::geometry);
+SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);
 -- "POINT(21.6338731332283 50.0545869554067)"
-			</programlisting>
+				</programlisting>
+				</listitem>
+			</itemizedlist>
 
 			<para>Similarly, <varname>geometry</varname> values of type <varname>point</varname> or <varname>linestring</varname> (restricted to two points) can be converted, respectively, to <varname>npoint</varname> and <varname>nsegment</varname> values using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. For this, the route that intersects the given points must be found, where a tolerance of 0.00001 units (depending on the coordinate system) is assumed so a point and a route that are close are considered to intersect. If no such route is found, a null value is returned.</para>
-			<programlisting>
+			<itemizedlist>
+				<listitem id="geometry_npoint">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Cast a geometry to a network point</para>
+					<para><varname>geometry::{npoint,nsegment}</varname></para>
+					<programlisting>
 SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;
 -- "NPoint(3,0.781413)"
 SELECT geometry 'LINESTRING(406.729536784738 702.58583437902,
@@ -148,7 +197,9 @@ SELECT geometry 'Point(279.3 811.5)'::npoint;
 -- NULL
 SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 -- NULL
-			</programlisting>
+				</programlisting>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2 id="static_operators">
@@ -278,6 +329,64 @@ SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 0
 		</programlisting>
 	</sect1>
 
+	<sect1 id="constructors_temporal_network_points">
+		<title>Constructors for Temporal Network Points</title>
+
+			<itemizedlist>
+				<listitem id="tnpoint_inst">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor for temporal network points of instant subtype</para>
+					<para><varname>tnpoint_inst(val npoint,t timestamptz):tnpoint_inst</varname></para>
+					<programlisting>
+SELECT tnpoint_inst('Npoint(1, 0.5)', '2000-01-01');
+-- NPoint(1,0.5)@2000-01-01
+					</programlisting>
+				</listitem>
+
+				<listitem id="tnpoint_instset">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructors for temporal network points of instant set subtype</para>
+					<para><varname>tnpoint_instset(tnpoint[]):tnpoint_instset</varname></para>
+					<para><varname>tnpoint_instset(npoint,timestampset):tnpoint_instset</varname></para>
+					<programlisting>
+SELECT tnpoint_instset(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01', 
+  'Npoint(1, 0.5)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);
+-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.5)@2000-01-03}
+SELECT tnpoint_instset('Npoint(1, 0.3)', '{2000-01-01, 2000-01-03, 2000-01-05}');
+-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
+					</programlisting>
+				</listitem>
+
+				<listitem id="tnpoint_seq">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor for temporal network points of sequence subtype</para>
+					<para><varname>tnpoint_seq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,</varname></para>
+					<para><varname>  linear boolean=true):tnpoint_seq</varname></para>
+					<para><varname>tnpoint_seq(npoint,period,linear boolean=true):tnpoint_seq</varname></para>
+					<programlisting>
+SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, 0.4)@2000-01-02',
+  'Npoint(1, 0.5)@2000-01-03']);
+-- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03]
+SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', false);
+-- Interp=Stepwise;[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]
+					</programlisting>
+				</listitem>
+
+				<listitem id="tnpoint_seqset">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor for temporal network points of sequence set subtype</para>
+					<para><varname>tnpoint_seqset(tnpoint[]):tnpoint_seqset</varname></para>
+					<para><varname>tnpoint_seqset(npoint,periodset,boolean=true):tnpoint_seqset</varname></para>
+					<programlisting>
+SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
+  Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]']);
+-- {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03], 
+  [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]}
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+	</sect1>
+
 	<sect1 id="casting_temporal_network_types">
 		<title>Casting for Temporal Network Points</title>
 
@@ -309,6 +418,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 				</programlisting>
 			</listitem>
 		</itemizedlist>
+		<para>We give next the functions and operators for network point types.</para>
 	</sect1>
 
 	<sect1 id="functions_temporal_network_points">
@@ -711,5 +821,84 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)'
 				</programlisting>
 			</listitem>
 		</itemizedlist>
+	</sect1>
+
+	<sect1 id="aggregate_temporal_network_points">
+		<title>Aggregate Functions for Temporal Network Points</title>
+
+		<para>The three aggregate functions for temporal network points are illustrated next.</para>
+
+		<itemizedlist>
+			<listitem id="tnpoint_tcount">
+				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+				<para>Temporal count</para>
+				<para><varname>tcount(tnpoint): {tint_instset,tint_seqset}</varname></para>
+				<programlisting>
+WITH Temp(temp) AS (
+SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )
+SELECT tcount(Temp)
+FROM Temp
+-- "{[1@2012-01-01, 2@2012-01-02, 1@2012-01-04, 1@2012-01-05)}"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_wcount">
+				<indexterm><primary><varname>wcount</varname></primary></indexterm>
+				<para>Window count</para>
+				<para><varname>wcount(tnpoint): {tint_instset,tint_seqset}</varname></para>
+				<programlisting>
+WITH Temp(temp) AS (
+SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )
+SELECT wcount(Temp, '1 day')
+FROM Temp
+-- "{[1@2012-01-01, 2@2012-01-02, 3@2012-01-03, 2@2012-01-04, 1@2012-01-05,
+1@2012-01-06)}"
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_tcentroid">
+				<indexterm><primary><varname>tcentroid</varname></primary></indexterm>
+				<para>Temporal centroid</para>
+				<para><varname>tcentroid(tnpoint): tgeompoint</varname></para>
+				<programlisting>
+WITH Temp(temp) AS (
+SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)' )
+SELECT astext(tcentroid(Temp))
+FROM Temp
+-- "{[POINT(72.451531682218 76.5231414472853)@2012-01-01,
+POINT(55.7001249027598 72.9552602410653)@2012-01-03)}"
+				</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="indexing_temporal_network_points">
+		<title>Indexing of Temporal Network Points</title>
+
+		<para>GiST and SP-GiST indexes can be created for table columns of temporal networks points. An example of index creation is follows:</para>
+		<programlisting>
+CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
+		</programlisting>
+		<para>The GiST and SP-GiST indexes store the bounding box for the temporal network points, which is an stbox and thus stores the absolute coordinates of the underlying space.</para>
+
+		<para>A GiST or SP-GiST index can accelerate queries involving the following operators:</para>
+		<itemizedlist>
+			<listitem>
+				<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, which only consider the spatial dimension in temporal network points,</para>
+			</listitem>
+			<listitem>
+				<para><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, <varname>#&gt;&gt;</varname>, which only consider the time dimension in temporal network points,</para>
+			</listitem>
+			<listitem>
+				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>-|-</varname>, which consider as many dimensions as they are shared by the indexed column and the query argument.</para>
+			</listitem>
+		</itemizedlist>
+		<para>These operators work on bounding boxes, not the entire values. In addition, a GiST index can accelerate nearest neighbor queries involving the <varname>|=|</varname> operator.</para>
 	</sect1>
 </chapter>

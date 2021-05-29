@@ -47,6 +47,8 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
+#include "tnpoint_static.h"
+
 /*
  * This is required for builds against pgsql
  */
@@ -123,6 +125,8 @@ get_typlen_byref(Oid type)
     result = 24;
   else if (type == type_oid(T_DOUBLE4))
     result = 32;
+  else if (type == type_oid(T_NPOINT))
+    result = 16;
   return result;
 }
 
@@ -997,6 +1001,8 @@ datum_eq(Datum l, Datum r, Oid type)
   else if (type == type_oid(T_GEOGRAPHY))
     //  result = DatumGetBool(call_function2(geography_eq, l, r));
     result = datum_point_eq(l, r);
+  else if (type == type_oid(T_NPOINT))
+    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
   return result;
 }
 
@@ -1098,6 +1104,8 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
   else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
     //  result = DatumGetBool(call_function2(geography_eq, l, r));
     result = datum_point_eq(l, r);
+  else if (typel == type_oid(T_NPOINT) && typer == type_oid(T_NPOINT))
+    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
   return result;
 }
 

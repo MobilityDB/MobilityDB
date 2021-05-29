@@ -58,6 +58,7 @@
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_boxops.h"
+#include "tnpoint_boxops.h"
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
@@ -73,7 +74,7 @@ temporal_bbox_size(Oid valuetypid)
     return sizeof(Period);
   if (tnumber_base_type(valuetypid))
     return sizeof(TBOX);
-  if (tgeo_base_type(valuetypid))
+  if (tspatial_base_type(valuetypid)) 
     return sizeof(STBOX);
   /* Types without bounding box, for example, tdoubleN */
   return 0;
@@ -95,7 +96,7 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
     result = period_eq_internal((Period *) box1, (Period *) box2);
   else if (tnumber_base_type(valuetypid))
     result = tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tgeo_base_type(valuetypid))
+  else if (tspatial_base_type(valuetypid))
     result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
     // TODO Due to floating point precision the previous statement
     // is not equal to the next one.
@@ -124,7 +125,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
     result = period_cmp_internal((Period *) box1, (Period *) box2);
   else if (tnumber_base_type(valuetypid))
     result = tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tgeo_base_type(valuetypid))
+  else if (tspatial_base_type(valuetypid))
     result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
   /* Types without bounding box, for example, doubleN */
   return result;
@@ -180,8 +181,14 @@ tinstant_make_bbox(void *box, const TInstant *inst)
     MOBDB_FLAGS_SET_X(result->flags, true);
     MOBDB_FLAGS_SET_T(result->flags, true);
   }
-  else if (tgeo_base_type(inst->valuetypid))
-    tpointinst_make_stbox((STBOX *) box, inst);
+  else if (tspatial_base_type(inst->valuetypid))
+  {
+    if (tgeo_base_type(inst->valuetypid))
+      tpointinst_make_stbox((STBOX *)box, inst);
+    else
+      tnpointinst_make_stbox((STBOX *)box, inst);
+  }
+  return;
 }
 
 /**
@@ -238,8 +245,14 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
     tinstantarr_to_period((Period *) box, instants, count, true, true);
   else if (tnumber_base_type(instants[0]->valuetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  else if (tgeo_base_type(instants[0]->valuetypid))
-    tpointinstarr_to_stbox((STBOX *) box, instants, count);
+  else if (tspatial_base_type(instants[0]->valuetypid))
+  {
+    if (tgeo_base_type(instants[0]->valuetypid))
+      tpointinstarr_to_stbox((STBOX *)box, instants, count);
+    else
+      tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
+  }
+  return;
 }
 
 /**
@@ -262,12 +275,23 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
       lower_inc, upper_inc);
   else if (tnumber_base_type(instants[0]->valuetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  /* This code is currently not used since for temporal points the bounding
-   * box is computed from the trajectory for efficiency reasons. It is left
-   * here in case this is no longer the case
-  else if (geo_base_type(instants[0]->valuetypid))
-    tpointinstarr_to_stbox((STBOX *) box, instants, count);
-  */
+  else if (tspatial_base_type(instants[0]->valuetypid))
+  {
+    if (!tgeo_base_type(instants[0]->valuetypid))
+    {
+      if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
+        tnpointinstarr_linear_to_stbox((STBOX *)box, instants, count);
+      else
+        tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
+    }
+    /* This code is currently not used since for temporal points the bounding
+     * box is computed from the trajectory for efficiency reasons. It is left
+     * here in case this is no longer the case
+    else
+      tpointinstarr_to_stbox((STBOX *)box, instants, count);
+    */
+  }
+  return;
 }
 
 /**
@@ -318,8 +342,14 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
     tsequencearr_to_period_internal((Period *) box, sequences, count);
   else if (tnumber_base_type(sequences[0]->valuetypid))
     tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
-  else if (tgeo_base_type(sequences[0]->valuetypid))
-    tpointseqarr_to_stbox((STBOX *) box, sequences, count);
+  else if (tspatial_base_type(sequences[0]->valuetypid)) 
+  {
+    if (tgeo_base_type(sequences[0]->valuetypid))
+      tpointseqarr_to_stbox((STBOX *)box, sequences, count);
+    else
+      tnpointseqarr_to_stbox((STBOX *)box, sequences, count);
+  }
+  return;
 }
 
 /*****************************************************************************

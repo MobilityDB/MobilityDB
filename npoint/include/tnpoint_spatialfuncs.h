@@ -42,11 +42,21 @@
 
 /* Parameter tests */
 
-extern void ensure_same_srid_tnpoint(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box);
-extern void ensure_same_srid_tnpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
-extern void ensure_same_srid_tnpoint_npoint(const Temporal *temp, const npoint *np);
-extern void ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2);
+extern void ensure_same_srid_tnpoint(const Temporal *temp1,
+  const Temporal *temp2);
+extern void ensure_same_srid_tnpoint_stbox(const Temporal *temp,
+  const STBOX *box);
+extern void ensure_same_srid_tnpoint_gs(const Temporal *temp,
+  const GSERIALIZED *gs);
+extern void ensure_same_srid_tnpoint_npoint(const Temporal *temp,
+  const npoint *np);
+extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
+  const TInstant *inst2);
+
+/* Interpolation functions */ 
+
+extern bool tnpointseq_intersection_value(const TInstant *inst1,
+  const TInstant *inst2, Datum value, TimestampTz *t);
 
 /* Functions for spatial reference systems */
 
@@ -56,12 +66,12 @@ extern Datum tnpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern Datum tnpointseq_trajectory1(const TInstant *inst1, const TInstant *inst2);
 extern Datum tnpointseq_trajectory(const TSequence *seq);
-extern Datum tnpoints_trajectory(const TSequenceSet *ts);
+extern Datum tnpointseqset_trajectory(const TSequenceSet *ts);
 
 extern Datum tnpointinst_geom(const TInstant *inst);
-extern Datum tnpointi_geom(const TInstantSet *ti);
+extern Datum tnpointinstset_geom(const TInstantSet *ti);
 extern Datum tnpointseq_geom(const TSequence *seq);
-extern Datum tnpoints_geom(const TSequenceSet *ts);
+extern Datum tnpointseqset_geom(const TSequenceSet *ts);
 extern Datum tnpoint_geom(const Temporal *temp);
 
 extern Datum tnpoint_length(PG_FUNCTION_ARGS);
