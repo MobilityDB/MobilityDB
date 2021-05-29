@@ -1,11 +1,11 @@
-SELECT MAX(getPosition(startValue(tnpointinst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
+SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
    max    
 ----------
  0.999506
 (1 row)
 
 WITH test(temp) as (
-SELECT tnpointi(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpointinst t GROUP BY k%10  )
+SELECT tnpoint_instset(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY k%10 )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
    max    
 ----------
@@ -13,7 +13,7 @@ SELECT MAX(getPosition(startValue(temp))) FROM test;
 (1 row)
 
 WITH test(temp) as (
-SELECT tnpointseq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpointinst t GROUP BY route(t.inst) )
+SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
    max    
 ----------
@@ -21,104 +21,105 @@ SELECT MAX(getPosition(startValue(temp))) FROM test;
 (1 row)
 
 WITH test(temp) as (
-SELECT tnpoints(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpointseq t GROUP BY k%10 )
+SELECT tnpoint_seqset(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpoint_seq t GROUP BY k%10 )
 SELECT MAX(getPosition(startValue(temp))) FROM test;
    max    
 ----------
  0.966244
 (1 row)
 
-SELECT DISTINCT duration(tnpointinst(inst)) FROM tbl_tnpointinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_inst(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(inst)) FROM tbl_tnpointinst;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tnpoint_instset(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointseq(inst)) FROM tbl_tnpointinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tnpoints(inst)) FROM tbl_tnpointinst;
-  duration   
+SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
 -------------
  SequenceSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointinst(ti)) FROM tbl_tnpointi WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_inst(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(ti)) FROM tbl_tnpointi;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tnpoint_instset(ti)) FROM tbl_tnpoint_instset;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointseq(ti)) FROM tbl_tnpointi WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tnpoints(ti)) FROM tbl_tnpointi;
-  duration   
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_instset;
+ tempsubtype 
 -------------
  SequenceSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointinst(seq)) FROM tbl_tnpointseq WHERE numInstants(seq) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_inst(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(seq)) FROM tbl_tnpointseq WHERE numInstants(seq) = 1;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tnpoint_instset(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointseq(seq)) FROM tbl_tnpointseq;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(seq)) FROM tbl_tnpoint_seq;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tnpoints(seq)) FROM tbl_tnpointseq;
-  duration   
+SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
+ tempsubtype 
 -------------
  SequenceSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointinst(ts)) FROM tbl_tnpoints WHERE numInstants(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_inst(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(ts)) FROM tbl_tnpoints WHERE duration(ts) = '00:00:00';
- duration 
-----------
-(0 rows)
+SELECT DISTINCT tempSubtype(tnpoint_instset(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
 
-SELECT DISTINCT duration(tnpointseq(ts)) FROM tbl_tnpoints WHERE numSequences(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
-SELECT DISTINCT duration(tnpoints(ts)) FROM tbl_tnpoints;
-  duration   
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
+ tempsubtype 
 -------------
  SequenceSet
 (1 row)
@@ -141,8 +142,8 @@ SELECT count(*) FROM tbl_tnpoint WHERE temp = (temp::tgeompoint)::tnpoint;
    100
 (1 row)
 
-SELECT DISTINCT duration(temp) FROM tbl_tnpoint ORDER BY 1;
-  duration   
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
+ tempsubtype 
 -------------
  Instant
  InstantSet
@@ -159,7 +160,7 @@ SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
 /*
 SELECT stbox(temp) FROM tbl_tnpoint;
 */
-SELECT getValue(inst) FROM tbl_tnpointinst ORDER BY getValue(inst) LIMIT 1;
+SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
       getvalue      
 --------------------
  NPoint(0,0.658185)
@@ -177,7 +178,7 @@ SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
    9
 (1 row)
 
-SELECT MAX(route(inst)) FROM tbl_tnpointinst;
+SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
  max 
 -----
   99
@@ -192,10 +193,10 @@ SELECT MAX(array_length(routes(temp), 1)) FROM tbl_tnpoint;
 SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
    max    
 ----------
- 04:00:00
+ 05:17:00
 (1 row)
 
-SELECT MAX(getTimestamp(inst)) FROM tbl_tnpointinst;
+SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
           max           
 ------------------------
  2001-12-30 18:06:00+00
@@ -213,13 +214,13 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %= t2.np;
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tnpointinst t1, tbl_npoint t2 WHERE everEquals(t1.inst, t2.np);
+SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tnpointinst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
+SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
  count 
 -------
      0
@@ -243,16 +244,10 @@ SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
  0.995935
 (1 row)
 
-SELECT MAX(timespan(period(temp))) FROM tbl_tnpoint;
-   max    
-----------
- 05:17:00
-(1 row)
-
 SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
    max    
 ----------
- 04:00:00
+ 05:17:00
 (1 row)
 
 SELECT MAX(numInstants(temp)) FROM tbl_tnpoint;
@@ -315,31 +310,31 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
   56
 (1 row)
 
-SELECT MAX(numSequences(ts)) FROM tbl_tnpoints;
+SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
  max 
 -----
    9
 (1 row)
 
-SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoints;
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoints;
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoints;
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
    max    
 ----------
  00:50:00
 (1 row)
 
-SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoints;
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
  max 
 -----
    9

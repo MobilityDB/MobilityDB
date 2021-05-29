@@ -73,7 +73,7 @@ tnpointinst_make_stbox(STBOX *box, const TInstant *inst)
 }
 
 void
-tnpointinstarr_step_to_stbox(STBOX *box, TInstant **instants, int count)
+tnpointinstarr_step_to_stbox(STBOX *box, const TInstant **instants, int count)
 {
   tnpointinst_make_stbox(box, instants[0]);
   for (int i = 1; i < count; i++)
@@ -86,7 +86,7 @@ tnpointinstarr_step_to_stbox(STBOX *box, TInstant **instants, int count)
 }
 
 void
-tnpointinstarr_linear_to_stbox(STBOX *box, TInstant **instants, int count)
+tnpointinstarr_linear_to_stbox(STBOX *box, const TInstant **instants, int count)
 {
   npoint *np = DatumGetNpoint(tinstant_value(instants[0]));
   int64 rid = np->rid;
@@ -116,7 +116,7 @@ tnpointinstarr_linear_to_stbox(STBOX *box, TInstant **instants, int count)
 }
 
 void
-tnpointseqarr_to_stbox(STBOX *box, TSequence **sequences, int count)
+tnpointseqarr_to_stbox(STBOX *box, const TSequence **sequences, int count)
 {
   tsequence_bbox(box, sequences[0]);
   for (int i = 1; i < count; i++)

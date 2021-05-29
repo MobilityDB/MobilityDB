@@ -54,6 +54,8 @@
 #include "tpoint_boxops.h"
 #include "tpoint_spatialfuncs.h"
 
+#include "tnpoint_spatialfuncs.h"
+
 /*****************************************************************************
  * Compute the intersection, if any, of a segment of a temporal sequence and
  * a value. The functions only return true when there is an intersection at
@@ -130,8 +132,13 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   bool result = false; /* make compiler quiet */
   if (inst1->basetypid == FLOAT8OID)
     result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
-  else if (tgeo_base_type(inst1->basetypid))
-    result = tpointseq_intersection_value(inst1, inst2, value, t);
+  else if (tspatial_base_type(inst1->basetypid))
+  {
+    if (tgeo_base_type(inst1->basetypid))
+      result = tpointseq_intersection_value(inst1, inst2, value, t);
+    else
+      result = tnpointseq_intersection_value(inst1, inst2, value, t);
+  }
 
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
@@ -363,6 +370,21 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
  * Returns true if the three values are collinear
  *
  * @param[in] basetypid Oid of the base type
+ * @param[in] np1,np2,np3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the
+ * timestamps associated to `np1` and `np2` divided by the duration
+ * of the timestamps associated to `np1` and `np3`
+ */
+static bool
+npoint_collinear(npoint *np1, npoint *np2, npoint *np3, double ratio)
+{
+  return float_collinear(np1->pos, np2->pos, np3->pos, ratio);
+}
+
+/**
+ * Returns true if the three values are collinear
+ *
+ * @param[in] basetypid Oid of the base type
  * @param[in] value1,value2,value3 Input values
  * @param[in] t1,t2,t3 Input timestamps
  */
@@ -393,6 +415,9 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_DOUBLE4))
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
+  if (valuetypid == type_oid(T_NPOINT))
+    return npoint_collinear(DatumGetNpoint(value1), DatumGetNpoint(value2),
+      DatumGetNpoint(value3), ratio);
   return false;
 }
 
@@ -518,8 +543,8 @@ tsequence_make_size(const TInstant **instants, int count, size_t bboxsize, size_
  * Ensure the validity of the arguments when creating a temporal value
  */
 static void
-tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear)
+tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear)
 {
   /* Test the validity of the instants */
   assert(count > 0);
@@ -531,7 +556,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool 
       tinstant_value(instants[count - 2]), instants[0]->basetypid))
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
-  ensure_valid_tinstantarr(instants, count, MERGE_NO);
+  ensure_valid_tinstantarr(instants, count, MERGE_NO, true);
   return;
 }
 
@@ -540,8 +565,8 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool 
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
-tsequence_make1(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear, bool normalize)
+tsequence_make1(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, bool normalize)
 {
   /* Normalize the array of instants */
   const TInstant **norminsts = instants;
@@ -894,6 +919,9 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->basetypid == inst->basetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
+  bool isnpoint = inst1->valuetypid == type_oid(T_NPOINT);
+  if (isnpoint)
+    ensure_same_rid_tnpointinst(inst, inst1);
   /* Notice that we cannot call ensure_increasing_timestamps since we must
    * take into account the inclusive/exclusive bounds */
   if (inst1->t > inst->t)
@@ -1606,7 +1634,7 @@ tstepseq_to_linear(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tstepseq_to_linear1(sequences, seq);
-  return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /*****************************************************************************
@@ -3228,6 +3256,14 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
       basetypid == type_oid(T_GEOGRAPHY))
   {
     result = geoseg_interpolate_point(value1, value2, ratio);
+  }
+  else if (valuetypid == type_oid(T_NPOINT))
+  {
+    npoint *np1 = DatumGetNpoint(value1);
+    npoint *np2 = DatumGetNpoint(value2);
+    double pos = np1->pos + (np2->pos - np1->pos) * ratio;
+    npoint *result = npoint_make(np1->rid, pos);
+    return PointerGetDatum(result);
   }
   return result;
 }

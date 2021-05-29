@@ -58,6 +58,8 @@
 #include "rangetypes_ext.h"
 
 #include "tpoint_spatialfuncs.h"
+#include "tnpoint_static.h"
+#include "tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Typmod
@@ -231,7 +233,8 @@ continuous_base_type(Oid type)
 {
   if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
     type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
-    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
+    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY) ||
+    type == type_oid(T_NPOINT))
     return true;
   return false;
 }
@@ -577,15 +580,23 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * Ensures that all temporal instant values of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] seq True if we a make operation for temporal sequences
  */
 void
-ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge)
+ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge, bool isseq)
 {
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
     ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
     ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+    if (isseq && instants[0]->valuetypid == type_oid(T_NPOINT))
+      ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
   }
   return;
 }
@@ -2901,13 +2912,18 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     return (ever && box.xmin <= d && d <= box.xmax) ||
       (!ever && box.xmin == d && d == box.xmax);
   }
-  else if (tgeo_base_type(temp->basetypid))
+  else if (tspatial_base_type(temp->basetypid))
   {
     STBOX box1, box2;
     memset(&box1, 0, sizeof(STBOX));
     memset(&box2, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
-    geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+    Datum geom = value;
+    if (!tgeo_base_type(temp->basetypid))
+      geom = npoint_as_geom_internal(DatumGetNpoint(value));
+    geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(geom));
+    if (!tgeo_base_type(temp->basetypid))
+      pfree(DatumGetPointer(geom));
     return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
       (!ever && same_stbox_stbox_internal(&box1, &box2));
   }

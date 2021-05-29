@@ -44,7 +44,7 @@
 
 typedef struct
 {
-  int64   rid;       /* route identifier */
+  int64     rid;       /* route identifier */
   double    pos;       /* position */
 } npoint;
 
@@ -52,7 +52,7 @@ typedef struct
 
 typedef struct
 {
-  int64   rid;      /* route identifier */
+  int64     rid;      /* route identifier */
   double    pos1;     /* position1 */
   double    pos2;     /* position2 */
 } nsegment;
@@ -62,14 +62,15 @@ typedef struct
  *****************************************************************************/
 
 /* npoint */
-#define DatumGetNpoint(X)   ((npoint *) DatumGetPointer(X))
-#define NpointGetDatum(X)   PointerGetDatum(X)
-#define PG_GETARG_NPOINT(i)   ((npoint *) PG_GETARG_POINTER(i))
+#define DatumGetNpoint(X)          ((npoint *) DatumGetPointer(X))
+#define NpointGetDatum(X)          PointerGetDatum(X)
+#define PG_GETARG_NPOINT(X)        DatumGetNpoint(PG_GETARG_DATUM(X))
+#define PG_RETURN_NPOINT(X)        PG_RETURN_POINTER(X)
 
 /* nsegment */
 #define DatumGetNsegment(X)   ((nsegment *) DatumGetPointer(X))
 #define NsegmentGetDatum(X)   PointerGetDatum(X)
-#define PG_GETARG_NSEGMENT(i) ((nsegment *) PG_GETARG_POINTER(i))
+#define PG_GETARG_NSEGMENT(X) DatumGetNsegment(PG_GETARG_DATUM(X))
 
 /*****************************************************************************
  * TNPoint.c
@@ -83,9 +84,9 @@ extern Datum tnpoint_as_tgeompoint(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_as_tnpoint(PG_FUNCTION_ARGS);
 
 extern TInstant *tnpointinst_as_tgeompointinst(const TInstant *inst);
-extern TInstantSet *tnpointi_as_tgeompointi(const TInstantSet *ti);
+extern TInstantSet *tnpointinstset_as_tgeompointi(const TInstantSet *ti);
 extern TSequence *tnpointseq_as_tgeompointseq(const TSequence *seq);
-extern TSequenceSet *tnpoints_as_tgeompoints(const TSequenceSet *ts);
+extern TSequenceSet *tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts);
 extern Temporal *tnpoint_as_tgeompoint_internal(const Temporal *temp);
 extern Temporal *tgeompoint_as_tnpoint_internal(Temporal *temp);
 
@@ -101,16 +102,16 @@ extern Datum tnpoint_routes(PG_FUNCTION_ARGS);
 extern int64 tnpointinst_route(const TInstant *inst);
 extern int64 tnpointiseq_route(const TSequence *seq);
 extern nsegment **tnpointinst_positions(const TInstant *inst);
-extern nsegment **tnpointi_positions(const TInstantSet *ti, int *count);
+extern nsegment **tnpointinstset_positions(const TInstantSet *ti, int *count);
 extern nsegment *tnpointseq_linear_positions(const TSequence *seq);
 extern nsegment **tnpointseq_positions(const TSequence *seq, int *count);
-extern nsegment **tnpoints_positions(const TSequenceSet *ts, int *count);
+extern nsegment **tnpointseqset_positions(const TSequenceSet *ts, int *count);
 extern nsegment **tnpoint_positions_internal(const Temporal *temp, int *count);
 
 extern ArrayType *tnpointinst_routes(const TInstant *inst);
-extern ArrayType *tnpointi_routes(const TInstantSet *ti);
+extern ArrayType *tnpointinstset_routes(const TInstantSet *ti);
 extern ArrayType *tnpointseq_routes(const TSequence *seq);
-extern ArrayType *tnpoints_routes(const TSequenceSet *ts);
+extern ArrayType *tnpointseqset_routes(const TSequenceSet *ts);
 
 /*****************************************************************************/
 

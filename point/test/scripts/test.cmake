@@ -3,6 +3,7 @@ add_test(
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
 	COMMAND ${PROJECT_SOURCE_DIR}/test/scripts/test.sh run_passfail ${CMAKE_BINARY_DIR} load_geom_tables "../point/test/scripts/load.sql.xz"
 )
+set(GEOM_TABLES true)
 
 set_tests_properties(load_geom_tables PROPERTIES FIXTURES_SETUP DBGEO)
 set_tests_properties(load_geom_tables PROPERTIES FIXTURES_REQUIRED DB)

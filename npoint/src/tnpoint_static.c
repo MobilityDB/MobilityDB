@@ -49,6 +49,10 @@
 #include "tnpoint.h"
 #include "tnpoint_parser.h"
 
+/** Buffer size for input and output of npoint values */
+#define MAXNPOINTLEN    128
+
+
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
@@ -87,7 +91,7 @@ npointarr_to_geom_internal(npoint **points, int count)
   {
     Datum line = route_geom(points[i]->rid);
     geoms[i] = call_function2(LWGEOM_line_interpolate_point, line,
-        Float8GetDatum(points[i]->pos));
+      Float8GetDatum(points[i]->pos));
     pfree(DatumGetPointer(line));
   }
   Datum result;
@@ -237,8 +241,12 @@ PG_FUNCTION_INFO_V1(npoint_out);
 PGDLLEXPORT Datum
 npoint_out(PG_FUNCTION_ARGS)
 {
+  static size_t size = MAXNPOINTLEN + 1;
+  char *result = (char *) palloc(size);
   npoint *np = PG_GETARG_NPOINT(0);
-  char *result = psprintf("NPoint(%ld,%g)", np->rid, np->pos);
+  char *rid = call_output(INT8OID, Int64GetDatum(np->rid));
+  char *pos = call_output(FLOAT8OID, Float8GetDatum(np->pos));
+  snprintf(result, size, "NPoint(%s,%s)", rid, pos);
   PG_RETURN_CSTRING(result);
 }
 

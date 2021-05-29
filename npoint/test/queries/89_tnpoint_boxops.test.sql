@@ -1,14 +1,14 @@
 ﻿-------------------------------------------------------------------------------
 
-SELECT stbox(npoint 'NPoint(1,0.5)');
-SELECT stbox(nsegment 'NSegment(1,0.5,0.7)');
-SELECT stbox(npoint 'NPoint(1,0.5)', timestamptz '2000-01-01');
-SELECT stbox(npoint 'NPoint(1,0.5)', period '[2000-01-01, 2000-01-02]');
+SELECT setPrecision(stbox(npoint 'NPoint(1,0.5)'), 6);
+SELECT setPrecision(stbox(nsegment 'NSegment(1,0.5,0.7)'), 6);
+SELECT setPrecision(stbox(npoint 'NPoint(1,0.5)', timestamptz '2000-01-01'), 6);
+SELECT setPrecision(stbox(npoint 'NPoint(1,0.5)', period '[2000-01-01, 2000-01-02]'), 6);
 
-SELECT stbox(tnpoint 'NPoint(1,0.5)@2000-01-01');
-SELECT stbox(tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}');
-SELECT stbox(tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]');
-SELECT stbox(tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}');
+SELECT setPrecision(stbox(tnpoint 'NPoint(1,0.5)@2000-01-01'), 6);
+SELECT setPrecision(stbox(tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}'), 6);
+SELECT setPrecision(stbox(tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]'), 6);
+SELECT setPrecision(stbox(tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}'), 6);
 
 -------------------------------------------------------------------------------
 /* Errors */
