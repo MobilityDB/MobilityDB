@@ -1,7 +1,11 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
 =======
 SELECT MAX(getPosition(startValue(tnpointinst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT MAX(getPosition(startValue(tnpoint_inst(t1.np, t2.t)))) FROM tbl_npoint t1, tbl_timestamptz t2;
 >>>>>>> Synchronize npoint with latest MobilityDB version
    max    
 ----------
@@ -10,9 +14,13 @@ SELECT MAX(getPosition(startValue(tnpointinst(t1.np, t2.t)))) FROM tbl_npoint t1
 
 WITH test(temp) as (
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT tnpoint_instset(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY k%10 )
 =======
 SELECT tnpointi(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpointinst t GROUP BY k%10  )
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT tnpoint_instset(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY k%10 )
 >>>>>>> Synchronize npoint with latest MobilityDB version
 SELECT MAX(getPosition(startValue(temp))) FROM test;
    max    
@@ -22,9 +30,13 @@ SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) as (
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
 =======
 SELECT tnpointseq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpointinst t GROUP BY route(t.inst) )
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT tnpoint_seq(array_agg(t.inst ORDER BY getTimestamp(t.inst))) FROM tbl_tnpoint_inst t GROUP BY route(t.inst) )
 >>>>>>> Synchronize npoint with latest MobilityDB version
 SELECT MAX(getPosition(startValue(temp))) FROM test;
    max    
@@ -34,9 +46,13 @@ SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 WITH test(temp) as (
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT tnpoint_seqset(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpoint_seq t GROUP BY k%10 )
 =======
 SELECT tnpoints(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpointseq t GROUP BY k%10 )
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT tnpoint_seqset(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_tnpoint_seq t GROUP BY k%10 )
 >>>>>>> Synchronize npoint with latest MobilityDB version
 SELECT MAX(getPosition(startValue(temp))) FROM test;
    max    
@@ -44,6 +60,7 @@ SELECT MAX(getPosition(startValue(temp))) FROM test;
  0.966244
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SELECT DISTINCT tempSubtype(tnpoint_inst(inst)) FROM tbl_tnpoint_inst;
  tempsubtype 
@@ -69,28 +86,39 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
 SELECT DISTINCT duration(tnpointinst(inst)) FROM tbl_tnpointinst;
  duration 
 ----------
+=======
+SELECT DISTINCT tempSubtype(tnpoint_inst(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
+>>>>>>> Synchronize npoint with latest MobilityDB version
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(inst)) FROM tbl_tnpointinst;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tnpoint_instset(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointseq(inst)) FROM tbl_tnpointinst;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
+<<<<<<< HEAD
 SELECT DISTINCT duration(tnpoints(inst)) FROM tbl_tnpointinst;
   duration   
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT DISTINCT tempSubtype(tnpoint_seqset(inst)) FROM tbl_tnpoint_inst;
+ tempsubtype 
 >>>>>>> Synchronize npoint with latest MobilityDB version
 -------------
  SequenceSet
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SELECT DISTINCT tempSubtype(tnpoint_inst(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
  tempsubtype 
@@ -116,28 +144,39 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_instset;
 SELECT DISTINCT duration(tnpointinst(ti)) FROM tbl_tnpointi WHERE numInstants(ti) = 1;
  duration 
 ----------
+=======
+SELECT DISTINCT tempSubtype(tnpoint_inst(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
+>>>>>>> Synchronize npoint with latest MobilityDB version
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(ti)) FROM tbl_tnpointi;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tnpoint_instset(ti)) FROM tbl_tnpoint_instset;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointseq(ti)) FROM tbl_tnpointi WHERE numInstants(ti) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(ti)) FROM tbl_tnpoint_instset WHERE numInstants(ti) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
+<<<<<<< HEAD
 SELECT DISTINCT duration(tnpoints(ti)) FROM tbl_tnpointi;
   duration   
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ti)) FROM tbl_tnpoint_instset;
+ tempsubtype 
 >>>>>>> Synchronize npoint with latest MobilityDB version
 -------------
  SequenceSet
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SELECT DISTINCT tempSubtype(tnpoint_inst(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
  tempsubtype 
@@ -163,28 +202,39 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
 SELECT DISTINCT duration(tnpointinst(seq)) FROM tbl_tnpointseq WHERE numInstants(seq) = 1;
  duration 
 ----------
+=======
+SELECT DISTINCT tempSubtype(tnpoint_inst(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
+>>>>>>> Synchronize npoint with latest MobilityDB version
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(seq)) FROM tbl_tnpointseq WHERE numInstants(seq) = 1;
-  duration  
-------------
+SELECT DISTINCT tempSubtype(tnpoint_instset(seq)) FROM tbl_tnpoint_seq WHERE numInstants(seq) = 1;
+ tempsubtype 
+-------------
  InstantSet
 (1 row)
 
-SELECT DISTINCT duration(tnpointseq(seq)) FROM tbl_tnpointseq;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(seq)) FROM tbl_tnpoint_seq;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
+<<<<<<< HEAD
 SELECT DISTINCT duration(tnpoints(seq)) FROM tbl_tnpointseq;
   duration   
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT DISTINCT tempSubtype(tnpoint_seqset(seq)) FROM tbl_tnpoint_seq;
+ tempsubtype 
 >>>>>>> Synchronize npoint with latest MobilityDB version
 -------------
  SequenceSet
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SELECT DISTINCT tempSubtype(tnpoint_inst(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
  tempsubtype 
@@ -210,22 +260,33 @@ SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
 SELECT DISTINCT duration(tnpointinst(ts)) FROM tbl_tnpoints WHERE numInstants(ts) = 1;
  duration 
 ----------
+=======
+SELECT DISTINCT tempSubtype(tnpoint_inst(ts)) FROM tbl_tnpoint_seqset WHERE numInstants(ts) = 1;
+ tempsubtype 
+-------------
+>>>>>>> Synchronize npoint with latest MobilityDB version
  Instant
 (1 row)
 
-SELECT DISTINCT duration(tnpointi(ts)) FROM tbl_tnpoints WHERE duration(ts) = '00:00:00';
- duration 
-----------
-(0 rows)
+SELECT DISTINCT tempSubtype(tnpoint_instset(ts)) FROM tbl_tnpoint_seqset WHERE duration(ts) = '00:00:00';
+ tempsubtype 
+-------------
+ InstantSet
+(1 row)
 
-SELECT DISTINCT duration(tnpointseq(ts)) FROM tbl_tnpoints WHERE numSequences(ts) = 1;
- duration 
-----------
+SELECT DISTINCT tempSubtype(tnpoint_seq(ts)) FROM tbl_tnpoint_seqset WHERE numSequences(ts) = 1;
+ tempsubtype 
+-------------
  Sequence
 (1 row)
 
+<<<<<<< HEAD
 SELECT DISTINCT duration(tnpoints(ts)) FROM tbl_tnpoints;
   duration   
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT DISTINCT tempSubtype(tnpoint_seqset(ts)) FROM tbl_tnpoint_seqset;
+ tempsubtype 
 >>>>>>> Synchronize npoint with latest MobilityDB version
 -------------
  SequenceSet
@@ -250,11 +311,16 @@ SELECT count(*) FROM tbl_tnpoint WHERE temp = (temp::tgeompoint)::tnpoint;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
  tempsubtype 
 =======
 SELECT DISTINCT duration(temp) FROM tbl_tnpoint ORDER BY 1;
   duration   
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
+ tempsubtype 
 >>>>>>> Synchronize npoint with latest MobilityDB version
 -------------
  Instant
@@ -273,9 +339,13 @@ SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
 SELECT stbox(temp) FROM tbl_tnpoint;
 */
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
 =======
 SELECT getValue(inst) FROM tbl_tnpointinst ORDER BY getValue(inst) LIMIT 1;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT getValue(inst) FROM tbl_tnpoint_inst ORDER BY getValue(inst) LIMIT 1;
 >>>>>>> Synchronize npoint with latest MobilityDB version
       getvalue      
 --------------------
@@ -295,9 +365,13 @@ SELECT MAX(array_length(positions(temp), 1)) FROM tbl_tnpoint;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
 =======
 SELECT MAX(route(inst)) FROM tbl_tnpointinst;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT MAX(route(inst)) FROM tbl_tnpoint_inst;
 >>>>>>> Synchronize npoint with latest MobilityDB version
  max 
 -----
@@ -314,6 +388,7 @@ SELECT MAX(timespan(getTime(temp))) FROM tbl_tnpoint;
    max    
 ----------
 <<<<<<< HEAD
+<<<<<<< HEAD
  05:17:00
 (1 row)
 
@@ -323,6 +398,12 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
 (1 row)
 
 SELECT MAX(getTimestamp(inst)) FROM tbl_tnpointinst;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+ 05:17:00
+(1 row)
+
+SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
 >>>>>>> Synchronize npoint with latest MobilityDB version
           max           
 ------------------------
@@ -342,9 +423,13 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %= t2.np;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
 =======
 SELECT count(*) FROM tbl_tnpointinst t1, tbl_npoint t2 WHERE everEquals(t1.inst, t2.np);
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
 >>>>>>> Synchronize npoint with latest MobilityDB version
  count 
 -------
@@ -352,9 +437,13 @@ SELECT count(*) FROM tbl_tnpointinst t1, tbl_npoint t2 WHERE everEquals(t1.inst,
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
 =======
 SELECT count(*) FROM tbl_tnpointinst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
 >>>>>>> Synchronize npoint with latest MobilityDB version
  count 
 -------
@@ -380,6 +469,7 @@ SELECT DISTINCT MAX(getPosition(endValue(temp))) FROM tbl_tnpoint;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
 =======
 SELECT MAX(timespan(period(temp))) FROM tbl_tnpoint;
@@ -391,10 +481,12 @@ SELECT MAX(timespan(period(temp))) FROM tbl_tnpoint;
 
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> Synchronize npoint with latest MobilityDB version
 SELECT MAX(timespan(temp)) FROM tbl_tnpoint;
    max    
 ----------
- 04:00:00
+ 05:17:00
 (1 row)
 
 >>>>>>> Synchronize npoint with latest MobilityDB version
@@ -459,9 +551,13 @@ SELECT MAX(array_length(timestamps(temp),1)) FROM tbl_tnpoint;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
 =======
 SELECT MAX(numSequences(ts)) FROM tbl_tnpoints;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT MAX(numSequences(ts)) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
  max 
 -----
@@ -469,29 +565,27 @@ SELECT MAX(numSequences(ts)) FROM tbl_tnpoints;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
 =======
 SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoints;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT MAX(timespan(startSequence(ts))) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
    max    
 ----------
  00:50:00
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
 =======
 SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoints;
 >>>>>>> Synchronize npoint with latest MobilityDB version
-   max    
-----------
- 00:50:00
-(1 row)
-
-<<<<<<< HEAD
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
 =======
-SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoints;
+SELECT MAX(timespan(endSequence(ts))) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
    max    
 ----------
@@ -499,9 +593,27 @@ SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoints;
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+=======
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoints;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT MAX(timespan(sequenceN(ts, numSequences(ts)))) FROM tbl_tnpoint_seqset;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+   max    
+----------
+ 00:50:00
+(1 row)
+
+<<<<<<< HEAD
+<<<<<<< HEAD
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
 =======
 SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoints;
+>>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
  max 
 -----

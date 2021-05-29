@@ -109,6 +109,8 @@ get_typlen_byref(Oid type)
     result = 24;
   else if (type == type_oid(T_DOUBLE4))
     result = 32;
+  else if (type == type_oid(T_NPOINT))
+    result = 16;
   return result;
 }
 
