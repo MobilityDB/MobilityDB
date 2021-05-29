@@ -66,6 +66,7 @@
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
+#include "tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c
@@ -600,7 +601,10 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     is_copy = VARATT_IS_EXTENDED(temp);
 
     /* Get trajectory from temporal point */
-    trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
+    if (tgeo_base_type(temp->valuetypid))
+      trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
+    else /* temp->valuetypid == type_oid(T_NPOINT)) */
+      trajgs = (GSERIALIZED *) DatumGetPointer(tnpoint_geom(temp));
 
     /* Read the bounds from the gserialized. */
     if ( LW_FAILURE == gserialized_get_gbox_p(trajgs, &gbox) )

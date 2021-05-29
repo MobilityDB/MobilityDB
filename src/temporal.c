@@ -58,6 +58,8 @@
 #include "rangetypes_ext.h"
 
 #include "tpoint_spatialfuncs.h"
+#include "tnpoint_static.h"
+#include "tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Typmod
@@ -336,7 +338,8 @@ continuous_base_type(Oid type)
 {
   if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
     type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
-    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
+    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY) ||
+    type == type_oid(T_NPOINT))
     return true;
   return false;
 }
@@ -382,6 +385,8 @@ temporal_oid_from_base(Oid basetypid)
     result = type_oid(T_TGEOMPOINT);
   if (basetypid == type_oid(T_GEOGRAPHY))
     result = type_oid(T_TGEOGPOINT);
+  if (valuetypid == type_oid(T_NPOINT))
+    result = type_oid(T_TNPOINT);
   return result;
 }
 
@@ -406,6 +411,8 @@ base_oid_from_temporal(Oid temptypid)
     result = type_oid(T_GEOMETRY);
   else if (temptypid == type_oid(T_TGEOGPOINT))
     result = type_oid(T_GEOGRAPHY);
+  else if (temptypid == type_oid(T_TNPOINT))
+    result = type_oid(T_NPOINT);
   return result;
 }
 
@@ -471,10 +478,22 @@ tnumber_range_type(Oid typid)
 bool
 tgeo_base_type(Oid typid)
 {
-  if (typid == type_oid(T_GEOMETRY) ||
-    typid == type_oid(T_GEOGRAPHY))
+  if (typid == type_oid(T_GEOMETRY) || typid == type_oid(T_GEOGRAPHY))
     return true;
   return false;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+bool
+tspatial_base_type(Oid typid)
+{
+	if (typid == type_oid(T_GEOMETRY) || 
+		typid == type_oid(T_GEOGRAPHY) ||
+		typid == type_oid(T_NPOINT))
+		return true;
+	return false;
 }
 
 /**
@@ -487,7 +506,8 @@ temporal_type(Oid typid)
 {
   if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
     typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
-    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
     return true;
   return false;
 }
@@ -513,7 +533,8 @@ tnumber_type(Oid typid)
 bool
 tgeo_type(Oid typid)
 {
-  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
     return true;
   return false;
 }
@@ -668,7 +689,8 @@ ensure_continuous_base_type(Oid basetypid)
 {
   if (basetypid != FLOAT8OID &&
     basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY))
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
 }
@@ -684,7 +706,8 @@ ensure_continuous_base_type_all(Oid basetypid)
     basetypid != type_oid(T_GEOMETRY) &&
     basetypid != type_oid(T_GEOGRAPHY) &&
     basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4))
+    basetypid != type_oid(T_DOUBLE4) &&
+    basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
 }
@@ -820,15 +843,23 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * Ensures that all temporal instant values of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] seq True if we a make operation for temporal sequences
  */
 void
-ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge)
+ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge, bool isseq)
 {
   for (int i = 1; i < count; i++)
   {
     ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
     ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
     ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+    if (isseq && instants[0]->valuetypid == type_oid(T_NPOINT))
+      ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
   }
   return;
 }
@@ -2902,13 +2933,18 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     return (ever && box.xmin <= d && d <= box.xmax) ||
       (!ever && box.xmin == d && d == box.xmax);
   }
-  else if (tgeo_base_type(temp->basetypid))
+  else if (tspatial_base_type(temp->basetypid))
   {
     STBOX box1, box2;
     memset(&box1, 0, sizeof(STBOX));
     memset(&box2, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
-    geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+    Datum geom = value;
+    if (!tgeo_base_type(temp->basetypid))
+      geom = npoint_as_geom_internal(DatumGetNpoint(value));
+    geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(geom));
+    if (!tgeo_base_type(temp->basetypid))
+      pfree(DatumGetPointer(geom));
     return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
       (!ever && same_stbox_stbox_internal(&box1, &box2));
   }

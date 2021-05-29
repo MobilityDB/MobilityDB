@@ -103,13 +103,16 @@ CREATE FUNCTION tnpoint_seqset(tnpoint[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnpoint_instset(npoint, timestampset)
-  RETURNS tnpoint AS 'MODULE_PATHNAME', 'tinstantset_from_base'
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'tinstantset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, period, boolean DEFAULT true)
-  RETURNS tnpoint AS 'MODULE_PATHNAME', 'tsequence_from_base'
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'tsequence_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(npoint, periodset, boolean DEFAULT true)
-  RETURNS tnpoint AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -180,9 +183,14 @@ CREATE FUNCTION merge(tnpoint[])
  * Accessor functions
  ******************************************************************************/
 
-CREATE FUNCTION duration(tnpoint)
+CREATE FUNCTION tempSubtype(tnpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'temporal_duration'
+  AS 'MODULE_PATHNAME', 'temporal_subtype'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION interpolation(tnpoint)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tnpoint)
@@ -229,33 +237,6 @@ CREATE FUNCTION getTimestamp(tnpoint)
   AS 'MODULE_PATHNAME', 'tinstant_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION everEquals(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-  LEFTARG = tnpoint, RIGHTARG = npoint,
-  PROCEDURE = everEquals,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-
-CREATE FUNCTION always_eq(tnpoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_always_eq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR %= (
-  LEFTARG = tnpoint, RIGHTARG = npoint,
-  PROCEDURE = always_eq,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-);
-
-CREATE FUNCTION shift(tnpoint, interval)
-  RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_shift'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION startValue(tnpoint)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'temporal_start_value'
@@ -269,6 +250,11 @@ CREATE FUNCTION endValue(tnpoint)
 CREATE FUNCTION timespan(tnpoint)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'temporal_timespan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION duration(tnpoint)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numInstants(tnpoint)
@@ -345,6 +331,82 @@ CREATE FUNCTION sequences(tnpoint)
   RETURNS tnpoint[]
   AS 'MODULE_PATHNAME', 'temporal_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION segments(tnpoint)
+  RETURNS tnpoint[]
+  AS 'MODULE_PATHNAME', 'temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Shift and tscale functions
+ *****************************************************************************/
+
+CREATE FUNCTION shift(tnpoint, interval)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'temporal_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(tnpoint, interval)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'temporal_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'temporal_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Ever/Always Comparison Functions
+ *****************************************************************************/
+
+CREATE FUNCTION ever_eq(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?= (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = ever_eq,
+  NEGATOR = %<>,
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+
+CREATE FUNCTION always_eq(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'temporal_always_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %= (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = always_eq,
+  NEGATOR = ?<>,
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+
+CREATE FUNCTION ever_ne(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'temporal_ever_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ?<> (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = ever_ne,
+  NEGATOR = %=,
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
+
+CREATE FUNCTION always_ne(tnpoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'temporal_always_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR %<> (
+  LEFTARG = tnpoint, RIGHTARG = npoint,
+  PROCEDURE = always_ne,
+  NEGATOR = ?=,
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
+);
 
 /******************************************************************************
  * Restriction functions

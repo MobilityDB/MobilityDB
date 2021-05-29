@@ -74,7 +74,7 @@ tnpointinst_as_tgeompointinst(const TInstant *inst)
 }
 
 TInstantSet *
-tnpointi_as_tgeompointi(const TInstantSet *ti)
+tnpointinstset_as_tgeompointi(const TInstantSet *ti)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -116,7 +116,7 @@ tnpointseq_as_tgeompointseq(const TSequence *seq)
 }
 
 TSequenceSet *
-tnpoints_as_tgeompoints(const TSequenceSet *ts)
+tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -136,11 +136,11 @@ tnpoint_as_tgeompoint_internal(const Temporal *temp)
   if (temp->subtype == INSTANT)
     result = (Temporal *)tnpointinst_as_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tnpointi_as_tgeompointi((TInstantSet *) temp);
+    result = (Temporal *)tnpointinstset_as_tgeompointi((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnpointseq_as_tgeompointseq((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpoints_as_tgeompoints((TSequenceSet *) temp);
+    result = (Temporal *)tnpointseqset_as_tgeompointseqset((TSequenceSet *) temp);
   return result;
 }
 
@@ -304,7 +304,7 @@ tnpointinst_positions(const TInstant *inst)
 }
 
 nsegment **
-tnpointi_positions(const TInstantSet *ti, int *count)
+tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
   /* The following function removes duplicate values */
@@ -367,7 +367,7 @@ tnpointseq_positions(const TSequence *seq, int *count)
 }
 
 nsegment **
-tnpoints_linear_positions(const TSequenceSet *ts, int *count)
+tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
 {
   nsegment **segments = palloc(sizeof(nsegment *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -384,7 +384,7 @@ tnpoints_linear_positions(const TSequenceSet *ts, int *count)
 }
 
 nsegment **
-tnpoints_step_positions(const TSequenceSet *ts, int *count)
+tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
   /* The following function removes duplicate values */
@@ -400,13 +400,13 @@ tnpoints_step_positions(const TSequenceSet *ts, int *count)
 }
 
 nsegment **
-tnpoints_positions(const TSequenceSet *ts, int *count)
+tnpointseqset_positions(const TSequenceSet *ts, int *count)
 {
   nsegment **result;
   if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
-    result = tnpoints_linear_positions(ts, count);
+    result = tnpointseqset_linear_positions(ts, count);
   else
-    result = tnpoints_step_positions(ts, count);
+    result = tnpointseqset_step_positions(ts, count);
   return result;
 }
 
@@ -421,11 +421,11 @@ tnpoint_positions_internal(const Temporal *temp, int *count)
     *count = 1;
   }
   else if (temp->subtype == INSTANTSET)
-    result = tnpointi_positions((TInstantSet *) temp, count);
+    result = tnpointinstset_positions((TInstantSet *) temp, count);
   else if (temp->subtype == SEQUENCE)
     result = tnpointseq_positions((TSequence *) temp, count);
   else /* temp->subtype == SEQUENCESET */
-    result = tnpoints_positions((TSequenceSet *) temp, count);
+    result = tnpointseqset_positions((TSequenceSet *) temp, count);
   return result;
 }
 
@@ -481,7 +481,7 @@ tnpointinst_routes(const TInstant *inst)
 }
 
 ArrayType *
-tnpointi_routes(const TInstantSet *ti)
+tnpointinstset_routes(const TInstantSet *ti)
 {
   int64 *routes = palloc(sizeof(int64) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -505,7 +505,7 @@ tnpointseq_routes(const TSequence *seq)
 }
 
 ArrayType *
-tnpoints_routes(const TSequenceSet *ts)
+tnpointseqset_routes(const TSequenceSet *ts)
 {
   int64 *routes = palloc(sizeof(int64) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -531,11 +531,11 @@ tnpoint_routes(PG_FUNCTION_ARGS)
   if (temp->subtype == INSTANT)
     result = tnpointinst_routes((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tnpointi_routes((TInstantSet *) temp);
+    result = tnpointinstset_routes((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
     result = tnpointseq_routes((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tnpoints_routes((TSequenceSet *) temp);
+    result = tnpointseqset_routes((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
