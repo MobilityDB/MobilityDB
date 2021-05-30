@@ -11,7 +11,6 @@ SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE disjoint(ST_SetSRID
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE intersects(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE touches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE dwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
-SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE relate(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 
 
 -------------------------------------------------------------------------------
 -- npoint rel tnpoint
