@@ -406,53 +406,7 @@ tspatial_base_type(Oid typid)
   return false;
 }
 
-
 /*****************************************************************************/
-
-/**
- * Ensures that the number is positive
- */
-void
-ensure_positive_datum(Datum size, Oid type)
-{
-  ensure_tnumber_base_type(type);
-  if (type == INT4OID)
-  {
-    int isize = DatumGetInt32(size);
-    if (isize <= 0)
-      elog(ERROR, "The value must be positive: %d", isize);
-  }
-  else
-  {
-    double dsize = DatumGetFloat8(size);
-    if (dsize <= 0.0)
-      elog(ERROR, "The value must be positive: %f", dsize);
-  }
-  return;
-}
-
-/**
- * Ensures that the interval is a positive and absolute duration
- */
-void
-ensure_valid_duration(const Interval *duration)
-{
-  if (duration->month != 0)
-  {
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("Interval defined in terms of month, year, century etc. not supported")));
-  }
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
-    PointerGetDatum(&intervalzero));
-  if (cmp <= 0)
-  {
-    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The interval must be positive: %s", t);
-  }
-  return;
-}
 
 /**
  * Ensures that the temporal type is valid
