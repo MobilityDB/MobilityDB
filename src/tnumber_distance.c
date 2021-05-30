@@ -78,11 +78,11 @@ datum_distance(Datum l, Datum r, Oid typel, Oid typer)
  *
  * @param[in] seq Temporal number
  * @param[in] value Value
- * @param[in] valuetypid Type of the base value
+ * @param[in] basetypid Type of the base value
  * @param[in] restypid Type of the result
  */
 static TSequence *
-distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
+distance_tnumberseq_base(const TSequence *seq, Datum value, Oid basetypid,
   Oid restypid)
 {
   int k = 0;
@@ -97,14 +97,14 @@ distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     instants[k++] = tinstant_make(
-      datum_distance(value1, value, seq->valuetypid, valuetypid),
+      datum_distance(value1, value, seq->basetypid, basetypid),
       inst1->t, restypid);
 
     /* Constant segment or step interpolation */
-    if (! datum_eq(value1, value2, seq->valuetypid) && linear)
+    if (! datum_eq(value1, value2, seq->basetypid) && linear)
     {
       TimestampTz crosstime;
-      if (tlinearseq_intersection_value(inst1, inst2, value, valuetypid, NULL,
+      if (tlinearseq_intersection_value(inst1, inst2, value, basetypid, NULL,
         &crosstime))
       {
         instants[k++] = tinstant_make(zero, crosstime, restypid);
@@ -112,7 +112,7 @@ distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
     }
     inst1 = inst2; value1 = value2;
   }
-  instants[k++] = tinstant_make(datum_distance(value, value1, valuetypid, seq->valuetypid),
+  instants[k++] = tinstant_make(datum_distance(value, value1, basetypid, seq->basetypid),
     inst1->t, restypid);
 
   return tsequence_make_free(instants, k, seq->period.lower_inc,
@@ -125,18 +125,18 @@ distance_tnumberseq_base(const TSequence *seq, Datum value, Oid valuetypid,
  *
  * @param[in] ts Temporal number
  * @param[in] value Value
- * @param[in] valuetypid Type of the base value
+ * @param[in] basetypid Type of the base value
  * @param[in] restypid Type of the result
  */
 static TSequenceSet *
-distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
+distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid basetypid,
   Oid restypid)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = distance_tnumberseq_base(seq, value, valuetypid, restypid);
+    sequences[i] = distance_tnumberseq_base(seq, value, basetypid, restypid);
   }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
@@ -149,12 +149,12 @@ distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid valuetypid,
  *
  * @param[in] temp Temporal number
  * @param[in] value Value
- * @param[in] valuetypid Type of the base value
+ * @param[in] basetypid Type of the base value
  * @param[in] restypid Type of the result
  */
 static Temporal *
 distance_tnumber_base_internal(const Temporal *temp, Datum value,
-  Oid valuetypid, Oid restypid)
+  Oid basetypid, Oid restypid)
 {
   LiftedFunctionInfo lfinfo;
   ensure_valid_tempsubtype(temp->subtype);
@@ -171,16 +171,16 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   Temporal *result;
   if (temp->subtype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, value,
-      valuetypid, (Datum) NULL, lfinfo);
+      basetypid, (Datum) NULL, lfinfo);
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, value,
-      valuetypid, (Datum) NULL, lfinfo);
+      basetypid, (Datum) NULL, lfinfo);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)distance_tnumberseq_base((TSequence *)temp, value,
-      valuetypid, restypid);
+      basetypid, restypid);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)distance_tnumberseqset_base((TSequenceSet *)temp, value,
-      valuetypid, restypid);
+      basetypid, restypid);
   return result;
 }
 
@@ -192,11 +192,11 @@ PGDLLEXPORT Datum
 distance_base_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid restypid = base_oid_from_temporal(temptypid);
-  Temporal *result = distance_tnumber_base_internal(temp, value, valuetypid,
+  Temporal *result = distance_tnumber_base_internal(temp, value, basetypid,
     restypid);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -214,8 +214,8 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid restypid = base_oid_from_temporal(temptypid);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = distance_tnumber_base_internal(temp, value, valuetypid,
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Temporal *result = distance_tnumber_base_internal(temp, value, basetypid,
     restypid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -274,16 +274,16 @@ distance_tnumber_tnumber(PG_FUNCTION_ARGS)
  * base value (internal function)
  */
 static double
-NAD_tnumber_base_internal(Temporal *temp, Datum value, Oid valuetypid)
+NAD_tnumber_base_internal(Temporal *temp, Datum value, Oid basetypid)
 {
-  ensure_tnumber_base_type(valuetypid);
+  ensure_tnumber_base_type(basetypid);
   TBOX box1, box2;
   memset(&box1, 0, sizeof(TBOX));
   memset(&box2, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
-  if (valuetypid == INT4OID)
+  if (basetypid == INT4OID)
     int_to_tbox_internal(&box2, DatumGetInt32(value));
-  else /* valuetypid == FLOAT8OID */
+  else /* basetypid == FLOAT8OID */
     float_to_tbox_internal(&box2, DatumGetFloat8(value));
   return NAD_tbox_tbox_internal(&box1, &box2);
 }
@@ -296,9 +296,9 @@ PGDLLEXPORT Datum
 NAD_base_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  double result = NAD_tnumber_base_internal(temp, value, valuetypid);
+  double result = NAD_tnumber_base_internal(temp, value, basetypid);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_FLOAT8(result);
 }
@@ -313,8 +313,8 @@ NAD_tnumber_base(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  double result = NAD_tnumber_base_internal(temp, value, valuetypid);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  double result = NAD_tnumber_base_internal(temp, value, basetypid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
 }
@@ -464,10 +464,10 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_tnumber_base_type(temp1->valuetypid);
-  ensure_tnumber_base_type(temp2->valuetypid);
+  ensure_tnumber_base_type(temp1->basetypid);
+  ensure_tnumber_base_type(temp2->basetypid);
   /* Result of the distance function is a tint iff both arguments are tint */
-  Oid restypid = (temp1->valuetypid == INT4OID && temp2->valuetypid == INT4OID) ?
+  Oid restypid = (temp1->basetypid == INT4OID && temp2->basetypid == INT4OID) ?
     INT4OID : FLOAT8OID;
   Temporal *dist = distance_tnumber_tnumber_internal(temp1, temp2, restypid);
   if (dist == NULL)

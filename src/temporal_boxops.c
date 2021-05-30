@@ -51,7 +51,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "rangetypes_ext.h"
 #include "tbox.h"
@@ -68,13 +68,13 @@
  * Returns the size of the bounding box
  */
 size_t
-temporal_bbox_size(Oid valuetypid)
+temporal_bbox_size(Oid basetypid)
 {
-  if (talpha_base_type(valuetypid))
+  if (talpha_base_type(basetypid))
     return sizeof(Period);
-  if (tnumber_base_type(valuetypid))
+  if (tnumber_base_type(basetypid))
     return sizeof(TBOX);
-  if (tspatial_base_type(valuetypid)) 
+  if (tspatial_base_type(basetypid)) 
     return sizeof(STBOX);
   /* Types without bounding box, for example, tdoubleN */
   return 0;
@@ -84,19 +84,19 @@ temporal_bbox_size(Oid valuetypid)
  * Returns true if the bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 bool
-temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
+temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(valuetypid);
+  ensure_temporal_base_type(basetypid);
   bool result = false;
-  if (talpha_base_type(valuetypid))
+  if (talpha_base_type(basetypid))
     result = period_eq_internal((Period *) box1, (Period *) box2);
-  else if (tnumber_base_type(valuetypid))
+  else if (tnumber_base_type(basetypid))
     result = tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tspatial_base_type(valuetypid))
+  else if (tspatial_base_type(basetypid))
     result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
     // TODO Due to floating point precision the previous statement
     // is not equal to the next one.
@@ -113,19 +113,19 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid valuetypid)
  * is less than, equal, or greater than the second one
  *
  * @param[in] box1,box2 Bounding boxes
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 int
-temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
+temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(valuetypid);
+  ensure_temporal_base_type(basetypid);
   int result = 0;
-  if (talpha_base_type(valuetypid))
+  if (talpha_base_type(basetypid))
     result = period_cmp_internal((Period *) box1, (Period *) box2);
-  else if (tnumber_base_type(valuetypid))
+  else if (tnumber_base_type(basetypid))
     result = tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tspatial_base_type(valuetypid))
+  else if (tspatial_base_type(basetypid))
     result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
   /* Types without bounding box, for example, doubleN */
   return result;
@@ -137,18 +137,18 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid valuetypid)
  * @param[in] box Bounding box
  * @param[in] start Interval to shift
  * @param[in] duration Interval to scale
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 void
 temporal_bbox_shift_tscale(void *box, const Interval *start,
-  const Interval *duration, Oid valuetypid)
+  const Interval *duration, Oid basetypid)
 {
-  ensure_temporal_base_type(valuetypid);
-  if (talpha_base_type(valuetypid))
+  ensure_temporal_base_type(basetypid);
+  if (talpha_base_type(basetypid))
     period_shift_tscale((Period *) box, start, duration);
-  else if (tnumber_base_type(valuetypid))
+  else if (tnumber_base_type(basetypid))
     tbox_shift_tscale((TBOX *) box, start, duration);
-  else if (tgeo_base_type(valuetypid))
+  else if (tgeo_base_type(basetypid))
     stbox_shift_tscale((STBOX *) box, start, duration);
   return;
 }
@@ -169,21 +169,21 @@ void
 tinstant_make_bbox(void *box, const TInstant *inst)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(inst->valuetypid);
-  if (talpha_base_type(inst->valuetypid))
+  ensure_temporal_base_type(inst->basetypid);
+  if (talpha_base_type(inst->basetypid))
     period_set((Period *) box, inst->t, inst->t, true, true);
-  else if (tnumber_base_type(inst->valuetypid))
+  else if (tnumber_base_type(inst->basetypid))
   {
-    double dvalue = datum_double(tinstant_value(inst), inst->valuetypid);
+    double dvalue = datum_double(tinstant_value(inst), inst->basetypid);
     TBOX *result = (TBOX *) box;
     result->xmin = result->xmax = dvalue;
     result->tmin = result->tmax = inst->t;
     MOBDB_FLAGS_SET_X(result->flags, true);
     MOBDB_FLAGS_SET_T(result->flags, true);
   }
-  else if (tspatial_base_type(inst->valuetypid))
+  else if (tspatial_base_type(inst->basetypid))
   {
-    if (tgeo_base_type(inst->valuetypid))
+    if (tgeo_base_type(inst->basetypid))
       tpointinst_make_stbox((STBOX *)box, inst);
     else
       tnpointinst_make_stbox((STBOX *)box, inst);
@@ -240,14 +240,14 @@ void
 tinstantset_make_bbox(void *box, const TInstant **instants, int count)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(instants[0]->valuetypid);
-  if (talpha_base_type(instants[0]->valuetypid))
+  ensure_temporal_base_type(instants[0]->basetypid);
+  if (talpha_base_type(instants[0]->basetypid))
     tinstantarr_to_period((Period *) box, instants, count, true, true);
-  else if (tnumber_base_type(instants[0]->valuetypid))
+  else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  else if (tspatial_base_type(instants[0]->valuetypid))
+  else if (tspatial_base_type(instants[0]->basetypid))
   {
-    if (tgeo_base_type(instants[0]->valuetypid))
+    if (tgeo_base_type(instants[0]->basetypid))
       tpointinstarr_to_stbox((STBOX *)box, instants, count);
     else
       tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
@@ -269,15 +269,15 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
   bool lower_inc, bool upper_inc)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(instants[0]->valuetypid);
-  if (talpha_base_type(instants[0]->valuetypid))
+  ensure_temporal_base_type(instants[0]->basetypid);
+  if (talpha_base_type(instants[0]->basetypid))
     tinstantarr_to_period((Period *) box, instants, count,
       lower_inc, upper_inc);
-  else if (tnumber_base_type(instants[0]->valuetypid))
+  else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  else if (tspatial_base_type(instants[0]->valuetypid))
+  else if (tspatial_base_type(instants[0]->basetypid))
   {
-    if (!tgeo_base_type(instants[0]->valuetypid))
+    if (!tgeo_base_type(instants[0]->basetypid))
     {
       if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
         tnpointinstarr_linear_to_stbox((STBOX *)box, instants, count);
@@ -337,14 +337,14 @@ void
 tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(sequences[0]->valuetypid);
-  if (talpha_base_type(sequences[0]->valuetypid))
+  ensure_temporal_base_type(sequences[0]->basetypid);
+  if (talpha_base_type(sequences[0]->basetypid))
     tsequencearr_to_period_internal((Period *) box, sequences, count);
-  else if (tnumber_base_type(sequences[0]->valuetypid))
+  else if (tnumber_base_type(sequences[0]->basetypid))
     tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
-  else if (tspatial_base_type(sequences[0]->valuetypid)) 
+  else if (tspatial_base_type(sequences[0]->basetypid)) 
   {
-    if (tgeo_base_type(sequences[0]->valuetypid))
+    if (tgeo_base_type(sequences[0]->basetypid))
       tpointseqarr_to_stbox((STBOX *)box, sequences, count);
     else
       tnpointseqarr_to_stbox((STBOX *)box, sequences, count);

@@ -43,7 +43,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 
 /*****************************************************************************
  * GiST consistent methods

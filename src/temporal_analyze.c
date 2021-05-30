@@ -85,7 +85,7 @@
 #include "time_analyze.h"
 #include "rangetypes_ext.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_analyze.h"
 

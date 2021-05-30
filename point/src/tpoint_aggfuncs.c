@@ -36,7 +36,7 @@
 #include <assert.h>
 
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "doublen.h"
 #include "skiplist.h"
@@ -355,10 +355,10 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 static Datum
 doublen_to_point(const TInstant *inst, int srid)
 {
-  assert(inst->valuetypid == type_oid(T_DOUBLE4) ||
-    inst->valuetypid == type_oid(T_DOUBLE3));
+  assert(inst->basetypid == type_oid(T_DOUBLE4) ||
+    inst->basetypid == type_oid(T_DOUBLE3));
   LWPOINT *point;
-  if (inst->valuetypid == type_oid(T_DOUBLE4))
+  if (inst->basetypid == type_oid(T_DOUBLE4))
   {
     double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
     assert(value4->d != 0);
@@ -367,7 +367,7 @@ doublen_to_point(const TInstant *inst, int srid)
     double valuec = value4->c / value4->d;
     point = lwpoint_make3dz(srid, valuea, valueb, valuec);
   }
-  else /* inst->valuetypid == type_oid(T_DOUBLE3) */
+  else /* inst->basetypid == type_oid(T_DOUBLE3) */
   {
     double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
     assert(value3->c != 0);

@@ -29,20 +29,45 @@
  * Routines for the temporal catalog.
  */
 
+DROP TABLE IF EXISTS mobilitydb_typcache;
 CREATE TABLE mobilitydb_typcache (
   temptypid Oid PRIMARY KEY,
-  valuetypid Oid
+  temptypname name NOT NULL,
+  basetypid Oid NOT NULL,
+  basetypname name NOT NULL,
+  basetyplen smallint NOT NULL,
+  basebyval boolean NOT NULL,
+  basecont boolean NOT NULL,
+  boxtypid Oid,
+  boxtypname name,
+  boxtyplen smallint
 );
 
 ALTER TABLE mobilitydb_typcache SET SCHEMA pg_catalog;
 
-CREATE FUNCTION register_temporal(temporal CHAR(24), base CHAR(24))
+CREATE FUNCTION register_temporal(temporal CHAR(24), base CHAR(24),
+  contbase boolean, box CHAR(24))
 RETURNS void AS $$
 BEGIN
-  WITH valueid AS (SELECT oid, typname FROM pg_type WHERE typname=base),
-  tempid AS (SELECT oid, typname FROM pg_type WHERE typname=temporal)
-  INSERT INTO mobilitydb_typcache (temptypid, valuetypid)
-  SELECT te.oid, v.oid FROM valueid v, tempid te;
+  IF box IS NULL OR box = '' THEN
+    WITH tempid AS (SELECT oid FROM pg_type WHERE typname = temporal),
+      baseid AS (SELECT oid, typlen, typbyval FROM pg_type WHERE typname = base),
+      boxid(oid, typlen) AS (SELECT 0::Oid, 0::smallint)
+    INSERT INTO mobilitydb_typcache (temptypid, temptypname, basetypid,
+      basetypname, basetyplen, basebyval, basecont, boxtypid, boxtypname, boxtyplen)
+    SELECT t.oid, temporal, v.oid, base, v.typlen, v.typbyval, contbase, b.oid,
+      box, b.typlen
+    FROM tempid t, baseid v, boxid b;
+  ELSE
+    WITH tempid AS (SELECT oid FROM pg_type WHERE typname = temporal),
+      baseid AS (SELECT oid, typlen, typbyval FROM pg_type WHERE typname = base),
+      boxid AS (SELECT oid, typlen FROM pg_type WHERE typname = box)
+    INSERT INTO mobilitydb_typcache (temptypid, temptypname, basetypid,
+      basetypname, basetyplen, basebyval, basecont, boxtypid, boxtypname, boxtyplen)
+    SELECT t.oid, temporal, v.oid, base, v.typlen, v.typbyval, contbase, b.oid,
+      box, b.typlen
+    FROM tempid t, baseid v, boxid b;
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 

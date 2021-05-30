@@ -60,7 +60,7 @@
 #include "period.h"
 #include "time_analyze.h"
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_analyze.h"
 #include "postgis.h"
@@ -601,9 +601,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     is_copy = VARATT_IS_EXTENDED(temp);
 
     /* Get trajectory from temporal point */
-    if (tgeo_base_type(temp->valuetypid))
+    if (tgeo_base_type(temp->basetypid))
       trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
-    else /* temp->valuetypid == type_oid(T_NPOINT)) */
+    else /* temp->basetypid == type_oid(T_NPOINT)) */
       trajgs = (GSERIALIZED *) DatumGetPointer(tnpoint_geom(temp));
 
     /* Read the bounds from the gserialized. */

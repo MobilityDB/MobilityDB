@@ -170,7 +170,7 @@ typedef enum
 #define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /**
- * Structure to represent the temporal type array
+ * Structure to represent the temporal subtype array
  */
 struct tempsubtype_struct
 {
@@ -268,7 +268,7 @@ typedef struct
   int32         vl_len_;       /**< varlena header (do not touch directly!) */
   int16         subtype;       /**< subtype */
   int16         flags;         /**< flags */
-  Oid           valuetypid;    /**< base type's OID (4 bytes) */
+  Oid           basetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -280,7 +280,7 @@ typedef struct
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
   int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
-  Oid           valuetypid;   /**< base type's OID (4 bytes) */
+  Oid           basetypid;   /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
@@ -293,7 +293,7 @@ typedef struct
   int32        vl_len_;       /**< varlena header (do not touch directly!) */
   int16        subtype;       /**< subtype */
   int16        flags;         /**< flags */
-  Oid          valuetypid;    /**< base type's OID (4 bytes) */
+  Oid          basetypid;    /**< base type's OID (4 bytes) */
   int32        count;         /**< number of TInstant elements */
   size_t       offsets[1];    /**< beginning of variable-length data */
 } TInstantSet;
@@ -306,7 +306,7 @@ typedef struct
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
   int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
-  Oid           valuetypid;   /**< base type's OID (4 bytes) */
+  Oid           basetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
   Period        period;       /**< time span (24 bytes) */
   size_t        offsets[1];   /**< beginning of variable-length data */
@@ -320,7 +320,7 @@ typedef struct
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
   int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
-  Oid           valuetypid;   /**< base type's OID (4 bytes) */
+  Oid           basetypid;   /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
   size_t        offsets[1];   /**< beginning of variable-length data */
@@ -434,15 +434,15 @@ typedef struct
 #define PG_GETARG_ANYDATUM(i) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, i)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(i)) : PG_GETARG_DATUM(i))
 
-#define DATUM_FREE(value, valuetypid) \
+#define DATUM_FREE(value, basetypid) \
   do { \
-    if (! get_typbyval_fast(valuetypid)) \
+    if (! get_typbyval_fast(basetypid)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
-#define DATUM_FREE_IF_COPY(value, valuetypid, n) \
+#define DATUM_FREE_IF_COPY(value, basetypid, n) \
   do { \
-    if (! get_typbyval_fast(valuetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
+    if (! get_typbyval_fast(basetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
@@ -483,7 +483,7 @@ extern int64 get_interval_units(Interval *interval);
 
 /* Catalog functions */
 
-extern Oid temporal_valuetypid(Oid temptypid);
+extern Oid temporal_basetypid(Oid temptypid);
 
 /* Oid functions */
 
@@ -542,7 +542,7 @@ extern Datum temporal_in(PG_FUNCTION_ARGS);
 extern Datum temporal_out(PG_FUNCTION_ARGS);
 extern Datum temporal_send(PG_FUNCTION_ARGS);
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
-extern Temporal* temporal_read(StringInfo buf, Oid valuetypid);
+extern Temporal* temporal_read(StringInfo buf, Oid basetypid);
 extern void temporal_write(const Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
@@ -560,7 +560,7 @@ extern Datum temporal_merge(PG_FUNCTION_ARGS);
 extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
  
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
-  Oid valuetypid, bool linear);
+  Oid basetypid, bool linear);
   
 /* Cast functions */
 

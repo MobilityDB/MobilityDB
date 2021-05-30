@@ -426,10 +426,10 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   Temporal *result;
   if (temp->subtype == INSTANT)
     result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, geo,
-      temp->valuetypid, (Datum) NULL, lfinfo);
+      temp->basetypid, (Datum) NULL, lfinfo);
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, geo,
-      temp->valuetypid, (Datum) NULL, lfinfo);
+      temp->basetypid, (Datum) NULL, lfinfo);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)distance_tpointseq_geo((TSequence *)temp, geo, func);
   else /* temp->subtype == SEQUENCESET */
@@ -766,7 +766,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
   TimestampTz t;
   bool tofree;
   NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &closest, &t, &tofree);
-  TInstant *result = tinstant_make(closest, t, seq->valuetypid);
+  TInstant *result = tinstant_make(closest, t, seq->basetypid);
   if (tofree)
     pfree(DatumGetPointer(closest));
   return result;
@@ -800,7 +800,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
     if (mindist == 0.0)
       break;
   }
-  TInstant *result = tinstant_make(closest, t, ts->valuetypid);
+  TInstant *result = tinstant_make(closest, t, ts->basetypid);
   if (tofree)
     pfree(DatumGetPointer(closest));
   return result;

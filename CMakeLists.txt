@@ -14,13 +14,13 @@ set(SRCS
 src/geo_constructors.c
 src/doublen.c
 src/lifting.c
-src/oidcache.c
 src/period.c
 src/periodset.c
 src/rangetypes_ext.c
 src/skiplist.c
 src/tbool_boolops.c
 src/tbox.c
+src/tempcache.c
 src/temporal.c
 src/tinstant.c
 src/tinstantset.c

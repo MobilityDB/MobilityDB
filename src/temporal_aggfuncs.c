@@ -43,7 +43,7 @@
 #include "period.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "tbool_boolops.h"
 #include "temporal_boxops.h"
@@ -180,7 +180,7 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     {
       result[count++] = tinstant_make(
         func(tinstant_value(inst1), tinstant_value(inst2)),
-        inst1->t, inst1->valuetypid);
+        inst1->t, inst1->basetypid);
       i++;
       j++;
     }
@@ -305,7 +305,7 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
     const TInstant *inst2 = tsequence_inst_n(syncseq2, i);
     instants[i] = tinstant_make(
       func(tinstant_value(inst1), tinstant_value(inst2)),
-      inst1->t, inst1->valuetypid);
+      inst1->t, inst1->basetypid);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
@@ -1306,7 +1306,7 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 TInstant *
 tnumberinst_transform_tavg(const TInstant *inst)
 {
-  double value = datum_double(tinstant_value(inst), inst->valuetypid);
+  double value = datum_double(tinstant_value(inst), inst->basetypid);
   double2 dvalue;
   double2_set(&dvalue, value, 1);
   TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,

@@ -71,19 +71,19 @@ extern Temporal *tfunc_temporal(const Temporal *temp, Datum param,
   LiftedFunctionInfo lfinfo);
 
 extern TInstant *
-tfunc_tinstant_base(const TInstant *inst, Datum value, Oid valuetypid, Datum param,
+tfunc_tinstant_base(const TInstant *inst, Datum value, Oid basetypid, Datum param,
   LiftedFunctionInfo lfinfo);
 extern TInstantSet *
-tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid valuetypid, Datum param,
+tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid basetypid, Datum param,
   LiftedFunctionInfo lfinfo);
 extern Temporal *
-tfunc_tsequence_base(const TSequence *seq, Datum value, Oid valuetypid, Datum param,
+tfunc_tsequence_base(const TSequence *seq, Datum value, Oid basetypid, Datum param,
   LiftedFunctionInfo lfinfo);
 extern TSequenceSet *
-tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid valuetypid, Datum param,
+tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid basetypid, Datum param,
   LiftedFunctionInfo lfinfo);
 extern Temporal *
-tfunc_temporal_base(const Temporal *temp, Datum value, Oid valuetypid, Datum param,
+tfunc_temporal_base(const Temporal *temp, Datum value, Oid basetypid, Datum param,
   LiftedFunctionInfo lfinfo);
 
 extern TInstant *

@@ -39,16 +39,6 @@
  * basic temporal types. In this file they are defined when one of the
  * arguments is a stbox.
  */
-/*****************************************************************************
- *
- * 
- *
- * Portions Copyright (c) 2019, Esteban Zimanyi, Arthur Lesuisse,
- *    Universite Libre de Bruxelles
- * Portions Copyright (c) 1996-2020, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
- *
- *****************************************************************************/
 
 #include "tnpoint_posops.h"
 

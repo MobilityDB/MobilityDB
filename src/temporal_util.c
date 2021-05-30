@@ -41,7 +41,7 @@
 
 #include "period.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "doublen.h"
 
 #include "tpoint.h"
@@ -66,6 +66,7 @@ void
 _PG_init(void)
 {
   /* elog(WARNING, "This is MobilityDB."); */
+  // fill_tempcache();
   temporalgeom_init();
 }
 
@@ -80,55 +81,55 @@ double_pad(size_t size)
   return size;
 }
 
-/**
- * Returns true if the values of the type are passed by value.
- *
- * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typbyval
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-bool
-get_typbyval_fast(Oid type)
-{
-  ensure_temporal_base_type_all(type);
-  bool result = false;
-  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
-    type == TIMESTAMPTZOID)
-    result = true;
-  else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
-    result = false;
-  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
-       type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
-    result = false;
-  return result;
-}
+// /**
+ // * Returns true if the values of the type are passed by value.
+ // *
+ // * This function is called only for the base types of the temporal types
+ // * and for TimestampTz. To avoid a call of the slow function get_typbyval
+ // * (which makes a lookup call), the known base types are explicitly enumerated.
+ // */
+// bool
+// get_typbyval_fast(Oid type)
+// {
+  // ensure_temporal_base_type_all(type);
+  // bool result = false;
+  // if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
+    // type == TIMESTAMPTZOID)
+    // result = true;
+  // else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
+    // result = false;
+  // else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
+       // type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+    // result = false;
+  // return result;
+// }
 
-/**
- * returns the length of type
- *
- * This function is called only for the base types of the temporal types
- * passed by reference. To avoid a call of the slow function get_typlen
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-int
-get_typlen_byref(Oid type)
-{
-  ensure_temporal_base_type_all(type);
-  int result = 0;
-  if (type == type_oid(T_DOUBLE2))
-    result = 16;
-  else if (type == TEXTOID)
-    result = -1;
-  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
-    result = -1;
-  else if (type == type_oid(T_DOUBLE3))
-    result = 24;
-  else if (type == type_oid(T_DOUBLE4))
-    result = 32;
-  else if (type == type_oid(T_NPOINT))
-    result = 16;
-  return result;
-}
+// /**
+ // * returns the length of type
+ // *
+ // * This function is called only for the base types of the temporal types
+ // * passed by reference. To avoid a call of the slow function get_typlen
+ // * (which makes a lookup call), the known base types are explicitly enumerated.
+ // */
+// int
+// get_typlen_byref(Oid type)
+// {
+  // ensure_temporal_base_type_all(type);
+  // int result = 0;
+  // if (type == type_oid(T_DOUBLE2))
+    // result = 16;
+  // else if (type == TEXTOID)
+    // result = -1;
+  // else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
+    // result = -1;
+  // else if (type == type_oid(T_DOUBLE3))
+    // result = 24;
+  // else if (type == type_oid(T_DOUBLE4))
+    // result = 32;
+  // else if (type == type_oid(T_NPOINT))
+    // result = 16;
+  // return result;
+// }
 
 /**
  * Copy a Datum if it is passed by reference
@@ -151,13 +152,13 @@ datum_copy(Datum value, Oid type)
  * Convert a number to a double
  */
 double
-datum_double(Datum d, Oid valuetypid)
+datum_double(Datum d, Oid basetypid)
 {
   double result;
-  ensure_tnumber_base_type(valuetypid);
-  if (valuetypid == INT4OID)
+  ensure_tnumber_base_type(basetypid);
+  if (basetypid == INT4OID)
     result = (double)(DatumGetInt32(d));
-  else /* valuetypid == FLOAT8OID */
+  else /* basetypid == FLOAT8OID */
     result = DatumGetFloat8(d);
   return result;
 }
@@ -614,7 +615,7 @@ ArrayType *
 temporalarr_to_array(const Temporal **temporalarr, int count)
 {
   assert(count > 0);
-  Oid type = temporal_oid_from_base(temporalarr[0]->valuetypid);
+  Oid type = temporal_oid_from_base(temporalarr[0]->basetypid);
   ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1, false, 'd');
   return result;
 }

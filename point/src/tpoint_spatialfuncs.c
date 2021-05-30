@@ -37,7 +37,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "tnumber_mathfuncs.h"
 #include "postgis.h"
 #include "stbox.h"
@@ -328,7 +328,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 void
 ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
-  if (tgeo_base_type(temp1->valuetypid))
+  if (tgeo_base_type(temp1->basetypid))
   {
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality(temp1->flags, temp2->flags);
@@ -1722,7 +1722,7 @@ TInstant *
 tpointinst_transform(const TInstant *inst, Datum srid)
 {
   Datum geo = datum_transform(tinstant_value(inst), srid);
-  TInstant *result = tinstant_make(geo, inst->t, inst->valuetypid);
+  TInstant *result = tinstant_make(geo, inst->t, inst->basetypid);
   pfree(DatumGetPointer(geo));
   return result;
 }
@@ -1752,7 +1752,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
   {
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    instants[i] = tinstant_make(point, inst->t, inst->valuetypid);
+    instants[i] = tinstant_make(point, inst->t, inst->basetypid);
     pfree(DatumGetPointer(point));
   }
   pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
@@ -1796,7 +1796,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   {
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
     const TInstant *inst = tsequence_inst_n(seq, i);
-    instants[i] = tinstant_make(point, inst->t, inst->valuetypid);
+    instants[i] = tinstant_make(point, inst->t, inst->basetypid);
     pfree(DatumGetPointer(point));
   }
 
@@ -1859,7 +1859,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
     {
       Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k++])));
       const TInstant *inst = tsequence_inst_n(seq, j);
-      instants[j] = tinstant_make(point, inst->t, inst->valuetypid);
+      instants[j] = tinstant_make(point, inst->t, inst->basetypid);
       pfree(DatumGetPointer(point));
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
@@ -2123,7 +2123,7 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum_set_precision;
   lfinfo.numparam = 2;
-  lfinfo.restypid = temp->valuetypid;
+  lfinfo.restypid = temp->basetypid;
   Temporal *result = tfunc_temporal(temp, size, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2152,7 +2152,7 @@ PGDLLEXPORT Datum
 tpoint_get_x(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->valuetypid);
+  ensure_tgeo_base_type(temp->basetypid);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &tpoint_get_x_internal;
@@ -2182,7 +2182,7 @@ PGDLLEXPORT Datum
 tpoint_get_y(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->valuetypid);
+  ensure_tgeo_base_type(temp->basetypid);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &tpoint_get_y_internal;
@@ -2212,7 +2212,7 @@ PGDLLEXPORT Datum
 tpoint_get_z(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->valuetypid);
+  ensure_tgeo_base_type(temp->basetypid);
   ensure_has_Z_tpoint(temp);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -2354,7 +2354,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     {
       const TInstant *inst2 = tsequence_inst_n(seq, i);
       Datum value2 = tinstant_value(inst2);
-      if (datum_ne(value1, value2, inst1->valuetypid))
+      if (datum_ne(value1, value2, inst1->basetypid))
         length += DatumGetFloat8(func(value1, value2));
       instants[i] = tinstant_make(Float8GetDatum(length), inst2->t,
         FLOAT8OID);
@@ -2763,7 +2763,7 @@ tpointseq_azimuth1(TSequence **result, const TSequence *seq)
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (datum_ne(value1, value2, seq->valuetypid))
+    if (datum_ne(value1, value2, seq->basetypid))
     {
       azimuth = func(value1, value2);
       instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);
@@ -3141,7 +3141,7 @@ tgeompoint_instarr_is_simple(const Temporal *temp, int count)
     const TInstant *inst = tinstarr_inst_n(temp, i);
     points[i] = tinstant_value(inst);
   }
-  datumarr_sort(points, count, temp->valuetypid);
+  datumarr_sort(points, count, temp->basetypid);
   bool found = false;
   for (int i = 1; i < count; i++)
   {
@@ -3351,7 +3351,7 @@ tgeompointseq_split(const TSequence *seq, bool *splits, int count)
     {
       Datum value = tinstant_value(instants[end - start - 1]);
       TimestampTz t = tsequence_inst_n(seq, end - start)->t;
-      instants[end - start] = tinstant_make(value, t, seq->valuetypid);
+      instants[end - start] = tinstant_make(value, t, seq->basetypid);
       tofree = true;
       upper_inc1 = false;
     }
@@ -3716,7 +3716,7 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * the intersection is non empty
  */
 Period **
-tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
+tgeompointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   int *count)
 {
   /* The temporal sequence has at least 2 instants since
@@ -3863,7 +3863,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, GSERIALIZED *gsinter,
 
   /* Get the periods at which the temporal point intersects the geometry */
   int countper;
-  Period **periods = tpointseq_geom_interperiods(seq, gsinter, &countper);
+  Period **periods = tgeompointseq_interperiods(seq, gsinter, &countper);
   if (countper == 0)
   {
     *count = 0;

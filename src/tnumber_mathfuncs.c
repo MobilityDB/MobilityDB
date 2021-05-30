@@ -80,10 +80,10 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
   TimestampTz *t)
 {
   assert(linear1); assert(linear2);
-  double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
-  double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
-  double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
-  double x4 = datum_double(tinstant_value(end2), start2->valuetypid);
+  double x1 = datum_double(tinstant_value(start1), start1->basetypid);
+  double x2 = datum_double(tinstant_value(end1), start1->basetypid);
+  double x3 = datum_double(tinstant_value(start2), start2->basetypid);
+  double x4 = datum_double(tinstant_value(end2), start2->basetypid);
   /* Compute the instants t1 and t2 at which the linear functions of the two
      segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
      minimum/maximum exactly at the middle between t1 and t2.
@@ -118,16 +118,16 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] temp Temporal number
  * @param[in] value Number
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] invert True when the base value is the first argument
  * of the function
  */
 Temporal *
 arithop_tnumber_base1(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  Temporal *temp, Datum value, Oid valuetypid, bool invert)
+  Temporal *temp, Datum value, Oid basetypid, bool invert)
 {
-  ensure_tnumber_base_type(valuetypid);
+  ensure_tnumber_base_type(basetypid);
   /* If division test whether the denominator is zero */
   if (oper == DIV)
   {
@@ -139,7 +139,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
     }
     else
     {
-      double d = datum_double(value, valuetypid);
+      double d = datum_double(value, basetypid);
       if (fabs(d) < EPSILON)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Division by zero")));
@@ -155,7 +155,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
+  return tfunc_temporal_base(temp, value, basetypid, (Datum) NULL, lfinfo);
 }
 
 /**
@@ -171,9 +171,9 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
-    temp, value, valuetypid, INVERT);
+    temp, value, basetypid, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -191,9 +191,9 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
-    temp, value, valuetypid, INVERT_NO);
+    temp, value, basetypid, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -450,13 +450,13 @@ tnumberseq_derivative(const TSequence *seq)
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double derivative;
-  Oid valuetypid = seq->valuetypid;
+  Oid basetypid = seq->basetypid;
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
-    derivative = datum_eq(value1, value2, valuetypid) ? 0.0 :
-      (datum_double(value1, valuetypid) - datum_double(value2, valuetypid)) /
+    derivative = datum_eq(value1, value2, basetypid) ? 0.0 :
+      (datum_double(value1, basetypid) - datum_double(value2, basetypid)) /
         ((double)(inst2->t - inst1->t) / 1000000);
     instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t,
       FLOAT8OID);

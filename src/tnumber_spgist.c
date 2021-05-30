@@ -102,7 +102,7 @@
 #include <utils/float.h>
 #endif
 
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_boxops.h"
 #include "tnumber_gist.h"
 

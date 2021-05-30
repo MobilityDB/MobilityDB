@@ -42,7 +42,7 @@
 #include <utils/typcache.h>
 
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 
 #define BTREE_AM_OID   403
 
