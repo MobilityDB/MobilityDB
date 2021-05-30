@@ -35,7 +35,7 @@
 
 #include "temporaltypes.h"
 #include "temporal_parser.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "tpoint_spatialfuncs.h"
 #include "tnpoint_static.h"
@@ -52,8 +52,8 @@ tnpoint_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid valuetypid = temporal_valuetypid(temptypid);
-  Temporal *result = temporal_parse(&input, valuetypid);
+  Oid basetypid = temporal_basetypid(temptypid);
+  Temporal *result = temporal_parse(&input, basetypid);
   PG_RETURN_POINTER(result);
 }
 

@@ -415,7 +415,7 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_DOUBLE4))
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
-  if (valuetypid == type_oid(T_NPOINT))
+  if (basetypid == type_oid(T_NPOINT))
     return npoint_collinear(DatumGetNpoint(value1), DatumGetNpoint(value2),
       DatumGetNpoint(value3), ratio);
   return false;
@@ -919,7 +919,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->basetypid == inst->basetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
-  bool isnpoint = inst1->valuetypid == type_oid(T_NPOINT);
+  bool isnpoint = inst1->basetypid == type_oid(T_NPOINT);
   if (isnpoint)
     ensure_same_rid_tnpointinst(inst, inst1);
   /* Notice that we cannot call ensure_increasing_timestamps since we must
@@ -3257,7 +3257,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   {
     result = geoseg_interpolate_point(value1, value2, ratio);
   }
-  else if (valuetypid == type_oid(T_NPOINT))
+  else if (basetypid == type_oid(T_NPOINT))
   {
     npoint *np1 = DatumGetNpoint(value1);
     npoint *np2 = DatumGetNpoint(value2);
