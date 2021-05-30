@@ -378,51 +378,6 @@ ensure_tgeo_base_type(Oid basetypid)
 /*****************************************************************************/
 
 /**
- * Ensures that the number is positive
- */
-void
-ensure_positive_datum(Datum size, Oid type)
-{
-  ensure_tnumber_base_type(type);
-  if (type == INT4OID)
-  {
-    int isize = DatumGetInt32(size);
-    if (isize <= 0)
-      elog(ERROR, "The value must be positive: %d", isize);
-  }
-  else
-  {
-    double dsize = DatumGetFloat8(size);
-    if (dsize <= 0.0)
-      elog(ERROR, "The value must be positive: %f", dsize);
-  }
-  return;
-}
-
-/**
- * Ensures that the interval is a positive and absolute duration
- */
-void
-ensure_valid_duration(const Interval *duration)
-{
-  if (duration->month != 0)
-  {
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("Interval defined in terms of month, year, century etc. not supported")));
-  }
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
-    PointerGetDatum(&intervalzero));
-  if (cmp <= 0)
-  {
-    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The interval must be positive: %s", t);
-  }
-  return;
-}
-
-/**
  * Ensures that the temporal type is valid
  *
  * @note Used for the dispatch functions
@@ -496,8 +451,6 @@ ensure_non_empty_array(ArrayType *array)
   return;
 }
 
-/*****************************************************************************/
-
 /**
  * Ensure that the temporal value has linear interpolation
  */
@@ -522,8 +475,6 @@ ensure_common_dimension(int16 flags1, int16 flags2)
       errmsg("The temporal values must have at least one common dimension")));
   return;
 }
-
-/*****************************************************************************/
 
 /**
  * Ensures that the two temporal values have the same base type
@@ -595,7 +546,7 @@ ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge, bool 
     ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
     ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
     ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    if (isseq && instants[0]->valuetypid == type_oid(T_NPOINT))
+    if (isseq && instants[0]->basetypid == type_oid(T_NPOINT))
       ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
   }
   return;

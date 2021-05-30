@@ -170,7 +170,7 @@ typedef enum
 #define TYPMOD_GET_SUBTYPE(typmod) ((int16) ((typmod == -1) ? (0) : (typmod & 0x0000000F)))
 
 /**
- * Structure to represent the temporal type array
+ * Structure to represent the temporal subtype array
  */
 struct tempsubtype_struct
 {

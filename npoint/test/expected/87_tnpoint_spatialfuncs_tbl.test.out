@@ -1,37 +1,37 @@
-SELECT max(st_npoints(trajectory(temp))) FROM tbl_tnpoint;
+SELECT MAX(st_npoints(trajectory(temp))) FROM tbl_tnpoint;
  max 
 -----
   46
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE atGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE atGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
  count 
 -------
-  1503
+  1263
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE minusGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE minusGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
  count 
 -------
-  8033
+  8198
 (1 row)
 
-SELECT MAX(length(temp)) FROM tbl_tnpoint;
-       max        
-------------------
- 1416.06032423575
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tnpoint;
+    round    
+-------------
+ 1416.060324
 (1 row)
 
-SELECT MAX(maxValue(cumulativeLength(temp))) FROM tbl_tnpoint;
-       max       
------------------
- 14661.268861497
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tnpoint;
+    round     
+--------------
+ 14661.268861
 (1 row)
 
-SELECT MAX(maxValue(speed(temp))) FROM tbl_tnpoint;
-       max        
-------------------
- 2.29694521343453
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tnpoint;
+  round   
+----------
+ 2.296945
 (1 row)
 
 SELECT round(azimuth(temp), 13) FROM tbl_tnpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
@@ -49,97 +49,97 @@ SELECT round(azimuth(temp), 13) FROM tbl_tnpoint WHERE azimuth(temp) IS NOT NULL
  Interp=Stepwise;{[4.1267050755019@2001-04-13 10:09:00+00, 0.9851124219121@2001-04-13 10:18:00+00, 4.1267050755019@2001-04-13 10:21:00+00, 0.1297164680391@2001-04-13 10:29:15.539565+00, 3.2713091216289@2001-04-13 10:30:00+00, 0.9851124219121@2001-04-13 10:30:22.969804+00, 4.1267050755019@2001-04-13 10:35:00+00, 0.9851124219121@2001-04-13 10:42:00+00, 4.1267050755019@2001-04-13 10:49:00+00, 4.1267050755019@2001-04-13 10:54:00+00]}
 (10 rows)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE nearestApproachInstant(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE nearestApproachInstant(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE nearestApproachInstant(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE nearestApproachInstant(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE nearestApproachInstant(t1.temp, t2.np) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE nearestApproachInstant(t1.temp, t2.np) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE nearestApproachInstant(t1.np, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE nearestApproachInstant(t1.np, t2.temp) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE nearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE nearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE nearestApproachDistance(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE nearestApproachDistance(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE nearestApproachDistance(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE nearestApproachDistance(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE nearestApproachDistance(t1.temp, t2.np) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE nearestApproachDistance(t1.temp, t2.np) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE nearestApproachDistance(t1.np, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE nearestApproachDistance(t1.np, t2.temp) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE shortestLine(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE shortestLine(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE shortestLine(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE shortestLine(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
  count 
 -------
   9400
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE shortestLine(t1.temp, t2.np) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE shortestLine(t1.temp, t2.np) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.np, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.np, t2.temp) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.np, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.np, t2.temp) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
    100

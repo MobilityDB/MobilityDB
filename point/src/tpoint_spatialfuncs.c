@@ -3718,7 +3718,7 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * the intersection is non empty
  */
 Period **
-tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
+tgeompointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   int *count)
 {
   /* The temporal sequence has at least 2 instants since
@@ -3892,7 +3892,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     if (countpers[i] != 0)
       pfree(periods[i]);
   }
-  /* It is necessary to sort the sequences */
+  /* It is necessary to sort the periods */
   periodarr_sort(allperiods, totalcount);
   PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);

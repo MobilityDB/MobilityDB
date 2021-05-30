@@ -272,7 +272,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
 
   /* Get the periods at which the temporal point intersects the geometry */
   int countper;
-  Period **periods = tpointseq_geom_interperiods(seq, gsinter, &countper);
+  Period **periods = tgeompointseq_interperiods(seq, gsinter, &countper);
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));

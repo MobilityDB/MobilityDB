@@ -37,11 +37,11 @@ CREATE TABLE mobilitydb_opcache (
   opid Oid
 );
 
-CREATE FUNCTION fill_opcache()
+CREATE FUNCTION fill_tempcache()
   RETURNS VOID
-  AS 'MODULE_PATHNAME', 'fill_opcache'
+  AS 'MODULE_PATHNAME', 'fill_tempcache'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-SELECT fill_opcache();
+SELECT fill_tempcache();
 
 /******************************************************************************/

@@ -37,7 +37,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_distance.h"
@@ -180,8 +180,8 @@ tnpoint_srid_internal(const Temporal *temp)
 {
   int result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->valuetypid != type_oid(T_NPOINT))
-    elog(ERROR, "unknown npoint base type: %d", temp->valuetypid);
+  if (temp->basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown npoint base type: %d", temp->basetypid);
   if (temp->subtype == INSTANT)
     result = tnpointinst_srid((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
