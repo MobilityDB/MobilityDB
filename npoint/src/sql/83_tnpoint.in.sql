@@ -31,6 +31,7 @@
 
 CREATE TYPE tnpoint;
 
+/* temporal, base, contbase, box */
 SELECT register_temporal('tnpoint', 'npoint', true, 'stbox');
 
 /******************************************************************************

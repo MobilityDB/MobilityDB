@@ -61,6 +61,26 @@
 #include "tnpoint_static.h"
 #include "tnpoint_spatialfuncs.h"
 
+/*
+ * This is required for builds against pgsql
+ */
+PG_MODULE_MAGIC;
+
+/*****************************************************************************
+ * Miscellaneous functions
+ *****************************************************************************/
+
+/**
+ * Initialize the extension
+ */
+void
+_PG_init(void)
+{
+  /* elog(WARNING, "This is MobilityDB."); */
+  // fill_tempcache();
+  temporalgeom_init();
+}
+
 /*****************************************************************************
  * Typmod
  *****************************************************************************/
@@ -337,39 +357,39 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /**
  * Returns the Oid of the base type from the Oid of the temporal type
  */
-// Oid
-// temporal_basetypid(Oid temptypid)
-// {
-  // Oid catalog = RelnameGetRelid("mobilitydb_typcache");
-// #if MOBDB_PGSQL_VERSION < 130000
-  // Relation rel = heap_open(catalog, AccessShareLock);
-// #else
-  // Relation rel = table_open(catalog, AccessShareLock);
-// #endif
-  // TupleDesc tupDesc = rel->rd_att;
-  // ScanKeyData scandata;
-  // ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ,
-    // ObjectIdGetDatum(temptypid));
-// #if MOBDB_PGSQL_VERSION >= 120000
-    // TableScanDesc scan = table_beginscan_catalog(rel, 1, &scandata);
-// #else
-    // HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);
-// #endif
-  // HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-  // bool isnull = false;
-  // Oid result;
-  // if (HeapTupleIsValid(tuple))
-    // result = DatumGetObjectId(heap_getattr(tuple, 3, tupDesc, &isnull));
-  // heap_endscan(scan);
-// #if MOBDB_PGSQL_VERSION < 130000
-  // heap_close(rel, AccessShareLock);
-// #else
-  // table_close(rel, AccessShareLock);
-// #endif
-  // if (! HeapTupleIsValid(tuple) || isnull)
-    // elog(ERROR, "type %u is not a temporal type", temptypid);
-  // return result;
-// }
+Oid
+temporal_basetypid(Oid temptypid)
+{
+  Oid catalog = RelnameGetRelid("mobilitydb_typcache");
+#if MOBDB_PGSQL_VERSION < 130000
+  Relation rel = heap_open(catalog, AccessShareLock);
+#else
+  Relation rel = table_open(catalog, AccessShareLock);
+#endif
+  TupleDesc tupDesc = rel->rd_att;
+  ScanKeyData scandata;
+  ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ,
+    ObjectIdGetDatum(temptypid));
+#if MOBDB_PGSQL_VERSION >= 120000
+    TableScanDesc scan = table_beginscan_catalog(rel, 1, &scandata);
+#else
+    HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);
+#endif
+  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
+  bool isnull = false;
+  Oid result;
+  if (HeapTupleIsValid(tuple))
+    result = DatumGetObjectId(heap_getattr(tuple, 3, tupDesc, &isnull));
+  heap_endscan(scan);
+#if MOBDB_PGSQL_VERSION < 130000
+  heap_close(rel, AccessShareLock);
+#else
+  table_close(rel, AccessShareLock);
+#endif
+  if (! HeapTupleIsValid(tuple) || isnull)
+    elog(ERROR, "type %u is not a temporal type", temptypid);
+  return result;
+}
 
 /*****************************************************************************
  * Oid functions
@@ -391,57 +411,57 @@ range_oid_from_base(Oid basetypid)
   return result;
 }
 
-// /**
- // * Returns the Oid of the temporal type corresponding to the Oid of the
- // * base type
- // */
-// Oid
-// temporal_oid_from_base(Oid basetypid)
-// {
-  // Oid result = 0;
-  // ensure_temporal_base_type(basetypid);
-  // if (basetypid == BOOLOID)
-    // result = type_oid(T_TBOOL);
-  // if (basetypid == INT4OID)
-    // result = type_oid(T_TINT);
-  // if (basetypid == FLOAT8OID)
-    // result = type_oid(T_TFLOAT);
-  // if (basetypid == TEXTOID)
-    // result = type_oid(T_TTEXT);
-  // if (basetypid == type_oid(T_GEOMETRY))
-    // result = type_oid(T_TGEOMPOINT);
-  // if (basetypid == type_oid(T_GEOGRAPHY))
-    // result = type_oid(T_TGEOGPOINT);
-  // if (basetypid == type_oid(T_NPOINT))
-    // result = type_oid(T_TNPOINT);
-  // return result;
-// }
+/**
+ * Returns the Oid of the temporal type corresponding to the Oid of the
+ * base type
+ */
+Oid
+temporal_oid_from_base(Oid basetypid)
+{
+  Oid result = 0;
+  ensure_temporal_base_type(basetypid);
+  if (basetypid == BOOLOID)
+    result = type_oid(T_TBOOL);
+  if (basetypid == INT4OID)
+    result = type_oid(T_TINT);
+  if (basetypid == FLOAT8OID)
+    result = type_oid(T_TFLOAT);
+  if (basetypid == TEXTOID)
+    result = type_oid(T_TTEXT);
+  if (basetypid == type_oid(T_GEOMETRY))
+    result = type_oid(T_TGEOMPOINT);
+  if (basetypid == type_oid(T_GEOGRAPHY))
+    result = type_oid(T_TGEOGPOINT);
+  if (basetypid == type_oid(T_NPOINT))
+    result = type_oid(T_TNPOINT);
+  return result;
+}
 
-// /**
- // * Returns the Oid of the base type corresponding to the Oid of the
- // * temporal type
- // */
-// Oid
-// base_oid_from_temporal(Oid temptypid)
-// {
-  // assert(temporal_type(temptypid));
-  // Oid result = 0;
-  // if (temptypid == type_oid(T_TBOOL))
-    // result = BOOLOID;
-  // else if (temptypid == type_oid(T_TINT))
-    // result = INT4OID;
-  // else if (temptypid == type_oid(T_TFLOAT))
-    // result = FLOAT8OID;
-  // else if (temptypid == type_oid(T_TTEXT))
-    // result = TEXTOID;
-  // else if (temptypid == type_oid(T_TGEOMPOINT))
-    // result = type_oid(T_GEOMETRY);
-  // else if (temptypid == type_oid(T_TGEOGPOINT))
-    // result = type_oid(T_GEOGRAPHY);
-  // else if (temptypid == type_oid(T_TNPOINT))
-    // result = type_oid(T_NPOINT);
-  // return result;
-// }
+/**
+ * Returns the Oid of the base type corresponding to the Oid of the
+ * temporal type
+ */
+Oid
+base_oid_from_temporal(Oid temptypid)
+{
+  assert(temporal_type(temptypid));
+  Oid result = 0;
+  if (temptypid == type_oid(T_TBOOL))
+    result = BOOLOID;
+  else if (temptypid == type_oid(T_TINT))
+    result = INT4OID;
+  else if (temptypid == type_oid(T_TFLOAT))
+    result = FLOAT8OID;
+  else if (temptypid == type_oid(T_TTEXT))
+    result = TEXTOID;
+  else if (temptypid == type_oid(T_TGEOMPOINT))
+    result = type_oid(T_GEOMETRY);
+  else if (temptypid == type_oid(T_TGEOGPOINT))
+    result = type_oid(T_GEOGRAPHY);
+  else if (temptypid == type_oid(T_TNPOINT))
+    result = type_oid(T_NPOINT);
+  return result;
+}
 
 /*****************************************************************************
  * Test families of base types and temporal types
@@ -465,55 +485,105 @@ talpha_base_type(Oid typid)
 bool
 tspatial_base_type(Oid typid)
 {
-	if (typid == type_oid(T_GEOMETRY) || 
-		typid == type_oid(T_GEOGRAPHY) ||
-		typid == type_oid(T_NPOINT))
-		return true;
-	return false;
+  if (typid == type_oid(T_GEOMETRY) || 
+    typid == type_oid(T_GEOGRAPHY) ||
+    typid == type_oid(T_NPOINT))
+    return true;
+  return false;
 }
 
-// /**
- // * Returns true if the Oid is a temporal type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// temporal_type(Oid typid)
-// {
-  // if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
-    // typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
-    // typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
-    // typid == type_oid(T_TNPOINT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+temporal_type(Oid typid)
+{
+  if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
+    typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
+    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
 
-// /**
- // * Returns true if the Oid is a temporal number type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// tnumber_type(Oid typid)
-// {
-  // if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_type(Oid typid)
+{
+  if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
+    return true;
+  return false;
+}
 
-// /**
- // * Returns true if the Oid is a temporal point type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// tgeo_type(Oid typid)
-// {
-  // if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
-    // typid == type_oid(T_TNPOINT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal point type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tgeo_type(Oid typid)
+{
+  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the values of the type are passed by value.
+ *
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typbyval
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+bool
+get_typbyval_fast(Oid type)
+{
+  ensure_temporal_base_type_all(type);
+  bool result = false;
+  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
+    type == TIMESTAMPTZOID)
+    result = true;
+  else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
+    result = false;
+  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
+       type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+    result = false;
+  return result;
+}
+
+/**
+ * returns the length of type
+ *
+ * This function is called only for the base types of the temporal types
+ * passed by reference. To avoid a call of the slow function get_typlen
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+int
+get_typlen_byref(Oid type)
+{
+  ensure_temporal_base_type_all(type);
+  int result = 0;
+  if (type == type_oid(T_DOUBLE2))
+    result = 16;
+  else if (type == TEXTOID)
+    result = -1;
+  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
+    result = -1;
+  else if (type == type_oid(T_DOUBLE3))
+    result = 24;
+  else if (type == type_oid(T_DOUBLE4))
+    result = 32;
+  else if (type == type_oid(T_NPOINT))
+    result = 16;
+  return result;
+}
 
 /*****************************************************************************
  * Parameter tests
@@ -580,164 +650,164 @@ ensure_tinstantarr(TInstant **instants, int count)
 
 /*****************************************************************************/
 
-// /**
- // * Ensures that the Oid is an external base type supported by MobilityDB
- // */
-// void
-// ensure_temporal_base_type(Oid basetypid)
-// {
-  // if (basetypid != BOOLOID && basetypid != INT4OID &&
-    // basetypid != FLOAT8OID && basetypid != TEXTOID &&
-    // basetypid != type_oid(T_GEOMETRY) &&
-    // basetypid != type_oid(T_GEOGRAPHY) &&
-    // basetypid != type_oid(T_NPOINT))
-    // elog(ERROR, "unknown base type: %d", basetypid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is an external base type supported by MobilityDB
+ */
+void
+ensure_temporal_base_type(Oid basetypid)
+{
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown base type: %d", basetypid);
+  return;
+}
 
-// /**
- // * Ensures that the Oid is an external or an internal base type
- // * supported by MobilityDB
- // */
-// void
-// ensure_temporal_base_type_all(Oid basetypid)
-// {
-  // if (basetypid != BOOLOID && basetypid != INT4OID &&
-    // basetypid != FLOAT8OID && basetypid != TEXTOID &&
-    // basetypid != TIMESTAMPTZOID && basetypid != type_oid(T_DOUBLE2) &&
-    // basetypid != type_oid(T_GEOMETRY) &&
-    // basetypid != type_oid(T_GEOGRAPHY) &&
-    // basetypid != type_oid(T_DOUBLE3) &&
-    // basetypid != type_oid(T_DOUBLE4) &&
-    // basetypid != type_oid(T_NPOINT))
-    // elog(ERROR, "unknown base type: %d", basetypid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is an external or an internal base type
+ * supported by MobilityDB
+ */
+void
+ensure_temporal_base_type_all(Oid basetypid)
+{
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != TIMESTAMPTZOID && basetypid != type_oid(T_DOUBLE2) &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4) &&
+    basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown base type: %d", basetypid);
+  return;
+}
 
-// /**
- // * Returns true if the Oid corresponds to a continuous base type
- // */
-// bool
-// continuous_base_type(Oid type)
-// {
-  // if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
-    // type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
-    // type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY) ||
-    // type == type_oid(T_NPOINT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid corresponds to a continuous base type
+ */
+bool
+continuous_base_type(Oid type)
+{
+  if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
+    type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
+    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY) ||
+    type == type_oid(T_NPOINT))
+    return true;
+  return false;
+}
 
-// /**
- // * Ensures that the Oid is an external base type that is continuous
- // */
-// void
-// ensure_continuous_base_type(Oid basetypid)
-// {
-  // if (basetypid != FLOAT8OID &&
-    // basetypid != type_oid(T_GEOMETRY) &&
-    // basetypid != type_oid(T_GEOGRAPHY) &&
-    // basetypid != type_oid(T_NPOINT))
-    // elog(ERROR, "unknown continuous base type: %d", basetypid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is an external base type that is continuous
+ */
+void
+ensure_continuous_base_type(Oid basetypid)
+{
+  if (basetypid != FLOAT8OID &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown continuous base type: %d", basetypid);
+  return;
+}
 
-// /**
- // * Ensures that the Oid is an internal or external base type that is continuous
- // */
-// void
-// ensure_continuous_base_type_all(Oid basetypid)
-// {
-  // if (basetypid != FLOAT8OID &&
-    // basetypid !=  type_oid(T_DOUBLE2) &&
-    // basetypid != type_oid(T_GEOMETRY) &&
-    // basetypid != type_oid(T_GEOGRAPHY) &&
-    // basetypid != type_oid(T_DOUBLE3) &&
-    // basetypid != type_oid(T_DOUBLE4) &&
-    // basetypid != type_oid(T_NPOINT))
-    // elog(ERROR, "unknown continuous base type: %d", basetypid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is an internal or external base type that is continuous
+ */
+void
+ensure_continuous_base_type_all(Oid basetypid)
+{
+  if (basetypid != FLOAT8OID &&
+    basetypid !=  type_oid(T_DOUBLE2) &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4) &&
+    basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown continuous base type: %d", basetypid);
+  return;
+}
 
-// /**
- // * Returns true if the Oid is a temporal number type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// tnumber_range_type(Oid typid)
-// {
-  // if (typid == type_oid(T_INTRANGE) || typid == type_oid(T_FLOATRANGE))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_range_type(Oid typid)
+{
+  if (typid == type_oid(T_INTRANGE) || typid == type_oid(T_FLOATRANGE))
+    return true;
+  return false;
+}
 
-// /**
- // * Ensures that the Oid is a range type
- // */
-// void
-// ensure_tnumber_range_type(Oid typid)
-// {
-  // if (! tnumber_range_type(typid))
-    // elog(ERROR, "unknown number range type: %d", typid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is a range type
+ */
+void
+ensure_tnumber_range_type(Oid typid)
+{
+  if (! tnumber_range_type(typid))
+    elog(ERROR, "unknown number range type: %d", typid);
+  return;
+}
 
-// /**
- // * Test whether the Oid is a number base type supported by MobilityDB
- // */
-// bool
-// tnumber_base_type(Oid typid)
-// {
-  // if (typid == INT4OID || typid == FLOAT8OID)
-    // return true;
-  // return false;
-// }
+/**
+ * Test whether the Oid is a number base type supported by MobilityDB
+ */
+bool
+tnumber_base_type(Oid typid)
+{
+  if (typid == INT4OID || typid == FLOAT8OID)
+    return true;
+  return false;
+}
 
-// /**
- // * Ensures that the Oid is a number base type supported by MobilityDB
- // */
-// void
-// ensure_tnumber_base_type(Oid basetypid)
-// {
-  // if (! tnumber_base_type(basetypid))
-    // elog(ERROR, "unknown number base type: %d", basetypid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is a number base type supported by MobilityDB
+ */
+void
+ensure_tnumber_base_type(Oid basetypid)
+{
+  if (! tnumber_base_type(basetypid))
+    elog(ERROR, "unknown number base type: %d", basetypid);
+  return;
+}
 
-// /**
- // * Ensures that the Oid is a point base type supported by MobilityDB
- // */
-// bool
-// tgeo_base_type(Oid typid)
-// {
-  // if (typid == type_oid(T_GEOMETRY) || typid == type_oid(T_GEOGRAPHY))
-    // return true;
-  // return false;
-// }
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+bool
+tgeo_base_type(Oid typid)
+{
+  if (typid == type_oid(T_GEOMETRY) || typid == type_oid(T_GEOGRAPHY))
+    return true;
+  return false;
+}
 
-// /**
- // * Ensures that the Oid is a point base type supported by MobilityDB
- // */
-// void
-// ensure_tgeo_base_type(Oid basetypid)
-// {
-  // if (! tgeo_base_type(basetypid))
-    // elog(ERROR, "unknown geospatial base type: %d", basetypid);
-  // return;
-// }
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+void
+ensure_tgeo_base_type(Oid basetypid)
+{
+  if (! tgeo_base_type(basetypid))
+    elog(ERROR, "unknown geospatial base type: %d", basetypid);
+  return;
+}
 
-// /**
- // * Returns true if the temporal type corresponding to the Oid of the
- // * base type has its trajectory precomputed
- // */
-// bool
-// type_has_precomputed_trajectory(Oid basetypid)
-// {
-  // if (tgeo_base_type(basetypid))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+bool
+type_has_precomputed_trajectory(Oid basetypid)
+{
+  if (tgeo_base_type(basetypid))
+    return true;
+  return false;
+}
 
 /*****************************************************************************/
 
