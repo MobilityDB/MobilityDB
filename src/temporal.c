@@ -61,6 +61,26 @@
 #include "tnpoint_static.h"
 #include "tnpoint_spatialfuncs.h"
 
+/*
+ * This is required for builds against pgsql
+ */
+PG_MODULE_MAGIC;
+
+/*****************************************************************************
+ * Miscellaneous functions
+ *****************************************************************************/
+
+/**
+ * Initialize the extension
+ */
+void
+_PG_init(void)
+{
+  /* elog(WARNING, "This is MobilityDB."); */
+  // fill_tempcache();
+  temporalgeom_init();
+}
+
 /*****************************************************************************
  * Typmod
  *****************************************************************************/
@@ -351,6 +371,8 @@ tgeo_type(Oid typid)
     return true;
   return false;
 }
+
+/*****************************************************************************/
 
 /**
  * Returns true if the Oid is a point base type supported by MobilityDB

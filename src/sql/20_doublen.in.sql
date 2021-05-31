@@ -29,6 +29,10 @@
  * Internal types used for the temporal average and centroid aggregates.
  */
 
+CREATE TYPE double2;
+CREATE TYPE double3;
+CREATE TYPE double4;
+
 CREATE FUNCTION double2_in(cstring)
   RETURNS double2
    AS 'MODULE_PATHNAME'
@@ -128,6 +132,7 @@ CREATE TYPE tdouble2;
 CREATE TYPE tdouble3;
 CREATE TYPE tdouble4;
 
+/* temporal, base, contbase, box */
 SELECT register_temporal('tdouble2', 'double2', true, '');
 SELECT register_temporal('tdouble3', 'double3', true, '');
 SELECT register_temporal('tdouble4', 'double4', true, '');

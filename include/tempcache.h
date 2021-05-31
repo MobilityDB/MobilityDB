@@ -60,7 +60,7 @@ typedef struct
 typedef enum
 {
   T_BOOL,
-  T_DOUBLE2, 
+  T_DOUBLE2,
   T_DOUBLE3,
   T_DOUBLE4,
   T_FLOAT8,
