@@ -61,6 +61,26 @@
 #include "tnpoint_static.h"
 #include "tnpoint_spatialfuncs.h"
 
+/*
+ * This is required for builds against pgsql
+ */
+PG_MODULE_MAGIC;
+
+/*****************************************************************************
+ * Miscellaneous functions
+ *****************************************************************************/
+
+/**
+ * Initialize the extension
+ */
+void
+_PG_init(void)
+{
+  /* elog(WARNING, "This is MobilityDB."); */
+  // fill_tempcache();
+  temporalgeom_init();
+}
+
 /*****************************************************************************
  * Typmod
  *****************************************************************************/
@@ -371,7 +391,7 @@ temporal_oid_from_base(Oid basetypid)
     result = type_oid(T_TGEOMPOINT);
   if (basetypid == type_oid(T_GEOGRAPHY))
     result = type_oid(T_TGEOGPOINT);
-  if (valuetypid == type_oid(T_NPOINT))
+  if (basetypid == type_oid(T_NPOINT))
     result = type_oid(T_TNPOINT);
   return result;
 }
@@ -440,55 +460,105 @@ talpha_base_type(Oid typid)
 bool
 tspatial_base_type(Oid typid)
 {
-	if (typid == type_oid(T_GEOMETRY) || 
-		typid == type_oid(T_GEOGRAPHY) ||
-		typid == type_oid(T_NPOINT))
-		return true;
-	return false;
+  if (typid == type_oid(T_GEOMETRY) || 
+    typid == type_oid(T_GEOGRAPHY) ||
+    typid == type_oid(T_NPOINT))
+    return true;
+  return false;
 }
 
-// /**
- // * Returns true if the Oid is a temporal type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// temporal_type(Oid typid)
-// {
-  // if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
-    // typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
-    // typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
-    // typid == type_oid(T_TNPOINT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+temporal_type(Oid typid)
+{
+  if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
+    typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
+    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
 
-// /**
- // * Returns true if the Oid is a temporal number type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// tnumber_type(Oid typid)
-// {
-  // if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_type(Oid typid)
+{
+  if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
+    return true;
+  return false;
+}
 
-// /**
- // * Returns true if the Oid is a temporal point type
- // *
- // * @note Function used in particular in the indexes
- // */
-// bool
-// tgeo_type(Oid typid)
-// {
-  // if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
-    // typid == type_oid(T_TNPOINT))
-    // return true;
-  // return false;
-// }
+/**
+ * Returns true if the Oid is a temporal point type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tgeo_type(Oid typid)
+{
+  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the values of the type are passed by value.
+ *
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typbyval
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+bool
+get_typbyval_fast(Oid type)
+{
+  ensure_temporal_base_type_all(type);
+  bool result = false;
+  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
+    type == TIMESTAMPTZOID)
+    result = true;
+  else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
+    result = false;
+  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
+       type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+    result = false;
+  return result;
+}
+
+/**
+ * returns the length of type
+ *
+ * This function is called only for the base types of the temporal types
+ * passed by reference. To avoid a call of the slow function get_typlen
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+int
+get_typlen_byref(Oid type)
+{
+  ensure_temporal_base_type_all(type);
+  int result = 0;
+  if (type == type_oid(T_DOUBLE2))
+    result = 16;
+  else if (type == TEXTOID)
+    result = -1;
+  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
+    result = -1;
+  else if (type == type_oid(T_DOUBLE3))
+    result = 24;
+  else if (type == type_oid(T_DOUBLE4))
+    result = 32;
+  else if (type == type_oid(T_NPOINT))
+    result = 16;
+  return result;
+}
 
 /*****************************************************************************
  * Parameter tests
@@ -553,6 +623,8 @@ ensure_tinstantarr(TInstant **instants, int count)
   return;
 }
 
+/*****************************************************************************/
+
 /**
  * Ensures that the Oid is an external base type supported by MobilityDB
  */
@@ -563,8 +635,8 @@ ensure_temporal_base_type(Oid basetypid)
     basetypid != FLOAT8OID && basetypid != TEXTOID &&
     basetypid != type_oid(T_GEOMETRY) &&
     basetypid != type_oid(T_GEOGRAPHY) &&
-    valuetypid != type_oid(T_NPOINT))
-    elog(ERROR, "unknown base type: %d", valuetypid);
+    basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown base type: %d", basetypid);
   return;
 }
 
@@ -585,6 +657,20 @@ ensure_temporal_base_type_all(Oid basetypid)
     basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown base type: %d", basetypid);
   return;
+}
+
+/**
+ * Returns true if the Oid corresponds to a continuous base type
+ */
+bool
+continuous_base_type(Oid type)
+{
+  if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
+    type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
+    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY) ||
+    type == type_oid(T_NPOINT))
+    return true;
+  return false;
 }
 
 /**
@@ -616,6 +702,86 @@ ensure_continuous_base_type_all(Oid basetypid)
     basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_range_type(Oid typid)
+{
+  if (typid == type_oid(T_INTRANGE) || typid == type_oid(T_FLOATRANGE))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a range type
+ */
+void
+ensure_tnumber_range_type(Oid typid)
+{
+  if (! tnumber_range_type(typid))
+    elog(ERROR, "unknown number range type: %d", typid);
+  return;
+}
+
+/**
+ * Test whether the Oid is a number base type supported by MobilityDB
+ */
+bool
+tnumber_base_type(Oid typid)
+{
+  if (typid == INT4OID || typid == FLOAT8OID)
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a number base type supported by MobilityDB
+ */
+void
+ensure_tnumber_base_type(Oid basetypid)
+{
+  if (! tnumber_base_type(basetypid))
+    elog(ERROR, "unknown number base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+bool
+tgeo_base_type(Oid typid)
+{
+  if (typid == type_oid(T_GEOMETRY) || typid == type_oid(T_GEOGRAPHY))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+void
+ensure_tgeo_base_type(Oid basetypid)
+{
+  if (! tgeo_base_type(basetypid))
+    elog(ERROR, "unknown geospatial base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+bool
+type_has_precomputed_trajectory(Oid basetypid)
+{
+  if (tgeo_base_type(basetypid))
+    return true;
+  return false;
 }
 
 /*****************************************************************************/

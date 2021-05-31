@@ -91,7 +91,10 @@ const char *_type_names[] =
   "geometry",
   "geography",
   "tgeompoint",
-  "tgeogpoint"
+  "tgeogpoint",
+  "npoint",
+  "nsegment",
+  "tnpoint"
 };
 
 /**
@@ -273,7 +276,7 @@ populate_types()
     _type_oids[i] = TypenameGetTypid(_type_names[i]);
     if (!_type_oids[i])
       ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-          errmsg("No Oid for type %s", _type_names[i])));
+        errmsg("No Oid for type %s", _type_names[i])));
   }
   return;
 }

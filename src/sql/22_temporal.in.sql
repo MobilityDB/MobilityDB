@@ -34,7 +34,7 @@ CREATE TYPE tbool;
 CREATE TYPE tfloat;
 CREATE TYPE ttext;
 
-/* ttype, basetype, continuous_basetype, boxtype */
+/* temporal, base, contbase, box */
 SELECT register_temporal('tbool', 'bool', false, 'period');
 SELECT register_temporal('tint', 'int4', false, 'tbox');
 SELECT register_temporal('tfloat', 'float8', true, 'tbox');

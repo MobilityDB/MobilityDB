@@ -30,12 +30,12 @@
  * catalog.
  */
 
-CREATE TABLE mobilitydb_opcache (
-  ltypnum INT,
-  rtypnum INT,
-  opnum INT,
-  opid Oid
-);
+-- CREATE TABLE mobilitydb_opcache (
+  -- ltypnum INT,
+  -- rtypnum INT,
+  -- opnum INT,
+  -- opid Oid
+-- );
 
 CREATE FUNCTION fill_tempcache()
   RETURNS VOID
