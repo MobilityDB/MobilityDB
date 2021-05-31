@@ -4,6 +4,9 @@ add_definitions(-DWITH_POSTGIS)
 include_directories("npoint/include")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Improve temporal cache
 set(SRCNPOINT
 npoint/src/tnpoint.c
 npoint/src/tnpoint_aggfuncs.c
@@ -34,6 +37,7 @@ npoint/src/sql/97_tnpoint_tempspatialrels.in.sql
 npoint/src/sql/98_tnpoint_indexes.in.sql
 )
 
+<<<<<<< HEAD
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCNPOINT})
 
 set(SQL "${SQL};${SQLNPOINT}")
@@ -43,12 +47,16 @@ include("npoint/test/scripts/test.cmake")
 
 =======
 file(GLOB SRCNPOINT "npoint/src/*.c")
+=======
+>>>>>>> Improve temporal cache
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCNPOINT})
 
-file(GLOB SQLNPOINT "npoint/src/sql/*.in.sql")
-list(SORT SQLNPOINT)
 set(SQL "${SQL};${SQLNPOINT}")
-set(CONTROLIN "${CONTROLIN};point/control.in;npoint/control.in")
+set(CONTROLIN "${CONTROLIN};npoint/control.in")
 
 include("npoint/test/scripts/test.cmake")
+<<<<<<< HEAD
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+
+>>>>>>> Improve temporal cache

@@ -5,6 +5,7 @@ add_test(
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DBNPOINT)
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DB)
 set_tests_properties(load_npoint_tables PROPERTIES DEPENDS create_extension)
@@ -33,18 +34,36 @@ foreach(file ${npoint_testfiles})
 endforeach()
 =======
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DB)
+=======
+set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DBNPOINT)
+set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DB)
+>>>>>>> Improve temporal cache
 set_tests_properties(load_npoint_tables PROPERTIES DEPENDS create_extension)
 
-file(GLOB geom_testfiles "npoint/test/queries/*.sql")
-foreach(file ${geom_testfiles})
+file(GLOB npoint_testfiles "npoint/test/queries/*.sql")
+list(SORT npoint_testfiles)
+
+foreach(file ${npoint_testfiles})
 	get_filename_component(TESTNAME ${file} NAME_WE)
-	add_test(
-		NAME ${TESTNAME} 
-		WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
-		COMMAND ${PROJECT_SOURCE_DIR}/test/scripts/test.sh run_compare ${CMAKE_BINARY_DIR} ${TESTNAME} ${file} 
-	)
-	set_tests_properties(${TESTNAME} PROPERTIES FIXTURES_REQUIRED DB)
-	set_tests_properties(${TESTNAME} PROPERTIES RESOURCE_LOCK DBLOCK)
+	set(DOTEST TRUE)
+	if(${TESTNAME} MATCHES "_pg([0-9]+)")
+		if(${PG_MAJOR_VERSION} LESS ${CMAKE_MATCH_1})
+			message("Disabling test ${TESTNAME}")
+			set(DOTEST FALSE)
+		endif()
+	endif()
+	if(DOTEST)
+		add_test(
+			NAME ${TESTNAME} 
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+			COMMAND ${PROJECT_SOURCE_DIR}/test/scripts/test.sh run_compare ${CMAKE_BINARY_DIR} ${TESTNAME} ${file} 
+		)
+		set_tests_properties(${TESTNAME} PROPERTIES FIXTURES_REQUIRED DB)
+		set_tests_properties(${TESTNAME} PROPERTIES RESOURCE_LOCK DBLOCK)
+	endif()
 endforeach()
+<<<<<<< HEAD
 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> Improve temporal cache
