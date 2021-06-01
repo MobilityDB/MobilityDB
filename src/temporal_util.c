@@ -147,13 +147,13 @@ datum_copy(Datum value, Oid type)
  * Convert a number to a double
  */
 double
-datum_double(Datum d, Oid valuetypid)
+datum_double(Datum d, Oid basetypid)
 {
   double result;
-  ensure_tnumber_base_type(valuetypid);
-  if (valuetypid == INT4OID)
+  ensure_tnumber_base_type(basetypid);
+  if (basetypid == INT4OID)
     result = (double)(DatumGetInt32(d));
-  else /* valuetypid == FLOAT8OID */
+  else /* basetypid == FLOAT8OID */
     result = DatumGetFloat8(d);
   return result;
 }
@@ -610,7 +610,7 @@ ArrayType *
 temporalarr_to_array(const Temporal **temporalarr, int count)
 {
   assert(count > 0);
-  Oid type = temporal_oid_from_base(temporalarr[0]->valuetypid);
+  Oid type = temporal_oid_from_base(temporalarr[0]->basetypid);
   ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1, false, 'd');
   return result;
 }

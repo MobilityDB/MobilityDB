@@ -58,7 +58,7 @@ tinstant_extend(TSequence **result, const TInstant *inst,
   const Interval *interval)
 {
   /* Should be additional attribute */
-  bool linear = continuous_base_type(inst->valuetypid);
+  bool linear = continuous_base_type(inst->basetypid);
   TInstant *instants[2];
   TimestampTz upper = DatumGetTimestampTz(
     DirectFunctionCall2(timestamptz_pl_interval,
@@ -66,7 +66,7 @@ tinstant_extend(TSequence **result, const TInstant *inst,
     PointerGetDatum(interval)));
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), upper,
-    inst->valuetypid);
+    inst->basetypid);
   result[0] = tsequence_make((const TInstant **) instants, 2,
     true, true, linear, NORMALIZE_NO);
   pfree(instants[1]);
@@ -122,13 +122,13 @@ tsequence_extend(TSequence **result, const TSequence *seq,
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 
     /* Stepwise interpolation or constant segment */
-    if (!linear || datum_eq(value1, value2, inst1->valuetypid))
+    if (!linear || datum_eq(value1, value2, inst1->basetypid))
     {
       TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
         timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
         PointerGetDatum(interval)));
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, upper, inst1->valuetypid);
+      instants[1] = tinstant_make(value1, upper, inst1->basetypid);
       result[i] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, linear, NORMALIZE_NO);
       pfree(instants[1]);
@@ -137,8 +137,8 @@ tsequence_extend(TSequence **result, const TSequence *seq,
     {
       /* Increasing period and minimum function or
        * decreasing period and maximum function */
-      if ((datum_lt(value1, value2, inst1->valuetypid) && min) ||
-        (datum_gt(value1, value2, inst1->valuetypid) && !min))
+      if ((datum_lt(value1, value2, inst1->basetypid) && min) ||
+        (datum_gt(value1, value2, inst1->basetypid) && !min))
       {
         /* Extend the start value for the duration of the window */
         TimestampTz lower = DatumGetTimestampTz(DirectFunctionCall2(
@@ -148,8 +148,8 @@ tsequence_extend(TSequence **result, const TSequence *seq,
           timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
           PointerGetDatum(interval)));
         instants[0] = inst1;
-        instants[1] = tinstant_make(value1, lower, inst1->valuetypid);
-        instants[2] = tinstant_make(value2, upper, inst1->valuetypid);
+        instants[1] = tinstant_make(value1, lower, inst1->basetypid);
+        instants[2] = tinstant_make(value2, upper, inst1->basetypid);
         result[i] = tsequence_make((const TInstant **) instants, 3,
           lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
@@ -162,7 +162,7 @@ tsequence_extend(TSequence **result, const TSequence *seq,
           PointerGetDatum(interval)));
         instants[0] = inst1;
         instants[1] = inst2;
-        instants[2] = tinstant_make(value2, upper, inst1->valuetypid);
+        instants[2] = tinstant_make(value2, upper, inst1->basetypid);
         result[i] = tsequence_make((const TInstant**) instants, 3,
           lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[2]);
@@ -411,10 +411,10 @@ tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
   /* Should be additional attribute */
   bool linear = true;
   float8 value = 0.0;
-  ensure_tnumber_base_type(inst->valuetypid);
-  if (inst->valuetypid == INT4OID)
+  ensure_tnumber_base_type(inst->basetypid);
+  if (inst->basetypid == INT4OID)
     value = DatumGetInt32(tinstant_value(inst));
-  else /* inst->valuetypid == FLOAT8OID */
+  else /* inst->basetypid == FLOAT8OID */
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
   double2_set(&dvalue, value, 1);
@@ -626,7 +626,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ((temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET) &&
-    temp->valuetypid == FLOAT8OID && func == &datum_sum_float8)
+    temp->basetypid == FLOAT8OID && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal float sequences")));
 

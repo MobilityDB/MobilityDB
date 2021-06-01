@@ -797,7 +797,7 @@ default_tnumber_selectivity(CachedOp operator)
  */
 Selectivity
 tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
-  CachedOp cachedOp, Oid valuetypid)
+  CachedOp cachedOp, Oid basetypid)
 {
   Period period;
   RangeType *range = NULL;
@@ -817,8 +817,8 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     if (value_oprid != InvalidOid)
     {
       range = range_make(Float8GetDatum(box->xmin),
-        Float8GetDatum(box->xmax), true, true, valuetypid);
-      rangetypid = range_oid_from_base(valuetypid);
+        Float8GetDatum(box->xmax), true, true, basetypid);
+      rangetypid = range_oid_from_base(basetypid);
       typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
     }
   }
@@ -834,7 +834,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_X(box->flags))
     {
-      value_oprid = oper_oid(EQ_OP, valuetypid, valuetypid);
+      value_oprid = oper_oid(EQ_OP, basetypid, basetypid);
 #if MOBDB_PGSQL_VERSION < 130000
       selec *= var_eq_const(vardata, value_oprid, PointerGetDatum(range),
         false, false, false);
@@ -916,7 +916,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
   Selectivity selec;
   CachedOp cachedOp;
   TBOX constBox;
-  Oid valuetypid;
+  Oid basetypid;
 
   /*
    * Get enumeration value associated to the operator
@@ -981,11 +981,11 @@ tnumber_sel(PG_FUNCTION_ARGS)
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
   /* Get the base type of the temporal column */
-  valuetypid = base_oid_from_temporal(vardata.atttype);
-  ensure_tnumber_base_type(valuetypid);
+  basetypid = base_oid_from_temporal(vardata.atttype);
+  ensure_tnumber_base_type(basetypid);
 
   /* Compute the selectivity */
-  selec = tnumber_sel_internal(root, &vardata, &constBox, cachedOp, valuetypid);
+  selec = tnumber_sel_internal(root, &vardata, &constBox, cachedOp, basetypid);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);

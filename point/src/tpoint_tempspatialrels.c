@@ -1270,10 +1270,10 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
-      PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
+      PointerGetDatum(gs), temp->basetypid, dist, lfinfo);
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
-      PointerGetDatum(gs), temp->valuetypid, dist, lfinfo);
+      PointerGetDatum(gs), temp->basetypid, dist, lfinfo);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_geo((TSequence *) temp,
         PointerGetDatum(gs), dist);

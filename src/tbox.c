@@ -303,12 +303,12 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
  * Transform the value to a temporal box (internal function only)
  */
 void
-number_to_box(TBOX *box, Datum value, Oid valuetypid)
+number_to_box(TBOX *box, Datum value, Oid basetypid)
 {
-  ensure_tnumber_base_type(valuetypid);
-  if (valuetypid == INT4OID)
+  ensure_tnumber_base_type(basetypid);
+  if (basetypid == INT4OID)
     box->xmin = box->xmax = (double)(DatumGetInt32(value));
-  else /* valuetypid == FLOAT8OID */
+  else /* basetypid == FLOAT8OID */
     box->xmin = box->xmax = DatumGetFloat8(value);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);

@@ -82,7 +82,7 @@ void
 tsequenceset_bbox(void *box, const TSequenceSet *ts)
 {
   void *box1 = tsequenceset_bbox_ptr(ts);
-  size_t bboxsize = temporal_bbox_size(ts->valuetypid);
+  size_t bboxsize = temporal_bbox_size(ts->basetypid);
   memcpy(box, box1, bboxsize);
 }
 
@@ -133,19 +133,19 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
     memsize += double_pad(VARSIZE(newsequences[i]));
   }
   /* Get the bounding box size */
-  size_t bboxsize = temporal_bbox_size(sequences[0]->valuetypid);
+  size_t bboxsize = temporal_bbox_size(sequences[0]->basetypid);
   memsize += double_pad(bboxsize);
   TSequenceSet *result = palloc0(pdata + memsize);
   SET_VARSIZE(result, pdata + memsize);
   result->count = newcount;
   result->totalcount = totalcount;
-  result->valuetypid = sequences[0]->valuetypid;
+  result->basetypid = sequences[0]->basetypid;
   result->subtype = SEQUENCESET;
   MOBDB_FLAGS_SET_LINEAR(result->flags,
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_base_type(sequences[0]->valuetypid))
+  if (tgeo_base_type(sequences[0]->basetypid))
   {
     MOBDB_FLAGS_SET_Z(result->flags,
       MOBDB_FLAGS_GET_Z(sequences[0]->flags));
@@ -213,19 +213,19 @@ tsequence_to_tsequenceset(const TSequence *seq)
  * a timestamp set (internal function)
  $
  * @param[in] value Base value
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] ps Period set
  * @param[in] linear True when the resulting value has linear interpolation
 */
 TSequenceSet *
-tsequenceset_from_base_internal(Datum value, Oid valuetypid,
+tsequenceset_from_base_internal(Datum value, Oid basetypid,
   const PeriodSet *ps, bool linear)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    sequences[i] = tsequence_from_base_internal(value, valuetypid, p, linear);
+    sequences[i] = tsequence_from_base_internal(value, basetypid, p, linear);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
@@ -245,9 +245,9 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
     linear = false;
   else
     linear = PG_GETARG_BOOL(2);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  TSequenceSet *result = tsequenceset_from_base_internal(value, valuetypid, ps, linear);
-  DATUM_FREE_IF_COPY(value, valuetypid, 0);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  TSequenceSet *result = tsequenceset_from_base_internal(value, basetypid, ps, linear);
+  DATUM_FREE_IF_COPY(value, basetypid, 0);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
 }
@@ -258,7 +258,7 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
 TSequenceSet *
 tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 {
-  assert(ts->valuetypid == inst->valuetypid);
+  assert(ts->basetypid == inst->basetypid);
   const TSequence *seq = tsequenceset_seq_n(ts, ts->count - 1);
   Temporal *temp = tsequence_append_tinstant(seq, inst);
   const TSequence **sequences = palloc(sizeof(TSequence *) * ts->count + 1);
@@ -630,7 +630,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
   char prefix[20];
-  if (continuous_base_type(ts->valuetypid) &&
+  if (continuous_base_type(ts->basetypid) &&
     ! MOBDB_FLAGS_GET_LINEAR(ts->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -671,16 +671,16 @@ tsequenceset_write(const TSequenceSet *ts, StringInfo buf)
  * read from the buffer
  *
  * @param[in] buf Buffer
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 TSequenceSet *
-tsequenceset_read(StringInfo buf, Oid valuetypid)
+tsequenceset_read(StringInfo buf, Oid basetypid)
 {
   int count = (int) pq_getmsgint(buf, 4);
   assert(count > 0);
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)
-    sequences[i] = tsequence_read(buf, valuetypid);
+    sequences[i] = tsequence_read(buf, basetypid);
   return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
 }
 
@@ -697,15 +697,15 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ts)
   /* It is not necessary to set the linear flag to false since it is already
    * set by the fact that the input argument is a temporal integer */
   TSequenceSet *result = tsequenceset_copy(ts);
-  result->valuetypid = FLOAT8OID;
+  result->basetypid = FLOAT8OID;
   for (int i = 0; i < ts->count; i++)
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
-    seq->valuetypid = FLOAT8OID;
+    seq->basetypid = FLOAT8OID;
     for (int j = 0; j < seq->count; j++)
     {
       TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
-      inst->valuetypid = FLOAT8OID;
+      inst->basetypid = FLOAT8OID;
       Datum *value_ptr = tinstant_value_ptr(inst);
       *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
     }
@@ -725,15 +725,15 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ts)
   /* It is not necessary to set the linear flag to false since it is already
    * set by the fact that the input argument has step interpolation */
   TSequenceSet *result = tsequenceset_copy(ts);
-  result->valuetypid = INT4OID;
+  result->basetypid = INT4OID;
   for (int i = 0; i < ts->count; i++)
   {
     TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
-    seq->valuetypid = INT4OID;
+    seq->basetypid = INT4OID;
     for (int j = 0; j < seq->count; j++)
     {
       TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
-      inst->valuetypid = INT4OID;
+      inst->basetypid = INT4OID;
       Datum *value_ptr = tinstant_value_ptr(inst);
       *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
     }
@@ -821,8 +821,8 @@ tsequenceset_values1(Datum *result, const TSequenceSet *ts)
   }
   if (k > 1)
   {
-    datumarr_sort(result, k, ts->valuetypid);
-    k = datumarr_remove_duplicates(result, k, ts->valuetypid);
+    datumarr_sort(result, k, ts->basetypid);
+    k = datumarr_remove_duplicates(result, k, ts->basetypid);
   }
   return k;
 }
@@ -836,7 +836,7 @@ tsequenceset_values(const TSequenceSet *ts)
 {
   Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
   int count = tsequenceset_values1(values, ts);
-  ArrayType *result = datumarr_to_array(values, count, ts->valuetypid);
+  ArrayType *result = datumarr_to_array(values, count, ts->basetypid);
   pfree(values);
   return result;
 }
@@ -935,7 +935,7 @@ tsequenceset_min_instant(const TSequenceSet *ts)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
       Datum value = tinstant_value(inst);
-      if (datum_lt(value, min, seq->valuetypid))
+      if (datum_lt(value, min, seq->basetypid))
       {
         min = value;
         result = inst;
@@ -951,13 +951,13 @@ tsequenceset_min_instant(const TSequenceSet *ts)
 Datum
 tsequenceset_min_value(const TSequenceSet *ts)
 {
-  Oid valuetypid = ts->valuetypid;
-  if (valuetypid == INT4OID)
+  Oid basetypid = ts->basetypid;
+  if (basetypid == INT4OID)
   {
     TBOX *box = tsequenceset_bbox_ptr(ts);
     return Int32GetDatum((int)(box->xmin));
   }
-  if (valuetypid == FLOAT8OID)
+  if (basetypid == FLOAT8OID)
   {
     TBOX *box = tsequenceset_bbox_ptr(ts);
     return Float8GetDatum(box->xmin);
@@ -966,7 +966,7 @@ tsequenceset_min_value(const TSequenceSet *ts)
   for (int i = 1; i < ts->count; i++)
   {
     Datum value = tsequence_min_value(tsequenceset_seq_n(ts, i));
-    if (datum_lt(value, result, valuetypid))
+    if (datum_lt(value, result, basetypid))
       result = value;
   }
   return result;
@@ -978,13 +978,13 @@ tsequenceset_min_value(const TSequenceSet *ts)
 Datum
 tsequenceset_max_value(const TSequenceSet *ts)
 {
-  Oid valuetypid = ts->valuetypid;
-  if (valuetypid == INT4OID)
+  Oid basetypid = ts->basetypid;
+  if (basetypid == INT4OID)
   {
     TBOX *box = tsequenceset_bbox_ptr(ts);
     return Int32GetDatum((int)(box->xmax));
   }
-  if (valuetypid == FLOAT8OID)
+  if (basetypid == FLOAT8OID)
   {
     TBOX *box = tsequenceset_bbox_ptr(ts);
     return Float8GetDatum(box->xmax);
@@ -993,7 +993,7 @@ tsequenceset_max_value(const TSequenceSet *ts)
   for (int i = 1; i < ts->count; i++)
   {
     Datum value = tsequence_max_value(tsequenceset_seq_n(ts, i));
-    if (datum_gt(value, result, valuetypid))
+    if (datum_gt(value, result, basetypid))
       result = value;
   }
   return result;
@@ -1428,7 +1428,7 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(ts->valuetypid) || tgeo_base_type(ts->valuetypid))
+  if (tnumber_base_type(ts->basetypid) || tgeo_base_type(ts->basetypid))
     return true;
 
   for (int i = 0; i < ts->count; i++)
@@ -1510,7 +1510,7 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers */
-  if (tnumber_base_type(ts->valuetypid))
+  if (tnumber_base_type(ts->basetypid))
     return true;
 
   for (int i = 0; i < ts->count; i++)
@@ -2156,7 +2156,7 @@ tnumberseqset_twavg(const TSequenceSet *ts)
 bool
 tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
 {
-  assert(ts1->valuetypid == ts2->valuetypid);
+  assert(ts1->basetypid == ts2->basetypid);
   /* If number of sequences or flags are not equal */
   if (ts1->count != ts2->count || ts1->flags != ts2->flags)
     return false;
@@ -2164,7 +2164,7 @@ tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
   /* If bounding boxes are not equal */
   void *box1 = tsequenceset_bbox_ptr(ts1);
   void *box2 = tsequenceset_bbox_ptr(ts2);
-  if (! temporal_bbox_eq(box1, box2, ts1->valuetypid))
+  if (! temporal_bbox_eq(box1, box2, ts1->basetypid))
     return false;
 
   /* Compare the composing sequences */
@@ -2189,7 +2189,7 @@ tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
 int
 tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
 {
-  assert(ts1->valuetypid == ts2->valuetypid);
+  assert(ts1->basetypid == ts2->basetypid);
 
   /* Compare composing instants */
   int count = Min(ts1->count, ts2->count);

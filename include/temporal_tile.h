@@ -42,7 +42,7 @@ typedef struct RangeBucketState
 {
   bool done;
   int i;
-  Oid valuetypid;
+  Oid basetypid;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
   Datum size;
   Datum origin;

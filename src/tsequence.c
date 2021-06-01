@@ -76,12 +76,12 @@
  */
 static bool
 tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, Oid valuetypid, TimestampTz *t)
+  Datum value, Oid basetypid, TimestampTz *t)
 {
-  assert(inst1->valuetypid == FLOAT8OID);
+  assert(inst1->basetypid == FLOAT8OID);
   double dvalue1 = DatumGetFloat8(tinstant_value(inst1));
   double dvalue2 = DatumGetFloat8(tinstant_value(inst2));
-  double dvalue = datum_double(value, valuetypid);
+  double dvalue = datum_double(value, basetypid);
   double min = Min(dvalue1, dvalue2);
   double max = Max(dvalue1, dvalue2);
   /* if value is to the left or to the right of the range */
@@ -110,7 +110,7 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
  *
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
- * @param[in] valuetypid Base type
+ * @param[in] basetypid Base type
  * @param[out] inter Base value taken by the segment at the timestamp.
  * This value is equal to the input base value up to the floating
  * point precision.
@@ -118,19 +118,19 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
  */
 bool
 tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, Oid valuetypid, Datum *inter, TimestampTz *t)
+  Datum value, Oid basetypid, Datum *inter, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  if (datum_eq2(value, value1, valuetypid, inst1->valuetypid) ||
-    datum_eq2(value, value2, valuetypid, inst1->valuetypid))
+  if (datum_eq2(value, value1, basetypid, inst1->basetypid) ||
+    datum_eq2(value, value2, basetypid, inst1->basetypid))
     return false;
 
-  ensure_continuous_base_type(inst1->valuetypid);
+  ensure_continuous_base_type(inst1->basetypid);
   bool result = false; /* make compiler quiet */
-  if (inst1->valuetypid == FLOAT8OID)
-    result = tfloatseq_intersection_value(inst1, inst2, value, valuetypid, t);
-  else if (tgeo_base_type(inst1->valuetypid))
+  if (inst1->basetypid == FLOAT8OID)
+    result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
+  else if (tgeo_base_type(inst1->basetypid))
     result = tpointseq_intersection_value(inst1, inst2, value, t);
 
   if (result && inter != NULL)
@@ -173,10 +173,10 @@ static bool
 tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  double x1 = datum_double(tinstant_value(start1), start1->valuetypid);
-  double x2 = datum_double(tinstant_value(end1), start1->valuetypid);
-  double x3 = datum_double(tinstant_value(start2), start2->valuetypid);
-  double x4 = datum_double(tinstant_value(end2), start2->valuetypid);
+  double x1 = datum_double(tinstant_value(start1), start1->basetypid);
+  double x2 = datum_double(tinstant_value(end1), start1->basetypid);
+  double x3 = datum_double(tinstant_value(start2), start2->basetypid);
+  double x4 = datum_double(tinstant_value(end2), start2->basetypid);
   /* Compute the instant t at which the linear functions of the two segments
      are equal: at + b = ct + d that is t = (d - b) / (a - c).
      To reduce problems related to floating point arithmetic, t1 and t2
@@ -227,7 +227,7 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
     if (inter1 != NULL)
       *inter1 = value;
     result = tlinearseq_intersection_value(start2, end2,
-      value, start1->valuetypid, inter2, t);
+      value, start1->basetypid, inter2, t);
   }
   else if (! linear2)
   {
@@ -235,17 +235,17 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
     if (inter2 != NULL)
       *inter2 = value;
     result = tlinearseq_intersection_value(start1, end1,
-      value, start2->valuetypid, inter1, t);
+      value, start2->basetypid, inter1, t);
   }
   else
   {
     /* Both segments have linear interpolation */
-    ensure_temporal_base_type(start1->valuetypid);
-    if (tnumber_base_type(start1->valuetypid))
+    ensure_temporal_base_type(start1->basetypid);
+    if (tnumber_base_type(start1->basetypid))
       result = tnumberseq_intersection(start1, end1, start2, end2, t);
-    else if (start1->valuetypid == type_oid(T_GEOMETRY))
+    else if (start1->basetypid == type_oid(T_GEOMETRY))
       result = tgeompointseq_intersection(start1, end1, start2, end2, t);
-    else if (start1->valuetypid == type_oid(T_GEOGRAPHY))
+    else if (start1->basetypid == type_oid(T_GEOGRAPHY))
       result = tgeogpointseq_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
     if (result && inter1 != NULL)
@@ -362,35 +362,35 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
 /**
  * Returns true if the three values are collinear
  *
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] value1,value2,value3 Input values
  * @param[in] t1,t2,t3 Input timestamps
  */
 static bool
-datum_collinear(Oid valuetypid, Datum value1, Datum value2, Datum value3,
+datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   TimestampTz t1, TimestampTz t2, TimestampTz t3)
 {
   double duration1 = (double) (t2 - t1);
   double duration2 = (double) (t3 - t1);
   double ratio = duration1 / duration2;
-  if (valuetypid == FLOAT8OID)
+  if (basetypid == FLOAT8OID)
     return float_collinear(DatumGetFloat8(value1), DatumGetFloat8(value2),
       DatumGetFloat8(value3), ratio);
-  if (valuetypid == type_oid(T_DOUBLE2))
+  if (basetypid == type_oid(T_DOUBLE2))
     return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2),
       DatumGetDouble2P(value3), ratio);
-  if (valuetypid == type_oid(T_GEOMETRY) ||
-    valuetypid == type_oid(T_GEOGRAPHY))
+  if (basetypid == type_oid(T_GEOMETRY) ||
+    basetypid == type_oid(T_GEOGRAPHY))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
     bool hasz = (bool) FLAGS_GET_Z(gs->flags);
     bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
     return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
   }
-  if (valuetypid == type_oid(T_DOUBLE3))
+  if (basetypid == type_oid(T_DOUBLE3))
     return double3_collinear(DatumGetDouble3P(value1), DatumGetDouble3P(value2),
       DatumGetDouble3P(value3), ratio);
-  if (valuetypid == type_oid(T_DOUBLE4))
+  if (basetypid == type_oid(T_DOUBLE4))
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
   return false;
@@ -417,7 +417,7 @@ tinstantarr_normalize(const TInstant **instants, bool linear, int count,
   int *newcount)
 {
   assert(count > 1);
-  Oid valuetypid = instants[0]->valuetypid;
+  Oid basetypid = instants[0]->basetypid;
   const TInstant **result = palloc(sizeof(TInstant *) * count);
   /* Remove redundant instants */
   const TInstant *inst1 = instants[0];
@@ -434,17 +434,17 @@ tinstantarr_normalize(const TInstant **instants, bool linear, int count,
       /* step sequences and 2 consecutive instants that have the same value
         ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
       */
-      (!linear && datum_eq(value1, value2, valuetypid))
+      (!linear && datum_eq(value1, value2, basetypid))
       ||
       /* 3 consecutive linear instants that have the same value
         ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
       */
-      (linear && datum_eq(value1, value2, valuetypid) && datum_eq(value2, value3, valuetypid))
+      (linear && datum_eq(value1, value2, basetypid) && datum_eq(value2, value3, basetypid))
       ||
       /* collinear linear instants
         ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
       */
-      (linear && datum_collinear(valuetypid, value1, value2, value3, inst1->t, inst2->t, inst3->t))
+      (linear && datum_collinear(basetypid, value1, value2, value3, inst1->t, inst2->t, inst3->t))
       )
     {
       inst2 = inst3; value2 = value3;
@@ -491,7 +491,7 @@ void
 tsequence_bbox(void *box, const TSequence *seq)
 {
   void *box1 = tsequence_bbox_ptr(seq);
-  size_t bboxsize = temporal_bbox_size(seq->valuetypid);
+  size_t bboxsize = temporal_bbox_size(seq->basetypid);
   memcpy(box, box1, bboxsize);
 }
 
@@ -528,7 +528,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool 
         errmsg("Instant sequence must have inclusive bounds")));
   if (!linear && count > 1 && !upper_inc &&
     datum_ne(tinstant_value(instants[count - 1]),
-      tinstant_value(instants[count - 2]), instants[0]->valuetypid))
+      tinstant_value(instants[count - 2]), instants[0]->basetypid))
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
   ensure_valid_tinstantarr(instants, count, MERGE_NO);
@@ -550,16 +550,16 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc, bool upper
     norminsts = tinstantarr_normalize(instants, linear, count, &newcount);
 
   /* Get the bounding box size */
-  size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->valuetypid));
+  size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->basetypid));
 
   /* Precompute the trajectory */
   size_t trajsize = 0;
   bool hastraj = false; /* keep compiler quiet */
   Datum traj = 0; /* keep compiler quiet */
-  bool isgeo = tgeo_base_type(instants[0]->valuetypid);
+  bool isgeo = tgeo_base_type(instants[0]->basetypid);
   if (isgeo)
   {
-    hastraj = type_has_precomputed_trajectory(instants[0]->valuetypid);
+    hastraj = type_has_precomputed_trajectory(instants[0]->basetypid);
     if (hastraj)
     {
       /* A trajectory is a geometry/geography, a point, a multipoint,
@@ -574,7 +574,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc, bool upper
   TSequence *result = palloc0(seqsize);
   SET_VARSIZE(result, seqsize);
   result->count = newcount;
-  result->valuetypid = instants[0]->valuetypid;
+  result->basetypid = instants[0]->basetypid;
   result->subtype = SEQUENCE;
   period_set(&result->period, norminsts[0]->t, norminsts[newcount - 1]->t,
     lower_inc, upper_inc);
@@ -693,20 +693,20 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * (internal function)
  *
  * @param[in] value Base value
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] p Period
  * @param[in] linear True when the resulting value has linear interpolation
  */
 TSequence *
-tsequence_from_base_internal(Datum value, Oid valuetypid, const Period *p,
+tsequence_from_base_internal(Datum value, Oid basetypid, const Period *p,
   bool linear)
 {
   int count;
   TInstant *instants[2];
-  instants[0] = tinstant_make(value, p->lower, valuetypid);
+  instants[0] = tinstant_make(value, p->lower, basetypid);
   if (p->lower != p->upper)
   {
-    instants[1] = tinstant_make(value, p->upper, valuetypid);
+    instants[1] = tinstant_make(value, p->upper, basetypid);
     count = 2;
   }
   else
@@ -733,9 +733,9 @@ tsequence_from_base(PG_FUNCTION_ARGS)
     linear = false;
   else
     linear = PG_GETARG_BOOL(2);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  TSequence *result = tsequence_from_base_internal(value, valuetypid, p, linear);
-  DATUM_FREE_IF_COPY(value, valuetypid, 0);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  TSequence *result = tsequence_from_base_internal(value, basetypid, p, linear);
+  DATUM_FREE_IF_COPY(value, basetypid, 0);
   PG_RETURN_POINTER(result);
 }
 
@@ -793,7 +793,7 @@ tsequencearr_normalize(const TSequence **sequences, int count, int *newcount)
   TSequence **result = palloc(sizeof(TSequence *) * count);
   /* seq1 is the sequence to which we try to join subsequent seq2 */
   TSequence *seq1 = (TSequence *) sequences[0];
-  Oid valuetypid = seq1->valuetypid;
+  Oid basetypid = seq1->basetypid;
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
   bool isnew = false;
   int k = 0;
@@ -823,21 +823,21 @@ tsequencearr_normalize(const TSequence **sequences, int count, int *newcount)
          ..., 1@t1, 1@t2] (1@t2, 2@t3, ... -> ..., 1@t1, 2@t3, ...
        */
       (!linear &&
-      datum_eq(last2value, last1value, valuetypid) &&
-      datum_eq(last1value, first1value, valuetypid))
+      datum_eq(last2value, last1value, basetypid) &&
+      datum_eq(last1value, first1value, basetypid))
       ||
       /* If the last/first segments are constant and equal
          ..., 1@t1, 1@t2] (1@t2, 1@t3, ... -> ..., 1@t1, 1@t3, ...
        */
-      (datum_eq(last2value, last1value, valuetypid) &&
-      datum_eq(last1value, first1value, valuetypid) &&
-      datum_eq(first1value, first2value, valuetypid))
+      (datum_eq(last2value, last1value, basetypid) &&
+      datum_eq(last1value, first1value, basetypid) &&
+      datum_eq(first1value, first2value, basetypid))
       ||
       /* If float/point sequences and collinear last/first segments having the same duration
          ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
       */
-      (datum_eq(last1value, first1value, valuetypid) &&
-      datum_collinear(valuetypid, last2value, first1value, first2value,
+      (datum_eq(last1value, first1value, basetypid) &&
+      datum_collinear(basetypid, last2value, first1value, first2value,
         last2->t, first1->t, first2->t))
       ))
     {
@@ -866,7 +866,7 @@ tsequencearr_normalize(const TSequence **sequences, int count, int *newcount)
       ..., 1@t1, 2@t2), [2@t2] -> ..., 1@t1, 2@t2]
       [1@t1],(1@t1, 2@t2, ... -> [1@t1, 2@t2, ...
     */
-    else if (adjacent && datum_eq(last1value, first1value, valuetypid))
+    else if (adjacent && datum_eq(last1value, first1value, basetypid))
     {
       /* Remove the first instant of the second sequence */
       seq1 = tsequence_join(seq1, seq2, false, true);
@@ -891,7 +891,7 @@ Temporal *
 tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
 {
   /* Ensure validity of the arguments */
-  assert(seq->valuetypid == inst->valuetypid);
+  assert(seq->basetypid == inst->basetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
   /* Notice that we cannot call ensure_increasing_timestamps since we must
@@ -905,7 +905,7 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   }
   if (inst1->t == inst->t)
   {
-    bool seqresult = datum_eq(tinstant_value(inst1), tinstant_value(inst), inst1->valuetypid);
+    bool seqresult = datum_eq(tinstant_value(inst1), tinstant_value(inst), inst1->basetypid);
     if (seq->period.upper_inc && ! seqresult)
     {
       char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
@@ -939,17 +939,17 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
       /* step sequences and 2 consecutive instants that have the same value
         ... 1@t1, 1@t2, 2@t3, ... -> ... 1@t1, 2@t3, ...
       */
-      (! linear && datum_eq(value1, value2, seq->valuetypid))
+      (! linear && datum_eq(value1, value2, seq->basetypid))
       ||
       /* 3 consecutive float/point instants that have the same value
         ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
       */
-      (datum_eq(value1, value2, seq->valuetypid) && datum_eq(value2, value3, seq->valuetypid))
+      (datum_eq(value1, value2, seq->basetypid) && datum_eq(value2, value3, seq->basetypid))
       ||
       /* collinear float/point instants that have the same duration
         ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
       */
-      (linear && datum_collinear(seq->valuetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
+      (linear && datum_collinear(seq->basetypid, value1, value2, value3, inst1->t, inst2->t, inst->t))
       )
     {
       /* The new instant replaces the last instant of the sequence */
@@ -1010,7 +1010,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     }
     else if (inst1->t == inst2->t && seq1->period.upper_inc && seq2->period.lower_inc)
     {
-      if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
+      if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->basetypid))
       {
         t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
         ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -1334,9 +1334,9 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
         instants2[k - 1], inst2, linear2, &inter1, &inter2, &crosstime))
       {
         instants1[k] = tofree[l++] = tinstant_make(inter1,
-          crosstime, seq1->valuetypid);
+          crosstime, seq1->basetypid);
         instants2[k++] = tofree[l++] = tinstant_make(inter2,
-          crosstime, seq2->valuetypid);
+          crosstime, seq2->basetypid);
       }
     }
     instants1[k] = inst1; instants2[k++] = inst2;
@@ -1350,18 +1350,18 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
      exclusive upper bound must be equal */
   if (! inter->upper_inc && k > 1 && ! linear1 &&
       datum_ne(tinstant_value(instants1[k - 2]),
-      tinstant_value(instants1[k - 1]), seq1->valuetypid))
+      tinstant_value(instants1[k - 1]), seq1->basetypid))
   {
     instants1[k - 1] = tinstant_make(tinstant_value(instants1[k - 2]),
-      instants1[k - 1]->t, instants1[k - 1]->valuetypid);
+      instants1[k - 1]->t, instants1[k - 1]->basetypid);
     tofree[l++] = instants1[k - 1];
   }
   if (! inter->upper_inc && k > 1 && ! linear2 &&
       datum_ne(tinstant_value(instants2[k - 2]),
-      tinstant_value(instants2[k - 1]), seq2->valuetypid))
+      tinstant_value(instants2[k - 1]), seq2->basetypid))
   {
     instants2[k - 1] = tinstant_make(tinstant_value(instants2[k - 2]),
-      instants2[k - 1]->t, instants2[k - 1]->valuetypid);
+      instants2[k - 1]->t, instants2[k - 1]->basetypid);
     tofree[l++] = instants2[k - 1];
   }
   *sync1 = tsequence_make((const TInstant **) instants1, k, inter->lower_inc,
@@ -1396,7 +1396,7 @@ tsequence_to_string(const TSequence *seq, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];
-  if (! component && continuous_base_type(seq->valuetypid) &&
+  if (! component && continuous_base_type(seq->basetypid) &&
     ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -1443,10 +1443,10 @@ tsequence_write(const TSequence *seq, StringInfo buf)
  * read from the buffer (dispatch function)
  *
  * @param[in] buf Buffer
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 TSequence *
-tsequence_read(StringInfo buf, Oid valuetypid)
+tsequence_read(StringInfo buf, Oid basetypid)
 {
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);
@@ -1454,7 +1454,7 @@ tsequence_read(StringInfo buf, Oid valuetypid)
   bool linear = (char) pq_getmsgbyte(buf);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
-    instants[i] = tinstant_read(buf, valuetypid);
+    instants[i] = tinstant_read(buf, basetypid);
   return tsequence_make_free(instants, count, lower_inc,
     upper_inc, linear, NORMALIZE);
 }
@@ -1472,11 +1472,11 @@ tintseq_to_tfloatseq(const TSequence *seq)
   /* It is not necessary to set the linear flag to false since it is already
    * set by the fact that the input argument is a temporal integer */
   TSequence *result = tsequence_copy(seq);
-  result->valuetypid = FLOAT8OID;
+  result->basetypid = FLOAT8OID;
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
-    inst->valuetypid = FLOAT8OID;
+    inst->basetypid = FLOAT8OID;
     Datum *value_ptr = tinstant_value_ptr(inst);
     *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
   }
@@ -1495,11 +1495,11 @@ tfloatseq_to_tintseq(const TSequence *seq)
   /* It is not necessary to set the linear flag to false since it is already
    * set by the fact that the input argument has step interpolation */
   TSequence *result = tsequence_copy(seq);
-  result->valuetypid = INT4OID;
+  result->basetypid = INT4OID;
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
-    inst->valuetypid = INT4OID;
+    inst->basetypid = INT4OID;
     Datum *value_ptr = tinstant_value_ptr(inst);
     *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
   }
@@ -1574,9 +1574,9 @@ tstepseq_to_linear1(TSequence **result, const TSequence *seq)
     value2 = tinstant_value(inst2);
     TInstant *instants[2];
     instants[0] = (TInstant *) inst1;
-    instants[1] = tinstant_make(value1, inst2->t, seq->valuetypid);
+    instants[1] = tinstant_make(value1, inst2->t, seq->basetypid);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc &&
-      datum_eq(value1, value2, seq->valuetypid) : false;
+      datum_eq(value1, value2, seq->basetypid) : false;
     result[k++] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc, LINEAR, NORMALIZE_NO);
     inst1 = inst2;
@@ -1588,7 +1588,7 @@ tstepseq_to_linear1(TSequence **result, const TSequence *seq)
   {
     value1 = tinstant_value(tsequence_inst_n(seq, seq->count - 2));
     value2 = tinstant_value(inst2);
-    if (datum_ne(value1, value2, seq->valuetypid))
+    if (datum_ne(value1, value2, seq->basetypid))
       result[k++] = tinstant_to_tsequence(inst2, LINEAR);
   }
   return k;
@@ -1629,8 +1629,8 @@ tsequence_values1(Datum *result, const TSequence *seq)
   int count = seq->count;
   if (count > 1)
   {
-    datumarr_sort(result, seq->count, seq->valuetypid);
-    count = datumarr_remove_duplicates(result, seq->count, seq->valuetypid);
+    datumarr_sort(result, seq->count, seq->basetypid);
+    count = datumarr_remove_duplicates(result, seq->count, seq->basetypid);
   }
   return count;
 }
@@ -1647,7 +1647,7 @@ tsequence_values(const TSequence *seq)
 {
   Datum *values = palloc(sizeof(Datum *) * seq->count);
   int count = tsequence_values1(values, seq);
-  ArrayType *result = datumarr_to_array(values, count, seq->valuetypid);
+  ArrayType *result = datumarr_to_array(values, count, seq->basetypid);
   pfree(values);
   return result;
 }
@@ -1774,7 +1774,7 @@ tsequence_min_instant(const TSequence *seq)
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_lt(value, min, seq->valuetypid))
+    if (datum_lt(value, min, seq->basetypid))
     {
       min = value;
       k = i;
@@ -1789,12 +1789,12 @@ tsequence_min_instant(const TSequence *seq)
 Datum
 tsequence_min_value(const TSequence *seq)
 {
-  if (seq->valuetypid == INT4OID)
+  if (seq->basetypid == INT4OID)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
     return Int32GetDatum((int)(box->xmin));
   }
-  if (seq->valuetypid == FLOAT8OID)
+  if (seq->basetypid == FLOAT8OID)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
     return Float8GetDatum(box->xmin);
@@ -1803,7 +1803,7 @@ tsequence_min_value(const TSequence *seq)
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_lt(value, result, seq->valuetypid))
+    if (datum_lt(value, result, seq->basetypid))
       result = value;
   }
   return result;
@@ -1815,12 +1815,12 @@ tsequence_min_value(const TSequence *seq)
 Datum
 tsequence_max_value(const TSequence *seq)
 {
-  if (seq->valuetypid == INT4OID)
+  if (seq->basetypid == INT4OID)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
     return Int32GetDatum((int)(box->xmax));
   }
-  if (seq->valuetypid == FLOAT8OID)
+  if (seq->basetypid == FLOAT8OID)
   {
     TBOX *box = tsequence_bbox_ptr(seq);
     return Float8GetDatum(box->xmax);
@@ -1829,7 +1829,7 @@ tsequence_max_value(const TSequence *seq)
   for (int i = 1; i < seq->count; i++)
   {
     Datum value = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_gt(value, result, seq->valuetypid))
+    if (datum_gt(value, result, seq->basetypid))
       result = value;
   }
   return result;
@@ -1878,10 +1878,10 @@ tsequence_segments(TSequence **result, const TSequence *seq)
     inst2 = (TInstant *) tsequence_inst_n(seq, i);
     instants[0] = inst1;
     instants[1] = linear ? inst2 :
-      tinstant_make(tinstant_value(inst1), inst2->t, seq->valuetypid);
+      tinstant_make(tinstant_value(inst1), inst2->t, seq->basetypid);
     bool upper_inc;
     if (i == seq->count - 1 &&
-      (linear || datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->valuetypid)))
+      (linear || datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->basetypid)))
       upper_inc = seq->period.upper_inc;
     else
       upper_inc = false;
@@ -1895,7 +1895,7 @@ tsequence_segments(TSequence **result, const TSequence *seq)
   {
     inst1 = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
     inst2 = (TInstant *) tsequence_inst_n(seq, seq->count - 2);
-    if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->valuetypid))
+    if (! datum_eq(tinstant_value(inst1), tinstant_value(inst2), seq->basetypid))
       result[k++] = tsequence_make((const TInstant **) &inst1, 1,
         true, true, linear, NORMALIZE_NO);
   }
@@ -2016,14 +2016,14 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
   }
   /* Shift and/or scale bounding box */
   void *bbox = tsequence_bbox_ptr(result);
-  temporal_bbox_shift_tscale(bbox, start, duration, seq->valuetypid);
+  temporal_bbox_shift_tscale(bbox, start, duration, seq->basetypid);
   return result;
 }
 
 /*****************************************************************************
  * Ever/always comparison operators
  * The functions assume that the temporal value and the datum value are of
- * the same valuetypid. Ever/always equal are valid for all temporal types
+ * the same basetypid. Ever/always equal are valid for all temporal types
  * including temporal points. All the other comparisons are only valid for
  * temporal alphanumeric types.
  *****************************************************************************/
@@ -2042,21 +2042,21 @@ tlinearseq_ever_eq1(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  Oid valuetypid = inst1->valuetypid;
+  Oid basetypid = inst1->basetypid;
 
   /* Constant segment */
-  if (datum_eq(value1, value2, valuetypid) &&
-    datum_eq(value1, value, valuetypid))
+  if (datum_eq(value1, value2, basetypid) &&
+    datum_eq(value1, value, basetypid))
     return true;
 
   /* Test of bounds */
-  if (datum_eq(value1, value, valuetypid))
+  if (datum_eq(value1, value, basetypid))
     return lower_inc;
-  if (datum_eq(value2, value, valuetypid))
+  if (datum_eq(value2, value, basetypid))
     return upper_inc;
 
   /* Interpolation for continuous base type */
-  return tlinearseq_intersection_value(inst1, inst2, value, valuetypid,
+  return tlinearseq_intersection_value(inst1, inst2, value, basetypid,
     NULL, NULL);
 }
 
@@ -2076,7 +2076,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
     for (int i = 0; i < seq->count; i++)
     {
       Datum value1 = tinstant_value(tsequence_inst_n(seq, i));
-      if (datum_eq(value1, value, seq->valuetypid))
+      if (datum_eq(value1, value, seq->basetypid))
         return true;
     }
     return false;
@@ -2109,7 +2109,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(seq->valuetypid) || tgeo_base_type(seq->valuetypid))
+  if (tnumber_base_type(seq->basetypid) || tgeo_base_type(seq->basetypid))
     return true;
 
   /* The following test assumes that the sequence is in normal form */
@@ -2118,7 +2118,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_ne(valueinst, value, seq->valuetypid))
+    if (datum_ne(valueinst, value, seq->basetypid))
       return false;
   }
   return true;
@@ -2131,24 +2131,24 @@ tsequence_always_eq(const TSequence *seq, Datum value)
  * interpolation is ever less than or equal to the base value
  *
  * @param[in] value1,value2 Input base values
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
  * @param[in] value Base value
  */
 static bool
-tlinearseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
+tlinearseq_ever_le1(Datum value1, Datum value2, Oid basetypid,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
-  if (datum_eq(value1, value2, valuetypid))
-    return datum_le(value1, value, valuetypid);
+  if (datum_eq(value1, value2, basetypid))
+    return datum_le(value1, value, basetypid);
   /* Increasing segment */
-  if (datum_lt(value1, value2, valuetypid))
-    return datum_lt(value1, value, valuetypid) ||
-      (lower_inc && datum_eq(value1, value, valuetypid));
+  if (datum_lt(value1, value2, basetypid))
+    return datum_lt(value1, value, basetypid) ||
+      (lower_inc && datum_eq(value1, value, basetypid));
   /* Decreasing segment */
-  return datum_lt(value2, value, valuetypid) ||
-    (upper_inc && datum_eq(value2, value, valuetypid));
+  return datum_lt(value2, value, basetypid) ||
+    (upper_inc && datum_eq(value2, value, basetypid));
 }
 
 /**
@@ -2156,24 +2156,24 @@ tlinearseq_ever_le1(Datum value1, Datum value2, Oid valuetypid,
  * interpolation is always less than the base value
  *
  * @param[in] value1,value2 Input base values
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
  * @param[in] value Base value
  */
 static bool
-tlinearseq_always_lt1(Datum value1, Datum value2, Oid valuetypid,
+tlinearseq_always_lt1(Datum value1, Datum value2, Oid basetypid,
   bool lower_inc, bool upper_inc, Datum value)
 {
   /* Constant segment */
-  if (datum_eq(value1, value2, valuetypid))
-    return datum_lt(value1, value1, valuetypid);
+  if (datum_eq(value1, value2, basetypid))
+    return datum_lt(value1, value1, basetypid);
   /* Increasing segment */
-  if (datum_lt(value1, value2, valuetypid))
-    return datum_lt(value2, value, valuetypid) ||
-      (! upper_inc && datum_eq(value, value2, valuetypid));
+  if (datum_lt(value1, value2, basetypid))
+    return datum_lt(value2, value, basetypid) ||
+      (! upper_inc && datum_eq(value, value2, basetypid));
   /* Decreasing segment */
-  return datum_lt(value1, value, valuetypid) ||
-    (! lower_inc && datum_eq(value1, value, valuetypid));
+  return datum_lt(value1, value, basetypid) ||
+    (! lower_inc && datum_eq(value1, value, basetypid));
 }
 
 /*****************************************************************************/
@@ -2191,7 +2191,7 @@ tsequence_ever_lt(const TSequence *seq, Datum value)
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (datum_lt(valueinst, value, seq->valuetypid))
+    if (datum_lt(valueinst, value, seq->basetypid))
       return true;
   }
   return false;
@@ -2216,7 +2216,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
     for (int i = 0; i < seq->count; i++)
     {
       value1 = tinstant_value(tsequence_inst_n(seq, i));
-      if (datum_le(value1, value, seq->valuetypid))
+      if (datum_le(value1, value, seq->basetypid))
         return true;
     }
     return false;
@@ -2229,7 +2229,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
   {
     Datum value2 = tinstant_value(tsequence_inst_n(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (tlinearseq_ever_le1(value1, value2, seq->valuetypid,
+    if (tlinearseq_ever_le1(value1, value2, seq->basetypid,
       lower_inc, upper_inc, value))
       return true;
     value1 = value2;
@@ -2256,7 +2256,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
     for (int i = 0; i < seq->count; i++)
     {
       value1 = tinstant_value(tsequence_inst_n(seq, i));
-      if (! datum_lt(value1, value, seq->valuetypid))
+      if (! datum_lt(value1, value, seq->basetypid))
         return false;
     }
     return true;
@@ -2269,7 +2269,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
   {
     Datum value2 = tinstant_value(tsequence_inst_n(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (! tlinearseq_always_lt1(value1, value2, seq->valuetypid,
+    if (! tlinearseq_always_lt1(value1, value2, seq->basetypid,
       lower_inc, upper_inc, value))
       return false;
     value1 = value2;
@@ -2291,7 +2291,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers */
-  if (tnumber_base_type(seq->valuetypid))
+  if (tnumber_base_type(seq->basetypid))
     return true;
 
   /* We are sure that the type has stewpwise interpolation since
@@ -2301,7 +2301,7 @@ tsequence_always_le(const TSequence *seq, Datum value)
   for (int i = 0; i < seq->count; i++)
   {
     Datum valueinst = tinstant_value(tsequence_inst_n(seq, i));
-    if (! datum_le(valueinst, value, seq->valuetypid))
+    if (! datum_le(valueinst, value, seq->basetypid))
       return false;
   }
   return true;
@@ -2331,22 +2331,22 @@ tsequence_restrict_value1(TSequence **result,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  Oid valuetypid = inst1->valuetypid;
+  Oid basetypid = inst1->basetypid;
   TInstant *instants[2];
   /* Is the segment constant? */
-  bool isconst = datum_eq(value1, value2, valuetypid);
+  bool isconst = datum_eq(value1, value2, basetypid);
   /* Does the lower bound belong to the answer? */
-  bool lower = atfunc ? datum_eq(value1, value, valuetypid) :
-    datum_ne(value1, value, valuetypid);
+  bool lower = atfunc ? datum_eq(value1, value, basetypid) :
+    datum_ne(value1, value, basetypid);
   /* Does the upper bound belong to the answer? */
-  bool upper = atfunc ? datum_eq(value2, value, valuetypid) :
-    datum_ne(value2, value, valuetypid);
+  bool upper = atfunc ? datum_eq(value2, value, basetypid) :
+    datum_ne(value2, value, basetypid);
   /* For linear interpolation and not constant segment is the
    * value in the interior of the segment? */
   Datum projvalue;
   TimestampTz t;
   bool inter = linear && !isconst && tlinearseq_intersection_value(
-    inst1, inst2, value, valuetypid, &projvalue, &t);
+    inst1, inst2, value, basetypid, &projvalue, &t);
 
   /* Overall segment does not belong to the answer */
   if ((isconst && !lower) ||
@@ -2374,7 +2374,7 @@ tsequence_restrict_value1(TSequence **result,
     if (lower)
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst2->t, valuetypid);
+      instants[1] = tinstant_make(value1, inst2->t, basetypid);
       result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, linear, NORMALIZE_NO);
       pfree(instants[1]);
@@ -2394,10 +2394,10 @@ tsequence_restrict_value1(TSequence **result,
   assert(inter);
   if (atfunc)
   {
-    TInstant *inst = tinstant_make(projvalue, t, valuetypid);
+    TInstant *inst = tinstant_make(projvalue, t, basetypid);
     result[0] = tinstant_to_tsequence(inst, linear);
     pfree(inst);
-    DATUM_FREE(projvalue, valuetypid);
+    DATUM_FREE(projvalue, basetypid);
     return 1;
   }
   else
@@ -2405,7 +2405,7 @@ tsequence_restrict_value1(TSequence **result,
     /* Due to roundoff errors t may be equal to inst1-> or ins2->t */
     if (t == inst1->t)
     {
-      DATUM_FREE(projvalue, valuetypid);
+      DATUM_FREE(projvalue, basetypid);
       if (! lower_inc)
         return 0;
 
@@ -2417,7 +2417,7 @@ tsequence_restrict_value1(TSequence **result,
     }
     else if (t == inst2->t)
     {
-      DATUM_FREE(projvalue, valuetypid);
+      DATUM_FREE(projvalue, basetypid);
       if (! upper_inc)
         return 0;
 
@@ -2430,7 +2430,7 @@ tsequence_restrict_value1(TSequence **result,
     else
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(projvalue, t, valuetypid);
+      instants[1] = tinstant_make(projvalue, t, basetypid);
       result[0] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, false, LINEAR, NORMALIZE_NO);
       instants[0] = instants[1];
@@ -2438,7 +2438,7 @@ tsequence_restrict_value1(TSequence **result,
       result[1] = tsequence_make((const TInstant **) instants, 2,
         false, upper_inc, LINEAR, NORMALIZE_NO);
       pfree(instants[0]);
-      DATUM_FREE(projvalue, valuetypid);
+      DATUM_FREE(projvalue, basetypid);
       return 2;
     }
   }
@@ -2469,7 +2469,7 @@ tsequence_restrict_value2(TSequence **result, const TSequence *seq, Datum value,
     inst1 = tsequence_inst_n(seq, 0);
     /* We do not call the function tinstant_restrict_value since this
      * would create a new unnecessary instant that should be freed here */
-    bool equal = datum_eq(tinstant_value(inst1), value, seq->valuetypid);
+    bool equal = datum_eq(tinstant_value(inst1), value, seq->basetypid);
     if ((atfunc && ! equal) || (! atfunc && equal))
       return 0;
     result[0] = tsequence_copy(seq);
@@ -2655,12 +2655,12 @@ tnumberseq_restrict_range1(TSequence **result,
     TYPECACHE_RANGE_INFO);
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  Oid valuetypid = inst1->valuetypid;
+  Oid basetypid = inst1->basetypid;
   TInstant *instants[2];
   bool contains;
 
   /* Constant segment (step or linear interpolation) */
-  if (datum_eq(value1, value2, valuetypid))
+  if (datum_eq(value1, value2, basetypid))
   {
 #if MOBDB_PGSQL_VERSION < 130000
     contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
@@ -2688,7 +2688,7 @@ tnumberseq_restrict_range1(TSequence **result,
     if ((atfunc && contains) || (! atfunc && ! contains))
     {
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, inst2->t, valuetypid);
+      instants[1] = tinstant_make(value1, inst2->t, basetypid);
       result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inclu, false, linear, NORMALIZE_NO);
       pfree(instants[1]);
@@ -2710,8 +2710,8 @@ tnumberseq_restrict_range1(TSequence **result,
   bool lower_inc1, upper_inc1;
   bool increasing = DatumGetFloat8(value1) < DatumGetFloat8(value2);
   RangeType *valuerange = increasing ?
-    range_make(value1, value2, lower_inclu, upper_inclu, valuetypid) :
-    range_make(value2, value1, upper_inclu, lower_inclu, valuetypid);
+    range_make(value1, value2, lower_inclu, upper_inclu, basetypid) :
+    range_make(value2, value1, upper_inclu, lower_inclu, basetypid);
 #if MOBDB_PGSQL_VERSION < 110000
   RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
     PointerGetDatum(valuerange), PointerGetDatum(range)));
@@ -2750,7 +2750,7 @@ tnumberseq_restrict_range1(TSequence **result,
     if (atfunc)
     {
       t1 = (dlower == dvalue1) ? inst1->t : inst2->t;
-      instants[0] = tinstant_make(lower, t1, valuetypid);
+      instants[0] = tinstant_make(lower, t1, basetypid);
       result[0] = tinstant_to_tsequence(instants[0], linear);
       pfree(instants[0]);
       return 1;
@@ -2799,11 +2799,11 @@ tnumberseq_restrict_range1(TSequence **result,
       instants[i] = (TInstant *) inst2;
     else
     {
-      freei = tfloatseq_intersection_value(inst1, inst2, lower, valuetypid, &t1);
+      freei = tfloatseq_intersection_value(inst1, inst2, lower, basetypid, &t1);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
       instants[i] = RANGE_ROUNDOFF ?
-        tinstant_make(lower, t1, valuetypid) :
+        tinstant_make(lower, t1, basetypid) :
         tsequence_at_timestamp1(inst1, inst2, linear, t1);
     }
 
@@ -2813,11 +2813,11 @@ tnumberseq_restrict_range1(TSequence **result,
       instants[j] = (TInstant *) inst2;
     else
     {
-      freej = tfloatseq_intersection_value(inst1, inst2, upper, valuetypid, &t2);
+      freej = tfloatseq_intersection_value(inst1, inst2, upper, basetypid, &t2);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
       instants[j] = RANGE_ROUNDOFF ?
-        tinstant_make(upper, t2, valuetypid) :
+        tinstant_make(upper, t2, basetypid) :
         tsequence_at_timestamp1(inst1, inst2, linear, t2);
     }
 
@@ -2837,20 +2837,20 @@ tnumberseq_restrict_range1(TSequence **result,
   TInstant *instbounds[2] = {NULL, NULL};
   if (dlower != dvalue1 && dlower != dvalue2)
   {
-    tfloatseq_intersection_value(inst1, inst2, lower, valuetypid, &t1);
+    tfloatseq_intersection_value(inst1, inst2, lower, basetypid, &t1);
     /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
     instbounds[i] = RANGE_ROUNDOFF ?
-      tinstant_make(lower, t1, valuetypid) :
+      tinstant_make(lower, t1, basetypid) :
       tsequence_at_timestamp1(inst1, inst2, linear, t1);
   }
   if (dupper != dvalue1 && dupper != dvalue2)
   {
-    tfloatseq_intersection_value(inst1, inst2, upper, valuetypid, &t2);
+    tfloatseq_intersection_value(inst1, inst2, upper, basetypid, &t2);
     /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
     instbounds[j] = RANGE_ROUNDOFF ?
-      tinstant_make(upper, t2, valuetypid) :
+      tinstant_make(upper, t2, basetypid) :
       tsequence_at_timestamp1(inst1, inst2, linear, t2);
   }
 
@@ -3169,11 +3169,11 @@ Datum
 tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   bool linear, TimestampTz t)
 {
-  Oid valuetypid = inst1->valuetypid;
+  Oid basetypid = inst1->basetypid;
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   /* Constant segment or t is equal to lower bound or step interpolation */
-  if (datum_eq(value1, value2, valuetypid) ||
+  if (datum_eq(value1, value2, basetypid) ||
     inst1->t == t || (! linear && t < inst2->t))
     return tinstant_value_copy(inst1);
 
@@ -3186,15 +3186,15 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
   Datum result = 0;
-  ensure_continuous_base_type_all(valuetypid);
-  if (valuetypid == FLOAT8OID)
+  ensure_continuous_base_type_all(basetypid);
+  if (basetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);
     double end = DatumGetFloat8(value2);
     double dresult = start + (double) ((long double)(end - start) * ratio);
     result = Float8GetDatum(dresult);
   }
-  else if (valuetypid == type_oid(T_DOUBLE2))
+  else if (basetypid == type_oid(T_DOUBLE2))
   {
     double2 *start = DatumGetDouble2P(value1);
     double2 *end = DatumGetDouble2P(value2);
@@ -3203,7 +3203,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
     result = Double2PGetDatum(dresult);
   }
-  else if (valuetypid == type_oid(T_DOUBLE3))
+  else if (basetypid == type_oid(T_DOUBLE3))
   {
     double3 *start = DatumGetDouble3P(value1);
     double3 *end = DatumGetDouble3P(value2);
@@ -3213,7 +3213,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
     result = Double3PGetDatum(dresult);
   }
-  else if (valuetypid == type_oid(T_DOUBLE4))
+  else if (basetypid == type_oid(T_DOUBLE4))
   {
     double4 *start = DatumGetDouble4P(value1);
     double4 *end = DatumGetDouble4P(value2);
@@ -3224,8 +3224,8 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
     result = Double4PGetDatum(dresult);
   }
-  else if (valuetypid == type_oid(T_GEOMETRY) ||
-      valuetypid == type_oid(T_GEOGRAPHY))
+  else if (basetypid == type_oid(T_GEOMETRY) ||
+      basetypid == type_oid(T_GEOGRAPHY))
   {
     result = geoseg_interpolate_point(value1, value2, ratio);
   }
@@ -3304,8 +3304,8 @@ tsequence_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   bool linear, TimestampTz t)
 {
   Datum value = tsequence_value_at_timestamp1(inst1, inst2, linear, t);
-  TInstant *result = tinstant_make(value, t, inst1->valuetypid);
-  DATUM_FREE(value, inst1->valuetypid);
+  TInstant *result = tinstant_make(value, t, inst1->basetypid);
+  DATUM_FREE(value, inst1->basetypid);
   return result;
 }
 
@@ -3387,7 +3387,7 @@ tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
       else
       {
         instants[n] = tinstant_make(tinstant_value(instants[n - 1]), t,
-          inst1->valuetypid);
+          inst1->basetypid);
         result[k++] = tsequence_make((const TInstant **) instants, n + 1,
           seq->period.lower_inc, false, linear, NORMALIZE_NO);
         pfree(instants[n]);
@@ -3400,7 +3400,7 @@ tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
       instants[n + 1] = linear ?
         tsequence_at_timestamp1(inst1, inst2, true, t) :
         tinstant_make(tinstant_value(inst1), t,
-          inst1->valuetypid);
+          inst1->basetypid);
       result[k++] = tsequence_make((const TInstant **) instants, n + 2,
         seq->period.lower_inc, false, linear, NORMALIZE_NO);
       pfree(instants[n + 1]);
@@ -3563,7 +3563,7 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
       else
       {
         instants[l] = tinstant_make(tinstant_value(instants[l - 1]),
-          t, inst->valuetypid);
+          t, inst->basetypid);
         result[k++] = tsequence_make((const TInstant **) instants, l + 1,
           lower_inc, false, linear, NORMALIZE_NO);
         pfree(instants[l]);
@@ -3588,7 +3588,7 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
         instants[l] = linear ?
           tsequence_at_timestamp1(instants[l - 1], inst, true, t) :
           tinstant_make(tinstant_value(instants[l - 1]), t,
-            inst->valuetypid);
+            inst->basetypid);
         result[k++] = tsequence_make((const TInstant **) instants, l + 1,
           lower_inc, false, linear, NORMALIZE_NO);
         if (tofree)
@@ -3684,7 +3684,7 @@ tsequence_at_period(const TSequence *seq, const Period *p)
   else
   {
     Datum value = tinstant_value(instants[k - 1]);
-    instants[k++] = tinstant_make(value, inter->upper, seq->valuetypid);
+    instants[k++] = tinstant_make(value, inter->upper, seq->basetypid);
   }
   /* Since by definition the sequence is normalized it is not necessary to
    * normalize the projection of the sequence to the period */
@@ -3967,7 +3967,7 @@ tnumberseq_integral(const TSequence *seq)
     else
     {
       /* Step interpolation */
-      result += datum_double(tinstant_value(inst1), inst1->valuetypid) *
+      result += datum_double(tinstant_value(inst1), inst1->basetypid) *
         (double) (inst2->t - inst1->t);
     }
     inst1 = inst2;
@@ -3986,7 +3986,7 @@ tnumberseq_twavg(const TSequence *seq)
   if (duration == 0.0)
     /* Instantaneous sequence */
     result = datum_double(tinstant_value(tsequence_inst_n(seq, 0)),
-      seq->valuetypid);
+      seq->basetypid);
   else
     result = tnumberseq_integral(seq) / duration;
   return result;
@@ -4005,7 +4005,7 @@ tnumberseq_twavg(const TSequence *seq)
 bool
 tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 {
-  assert(seq1->valuetypid == seq2->valuetypid);
+  assert(seq1->basetypid == seq2->basetypid);
   /* If number of sequences, flags, or periods are not equal */
   if (seq1->count != seq2->count || seq1->flags != seq2->flags ||
       ! period_eq_internal(&seq1->period, &seq2->period))
@@ -4014,7 +4014,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
   /* If bounding boxes are not equal */
   void *box1 = tsequence_bbox_ptr(seq1);
   void *box2 = tsequence_bbox_ptr(seq2);
-  if (! temporal_bbox_eq(box1, box2, seq1->valuetypid))
+  if (! temporal_bbox_eq(box1, box2, seq1->basetypid))
     return false;
 
   /* Compare the composing instants */
@@ -4039,7 +4039,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 int
 tsequence_cmp(const TSequence *seq1, const TSequence *seq2)
 {
-  assert(seq1->valuetypid == seq2->valuetypid);
+  assert(seq1->basetypid == seq2->basetypid);
 
   /* Compare composing instants */
   int count = Min(seq1->count, seq2->count);

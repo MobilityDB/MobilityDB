@@ -402,8 +402,8 @@ PG_FUNCTION_INFO_V1(intersects_geo_tpoint);
 PGDLLEXPORT Datum
 intersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  bool geod = (basetypid == type_oid(T_GEOGRAPHY));
   return spatialrel_geo_tpoint(fcinfo, geod ?
     (varfunc) &geog_intersects : (varfunc) &geom_intersects2d, 2);
 }
@@ -416,8 +416,8 @@ PG_FUNCTION_INFO_V1(intersects_tpoint_geo);
 PGDLLEXPORT Datum
 intersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  bool geod = (basetypid == type_oid(T_GEOGRAPHY));
   return spatialrel_tpoint_geo(fcinfo, geod ?
     (varfunc) &geog_intersects : (varfunc) &geom_intersects2d, 2);
 }
@@ -458,8 +458,8 @@ PG_FUNCTION_INFO_V1(dwithin_geo_tpoint);
 PGDLLEXPORT Datum
 dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  bool geod = (basetypid == type_oid(T_GEOGRAPHY));
   return spatialrel_geo_tpoint(fcinfo, geod ?
     (varfunc) &geog_dwithin : (varfunc) &geom_dwithin2d, 3);
 }
@@ -472,8 +472,8 @@ PG_FUNCTION_INFO_V1(dwithin_tpoint_geo);
 PGDLLEXPORT Datum
 dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  bool geod = (valuetypid == type_oid(T_GEOGRAPHY));
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  bool geod = (basetypid == type_oid(T_GEOGRAPHY));
   return spatialrel_tpoint_geo(fcinfo, geod ?
     (varfunc) &geog_dwithin : (varfunc) &geom_dwithin2d, 3);
 }
