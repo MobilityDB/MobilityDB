@@ -143,7 +143,7 @@ extern bool _ready;
 
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
-extern Datum fill_tempcache(PG_FUNCTION_ARGS);
+extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 #endif /* TEMPCACHE_H */
 

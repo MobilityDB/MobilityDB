@@ -1,19 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
-=======
->>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 	<sect1>
 		<title>Functions and Operators for Temporal Network Points</title>
     
 		<sect2>
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 		<title>Static Network Types</title>
 
 			<sect3>
@@ -204,14 +193,7 @@
 		</sect2>
 	</sect1>
 
-<<<<<<< HEAD
-=======
-<chapter id="temporal_network_points">
-	<title>Temporal Network Points</title>
-
-		<sect1>
-=======
->>>>>>> Synchronize npoint with latest MobilityDB version
+	<sect1>
 		<title>Static Network Types</title>
 
 			<sect3>
@@ -401,11 +383,3 @@
 			</sect3>
 		</sect2>
 	</sect1>
-<<<<<<< HEAD
-</chapter>
->>>>>>> Synchronize npoint with latest MobilityDB version
-=======
-
->>>>>>> Synchronize npoint with latest MobilityDB version
-=======
->>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560

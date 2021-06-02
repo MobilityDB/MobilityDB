@@ -4,11 +4,6 @@ add_test(
 	COMMAND ${PROJECT_SOURCE_DIR}/test/scripts/test.sh run_passfail ${CMAKE_BINARY_DIR} load_npoint_tables "../npoint/test/scripts/load.sql.xz"
 )
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DBNPOINT)
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DB)
 set_tests_properties(load_npoint_tables PROPERTIES DEPENDS create_extension)
@@ -35,13 +30,8 @@ foreach(file ${npoint_testfiles})
 		set_tests_properties(${TESTNAME} PROPERTIES RESOURCE_LOCK DBLOCK)
 	endif()
 endforeach()
-<<<<<<< HEAD
-=======
-set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DB)
-=======
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DBNPOINT)
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DB)
->>>>>>> Improve temporal cache
 set_tests_properties(load_npoint_tables PROPERTIES DEPENDS create_extension)
 
 file(GLOB npoint_testfiles "npoint/test/queries/*.sql")
@@ -66,10 +56,3 @@ foreach(file ${npoint_testfiles})
 		set_tests_properties(${TESTNAME} PROPERTIES RESOURCE_LOCK DBLOCK)
 	endif()
 endforeach()
-<<<<<<< HEAD
-
->>>>>>> Synchronize npoint with latest MobilityDB version
-=======
->>>>>>> Improve temporal cache
-=======
->>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
