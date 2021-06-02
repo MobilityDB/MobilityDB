@@ -171,7 +171,534 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
 }
 
 /*****************************************************************************
- * Utility functions
+ * Test families of temporal/base types and parameter tests
+ *****************************************************************************/
+
+/**
+ * Returns true if the Oid is a temporal type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+temporal_type(Oid typid)
+{
+  if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
+    typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
+    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is an external base type supported by MobilityDB
+ */
+void
+ensure_temporal_base_type(Oid basetypid)
+{
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY))
+    elog(ERROR, "unknown base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Ensures that the Oid is an external or an internal base type
+ * supported by MobilityDB
+ */
+void
+ensure_temporal_base_type_all(Oid basetypid)
+{
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != TIMESTAMPTZOID && basetypid != type_oid(T_DOUBLE2) &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4))
+    elog(ERROR, "unknown base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Returns true if the Oid corresponds to a continuous base type
+ */
+bool
+continuous_base_type(Oid type)
+{
+  if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
+    type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
+    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is an external base type that is continuous
+ */
+void
+ensure_continuous_base_type(Oid basetypid)
+{
+  if (basetypid != FLOAT8OID &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY))
+    elog(ERROR, "unknown continuous base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Ensures that the Oid is an internal or external base type that is continuous
+ */
+void
+ensure_continuous_base_type_all(Oid basetypid)
+{
+  if (basetypid != FLOAT8OID &&
+    basetypid !=  type_oid(T_DOUBLE2) &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4))
+    elog(ERROR, "unknown continuous base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Returns true if the Oid is a alpha base type (i.e., those whose bounding
+ * box is a period) supported by MobilityDB
+ */
+bool
+talpha_base_type(Oid typid)
+{
+  if (typid == BOOLOID || typid == TEXTOID)
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_type(Oid typid)
+{
+  if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
+    return true;
+  return false;
+}
+
+/**
+ * Test whether the Oid is a number base type supported by MobilityDB
+ */
+bool
+tnumber_base_type(Oid typid)
+{
+  if (typid == INT4OID || typid == FLOAT8OID)
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a number base type supported by MobilityDB
+ */
+void
+ensure_tnumber_base_type(Oid basetypid)
+{
+  if (! tnumber_base_type(basetypid))
+    elog(ERROR, "unknown number base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_range_type(Oid typid)
+{
+  if (typid == type_oid(T_INTRANGE) || typid == type_oid(T_FLOATRANGE))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a range type
+ */
+void
+ensure_tnumber_range_type(Oid typid)
+{
+  if (! tnumber_range_type(typid))
+    elog(ERROR, "unknown number range type: %d", typid);
+  return;
+}
+
+/**
+ * Returns true if the Oid is a temporal point type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tgeo_type(Oid typid)
+{
+  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a point base type supported by MobilityDB
+ */
+bool
+tgeo_base_type(Oid typid)
+{
+  if (typid == type_oid(T_GEOMETRY) ||
+    typid == type_oid(T_GEOGRAPHY))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+void
+ensure_tgeo_base_type(Oid basetypid)
+{
+  if (! tgeo_base_type(basetypid))
+    elog(ERROR, "unknown geospatial base type: %d", basetypid);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Ensures that the number is positive
+ */
+void
+ensure_positive_datum(Datum size, Oid type)
+{
+  ensure_tnumber_base_type(type);
+  if (type == INT4OID)
+  {
+    int isize = DatumGetInt32(size);
+    if (isize <= 0)
+      elog(ERROR, "The value must be positive: %d", isize);
+  }
+  else
+  {
+    double dsize = DatumGetFloat8(size);
+    if (dsize <= 0.0)
+      elog(ERROR, "The value must be positive: %f", dsize);
+  }
+  return;
+}
+
+/**
+ * Ensures that the interval is a positive and absolute duration
+ */
+void
+ensure_valid_duration(const Interval *duration)
+{
+  if (duration->month != 0)
+  {
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("Interval defined in terms of month, year, century etc. not supported")));
+  }
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
+    PointerGetDatum(&intervalzero));
+  if (cmp <= 0)
+  {
+    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
+    elog(ERROR, "The interval must be positive: %s", t);
+  }
+  return;
+}
+
+/**
+ * Ensures that the temporal type is valid
+ *
+ * @note Used for the dispatch functions
+ */
+void
+ensure_valid_tempsubtype(int16 subtype)
+{
+  if (subtype != INSTANT && subtype != INSTANTSET &&
+    subtype != SEQUENCE && subtype != SEQUENCESET)
+    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
+  return;
+}
+
+/**
+ * Ensures that the temporal type is valid
+ *
+ * @note Used for the analyze and selectivity functions
+ */
+void
+ensure_valid_tempsubtype_all(int16 subtype)
+{
+  if (subtype != ANYTEMPSUBTYPE &&
+    subtype != INSTANT && subtype != INSTANTSET &&
+    subtype != SEQUENCE && subtype != SEQUENCESET)
+    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
+  return;
+}
+
+/**
+ * Ensures that the temporal type is a sequence (set)
+ */
+void
+ensure_sequences_type(int16 subtype)
+{
+  if (subtype != SEQUENCE && subtype != SEQUENCESET)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Input must be a temporal sequence (set)")));
+  return;
+}
+
+/**
+ * Ensures that the elements of the array are of instant subtype
+ */
+void
+ensure_tinstantarr(TInstant **instants, int count)
+{
+  for (int i = 0; i < count; i++)
+  {
+    if (instants[i]->subtype != INSTANT)
+    {
+      pfree(instants);
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Input values must be temporal instants")));
+    }
+  }
+  return;
+}
+
+
+/**
+ * Ensures that the array is not empty
+ *
+ * @note Used for the constructor functions
+ */
+void
+ensure_non_empty_array(ArrayType *array)
+{
+  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("The input array cannot be empty")));
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Ensure that the temporal value has linear interpolation
+ */
+void
+ensure_linear_interpolation(int16 flags)
+{
+  if (! MOBDB_FLAGS_GET_LINEAR(flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal value must have linear interpolation")));
+  return;
+}
+
+/**
+ * Ensure that the temporal values have at least one common dimension
+ */
+void
+ensure_common_dimension(int16 flags1, int16 flags2)
+{
+  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) &&
+    MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The temporal values must have at least one common dimension")));
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * Ensures that the two temporal values have the same base type
+ */
+void
+ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
+{
+  if (temp1->basetypid != temp2->basetypid)
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("The temporal values must be of the same base type")));
+  return;
+}
+
+/**
+ * Ensures that the two temporal values have the same interpolation
+ */
+void
+ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
+{
+  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("The temporal values must be of the same interpolation")));
+  return;
+}
+
+/**
+ * Ensures that the timestamp of the first temporal instant is smaller
+ * (or equal if the merge parameter is true) than the one of the second
+ * temporal instant. Moreover, ensures that the values are the same
+ * if the timestamps are equal
+ */
+void
+ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
+  bool merge)
+{
+  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
+  {
+    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
+    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+  }
+  if (merge && inst1->t == inst2->t &&
+    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->basetypid))
+  {
+    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
+    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+      errmsg("The temporal values have different value at their overlapping instant %s", t1)));
+  }
+  return;
+}
+
+/**
+ * Ensures that all temporal instant values of the array have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ */
+void
+ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge)
+{
+  for (int i = 1; i < count; i++)
+  {
+    ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
+    ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+  }
+  return;
+}
+
+/**
+ * Ensures that all temporal instant values of the array have increasing
+ * timestamp, and if they are temporal points, have the same srid and the
+ * same dimensionality
+ */
+void
+ensure_valid_tsequencearr(const TSequence **sequences, int count)
+{
+  for (int i = 1; i < count; i++)
+  {
+    ensure_same_interpolation((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
+    if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
+      (sequences[i - 1]->period.upper == sequences[i]->period.lower &&
+      sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
+    {
+      char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
+      char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
+      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
+        errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
+    }
+    ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
+  }
+  return;
+}
+
+/*****************************************************************************
+ * Oid functions
+ *****************************************************************************/
+
+/**
+ * Returns the Oid of the range type corresponding to the Oid of the
+ * base type
+ */
+Oid
+range_oid_from_base(Oid basetypid)
+{
+  Oid result = 0;
+  ensure_tnumber_base_type(basetypid);
+  if (basetypid == INT4OID)
+    result = type_oid(T_INTRANGE);
+  else /* basetypid == FLOAT8OID */
+    result = type_oid(T_FLOATRANGE);
+  return result;
+}
+
+/**
+ * Returns the Oid of the temporal type corresponding to the Oid of the
+ * base type
+ */
+Oid
+temporal_oid_from_base(Oid basetypid)
+{
+  Oid result = 0;
+  ensure_temporal_base_type(basetypid);
+  if (basetypid == BOOLOID)
+    result = type_oid(T_TBOOL);
+  if (basetypid == INT4OID)
+    result = type_oid(T_TINT);
+  if (basetypid == FLOAT8OID)
+    result = type_oid(T_TFLOAT);
+  if (basetypid == TEXTOID)
+    result = type_oid(T_TTEXT);
+  if (basetypid == type_oid(T_GEOMETRY))
+    result = type_oid(T_TGEOMPOINT);
+  if (basetypid == type_oid(T_GEOGRAPHY))
+    result = type_oid(T_TGEOGPOINT);
+  return result;
+}
+
+/**
+ * Returns the Oid of the base type corresponding to the Oid of the
+ * temporal type
+ */
+Oid
+base_oid_from_temporal(Oid temptypid)
+{
+  assert(temporal_type(temptypid));
+  Oid result = 0;
+  if (temptypid == type_oid(T_TBOOL))
+    result = BOOLOID;
+  else if (temptypid == type_oid(T_TINT))
+    result = INT4OID;
+  else if (temptypid == type_oid(T_TFLOAT))
+    result = FLOAT8OID;
+  else if (temptypid == type_oid(T_TTEXT))
+    result = TEXTOID;
+  else if (temptypid == type_oid(T_TGEOMPOINT))
+    result = type_oid(T_GEOMETRY);
+  else if (temptypid == type_oid(T_TGEOGPOINT))
+    result = type_oid(T_GEOGRAPHY);
+  return result;
+}
+
+/*****************************************************************************
+ * Trajectory functions
+ *****************************************************************************/
+
+/**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+bool
+type_has_precomputed_trajectory(Oid basetypid)
+{
+  if (tgeo_base_type(basetypid))
+    return true;
+  return false;
+}
+
+/*****************************************************************************
+ * Miscellaneous functions
  *****************************************************************************/
 
 /**
@@ -328,536 +855,8 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
-/**
- * Returns true if the Oid corresponds to a continuous base type
- */
-bool
-continuous_base_type(Oid type)
-{
-  if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
-    type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
-    type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
-    return true;
-  return false;
-}
-
 /*****************************************************************************
- * Oid functions
- *****************************************************************************/
-
-/**
- * Returns the Oid of the range type corresponding to the Oid of the
- * base type
- */
-Oid
-range_oid_from_base(Oid basetypid)
-{
-  Oid result = 0;
-  ensure_tnumber_base_type(basetypid);
-  if (basetypid == INT4OID)
-    result = type_oid(T_INTRANGE);
-  else /* basetypid == FLOAT8OID */
-    result = type_oid(T_FLOATRANGE);
-  return result;
-}
-
-/**
- * Returns the Oid of the temporal type corresponding to the Oid of the
- * base type
- */
-Oid
-temporal_oid_from_base(Oid basetypid)
-{
-  Oid result = 0;
-  ensure_temporal_base_type(basetypid);
-  if (basetypid == BOOLOID)
-    result = type_oid(T_TBOOL);
-  if (basetypid == INT4OID)
-    result = type_oid(T_TINT);
-  if (basetypid == FLOAT8OID)
-    result = type_oid(T_TFLOAT);
-  if (basetypid == TEXTOID)
-    result = type_oid(T_TTEXT);
-  if (basetypid == type_oid(T_GEOMETRY))
-    result = type_oid(T_TGEOMPOINT);
-  if (basetypid == type_oid(T_GEOGRAPHY))
-    result = type_oid(T_TGEOGPOINT);
-  return result;
-}
-
-/**
- * Returns the Oid of the base type corresponding to the Oid of the
- * temporal type
- */
-Oid
-base_oid_from_temporal(Oid temptypid)
-{
-  assert(temporal_type(temptypid));
-  Oid result = 0;
-  if (temptypid == type_oid(T_TBOOL))
-    result = BOOLOID;
-  else if (temptypid == type_oid(T_TINT))
-    result = INT4OID;
-  else if (temptypid == type_oid(T_TFLOAT))
-    result = FLOAT8OID;
-  else if (temptypid == type_oid(T_TTEXT))
-    result = TEXTOID;
-  else if (temptypid == type_oid(T_TGEOMPOINT))
-    result = type_oid(T_GEOMETRY);
-  else if (temptypid == type_oid(T_TGEOGPOINT))
-    result = type_oid(T_GEOGRAPHY);
-  return result;
-}
-
-/*****************************************************************************
- * Trajectory functions
- *****************************************************************************/
-
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-type_has_precomputed_trajectory(Oid basetypid)
-{
-  if (tgeo_base_type(basetypid))
-    return true;
-  return false;
-}
-
-/*****************************************************************************
- * Test families of base types and temporal types
- *****************************************************************************/
-
-/**
- * Returns true if the Oid is a alpha base type (i.e., those whose bounding
- * box is a period) supported by MobilityDB
- */
-bool
-talpha_base_type(Oid typid)
-{
-  if (typid == BOOLOID || typid == TEXTOID)
-    return true;
-  return false;
-}
-
-/**
- * Test whether the Oid is a number base type supported by MobilityDB
- */
-bool
-tnumber_base_type(Oid typid)
-{
-  if (typid == INT4OID || typid == FLOAT8OID)
-    return true;
-  return false;
-}
-
-/**
- * Returns true if the Oid is a temporal number type
- *
- * @note Function used in particular in the indexes
- */
-bool
-tnumber_range_type(Oid typid)
-{
-  if (typid == type_oid(T_INTRANGE) || typid == type_oid(T_FLOATRANGE))
-    return true;
-  return false;
-}
-
-/**
- * Ensures that the Oid is a point base type supported by MobilityDB
- */
-bool
-tgeo_base_type(Oid typid)
-{
-  if (typid == type_oid(T_GEOMETRY) ||
-    typid == type_oid(T_GEOGRAPHY))
-    return true;
-  return false;
-}
-
-/**
- * Returns true if the Oid is a temporal type
- *
- * @note Function used in particular in the indexes
- */
-bool
-temporal_type(Oid typid)
-{
-  if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
-    typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
-    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
-    return true;
-  return false;
-}
-
-/**
- * Returns true if the Oid is a temporal number type
- *
- * @note Function used in particular in the indexes
- */
-bool
-tnumber_type(Oid typid)
-{
-  if (typid == type_oid(T_TINT) || typid == type_oid(T_TFLOAT))
-    return true;
-  return false;
-}
-
-/**
- * Returns true if the Oid is a temporal point type
- *
- * @note Function used in particular in the indexes
- */
-bool
-tgeo_type(Oid typid)
-{
-  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
-    return true;
-  return false;
-}
-
-/*****************************************************************************
- * Parameter tests
- *****************************************************************************/
-
-/**
- * Ensures that the number is positive
- */
-void
-ensure_positive_datum(Datum size, Oid type)
-{
-  ensure_tnumber_base_type(type);
-  if (type == INT4OID)
-  {
-    int isize = DatumGetInt32(size);
-    if (isize <= 0)
-      elog(ERROR, "The value must be positive: %d", isize);
-  }
-  else
-  {
-    double dsize = DatumGetFloat8(size);
-    if (dsize <= 0.0)
-      elog(ERROR, "The value must be positive: %f", dsize);
-  }
-  return;
-}
-
-/**
- * Ensures that the interval is a positive and absolute duration
- */
-void
-ensure_valid_duration(const Interval *duration)
-{
-  if (duration->month != 0)
-  {
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("Interval defined in terms of month, year, century etc. not supported")));
-  }
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
-    PointerGetDatum(&intervalzero));
-  if (cmp <= 0)
-  {
-    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The interval must be positive: %s", t);
-  }
-  return;
-}
-
-/**
- * Ensures that the temporal type is valid
- *
- * @note Used for the dispatch functions
- */
-void
-ensure_valid_tempsubtype(int16 subtype)
-{
-  if (subtype != INSTANT && subtype != INSTANTSET &&
-    subtype != SEQUENCE && subtype != SEQUENCESET)
-    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
-  return;
-}
-
-/**
- * Ensures that the temporal type is valid
- *
- * @note Used for the analyze and selectivity functions
- */
-void
-ensure_valid_tempsubtype_all(int16 subtype)
-{
-  if (subtype != ANYTEMPSUBTYPE &&
-    subtype != INSTANT && subtype != INSTANTSET &&
-    subtype != SEQUENCE && subtype != SEQUENCESET)
-    elog(ERROR, "unknown subtype for temporal type: %d", subtype);
-  return;
-}
-
-/**
- * Ensures that the temporal type is a sequence (set)
- */
-void
-ensure_sequences_type(int16 subtype)
-{
-  if (subtype != SEQUENCE && subtype != SEQUENCESET)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal sequence (set)")));
-  return;
-}
-
-/**
- * Ensures that the elements of the array are of instant subtype
- */
-void
-ensure_tinstantarr(TInstant **instants, int count)
-{
-  for (int i = 0; i < count; i++)
-  {
-    if (instants[i]->subtype != INSTANT)
-    {
-      pfree(instants);
-      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Input values must be temporal instants")));
-    }
-  }
-  return;
-}
-
-/**
- * Ensures that the Oid is an external base type supported by MobilityDB
- */
-void
-ensure_temporal_base_type(Oid basetypid)
-{
-  if (basetypid != BOOLOID && basetypid != INT4OID &&
-    basetypid != FLOAT8OID && basetypid != TEXTOID &&
-    basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the Oid is an external or an internal base type
- * supported by MobilityDB
- */
-void
-ensure_temporal_base_type_all(Oid basetypid)
-{
-  if (basetypid != BOOLOID && basetypid != INT4OID &&
-    basetypid != FLOAT8OID && basetypid != TEXTOID &&
-    basetypid != TIMESTAMPTZOID && basetypid != type_oid(T_DOUBLE2) &&
-    basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY) &&
-    basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4))
-    elog(ERROR, "unknown base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the Oid is an external base type that is continuous
- */
-void
-ensure_continuous_base_type(Oid basetypid)
-{
-  if (basetypid != FLOAT8OID &&
-    basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown continuous base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the Oid is an internal or external base type that is continuous
- */
-void
-ensure_continuous_base_type_all(Oid basetypid)
-{
-  if (basetypid != FLOAT8OID &&
-    basetypid !=  type_oid(T_DOUBLE2) &&
-    basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY) &&
-    basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4))
-    elog(ERROR, "unknown continuous base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the Oid is a range type
- */
-void
-ensure_tnumber_range_type(Oid typid)
-{
-  if (! tnumber_range_type(typid))
-    elog(ERROR, "unknown number range type: %d", typid);
-  return;
-}
-
-/**
- * Ensures that the Oid is a number base type supported by MobilityDB
- */
-void
-ensure_tnumber_base_type(Oid basetypid)
-{
-  if (! tnumber_base_type(basetypid))
-    elog(ERROR, "unknown number base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the Oid is a point base type supported by MobilityDB
- */
-void
-ensure_tgeo_base_type(Oid basetypid)
-{
-  if (! tgeo_base_type(basetypid))
-    elog(ERROR, "unknown geospatial base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the array is not empty
- *
- * @note Used for the constructor functions
- */
-void
-ensure_non_empty_array(ArrayType *array)
-{
-  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The input array cannot be empty")));
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * Ensure that the temporal value has linear interpolation
- */
-void
-ensure_linear_interpolation(int16 flags)
-{
-  if (! MOBDB_FLAGS_GET_LINEAR(flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal value must have linear interpolation")));
-  return;
-}
-
-/**
- * Ensure that the temporal values have at least one common dimension
- */
-void
-ensure_common_dimension(int16 flags1, int16 flags2)
-{
-  if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) &&
-    MOBDB_FLAGS_GET_T(flags1) != MOBDB_FLAGS_GET_T(flags2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal values must have at least one common dimension")));
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * Ensures that the two temporal values have the same base type
- */
-void
-ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
-{
-  if (temp1->basetypid != temp2->basetypid)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must be of the same base type")));
-  return;
-}
-
-/**
- * Ensures that the two temporal values have the same interpolation
- */
-void
-ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
-{
-  if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must be of the same interpolation")));
-  return;
-}
-
-/**
- * Ensures that the timestamp of the first temporal instant is smaller
- * (or equal if the merge parameter is true) than the one of the second
- * temporal instant. Moreover, ensures that the values are the same
- * if the timestamps are equal
- */
-void
-ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
-  bool merge)
-{
-  if ((merge && inst1->t > inst2->t) || (!merge && inst1->t >= inst2->t))
-  {
-    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-    char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst2->t));
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-      errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
-  }
-  if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->basetypid))
-  {
-    char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values have different value at their overlapping instant %s", t1)));
-  }
-  return;
-}
-
-/**
- * Ensures that all temporal instant values of the array have increasing
- * timestamp (or may be equal if the merge parameter is true), and if they
- * are temporal points, have the same srid and the same dimensionality.
- */
-void
-ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge)
-{
-  for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
-    ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-  }
-  return;
-}
-
-/**
- * Ensures that all temporal instant values of the array have increasing
- * timestamp, and if they are temporal points, have the same srid and the
- * same dimensionality
- */
-void
-ensure_valid_tsequencearr(const TSequence **sequences, int count)
-{
-  for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *) sequences[i - 1], (Temporal *) sequences[i]);
-    if (sequences[i - 1]->period.upper > sequences[i]->period.lower ||
-      (sequences[i - 1]->period.upper == sequences[i]->period.lower &&
-      sequences[i - 1]->period.upper_inc && sequences[i]->period.lower_inc))
-    {
-      char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i - 1]->period.upper));
-      char *t2 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(sequences[i]->period.lower));
-      ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
-    }
-    ensure_spatial_validity((Temporal *)sequences[i - 1], (Temporal *)sequences[i]);
-  }
-  return;
-}
-
-/*****************************************************************************
- * Utility functions
+ * Version functions
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(mobilitydb_version);

@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 /**
- * @file oidcache.h
+ * @file tempcache.h
  * Functions for building a cache of type and operator Oids.
  */
 

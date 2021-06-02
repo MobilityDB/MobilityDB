@@ -165,8 +165,8 @@ populate_temptype_cache()
   {
     bzero(_temptype_cache, sizeof(_temptype_cache));
     /*
-     * This fetches the pre-computed operator cache from the catalog where
-     * it is stored in a table. See the fill_opcache function below.
+     * This fetches the pre-computed temporal type cache from the catalog
+     * where it is stored in a table.
      */
     Oid catalog = RelnameGetRelid("mobilitydb_typcache");
 #if MOBDB_PGSQL_VERSION < 130000
@@ -367,13 +367,13 @@ oper_oid(CachedOp op, CachedType lt, CachedType rt)
   return _op_oids[op][lt][rt];
 }
 
-PG_FUNCTION_INFO_V1(fill_tempcache);
+PG_FUNCTION_INFO_V1(fill_opcache);
 /**
  * Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it as a table in the catalog
  */
 PGDLLEXPORT Datum
-fill_tempcache(PG_FUNCTION_ARGS)
+fill_opcache(PG_FUNCTION_ARGS)
 {
   Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if MOBDB_PGSQL_VERSION < 130000

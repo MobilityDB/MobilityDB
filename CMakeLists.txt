@@ -79,7 +79,7 @@ src/sql/38_temporal_aggfuncs.in.sql
 src/sql/40_temporal_waggfuncs.in.sql
 src/sql/42_temporal_gist.in.sql
 src/sql/44_temporal_spgist.in.sql
-src/sql/99_oidcache.in.sql
+src/sql/99_tempcache.in.sql
 )
 
 include(CTest)
