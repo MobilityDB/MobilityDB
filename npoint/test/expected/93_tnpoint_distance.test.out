@@ -1,12 +1,18 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT round(geometry 'SRID=5676;Point(1 1)' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
               round               
 ----------------------------------
  90.386909@2000-01-01 00:00:00+00
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT round(geometry 'SRID=5676;Point(1 1)' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
@@ -149,6 +155,7 @@ SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Np
 
 SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
           round           
+<<<<<<< HEAD
 =======
 SELECT geometry 'SRID=5676;Point(1 1)' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01';
                 ?column?                 
@@ -304,23 +311,32 @@ SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint 'Npoint(1, 0.5)@2000-01-0
 SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
           round           
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------
  0@2000-01-01 00:00:00+00
 (1 row)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
               round               
 ----------------------------------
  14.267787@2000-01-01 00:00:00+00
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
           round           
+<<<<<<< HEAD
 =======
 SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01';
                 ?column?                 
@@ -337,18 +353,24 @@ SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1,
 SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
           round           
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------
  0@2000-01-01 00:00:00+00
 (1 row)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint 'Npoint(1, 0.5)@2000-01-01', 6);
               round               
 ----------------------------------
  21.392016@2000-01-01 00:00:00+00
+<<<<<<< HEAD
 <<<<<<< HEAD
 (1 row)
 
@@ -367,6 +389,8 @@ SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1
  21.392015699257@2000-01-01 00:00:00+00
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
@@ -376,6 +400,7 @@ SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '{Npoint(1, 0.3)@20
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}';
                                     ?column?                                    
 >>>>>>> Synchronize npoint with latest MobilityDB version
@@ -383,19 +408,29 @@ SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1,
 SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
                                      round                                      
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
+                                     round                                      
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------------------------------------------------------------
  {0@2000-01-01 00:00:00+00, 0@2000-01-02 00:00:00+00, 0@2000-01-03 00:00:00+00}
 (1 row)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
                                             round                                             
 ----------------------------------------------------------------------------------------------
  {7.124928@2000-01-01 00:00:00+00, 7.133893@2000-01-02 00:00:00+00, 0@2000-01-03 00:00:00+00}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 6);
@@ -406,6 +441,7 @@ SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Np
 
 SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
           round           
+<<<<<<< HEAD
 =======
 SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}';
                                                    ?column?                                                   
@@ -429,18 +465,24 @@ SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '[Npoint(1, 0.2)@2000-01-
 SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
           round           
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------
  0@2000-01-01 00:00:00+00
 (1 row)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
                                             round                                             
 ----------------------------------------------------------------------------------------------
  {7.124928@2000-01-01 00:00:00+00, 7.133893@2000-01-02 00:00:00+00, 0@2000-01-03 00:00:00+00}
+<<<<<<< HEAD
 <<<<<<< HEAD
 (1 row)
 
@@ -457,15 +499,21 @@ SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1,
                        ?column?                       
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
                         round                         
+<<<<<<< HEAD
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ------------------------------------------------------
  [0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00]
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
@@ -478,19 +526,29 @@ SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1
 SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
                          round                          
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 6);
+                         round                          
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------------------------------------
  {[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00]}
 (1 row)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT round(tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
               round               
 ----------------------------------
  21.392016@2000-01-01 00:00:00+00
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
@@ -501,6 +559,7 @@ SELECT round(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npo
 
 SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
                          round                          
+<<<<<<< HEAD
 =======
 SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}';
                 ?column?                
@@ -524,10 +583,13 @@ SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1,
 SELECT round(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
                          round                          
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------------------------------------
  {[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00]}
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
@@ -540,6 +602,10 @@ SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1
 SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
                                                     round                                                     
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT round(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}' <-> tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 6);
+                                                    round                                                     
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 --------------------------------------------------------------------------------------------------------------
  {[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)

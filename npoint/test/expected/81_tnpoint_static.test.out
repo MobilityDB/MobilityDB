@@ -161,6 +161,7 @@ SELECT st_astext(nsegment 'nsegment(1,0.5,0.7)'::geometry);
 SELECT (npoint 'npoint(1,0.2)'::geometry)::npoint;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             npoint             
 -------------------------------
  NPoint(1,0.20000000000000093)
@@ -174,6 +175,11 @@ SELECT (npoint 'npoint(1,0.2)'::geometry)::npoint;
 -------------------------------
  NPoint(1,0.20000000000000093)
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+            npoint             
+-------------------------------
+ NPoint(1,0.20000000000000093)
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT (nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment;

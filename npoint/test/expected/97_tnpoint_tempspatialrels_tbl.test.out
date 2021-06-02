@@ -6,10 +6,14 @@ SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tcontains(ST_SetSRID(
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tdisjoint(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
  count 
 -------
    400
+<<<<<<< HEAD
 =======
 SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tcovers(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
  count 
@@ -40,11 +44,14 @@ SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tdisjoint(ST_SetSRID(
 -------
    400
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tintersects(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
  count 
 -------
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
    400
@@ -54,11 +61,15 @@ SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tintersects(ST_SetSRI
 =======
    400
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+   400
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE ttouches(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
  count 
 -------
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
    400
@@ -74,6 +85,9 @@ SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE twithin(ST_SetSRID(t1
 =======
    400
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+   400
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tdwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
@@ -82,6 +96,7 @@ SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tdwithin(ST_SetSRID(t
    380
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -118,12 +133,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tcoveredby(t1.np, t2.te
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tdisjoint(t1.np, t2.temp) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
  count 
 -------
     80
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -136,6 +154,8 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tequals(t1.np, t2.temp)
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tintersects(t1.np, t2.temp) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
  count 
 -------
@@ -143,6 +163,7 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tintersects(t1.np, t2.t
 (1 row)
 
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE ttouches(t1.np, t2.temp) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 ERROR:  unknown subtype for temporal type: 0
@@ -162,6 +183,9 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE twithin(t1.np, t2.temp)
 =======
 ERROR:  unknown subtype for temporal type: 0
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+ERROR:  unknown subtype for temporal type: 0
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tdwithin(t1.np, t2.temp, 0.01) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
  count 
 -------
@@ -170,30 +194,42 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE tdwithin(t1.np, t2.temp
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tdisjoint(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE trelate(t1.np, t2.temp) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tdisjoint(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
     80
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tintersects(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE trelate(t1.np, t2.temp, 'T*****FF*') IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tintersects(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
     80
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE ttouches(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
  count 
 -------
     80
+<<<<<<< HEAD
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tcontains(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
  count 
@@ -242,6 +278,8 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE twithin(t1.temp, ST_S
 =======
     80
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 (1 row)
 
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tdwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
@@ -250,6 +288,7 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tdwithin(t1.temp, ST_
     76
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -286,12 +325,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE tcoveredby(t1.temp, t2.
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE tdisjoint(t1.temp, t2.np) IS NOT NULL AND t1.k < 5 AND t2.k < 5;
  count 
 -------
     16
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -304,6 +346,8 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE tequals(t1.temp, t2.np)
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE tintersects(t1.temp, t2.np) IS NOT NULL AND t1.k < 5 AND t2.k < 5;
  count 
 -------
@@ -318,6 +362,7 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE ttouches(t1.temp, t2.np
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE twithin(t1.temp, t2.np) IS NOT NULL AND t1.k < 5 AND t2.k < 5;
  count 
@@ -328,12 +373,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE twithin(t1.temp, t2.np)
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE tdwithin(t1.temp, t2.np, 0.01) IS NOT NULL AND t1.k < 5 AND t2.k < 5;
  count 
 -------
     16
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -370,12 +418,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE tintersects(t1.temp, t
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE tdwithin(t1.temp, t2.temp, 0.01) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
  count 
 -------
     20
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -394,3 +445,5 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE trelate(t1.temp, t2.te
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560

@@ -22,6 +22,7 @@ SELECT asText(tcentroid(temp)) FROM ( VALUES
 	('[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')) t(temp);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ERROR:  Cannot aggregate temporal values of different type
 SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
 =======
@@ -32,11 +33,16 @@ SELECT numInstants(tcount(inst)) FROM tbl_tnpointinst;
 ERROR:  Cannot aggregate temporal values of different type
 SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+ERROR:  Cannot aggregate temporal values of different type
+SELECT numInstants(tcount(inst)) FROM tbl_tnpoint_inst;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numinstants 
 -------------
          100
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
@@ -46,11 +52,15 @@ SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpointinst;
 =======
 SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numinstants 
 -------------
          201
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst;
@@ -60,11 +70,15 @@ SELECT numInstants(tcentroid(inst)) FROM tbl_tnpointinst;
 =======
 SELECT numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numinstants 
 -------------
          100
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
@@ -74,6 +88,9 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpointinst GROUP BY k%10 ORDER 
 =======
 SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -90,6 +107,7 @@ SELECT k%10, numInstants(tcount(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 =======
 SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpointinst GROUP BY k%10 ORDER BY k%10;
@@ -97,6 +115,9 @@ SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpointinst GROUP BY k
 =======
 SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numinstants 
 ----------+-------------
         0 |          20
@@ -113,6 +134,7 @@ SELECT k%10, numInstants(wcount(inst, '1 hour')) FROM tbl_tnpoint_inst GROUP BY 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 =======
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpointinst GROUP BY k%10 ORDER BY k%10;
@@ -120,6 +142,9 @@ SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpointinst GROUP BY k%10 ORD
 =======
 SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numinstants 
 ----------+-------------
         0 |          10
@@ -136,6 +161,7 @@ SELECT k%10, numInstants(tcentroid(inst)) FROM tbl_tnpoint_inst GROUP BY k%10 OR
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT numInstants(tcount(ti)) FROM tbl_tnpoint_instset;
 =======
 SELECT numInstants(tcount(ti)) FROM tbl_tnpointi;
@@ -143,11 +169,15 @@ SELECT numInstants(tcount(ti)) FROM tbl_tnpointi;
 =======
 SELECT numInstants(tcount(ti)) FROM tbl_tnpoint_instset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numInstants(tcount(ti)) FROM tbl_tnpoint_instset;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numinstants 
 -------------
          476
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpoint_instset;
@@ -157,11 +187,15 @@ SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpointi;
 =======
 SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpoint_instset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numInstants(wcount(ti, '1 hour')) FROM tbl_tnpoint_instset;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numinstants 
 -------------
         1328
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset;
@@ -171,6 +205,9 @@ SELECT numInstants(tcentroid(ti)) FROM tbl_tnpointi;
 =======
 SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numinstants 
 -------------
          476
@@ -178,6 +215,7 @@ SELECT numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset;
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
 =======
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpointi GROUP BY k%10 ORDER BY k%10;
@@ -185,6 +223,9 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpointi GROUP BY k%10 ORDER BY k%
 =======
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numinstants 
 ----------+-------------
         0 |          34
@@ -201,6 +242,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDE
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
 =======
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpointi GROUP BY k%10 ORDER BY k%10;
@@ -208,6 +250,9 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpointi GROUP BY k%10 ORDER BY k%
 =======
 SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numinstants 
 ----------+-------------
         0 |          34
@@ -222,6 +267,7 @@ SELECT k%10, numInstants(tcount(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDE
         9 |          42
 (10 rows)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
@@ -231,6 +277,9 @@ SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpointi GROUP BY k%10 ORDER BY
 =======
 SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numinstants 
 ----------+-------------
         0 |          34
@@ -247,6 +296,7 @@ SELECT k%10, numInstants(tcentroid(ti)) FROM tbl_tnpoint_instset GROUP BY k%10 O
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
 =======
 SELECT numSequences(tcount(seq)) FROM tbl_tnpointseq;
@@ -254,11 +304,15 @@ SELECT numSequences(tcount(seq)) FROM tbl_tnpointseq;
 =======
 SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numSequences(tcount(seq)) FROM tbl_tnpoint_seq;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numsequences 
 --------------
           100
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;
@@ -268,11 +322,15 @@ SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpointseq;
 =======
 SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numsequences 
 --------------
           100
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq;
@@ -282,11 +340,15 @@ SELECT numSequences(tcentroid(seq)) FROM tbl_tnpointseq;
 =======
 SELECT numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numsequences 
 --------------
           100
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
@@ -296,6 +358,9 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpointseq GROUP BY k%10 ORDER B
 =======
 SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -310,6 +375,7 @@ SELECT k%10, numSequences(tcount(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER 
         9 |           10
 (10 rows)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT k%10, numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
@@ -319,6 +385,9 @@ SELECT k%10, numSequences(wcount(seq, '1 hour')) FROM tbl_tnpointseq GROUP BY k%
 =======
 SELECT k%10, numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -333,6 +402,7 @@ SELECT k%10, numSequences(wcount(seq, '1 hour')) FROM tbl_tnpoint_seq GROUP BY k
         9 |           10
 (10 rows)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
@@ -342,6 +412,9 @@ SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tnpointseq GROUP BY k%10 ORDE
 =======
 SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numsequences 
 ----------+--------------
         0 |           10
@@ -358,6 +431,7 @@ SELECT k%10, numSequences(tcentroid(seq)) FROM tbl_tnpoint_seq GROUP BY k%10 ORD
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT numSequences(tcount(ts)) FROM tbl_tnpoint_seqset;
 =======
 SELECT numSequences(tcount(ts)) FROM tbl_tnpoints;
@@ -365,11 +439,15 @@ SELECT numSequences(tcount(ts)) FROM tbl_tnpoints;
 =======
 SELECT numSequences(tcount(ts)) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numSequences(tcount(ts)) FROM tbl_tnpoint_seqset;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numsequences 
 --------------
           483
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset;
@@ -379,11 +457,15 @@ SELECT numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoints;
 =======
 SELECT numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numsequences 
 --------------
           502
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset;
@@ -393,11 +475,15 @@ SELECT numSequences(tcentroid(ts)) FROM tbl_tnpoints;
 =======
 SELECT numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  numsequences 
 --------------
           494
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
@@ -407,6 +493,9 @@ SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoints GROUP BY k%10 ORDER BY k
 =======
 SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numsequences 
 ----------+--------------
         0 |           65
@@ -423,6 +512,7 @@ SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDE
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
 ERROR:  syntax error at or near ")"
 LINE 1: SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tn...
@@ -436,12 +526,17 @@ LINE 1: SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tn...
 SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tnpoints GROUP BY k%10 ORDER BY k%10;
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
 ERROR:  syntax error at or near ")"
 LINE 1: SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tn...
                                                        ^
 SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+<<<<<<< HEAD
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  ?column? | numsequences 
 ----------+--------------
         0 |           65

@@ -48,6 +48,7 @@ SELECT contains(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  disjoint 
 =======
@@ -102,10 +103,15 @@ SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-
 
 SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  disjoint 
+=======
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  disjoint 
 =======
@@ -115,6 +121,10 @@ SELECT contains(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Np
 SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
@@ -156,6 +166,7 @@ SELECT disjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT contains(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
  contains 
 >>>>>>> Synchronize npoint with latest MobilityDB version
@@ -163,10 +174,15 @@ SELECT contains(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point 
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
@@ -179,10 +195,15 @@ SELECT contains(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, 
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
@@ -195,10 +216,15 @@ SELECT contains(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
@@ -211,10 +237,15 @@ SELECT contains(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
 SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
@@ -227,10 +258,15 @@ SELECT contains(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
 SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
@@ -243,10 +279,15 @@ SELECT contains(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, 
 SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
@@ -271,10 +312,15 @@ SELECT contains(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@200
 SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
@@ -293,10 +339,15 @@ SELECT contains(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
 SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
@@ -321,10 +372,15 @@ SELECT contains(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, 
 SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
@@ -349,10 +405,15 @@ SELECT contains(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '[Npoint(1, 0.2)@20
 SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
@@ -371,10 +432,15 @@ SELECT contains(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
 SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
@@ -387,10 +453,15 @@ SELECT contains(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
 SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  t
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
@@ -403,10 +474,15 @@ SELECT contains(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint '{[Npoint(1, 0.2)@2
 SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
@@ -415,11 +491,18 @@ SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, 
 SELECT contains(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  contains 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
+ disjoint 
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(1, 0.5)');
  disjoint 
 ----------
@@ -428,15 +511,21 @@ SELECT disjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
 
 SELECT disjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(1, 0.5)');
  disjoint 
+<<<<<<< HEAD
 =======
 SELECT disjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
  disjoint 
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 ----------
  f
 (1 row)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 SELECT intersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
  intersects 
 ------------
@@ -638,6 +727,7 @@ SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
 SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
  touches 
 ---------
+<<<<<<< HEAD
 =======
 SELECT contains(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  contains 
@@ -3212,6 +3302,122 @@ SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-0
 SELECT dwithin(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
  dwithin 
 ---------
+=======
+ f
+(1 row)
+
+SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(npoint 'NPoint(1, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ f
+(1 row)
+
+SELECT touches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT touches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(1, 0.5)');
+ touches 
+---------
+ t
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.5)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 2);
+ dwithin 
+---------
+ f
+(1 row)
+
+SELECT dwithin(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01', 2);
+ dwithin 
+---------
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  f
 (1 row)
 
@@ -3431,6 +3637,7 @@ SELECT dwithin(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000
  
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -3929,3 +4136,5 @@ SELECT relate(tnpoint 'Npoint(1, 0.5)@2000-01-01', tnpoint 'Npoint(1, 0.5)@2000-
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560

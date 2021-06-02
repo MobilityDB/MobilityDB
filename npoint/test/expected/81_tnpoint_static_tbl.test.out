@@ -74,6 +74,7 @@ SELECT count(*) FROM tbl_nsegment WHERE ns = (ns::geometry)::nsegment;
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_point WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
 =======
 SELECT count(*) FROM tbl_geompoint WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
@@ -81,11 +82,15 @@ SELECT count(*) FROM tbl_geompoint WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_Set
 =======
 SELECT count(*) FROM tbl_geom_point WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT count(*) FROM tbl_geom_point WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_linestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;
@@ -95,6 +100,9 @@ SELECT count(*) FROM tbl_geomlinestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN S
 =======
 SELECT count(*) FROM tbl_geom_linestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;
 >>>>>>> Synchronize npoint with latest MobilityDB version
+=======
+SELECT count(*) FROM tbl_geom_linestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0

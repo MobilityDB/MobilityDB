@@ -467,6 +467,8 @@ ensure_tinstantarr(TInstant **instants, int count)
   return;
 }
 
+/*****************************************************************************/
+
 /**
  * Ensures that the array is not empty
  *

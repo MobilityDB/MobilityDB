@@ -6,6 +6,7 @@ set force_parallel_mode=regress;
 SET
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE contains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 =======
 SELECT count(*) FROM tbl_geompoint t1, tbl_tnpoint t2 WHERE contains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND duration(temp) != 'SequenceSet';
@@ -13,11 +14,15 @@ SELECT count(*) FROM tbl_geompoint t1, tbl_tnpoint t2 WHERE contains(ST_SetSRID(
 =======
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE contains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE contains(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE disjoint(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -97,11 +102,15 @@ SELECT count(*) FROM tbl_geompoint t1, tbl_tnpoint t2 WHERE dwithin(ST_SetSRID(t
 (1 row)
 
 SELECT count(*) FROM tbl_geompoint t1, tbl_tnpoint t2 WHERE relate(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL AND t1.k < 10 AND t2.k%4 = 0 AND duration(temp) != 'SequenceSet';
+=======
+SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE disjoint(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
    162
 (1 row)
 
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_geompoint t1, tbl_tnpoint t2 WHERE relate(ST_SetSRID(t1.g, 5676), t2.temp, 'T*****FF*') AND t1.k < 10 AND t2.k%4 = 0 AND duration(temp) != 'SequenceSet';
  count 
 -------
@@ -119,11 +128,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE containsproperly(t1.np,
 =======
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE intersects(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE intersects(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE touches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -133,11 +146,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE covers(t1.np, t2.temp) 
 =======
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE touches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE touches(ST_SetSRID(t1.g, 5676), t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE dwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -147,11 +164,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE coveredby(t1.np, t2.tem
 =======
 SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE dwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE dwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE disjoint(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -167,11 +188,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE disjoint(t1.np, t2.temp
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE disjoint(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE disjoint(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
    162
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE intersects(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -181,11 +206,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE equals(t1.np, t2.temp) 
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE intersects(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE intersects(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE touches(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -195,11 +224,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE intersects(t1.np, t2.te
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE touches(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE touches(t1.np, t2.temp) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE dwithin(t1.np, t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
@@ -209,11 +242,15 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE overlaps(t1.np, t2.temp
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE dwithin(t1.np, t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE dwithin(t1.np, t2.temp, 0.01) AND t1.k < 10 AND t2.k%4 = 0 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE disjoint(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
@@ -241,6 +278,9 @@ SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE relate(t1.np, t2.temp) 
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE disjoint(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE disjoint(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
    162
@@ -248,14 +288,19 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE disjoint(t1.temp, S
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE intersects(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 =======
 SELECT count(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE relate(t1.np, t2.temp, 'T*****FF*') AND t1.k < 10 AND t2.k%4 = 0 AND duration(temp) != 'SequenceSet';
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE intersects(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE contains(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND duration(temp) != 'SequenceSet';
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
@@ -275,11 +320,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE containsproperly(t1.
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE touches(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE touches(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE dwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
@@ -289,11 +338,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE covers(t1.temp, ST_S
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE dwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE dwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE disjoint(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
@@ -315,11 +368,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE disjoint(t1.temp, ST
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE disjoint(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE disjoint(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
    162
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE intersects(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
@@ -337,11 +394,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE intersects(t1.temp, 
 (1 row)
 
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE overlaps(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND duration(temp) != 'SequenceSet';
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE intersects(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE touches(t1.temp, ST_SetSRID(t2.g, 5676)) AND t1.k%4 = 0 AND t2.k < 10 AND duration(temp) != 'SequenceSet';
  count 
 -------
@@ -379,11 +440,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geompoint t2 WHERE relate(t1.temp, ST_S
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE touches(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE touches(t1.temp, t2.np) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE dwithin(t1.temp, t2.np, 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
@@ -475,11 +540,15 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE relate(t1.temp, t2.np) 
 (1 row)
 
 SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE relate(t1.temp, t2.np, 'T*****FF*') AND t1.k%4 = 0 AND t2.k < 10 AND duration(temp) != 'SequenceSet';
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE dwithin(t1.temp, t2.np, 0.01) AND t1.k%4 = 0 AND t2.k < 10 AND tempSubtype(temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
      0
 (1 row)
 
+<<<<<<< HEAD
 SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE contains(t1.temp, t2.temp) AND t1.k%4 = 0 AND t2.k%4 = 0 AND duration(t1.temp) != 'SequenceSet';
  count 
 -------
@@ -563,6 +632,9 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE relate(t1.temp, t2.tem
 =======
 SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE dwithin(t1.temp, t2.temp, 0.01) AND t1.k%4 = 0 AND t2.k%4 = 0 AND tempSubtype(t1.temp) != 'SequenceSet';
 >>>>>>> Improve temporal cache
+=======
+SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE dwithin(t1.temp, t2.temp, 0.01) AND t1.k%4 = 0 AND t2.k%4 = 0 AND tempSubtype(t1.temp) != 'SequenceSet';
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
  count 
 -------
     18

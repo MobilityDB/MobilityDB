@@ -6,6 +6,9 @@ add_test(
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DBNPOINT)
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DB)
 set_tests_properties(load_npoint_tables PROPERTIES DEPENDS create_extension)
@@ -32,6 +35,7 @@ foreach(file ${npoint_testfiles})
 		set_tests_properties(${TESTNAME} PROPERTIES RESOURCE_LOCK DBLOCK)
 	endif()
 endforeach()
+<<<<<<< HEAD
 =======
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DB)
 =======
@@ -67,3 +71,5 @@ endforeach()
 >>>>>>> Synchronize npoint with latest MobilityDB version
 =======
 >>>>>>> Improve temporal cache
+=======
+>>>>>>> 9e9ae4a4543a3d4e0dc6f22a1c5c7db4d8bf4560
