@@ -42,7 +42,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
@@ -415,7 +415,7 @@ tsequenceset_to_tinstant(const TSequenceSet *ts)
  * Returns the base value of the temporal value as an array
  */
 ArrayType *
-tinstant_values(const TInstant *inst)
+tinstant_values_array(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   return datumarr_to_array(&value, 1, inst->basetypid);

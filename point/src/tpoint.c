@@ -35,7 +35,7 @@
 #include <utils/timestamp.h>
 
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "lifting.h"
 #include "temporal_compops.h"

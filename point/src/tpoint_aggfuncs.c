@@ -36,7 +36,7 @@
 #include <assert.h>
 
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "doublen.h"
 #include "skiplist.h"

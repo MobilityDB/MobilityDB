@@ -43,7 +43,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
@@ -616,7 +616,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * @result Number of elements in the output array
  */
 static int
-tinstantset_values1(Datum *result, const TInstantSet *ti)
+tinstantset_values(Datum *result, const TInstantSet *ti)
 {
   for (int i = 0; i < ti->count; i++)
     result[i] = tinstant_value(tinstantset_inst_n(ti, i));
@@ -631,10 +631,10 @@ tinstantset_values1(Datum *result, const TInstantSet *ti)
  * Returns the base values of the temporal value as a PostgreSQL array
  */
 ArrayType *
-tinstantset_values(const TInstantSet *ti)
+tinstantset_values_array(const TInstantSet *ti)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
-  int count = tinstantset_values1(values, ti);
+  int count = tinstantset_values(values, ti);
   ArrayType *result = datumarr_to_array(values, count, ti->basetypid);
   pfree(values);
   return result;
@@ -647,7 +647,7 @@ ArrayType *
 tfloatinstset_ranges(const TInstantSet *ti)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
-  int count = tinstantset_values1(values, ti);
+  int count = tinstantset_values(values, ti);
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   for (int i = 0; i < count; i++)
     ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);

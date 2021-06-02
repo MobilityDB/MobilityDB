@@ -51,12 +51,12 @@
 #include "period.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_boxops.h"
 #include "temporal_parser.h"
 #include "rangetypes_ext.h"
-#include "temporal.h"
+
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -339,47 +339,6 @@ continuous_base_type(Oid type)
     type == type_oid(T_GEOGRAPHY) || type == type_oid(T_GEOMETRY))
     return true;
   return false;
-}
-
-/*****************************************************************************
- * Catalog functions
- *****************************************************************************/
-
-/**
- * Returns the Oid of the base type from the Oid of the temporal type
- */
-Oid
-temporal_basetypid(Oid temptypid)
-{
-  Oid catalog = RelnameGetRelid("mobilitydb_typcache");
-#if MOBDB_PGSQL_VERSION < 130000
-  Relation rel = heap_open(catalog, AccessShareLock);
-#else
-  Relation rel = table_open(catalog, AccessShareLock);
-#endif
-  TupleDesc tupDesc = rel->rd_att;
-  ScanKeyData scandata;
-  ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ,
-    ObjectIdGetDatum(temptypid));
-#if MOBDB_PGSQL_VERSION >= 120000
-    TableScanDesc scan = table_beginscan_catalog(rel, 1, &scandata);
-#else
-    HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);
-#endif
-  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-  bool isnull = false;
-  Oid result;
-  if (HeapTupleIsValid(tuple))
-    result = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
-  heap_endscan(scan);
-#if MOBDB_PGSQL_VERSION < 130000
-  heap_close(rel, AccessShareLock);
-#else
-  table_close(rel, AccessShareLock);
-#endif
-  if (! HeapTupleIsValid(tuple) || isnull)
-    elog(ERROR, "type %u is not a temporal type", temptypid);
-  return result;
 }
 
 /*****************************************************************************
@@ -1976,18 +1935,18 @@ temporal_mem_size(PG_FUNCTION_ARGS)
  * (dispatch function)
  */
 Datum
-temporal_values(Temporal *temp)
+temporal_values_array(Temporal *temp)
 {
   ArrayType *result;  /* make the compiler quiet */
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_values((TInstant *) temp);
+    result = tinstant_values_array((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_values((TInstantSet *) temp);
+    result = tinstantset_values_array((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_values((TSequence *) temp);
+    result = tsequence_values_array((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_values((TSequenceSet *) temp);
+    result = tsequenceset_values_array((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
 
@@ -1999,7 +1958,7 @@ PGDLLEXPORT Datum
 temporal_get_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Datum result = temporal_values(temp);
+  Datum result = temporal_values_array(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

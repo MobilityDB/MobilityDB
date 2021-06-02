@@ -51,7 +51,7 @@
 #include "periodset.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "rangetypes_ext.h"
 #include "tbox.h"

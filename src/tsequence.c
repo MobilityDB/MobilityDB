@@ -45,7 +45,7 @@
 #include "timeops.h"
 #include "doublen.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
@@ -1622,7 +1622,7 @@ tstepseq_to_linear(const TSequence *seq)
  * @result Number of values in the resulting array
  */
 int
-tsequence_values1(Datum *result, const TSequence *seq)
+tsequence_values(Datum *result, const TSequence *seq)
 {
   for (int i = 0; i < seq->count; i++)
     result[i] = tinstant_value(tsequence_inst_n(seq, i));
@@ -1643,10 +1643,10 @@ tsequence_values1(Datum *result, const TSequence *seq)
  * @result PostgreSQL array of Datums
  */
 ArrayType *
-tsequence_values(const TSequence *seq)
+tsequence_values_array(const TSequence *seq)
 {
   Datum *values = palloc(sizeof(Datum *) * seq->count);
-  int count = tsequence_values1(values, seq);
+  int count = tsequence_values(values, seq);
   ArrayType *result = datumarr_to_array(values, count, seq->basetypid);
   pfree(values);
   return result;
@@ -1721,7 +1721,7 @@ tfloatseq_ranges1(RangeType **result, const TSequence *seq)
 
   /* Temporal float with step interpolation */
   Datum *values = palloc(sizeof(Datum *) * seq->count);
-  int count = tsequence_values1(values, seq);
+  int count = tsequence_values(values, seq);
   for (int i = 0; i < count; i++)
     result[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
   pfree(values);

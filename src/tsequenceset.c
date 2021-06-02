@@ -43,7 +43,7 @@
 #include "timeops.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_boxops.h"
 #include "rangetypes_ext.h"
 
@@ -809,8 +809,8 @@ tstepseqset_to_linear(const TSequenceSet *ts)
  * @param[out] result Array of Datums
  * @result Number of elements in the output array
  */
-static int
-tsequenceset_values1(Datum *result, const TSequenceSet *ts)
+int
+tsequenceset_values(Datum *result, const TSequenceSet *ts)
 {
   int k = 0;
   for (int i = 0; i < ts->count; i++)
@@ -832,10 +832,10 @@ tsequenceset_values1(Datum *result, const TSequenceSet *ts)
  * interpolation as a PostgreSQL array
  */
 ArrayType *
-tsequenceset_values(const TSequenceSet *ts)
+tsequenceset_values_array(const TSequenceSet *ts)
 {
   Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
-  int count = tsequenceset_values1(values, ts);
+  int count = tsequenceset_values(values, ts);
   ArrayType *result = datumarr_to_array(values, count, ts->basetypid);
   pfree(values);
   return result;

@@ -38,7 +38,7 @@
 #include <utils/builtins.h>
 
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "tnumber_mathfuncs.h"
 

@@ -31,7 +31,7 @@
 
 CREATE TABLE mobilitydb_typcache (
   temptypid Oid PRIMARY KEY,
-  valuetypid Oid
+  basetypid Oid
 );
 
 ALTER TABLE mobilitydb_typcache SET SCHEMA pg_catalog;
@@ -41,7 +41,7 @@ RETURNS void AS $$
 BEGIN
   WITH valueid AS (SELECT oid, typname FROM pg_type WHERE typname=base),
   tempid AS (SELECT oid, typname FROM pg_type WHERE typname=temporal)
-  INSERT INTO mobilitydb_typcache (temptypid, valuetypid)
+  INSERT INTO mobilitydb_typcache (temptypid, basetypid)
   SELECT te.oid, v.oid FROM valueid v, tempid te;
 END;
 $$ LANGUAGE plpgsql;

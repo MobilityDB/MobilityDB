@@ -39,7 +39,7 @@
 
 #include <liblwgeom.h>
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "lifting.h"
 #include "postgis.h"
 #include "tpoint.h"

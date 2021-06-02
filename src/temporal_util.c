@@ -41,7 +41,7 @@
 
 #include "period.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "doublen.h"
 
 #include "tpoint.h"

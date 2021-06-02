@@ -36,7 +36,7 @@
 #include <json-c/json.h>
 
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "postgis.h"
 #include "tpoint.h"

@@ -481,10 +481,6 @@ extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 extern int64 get_interval_units(Interval *interval);
 
-/* Catalog functions */
-
-extern Oid temporal_basetypid(Oid temptypid);
-
 /* Oid functions */
 
 extern Oid range_oid_from_base(Oid type);

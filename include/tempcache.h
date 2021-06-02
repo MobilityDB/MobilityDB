@@ -29,13 +29,28 @@
  * Functions for building a cache of type and operator Oids.
  */
 
-#ifndef OIDCACHE_H
-#define OIDCACHE_H
+#ifndef TEMPCACHE_H
+#define TEMPCACHE_H
 
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 #include "temporal.h"
+
+/*****************************************************************************/
+
+/**
+ * Structure to represent the temporal type cache array
+ */
+typedef struct
+{
+  Oid temptypid;          /**< Oid of the temporal type */
+  Oid basetypid;          /**< Oid of the base type */
+} temptypecache_struct;
+
+#define TEMPTYPECACHE_MAX_LEN   16
+
+/*****************************************************************************/
 
 /**
  * Enumeration that defines the built-in and temporal types used in
@@ -45,7 +60,7 @@
 typedef enum
 {
   T_BOOL,
-  T_DOUBLE2,
+  T_DOUBLE2, 
   T_DOUBLE3,
   T_DOUBLE4,
   T_FLOAT8,
@@ -112,10 +127,21 @@ typedef enum
   OVERAFTER_OP,
 } CachedOp;
 
+/* Global variable that states whether the temporal type cache has been filled */
+extern bool _temptyp_cache_ready;
+
+extern Oid temporal_basetypid(Oid temptypid);
+
+/**
+ * Global variable that states whether the type and operator caches
+ * has been initialized.
+ */
+extern bool _ready;
+
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
-extern Datum fill_opcache(PG_FUNCTION_ARGS);
+extern Datum fill_tempcache(PG_FUNCTION_ARGS);
 
-#endif /* OIDCACHE_H */
+#endif /* TEMPCACHE_H */
 
 /*****************************************************************************/
