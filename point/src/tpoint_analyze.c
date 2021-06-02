@@ -60,7 +60,7 @@
 #include "period.h"
 #include "time_analyze.h"
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_analyze.h"
 #include "postgis.h"

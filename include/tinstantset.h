@@ -61,11 +61,11 @@ extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1, const T
 
 extern char *tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum));
 extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
-extern TInstantSet *tinstantset_read(StringInfo buf, Oid valuetypid);
+extern TInstantSet *tinstantset_read(StringInfo buf, Oid basetypid);
 
 /* Constructor functions */
 
-extern TInstantSet *tinstantset_from_base_internal(Datum value, Oid valuetypid,
+extern TInstantSet *tinstantset_from_base_internal(Datum value, Oid basetypid,
   const TimestampSet *ts);
 
 extern Datum tinstantset_from_base(PG_FUNCTION_ARGS);
@@ -89,7 +89,7 @@ extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
 
 /* Accessor functions */
 
-extern ArrayType *tinstantset_values(const TInstantSet *ti);
+extern ArrayType *tinstantset_values_array(const TInstantSet *ti);
 extern ArrayType *tfloatinstset_ranges(const TInstantSet *ti);
 extern PeriodSet *tinstantset_get_time(const TInstantSet *ti);
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);

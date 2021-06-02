@@ -32,7 +32,7 @@
 #include "tpoint_parser.h"
 
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 #include "temporal_parser.h"

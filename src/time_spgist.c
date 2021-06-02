@@ -46,7 +46,7 @@
 #include "periodset.h"
 #include "time_gist.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 
 /*****************************************************************************
  * SP-GiST config function

@@ -70,7 +70,7 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1, const TSequen
   TSequence **sync1, TSequence **sync2, bool interpoint);
 
 extern bool tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
-  Datum value, Oid valuetypid, Datum *inter, TimestampTz *t);
+  Datum value, Oid basetypid, Datum *inter, TimestampTz *t);
 extern bool tsequence_intersection(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   Datum *inter1, Datum *inter2, TimestampTz *t);
@@ -82,11 +82,11 @@ extern bool tsequence_intersection1(const TInstant *start1, const TInstant *end1
 
 extern char *tsequence_to_string(const TSequence *seq, bool component, char *(*value_out)(Oid, Datum));
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
-extern TSequence *tsequence_read(StringInfo buf, Oid valuetypid);
+extern TSequence *tsequence_read(StringInfo buf, Oid basetypid);
 
 /* Constructor functions */
 
-extern TSequence *tsequence_from_base_internal(Datum value, Oid valuetypid, const Period *p, bool linear);
+extern TSequence *tsequence_from_base_internal(Datum value, Oid basetypid, const Period *p, bool linear);
 
 extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
 
@@ -112,7 +112,7 @@ extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 
 /* Accessor functions */
 
-extern ArrayType *tsequence_values(const TSequence *seq);
+extern ArrayType *tsequence_values_array(const TSequence *seq);
 extern int tfloatseq_ranges1(RangeType **result, const TSequence *seq);
 extern PeriodSet *tsequence_get_time(const TSequence *seq);
 extern void *tsequence_bbox_ptr(const TSequence *seq);

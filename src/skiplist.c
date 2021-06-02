@@ -599,13 +599,13 @@ aggstate_write(SkipList *state, StringInfo buf)
   }
   else
   {
-    Oid valuetypid = InvalidOid;
+    Oid basetypid = InvalidOid;
     if (state->length > 0)
-      valuetypid = ((Temporal *) values[0])->valuetypid;
+      basetypid = ((Temporal *) values[0])->basetypid;
   #if MOBDB_PGSQL_VERSION < 110000
-    pq_sendint(buf, valuetypid, 4);
+    pq_sendint(buf, basetypid, 4);
   #else
-    pq_sendint32(buf, valuetypid);
+    pq_sendint32(buf, basetypid);
   #endif
     for (int i = 0; i < state->length; i ++)
     {
@@ -650,9 +650,9 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   }
   else
   {
-    Oid valuetypid = pq_getmsgint(buf, 4);
+    Oid basetypid = pq_getmsgint(buf, 4);
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_read(buf, valuetypid);
+      values[i] = temporal_read(buf, basetypid);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

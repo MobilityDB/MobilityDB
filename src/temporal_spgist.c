@@ -40,7 +40,7 @@
 #include <utils/builtins.h>
 
 #include "timetypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "period.h"
 #include "time_gist.h"
 #include "time_spgist.h"

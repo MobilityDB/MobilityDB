@@ -78,12 +78,12 @@ extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 extern char *tsequenceset_to_string(const TSequenceSet *ts,
   char *(*value_out)(Oid, Datum));
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
-extern TSequenceSet *tsequenceset_read(StringInfo buf, Oid valuetypid);
+extern TSequenceSet *tsequenceset_read(StringInfo buf, Oid basetypid);
 
 /* Constructor functions */
 
 extern TSequenceSet *tsequenceset_from_base_internal(Datum value,
-  Oid valuetypid, const PeriodSet *ps, bool linear);
+  Oid basetypid, const PeriodSet *ps, bool linear);
 
 extern Datum tsequenceset_from_base(PG_FUNCTION_ARGS);
 
@@ -113,7 +113,8 @@ extern TSequenceSet *tstepseqset_to_linear(const TSequenceSet *ts);
 
 /* Accessor functions */
 
-extern ArrayType *tsequenceset_values(const TSequenceSet *ts);
+extern int tsequenceset_values(Datum *result, const TSequenceSet *ts);
+extern ArrayType *tsequenceset_values_array(const TSequenceSet *ts);
 extern ArrayType *tfloatseqset_ranges(const TSequenceSet *ts);
 extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
 extern void tsequenceset_bbox(void *box, const TSequenceSet *ts);

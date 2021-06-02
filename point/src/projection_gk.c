@@ -39,7 +39,7 @@
 
 #include <liblwgeom.h>
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "lifting.h"
 #include "postgis.h"
 #include "tpoint.h"
@@ -281,7 +281,7 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &gk;
   lfinfo.numparam = 1;
-  lfinfo.restypid = temp->valuetypid;
+  lfinfo.restypid = temp->basetypid;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

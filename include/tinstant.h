@@ -42,7 +42,7 @@
 
 /*****************************************************************************/
 
-extern TInstant *tinstant_make(Datum value, TimestampTz t, Oid valuetypid);
+extern TInstant *tinstant_make(Datum value, TimestampTz t, Oid basetypid);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern Datum* tinstant_value_ptr(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
@@ -53,7 +53,7 @@ extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
 
 extern char *tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum));
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
-extern TInstant *tinstant_read(StringInfo buf, Oid valuetypid);
+extern TInstant *tinstant_read(StringInfo buf, Oid basetypid);
 
 /* Intersection function */
 
@@ -79,7 +79,7 @@ extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ts);
 
 /* Accessor functions */
 
-extern ArrayType *tinstant_values(const TInstant *inst);
+extern ArrayType *tinstant_values_array(const TInstant *inst);
 extern ArrayType *tfloatinst_ranges(const TInstant *inst);
 extern PeriodSet *tinstant_get_time(const TInstant *inst);
 extern void tinstant_period(Period *p, const TInstant *inst);

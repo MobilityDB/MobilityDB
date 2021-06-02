@@ -49,7 +49,7 @@
 #include "period.h"
 #include "periodset.h"
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 
 static void timetype_compute_stats(CachedType type, VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows);

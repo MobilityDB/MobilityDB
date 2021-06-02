@@ -35,7 +35,7 @@
 #include <utils/timestamp.h>
 
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "lifting.h"
 #include "temporal_compops.h"
@@ -160,8 +160,8 @@ tpoint_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid valuetypid = temporal_valuetypid(temptypid);
-  Temporal *result = tpoint_parse(&input, valuetypid);
+  Oid basetypid = temporal_basetypid(temptypid);
+  Temporal *result = tpoint_parse(&input, basetypid);
   PG_RETURN_POINTER(result);
 }
 
@@ -394,9 +394,9 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Oid  valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid  basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
-    valuetypid);
+    basetypid);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }

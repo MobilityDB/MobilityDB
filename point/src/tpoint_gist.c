@@ -42,7 +42,7 @@
 
 #include "time_gist.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "tpoint.h"
 #include "tnumber_gist.h"
 #include "tpoint_boxops.h"

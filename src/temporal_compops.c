@@ -43,7 +43,7 @@
  *****************************************************************************/
 
 Temporal *
-tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
+tcomp_temporal_base1(const Temporal *temp, Datum value, Oid basetypid,
   Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
   LiftedFunctionInfo lfinfo;
@@ -53,7 +53,7 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid valuetypid,
   lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-  return tfunc_temporal_base(temp, value, valuetypid, (Datum) NULL, lfinfo);
+  return tfunc_temporal_base(temp, value, basetypid, (Datum) NULL, lfinfo);
 }
 
 PGDLLEXPORT Datum
@@ -62,10 +62,10 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *result = tcomp_temporal_base1(temp, value, valuetypid,
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Temporal *result = tcomp_temporal_base1(temp, value, basetypid,
     func, INVERT);
-  DATUM_FREE_IF_COPY(value, valuetypid, 0);
+  DATUM_FREE_IF_COPY(value, basetypid, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -76,11 +76,11 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = tcomp_temporal_base1(temp, value, valuetypid,
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Temporal *result = tcomp_temporal_base1(temp, value, basetypid,
     func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
-  DATUM_FREE_IF_COPY(value, valuetypid, 1);
+  DATUM_FREE_IF_COPY(value, basetypid, 1);
   PG_RETURN_POINTER(result);
 }
 
@@ -90,7 +90,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  if (tgeo_base_type(temp1->valuetypid))
+  if (tgeo_base_type(temp1->basetypid))
   {
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality(temp1->flags, temp2->flags);

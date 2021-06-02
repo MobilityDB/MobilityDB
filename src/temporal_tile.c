@@ -42,7 +42,7 @@
 #include <utils/datetime.h>
 
 #include "temporal_tile.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "period.h"
 #include "periodset.h"
 #include "timeops.h"
@@ -257,14 +257,14 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
   state->done = false;
   state->i = 1;
   state->temp = temp;
-  state->valuetypid = (r->rangetypid == type_oid(T_INTRANGE)) ? 
+  state->basetypid = (r->rangetypid == type_oid(T_INTRANGE)) ? 
     INT4OID : FLOAT8OID;
   state->size = size;
   state->origin = origin;
   Datum lower = lower_datum(r);
   Datum upper = upper_datum(r);
-  state->minvalue = number_bucket_internal(lower, size, origin, state->valuetypid);
-  state->maxvalue = number_bucket_internal(upper, size, origin, state->valuetypid);
+  state->minvalue = number_bucket_internal(lower, size, origin, state->basetypid);
+  state->maxvalue = number_bucket_internal(upper, size, origin, state->basetypid);
   state->value = state->minvalue;
   return state;
 }
@@ -281,9 +281,9 @@ range_bucket_state_next(RangeBucketState *state)
     return;
   /* Move to the next bucket */
   state->i++;
-  state->value = datum_add(state->value, state->size, state->valuetypid,
-    state->valuetypid);
-  if (datum_gt(state->value, state->maxvalue, state->valuetypid))
+  state->value = datum_add(state->value, state->size, state->basetypid,
+    state->basetypid);
+  if (datum_gt(state->value, state->maxvalue, state->basetypid))
     state->done = true;
   return;
 }
@@ -343,7 +343,7 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
   tuple_arr[1] = PointerGetDatum(range_bucket_get(state->value, state->size,
-    state->valuetypid));
+    state->basetypid));
   /* Advance state */
   range_bucket_state_next(state);
   /* Form tuple and return */
@@ -697,7 +697,7 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value(instants[k - 1]);
-          tofree[l] = tinstant_make(value, upper, seq->valuetypid);
+          tofree[l] = tinstant_make(value, upper, seq->basetypid);
         }
         instants[k++] = tofree[l++];
       }
@@ -1220,11 +1220,11 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Datum **buckets, int *newcount)
 {
   Datum value = tinstant_value(inst);
-  Oid valuetypid = inst->valuetypid;
+  Oid basetypid = inst->basetypid;
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = (TInstant *) inst;
-  values[0] = number_bucket_internal(value, size, start_bucket, valuetypid);
+  values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
   *buckets = values;
   *newcount = 1;
   return result;
@@ -1246,7 +1246,7 @@ static TInstantSet **
 tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  Oid valuetypid = ti->valuetypid;
+  Oid basetypid = ti->basetypid;
   TInstantSet **result;
   Datum *values, value, bucket_value;
 
@@ -1257,7 +1257,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
     values = palloc(sizeof(Datum));
     result[0] = tinstantset_copy(ti);
     value = tinstant_value(tinstantset_inst_n(ti, 0));
-    values[0] = number_bucket_internal(value, size, start_bucket, valuetypid);
+    values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
     *buckets = values;
     *newcount = 1;
     return result;
@@ -1271,8 +1271,8 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     value = tinstant_value(inst);
-    bucket_value = number_bucket_internal(value, size, start_bucket, valuetypid);
-    int bucket_no = bucket_position(bucket_value, size, start_bucket, valuetypid);
+    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
+    int bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
     int inst_no = numinsts[bucket_no]++;
     instants[bucket_no * ti->count + inst_no] = inst;
   }
@@ -1288,7 +1288,7 @@ tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size
       result[k] = tinstantset_make(&instants[i * ti->count], numinsts[i], MERGE_NO);
       values[k++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, valuetypid, valuetypid);
+    bucket_value = datum_add(bucket_value, size, basetypid, basetypid);
   }
   pfree(instants);
   pfree(numinsts);
@@ -1316,7 +1316,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  Oid valuetypid = seq->valuetypid;
+  Oid basetypid = seq->basetypid;
   Datum value, bucket_value;
   int bucket_no, seq_no;
 
@@ -1324,8 +1324,8 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   if (seq->count == 1)
   {
     value = tinstant_value(tsequence_inst_n(seq, 0));
-    bucket_value = number_bucket_internal(value, size, start_bucket, valuetypid);
-    bucket_no = bucket_position(bucket_value, size, start_bucket, valuetypid);
+    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
+    bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
     seq_no = numseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tsequence_copy(seq);
     return;
@@ -1339,8 +1339,8 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   {
     inst1 = tsequence_inst_n(seq, i - 1);
     value = tinstant_value(inst1);
-    bucket_value = number_bucket_internal(value, size, start_bucket, valuetypid);
-    bucket_no = bucket_position(bucket_value, size, start_bucket, valuetypid);
+    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
+    bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
     seq_no = numseqs[bucket_no]++;
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     bool lower_inc1 = (i == 1) ? seq->period.lower_inc : true;
@@ -1349,7 +1349,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     int k = 1;
     if (i < seq->count)
     {
-      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, valuetypid);
+      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, basetypid);
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
@@ -1363,8 +1363,8 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   {
     inst1 = tsequence_inst_n(seq, seq->count - 1);
     value = tinstant_value(inst1);
-    bucket_value = number_bucket_internal(value, size, start_bucket, valuetypid);
-    bucket_no = bucket_position(bucket_value, size, start_bucket, valuetypid);
+    bucket_value = number_bucket_internal(value, size, start_bucket, basetypid);
+    bucket_no = bucket_position(bucket_value, size, start_bucket, basetypid);
     seq_no = numseqs[bucket_no]++;
     result[bucket_no * numcols + seq_no] = tsequence_make(&inst1, 1,
       true, true, STEP, NORMALIZE);
@@ -1392,7 +1392,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  Oid valuetypid = seq->valuetypid;
+  Oid basetypid = seq->basetypid;
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
 
@@ -1400,8 +1400,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   if (seq->count == 1)
   {
     value1 = tinstant_value(tsequence_inst_n(seq, 0));
-    bucket_value1 = number_bucket_internal(value1, size, start_bucket, valuetypid);
-    bucket_no1 = bucket_position(bucket_value1, size, start_bucket, valuetypid);
+    bucket_value1 = number_bucket_internal(value1, size, start_bucket, basetypid);
+    bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetypid);
     seq_no = numseqs[bucket_no1]++;
     result[bucket_no1 * numcols + seq_no] = tsequence_copy(seq);
     return;
@@ -1412,19 +1412,19 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   int l = 0;   /* counter for the instants to free */
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   value1 = tinstant_value(inst1);
-  bucket_value1 = number_bucket_internal(value1, size, start_bucket, valuetypid);
-  bucket_no1 = bucket_position(bucket_value1, size, start_bucket, valuetypid);
+  bucket_value1 = number_bucket_internal(value1, size, start_bucket, basetypid);
+  bucket_no1 = bucket_position(bucket_value1, size, start_bucket, basetypid);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
-    Datum bucket_value2 = number_bucket_internal(value2, size, start_bucket, valuetypid);
-    int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, valuetypid);
+    Datum bucket_value2 = number_bucket_internal(value2, size, start_bucket, basetypid);
+    int bucket_no2 = bucket_position(bucket_value2, size, start_bucket, basetypid);
     /* Take into account on whether the segment is increasing or decreasing */
     Datum min_value, max_value;
     int first_bucket, last_bucket, first, last;
     bool lower_inc1, upper_inc1, lower_inc_def, upper_inc_def;
-    bool incr = datum_lt(value1, value2, valuetypid);
+    bool incr = datum_lt(value1, value2, basetypid);
     if (incr)
     {
       min_value = value1;
@@ -1451,37 +1451,37 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       lower_inc1 = (i == seq->count - 1) ? seq->period.upper_inc : false;
       upper_inc1 = (i == 1) ? seq->period.lower_inc : true;
     }
-    if (datum_eq(min_value, max_value, valuetypid))
+    if (datum_eq(min_value, max_value, basetypid))
     {
       lower_inc1 = upper_inc1 = true;
     }
-    RangeType *segrange = range_make(min_value, max_value, lower_inc1, upper_inc1, valuetypid);
+    RangeType *segrange = range_make(min_value, max_value, lower_inc1, upper_inc1, basetypid);
     TInstant *bounds[2];
     bounds[first] = incr ? (TInstant *) inst1 : (TInstant *) inst2;
     Datum bucket_lower = incr ? bucket_value1 : bucket_value2;
-    Datum bucket_upper = datum_add(bucket_lower, size, valuetypid, valuetypid);
+    Datum bucket_upper = datum_add(bucket_lower, size, basetypid, basetypid);
     for (int j = first_bucket; j <= last_bucket; j++)
     {
       /* Choose between interpolate or take one of the segment ends */
-      if (datum_lt(min_value, bucket_upper, valuetypid) &&
-        datum_lt(bucket_upper, max_value, valuetypid))
+      if (datum_lt(min_value, bucket_upper, basetypid) &&
+        datum_lt(bucket_upper, max_value, basetypid))
       {
         TimestampTz t;
         /* To reduce the roundoff errors we may take the bound instead of
          * projecting the value to the timestamp */
         Datum projvalue;
-        tlinearseq_intersection_value(inst1, inst2, bucket_upper, valuetypid,
+        tlinearseq_intersection_value(inst1, inst2, bucket_upper, basetypid,
           &projvalue, &t);
         tofree[l++] = bounds[last] =  RANGE_ROUNDOFF ?
-          tinstant_make(bucket_upper, t, valuetypid) :
-          tinstant_make(projvalue, t, valuetypid);
+          tinstant_make(bucket_upper, t, basetypid) :
+          tinstant_make(projvalue, t, basetypid);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
       /* Determine the bounds of the resulting sequence */
       if (j == first_bucket || j == last_bucket)
       {
-        RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, valuetypid);
+        RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, basetypid);
 #if MOBDB_PGSQL_VERSION < 110000
         RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
           PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
@@ -1518,7 +1518,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
-      bucket_upper = datum_add(bucket_upper, size, valuetypid, valuetypid);
+      bucket_upper = datum_add(bucket_upper, size, basetypid, basetypid);
     }
     pfree(segrange);
     inst1 = inst2;
@@ -1546,7 +1546,7 @@ static TSequenceSet **
 tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  Oid valuetypid = seq->valuetypid;
+  Oid basetypid = seq->basetypid;
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1554,7 +1554,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
     Datum *values = palloc(sizeof(Datum));
     result[0] = tsequence_to_tsequenceset(seq);
     Datum value = tinstant_value(tsequence_inst_n(seq, 0));
-    values[0] = number_bucket_internal(value, size, start_bucket, valuetypid);
+    values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
     *buckets = values;
     *newcount = 1;
     return result;
@@ -1583,7 +1583,7 @@ tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
         numseqs[i], NORMALIZE);
       values[k++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, valuetypid, valuetypid);
+    bucket_value = datum_add(bucket_value, size, basetypid, basetypid);
   }
   pfree(sequences);
   pfree(numseqs);
@@ -1613,7 +1613,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
       count, buckets, newcount);
 
   /* General case */
-  Oid valuetypid = ts->valuetypid;
+  Oid basetypid = ts->basetypid;
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ts->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
@@ -1640,7 +1640,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
         numseqs[i], NORMALIZE);
       values[k++] = bucket_value;
     }
-    bucket_value = datum_add(bucket_value, size, valuetypid, valuetypid);
+    bucket_value = datum_add(bucket_value, size, basetypid, basetypid);
   }
   pfree(bucketseqs);
   pfree(numseqs);
@@ -1696,8 +1696,8 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    Oid valuetypid = temp->valuetypid;
-    ensure_positive_datum(size, valuetypid);
+    Oid basetypid = temp->basetypid;
+    ensure_positive_datum(size, basetypid);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
@@ -1708,10 +1708,10 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     RangeType *range = tnumber_value_range_internal((const Temporal *) temp);
     Datum start_value = lower_datum(range);
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(upper_datum(range), size, valuetypid, valuetypid);
-    Datum start_bucket = number_bucket_internal(start_value, size, origin, valuetypid);
-    Datum end_bucket = number_bucket_internal(end_value, size, origin, valuetypid);
-    int count = (valuetypid == INT4OID) ?
+    Datum end_value = datum_add(upper_datum(range), size, basetypid, basetypid);
+    Datum start_bucket = number_bucket_internal(start_value, size, origin, basetypid);
+    Datum end_bucket = number_bucket_internal(end_value, size, origin, basetypid);
+    int count = (basetypid == INT4OID) ?
       (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) /
         DatumGetInt32(size) :
       floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) /
@@ -1822,8 +1822,8 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
     /* Ensure parameter validity */
-    Oid valuetypid = temp->valuetypid;
-    ensure_positive_datum(size, valuetypid);
+    Oid basetypid = temp->basetypid;
+    ensure_positive_datum(size, basetypid);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
 
@@ -1836,10 +1836,10 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     RangeType *range = tnumber_value_range_internal((const Temporal *) temp);
     Datum start_value = lower_datum(range);
     /* We need to add size to obtain the end value of the last bucket */
-    Datum end_value = datum_add(upper_datum(range), size, valuetypid, valuetypid);
-    Datum start_bucket = number_bucket_internal(start_value, size, origin, valuetypid);
-    Datum end_bucket = number_bucket_internal(end_value, size, origin, valuetypid);
-    int value_count = (valuetypid == INT4OID) ?
+    Datum end_value = datum_add(upper_datum(range), size, basetypid, basetypid);
+    Datum start_bucket = number_bucket_internal(start_value, size, origin, basetypid);
+    Datum end_bucket = number_bucket_internal(end_value, size, origin, basetypid);
+    int value_count = (basetypid == INT4OID) ?
       (DatumGetInt32(end_bucket) - DatumGetInt32(start_bucket)) / DatumGetInt32(size) :
       floor((DatumGetFloat8(end_bucket) - DatumGetFloat8(start_bucket)) / DatumGetFloat8(size));
 
@@ -1864,10 +1864,10 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     Temporal **fragments = palloc(sizeof(Temporal *) * count);
     int k = 0;
     Datum lower_value = start_bucket;
-    while (datum_lt(lower_value, end_bucket, valuetypid))
+    while (datum_lt(lower_value, end_bucket, basetypid))
     {
-      Datum upper_value = datum_add(lower_value, size, valuetypid, valuetypid);
-      range = range_make(lower_value, upper_value, true, false, valuetypid);
+      Datum upper_value = datum_add(lower_value, size, basetypid, basetypid);
+      range = range_make(lower_value, upper_value, true, false, basetypid);
       Temporal *atrange = tnumber_restrict_range_internal(temp, range, REST_AT);
       if (atrange != NULL)
       {

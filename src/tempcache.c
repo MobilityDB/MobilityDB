@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 /**
- * @file oidcache.c
+ * @file tempcache.c
  *
  * MobilityDB builds a cache of OIDs in global arrays in order to avoid (slow)
  * lookups. The global arrays are initialized at the loading of the extension.
@@ -134,11 +134,110 @@ const char *_op_names[] =
 };
 
 /*****************************************************************************
+ * Catalog functions
+ *****************************************************************************/
+
+/**
+ * Global variable that states whether the type and operator caches
+ * has been initialized.
+ */
+bool _temptyp_cache_ready = false;
+
+/**
+ * Global array that keeps type information for the temporal types defined
+ * in MobilityDB.
+ */
+static temptypecache_struct _temptype_cache[TEMPTYPECACHE_MAX_LEN];
+
+/**
+ * Populate the Oid cache for temporal types
+ */
+static void
+populate_temptype_cache()
+{
+  // elog(WARNING, "populate tempcache: _temptyp_cache_ready = %s", _temptyp_cache_ready ? "true" : "false");
+  Oid namespaceId = LookupNamespaceNoError("public") ;
+  OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
+  overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
+  PushOverrideSearchPath(overridePath);
+
+  PG_TRY();
+  {
+    bzero(_temptype_cache, sizeof(_temptype_cache));
+    /*
+     * This fetches the pre-computed operator cache from the catalog where
+     * it is stored in a table. See the fill_opcache function below.
+     */
+    Oid catalog = RelnameGetRelid("mobilitydb_typcache");
+#if MOBDB_PGSQL_VERSION < 130000
+    Relation rel = heap_open(catalog, AccessShareLock);
+#else
+    Relation rel = table_open(catalog, AccessShareLock);
+#endif
+    TupleDesc tupDesc = rel->rd_att;
+    ScanKeyData scandata;
+#if MOBDB_PGSQL_VERSION >= 120000
+    TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
+#else
+    HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
+#endif
+    HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
+    int i = 0;
+    while (HeapTupleIsValid(tuple))
+    {
+      bool isnull = false;
+      Oid temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
+      Oid basetypid = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
+      _temptype_cache[i].temptypid = temptypid;
+      _temptype_cache[i++].basetypid = basetypid;
+      if (i == TEMPTYPECACHE_MAX_LEN)
+        elog(ERROR, "Cache for temporal types consumed, consider increasing TEMPTYPECACHE_MAX_LEN");
+      tuple = heap_getnext(scan, ForwardScanDirection);
+    }
+    heap_endscan(scan);
+#if MOBDB_PGSQL_VERSION < 130000
+    heap_close(rel, AccessShareLock);
+#else
+    table_close(rel, AccessShareLock);
+#endif
+    PopOverrideSearchPath();
+  // elog(WARNING, "populate tempcache: _temptyp_cache_ready = %s", _temptyp_cache_ready ? "true" : "false");
+    _temptyp_cache_ready = true;
+  }
+  PG_CATCH();
+  {
+    PopOverrideSearchPath() ;
+    PG_RE_THROW();
+  }
+  PG_END_TRY();
+}
+
+/**
+ * Returns the Oid of the base type from the Oid of the temporal type
+ */
+Oid
+temporal_basetypid(Oid temptypid)
+{
+  if (!_temptyp_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPECACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptypid == temptypid)
+      return _temptype_cache[i].basetypid;
+    /* If there are no more temporal types in the array */
+    if (_temptype_cache[i].temptypid == InvalidOid)
+      break;
+  }
+  /*We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptypid);
+}
+
+/*****************************************************************************
  * Functions for the Oid cache
  *****************************************************************************/
 
 /**
- * Global variable that states whether the type and operator cache
+ * Global variable that states whether the type and operator caches
  * has been initialized.
  */
 bool _ready = false;
@@ -159,6 +258,8 @@ Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
 Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
   [sizeof(_type_names) / sizeof(char *)]
   [sizeof(_type_names) / sizeof(char *)];
+
+/*****************************************************************************/
 
 /**
  * Populate the Oid cache for types
@@ -183,6 +284,7 @@ populate_types()
 static void
 populate_operators()
 {
+  // elog(WARNING, "populate _operators: _ready = %s", _ready ? "true" : "false");
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
@@ -190,10 +292,8 @@ populate_operators()
 
   PG_TRY();
   {
-
     populate_types();
     bzero(_op_oids, sizeof(_op_oids));
-
     /*
      * This fetches the pre-computed operator cache from the catalog where
      * it is stored in a table. See the fill_opcache function below.
@@ -227,9 +327,9 @@ populate_operators()
 #else
     table_close(rel, AccessShareLock);
 #endif
-    _ready = true;
-
     PopOverrideSearchPath();
+    // elog(WARNING, "populate _operators: _ready = %s", _ready ? "true" : "false");
+    _ready = true;
   }
   PG_CATCH();
   {
@@ -242,7 +342,7 @@ populate_operators()
 /**
  * Fetch from the cache the Oid of a type
  *
- * @arg[in] t Enum value for the type
+ * @arg[in] type Enum value for the type
  */
 Oid
 type_oid(CachedType type)
@@ -267,14 +367,13 @@ oper_oid(CachedOp op, CachedType lt, CachedType rt)
   return _op_oids[op][lt][rt];
 }
 
-
-PG_FUNCTION_INFO_V1(fill_opcache);
+PG_FUNCTION_INFO_V1(fill_tempcache);
 /**
  * Function executed during the `CREATE EXTENSION` to precompute the
  * operator cache and store it as a table in the catalog
  */
 PGDLLEXPORT Datum
-fill_opcache(PG_FUNCTION_ARGS)
+fill_tempcache(PG_FUNCTION_ARGS)
 {
   Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if MOBDB_PGSQL_VERSION < 130000

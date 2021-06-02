@@ -52,7 +52,7 @@ extern size_t double_pad(size_t size);
 extern bool get_typbyval_fast(Oid type);
 extern int get_typlen_byref(Oid type);
 extern Datum datum_copy(Datum value, Oid type);
-extern double datum_double(Datum d, Oid valuetypid);
+extern double datum_double(Datum d, Oid basetypid);
 extern char *text2cstring(const text *textptr);
 
 /* PostgreSQL call helpers */
@@ -96,7 +96,7 @@ extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 
 /* Sort functions */
 
-extern void datumarr_sort(Datum *values, int count, Oid valuetypid);
+extern void datumarr_sort(Datum *values, int count, Oid basetypid);
 extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
@@ -108,7 +108,7 @@ extern void tsequencearr_sort(TSequence **sequences, int count);
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
-  Oid valuetypid);
+  Oid basetypid);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstantarr_remove_duplicates(const TInstant **instants, int count);
 

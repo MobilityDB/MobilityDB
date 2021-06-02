@@ -36,7 +36,7 @@
 
 #include "timetypes.h"
 #include "temporal.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "time_gist.h"
 
 /*****************************************************************************

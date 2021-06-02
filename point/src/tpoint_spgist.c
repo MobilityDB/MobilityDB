@@ -106,7 +106,7 @@
 #include "timeops.h"
 #include "temporaltypes.h"
 #include "temporal_util.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "tnumber_spgist.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"

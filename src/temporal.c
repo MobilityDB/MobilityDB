@@ -51,12 +51,12 @@
 #include "period.h"
 #include "timeops.h"
 #include "temporaltypes.h"
-#include "oidcache.h"
+#include "tempcache.h"
 #include "temporal_util.h"
 #include "temporal_boxops.h"
 #include "temporal_parser.h"
 #include "rangetypes_ext.h"
-#include "temporal.h"
+
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -342,47 +342,6 @@ continuous_base_type(Oid type)
 }
 
 /*****************************************************************************
- * Catalog functions
- *****************************************************************************/
-
-/**
- * Returns the Oid of the base type from the Oid of the temporal type
- */
-Oid
-temporal_valuetypid(Oid temptypid)
-{
-  Oid catalog = RelnameGetRelid("mobilitydb_typcache");
-#if MOBDB_PGSQL_VERSION < 130000
-  Relation rel = heap_open(catalog, AccessShareLock);
-#else
-  Relation rel = table_open(catalog, AccessShareLock);
-#endif
-  TupleDesc tupDesc = rel->rd_att;
-  ScanKeyData scandata;
-  ScanKeyInit(&scandata, 1, BTEqualStrategyNumber, F_OIDEQ,
-    ObjectIdGetDatum(temptypid));
-#if MOBDB_PGSQL_VERSION >= 120000
-    TableScanDesc scan = table_beginscan_catalog(rel, 1, &scandata);
-#else
-    HeapScanDesc scan = heap_beginscan_catalog(rel, 1, &scandata);
-#endif
-  HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-  bool isnull = false;
-  Oid result;
-  if (HeapTupleIsValid(tuple))
-    result = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
-  heap_endscan(scan);
-#if MOBDB_PGSQL_VERSION < 130000
-  heap_close(rel, AccessShareLock);
-#else
-  table_close(rel, AccessShareLock);
-#endif
-  if (! HeapTupleIsValid(tuple) || isnull)
-    elog(ERROR, "type %u is not a temporal type", temptypid);
-  return result;
-}
-
-/*****************************************************************************
  * Oid functions
  *****************************************************************************/
 
@@ -391,13 +350,13 @@ temporal_valuetypid(Oid temptypid)
  * base type
  */
 Oid
-range_oid_from_base(Oid valuetypid)
+range_oid_from_base(Oid basetypid)
 {
   Oid result = 0;
-  ensure_tnumber_base_type(valuetypid);
-  if (valuetypid == INT4OID)
+  ensure_tnumber_base_type(basetypid);
+  if (basetypid == INT4OID)
     result = type_oid(T_INTRANGE);
-  else /* valuetypid == FLOAT8OID */
+  else /* basetypid == FLOAT8OID */
     result = type_oid(T_FLOATRANGE);
   return result;
 }
@@ -407,21 +366,21 @@ range_oid_from_base(Oid valuetypid)
  * base type
  */
 Oid
-temporal_oid_from_base(Oid valuetypid)
+temporal_oid_from_base(Oid basetypid)
 {
   Oid result = 0;
-  ensure_temporal_base_type(valuetypid);
-  if (valuetypid == BOOLOID)
+  ensure_temporal_base_type(basetypid);
+  if (basetypid == BOOLOID)
     result = type_oid(T_TBOOL);
-  if (valuetypid == INT4OID)
+  if (basetypid == INT4OID)
     result = type_oid(T_TINT);
-  if (valuetypid == FLOAT8OID)
+  if (basetypid == FLOAT8OID)
     result = type_oid(T_TFLOAT);
-  if (valuetypid == TEXTOID)
+  if (basetypid == TEXTOID)
     result = type_oid(T_TTEXT);
-  if (valuetypid == type_oid(T_GEOMETRY))
+  if (basetypid == type_oid(T_GEOMETRY))
     result = type_oid(T_TGEOMPOINT);
-  if (valuetypid == type_oid(T_GEOGRAPHY))
+  if (basetypid == type_oid(T_GEOGRAPHY))
     result = type_oid(T_TGEOGPOINT);
   return result;
 }
@@ -459,9 +418,9 @@ base_oid_from_temporal(Oid temptypid)
  * base type has its trajectory precomputed
  */
 bool
-type_has_precomputed_trajectory(Oid valuetypid)
+type_has_precomputed_trajectory(Oid basetypid)
 {
-  if (tgeo_base_type(valuetypid))
+  if (tgeo_base_type(basetypid))
     return true;
   return false;
 }
@@ -671,13 +630,13 @@ ensure_tinstantarr(TInstant **instants, int count)
  * Ensures that the Oid is an external base type supported by MobilityDB
  */
 void
-ensure_temporal_base_type(Oid valuetypid)
+ensure_temporal_base_type(Oid basetypid)
 {
-  if (valuetypid != BOOLOID && valuetypid != INT4OID &&
-    valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
-    valuetypid != type_oid(T_GEOMETRY) &&
-    valuetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown base type: %d", valuetypid);
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY))
+    elog(ERROR, "unknown base type: %d", basetypid);
   return;
 }
 
@@ -686,16 +645,16 @@ ensure_temporal_base_type(Oid valuetypid)
  * supported by MobilityDB
  */
 void
-ensure_temporal_base_type_all(Oid valuetypid)
+ensure_temporal_base_type_all(Oid basetypid)
 {
-  if (valuetypid != BOOLOID && valuetypid != INT4OID &&
-    valuetypid != FLOAT8OID && valuetypid != TEXTOID &&
-    valuetypid != TIMESTAMPTZOID && valuetypid != type_oid(T_DOUBLE2) &&
-    valuetypid != type_oid(T_GEOMETRY) &&
-    valuetypid != type_oid(T_GEOGRAPHY) &&
-    valuetypid != type_oid(T_DOUBLE3) &&
-    valuetypid != type_oid(T_DOUBLE4))
-    elog(ERROR, "unknown base type: %d", valuetypid);
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != TIMESTAMPTZOID && basetypid != type_oid(T_DOUBLE2) &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4))
+    elog(ERROR, "unknown base type: %d", basetypid);
   return;
 }
 
@@ -703,12 +662,12 @@ ensure_temporal_base_type_all(Oid valuetypid)
  * Ensures that the Oid is an external base type that is continuous
  */
 void
-ensure_continuous_base_type(Oid valuetypid)
+ensure_continuous_base_type(Oid basetypid)
 {
-  if (valuetypid != FLOAT8OID &&
-    valuetypid != type_oid(T_GEOMETRY) &&
-    valuetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown continuous base type: %d", valuetypid);
+  if (basetypid != FLOAT8OID &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY))
+    elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
 }
 
@@ -716,15 +675,15 @@ ensure_continuous_base_type(Oid valuetypid)
  * Ensures that the Oid is an internal or external base type that is continuous
  */
 void
-ensure_continuous_base_type_all(Oid valuetypid)
+ensure_continuous_base_type_all(Oid basetypid)
 {
-  if (valuetypid != FLOAT8OID &&
-    valuetypid !=  type_oid(T_DOUBLE2) &&
-    valuetypid != type_oid(T_GEOMETRY) &&
-    valuetypid != type_oid(T_GEOGRAPHY) &&
-    valuetypid != type_oid(T_DOUBLE3) &&
-    valuetypid != type_oid(T_DOUBLE4))
-    elog(ERROR, "unknown continuous base type: %d", valuetypid);
+  if (basetypid != FLOAT8OID &&
+    basetypid !=  type_oid(T_DOUBLE2) &&
+    basetypid != type_oid(T_GEOMETRY) &&
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4))
+    elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
 }
 
@@ -743,10 +702,10 @@ ensure_tnumber_range_type(Oid typid)
  * Ensures that the Oid is a number base type supported by MobilityDB
  */
 void
-ensure_tnumber_base_type(Oid valuetypid)
+ensure_tnumber_base_type(Oid basetypid)
 {
-  if (! tnumber_base_type(valuetypid))
-    elog(ERROR, "unknown number base type: %d", valuetypid);
+  if (! tnumber_base_type(basetypid))
+    elog(ERROR, "unknown number base type: %d", basetypid);
   return;
 }
 
@@ -754,10 +713,10 @@ ensure_tnumber_base_type(Oid valuetypid)
  * Ensures that the Oid is a point base type supported by MobilityDB
  */
 void
-ensure_tgeo_base_type(Oid valuetypid)
+ensure_tgeo_base_type(Oid basetypid)
 {
-  if (! tgeo_base_type(valuetypid))
-    elog(ERROR, "unknown geospatial base type: %d", valuetypid);
+  if (! tgeo_base_type(basetypid))
+    elog(ERROR, "unknown geospatial base type: %d", basetypid);
   return;
 }
 
@@ -810,7 +769,7 @@ ensure_common_dimension(int16 flags1, int16 flags2)
 void
 ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
 {
-  if (temp1->valuetypid != temp2->valuetypid)
+  if (temp1->basetypid != temp2->basetypid)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The temporal values must be of the same base type")));
   return;
@@ -846,7 +805,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
       errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
   }
   if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->valuetypid))
+    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), inst1->basetypid))
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -951,8 +910,8 @@ temporal_in(PG_FUNCTION_ARGS)
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
   int32 temp_typmod = -1;
-  Oid valuetypid = temporal_valuetypid(temptypid);
-  Temporal *result = temporal_parse(&input, valuetypid);
+  Oid basetypid = temporal_basetypid(temptypid);
+  Temporal *result = temporal_parse(&input, basetypid);
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     temp_typmod = PG_GETARG_INT32(2);
   if (temp_typmod >= 0)
@@ -1040,22 +999,22 @@ temporal_send(PG_FUNCTION_ARGS)
  * read from the buffer (dispatch function)
  *
  * @param[in] buf Buffer
- * @param[in] valuetypid Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 Temporal *
-temporal_read(StringInfo buf, Oid valuetypid)
+temporal_read(StringInfo buf, Oid basetypid)
 {
   int16 type = (int16) pq_getmsgbyte(buf);
   Temporal *result;
   ensure_valid_tempsubtype(type);
   if (type == INSTANT)
-    result = (Temporal *) tinstant_read(buf, valuetypid);
+    result = (Temporal *) tinstant_read(buf, basetypid);
   else if (type == INSTANTSET)
-    result = (Temporal *) tinstantset_read(buf, valuetypid);
+    result = (Temporal *) tinstantset_read(buf, basetypid);
   else if (type == SEQUENCE)
-    result = (Temporal *) tsequence_read(buf, valuetypid);
+    result = (Temporal *) tsequence_read(buf, basetypid);
   else /* type == SEQUENCESET */
-    result = (Temporal *) tsequenceset_read(buf, valuetypid);
+    result = (Temporal *) tsequenceset_read(buf, basetypid);
   return result;
 }
 
@@ -1068,8 +1027,8 @@ temporal_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid valuetypid = temporal_valuetypid(temptypid);
-  Temporal *result = temporal_read(buf, valuetypid) ;
+  Oid basetypid = temporal_basetypid(temptypid);
+  Temporal *result = temporal_read(buf, basetypid) ;
   PG_RETURN_POINTER(result);
 }
 
@@ -1161,8 +1120,8 @@ tinstant_constructor(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Oid  valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *result = (Temporal *) tinstant_make(value, t, valuetypid);
+  Oid  basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Temporal *result = (Temporal *) tinstant_make(value, t, basetypid);
   PG_RETURN_POINTER(result);
 }
 
@@ -1318,7 +1277,7 @@ static void
 temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   Temporal **out1, Temporal **out2)
 {
-  assert(temp1->valuetypid == temp2->valuetypid);
+  assert(temp1->basetypid == temp2->basetypid);
   ensure_valid_tempsubtype(temp1->subtype);
   ensure_valid_tempsubtype(temp2->subtype);
 
@@ -1568,7 +1527,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
  * (internal function)
  */
 Temporal *
-temporal_from_base(const Temporal *temp, Datum value, Oid valuetypid,
+temporal_from_base(const Temporal *temp, Datum value, Oid basetypid,
   bool linear)
 {
   Temporal *result;
@@ -1576,7 +1535,7 @@ temporal_from_base(const Temporal *temp, Datum value, Oid valuetypid,
   if (temp->subtype == INSTANT)
   {
     TInstant *inst = (TInstant *) temp;
-    result = (Temporal *) tinstant_make(value, inst->t, valuetypid);
+    result = (Temporal *) tinstant_make(value, inst->t, basetypid);
   }
   else if (temp->subtype == INSTANTSET)
   {
@@ -1584,14 +1543,14 @@ temporal_from_base(const Temporal *temp, Datum value, Oid valuetypid,
     TimestampTz *times = tinstantset_timestamps1(ti);
     TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
     for (int i = 0; i < ti->count; i++)
-      instants[i] = tinstant_make(value, times[i], valuetypid);
+      instants[i] = tinstant_make(value, times[i], basetypid);
     result = (Temporal *) tinstantset_make_free(instants, ti->count, MERGE_NO);
     pfree(times);
   }
   else if (temp->subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *) temp;
-    result = (Temporal *) tsequence_from_base_internal(value, valuetypid, 
+    result = (Temporal *) tsequence_from_base_internal(value, basetypid, 
       &seq->period, linear);
   }
   else /* temp->subtype == SEQUENCESET */
@@ -1601,7 +1560,7 @@ temporal_from_base(const Temporal *temp, Datum value, Oid valuetypid,
     for (int i = 0; i < ts->count; i++)
     {
       const TSequence *seq = tsequenceset_seq_n(ts, i);
-      sequences[i] = tsequence_from_base_internal(value, valuetypid, 
+      sequences[i] = tsequence_from_base_internal(value, basetypid, 
         &seq->period, linear);
     }
     result = (Temporal *) tsequenceset_make_free(sequences, ts->count,
@@ -1626,7 +1585,7 @@ tint_range(const Temporal *temp)
   if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    return range_make(value, value, true, true, temp->valuetypid);
+    return range_make(value, value, true, true, temp->basetypid);
   }
 
   TBOX *box;
@@ -1667,7 +1626,7 @@ tfloat_to_range(PG_FUNCTION_ARGS)
   if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    result = range_make(value, value, true, true, temp->valuetypid);
+    result = range_make(value, value, true, true, temp->basetypid);
   }
   else if (temp->subtype == INSTANTSET)
   {
@@ -1886,7 +1845,7 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ensure_sequences_type(temp->subtype);
-  ensure_continuous_base_type(temp->valuetypid);
+  ensure_continuous_base_type(temp->basetypid);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     PG_RETURN_POINTER(temporal_copy(temp));
@@ -1976,18 +1935,18 @@ temporal_mem_size(PG_FUNCTION_ARGS)
  * (dispatch function)
  */
 Datum
-temporal_values(Temporal *temp)
+temporal_values_array(Temporal *temp)
 {
   ArrayType *result;  /* make the compiler quiet */
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_values((TInstant *) temp);
+    result = tinstant_values_array((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_values((TInstantSet *) temp);
+    result = tinstantset_values_array((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_values((TSequence *) temp);
+    result = tsequence_values_array((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_values((TSequenceSet *) temp);
+    result = tsequenceset_values_array((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
 
@@ -1999,7 +1958,7 @@ PGDLLEXPORT Datum
 temporal_get_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Datum result = temporal_values(temp);
+  Datum result = temporal_values_array(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2173,24 +2132,24 @@ tnumber_value_range_internal(const Temporal *temp)
   if (temp->subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
-    result = range_make(value, value, true, true, temp->valuetypid);
+    result = range_make(value, value, true, true, temp->basetypid);
   }
   else
   {
     TBOX *box = (TBOX *) temporal_bbox_ptr(temp);
     Datum min = 0, max = 0;
-    ensure_tnumber_base_type(temp->valuetypid);
-    if (temp->valuetypid == INT4OID)
+    ensure_tnumber_base_type(temp->basetypid);
+    if (temp->basetypid == INT4OID)
     {
       min = Int32GetDatum((int)(box->xmin));
       max = Int32GetDatum((int)(box->xmax));
     }
-    else /* temp->valuetypid == FLOAT8OID */
+    else /* temp->basetypid == FLOAT8OID */
     {
       min = Float8GetDatum(box->xmin);
       max = Float8GetDatum(box->xmax);
     }
-    result = range_make(min, max, true, true, temp->valuetypid);
+    result = range_make(min, max, true, true, temp->basetypid);
   }
   return result;
 }
@@ -2304,13 +2263,13 @@ temporal_min_value_internal(const Temporal *temp)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
     result = datum_copy(tinstantset_min_value((TInstantSet *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   else if (temp->subtype == SEQUENCE)
     result = datum_copy(tsequence_min_value((TSequence *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   else /* temp->subtype == SEQUENCESET */
     result = datum_copy(tsequenceset_min_value((TSequenceSet *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   return result;
 }
 
@@ -2341,13 +2300,13 @@ temporal_max_value(PG_FUNCTION_ARGS)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
     result = datum_copy(tinstantset_max_value((TInstantSet *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   else if (temp->subtype == SEQUENCE)
     result = datum_copy(tsequence_max_value((TSequence *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   else /* temp->subtype == SEQUENCESET */
     result = datum_copy(tsequenceset_max_value((TSequenceSet *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
@@ -2932,16 +2891,16 @@ bool
 temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 {
   /* Bounding box test */
-  if (tnumber_base_type(temp->valuetypid))
+  if (tnumber_base_type(temp->basetypid))
   {
     TBOX box;
     memset(&box, 0, sizeof(TBOX));
     temporal_bbox(&box, temp);
-    double d = datum_double(value, temp->valuetypid);
+    double d = datum_double(value, temp->basetypid);
     return (ever && box.xmin <= d && d <= box.xmax) ||
       (!ever && box.xmin == d && d == box.xmax);
   }
-  else if (tgeo_base_type(temp->valuetypid))
+  else if (tgeo_base_type(temp->basetypid))
   {
     STBOX box1, box2;
     memset(&box1, 0, sizeof(STBOX));
@@ -2966,12 +2925,12 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
 bool
 temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 {
-  if (tnumber_base_type(temp->valuetypid))
+  if (tnumber_base_type(temp->basetypid))
   {
     TBOX box;
     memset(&box, 0, sizeof(TBOX));
     temporal_bbox(&box, temp);
-    double d = datum_double(value, temp->valuetypid);
+    double d = datum_double(value, temp->basetypid);
     if ((ever && d < box.xmin) || (!ever && d < box.xmax))
       return false;
   }
@@ -3126,7 +3085,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_ANYDATUM(1);
   /* For temporal points test that the geometry is not empty */
-  if (tgeo_base_type(temp->valuetypid))
+  if (tgeo_base_type(temp->basetypid))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
     ensure_point_type(gs);
@@ -3140,7 +3099,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
   }
   bool result = func(temp, value);
   PG_FREE_IF_COPY(temp, 0);
-  DATUM_FREE_IF_COPY(value, temp->valuetypid, 1);
+  DATUM_FREE_IF_COPY(value, temp->basetypid, 1);
   PG_RETURN_BOOL(result);
 }
 
@@ -3281,16 +3240,16 @@ bool
 temporal_bbox_restrict_value(const Temporal *temp, Datum value)
 {
   /* Bounding box test */
-  if (tnumber_base_type(temp->valuetypid))
+  if (tnumber_base_type(temp->basetypid))
   {
     TBOX box1, box2;
     memset(&box1, 0, sizeof(TBOX));
     memset(&box2, 0, sizeof(TBOX));
     temporal_bbox(&box1, temp);
-    number_to_box(&box2, value, temp->valuetypid);
+    number_to_box(&box2, value, temp->basetypid);
     return contains_tbox_tbox_internal(&box1, &box2);
   }
-  if (tgeo_base_type(temp->valuetypid))
+  if (tgeo_base_type(temp->basetypid))
   {
     /* Test that the geometry is not empty */
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
@@ -3330,7 +3289,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
   int k = 0;
 
   /* Bounding box test */
-  if (tnumber_base_type(temp->valuetypid))
+  if (tnumber_base_type(temp->basetypid))
   {
     TBOX box1;
     memset(&box1, 0, sizeof(TBOX));
@@ -3339,12 +3298,12 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
     {
       TBOX box2;
       memset(&box2, 0, sizeof(TBOX));
-      number_to_box(&box2, values[i], temp->valuetypid);
+      number_to_box(&box2, values[i], temp->basetypid);
       if (contains_tbox_tbox_internal(&box1, &box2))
         newvalues[k++] = values[i];
     }
   }
-  if (tgeo_base_type(temp->valuetypid))
+  if (tgeo_base_type(temp->basetypid))
   {
     STBOX box1;
     memset(&box1, 0, sizeof(STBOX));
@@ -3380,8 +3339,8 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
   }
   if (k > 1)
   {
-    datumarr_sort(newvalues, k, temp->valuetypid);
-    k = datumarr_remove_duplicates(newvalues, k, temp->valuetypid);
+    datumarr_sort(newvalues, k, temp->basetypid);
+    k = datumarr_remove_duplicates(newvalues, k, temp->basetypid);
   }
   *newcount = k;
   return newvalues;
@@ -3395,7 +3354,7 @@ bool
 tnumber_bbox_restrict_range(const Temporal *temp, const RangeType *range)
 {
   /* Bounding box test */
-  assert(tnumber_base_type(temp->valuetypid));
+  assert(tnumber_base_type(temp->basetypid));
   TBOX box1, box2;
   memset(&box1, 0, sizeof(TBOX));
   memset(&box2, 0, sizeof(TBOX));
@@ -3418,7 +3377,7 @@ RangeType **
 tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
   int count, int *newcount)
 {
-  assert(tnumber_base_type(temp->valuetypid));
+  assert(tnumber_base_type(temp->basetypid));
   RangeType **newranges = palloc(sizeof(Datum) * count);
   int k = 0;
   TBOX box1;
@@ -3497,10 +3456,10 @@ temporal_restrict_value(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   Temporal *result = temporal_restrict_value_internal(temp, value, atfunc);
   PG_FREE_IF_COPY(temp, 0);
-  DATUM_FREE_IF_COPY(value, valuetypid, 1);
+  DATUM_FREE_IF_COPY(value, basetypid, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -4215,14 +4174,14 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
     /* Ensure function is called for temporal numbers */
-    ensure_tnumber_base_type(temp->valuetypid);
-    /* The valuetypid of the temporal value determines wheter the
+    ensure_tnumber_base_type(temp->basetypid);
+    /* The basetypid of the temporal value determines wheter the
      * argument box is converted into an intrange or a floatrange */
     RangeType *range;
-    if (temp->valuetypid == INT4OID)
+    if (temp->basetypid == INT4OID)
       range = range_make(Int32GetDatum((int) box->xmin),
         Int32GetDatum((int) box->xmax), true, true, INT4OID);
-    else /* temp->valuetypid == FLOAT8OID */
+    else /* temp->basetypid == FLOAT8OID */
       range = range_make(Float8GetDatum(box->xmin),
         Float8GetDatum(box->xmax), true, true, FLOAT8OID);
     result = tnumber_restrict_range_internal(temp1, range, true);
@@ -4440,7 +4399,7 @@ tnumber_twavg(PG_FUNCTION_ARGS)
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = datum_double(tinstant_value((TInstant *) temp),
-      temp->valuetypid);
+      temp->basetypid);
   else if (temp->subtype == INSTANTSET)
     result = tnumberinstset_twavg((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
@@ -4465,7 +4424,7 @@ tnumber_twavg(PG_FUNCTION_ARGS)
 static int
 temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1->valuetypid == temp2->valuetypid);
+  assert(temp1->basetypid == temp2->basetypid);
 
   /* Compare bounding period
    * We need to compare periods AND bounding boxes since the bounding boxes
@@ -4483,7 +4442,7 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
   memset(&box2, 0, sizeof(bboxunion));
   temporal_bbox(&box1, temp1);
   temporal_bbox(&box2, temp2);
-  result = temporal_bbox_cmp(&box1, &box2, temp1->valuetypid);
+  result = temporal_bbox_cmp(&box1, &box2, temp1->basetypid);
   if (result)
     return result;
 
@@ -4559,7 +4518,7 @@ temporal_cmp(PG_FUNCTION_ARGS)
 static bool
 temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1->valuetypid == temp2->valuetypid);
+  assert(temp1->basetypid == temp2->basetypid);
   ensure_valid_tempsubtype(temp1->subtype);
   ensure_valid_tempsubtype(temp2->subtype);
 
