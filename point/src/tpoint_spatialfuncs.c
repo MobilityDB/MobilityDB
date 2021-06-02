@@ -3869,7 +3869,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
     {
-      periods[i] = tpointseq_geom_interperiods(simpleseqs[i], gsinter,
+      periods[i] = tgeompointseq_interperiods(simpleseqs[i], gsinter,
         &countpers[i]);
       totalcount += countpers[i];
     }

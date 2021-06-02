@@ -183,6 +183,8 @@ extern Datum tpoint_at_stbox(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_geometry(PG_FUNCTION_ARGS);
 extern Datum tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
+Period **tgeompointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
+  int *count);
 extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
   int *count);
 extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
@@ -191,8 +193,6 @@ extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box
 
 extern TInstantSet **tgeompointi_make_simple1(const TInstantSet *ti, int *count);
 extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
-extern Period **tpointseq_geom_interperiods(const TSequence *seq,
-  GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
 

@@ -30,18 +30,18 @@
  * catalog.
  */
 
--- CREATE TABLE mobilitydb_opcache (
-  -- ltypnum INT,
-  -- rtypnum INT,
-  -- opnum INT,
-  -- opid Oid
--- );
+CREATE TABLE mobilitydb_opcache (
+  ltypnum INT,
+  rtypnum INT,
+  opnum INT,
+  opid Oid
+);
 
-CREATE FUNCTION fill_tempcache()
+CREATE FUNCTION fill_opcache()
   RETURNS VOID
-  AS 'MODULE_PATHNAME', 'fill_tempcache'
+  AS 'MODULE_PATHNAME', 'fill_opcache'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-SELECT fill_tempcache();
+SELECT fill_opcache();
 
 /******************************************************************************/
