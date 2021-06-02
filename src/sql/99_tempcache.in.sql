@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 /*
- * oidcache.sql
+ * tempcache.sql
  * Routine that pre-computes the opcache and store it as a table in the
  * catalog.
  */
