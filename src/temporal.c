@@ -423,22 +423,6 @@ base_oid_from_temporal(Oid temptypid)
 }
 
 /*****************************************************************************
- * Trajectory functions
- *****************************************************************************/
-
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-type_has_precomputed_trajectory(Oid basetypid)
-{
-  if (tgeo_base_type(basetypid))
-    return true;
-  return false;
-}
-
-/*****************************************************************************
  * Test families of base types and temporal types
  *****************************************************************************/
 
@@ -785,28 +769,6 @@ type_has_precomputed_trajectory(Oid basetypid)
 }
 
 /*****************************************************************************/
-
-/**
- * Ensures that the number is positive
- */
-void
-ensure_tnumber_base_type(Oid basetypid)
-{
-  if (! tnumber_base_type(basetypid))
-    elog(ERROR, "unknown number base type: %d", basetypid);
-  return;
-}
-
-/**
- * Ensures that the interval is a positive and absolute duration
- */
-void
-ensure_tgeo_base_type(Oid basetypid)
-{
-  if (! tgeo_base_type(basetypid))
-    elog(ERROR, "unknown geospatial base type: %d", basetypid);
-  return;
-}
 
 /**
  * Ensures that the array is not empty
