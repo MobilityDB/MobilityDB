@@ -2517,7 +2517,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
  * instant set type
  */
 Datum
-tgeompointi_twcentroid(const TInstantSet *ti)
+tgeompointinstset_twcentroid(const TInstantSet *ti)
 {
   int srid = tpointinstset_srid(ti);
   TInstant **instantsx = palloc(sizeof(TInstant *) * ti->count);
@@ -2613,7 +2613,7 @@ tgeompointseq_twcentroid(const TSequence *seq)
  * sequence set type
  */
 Datum
-tgeompoints_twcentroid(const TSequenceSet *ts)
+tgeompointseqset_twcentroid(const TSequenceSet *ts)
 {
   int srid = tpointseqset_srid(ts);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ts->count);
@@ -2684,11 +2684,11 @@ tgeompoint_twcentroid_internal(Temporal *temp)
   if (temp->subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = tgeompointi_twcentroid((TInstantSet *) temp);
+    result = tgeompointinstset_twcentroid((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
     result = tgeompointseq_twcentroid((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tgeompoints_twcentroid((TSequenceSet *) temp);
+    result = tgeompointseqset_twcentroid((TSequenceSet *) temp);
   return result;
 }
 
@@ -3269,7 +3269,7 @@ tgeompointi_split(const TInstantSet *ti, bool *splits, int count)
  * @param[in] ti Temporal point
  */
 TInstantSet **
-tgeompointi_make_simple1(const TInstantSet *ti, int *count)
+tgeompointinstset_make_simple1(const TInstantSet *ti, int *count)
 {
   TInstantSet **result;
   /* Special case when the input instant set has 1 instant */
@@ -3308,7 +3308,7 @@ static ArrayType *
 tgeompointi_make_simple(const TInstantSet *ti)
 {
   int count;
-  TInstantSet **instsets = tgeompointi_make_simple1(ti, &count);
+  TInstantSet **instsets = tgeompointinstset_make_simple1(ti, &count);
   ArrayType *result = temporalarr_to_array((const Temporal **) instsets, count);
   pfree_array((void **) instsets, count);
   return result;
@@ -3718,7 +3718,7 @@ tgeompointseq_timestamp_at_value(const TSequence *seq, Datum value,
  * the intersection is non empty
  */
 Period **
-tpointseq_geom_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
+tgeompointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   int *count)
 {
   /* The temporal sequence has at least 2 instants since
@@ -3869,7 +3869,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
     {
-      periods[i] = tpointseq_geom_interperiods(simpleseqs[i], gsinter,
+      periods[i] = tgeompointseq_interperiods(simpleseqs[i], gsinter,
         &countpers[i]);
       totalcount += countpers[i];
     }
@@ -3892,7 +3892,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     if (countpers[i] != 0)
       pfree(periods[i]);
   }
-  /* It is necessary to sort the sequences */
+  /* It is necessary to sort the periods */
   periodarr_sort(allperiods, totalcount);
   PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);

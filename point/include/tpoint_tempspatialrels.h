@@ -38,46 +38,26 @@
 
 #include "temporal.h"
 
+/* Compute either the tintersects or the tdisjoint relationship */
+#define TINTERSECTS true
+#define TDISJOINT   false
+
 /*****************************************************************************/
 
 extern Datum tcontains_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tcontains_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum tcovers_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tcovers_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum tcoveredby_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tcoveredby_tpoint_geo(PG_FUNCTION_ARGS);
 
 extern Datum tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum tequals_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tequals_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tequals_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum tintersects_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tintersects_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tintersects_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum ttouches_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum ttouches_tpoint_geo(PG_FUNCTION_ARGS);
 
-extern Datum twithin_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum twithin_tpoint_geo(PG_FUNCTION_ARGS);
-
 extern Datum tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum trelate_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum trelate_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum trelate_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum trelate_pattern_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum trelate_pattern_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum trelate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

@@ -518,8 +518,8 @@ tsequence_make_size(const TInstant **instants, int count, size_t bboxsize, size_
  * Ensure the validity of the arguments when creating a temporal value
  */
 static void
-tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear)
+tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear)
 {
   /* Test the validity of the instants */
   assert(count > 0);
@@ -540,8 +540,8 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool 
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
-tsequence_make1(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear, bool normalize)
+tsequence_make1(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, bool normalize)
 {
   /* Normalize the array of instants */
   const TInstant **norminsts = instants;
@@ -1606,7 +1606,7 @@ tstepseq_to_linear(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tstepseq_to_linear1(sequences, seq);
-  return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /*****************************************************************************

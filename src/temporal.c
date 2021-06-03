@@ -575,6 +575,12 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * Ensures that all temporal instant values of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] seq True if we a make operation for temporal sequences
  */
 void
 ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge)
