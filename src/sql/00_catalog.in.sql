@@ -37,8 +37,7 @@ CREATE TABLE mobilitydb_typcache (
 
 ALTER TABLE mobilitydb_typcache SET SCHEMA pg_catalog;
 
-CREATE FUNCTION register_temporal(temporal CHAR(24), base CHAR(24),
-  contbase boolean, box CHAR(24))
+CREATE FUNCTION register_temporal(temporal CHAR(24), base CHAR(24))
 RETURNS void AS $$
 BEGIN
   WITH valueid AS (SELECT oid, typname FROM pg_type WHERE typname=base),

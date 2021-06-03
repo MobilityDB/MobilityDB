@@ -206,7 +206,8 @@ temporal_type(Oid typid)
 {
   if (typid == type_oid(T_TBOOL) || typid == type_oid(T_TINT) ||
     typid == type_oid(T_TFLOAT) || typid == type_oid(T_TTEXT) ||
-    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+    typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
     return true;
   return false;
 }
@@ -283,7 +284,8 @@ ensure_continuous_base_type_all(Oid basetypid)
     basetypid != type_oid(T_GEOMETRY) &&
     basetypid != type_oid(T_GEOGRAPHY) &&
     basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4))
+    basetypid != type_oid(T_DOUBLE4) &&
+    basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
 }
@@ -367,7 +369,8 @@ ensure_tnumber_range_type(Oid typid)
 bool
 tgeo_type(Oid typid)
 {
-  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT))
+  if (typid == type_oid(T_TGEOMPOINT) || typid == type_oid(T_TGEOGPOINT) || 
+    typid == type_oid(T_TNPOINT))
     return true;
   return false;
 }
@@ -695,6 +698,8 @@ temporal_oid_from_base(Oid basetypid)
     result = type_oid(T_TGEOMPOINT);
   if (basetypid == type_oid(T_GEOGRAPHY))
     result = type_oid(T_TGEOGPOINT);
+  if (basetypid == type_oid(T_NPOINT))
+    result = type_oid(T_TNPOINT);
   return result;
 }
 
@@ -719,6 +724,8 @@ base_oid_from_temporal(Oid temptypid)
     result = type_oid(T_GEOMETRY);
   else if (temptypid == type_oid(T_TGEOGPOINT))
     result = type_oid(T_GEOGRAPHY);
+  else if (temptypid == type_oid(T_TNPOINT))
+    result = type_oid(T_NPOINT);
   return result;
 }
 

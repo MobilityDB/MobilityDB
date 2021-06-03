@@ -132,10 +132,9 @@ CREATE TYPE tdouble2;
 CREATE TYPE tdouble3;
 CREATE TYPE tdouble4;
 
-/* temporal, base, contbase, box */
-SELECT register_temporal('tdouble2', 'double2', true, '');
-SELECT register_temporal('tdouble3', 'double3', true, '');
-SELECT register_temporal('tdouble4', 'double4', true, '');
+SELECT register_temporal('tdouble2', 'double2');
+SELECT register_temporal('tdouble3', 'double3');
+SELECT register_temporal('tdouble4', 'double4');
 
 /******************************************************************************/
 

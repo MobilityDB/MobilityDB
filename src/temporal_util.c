@@ -79,11 +79,6 @@ get_typbyval_fast(Oid type)
   if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
     type == TIMESTAMPTZOID)
     result = true;
-  else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
-    result = false;
-  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
-       type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
-    result = false;
   return result;
 }
 
@@ -109,6 +104,8 @@ get_typlen_byref(Oid type)
     result = 24;
   else if (type == type_oid(T_DOUBLE4))
     result = 32;
+  else if (type == type_oid(T_NPOINT))
+    result = 16;
   return result;
 }
 
