@@ -5,7 +5,7 @@ add_test(
 )
 
 set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_SETUP DBNPOINT)
-set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DB)
+set_tests_properties(load_npoint_tables PROPERTIES FIXTURES_REQUIRED DBGEO)
 set_tests_properties(load_npoint_tables PROPERTIES DEPENDS create_extension)
 
 file(GLOB npoint_testfiles "npoint/test/queries/*.sql")
@@ -26,7 +26,7 @@ foreach(file ${npoint_testfiles})
 			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
 			COMMAND ${PROJECT_SOURCE_DIR}/test/scripts/test.sh run_compare ${CMAKE_BINARY_DIR} ${TESTNAME} ${file} 
 		)
-		set_tests_properties(${TESTNAME} PROPERTIES FIXTURES_REQUIRED DB)
+		set_tests_properties(${TESTNAME} PROPERTIES FIXTURES_REQUIRED DBNPOINT)
 		set_tests_properties(${TESTNAME} PROPERTIES RESOURCE_LOCK DBLOCK)
 	endif()
 endforeach()

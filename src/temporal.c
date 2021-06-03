@@ -268,7 +268,8 @@ ensure_continuous_base_type(Oid basetypid)
 {
   if (basetypid != FLOAT8OID &&
     basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY))
+    basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
 }
