@@ -60,6 +60,20 @@
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************
+ * Initialization function
+ *****************************************************************************/
+
+/**
+ * Initialize the extension
+ */
+void
+_PG_init(void)
+{
+  /* elog(WARNING, "This is MobilityDB."); */
+  temporalgeom_init();
+}
+
+/*****************************************************************************
  * Typmod
  *****************************************************************************/
 
@@ -225,7 +239,7 @@ ensure_temporal_base_type_all(Oid basetypid)
  * Returns true if the Oid corresponds to a continuous base type
  */
 bool
-continuous_base_type(Oid type)
+base_type_continuous(Oid type)
 {
   if (type == FLOAT8OID || type == type_oid(T_DOUBLE2) ||
     type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4) ||
@@ -235,23 +249,10 @@ continuous_base_type(Oid type)
 }
 
 /**
- * Ensures that the Oid is an external base type that is continuous
- */
-void
-ensure_continuous_base_type(Oid basetypid)
-{
-  if (basetypid != FLOAT8OID &&
-    basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY))
-    elog(ERROR, "unknown continuous base type: %d", basetypid);
-  return;
-}
-
-/**
  * Ensures that the Oid is an internal or external base type that is continuous
  */
 void
-ensure_continuous_base_type_all(Oid basetypid)
+ensure_base_type_continuous(Oid basetypid)
 {
   if (basetypid != FLOAT8OID &&
     basetypid !=  type_oid(T_DOUBLE2) &&
@@ -261,6 +262,54 @@ ensure_continuous_base_type_all(Oid basetypid)
     basetypid != type_oid(T_DOUBLE4))
     elog(ERROR, "unknown continuous base type: %d", basetypid);
   return;
+}
+
+/**
+ * Returns true if the values of the type are passed by value.
+ *
+ * This function is called only for the base types of the temporal types
+ * and for TimestampTz. To avoid a call of the slow function get_typbyval
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+bool
+base_type_byvalue(Oid type)
+{
+  ensure_temporal_base_type_all(type);
+  bool result = false;
+  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
+    type == TIMESTAMPTZOID)
+    result = true;
+  else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
+    result = false;
+  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
+       type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
+    result = false;
+  return result;
+}
+
+/**
+ * returns the length of type
+ *
+ * This function is called only for the base types of the temporal types
+ * passed by reference. To avoid a call of the slow function get_typlen
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+size_t
+base_type_length(Oid type)
+{
+  ensure_temporal_base_type_all(type);
+  size_t result = 0;
+  if (type == type_oid(T_DOUBLE2))
+    result = 16;
+  else if (type == TEXTOID)
+    result = -1;
+  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
+    result = -1;
+  else if (type == type_oid(T_DOUBLE3))
+    result = 24;
+  else if (type == type_oid(T_DOUBLE4))
+    result = 32;
+  return result;
 }
 
 /**
@@ -368,6 +417,34 @@ ensure_tgeo_base_type(Oid basetypid)
   if (! tgeo_base_type(basetypid))
     elog(ERROR, "unknown geospatial base type: %d", basetypid);
   return;
+}
+
+/**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+bool
+type_has_precomputed_trajectory(Oid basetypid)
+{
+  if (tgeo_base_type(basetypid))
+    return true;
+  return false;
+}
+
+/**
+ * Returns the size of the bounding box
+ */
+size_t
+temporal_bbox_size(Oid basetypid)
+{
+  if (talpha_base_type(basetypid))
+    return sizeof(Period);
+  if (tnumber_base_type(basetypid))
+    return sizeof(TBOX);
+  if (tgeo_base_type(basetypid))
+    return sizeof(STBOX);
+  /* Types without bounding box, for example, tdoubleN */
+  return 0;
 }
 
 /*****************************************************************************/
@@ -685,22 +762,6 @@ base_oid_from_temporal(Oid temptypid)
   else if (temptypid == type_oid(T_TGEOGPOINT))
     result = type_oid(T_GEOGRAPHY);
   return result;
-}
-
-/*****************************************************************************
- * Trajectory functions
- *****************************************************************************/
-
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-type_has_precomputed_trajectory(Oid basetypid)
-{
-  if (tgeo_base_type(basetypid))
-    return true;
-  return false;
 }
 
 /*****************************************************************************
@@ -1850,7 +1911,7 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ensure_sequences_type(temp->subtype);
-  ensure_continuous_base_type(temp->basetypid);
+  ensure_base_type_continuous(temp->basetypid);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     PG_RETURN_POINTER(temporal_copy(temp));
@@ -3064,15 +3125,6 @@ temporal_always_le_internal(const Temporal *temp, Datum value)
   else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_always_le((TSequenceSet *) temp, value);
   return result;
-}
-
-/**
- * Returns the interval in the same representation as Postgres timestamps.
- */
-int64
-get_interval_units(Interval *interval)
-{
-  return interval->time + (interval->day * USECS_PER_DAY);
 }
 
 /*****************************************************************************/

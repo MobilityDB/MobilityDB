@@ -58,7 +58,7 @@ tinstant_extend(TSequence **result, const TInstant *inst,
   const Interval *interval)
 {
   /* Should be additional attribute */
-  bool linear = continuous_base_type(inst->basetypid);
+  bool linear = base_type_continuous(inst->basetypid);
   TInstant *instants[2];
   TimestampTz upper = DatumGetTimestampTz(
     DirectFunctionCall2(timestamptz_pl_interval,

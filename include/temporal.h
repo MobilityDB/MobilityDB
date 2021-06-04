@@ -268,7 +268,7 @@ typedef struct
   int32         vl_len_;       /**< varlena header (do not touch directly!) */
   int16         subtype;       /**< subtype */
   int16         flags;         /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
+  Oid           basetypid;     /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -280,7 +280,7 @@ typedef struct
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
   int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
-  Oid           basetypid;   /**< base type's OID (4 bytes) */
+  Oid           basetypid;    /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
@@ -293,7 +293,7 @@ typedef struct
   int32        vl_len_;       /**< varlena header (do not touch directly!) */
   int16        subtype;       /**< subtype */
   int16        flags;         /**< flags */
-  Oid          basetypid;    /**< base type's OID (4 bytes) */
+  Oid          basetypid;     /**< base type's OID (4 bytes) */
   int32        count;         /**< number of TInstant elements */
   size_t       offsets[1];    /**< beginning of variable-length data */
 } TInstantSet;
@@ -306,7 +306,7 @@ typedef struct
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
   int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
-  Oid           basetypid;   /**< base type's OID (4 bytes) */
+  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
   Period        period;       /**< time span (24 bytes) */
   size_t        offsets[1];   /**< beginning of variable-length data */
@@ -320,7 +320,7 @@ typedef struct
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
   int16         subtype;      /**< subtype */
   int16         flags;        /**< flags */
-  Oid           basetypid;   /**< base type's OID (4 bytes) */
+  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
   size_t        offsets[1];   /**< beginning of variable-length data */
@@ -414,12 +414,12 @@ typedef struct
 
 /* doubleN */
 
-#define DatumGetDouble2P(X)    ((double2 *) DatumGetPointer(X))
-#define Double2PGetDatum(X)    PointerGetDatum(X)
-#define DatumGetDouble3P(X)    ((double3 *) DatumGetPointer(X))
-#define Double3PGetDatum(X)    PointerGetDatum(X)
-#define DatumGetDouble4P(X)    ((double4 *) DatumGetPointer(X))
-#define Double4PGetDatum(X)    PointerGetDatum(X)
+#define DatumGetDouble2P(X)       ((double2 *) DatumGetPointer(X))
+#define Double2PGetDatum(X)       PointerGetDatum(X)
+#define DatumGetDouble3P(X)       ((double3 *) DatumGetPointer(X))
+#define Double3PGetDatum(X)       PointerGetDatum(X)
+#define DatumGetDouble4P(X)       ((double4 *) DatumGetPointer(X))
+#define Double4PGetDatum(X)       PointerGetDatum(X)
 
 /* Temporal types */
 
@@ -429,20 +429,20 @@ typedef struct
 #define DatumGetTSequence(X)      ((TSequence *) PG_DETOAST_DATUM(X))
 #define DatumGetTSequenceSet(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
 
-#define PG_GETARG_TEMPORAL(i)     ((Temporal *) PG_GETARG_VARLENA_P(i))
+#define PG_GETARG_TEMPORAL(X)     ((Temporal *) PG_GETARG_VARLENA_P(X))
 
-#define PG_GETARG_ANYDATUM(i) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, i)) == -1 ? \
-  PointerGetDatum(PG_GETARG_VARLENA_P(i)) : PG_GETARG_DATUM(i))
+#define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
+  PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
 
 #define DATUM_FREE(value, basetypid) \
   do { \
-    if (! get_typbyval_fast(basetypid)) \
+    if (! base_type_byvalue(basetypid)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
 #define DATUM_FREE_IF_COPY(value, basetypid, n) \
   do { \
-    if (! get_typbyval_fast(basetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
+    if (! base_type_byvalue(basetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
@@ -462,7 +462,64 @@ typedef struct
 
 /*****************************************************************************/
 
-/* Utility functions */
+/* Initialization function */
+
+extern void _PG_init(void);
+
+/* Typmod functions */
+ 
+extern const char *tempsubtype_name(int16 subtype);
+extern bool tempsubtype_from_string(const char *str, int16 *subtype);
+
+/* Temporal/base types tests */
+
+extern bool temporal_type(Oid type);
+extern void ensure_temporal_base_type(Oid type);
+extern void ensure_temporal_base_type_all(Oid basetypid);
+extern bool base_type_continuous(Oid basetypid);
+extern void ensure_base_type_continuous(Oid basetypid);
+extern bool base_type_byvalue(Oid type);
+extern size_t base_type_length(Oid type);
+extern bool talpha_base_type(Oid type);
+extern bool tnumber_type(Oid temptypid);
+extern bool tnumber_base_type(Oid type);
+extern void ensure_tnumber_base_type(Oid type);
+extern bool tnumber_range_type(Oid type);
+extern void ensure_tnumber_range_type(Oid type);
+extern bool tgeo_type(Oid type);
+extern bool tgeo_base_type(Oid type);
+extern void ensure_tgeo_base_type(Oid type);
+extern bool type_has_precomputed_trajectory(Oid type);
+extern size_t temporal_bbox_size(Oid basetypid);
+
+/* Oid functions */
+
+extern Oid range_oid_from_base(Oid type);
+extern Oid temporal_oid_from_base(Oid type);
+extern Oid base_oid_from_temporal(Oid type);
+
+/* Parameter tests */
+
+extern void ensure_valid_tempsubtype(int16 type);
+extern void ensure_valid_tempsubtype_all(int16 type);
+extern void ensure_sequences_subtype(int16 subtype);
+extern void ensure_linear_interpolation(int16 flags);
+extern void ensure_common_dimension(int16 flags1, int16 flags2);
+extern void ensure_same_base_type(const Temporal *temp1,
+  const Temporal *temp2);
+extern void ensure_same_interpolation(const Temporal *temp1,
+  const Temporal *temp2);
+extern void ensure_increasing_timestamps(const TInstant *inst1,
+  const TInstant *inst2, bool strict);
+extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
+  bool merge);
+extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
+
+extern void ensure_positive_datum(Datum size, Oid type);
+extern void ensure_valid_duration(const Interval *duration);
+extern void ensure_non_empty_array(ArrayType *array);
+
+/* Miscellaneous functions */
 
 extern const TInstant *tsequence_inst_at_timestamp_excl(const TSequence *seq,
   TimestampTz t);
@@ -474,62 +531,11 @@ extern Temporal *pg_getarg_temporal(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, TIntersection mode,
   Temporal **inter1, Temporal **inter2);
-extern bool continuous_base_type(Oid type);
 
-extern const char *tempsubtype_name(int16 subtype);
-extern bool tempsubtype_from_string(const char *str, int16 *subtype);
+/* Version functions */
 
-extern int64 get_interval_units(Interval *interval);
-
-/* Oid functions */
-
-extern Oid range_oid_from_base(Oid type);
-extern Oid temporal_oid_from_base(Oid type);
-extern Oid base_oid_from_temporal(Oid type);
-
-/* Trajectory functions */
-
-extern bool type_has_precomputed_trajectory(Oid type);
-
-/* Parameter tests */
-
-extern bool talpha_base_type(Oid type);
-extern bool tnumber_base_type(Oid type);
-extern bool tnumber_range_type(Oid type);
-extern bool tgeo_base_type(Oid type);
-extern bool temporal_type(Oid type);
-extern bool tnumber_type(Oid type);
-extern bool tgeo_type(Oid type);
-
-extern void ensure_talpha_base_type(Oid type);
-extern void ensure_tnumber_base_type(Oid type);
-extern void ensure_tnumber_range_type(Oid type);
-extern void ensure_tgeo_base_type(Oid type);
-extern void ensure_temporal_base_type(Oid type);
-extern void ensure_temporal_base_type_all(Oid type);
-
-extern void ensure_positive_datum(Datum size, Oid type);
-extern void ensure_valid_duration(const Interval *duration);
-extern void ensure_valid_tempsubtype(int16 type);
-extern void ensure_valid_tempsubtype_all(int16 type);
-extern void ensure_sequences_type(int16 subtype);
-extern void ensure_non_empty_array(ArrayType *array);
-extern void ensure_continuous_base_type(Oid type);
-extern void ensure_continuous_base_type_all(Oid type);
-extern void ensure_linear_interpolation(int16 flags);
-extern void ensure_common_dimension(int16 flags1, int16 flags2);
-
-extern void ensure_same_temp_subtype(const Temporal *temp1,
-  const Temporal *temp2);
-extern void ensure_same_base_type(const Temporal *temp1,
-  const Temporal *temp2);
-extern void ensure_same_interpolation(const Temporal *temp1,
-  const Temporal *temp2);
-extern void ensure_increasing_timestamps(const TInstant *inst1,
-  const TInstant *inst2, bool strict);
-extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
-  bool merge);
-extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
+extern Datum mobilitydb_version(PG_FUNCTION_ARGS);
+extern Datum mobilitydb_full_version(PG_FUNCTION_ARGS);
 
 /* Input/output functions */
 

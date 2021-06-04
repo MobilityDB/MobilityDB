@@ -88,7 +88,7 @@ tinstant_value_copy(const TInstant *inst)
   if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
     return *value;
   /* For base types passed by reference */
-  int typlen = get_typlen_byref(inst->basetypid);
+  int typlen = base_type_length(inst->basetypid);
   size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, value, value_size);
@@ -119,7 +119,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   TInstant *result;
   size_t value_size;
   /* Copy value */
-  bool byval = get_typbyval_fast(basetypid);
+  bool byval = base_type_byvalue(basetypid);
   if (byval)
   {
     /* For base types passed by value */
@@ -133,7 +133,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   {
     /* For base types passed by reference */
     void *value_from = DatumGetPointer(value);
-    int typlen = get_typlen_byref(basetypid);
+    int typlen = base_type_length(basetypid);
     value_size = typlen != -1 ? double_pad((unsigned int) typlen) :
       double_pad(VARSIZE(value_from));
     size += value_size;
@@ -147,7 +147,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   result->t = t;
   SET_VARSIZE(result, size);
   MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous_base_type(basetypid));
+  MOBDB_FLAGS_SET_LINEAR(result->flags, base_type_continuous(basetypid));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_base_type(basetypid))

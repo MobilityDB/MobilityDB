@@ -431,7 +431,7 @@ tpoint_parse(char **str, Oid basetype)
     srid_is_latlong(fcinfo, tpoint_srid);
    */
 
-  bool linear = continuous_base_type(basetype);
+  bool linear = base_type_continuous(basetype);
   /* Starts with "Interp=Stepwise" */
   if (strncasecmp(*str,"Interp=Stepwise;",16) == 0)
   {

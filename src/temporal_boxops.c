@@ -64,22 +64,6 @@
  *****************************************************************************/
 
 /**
- * Returns the size of the bounding box
- */
-size_t
-temporal_bbox_size(Oid basetypid)
-{
-  if (talpha_base_type(basetypid))
-    return sizeof(Period);
-  if (tnumber_base_type(basetypid))
-    return sizeof(TBOX);
-  if (tgeo_base_type(basetypid))
-    return sizeof(STBOX);
-  /* Types without bounding box, for example, tdoubleN */
-  return 0;
-}
-
-/**
  * Returns true if the bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes

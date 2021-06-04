@@ -126,7 +126,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     datum_eq2(value, value2, basetypid, inst1->basetypid))
     return false;
 
-  ensure_continuous_base_type(inst1->basetypid);
+  ensure_base_type_continuous(inst1->basetypid);
   bool result = false; /* make compiler quiet */
   if (inst1->basetypid == FLOAT8OID)
     result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
@@ -1396,7 +1396,7 @@ tsequence_to_string(const TSequence *seq, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];
-  if (! component && continuous_base_type(seq->basetypid) &&
+  if (! component && base_type_continuous(seq->basetypid) &&
     ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -3186,7 +3186,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
   Datum result = 0;
-  ensure_continuous_base_type_all(basetypid);
+  ensure_base_type_continuous(basetypid);
   if (basetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);

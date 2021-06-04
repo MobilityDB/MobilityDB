@@ -199,6 +199,15 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
   return result;
 }
 
+/**
+ * Returns the interval in the same representation as Postgres timestamps.
+ */
+int64
+get_interval_units(Interval *interval)
+{
+  return interval->time + (interval->day * USECS_PER_DAY);
+}
+
 PG_FUNCTION_INFO_V1(timestamptz_bucket);
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.

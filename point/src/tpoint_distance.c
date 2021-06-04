@@ -228,8 +228,8 @@ distance_tpointseqset_geo(const TSequenceSet *ts, Datum point, datum_func2 func)
  */
 static bool
 tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2,
-  const TInstant *end2, TimestampTz *t)
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  TimestampTz *t)
 {
   long double denum, fraction;
   long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
