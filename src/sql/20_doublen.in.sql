@@ -29,6 +29,10 @@
  * Internal types used for the temporal average and centroid aggregates.
  */
 
+CREATE TYPE double2;
+CREATE TYPE double3;
+CREATE TYPE double4;
+
 CREATE FUNCTION double2_in(cstring)
   RETURNS double2
    AS 'MODULE_PATHNAME'

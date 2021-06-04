@@ -197,7 +197,7 @@ static char *
 tbox_to_string(const TBOX *box)
 {
   static size_t size = MAXTBOXLEN + 1;
-  char *str = (char *) palloc(size);
+  char *result = (char *) palloc(size);
   char *xmin = NULL, *xmax = NULL, *tmin = NULL, *tmax = NULL;
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
@@ -215,14 +215,14 @@ tbox_to_string(const TBOX *box)
   if (hasx)
   {
     if (hast)
-      snprintf(str, size, "TBOX((%s,%s),(%s,%s))", xmin, tmin,
+      snprintf(result, size, "TBOX((%s,%s),(%s,%s))", xmin, tmin,
         xmax, tmax);
     else
-      snprintf(str, size, "TBOX((%s,),(%s,))", xmin, xmax);
+      snprintf(result, size, "TBOX((%s,),(%s,))", xmin, xmax);
   }
   else
     /* Missing X dimension */
-    snprintf(str, size, "TBOX((,%s),(,%s))", tmin, tmax);
+    snprintf(result, size, "TBOX((,%s),(,%s))", tmin, tmax);
   if (hasx)
   {
     pfree(xmin); pfree(xmax);
@@ -231,7 +231,7 @@ tbox_to_string(const TBOX *box)
   {
     pfree(tmin); pfree(tmax);
   }
-  return str;
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(tbox_out);

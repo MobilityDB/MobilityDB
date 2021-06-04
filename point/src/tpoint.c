@@ -394,7 +394,7 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Oid  basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
     basetypid);
   PG_FREE_IF_COPY(gs, 0);

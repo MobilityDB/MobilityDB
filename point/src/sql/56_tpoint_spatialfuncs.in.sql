@@ -172,7 +172,7 @@ CREATE FUNCTION speed(tgeogpoint)
 
 CREATE FUNCTION twcentroid(tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'tgeompoint_twcentroid'
+  AS 'MODULE_PATHNAME', 'tpoint_twcentroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION azimuth(tgeompoint)
@@ -188,12 +188,12 @@ CREATE FUNCTION azimuth(tgeogpoint)
 
 CREATE FUNCTION isSimple(tgeompoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'tgeompoint_is_simple'
+  AS 'MODULE_PATHNAME', 'tpoint_is_simple'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION makeSimple(tgeompoint)
   RETURNS tgeompoint[]
-  AS 'MODULE_PATHNAME', 'tgeompoint_make_simple'
+  AS 'MODULE_PATHNAME', 'tpoint_make_simple'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

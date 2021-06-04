@@ -170,9 +170,9 @@ extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tgeompoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 
-extern Datum tgeompointi_twcentroid(const TInstantSet *ti);
-extern Datum tgeompointseq_twcentroid(const TSequence *seq);
-extern Datum tgeompoints_twcentroid(const TSequenceSet *ts);
+extern Datum tpointinstset_twcentroid(const TInstantSet *ti);
+extern Datum tpointseq_twcentroid(const TSequence *seq);
+extern Datum tpointseqset_twcentroid(const TSequenceSet *ts);
 
 /* Restriction functions */
 
@@ -188,9 +188,9 @@ extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
   Datum geom, bool atfunc);
 extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
 
-extern TInstantSet **tgeompointi_make_simple1(const TInstantSet *ti, int *count);
-extern TSequence **tgeompointseq_make_simple1(const TSequence *seq, int *count);
-extern Period **tpointseq_geom_interperiods(const TSequence *seq,
+extern TInstantSet **tpointinstset_make_simple1(const TInstantSet *ti, int *count);
+extern TSequence **tpointseq_make_simple1(const TSequence *seq, int *count);
+extern Period **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/

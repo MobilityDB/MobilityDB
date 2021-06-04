@@ -49,6 +49,8 @@ extern Datum tpoint_as_binary(PG_FUNCTION_ARGS);
 extern Datum tpoint_as_ewkb(PG_FUNCTION_ARGS);
 extern Datum tpoint_as_hexewkb(PG_FUNCTION_ARGS);
 
+extern char *ewkt_out(Oid type, Datum value);
+
 /*****************************************************************************/
 
 #endif

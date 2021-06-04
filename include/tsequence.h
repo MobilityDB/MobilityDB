@@ -112,6 +112,7 @@ extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 
 /* Accessor functions */
 
+extern int tsequence_values(Datum *result, const TSequence *seq);
 extern ArrayType *tsequence_values_array(const TSequence *seq);
 extern int tfloatseq_ranges1(RangeType **result, const TSequence *seq);
 extern PeriodSet *tsequence_get_time(const TSequence *seq);
@@ -175,6 +176,8 @@ extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t,
   Datum *result);
 extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,
   Datum *result);
+extern const TInstant *tsequence_inst_at_timestamp_excl(const TSequence *seq,
+  TimestampTz t);
 
 extern int tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
   TimestampTz t);

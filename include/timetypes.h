@@ -91,18 +91,18 @@ typedef struct
 
 #define DatumGetTimestampSet(X)    ((TimestampSet *) DatumGetPointer(X))
 #define TimestampSetGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_TIMESTAMPSET(n)  DatumGetTimestampSet(PG_GETARG_POINTER(n))
-#define PG_RETURN_TIMESTAMPSET(x)  PG_RETURN_POINTER(x)
+#define PG_GETARG_TIMESTAMPSET(X)  DatumGetTimestampSet(PG_GETARG_POINTER(X))
+#define PG_RETURN_TIMESTAMPSET(X)  PG_RETURN_POINTER(X)
 
-#define DatumGetPeriod(X)      ((Period *) DatumGetPointer(X))
-#define PeriodGetDatum(X)      PointerGetDatum(X)
-#define PG_GETARG_PERIOD(n)      DatumGetPeriod(PG_GETARG_POINTER(n))
-#define PG_RETURN_PERIOD(x)      PG_RETURN_POINTER(x)
+#define DatumGetPeriod(X)          ((Period *) DatumGetPointer(X))
+#define PeriodGetDatum(X)          PointerGetDatum(X)
+#define PG_GETARG_PERIOD(X)        DatumGetPeriod(PG_GETARG_POINTER(X))
+#define PG_RETURN_PERIOD(X)        PG_RETURN_POINTER(X)
 
-#define DatumGetPeriodSet(X)    ((PeriodSet *) DatumGetPointer(X))
-#define PeriodSetGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_PERIODSET(n)    DatumGetPeriodSet(PG_GETARG_POINTER(n))
-#define PG_RETURN_PERIODSET(x)    PG_RETURN_POINTER(x)
+#define DatumGetPeriodSet(X)       ((PeriodSet *) DatumGetPointer(X))
+#define PeriodSetGetDatum(X)       PointerGetDatum(X)
+#define PG_GETARG_PERIODSET(X)     DatumGetPeriodSet(PG_GETARG_POINTER(X))
+#define PG_RETURN_PERIODSET(X)     PG_RETURN_POINTER(X)
 
 /*****************************************************************************/
 

@@ -47,25 +47,9 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
-/*
- * This is required for builds against pgsql
- */
-PG_MODULE_MAGIC;
-
-
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
-
-/**
- * Initialize the extension
- */
-void
-_PG_init(void)
-{
-  /* elog(WARNING, "This is MobilityDB."); */
-  temporalgeom_init();
-}
 
 /**
  * Align to double
@@ -79,64 +63,16 @@ double_pad(size_t size)
 }
 
 /**
- * Returns true if the values of the type are passed by value.
- *
- * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typbyval
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-bool
-get_typbyval_fast(Oid type)
-{
-  ensure_temporal_base_type_all(type);
-  bool result = false;
-  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
-    type == TIMESTAMPTZOID)
-    result = true;
-  else if (type == type_oid(T_DOUBLE2) || type == TEXTOID)
-    result = false;
-  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY) ||
-       type == type_oid(T_DOUBLE3) || type == type_oid(T_DOUBLE4))
-    result = false;
-  return result;
-}
-
-/**
- * returns the length of type
- *
- * This function is called only for the base types of the temporal types
- * passed by reference. To avoid a call of the slow function get_typlen
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-int
-get_typlen_byref(Oid type)
-{
-  ensure_temporal_base_type_all(type);
-  int result = 0;
-  if (type == type_oid(T_DOUBLE2))
-    result = 16;
-  else if (type == TEXTOID)
-    result = -1;
-  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
-    result = -1;
-  else if (type == type_oid(T_DOUBLE3))
-    result = 24;
-  else if (type == type_oid(T_DOUBLE4))
-    result = 32;
-  return result;
-}
-
-/**
  * Copy a Datum if it is passed by reference
  */
 Datum
 datum_copy(Datum value, Oid type)
 {
   /* For types passed by value */
-  if (get_typbyval_fast(type))
+  if (base_type_byvalue(type))
     return value;
   /* For types passed by reference */
-  int typlen = get_typlen_byref(type);
+  int typlen = base_type_length(type);
   size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
@@ -976,7 +912,7 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 bool
 datum_eq(Datum l, Datum r, Oid type)
 {
-  ensure_temporal_base_type_all(type);
+  ensure_temporal_base_type(type);
   bool result = false;
   if (type == BOOLOID || type == INT4OID)
     result = l == r;
@@ -1074,8 +1010,8 @@ datum_ge(Datum l, Datum r, Oid type)
 bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
-  ensure_temporal_base_type_all(typel);
-  ensure_temporal_base_type_all(typer);
+  ensure_temporal_base_type(typel);
+  ensure_temporal_base_type(typer);
   bool result = false;
   if ((typel == BOOLOID && typer == BOOLOID) ||
     (typel == INT4OID && typer == INT4OID))

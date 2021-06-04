@@ -126,7 +126,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     datum_eq2(value, value2, basetypid, inst1->basetypid))
     return false;
 
-  ensure_continuous_base_type(inst1->basetypid);
+  ensure_base_type_continuous(inst1->basetypid);
   bool result = false; /* make compiler quiet */
   if (inst1->basetypid == FLOAT8OID)
     result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
@@ -518,8 +518,8 @@ tsequence_make_size(const TInstant **instants, int count, size_t bboxsize, size_
  * Ensure the validity of the arguments when creating a temporal value
  */
 static void
-tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear)
+tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear)
 {
   /* Test the validity of the instants */
   assert(count > 0);
@@ -540,8 +540,8 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc, bool 
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
-tsequence_make1(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear, bool normalize)
+tsequence_make1(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, bool normalize)
 {
   /* Normalize the array of instants */
   const TInstant **norminsts = instants;
@@ -1396,7 +1396,7 @@ tsequence_to_string(const TSequence *seq, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];
-  if (! component && continuous_base_type(seq->basetypid) &&
+  if (! component && base_type_continuous(seq->basetypid) &&
     ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
@@ -1606,7 +1606,7 @@ tstepseq_to_linear(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   int count = tstepseq_to_linear1(sequences, seq);
-  return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
+  return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /*****************************************************************************
@@ -3186,7 +3186,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
   Datum result = 0;
-  ensure_continuous_base_type_all(basetypid);
+  ensure_base_type_continuous(basetypid);
   if (basetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);
@@ -3288,6 +3288,21 @@ tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t, Datum *res
   if (inst->t == t)
     return tinstant_value_at_timestamp(inst, t, result);
   return tsequence_value_at_timestamp(seq, t, result);
+}
+
+/**
+ * Returns the temporal instant at the timestamp for timestamps that
+ * are at an exclusive bound
+ */
+const TInstant *
+tsequence_inst_at_timestamp_excl(const TSequence *seq, TimestampTz t)
+{
+  const TInstant *result;
+  if (t == seq->period.lower)
+    result = tsequence_inst_n(seq, 0);
+  else
+    result = tsequence_inst_n(seq, seq->count - 1);
+  return tinstant_copy(result);
 }
 
 /**

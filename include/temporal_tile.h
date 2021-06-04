@@ -131,7 +131,8 @@ extern double float_bucket_internal(double value, double size,
   double origin);
 extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
   int64 tunits, TimestampTz torigin);
-  
+extern int64 get_interval_units(Interval *interval);
+
 extern Datum number_bucket(PG_FUNCTION_ARGS);
 extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
 extern Datum range_bucket_list(PG_FUNCTION_ARGS);

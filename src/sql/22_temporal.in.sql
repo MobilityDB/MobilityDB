@@ -34,20 +34,22 @@ CREATE TYPE tbool;
 CREATE TYPE tfloat;
 CREATE TYPE ttext;
 
-SELECT register_temporal('tbool', 'bool') ;
-SELECT register_temporal('tint', 'int4') ;
-SELECT register_temporal('tfloat', 'float8') ;
-SELECT register_temporal('ttext', 'text') ;
+SELECT register_temporal('tbool', 'bool');
+SELECT register_temporal('tint', 'int4');
+SELECT register_temporal('tfloat', 'float8');
+SELECT register_temporal('ttext', 'text');
 
 /*****************************************************************************
  * Utility functions
  *****************************************************************************/
 
-CREATE FUNCTION mobilitydb_version() RETURNS text
+CREATE FUNCTION mobilitydb_version()
+  RETURNS text
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE;
 
-CREATE FUNCTION mobilitydb_full_version() RETURNS text
+CREATE FUNCTION mobilitydb_full_version()
+  RETURNS text
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE;
 
