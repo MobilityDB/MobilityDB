@@ -473,23 +473,22 @@ extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 /* Temporal/base types tests */
 
-extern bool temporal_type(Oid type);
-extern void ensure_temporal_base_type(Oid type);
-extern void ensure_temporal_base_type_all(Oid basetypid);
+extern bool temporal_type(Oid temptype);
+extern void ensure_temporal_base_type(Oid basetypid);
 extern bool base_type_continuous(Oid basetypid);
 extern void ensure_base_type_continuous(Oid basetypid);
-extern bool base_type_byvalue(Oid type);
-extern size_t base_type_length(Oid type);
-extern bool talpha_base_type(Oid type);
+extern bool base_type_byvalue(Oid basetypid);
+extern size_t base_type_length(Oid basetypid);
+extern bool talpha_base_type(Oid basetypid);
 extern bool tnumber_type(Oid temptypid);
-extern bool tnumber_base_type(Oid type);
-extern void ensure_tnumber_base_type(Oid type);
-extern bool tnumber_range_type(Oid type);
-extern void ensure_tnumber_range_type(Oid type);
-extern bool tgeo_type(Oid type);
-extern bool tgeo_base_type(Oid type);
-extern void ensure_tgeo_base_type(Oid type);
-extern bool type_has_precomputed_trajectory(Oid type);
+extern bool tnumber_base_type(Oid basetypid);
+extern void ensure_tnumber_base_type(Oid basetypid);
+extern bool tnumber_range_type(Oid rangetype);
+extern void ensure_tnumber_range_type(Oid rangetype);
+extern bool tgeo_type(Oid temptype);
+extern bool tgeo_base_type(Oid basetype);
+extern void ensure_tgeo_base_type(Oid basetype);
+extern bool type_has_precomputed_trajectory(Oid basetype);
 extern size_t temporal_bbox_size(Oid basetypid);
 
 /* Oid functions */

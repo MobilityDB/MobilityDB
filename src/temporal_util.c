@@ -47,12 +47,6 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
-/*
- * This is required for builds against pgsql
- */
-PG_MODULE_MAGIC;
-
-
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
@@ -918,7 +912,7 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 bool
 datum_eq(Datum l, Datum r, Oid type)
 {
-  ensure_temporal_base_type_all(type);
+  ensure_temporal_base_type(type);
   bool result = false;
   if (type == BOOLOID || type == INT4OID)
     result = l == r;
@@ -1016,8 +1010,8 @@ datum_ge(Datum l, Datum r, Oid type)
 bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
-  ensure_temporal_base_type_all(typel);
-  ensure_temporal_base_type_all(typer);
+  ensure_temporal_base_type(typel);
+  ensure_temporal_base_type(typer);
   bool result = false;
   if ((typel == BOOLOID && typer == BOOLOID) ||
     (typel == INT4OID && typer == INT4OID))
