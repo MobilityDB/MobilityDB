@@ -473,7 +473,7 @@ extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
 /* Temporal/base types tests */
 
-extern bool temporal_type(Oid temptype);
+extern bool temporal_type(Oid temptypid);
 extern void ensure_temporal_base_type(Oid basetypid);
 extern bool base_type_continuous(Oid basetypid);
 extern void ensure_base_type_continuous(Oid basetypid);
@@ -485,23 +485,23 @@ extern bool tnumber_base_type(Oid basetypid);
 extern void ensure_tnumber_base_type(Oid basetypid);
 extern bool tnumber_range_type(Oid rangetype);
 extern void ensure_tnumber_range_type(Oid rangetype);
-extern bool tgeo_type(Oid temptype);
-extern bool tgeo_base_type(Oid basetype);
-extern void ensure_tgeo_base_type(Oid basetype);
-extern bool type_has_precomputed_trajectory(Oid basetype);
+extern bool tgeo_type(Oid temptypid);
+extern bool tgeo_base_type(Oid basetypid);
+extern void ensure_tgeo_base_type(Oid basetypid);
+extern bool type_has_precomputed_trajectory(Oid basetypid);
 extern size_t temporal_bbox_size(Oid basetypid);
 
 /* Oid functions */
 
-extern Oid range_oid_from_base(Oid type);
-extern Oid temporal_oid_from_base(Oid type);
-extern Oid base_oid_from_temporal(Oid type);
+extern Oid range_oid_from_base(Oid basetypid);
+extern Oid temporal_oid_from_base(Oid basetypid);
+extern Oid base_oid_from_temporal(Oid temptypid);
 
 /* Parameter tests */
 
 extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
-extern void ensure_sequences_subtype(int16 subtype);
+extern void ensure_seq_subtypes(int16 subtype);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 extern void ensure_same_base_type(const Temporal *temp1,
@@ -519,11 +519,6 @@ extern void ensure_valid_duration(const Interval *duration);
 extern void ensure_non_empty_array(ArrayType *array);
 
 /* Miscellaneous functions */
-
-extern const TInstant *tsequence_inst_at_timestamp_excl(const TSequence *seq,
-  TimestampTz t);
-extern const TInstant *tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts,
-  TimestampTz t);
 
 extern Temporal *temporal_copy(const Temporal *temp);
 extern Temporal *pg_getarg_temporal(const Temporal *temp);

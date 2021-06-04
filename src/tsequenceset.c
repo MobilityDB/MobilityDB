@@ -1796,6 +1796,39 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
   return false;
 }
 
+/**
+ * Returns the temporal instant at the timestamp when the timestamp is
+ * at an exclusive bound
+ */
+const TInstant *
+tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
+{
+  const TInstant *result;
+  int loc;
+  tsequenceset_find_timestamp(ts, t, &loc);
+  const TSequence *seq1, *seq2;
+  if (loc == 0)
+  {
+    seq1 = tsequenceset_seq_n(ts, 0);
+    result = tsequence_inst_n(seq1, 0);
+  }
+  else if (loc == ts->count)
+  {
+    seq1 = tsequenceset_seq_n(ts, ts->count - 1);
+    result = tsequence_inst_n(seq1, seq1->count - 1);
+  }
+  else
+  {
+    seq1 = tsequenceset_seq_n(ts, loc - 1);
+    seq2 = tsequenceset_seq_n(ts, loc);
+    if (tsequence_end_timestamp(seq1) == t)
+      result = tsequence_inst_n(seq1, seq1->count - 1);
+    else
+      result = tsequence_inst_n(seq2, 0);
+  }
+  return tinstant_copy(result);
+}
+
 
 /**
  * Restricts the temporal value to the (complement of the) timestamp set

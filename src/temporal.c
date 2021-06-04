@@ -503,52 +503,9 @@ base_oid_from_temporal(Oid temptypid)
   return result;
 }
 
-/*****************************************************************************/
-
-/**
- * Ensures that the number is positive
- */
-void
-ensure_positive_datum(Datum size, Oid type)
-{
-  ensure_tnumber_base_type(type);
-  if (type == INT4OID)
-  {
-    int isize = DatumGetInt32(size);
-    if (isize <= 0)
-      elog(ERROR, "The value must be positive: %d", isize);
-  }
-  else
-  {
-    double dsize = DatumGetFloat8(size);
-    if (dsize <= 0.0)
-      elog(ERROR, "The value must be positive: %f", dsize);
-  }
-  return;
-}
-
-/**
- * Ensures that the interval is a positive and absolute duration
- */
-void
-ensure_valid_duration(const Interval *duration)
-{
-  if (duration->month != 0)
-  {
-    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-      errmsg("Interval defined in terms of month, year, century etc. not supported")));
-  }
-  Interval intervalzero;
-  memset(&intervalzero, 0, sizeof(Interval));
-  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
-    PointerGetDatum(&intervalzero));
-  if (cmp <= 0)
-  {
-    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
-    elog(ERROR, "The interval must be positive: %s", t);
-  }
-  return;
-}
+/*****************************************************************************
+ * Parameter tests
+ *****************************************************************************/
 
 /**
  * Ensures that the temporal type is valid
@@ -567,7 +524,7 @@ ensure_valid_tempsubtype(int16 subtype)
 /**
  * Ensures that the temporal type is valid
  *
- * @note Used for the analyze and selectivity functions
+ * @note Used for the the analyze and selectivity functions
  */
 void
 ensure_valid_tempsubtype_all(int16 subtype)
@@ -583,7 +540,7 @@ ensure_valid_tempsubtype_all(int16 subtype)
  * Ensures that the temporal type is a sequence (set)
  */
 void
-ensure_sequences_type(int16 subtype)
+ensure_seq_subtypes(int16 subtype)
 {
   if (subtype != SEQUENCE && subtype != SEQUENCESET)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -609,23 +566,6 @@ ensure_tinstantarr(TInstant **instants, int count)
   return;
 }
 
-
-/**
- * Ensures that the array is not empty
- *
- * @note Used for the constructor functions
- */
-void
-ensure_non_empty_array(ArrayType *array)
-{
-  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
-    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
-      errmsg("The input array cannot be empty")));
-  return;
-}
-
-/*****************************************************************************/
-
 /**
  * Ensure that the temporal value has linear interpolation
  */
@@ -650,8 +590,6 @@ ensure_common_dimension(int16 flags1, int16 flags2)
       errmsg("The temporal values must have at least one common dimension")));
   return;
 }
-
-/*****************************************************************************/
 
 /**
  * Ensures that the two temporal values have the same base type
@@ -752,57 +690,70 @@ ensure_valid_tsequencearr(const TSequence **sequences, int count)
   return;
 }
 
+/*****************************************************************************/
+
+/**
+ * Ensures that the number is positive
+ */
+void
+ensure_positive_datum(Datum size, Oid type)
+{
+  ensure_tnumber_base_type(type);
+  if (type == INT4OID)
+  {
+    int isize = DatumGetInt32(size);
+    if (isize <= 0)
+      elog(ERROR, "The value must be positive: %d", isize);
+  }
+  else
+  {
+    double dsize = DatumGetFloat8(size);
+    if (dsize <= 0.0)
+      elog(ERROR, "The value must be positive: %f", dsize);
+  }
+  return;
+}
+
+/**
+ * Ensures that the interval is a positive and absolute duration
+ */
+void
+ensure_valid_duration(const Interval *duration)
+{
+  if (duration->month != 0)
+  {
+    ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+      errmsg("Interval defined in terms of month, year, century etc. not supported")));
+  }
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = call_function2(interval_cmp, PointerGetDatum(duration),
+    PointerGetDatum(&intervalzero));
+  if (cmp <= 0)
+  {
+    char *t = call_output(INTERVALOID, PointerGetDatum(duration));
+    elog(ERROR, "The interval must be positive: %s", t);
+  }
+  return;
+}
+
+/**
+ * Ensures that the array is not empty
+ *
+ * @note Used for the constructor functions
+ */
+void
+ensure_non_empty_array(ArrayType *array)
+{
+  if (ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) == 0)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
+      errmsg("The input array cannot be empty")));
+  return;
+}
+
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
-
-/**
- * Returns the temporal instant at the timestamp for timestamps that
- * are at an exclusive bound
- */
-const TInstant *
-tsequence_inst_at_timestamp_excl(const TSequence *seq, TimestampTz t)
-{
-  const TInstant *result;
-  if (t == seq->period.lower)
-    result = tsequence_inst_n(seq, 0);
-  else
-    result = tsequence_inst_n(seq, seq->count - 1);
-  return tinstant_copy(result);
-}
-
-/**
- * Returns the temporal instant at the timestamp when the timestamp is
- * at an exclusive bound
- */
-const TInstant *
-tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
-{
-  const TInstant *result;
-  int loc;
-  tsequenceset_find_timestamp(ts, t, &loc);
-  const TSequence *seq1, *seq2;
-  if (loc == 0)
-  {
-    seq1 = tsequenceset_seq_n(ts, 0);
-    result = tsequence_inst_n(seq1, 0);
-  }
-  else if (loc == ts->count)
-  {
-    seq1 = tsequenceset_seq_n(ts, ts->count - 1);
-    result = tsequence_inst_n(seq1, seq1->count - 1);
-  }
-  else
-  {
-    seq1 = tsequenceset_seq_n(ts, loc - 1);
-    seq2 = tsequenceset_seq_n(ts, loc);
-    if (tsequence_end_timestamp(seq1) == t)
-      result = tsequence_inst_n(seq1, seq1->count - 1);
-    else
-      result = tsequence_inst_n(seq2, 0);
-  }
-  return tinstant_copy(result);
-}
 
 /**
  * Returns a copy of the temporal value
@@ -1898,7 +1849,7 @@ PGDLLEXPORT Datum
 tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->subtype);
+  ensure_seq_subtypes(temp->subtype);
   ensure_base_type_continuous(temp->basetypid);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
@@ -2425,7 +2376,7 @@ PGDLLEXPORT Datum
 temporal_num_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->subtype);
+  ensure_seq_subtypes(temp->subtype);
   int result = 1;
   if (temp->subtype == SEQUENCESET)
     result = ((TSequenceSet *) temp)->count;
@@ -2441,7 +2392,7 @@ PGDLLEXPORT Datum
 temporal_start_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->subtype);
+  ensure_seq_subtypes(temp->subtype);
   TSequence *result;
   if (temp->subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
@@ -2459,7 +2410,7 @@ PGDLLEXPORT Datum
 temporal_end_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->subtype);
+  ensure_seq_subtypes(temp->subtype);
   TSequence *result;
   if (temp->subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
@@ -2480,7 +2431,7 @@ PGDLLEXPORT Datum
 temporal_sequence_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_sequences_type(temp->subtype);
+  ensure_seq_subtypes(temp->subtype);
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
   TSequence *result = NULL;
   if (temp->subtype == SEQUENCE)
