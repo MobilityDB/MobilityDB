@@ -28,21 +28,39 @@
  * catalog.sql
  * Routines for the temporal catalog.
  */
-
-DROP TABLE IF EXISTS mobilitydb_typcache;
-CREATE TABLE mobilitydb_typcache (
+DROP TABLE IF EXISTS mobdb_temptype;
+CREATE TABLE mobdb_temptype (
   temptypid Oid PRIMARY KEY,
-  basetypid Oid
+  basetypid Oid NOT NULL,
+  basetyplen smallint NOT NULL,
+  basebyval boolean NOT NULL,
+  basecont boolean NOT NULL,
+  boxtypid Oid,
+  boxtyplen smallint
 );
-ALTER TABLE mobilitydb_typcache SET SCHEMA pg_catalog;
+ALTER TABLE mobdb_temptype SET SCHEMA pg_catalog;
 
-CREATE FUNCTION register_temporal(temporal CHAR(24), base CHAR(24))
+CREATE FUNCTION register_temporal_type(temporal CHAR(24), base CHAR(24),
+  contbase boolean, box CHAR(24))
 RETURNS void AS $$
 BEGIN
-  WITH valueid AS (SELECT oid, typname FROM pg_type WHERE typname=base),
-  tempid AS (SELECT oid, typname FROM pg_type WHERE typname=temporal)
-  INSERT INTO mobilitydb_typcache (temptypid, basetypid)
-  SELECT te.oid, v.oid FROM valueid v, tempid te;
+  IF box IS NULL OR box = '' THEN
+    WITH tempid AS (SELECT oid FROM pg_type WHERE typname = temporal),
+      baseid AS (SELECT oid, typlen, typbyval FROM pg_type WHERE typname = base),
+      boxid(oid, typlen) AS (SELECT 0::Oid, 0::smallint)
+    INSERT INTO mobdb_temptype (temptypid, basetypid, basetyplen, basebyval,
+       basecont, boxtypid, boxtyplen)
+    SELECT t.oid, v.oid, v.typlen, v.typbyval, contbase, b.oid, b.typlen
+    FROM tempid t, baseid v, boxid b;
+  ELSE
+    WITH tempid AS (SELECT oid FROM pg_type WHERE typname = temporal),
+      baseid AS (SELECT oid, typlen, typbyval FROM pg_type WHERE typname = base),
+      boxid AS (SELECT oid, typlen FROM pg_type WHERE typname = box)
+    INSERT INTO mobdb_temptype (temptypid, basetypid, basetyplen, basebyval,
+       basecont, boxtypid, boxtyplen)
+    SELECT t.oid, v.oid, v.typlen, v.typbyval, contbase, b.oid, b.typlen
+    FROM tempid t, baseid v, boxid b;
+  END IF;
 END;
 $$ LANGUAGE plpgsql;
 

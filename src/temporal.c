@@ -256,23 +256,16 @@ ensure_base_type_continuous(Oid basetypid)
  * Returns true if the values of the type are passed by value.
  *
  * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typbyval
- * (which makes a lookup call), the known base types are explicitly enumerated.
+ * To avoid a call of the slow function get_typbyval (which makes a lookup
+ * call), the known base types are explicitly enumerated.
  */
 bool
 base_type_byvalue(Oid basetypid)
 {
   ensure_temporal_base_type(basetypid);
-  bool result = false;
-  if (basetypid == BOOLOID || basetypid == INT4OID || basetypid == FLOAT8OID ||
-    basetypid == TIMESTAMPTZOID)
-    result = true;
-  else if (basetypid == type_oid(T_DOUBLE2) || basetypid == TEXTOID)
-    result = false;
-  else if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY) ||
-       basetypid == type_oid(T_DOUBLE3) || basetypid == type_oid(T_DOUBLE4))
-    result = false;
-  return result;
+  if (basetypid == BOOLOID || basetypid == INT4OID || basetypid == FLOAT8OID)
+    return true;
+  return false;
 }
 
 /**

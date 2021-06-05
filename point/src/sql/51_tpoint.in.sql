@@ -32,9 +32,10 @@
 CREATE TYPE tgeompoint;
 CREATE TYPE tgeogpoint;
 
-SELECT register_temporal('tgeompoint', 'geometry');
-SELECT register_temporal('tgeogpoint', 'geography');
-
+/* temporal, base, contbase, box */
+SELECT register_temporal_type('tgeompoint', 'geometry', true, 'stbox');
+SELECT register_temporal_type('tgeogpoint', 'geography', true, 'stbox');
+ 
 /******************************************************************************
  * Input/Output
  ******************************************************************************/
