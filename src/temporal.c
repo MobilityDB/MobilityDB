@@ -62,7 +62,7 @@
 #include "tnpoint_spatialfuncs.h"
 
 /*
- * This is required for builds against pgsql
+ * This is required in a SINGLE file for builds against pgsql
  */
 PG_MODULE_MAGIC;
 
@@ -77,7 +77,6 @@ void
 _PG_init(void)
 {
   /* elog(WARNING, "This is MobilityDB."); */
-  // fill_tempcache();
   temporalgeom_init();
 }
 
