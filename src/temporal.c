@@ -240,15 +240,10 @@ base_type_continuous(Oid basetypid)
  * Ensures that the Oid is an internal or external base type that is continuous
  */
 void
-ensure_base_type_continuous(Oid basetypid)
+ensure_base_type_continuous(Temporal *temp)
 {
-  if (basetypid != FLOAT8OID &&
-    basetypid !=  type_oid(T_DOUBLE2) &&
-    basetypid != type_oid(T_GEOMETRY) &&
-    basetypid != type_oid(T_GEOGRAPHY) &&
-    basetypid != type_oid(T_DOUBLE3) &&
-    basetypid != type_oid(T_DOUBLE4))
-    elog(ERROR, "unknown continuous base type: %d", basetypid);
+  if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
+    elog(ERROR, "unknown continuous base type: %d", temp->basetypid);
   return;
 }
 
@@ -275,11 +270,11 @@ base_type_byvalue(Oid basetypid)
  * passed by reference. To avoid a call of the slow function get_typlen
  * (which makes a lookup call), the known base types are explicitly enumerated.
  */
-size_t
+int16
 base_type_length(Oid basetypid)
 {
   ensure_temporal_base_type(basetypid);
-  size_t result = 0;
+  int16 result = 0;
   if (basetypid == type_oid(T_DOUBLE2))
     result = 16;
   else if (basetypid == TEXTOID)
@@ -754,7 +749,7 @@ ensure_non_empty_array(ArrayType *array)
 Temporal *
 temporal_copy(const Temporal *temp)
 {
-  Temporal *result = (Temporal *)palloc0(VARSIZE(temp));
+  Temporal *result = (Temporal *) palloc0(VARSIZE(temp));
   memcpy(result, temp, VARSIZE(temp));
   return result;
 }
@@ -1843,7 +1838,7 @@ tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ensure_seq_subtypes(temp->subtype);
-  ensure_base_type_continuous(temp->basetypid);
+  ensure_base_type_continuous(temp);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     PG_RETURN_POINTER(temporal_copy(temp));

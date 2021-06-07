@@ -292,7 +292,7 @@ populate_types()
 static void
 populate_operators()
 {
-  // elog(WARNING, "populate _operators: _ready = %s", _ready ? "true" : "false");
+  // elog(NOTICE, "populate operators");
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
@@ -336,7 +336,6 @@ populate_operators()
     table_close(rel, AccessShareLock);
 #endif
     PopOverrideSearchPath();
-    // elog(WARNING, "populate _operators: _ready = %s", _ready ? "true" : "false");
     _ready = true;
   }
   PG_CATCH();

@@ -476,7 +476,6 @@ create_trip(PG_FUNCTION_ARGS)
       errmsg("1-dimensional array needed")));
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool disturbData = PG_GETARG_BOOL(2);
-  // int32 messages = PG_GETARG_INT32(3);
   text *messages = PG_GETARG_TEXT_PP(3);
   char *msgstr = text2cstring(messages);
   int32 msg = 0; /* 'minimal' by default */

@@ -73,7 +73,7 @@ datum_copy(Datum value, Oid type)
     return value;
   /* For types passed by reference */
   int typlen = base_type_length(type);
-  size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
+  size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
   return PointerGetDatum(result);

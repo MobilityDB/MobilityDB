@@ -183,33 +183,36 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure xxGTZXBL, where
- * xx:unused bits, G:Coordinates are geodetic, T:has T coordinate, 
+ * Macros for manipulating the 'flags' element with structure xGTZXBCL, where
+ * x:unused bit, G:Coordinates are geodetic, T:has T coordinate, 
  * Z:has Z coordinate, X:has value or X coordinate,
- * B:base type passed by value,L: Linear interpolation
+ * B:base type passed by value, L: Linear interpolation, L: Continuous base type
  *****************************************************************************/
 
 #define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & 0x02)>>1))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x10)>>4))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x20)>>5))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x20)>>5))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x40)>>6))
 
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
   ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
+#define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
-#define MOBDB_FLAGS_SET_X(flags, value) \
+#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
   ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
-#define MOBDB_FLAGS_SET_Z(flags, value) \
+#define MOBDB_FLAGS_SET_X(flags, value) \
   ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
-#define MOBDB_FLAGS_SET_T(flags, value) \
+#define MOBDB_FLAGS_SET_Z(flags, value) \
   ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
-#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+#define MOBDB_FLAGS_SET_T(flags, value) \
   ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+  ((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling
@@ -476,9 +479,9 @@ extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 extern bool temporal_type(Oid temptypid);
 extern void ensure_temporal_base_type(Oid basetypid);
 extern bool base_type_continuous(Oid basetypid);
-extern void ensure_base_type_continuous(Oid basetypid);
+extern void ensure_base_type_continuous(Temporal *temp);
 extern bool base_type_byvalue(Oid basetypid);
-extern size_t base_type_length(Oid basetypid);
+extern int16 base_type_length(Oid basetypid);
 extern bool talpha_base_type(Oid basetypid);
 extern bool tnumber_type(Oid temptypid);
 extern bool tnumber_base_type(Oid basetypid);
