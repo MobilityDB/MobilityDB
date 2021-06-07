@@ -183,27 +183,31 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure xGTZXBCL, where
+ * Macros for manipulating the 'flags' element with structure xGTZXLCB, where
  * x:unused bit, G:Coordinates are geodetic, T:has T coordinate, 
  * Z:has Z coordinate, X:has value or X coordinate,
- * B:base type passed by value, L: Linear interpolation, L: Continuous base type
+ * B:base type passed by value, L: Linear interpolation, C: Continuous base type
+ * Notice that formally speaking the Linear interpolation flag is only needed
+ * for sequence and sequence set subtypes. To facilate the transformation from
+ * one subtype to another, the linear flag for instant and instant set is set
+ * to the value of the continuous subtype flag.
  *****************************************************************************/
 
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
-#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & 0x02)>>1))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) ((flags) & 0x01))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & 0x04)>>2))
 #define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x08)>>3))
 #define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x10)>>4))
 #define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x20)>>5))
 #define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x40)>>6))
 
-#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 /* The following flag is only used for TInstant */
+#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
+  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
-#define MOBDB_FLAGS_SET_BYVAL(flags, value) \
+#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
   ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
 #define MOBDB_FLAGS_SET_X(flags, value) \
   ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))

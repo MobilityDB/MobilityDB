@@ -121,8 +121,9 @@ tinstantset_make1(const TInstant **instants, int count)
   result->count = count;
   result->basetypid = instants[0]->basetypid;
   result->subtype = INSTANTSET;
-  MOBDB_FLAGS_SET_LINEAR(result->flags,
-    MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
+  bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_base_type(instants[0]->basetypid))
@@ -772,7 +773,7 @@ static TSequence **
 tinstantset_sequences(const TInstantSet *ti)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ti->count);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(ti->flags);
+  bool linear = MOBDB_FLAGS_GET_CONTINUOUS(ti->flags);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
