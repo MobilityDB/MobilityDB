@@ -1321,10 +1321,10 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
       new = (Temporal *) tinstant_to_tinstantset((TInstant *) new1);
     else if (new2->subtype == SEQUENCE)
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1,
-        MOBDB_FLAGS_GET_LINEAR(new2->flags));
+        MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
     else /* new2->subtype == SEQUENCESET */
       new = (Temporal *) tinstant_to_tsequenceset((TInstant *) new1,
-      MOBDB_FLAGS_GET_LINEAR(new2->flags));
+      MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
   }
   else if (new1->subtype == INSTANTSET)
   {
@@ -1332,17 +1332,17 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
     {
       if (((TInstantSet *) new1)->count == 1)
         new = (Temporal *) tinstantset_to_tsequence((TInstantSet *) new1,
-          MOBDB_FLAGS_GET_LINEAR(new2->flags));
-      else
+          MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
+      else /* new2->subtype == SEQUENCESET */
       {
         new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
-          MOBDB_FLAGS_GET_LINEAR(new2->flags));
+          MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
         newts = (Temporal *) tsequence_to_tsequenceset((TSequence *) new2);
       }
     }
     else /* new2->subtype == SEQUENCESET */
       new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
-        MOBDB_FLAGS_GET_LINEAR(new2->flags));
+        MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
   }
   else /* new1->subtype == SEQUENCE && new2->subtype == SEQUENCESET */
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
@@ -1808,12 +1808,13 @@ temporal_to_tsequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp, linear);
+    result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tinstantset_to_tsequence((TInstantSet *) temp, linear);
+    result = (Temporal *) tinstantset_to_tsequence((TInstantSet *) temp,
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
   else if (temp->subtype == SEQUENCE)
     result = temporal_copy(temp);
   else /* temp->subtype == SEQUENCESET */
@@ -1831,12 +1832,13 @@ temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *result;
-  bool linear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp, linear);
+    result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp,
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp, linear);
+    result = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp,
+      MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */

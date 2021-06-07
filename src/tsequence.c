@@ -603,6 +603,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   result->subtype = SEQUENCE;
   period_set(&result->period, norminsts[0]->t, norminsts[newcount - 1]->t,
     lower_inc, upper_inc);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
+    MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -1497,10 +1499,10 @@ tsequence_read(StringInfo buf, Oid basetypid)
 TSequence *
 tintseq_to_tfloatseq(const TSequence *seq)
 {
-  /* It is not necessary to set the linear flag to false since it is already
-   * set by the fact that the input argument is a temporal integer */
   TSequence *result = tsequence_copy(seq);
   result->basetypid = FLOAT8OID;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
@@ -1520,10 +1522,10 @@ tfloatseq_to_tintseq(const TSequence *seq)
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
-  /* It is not necessary to set the linear flag to false since it is already
-   * set by the fact that the input argument has step interpolation */
   TSequence *result = tsequence_copy(seq);
   result->basetypid = INT4OID;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);

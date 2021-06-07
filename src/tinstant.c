@@ -131,7 +131,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   else
   {
     /* For base types passed by reference */
-    void *value_from = DatumGetPointer(value);
+    value_from = DatumGetPointer(value);
     int16 typlen = base_type_length(basetypid);
     value_size = (typlen != -1) ? double_pad((unsigned int) typlen) :
       double_pad(VARSIZE(value_from));
@@ -146,8 +146,9 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   result->t = t;
   SET_VARSIZE(result, size);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, base_type_continuous(basetypid));
-  MOBDB_FLAGS_SET_LINEAR(result->flags, MOBDB_FLAGS_GET_CONTINUOUS(result->flags));
+  bool continuous = base_type_continuous(basetypid);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_base_type(basetypid))
@@ -461,7 +462,7 @@ ArrayType *
 tinstant_sequences_array(const TInstant *inst)
 {
   TSequence *seq = tinstant_to_tsequence(inst,
-    MOBDB_FLAGS_GET_LINEAR(inst->flags));
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
   ArrayType *result = temporalarr_to_array((const Temporal **) &seq, 1);
   pfree(seq);
   return result;
