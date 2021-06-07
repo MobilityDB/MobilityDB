@@ -97,7 +97,7 @@ ttouches_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
   ensure_same_srid_tnpoint_gs(temp, gs);
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo1(geomtemp, gs);
+  Temporal *result = ttouches_tpoint_geo_internal(geomtemp, gs);
   pfree(geomtemp); 
   return result;
 }
@@ -113,7 +113,7 @@ ttouches_tnpoint_npoint_internal(Temporal *temp, npoint *np)
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_as_geom_internal(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo1(geomtemp, gs);
+  Temporal *result = ttouches_tpoint_geo_internal(geomtemp, gs);
   pfree(geomtemp); 
   pfree(gs);
   return result;

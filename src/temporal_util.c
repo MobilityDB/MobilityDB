@@ -65,62 +65,17 @@ double_pad(size_t size)
 }
 
 /**
- * Returns true if the values of the type are passed by value.
- *
- * This function is called only for the base types of the temporal types
- * and for TimestampTz. To avoid a call of the slow function get_typbyval
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-bool
-get_typbyval_fast(Oid type)
-{
-  ensure_temporal_base_type_all(type);
-  bool result = false;
-  if (type == BOOLOID || type == INT4OID || type == FLOAT8OID ||
-    type == TIMESTAMPTZOID)
-    result = true;
-  return result;
-}
-
-/**
- * returns the length of type
- *
- * This function is called only for the base types of the temporal types
- * passed by reference. To avoid a call of the slow function get_typlen
- * (which makes a lookup call), the known base types are explicitly enumerated.
- */
-int
-get_typlen_byref(Oid type)
-{
-  ensure_temporal_base_type_all(type);
-  int result = 0;
-  if (type == type_oid(T_DOUBLE2))
-    result = 16;
-  else if (type == TEXTOID)
-    result = -1;
-  else if (type == type_oid(T_GEOMETRY) || type == type_oid(T_GEOGRAPHY))
-    result = -1;
-  else if (type == type_oid(T_DOUBLE3))
-    result = 24;
-  else if (type == type_oid(T_DOUBLE4))
-    result = 32;
-  else if (type == type_oid(T_NPOINT))
-    result = 16;
-  return result;
-}
-
-/**
  * Copy a Datum if it is passed by reference
  */
 Datum
 datum_copy(Datum value, Oid type)
 {
   /* For types passed by value */
-  if (get_typbyval_fast(type))
+  if (base_type_byvalue(type))
     return value;
   /* For types passed by reference */
-  int typlen = get_typlen_byref(type);
-  size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
+  int typlen = base_type_length(type);
+  size_t value_size = (typlen != -1) ? (size_t) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, DatumGetPointer(value), value_size);
   return PointerGetDatum(result);
@@ -548,7 +503,8 @@ ArrayType *
 timestamparr_to_array(TimestampTz *times, int count)
 {
   assert(count > 0);
-  ArrayType *result = construct_array((Datum *)times, count, TIMESTAMPTZOID, 8, true, 'd');
+  ArrayType *result = construct_array((Datum *)times, count, TIMESTAMPTZOID, 8,
+    true, 'd');
   return result;
 }
 
@@ -559,8 +515,8 @@ ArrayType *
 periodarr_to_array(const Period **periods, int count)
 {
   assert(count > 0);
-  ArrayType *result = construct_array((Datum *)periods, count, type_oid(T_PERIOD),
-    sizeof(Period), false, 'd');
+  ArrayType *result = construct_array((Datum *)periods, count,
+    type_oid(T_PERIOD), sizeof(Period), false, 'd');
   return result;
 }
 
@@ -571,7 +527,8 @@ ArrayType *
 rangearr_to_array(RangeType **ranges, int count, Oid type)
 {
   assert(count > 0);
-  ArrayType *result = construct_array((Datum *)ranges, count, type, -1, false, 'd');
+  ArrayType *result = construct_array((Datum *)ranges, count, type, -1,
+    false, 'd');
   return result;
 }
 
@@ -582,7 +539,8 @@ ArrayType *
 textarr_to_array(text **textarr, int count)
 {
   assert(count > 0);
-  ArrayType *result = construct_array((Datum *)textarr, count, TEXTOID, -1, false, 'i');
+  ArrayType *result = construct_array((Datum *)textarr, count, TEXTOID, -1,
+    false, 'i');
   return result;
 }
 
@@ -594,7 +552,8 @@ temporalarr_to_array(const Temporal **temporalarr, int count)
 {
   assert(count > 0);
   Oid type = temporal_oid_from_base(temporalarr[0]->basetypid);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1, false, 'd');
+  ArrayType *result = construct_array((Datum *) temporalarr, count, type, -1,
+    false, 'd');
   return result;
 }
 
@@ -608,7 +567,8 @@ stboxarr_to_array(STBOX *boxarr, int count)
   STBOX **boxptrs = palloc(sizeof(STBOX *) * count);
   for (int i = 0; i < count; i++)
     boxptrs[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *)boxptrs, count, type_oid(T_STBOX), sizeof(STBOX), false, 'd');
+  ArrayType *result = construct_array((Datum *)boxptrs, count,
+    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
   pfree(boxptrs);
   return result;
 }
@@ -959,7 +919,7 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
 bool
 datum_eq(Datum l, Datum r, Oid type)
 {
-  ensure_temporal_base_type_all(type);
+  ensure_temporal_base_type(type);
   bool result = false;
   if (type == BOOLOID || type == INT4OID)
     result = l == r;
@@ -1059,8 +1019,8 @@ datum_ge(Datum l, Datum r, Oid type)
 bool
 datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
-  ensure_temporal_base_type_all(typel);
-  ensure_temporal_base_type_all(typer);
+  ensure_temporal_base_type(typel);
+  ensure_temporal_base_type(typer);
   bool result = false;
   if ((typel == BOOLOID && typer == BOOLOID) ||
     (typel == INT4OID && typer == INT4OID))

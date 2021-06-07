@@ -65,61 +65,22 @@ extern Datum geog_coveredby(Datum geog1, Datum geog2);
 extern Datum geog_intersects(Datum geog1, Datum geog2);
 extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
 
+/*****************************************************************************/
+
 extern Datum contains_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contains_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum containsproperly_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum containsproperly_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum containsproperly_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum covers_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum covers_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum covers_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum coveredby_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum coveredby_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum coveredby_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum crosses_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum crosses_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum crosses_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum disjoint_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum disjoint_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum disjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum equals_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum equals_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum equals_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum intersects_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum intersects_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum intersects_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum overlaps_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum overlaps_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum touches_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum touches_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum touches_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum within_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum within_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum within_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum dwithin_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum dwithin_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum dwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum relate_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum relate_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum relate_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum relate_pattern_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum relate_pattern_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum relate_pattern_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

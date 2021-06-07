@@ -165,6 +165,8 @@ extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts,
   TimestampTz t, Datum *result);
 extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts,
   TimestampTz t, Datum *result);
+extern const TInstant *tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts,
+  TimestampTz t);
 
 extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts,
   TimestampTz t, bool atfunc);

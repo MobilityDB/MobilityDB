@@ -144,13 +144,13 @@ const char *_op_names[] =
  * Global variable that states whether the type and operator caches
  * has been initialized.
  */
-bool _temptyp_cache_ready = false;
+bool _temptype_cache_ready = false;
 
 /**
  * Global array that keeps type information for the temporal types defined
  * in MobilityDB.
  */
-static temptypecache_struct _temptype_cache[TEMPTYPECACHE_MAX_LEN];
+static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
 
 /**
  * Populate the Oid cache for temporal types
@@ -158,7 +158,7 @@ static temptypecache_struct _temptype_cache[TEMPTYPECACHE_MAX_LEN];
 static void
 populate_temptype_cache()
 {
-  // elog(WARNING, "populate tempcache: _temptyp_cache_ready = %s", _temptyp_cache_ready ? "true" : "false");
+  // elog(NOTICE, "populate temptype cache");
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
@@ -171,7 +171,7 @@ populate_temptype_cache()
      * This fetches the pre-computed temporal type cache from the catalog
      * where it is stored in a table.
      */
-    Oid catalog = RelnameGetRelid("mobilitydb_typcache");
+    Oid catalog = RelnameGetRelid("mobdb_temptype");
 #if MOBDB_PGSQL_VERSION < 130000
     Relation rel = heap_open(catalog, AccessShareLock);
 #else
@@ -189,12 +189,21 @@ populate_temptype_cache()
     while (HeapTupleIsValid(tuple))
     {
       bool isnull = false;
-      Oid temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
-      Oid basetypid = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
-      _temptype_cache[i].temptypid = temptypid;
-      _temptype_cache[i++].basetypid = basetypid;
-      if (i == TEMPTYPECACHE_MAX_LEN)
-        elog(ERROR, "Cache for temporal types consumed, consider increasing TEMPTYPECACHE_MAX_LEN");
+      /* All the following attributes are declared as NOT NULL in the table */
+      _temptype_cache[i].temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
+      _temptype_cache[i].basetypid = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
+      _temptype_cache[i].basetyplen = DatumGetInt16(heap_getattr(tuple, 3, tupDesc, &isnull));
+      _temptype_cache[i].basebyval = DatumGetObjectId(heap_getattr(tuple, 4, tupDesc, &isnull));
+      _temptype_cache[i].basecont = DatumGetObjectId(heap_getattr(tuple, 5, tupDesc, &isnull));
+      /* The box type attributes may be null or zero for internal types such as doubleN */
+      _temptype_cache[i].boxtypid = InvalidOid;
+      _temptype_cache[i].boxtyplen = 0;
+      _temptype_cache[i].boxtypid = DatumGetObjectId(heap_getattr(tuple, 6, tupDesc, &isnull));
+      if (! isnull)
+        _temptype_cache[i].boxtyplen = DatumGetInt16(heap_getattr(tuple, 7, tupDesc, &isnull));
+      i++;
+      if (i == TEMPTYPE_CACHE_MAX_LEN)
+        elog(ERROR, "Cache for temporal types consumed, consider increasing TEMPORAL_TYPE_CACHE_MAX_LEN");
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
@@ -204,8 +213,7 @@ populate_temptype_cache()
     table_close(rel, AccessShareLock);
 #endif
     PopOverrideSearchPath();
-  // elog(WARNING, "populate tempcache: _temptyp_cache_ready = %s", _temptyp_cache_ready ? "true" : "false");
-    _temptyp_cache_ready = true;
+    _temptype_cache_ready = true;
   }
   PG_CATCH();
   {
@@ -221,9 +229,9 @@ populate_temptype_cache()
 Oid
 temporal_basetypid(Oid temptypid)
 {
-  if (!_temptyp_cache_ready)
+  if (!_temptype_cache_ready)
     populate_temptype_cache();
-  for (int i = 0; i < TEMPTYPECACHE_MAX_LEN; i++)
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
   {
     if (_temptype_cache[i].temptypid == temptypid)
       return _temptype_cache[i].basetypid;
@@ -287,7 +295,7 @@ populate_types()
 static void
 populate_operators()
 {
-  // elog(WARNING, "populate _operators: _ready = %s", _ready ? "true" : "false");
+  // elog(NOTICE, "populate operators");
   Oid namespaceId = LookupNamespaceNoError("public") ;
   OverrideSearchPath* overridePath = GetOverrideSearchPath(CurrentMemoryContext);
   overridePath->schemas = lcons_oid(namespaceId, overridePath->schemas);
@@ -331,7 +339,6 @@ populate_operators()
     table_close(rel, AccessShareLock);
 #endif
     PopOverrideSearchPath();
-    // elog(WARNING, "populate _operators: _ready = %s", _ready ? "true" : "false");
     _ready = true;
   }
   PG_CATCH();

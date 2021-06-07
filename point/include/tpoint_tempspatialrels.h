@@ -44,36 +44,32 @@
 
 /*****************************************************************************/
 
-extern Temporal *tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs,
-  bool tinter);
-
 extern Datum tcontains_geo_tpoint(PG_FUNCTION_ARGS);
-
-extern Temporal *tcontains_geo_tpoint_internal(GSERIALIZED *gs,
-  Temporal *temp);
 
 extern Datum tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum tintersects_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tintersects_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tintersects_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum ttouches_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum ttouches_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Temporal *ttouches_tpoint_geo1(Temporal *temp, GSERIALIZED *gs);
 
 extern Datum tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 
+extern Temporal *tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs,
+  bool tinter);
+extern Temporal *tcontains_geo_tpoint_internal(GSERIALIZED *gs,
+  Temporal *temp);
+extern Temporal *ttouches_tpoint_geo_internal(Temporal *temp,
+  GSERIALIZED *gs);
 extern Temporal *tdwithin_tpoint_geo_internal(const Temporal *temp,
   GSERIALIZED *gs, Datum dist);
 extern Temporal *tdwithin_tpoint_tpoint_internal(const Temporal *temp1,
   const Temporal *temp2, Datum dist);
-  
+
 /*****************************************************************************/
 
 #endif

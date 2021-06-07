@@ -792,7 +792,7 @@ tnpoint_twcentroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Temporal *tgeom = tnpoint_as_tgeompoint_internal(temp);
-  Datum result = tgeompoint_twcentroid_internal(tgeom);
+  Datum result = tpoint_twcentroid_internal(tgeom);
   pfree(tgeom);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);

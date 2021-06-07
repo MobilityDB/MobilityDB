@@ -607,18 +607,18 @@ temporal_parse(char **str, Oid basetype)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  bool linear = continuous_base_type(basetype);
+  bool linear = base_type_continuous(basetype);
   /* Starts with "Interp=Stepwise" */
-  if (strncasecmp(*str,"Interp=Stepwise;", 16) == 0)
+  if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
     /* Move str after the semicolon */
     *str += 16;
     linear = false;
   }
   if (**str != '{' && **str != '[' && **str != '(')
-    result = (Temporal *)tinstant_parse(str, basetype, true, true);
+    result = (Temporal *) tinstant_parse(str, basetype, true, true);
   else if (**str == '[' || **str == '(')
-    result = (Temporal *)tsequence_parse(str, basetype, linear, true, true);
+    result = (Temporal *) tsequence_parse(str, basetype, linear, true, true);
   else if (**str == '{')
   {
     char *bak = *str;
@@ -627,12 +627,12 @@ temporal_parse(char **str, Oid basetype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *)tsequenceset_parse(str, basetype, linear);
+      result = (Temporal *) tsequenceset_parse(str, basetype, linear);
     }
     else
     {
       *str = bak;
-      result = (Temporal *)tinstantset_parse(str, basetype);
+      result = (Temporal *) tinstantset_parse(str, basetype);
     }
   }
   return result;

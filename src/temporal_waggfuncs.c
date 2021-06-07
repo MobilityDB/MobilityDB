@@ -57,8 +57,6 @@ static int
 tinstant_extend(TSequence **result, const TInstant *inst,
   const Interval *interval)
 {
-  /* Should be additional attribute */
-  bool linear = continuous_base_type(inst->basetypid);
   TInstant *instants[2];
   TimestampTz upper = DatumGetTimestampTz(
     DirectFunctionCall2(timestamptz_pl_interval,
@@ -67,8 +65,8 @@ tinstant_extend(TSequence **result, const TInstant *inst,
   instants[0] = (TInstant *) inst;
   instants[1] = tinstant_make(tinstant_value(inst), upper,
     inst->basetypid);
-  result[0] = tsequence_make((const TInstant **) instants, 2,
-    true, true, linear, NORMALIZE_NO);
+  result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags), NORMALIZE_NO);
   pfree(instants[1]);
   return 1;
 }

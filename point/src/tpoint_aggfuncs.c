@@ -51,7 +51,7 @@
 /**
  * Check the validity of the temporal point values for aggregation
  */
-static void
+void
 geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 {
   if(! state)

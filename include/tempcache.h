@@ -46,9 +46,14 @@ typedef struct
 {
   Oid temptypid;          /**< Oid of the temporal type */
   Oid basetypid;          /**< Oid of the base type */
-} temptypecache_struct;
+  int32 basetyplen;       /**< Length of the base type */
+  bool basebyval;         /**< True if the base type is passed by value */
+  bool basecont;          /**< True if the base type is continuous */
+  Oid boxtypid;           /**< Oid of the box type */
+  int32 boxtyplen;        /**< Length of the box type */
+} temptype_cache_struct;
 
-#define TEMPTYPECACHE_MAX_LEN   16
+#define TEMPTYPE_CACHE_MAX_LEN   16
 
 /*****************************************************************************/
 

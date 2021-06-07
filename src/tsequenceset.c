@@ -630,8 +630,8 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
   char **strings = palloc(sizeof(char *) * ts->count);
   size_t outlen = 0;
   char prefix[20];
-  if (continuous_base_type(ts->basetypid) &&
-    ! MOBDB_FLAGS_GET_LINEAR(ts->flags))
+  if (MOBDB_FLAGS_GET_CONTINUOUS(ts->flags) &&
+      ! MOBDB_FLAGS_GET_LINEAR(ts->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
     prefix[0] = '\0';
@@ -1794,6 +1794,39 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
   /* Since this function is always called with a timestamp that appears
    * in the sequence set value the next statement is never reached */
   return false;
+}
+
+/**
+ * Returns the temporal instant at the timestamp when the timestamp is
+ * at an exclusive bound
+ */
+const TInstant *
+tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
+{
+  const TInstant *result;
+  int loc;
+  tsequenceset_find_timestamp(ts, t, &loc);
+  const TSequence *seq1, *seq2;
+  if (loc == 0)
+  {
+    seq1 = tsequenceset_seq_n(ts, 0);
+    result = tsequence_inst_n(seq1, 0);
+  }
+  else if (loc == ts->count)
+  {
+    seq1 = tsequenceset_seq_n(ts, ts->count - 1);
+    result = tsequence_inst_n(seq1, seq1->count - 1);
+  }
+  else
+  {
+    seq1 = tsequenceset_seq_n(ts, loc - 1);
+    seq2 = tsequenceset_seq_n(ts, loc);
+    if (tsequence_end_timestamp(seq1) == t)
+      result = tsequence_inst_n(seq1, seq1->count - 1);
+    else
+      result = tsequence_inst_n(seq2, 0);
+  }
+  return tinstant_copy(result);
 }
 
 
