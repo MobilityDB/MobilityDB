@@ -132,7 +132,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
     period_shift_tscale((Period *) box, start, duration);
   else if (tnumber_base_type(basetypid))
     tbox_shift_tscale((TBOX *) box, start, duration);
-  else if (tgeo_base_type(basetypid))
+  else if (tspatial_base_type(basetypid))
     stbox_shift_tscale((STBOX *) box, start, duration);
   return;
 }

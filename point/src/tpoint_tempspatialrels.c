@@ -1065,6 +1065,10 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  * Temporal contains
  *****************************************************************************/
 
+/**
+ * Returns the temporal contains relationship between the geometry and the
+ * temporal point (internal function)
+ */
 Temporal *
 tcontains_geo_tpoint_internal(GSERIALIZED *gs, Temporal *temp)
 {
@@ -1191,6 +1195,10 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
  * Temporal touches
  *****************************************************************************/
 
+/**
+ * Returns the temporal touches relationship between the geometry and the
+ * temporal point (internal version)
+ */
 Temporal *
 ttouches_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {

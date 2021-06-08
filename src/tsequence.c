@@ -581,8 +581,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   size_t trajsize = 0;
   bool hastraj = false; /* keep compiler quiet */
   Datum traj = 0; /* keep compiler quiet */
-  bool isgeo = tgeo_base_type(instants[0]->basetypid);
-  if (isgeo)
+  bool isspatial = tspatial_base_type(instants[0]->basetypid);
+  if (isspatial)
   {
     hastraj = type_has_precomputed_trajectory(instants[0]->basetypid);
     if (hastraj)
@@ -608,7 +608,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (isgeo)
+  if (isspatial)
   {
     MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
@@ -646,7 +646,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     result->offsets[newcount] = pos;
     pos += double_pad(bboxsize);
   }
-  if (isgeo && hastraj)
+  if (isspatial && hastraj)
   {
     result->offsets[newcount + 1] = pos;
     memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
@@ -2139,7 +2139,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(seq->basetypid) || tgeo_base_type(seq->basetypid))
+  if (tnumber_base_type(seq->basetypid) || tspatial_base_type(seq->basetypid))
     return true;
 
   /* The following test assumes that the sequence is in normal form */

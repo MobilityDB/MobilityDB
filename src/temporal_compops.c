@@ -90,7 +90,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  if (tgeo_base_type(temp1->basetypid))
+  if (tspatial_base_type(temp1->basetypid))
   {
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality(temp1->flags, temp2->flags);

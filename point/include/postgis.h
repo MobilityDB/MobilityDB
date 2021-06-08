@@ -212,7 +212,7 @@ extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
 
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);
-extern int getSRIDbySRS(const char *srs);
+extern int getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs);
 
 extern char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
 

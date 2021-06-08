@@ -225,9 +225,41 @@ ensure_tnumber_range_type(Oid rangetypid)
 }
 
 /**
+ * Returns true if the Oid is a spatiotemporal type
+ *
+ * @note This function is used for features common to all spatiotemporal types,
+ * in particular, all of them use the same bounding box STBOX. Therefore it is
+ * used for the indexes and selectivity functions
+ */
+bool
+tspatial_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) ||
+    temptypid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a spatiotemporal type
+ *
+ * @note This function is used for features common to all spatiotemporal types,
+ * in particular, all of them use the same bounding box STBOX
+ */
+bool
+tspatial_base_type(Oid basetypid)
+{
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY) ||
+    basetypid == type_oid(T_NPOINT))
+    return true;
+  return false;
+}
+
+/**
  * Returns true if the Oid is a temporal point type
  *
- * @note Function used in particular in the indexes
+ * @note This function is used for temporal types whose subtype is a geography
+ * or a geography.
  */
 bool
 tgeo_type(Oid temptypid)
@@ -258,15 +290,6 @@ ensure_tgeo_base_type(Oid basetypid)
   if (! tgeo_base_type(basetypid))
     elog(ERROR, "unknown geospatial base type: %d", basetypid);
   return;
-}
-
-bool
-tspatial_base_type(Oid typid)
-{
-  if (typid == type_oid(T_GEOMETRY) || typid == type_oid(T_GEOGRAPHY) ||
-    typid == type_oid(T_NPOINT))
-    return true;
-  return false;
 }
 
 /**
