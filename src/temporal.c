@@ -2781,7 +2781,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_ANYDATUM(1);
   /* For temporal points test that the geometry is not empty */
-  if (tspatial_base_type(temp->basetypid))
+  if (tgeo_base_type(temp->basetypid))
   {
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     ensure_point_type(gs);
@@ -2945,7 +2945,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     number_to_box(&box2, value, temp->basetypid);
     return contains_tbox_tbox_internal(&box1, &box2);
   }
-  if (tspatial_base_type(temp->basetypid))
+  if (tgeo_base_type(temp->basetypid))
   {
     /* Test that the geometry is not empty */
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
@@ -2999,7 +2999,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
         newvalues[k++] = values[i];
     }
   }
-  if (tspatial_base_type(temp->basetypid))
+  if (tgeo_base_type(temp->basetypid))
   {
     STBOX box1;
     memset(&box1, 0, sizeof(STBOX));

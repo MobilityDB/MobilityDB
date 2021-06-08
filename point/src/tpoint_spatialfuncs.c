@@ -328,7 +328,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 void
 ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
-  if (tspatial_base_type(temp1->basetypid))
+  if (tgeo_base_type(temp1->basetypid))
   {
     ensure_same_srid_tpoint(temp1, temp2);
     ensure_same_dimensionality(temp1->flags, temp2->flags);
