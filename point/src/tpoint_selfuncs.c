@@ -474,7 +474,7 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
  * Transform the constant into an STBOX
  *
  * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
- * Period, and PeriodSet are transformed into an STBox
+ * Period, and PeriodSet are transformed into an STBOX
  */
 bool
 tpoint_const_to_stbox(Node *other, STBOX *box)
@@ -483,10 +483,10 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
 
   if (tgeo_base_type(consttype))
     geo_to_stbox_internal(box,
-      (GSERIALIZED *)PointerGetDatum(((Const *) other)->constvalue));
+      (GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue));
   else if (consttype == type_oid(T_STBOX))
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
-  else if (tgeo_type(consttype))
+  else if (tspatial_type(consttype))
     temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
   else
     return false;

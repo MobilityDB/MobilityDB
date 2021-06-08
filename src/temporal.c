@@ -2593,13 +2593,13 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     return (ever && box.xmin <= d && d <= box.xmax) ||
       (!ever && box.xmin == d && d == box.xmax);
   }
-  else if (tgeo_base_type(temp->basetypid))
+  else if (tspatial_base_type(temp->basetypid))
   {
     STBOX box1, box2;
     memset(&box1, 0, sizeof(STBOX));
     memset(&box2, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
-    geo_to_stbox_internal(&box2, (GSERIALIZED *)DatumGetPointer(value));
+    geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(value));
     return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
       (!ever && same_stbox_stbox_internal(&box1, &box2));
   }
@@ -2769,9 +2769,9 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_ANYDATUM(1);
   /* For temporal points test that the geometry is not empty */
-  if (tgeo_base_type(temp->basetypid))
+  if (tspatial_base_type(temp->basetypid))
   {
-    GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     ensure_point_type(gs);
     ensure_same_srid_tpoint_gs(temp, gs);
     ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -2933,7 +2933,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     number_to_box(&box2, value, temp->basetypid);
     return contains_tbox_tbox_internal(&box1, &box2);
   }
-  if (tgeo_base_type(temp->basetypid))
+  if (tspatial_base_type(temp->basetypid))
   {
     /* Test that the geometry is not empty */
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
@@ -2987,7 +2987,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
         newvalues[k++] = values[i];
     }
   }
-  if (tgeo_base_type(temp->basetypid))
+  if (tspatial_base_type(temp->basetypid))
   {
     STBOX box1;
     memset(&box1, 0, sizeof(STBOX));

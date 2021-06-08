@@ -1065,6 +1065,33 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  * Temporal contains
  *****************************************************************************/
 
+/**
+ * Returns the temporal contains relationship between the geometry and the
+ * temporal point (internal function)
+ */
+Temporal *
+tcontains_geo_tpoint_internal(GSERIALIZED *gs, Temporal *temp)
+{
+  ensure_same_srid_tpoint_gs(temp, gs);
+  Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
+  Datum bound = call_function1(boundary, PointerGetDatum(gs));
+  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
+  Temporal *result;
+  if (! gserialized_is_empty(gsbound))
+  {
+    Temporal *inter_bound = tinterrel_tpoint_geo(temp, gsbound, TINTERSECTS);
+    Temporal *not_inter_bound = tnot_tbool_internal(inter_bound);
+    result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
+    pfree(inter);
+    pfree(DatumGetPointer(bound));
+    pfree(inter_bound);
+    pfree(not_inter_bound);
+  }
+  else
+    result = inter;
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(tcontains_geo_tpoint);
 /**
  * Returns the temporal contains relationship between the geometry and the
@@ -1184,6 +1211,10 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
  * Temporal touches
  *****************************************************************************/
 
+/**
+ * Returns the temporal touches relationship between the geometry and the
+ * temporal point (internal version)
+ */
 Temporal *
 ttouches_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {

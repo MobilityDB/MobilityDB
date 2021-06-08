@@ -289,7 +289,7 @@ tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
       return false;
     memcpy(result, box, sizeof(STBOX));
   }
-  else if (tgeo_type(subtype))
+  else if (tspatial_type(subtype))
   {
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)

@@ -79,7 +79,7 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
     result = period_eq_internal((Period *) box1, (Period *) box2);
   else if (tnumber_base_type(basetypid))
     result = tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tgeo_base_type(basetypid))
+  else if (tspatial_base_type(basetypid))
     result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
     // TODO Due to floating point precision the previous statement
     // is not equal to the next one.
@@ -108,7 +108,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid)
     result = period_cmp_internal((Period *) box1, (Period *) box2);
   else if (tnumber_base_type(basetypid))
     result = tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tgeo_base_type(basetypid))
+  else if (tspatial_base_type(basetypid))
     result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
   /* Types without bounding box, for example, doubleN */
   return result;
@@ -131,7 +131,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
     period_shift_tscale((Period *) box, start, duration);
   else if (tnumber_base_type(basetypid))
     tbox_shift_tscale((TBOX *) box, start, duration);
-  else if (tgeo_base_type(basetypid))
+  else if (tspatial_base_type(basetypid))
     stbox_shift_tscale((STBOX *) box, start, duration);
   return;
 }

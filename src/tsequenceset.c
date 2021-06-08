@@ -147,7 +147,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_base_type(sequences[0]->basetypid))
+  if (tspatial_base_type(sequences[0]->basetypid))
   {
     MOBDB_FLAGS_SET_Z(result->flags,
       MOBDB_FLAGS_GET_Z(sequences[0]->flags));
@@ -1430,7 +1430,7 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(ts->basetypid) || tgeo_base_type(ts->basetypid))
+  if (tnumber_base_type(ts->basetypid) || tspatial_base_type(ts->basetypid))
     return true;
 
   for (int i = 0; i < ts->count; i++)
