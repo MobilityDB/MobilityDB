@@ -50,6 +50,583 @@
 #include "tnpoint_static.h"
 
 /*****************************************************************************
+ * Temporal/base types tests
+ *****************************************************************************/
+
+/**
+ * Returns true if the Oid is a EXTERNAL temporal type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+temporal_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
+    temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
+    temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) || 
+    temptypid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a base type supported by MobilityDB
+ */
+void
+ensure_temporal_base_type(Oid basetypid)
+{
+  if (basetypid != BOOLOID && basetypid != INT4OID &&
+    basetypid != FLOAT8OID && basetypid != TEXTOID &&
+    basetypid != type_oid(T_DOUBLE2) && basetypid != type_oid(T_DOUBLE3) &&
+    basetypid != type_oid(T_DOUBLE4) &&
+    basetypid != type_oid(T_GEOMETRY) && basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_NPOINT))
+    elog(ERROR, "unknown base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Returns true if the Oid corresponds to a continuous base type
+ */
+bool
+base_type_continuous(Oid basetypid)
+{
+  if (basetypid == FLOAT8OID || basetypid == type_oid(T_DOUBLE2) ||
+    basetypid == type_oid(T_DOUBLE3) || basetypid == type_oid(T_DOUBLE4) ||
+    basetypid == type_oid(T_GEOGRAPHY) || basetypid == type_oid(T_GEOMETRY) ||
+    basetypid == type_oid(T_NPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is an internal or external base type that is continuous
+ */
+void
+ensure_base_type_continuous(Temporal *temp)
+{
+  if (! MOBDB_FLAGS_GET_CONTINUOUS(temp->flags))
+    elog(ERROR, "unknown continuous base type: %d", temp->basetypid);
+  return;
+}
+
+/**
+ * Returns true if the values of the type are passed by value.
+ *
+ * This function is called only for the base types of the temporal types
+ * To avoid a call of the slow function get_typbyval (which makes a lookup
+ * call), the known base types are explicitly enumerated.
+ */
+bool
+base_type_byvalue(Oid basetypid)
+{
+  ensure_temporal_base_type(basetypid);
+  if (basetypid == BOOLOID || basetypid == INT4OID || basetypid == FLOAT8OID)
+    return true;
+  return false;
+}
+
+/**
+ * Returns the length of type
+ *
+ * This function is called only for the base types of the temporal types
+ * passed by reference. To avoid a call of the slow function get_typlen
+ * (which makes a lookup call), the known base types are explicitly enumerated.
+ */
+int16
+base_type_length(Oid basetypid)
+{
+  ensure_temporal_base_type(basetypid);
+  int16 result = 0;
+  if (basetypid == type_oid(T_DOUBLE2))
+    result = 16;
+  else if (basetypid == type_oid(T_DOUBLE3))
+    result = 24;
+  else if (basetypid == type_oid(T_DOUBLE4))
+    result = 32;
+  else if (basetypid == TEXTOID)
+    result = -1;
+  else if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+    result = -1;
+  else if (basetypid == type_oid(T_NPOINT))
+    result = 16;
+  return result;
+}
+
+/**
+ * Returns true if the Oid is a alpha base type (i.e., those whose bounding
+ * box is a period) supported by MobilityDB
+ */
+bool
+talpha_base_type(Oid basetypid)
+{
+  if (basetypid == BOOLOID || basetypid == TEXTOID)
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TINT) || temptypid == type_oid(T_TFLOAT))
+    return true;
+  return false;
+}
+
+/**
+ * Test whether the Oid is a number base type supported by MobilityDB
+ */
+bool
+tnumber_base_type(Oid basetypid)
+{
+  if (basetypid == INT4OID || basetypid == FLOAT8OID)
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a number base type supported by MobilityDB
+ */
+void
+ensure_tnumber_base_type(Oid basetypid)
+{
+  if (! tnumber_base_type(basetypid))
+    elog(ERROR, "unknown number base type: %d", basetypid);
+  return;
+}
+
+/**
+ * Returns true if the Oid is a temporal number type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tnumber_range_type(Oid rangetypid)
+{
+  if (rangetypid == type_oid(T_INTRANGE) || rangetypid == type_oid(T_FLOATRANGE))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a range type
+ */
+void
+ensure_tnumber_range_type(Oid rangetypid)
+{
+  if (! tnumber_range_type(rangetypid))
+    elog(ERROR, "unknown number range type: %d", rangetypid);
+  return;
+}
+
+/**
+ * Returns true if the Oid is a temporal point type
+ *
+ * @note Function used in particular in the indexes
+ */
+bool
+tgeo_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) || 
+    temptypid == type_oid(T_TNPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the Oid is a point base type supported by MobilityDB
+ */
+bool
+tgeo_base_type(Oid basetypid)
+{
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+    return true;
+  return false;
+}
+
+/**
+ * Ensures that the Oid is a point base type supported by MobilityDB
+ */
+void
+ensure_tgeo_base_type(Oid basetypid)
+{
+  if (! tgeo_base_type(basetypid))
+    elog(ERROR, "unknown geospatial base type: %d", basetypid);
+  return;
+}
+
+bool
+tspatial_base_type(Oid typid)
+{
+  if (typid == type_oid(T_GEOMETRY) || typid == type_oid(T_GEOGRAPHY) ||
+    typid == type_oid(T_NPOINT))
+    return true;
+  return false;
+}
+
+/**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+bool
+type_has_precomputed_trajectory(Oid basetypid)
+{
+  if (tgeo_base_type(basetypid))
+    return true;
+  return false;
+}
+
+/**
+ * Returns the size of the bounding box
+ */
+size_t
+temporal_bbox_size(Oid basetypid)
+{
+  if (talpha_base_type(basetypid))
+    return sizeof(Period);
+  if (tnumber_base_type(basetypid))
+    return sizeof(TBOX);
+  if (tspatial_base_type(basetypid))
+    return sizeof(STBOX);
+  /* Types without bounding box, for example, tdoubleN */
+  return 0;
+}
+
+/*****************************************************************************
+ * Oid functions
+ *****************************************************************************/
+
+/**
+ * Returns the Oid of the range type corresponding to the Oid of the
+ * base type
+ */
+Oid
+range_oid_from_base(Oid basetypid)
+{
+  ensure_tnumber_base_type(basetypid);
+  if (basetypid == INT4OID)
+    return type_oid(T_INTRANGE);
+  if (basetypid == FLOAT8OID)
+    return type_oid(T_FLOATRANGE);
+  elog(ERROR, "unknown range type for base type: %d", basetypid);
+}
+
+/**
+ * Returns the Oid of the temporal type corresponding to the Oid of the
+ * base type
+ */
+Oid
+temporal_oid_from_base(Oid basetypid)
+{
+  ensure_temporal_base_type(basetypid);
+  if (basetypid == BOOLOID)
+    return type_oid(T_TBOOL);
+  if (basetypid == INT4OID)
+    return type_oid(T_TINT);
+  if (basetypid == FLOAT8OID)
+    return type_oid(T_TFLOAT);
+  if (basetypid == TEXTOID)
+    return type_oid(T_TTEXT);
+  if (basetypid == type_oid(T_GEOMETRY))
+    return type_oid(T_TGEOMPOINT);
+  if (basetypid == type_oid(T_GEOGRAPHY))
+    return type_oid(T_TGEOGPOINT);
+  if (basetypid == type_oid(T_GEOGRAPHY))
+    return type_oid(T_TGEOGPOINT);
+  if (basetypid == type_oid(T_NPOINT))
+    return type_oid(T_TNPOINT);
+  elog(ERROR, "unknown temporal type for base type: %d", basetypid);
+}
+
+/**
+ * Returns the Oid of the base type corresponding to the Oid of the
+ * temporal type
+ */
+Oid
+base_oid_from_temporal(Oid temptypid)
+{
+  assert(temporal_type(temptypid));
+  if (temptypid == type_oid(T_TBOOL))
+    return BOOLOID;
+  if (temptypid == type_oid(T_TINT))
+    return INT4OID;
+  if (temptypid == type_oid(T_TFLOAT))
+    return FLOAT8OID;
+  if (temptypid == type_oid(T_TTEXT))
+    return TEXTOID;
+  if (temptypid == type_oid(T_TGEOMPOINT))
+    return type_oid(T_GEOMETRY);
+  if (temptypid == type_oid(T_TGEOGPOINT))
+    return type_oid(T_GEOGRAPHY);
+  if (temptypid == type_oid(T_TNPOINT))
+    return type_oid(T_NPOINT);
+  elog(ERROR, "unknown base type for temporal type: %d", temptypid);
+}
+
+/*****************************************************************************
+ * Comparison functions on datums
+ *****************************************************************************/
+
+/* Version of the functions where the types of both arguments is equal */
+
+/**
+ * Returns true if the two values are equal
+ */
+bool
+datum_eq(Datum l, Datum r, Oid type)
+{
+  ensure_temporal_base_type(type);
+  bool result = false;
+  if (type == BOOLOID || type == INT4OID)
+    result = l == r;
+  else if (type == FLOAT8OID)
+    result = l == r;
+    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
+  else if (type == TEXTOID)
+    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+  else if (type == type_oid(T_DOUBLE2))
+    result = double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
+  else if (type == type_oid(T_DOUBLE3))
+    result = double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
+  else if (type == type_oid(T_DOUBLE4))
+    result = double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
+  else if (type == type_oid(T_GEOMETRY))
+    //  result = DatumGetBool(call_function2(lwgeom_eq, l, r));
+    result = datum_point_eq(l, r);
+  else if (type == type_oid(T_GEOGRAPHY))
+    //  result = DatumGetBool(call_function2(geography_eq, l, r));
+    result = datum_point_eq(l, r);
+  else if (type == type_oid(T_NPOINT))
+    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+  return result;
+}
+
+/**
+ * Returns true if the two values are different
+ */
+bool
+datum_ne(Datum l, Datum r, Oid type)
+{
+  return !datum_eq(l, r, type);
+}
+
+/**
+ * Returns true if the first value is less than the second one
+ */
+bool
+datum_lt(Datum l, Datum r, Oid type)
+{
+  ensure_temporal_base_type(type);
+  bool result = false;
+  if (type == BOOLOID)
+    result = DatumGetBool(l) < DatumGetBool(r);
+  else if (type == INT4OID)
+    result = DatumGetInt32(l) < DatumGetInt32(r);
+  else if (type == FLOAT8OID)
+    result = DatumGetFloat8(l) < DatumGetFloat8(r);
+    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
+  else if (type == TEXTOID)
+    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+  else if (type == type_oid(T_GEOMETRY))
+    result = DatumGetBool(call_function2(lwgeom_lt, l, r));
+  else if (type == type_oid(T_GEOGRAPHY))
+    result = DatumGetBool(call_function2(geography_lt, l, r));
+  return result;
+}
+
+/**
+ * Returns true if the first value is less than or equal to the second one
+ */
+bool
+datum_le(Datum l, Datum r, Oid type)
+{
+  return datum_eq(l, r, type) || datum_lt(l, r, type);
+}
+
+/**
+ * Returns true if the first value is greater than the second one
+ */
+bool
+datum_gt(Datum l, Datum r, Oid type)
+{
+  return datum_lt(r, l, type);
+}
+
+/**
+ * Returns true if the first value is greater than or equal to the second one
+ * This function is currently not used
+bool
+datum_ge(Datum l, Datum r, Oid type)
+{
+  return datum_eq(l, r, type) || datum_lt(r, l, type);
+}
+*/
+
+/*****************************************************************************/
+
+/*
+ * Version of the functions where the types of both arguments may be different
+ * but compatible, e.g., integer and float
+ */
+
+/**
+ * Returns true if the two values are equal even if their type is not the same
+ */
+bool
+datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  ensure_temporal_base_type(typel);
+  ensure_temporal_base_type(typer);
+  bool result = false;
+  if ((typel == BOOLOID && typer == BOOLOID) ||
+    (typel == INT4OID && typer == INT4OID))
+    result = l == r;
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = l == r;
+    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
+  else if (typel == INT4OID && typer == FLOAT8OID)
+    result = (double) DatumGetInt32(l) == DatumGetFloat8(r);
+    // result = FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
+  else if (typel == FLOAT8OID && typer == INT4OID)
+    result = DatumGetFloat8(l) == (double) DatumGetInt32(r);
+    // result = FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
+  else if (typel == TEXTOID && typer == TEXTOID)
+    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+    /* This function is never called with doubleN */
+  else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
+    //  result = DatumGetBool(call_function2(lwgeom_eq, l, r));
+    result = datum_point_eq(l, r);
+  else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
+    //  result = DatumGetBool(call_function2(geography_eq, l, r));
+    result = datum_point_eq(l, r);
+  else if (typel == type_oid(T_NPOINT) && typer == type_oid(T_NPOINT))
+    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+  return result;
+}
+
+/**
+ * Returns true if the two values are different
+ */
+bool
+datum_ne2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return !datum_eq2(l, r, typel, typer);
+}
+
+/**
+ * Returns true if the first value is less than the second one
+ */
+bool
+datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  assert(typel == INT4OID || typel == FLOAT8OID || typel == TEXTOID);
+  assert(typer == INT4OID || typer == FLOAT8OID || typer == TEXTOID);
+  bool result = false;
+  if (typel == INT4OID && typer == INT4OID)
+    result = DatumGetInt32(l) < DatumGetInt32(r);
+  else if (typel == INT4OID && typer == FLOAT8OID)
+    result = (double) DatumGetInt32(l) < DatumGetFloat8(r);
+    // result = FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
+  else if (typel == FLOAT8OID && typer == INT4OID)
+    result = DatumGetFloat8(l) < (double) DatumGetInt32(r);
+    // result = FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
+  else if (typel == FLOAT8OID && typer == FLOAT8OID)
+    result = DatumGetFloat8(l) < DatumGetFloat8(r);
+    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
+  else if (typel == TEXTOID && typer == TEXTOID)
+    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+  return result;
+}
+
+/**
+ * Returns true if the first value is less than or equal to the second one
+ */
+bool
+datum_le2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
+}
+
+/**
+ * Returns true if the first value is greater than the second one
+ */
+bool
+datum_gt2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return datum_lt2(r, l, typer, typel);
+}
+
+/**
+ * Returns true if the first value is greater than or equal to the second one
+ */
+bool
+datum_ge2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return datum_eq2(l, r, typel, typer) || datum_gt2(l, r, typel, typer);
+}
+
+/*****************************************************************************/
+
+/**
+ * Returns a Datum true if the two values are equal
+ */
+Datum
+datum2_eq2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return BoolGetDatum(datum_eq2(l, r, typel, typer));
+}
+
+/**
+ * Returns a Datum true if the two values are different
+ */
+Datum
+datum2_ne2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return BoolGetDatum(datum_ne2(l, r, typel, typer));
+}
+
+/**
+ * Returns a Datum true if the first value is less than the second one
+ */
+Datum
+datum2_lt2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return BoolGetDatum(datum_lt2(l, r, typel, typer));
+}
+
+/**
+ * Returns a Datum true if the first value is less than or equal to the second one
+ */
+Datum
+datum2_le2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return BoolGetDatum(datum_le2(l, r, typel, typer));
+}
+
+/**
+ * Returns a Datum true if the first value is greater than the second one
+ */
+Datum
+datum2_gt2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return BoolGetDatum(datum_gt2(l, r, typel, typer));
+}
+
+/**
+ * Returns a Datum true if the first value is greater than or equal to the second one
+ */
+Datum
+datum2_ge2(Datum l, Datum r, Oid typel, Oid typer)
+{
+  return BoolGetDatum(datum_ge2(l, r, typel, typer));
+}
+
+/*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
 
@@ -907,264 +1484,6 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
   return result;
 }
 
-/*****************************************************************************
- * Comparison functions on datums
- *****************************************************************************/
-
-/* Version of the functions where the types of both arguments is equal */
-
-/**
- * Returns true if the two values are equal
- */
-bool
-datum_eq(Datum l, Datum r, Oid type)
-{
-  ensure_temporal_base_type(type);
-  bool result = false;
-  if (type == BOOLOID || type == INT4OID)
-    result = l == r;
-  else if (type == FLOAT8OID)
-    result = l == r;
-    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (type == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-  else if (type == type_oid(T_DOUBLE2))
-    result = double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
-  else if (type == type_oid(T_DOUBLE3))
-    result = double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
-  else if (type == type_oid(T_DOUBLE4))
-    result = double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
-  else if (type == type_oid(T_GEOMETRY))
-    //  result = DatumGetBool(call_function2(lwgeom_eq, l, r));
-    result = datum_point_eq(l, r);
-  else if (type == type_oid(T_GEOGRAPHY))
-    //  result = DatumGetBool(call_function2(geography_eq, l, r));
-    result = datum_point_eq(l, r);
-  else if (type == type_oid(T_NPOINT))
-    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
-  return result;
-}
-
-/**
- * Returns true if the two values are different
- */
-bool
-datum_ne(Datum l, Datum r, Oid type)
-{
-  return !datum_eq(l, r, type);
-}
-
-/**
- * Returns true if the first value is less than the second one
- */
-bool
-datum_lt(Datum l, Datum r, Oid type)
-{
-  ensure_temporal_base_type(type);
-  bool result = false;
-  if (type == BOOLOID)
-    result = DatumGetBool(l) < DatumGetBool(r);
-  else if (type == INT4OID)
-    result = DatumGetInt32(l) < DatumGetInt32(r);
-  else if (type == FLOAT8OID)
-    result = DatumGetFloat8(l) < DatumGetFloat8(r);
-    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (type == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-  else if (type == type_oid(T_GEOMETRY))
-    result = DatumGetBool(call_function2(lwgeom_lt, l, r));
-  else if (type == type_oid(T_GEOGRAPHY))
-    result = DatumGetBool(call_function2(geography_lt, l, r));
-  return result;
-}
-
-/**
- * Returns true if the first value is less than or equal to the second one
- */
-bool
-datum_le(Datum l, Datum r, Oid type)
-{
-  return datum_eq(l, r, type) || datum_lt(l, r, type);
-}
-
-/**
- * Returns true if the first value is greater than the second one
- */
-bool
-datum_gt(Datum l, Datum r, Oid type)
-{
-  return datum_lt(r, l, type);
-}
-
-/**
- * Returns true if the first value is greater than or equal to the second one
- * This function is currently not used
-bool
-datum_ge(Datum l, Datum r, Oid type)
-{
-  return datum_eq(l, r, type) || datum_lt(r, l, type);
-}
-*/
-
-/*****************************************************************************/
-
-/*
- * Version of the functions where the types of both arguments may be different
- * but compatible, e.g., integer and float
- */
-
-/**
- * Returns true if the two values are equal even if their type is not the same
- */
-bool
-datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  ensure_temporal_base_type(typel);
-  ensure_temporal_base_type(typer);
-  bool result = false;
-  if ((typel == BOOLOID && typer == BOOLOID) ||
-    (typel == INT4OID && typer == INT4OID))
-    result = l == r;
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = l == r;
-    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = (double) DatumGetInt32(l) == DatumGetFloat8(r);
-    // result = FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = DatumGetFloat8(l) == (double) DatumGetInt32(r);
-    // result = FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  else if (typel == TEXTOID && typer == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-    /* This function is never called with doubleN */
-  else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
-    //  result = DatumGetBool(call_function2(lwgeom_eq, l, r));
-    result = datum_point_eq(l, r);
-  else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
-    //  result = DatumGetBool(call_function2(geography_eq, l, r));
-    result = datum_point_eq(l, r);
-  else if (typel == type_oid(T_NPOINT) && typer == type_oid(T_NPOINT))
-    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
-  return result;
-}
-
-/**
- * Returns true if the two values are different
- */
-bool
-datum_ne2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return !datum_eq2(l, r, typel, typer);
-}
-
-/**
- * Returns true if the first value is less than the second one
- */
-bool
-datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  assert(typel == INT4OID || typel == FLOAT8OID || typel == TEXTOID);
-  assert(typer == INT4OID || typer == FLOAT8OID || typer == TEXTOID);
-  bool result = false;
-  if (typel == INT4OID && typer == INT4OID)
-    result = DatumGetInt32(l) < DatumGetInt32(r);
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = (double) DatumGetInt32(l) < DatumGetFloat8(r);
-    // result = FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = DatumGetFloat8(l) < (double) DatumGetInt32(r);
-    // result = FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = DatumGetFloat8(l) < DatumGetFloat8(r);
-    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (typel == TEXTOID && typer == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-  return result;
-}
-
-/**
- * Returns true if the first value is less than or equal to the second one
- */
-bool
-datum_le2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return datum_eq2(l, r, typel, typer) || datum_lt2(l, r, typel, typer);
-}
-
-/**
- * Returns true if the first value is greater than the second one
- */
-bool
-datum_gt2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return datum_lt2(r, l, typer, typel);
-}
-
-/**
- * Returns true if the first value is greater than or equal to the second one
- */
-bool
-datum_ge2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return datum_eq2(l, r, typel, typer) || datum_gt2(l, r, typel, typer);
-}
-
-/*****************************************************************************/
-
-/**
- * Returns a Datum true if the two values are equal
- */
-Datum
-datum2_eq2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return BoolGetDatum(datum_eq2(l, r, typel, typer));
-}
-
-/**
- * Returns a Datum true if the two values are different
- */
-Datum
-datum2_ne2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return BoolGetDatum(datum_ne2(l, r, typel, typer));
-}
-
-/**
- * Returns a Datum true if the first value is less than the second one
- */
-Datum
-datum2_lt2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return BoolGetDatum(datum_lt2(l, r, typel, typer));
-}
-
-/**
- * Returns a Datum true if the first value is less than or equal to the second one
- */
-Datum
-datum2_le2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return BoolGetDatum(datum_le2(l, r, typel, typer));
-}
-
-/**
- * Returns a Datum true if the first value is greater than the second one
- */
-Datum
-datum2_gt2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return BoolGetDatum(datum_gt2(l, r, typel, typer));
-}
-
-/**
- * Returns a Datum true if the first value is greater than or equal to the second one
- */
-Datum
-datum2_ge2(Datum l, Datum r, Oid typel, Oid typer)
-{
-  return BoolGetDatum(datum_ge2(l, r, typel, typer));
-}
-
 /*****************************************************************************/
 
 /**
@@ -1289,4 +1608,3 @@ hypot4d(double x, double y, double z, double m)
 }
 
 /*****************************************************************************/
-

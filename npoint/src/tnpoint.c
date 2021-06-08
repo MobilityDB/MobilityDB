@@ -173,7 +173,7 @@ tgeompointinst_as_tnpointinst(const TInstant *inst)
 }
 
 TInstantSet *
-tgeompointi_as_tnpointi(const TInstantSet *ti)
+tgeompointinstset_as_tnpointinstset(const TInstantSet *ti)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -182,9 +182,7 @@ tgeompointi_as_tnpointi(const TInstantSet *ti)
     TInstant *inst1 = tgeompointinst_as_tnpointinst(inst);
     if (inst1 == NULL)
     {
-      for (int j = 0; j < i; j++)
-        pfree(instants[j]);
-      pfree(instants);
+      pfree_array((void **) instants, i);
       return NULL;
     }
     instants[i] = inst1;
@@ -217,7 +215,7 @@ tgeompointseq_as_tnpointseq(const TSequence *seq)
 }
 
 TSequenceSet *
-tgeompoints_as_tnpoints(const TSequenceSet *ts)
+tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -245,11 +243,11 @@ tgeompoint_as_tnpoint_internal(Temporal *temp)
   if (temp->subtype == INSTANT)
     result = (Temporal *)tgeompointinst_as_tnpointinst((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tgeompointi_as_tnpointi((TInstantSet *) temp);
+    result = (Temporal *)tgeompointinstset_as_tnpointinstset((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tgeompointseq_as_tnpointseq((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tgeompoints_as_tnpoints((TSequenceSet *) temp);
+    result = (Temporal *)tgeompointseqset_as_tnpointseqset((TSequenceSet *) temp);
   return result;
 }
 

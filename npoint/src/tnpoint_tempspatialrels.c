@@ -300,10 +300,10 @@ PG_FUNCTION_INFO_V1(ttouches_npoint_tnpoint);
 PGDLLEXPORT Datum
 ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  npoint *np = PG_GETARG_NPOINT(0);
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
   Temporal *result = ttouches_tnpoint_npoint_internal(temp, np);
-  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 

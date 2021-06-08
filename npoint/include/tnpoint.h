@@ -91,9 +91,9 @@ extern Temporal *tnpoint_as_tgeompoint_internal(const Temporal *temp);
 extern Temporal *tgeompoint_as_tnpoint_internal(Temporal *temp);
 
 extern TInstant *tgeompointinst_as_tnpointinst(const TInstant *inst);
-extern TInstantSet *tgeompointi_as_tnpointi(const TInstantSet *ti);
+extern TInstantSet *tgeompointinstset_as_tnpointinstset(const TInstantSet *ti);
 extern TSequence *tgeompointseq_as_tnpointseq(const TSequence *seq);
-extern TSequenceSet *tgeompoints_as_tnpoints(const TSequenceSet *ts);
+extern TSequenceSet *tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts);
 
 extern Datum tnpoint_positions(PG_FUNCTION_ARGS);
 extern Datum tnpoint_route(PG_FUNCTION_ARGS);

@@ -666,13 +666,13 @@ tnpoint_cumulative_length(PG_FUNCTION_ARGS)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *)tnpointinst_set_zero((TInstant *) temp);
+    result = (Temporal *) tnpointinst_set_zero((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tnpointinstset_set_zero((TInstantSet *) temp);
+    result = (Temporal *) tnpointinstset_set_zero((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnpointseq_cumulative_length((TSequence *) temp, 0);
+    result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpointseqset_cumulative_length((TSequenceSet *) temp);
+    result = (Temporal *) tnpointseqset_cumulative_length((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -766,13 +766,13 @@ tnpoint_speed(PG_FUNCTION_ARGS)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *)tnpointinst_set_zero((TInstant *) temp);
+    result = (Temporal *) tnpointinst_set_zero((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tnpointinstset_set_zero((TInstantSet *) temp);
+    result = (Temporal *) tnpointinstset_set_zero((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnpointseq_speed((TSequence *) temp);
+    result = (Temporal *) tnpointseq_speed((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpointseqset_speed((TSequenceSet *) temp);
+    result = (Temporal *) tnpointseqset_speed((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -984,9 +984,9 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
     (temp->subtype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
     ;
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnpointseq_azimuth((TSequence *) temp);
+    result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpointseqset_azimuth((TSequenceSet *) temp);
+    result = (Temporal *) tnpointseqset_azimuth((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -998,32 +998,37 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Restrict a temporal network point to a geometry
+ * Restrict a temporal network point to (the complement of) a geometry
  */
-PG_FUNCTION_INFO_V1(tnpoint_at_geometry);
-
-PGDLLEXPORT Datum
-tnpoint_at_geometry(PG_FUNCTION_ARGS)
+static Datum
+tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_same_srid_tnpoint_gs(temp, gs);
   if (gserialized_is_empty(gs))
   {
+    Temporal *result = atfunc ? NULL : temporal_copy(temp);
     PG_FREE_IF_COPY(temp, 0);
     PG_FREE_IF_COPY(gs, 1);
-    PG_RETURN_NULL();
+    if (atfunc)
+      PG_RETURN_NULL();
+    PG_RETURN_POINTER(result);
   }
   ensure_has_not_Z_gs(gs);
 
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   Temporal *geomresult = tpoint_restrict_geometry_internal(geomtemp,
-    PointerGetDatum(gs), REST_AT);
+    PointerGetDatum(gs), atfunc);
   Temporal *result = NULL;
   if (geomresult != NULL)
   {
-    result = tgeompoint_as_tnpoint_internal(geomresult);
+    /* We do not do call the function tgeompoint_as_tnpoint to avoid
+     * roundoff errors */
+    PeriodSet *ps = temporal_get_time_internal(geomresult);
+    result = temporal_restrict_periodset_internal(temp, ps, REST_AT);
     pfree(geomresult);
+    pfree(ps);
   }
   pfree(geomtemp);
   PG_FREE_IF_COPY(temp, 0);
@@ -1033,40 +1038,24 @@ tnpoint_at_geometry(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PG_FUNCTION_INFO_V1(tnpoint_at_geometry);
+/**
+ * Restricts the temporal point to the geometry
+ */
+PGDLLEXPORT Datum
+tnpoint_at_geometry(PG_FUNCTION_ARGS)
+{
+  return tnpoint_restrict_geometry(fcinfo, REST_AT);
+}
+
 PG_FUNCTION_INFO_V1(tnpoint_minus_geometry);
 /**
- * Restrict a temporal network point to the complement of a geometry
+ * Restrict the temporal point to the complement of the geometry
  */
 PGDLLEXPORT Datum
 tnpoint_minus_geometry(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid_tnpoint_gs(temp, gs);
-  if (gserialized_is_empty(gs))
-  {
-    Temporal* copy = temporal_copy(temp);
-    PG_FREE_IF_COPY(temp, 0);
-    PG_FREE_IF_COPY(gs, 1);
-    PG_RETURN_POINTER(copy);
-  }
-  ensure_has_not_Z_gs(gs);
-
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
-  Temporal *geomresult = tpoint_restrict_geometry_internal(geomtemp,
-    PointerGetDatum(gs), REST_MINUS);
-  Temporal *result = NULL;
-  if (geomresult != NULL)
-  {
-    result = tgeompoint_as_tnpoint_internal(geomresult);
-    pfree(geomresult);
-  }
-  pfree(geomtemp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tnpoint_restrict_geometry(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************
@@ -1091,7 +1080,10 @@ NAI_geometry_tnpoint(PG_FUNCTION_ARGS)
 
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  TInstant *result = tgeompointinst_as_tnpointinst(geomresult);
+  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+   * roundoff errors */
+  Temporal *result = temporal_restrict_timestamp_internal(temp,
+    geomresult->t, REST_AT);
   pfree(geomtemp); pfree(geomresult);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1111,7 +1103,10 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  TInstant *result = tgeompointinst_as_tnpointinst(geomresult);
+  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+   * roundoff errors */
+  Temporal *result = temporal_restrict_timestamp_internal(temp,
+    geomresult->t, REST_AT);
   pfree(geomtemp); pfree(geomresult);
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -1137,7 +1132,10 @@ NAI_tnpoint_geometry(PG_FUNCTION_ARGS)
 
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  TInstant *result = tgeompointinst_as_tnpointinst(geomresult);
+  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+   * roundoff errors */
+  Temporal *result = temporal_restrict_timestamp_internal(temp,
+    geomresult->t, REST_AT);
   pfree(geomtemp); pfree(geomresult);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -1157,7 +1155,10 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  TInstant *result = tgeompointinst_as_tnpointinst(geomresult);
+  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+   * roundoff errors */
+  Temporal *result = temporal_restrict_timestamp_internal(temp,
+    geomresult->t, REST_AT);
   pfree(geomtemp); pfree(geomresult);
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));

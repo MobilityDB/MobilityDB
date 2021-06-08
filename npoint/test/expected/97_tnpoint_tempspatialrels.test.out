@@ -193,150 +193,6 @@ SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
        tintersects        
 --------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                      tdisjoint                       
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                                                  tdisjoint                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
-        tdisjoint         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                      tdisjoint                       
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tdisjoint(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                                                  tdisjoint                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
-        tdisjoint         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-                      tdisjoint                       
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tdisjoint(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                                                  tdisjoint                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
-        tdisjoint         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point(1 1)');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point(1 1)');
-                      tdisjoint                       
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
-                                                  tdisjoint                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point empty');
-        tdisjoint         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
-                      tdisjoint                       
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
-                                                  tdisjoint                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tdisjoint(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
-        tdisjoint         
---------------------------
- t@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT tdisjoint(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
-                                   tdisjoint                                    
---------------------------------------------------------------------------------
- {t@2000-01-01 00:00:00+00, t@2000-01-02 00:00:00+00, t@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tdisjoint(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
-                      tdisjoint                       
-------------------------------------------------------
- [t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tdisjoint(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
-                                                  tdisjoint                                                   
---------------------------------------------------------------------------------------------------------------
- {[t@2000-01-01 00:00:00+00, t@2000-01-03 00:00:00+00], [t@2000-01-04 00:00:00+00, t@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcovers(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
-         tcovers          
---------------------------
  f@2000-01-01 00:00:00+00
 (1 row)
 
@@ -350,10 +206,6 @@ SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '[Npoint(1, 0.2)@200
                      tintersects                      
 ------------------------------------------------------
  [f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                                                 tintersects                                                  
 (1 row)
 
 SELECT tintersects(geometry 'SRID=5676;Point(1 1)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
@@ -378,10 +230,6 @@ SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@20
                      tintersects                      
 ------------------------------------------------------
  [f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-                                                 tintersects                                                  
 (1 row)
 
 SELECT tintersects(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
@@ -488,24 +336,6 @@ SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-
 
 SELECT ttouches(geometry 'SRID=5676;Point(1 1)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
          ttouches         
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT tintersects(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
-                     tintersects                      
-------------------------------------------------------
- [f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT tintersects(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
-                                                 tintersects                                                  
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT tcoveredby(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
-        tcoveredby        
 --------------------------
  f@2000-01-01 00:00:00+00
 (1 row)
@@ -553,45 +383,29 @@ SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000
 (1 row)
 
 SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
-ERROR:  compressed data is corrupted
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-ERROR:  compressed data is corrupted
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-ERROR:  compressed data is corrupted
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-ERROR:  compressed data is corrupted
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
          ttouches         
+--------------------------
+ f@2000-01-01 00:00:00+00
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
                                     ttouches                                    
 --------------------------------------------------------------------------------
  {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
                        ttouches                       
 ------------------------------------------------------
  [f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]
 (1 row)
 
-SELECT ttouches(geometry 'SRID=5676;Point empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
                                                    ttouches                                                   
 --------------------------------------------------------------------------------------------------------------
  {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tcoveredby(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
-        tcoveredby        
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
-ERROR:  compressed data is corrupted
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
-ERROR:  compressed data is corrupted
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
-ERROR:  compressed data is corrupted
-SELECT ttouches(npoint 'NPoint(2, 0.3)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
-ERROR:  compressed data is corrupted
 SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  geometry 'SRID=5676;Point(1 1)');
          ttouches         
 --------------------------
@@ -608,10 +422,6 @@ SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, 
                        ttouches                       
 ------------------------------------------------------
  [f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
-                                                   ttouches                                                   
 (1 row)
 
 SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point(1 1)');
@@ -648,48 +458,6 @@ SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
          ttouches         
 --------------------------
  f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  geometry 'SRID=5676;Point empty');
-                                    ttouches                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  geometry 'SRID=5676;Point empty');
-                       ttouches                       
-------------------------------------------------------
- [f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]
-(1 row)
-
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  geometry 'SRID=5676;Point empty');
-                                                   ttouches                                                   
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
-(1 row)
-
-SELECT ttouches(tnpoint 'Npoint(1, 0.5)@2000-01-01',  npoint 'NPoint(2, 0.3)');
-         ttouches         
---------------------------
- f@2000-01-01 00:00:00+00
-(1 row)
-
-SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');
-                                    ttouches                                    
---------------------------------------------------------------------------------
- {f@2000-01-01 00:00:00+00, f@2000-01-02 00:00:00+00, f@2000-01-03 00:00:00+00}
-(1 row)
-
-SELECT ttouches(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  npoint 'NPoint(2, 0.3)');
-                        ttouches                        
---------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00]}
-(1 row)
-
-SELECT ttouches(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  npoint 'NPoint(2, 0.3)');
-                                                   ttouches                                                   
---------------------------------------------------------------------------------------------------------------
- {[f@2000-01-01 00:00:00+00, f@2000-01-03 00:00:00+00], [f@2000-01-04 00:00:00+00, f@2000-01-05 00:00:00+00]}
 (1 row)
 
 SELECT ttouches(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  npoint 'NPoint(2, 0.3)');

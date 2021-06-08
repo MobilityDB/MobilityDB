@@ -380,7 +380,7 @@ npoint_make(int64 rid, double pos)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("the relative position must be a real number between 0 and 1")));
 
-  npoint *result = (npoint *)palloc(sizeof(npoint));
+  npoint *result = (npoint *) palloc(sizeof(npoint));
   result->rid = rid;
   result->pos = pos;
   return result;
@@ -428,7 +428,7 @@ nsegment_make(int64 rid, double pos1, double pos2)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The relative position of a network segment must be a real number between 0 and 1")));
 
-  nsegment *result = (nsegment *)palloc(sizeof(nsegment));
+  nsegment *result = (nsegment *) palloc(sizeof(nsegment));
   result->rid = rid;
   result->pos1 = Min(pos1, pos2);
   result->pos2 = Max(pos1, pos2);
@@ -908,7 +908,7 @@ geom_as_npoint_internal(Datum geom)
     "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
     DIST_EPSILON, geomstr);
   pfree(geomstr);
-  npoint *result = (npoint *)palloc(sizeof(npoint));
+  npoint *result = (npoint *) palloc(sizeof(npoint));
   bool isNull = true;
   SPI_connect();
   int ret = SPI_execute(sql, true, 1);
