@@ -147,7 +147,7 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
     MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags));
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tspatial_base_type(sequences[0]->basetypid))
+  if (tgeo_base_type(sequences[0]->basetypid))
   {
     MOBDB_FLAGS_SET_Z(result->flags,
       MOBDB_FLAGS_GET_Z(sequences[0]->flags));
