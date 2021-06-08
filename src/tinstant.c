@@ -151,7 +151,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tspatial_base_type(basetypid))
+  if (tgeo_base_type(basetypid))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->flags));

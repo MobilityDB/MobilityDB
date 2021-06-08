@@ -581,8 +581,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   size_t trajsize = 0;
   bool hastraj = false; /* keep compiler quiet */
   Datum traj = 0; /* keep compiler quiet */
-  bool isspatial = tspatial_base_type(instants[0]->basetypid);
-  if (isspatial)
+  bool isgeo = tgeo_base_type(instants[0]->basetypid);
+  if (isgeo)
   {
     hastraj = type_has_precomputed_trajectory(instants[0]->basetypid);
     if (hastraj)
@@ -608,7 +608,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (isspatial)
+  if (isgeo)
   {
     MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
@@ -646,7 +646,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     result->offsets[newcount] = pos;
     pos += double_pad(bboxsize);
   }
-  if (isspatial && hastraj)
+  if (isgeo && hastraj)
   {
     result->offsets[newcount + 1] = pos;
     memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
