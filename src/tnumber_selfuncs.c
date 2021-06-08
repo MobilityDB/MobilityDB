@@ -48,6 +48,7 @@
 
 #include "period.h"
 #include "rangetypes_ext.h"
+#include "temporal_util.h"
 #include "tempcache.h"
 #include "tbox.h"
 #include "time_selfuncs.h"

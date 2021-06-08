@@ -45,7 +45,7 @@
 #include "period.h"
 #include "periodset.h"
 #include "time_gist.h"
-#include "temporaltypes.h"
+#include "temporal_util.h"
 #include "tempcache.h"
 
 /*****************************************************************************

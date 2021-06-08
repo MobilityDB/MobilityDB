@@ -478,32 +478,6 @@ extern void _PG_init(void);
 extern const char *tempsubtype_name(int16 subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
-/* Temporal/base types tests */
-
-extern bool temporal_type(Oid temptypid);
-extern void ensure_temporal_base_type(Oid basetypid);
-extern bool base_type_continuous(Oid basetypid);
-extern void ensure_base_type_continuous(Temporal *temp);
-extern bool base_type_byvalue(Oid basetypid);
-extern int16 base_type_length(Oid basetypid);
-extern bool talpha_base_type(Oid basetypid);
-extern bool tnumber_type(Oid temptypid);
-extern bool tnumber_base_type(Oid basetypid);
-extern void ensure_tnumber_base_type(Oid basetypid);
-extern bool tnumber_range_type(Oid rangetype);
-extern void ensure_tnumber_range_type(Oid rangetype);
-extern bool tgeo_type(Oid temptypid);
-extern bool tgeo_base_type(Oid basetypid);
-extern void ensure_tgeo_base_type(Oid basetypid);
-extern bool type_has_precomputed_trajectory(Oid basetypid);
-extern size_t temporal_bbox_size(Oid basetypid);
-
-/* Oid functions */
-
-extern Oid range_oid_from_base(Oid basetypid);
-extern Oid temporal_oid_from_base(Oid basetypid);
-extern Oid base_oid_from_temporal(Oid temptypid);
-
 /* Parameter tests */
 
 extern void ensure_valid_tempsubtype(int16 type);
