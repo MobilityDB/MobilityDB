@@ -47,6 +47,7 @@
 #include "period.h"
 #include "timeops.h"
 #include "time_gist.h"
+#include "temporal_util.h"
 #include "tempcache.h"
 #include "temporal_boxops.h"
 #include "temporal_posops.h"

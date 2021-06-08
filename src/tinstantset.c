@@ -424,21 +424,22 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
   const TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   const TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   int i = 0, j = 0, k = 0;
+  const TInstant *inst1 = tinstantset_inst_n(ti1, i);
+  const TInstant *inst2 = tinstantset_inst_n(ti2, j);
   while (i < ti1->count && j < ti2->count)
   {
-    const TInstant *inst1 = tinstantset_inst_n(ti1, i);
-    const TInstant *inst2 = tinstantset_inst_n(ti2, j);
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       instants1[k] = inst1;
       instants2[k++] = inst2;
-      i++; j++;
+      inst1 = tinstantset_inst_n(ti1, ++i);
+      inst2 = tinstantset_inst_n(ti2, ++j);
     }
     else if (cmp < 0)
-      i++;
+      inst1 = tinstantset_inst_n(ti1, ++i);
     else
-      j++;
+      inst2 = tinstantset_inst_n(ti2, ++j);
   }
   if (k != 0)
   {

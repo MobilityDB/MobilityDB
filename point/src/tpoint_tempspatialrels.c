@@ -121,7 +121,7 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  *****************************************************************************/
 
 /**
- * Evalues tintersects/tdisjoint for a temporal point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal point and a geometry
  *
  * @param[in] inst Temporal point
  * @param[in] geom Geometry
@@ -137,7 +137,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal point and a geometry
  *
  * @param[in] ti Temporal point
  * @param[in] geom Geometry
@@ -160,7 +160,7 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal sequence point with step
+ * Evaluates tintersects/tdisjoint for a temporal sequence point with step
  * interpolation and a geometry
  *
  * @param[in] seq Temporal point
@@ -207,7 +207,7 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal sequence point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal sequence point and a geometry
  *
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
@@ -317,7 +317,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal sequence point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal sequence point and a geometry
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -369,7 +369,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal sequence point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal sequence point and a geometry
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -393,7 +393,7 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal sequence set point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal sequence set point and a geometry
  *
  * @param[in] ts Temporal point
  * @param[in] geom Geometry
@@ -427,7 +427,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
 }
 
 /**
- * Evalues tintersects/tdisjoint for a temporal point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal point and a geometry
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
