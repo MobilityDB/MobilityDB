@@ -74,21 +74,19 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(basetypid);
-  bool result = false;
   if (talpha_base_type(basetypid))
-    result = period_eq_internal((Period *) box1, (Period *) box2);
-  else if (tnumber_base_type(basetypid))
-    result = tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tspatial_base_type(basetypid))
-    result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
-    // TODO Due to floating point precision the previous statement
+    return period_eq_internal((Period *) box1, (Period *) box2);
+  if (tnumber_base_type(basetypid))
+    return tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
+  if (tspatial_base_type(basetypid))
+    // TODO Due to floating point precision the current statement
     // is not equal to the next one.
     // result = stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
     // Problem raised in the test file 51_tpoint_tbl.test.out
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
-  /* Types without bounding box, for example, doubleN */
-  return result;
+    return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
+  elog(ERROR, "unknown operation for base type: %d", basetypid);
 }
 
 /**
@@ -103,15 +101,13 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(basetypid);
-  int result = 0;
   if (talpha_base_type(basetypid))
-    result = period_cmp_internal((Period *) box1, (Period *) box2);
-  else if (tnumber_base_type(basetypid))
-    result = tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
-  else if (tspatial_base_type(basetypid))
-    result = stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
-  /* Types without bounding box, for example, doubleN */
-  return result;
+    return period_cmp_internal((Period *) box1, (Period *) box2);
+  if (tnumber_base_type(basetypid))
+    return tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
+  if (tspatial_base_type(basetypid))
+    return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
+  elog(ERROR, "unknown operation for base type: %d", basetypid);
 }
 
 /**
@@ -133,6 +129,8 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
     tbox_shift_tscale((TBOX *) box, start, duration);
   else if (tspatial_base_type(basetypid))
     stbox_shift_tscale((STBOX *) box, start, duration);
+  else
+    elog(ERROR, "unknown operation for base type: %d", basetypid);
   return;
 }
 
@@ -166,6 +164,9 @@ tinstant_make_bbox(void *box, const TInstant *inst)
   }
   else if (tgeo_base_type(inst->basetypid))
     tpointinst_make_stbox((STBOX *) box, inst);
+  else
+    elog(ERROR, "unknown operation for base type: %d", inst->basetypid);
+  return;
 }
 
 /**
@@ -224,6 +225,9 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
   else if (tgeo_base_type(instants[0]->basetypid))
     tpointinstarr_to_stbox((STBOX *) box, instants, count);
+  else 
+    elog(ERROR, "unknown operation for base type: %d", instants[0]->basetypid);
+  return;
 }
 
 /**
@@ -246,12 +250,14 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
       lower_inc, upper_inc);
   else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  /* This code is currently not used since for temporal points the bounding
+  /* This case is currently not used since for temporal points the bounding
    * box is computed from the trajectory for efficiency reasons. It is left
    * here in case this is no longer the case
   else if (geo_base_type(instants[0]->basetypid))
-    tpointinstarr_to_stbox((STBOX *) box, instants, count);
-  */
+    tpointinstarr_to_stbox((STBOX *) box, instants, count); */
+  else 
+    elog(ERROR, "unknown operation for base type: %d", instants[0]->basetypid);
+  return;
 }
 
 /**
@@ -296,7 +302,7 @@ tnumberseqarr_to_tbox_internal(TBOX *box, const TSequence **sequences, int count
 void
 tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
 {
-  /* Only external types have bounding box */
+  /* Only external types have bounding box */ // TODO
   ensure_temporal_base_type(sequences[0]->basetypid);
   if (talpha_base_type(sequences[0]->basetypid))
     tsequencearr_to_period_internal((Period *) box, sequences, count);
@@ -304,6 +310,9 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
     tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
   else if (tgeo_base_type(sequences[0]->basetypid))
     tpointseqarr_to_stbox((STBOX *) box, sequences, count);
+  else 
+    elog(ERROR, "unknown operation for base type: %d", sequences[0]->basetypid);
+  return;
 }
 
 /*****************************************************************************

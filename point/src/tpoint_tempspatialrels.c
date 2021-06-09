@@ -1104,23 +1104,7 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
-  Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
-  Datum bound = call_function1(boundary, PointerGetDatum(gs));
-  GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
-  Temporal *result;
-  if (! gserialized_is_empty(gsbound))
-  {
-    Temporal *inter_bound = tinterrel_tpoint_geo(temp, gsbound, TINTERSECTS);
-    Temporal *not_inter_bound = tnot_tbool_internal(inter_bound);
-    result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
-    pfree(inter);
-    pfree(DatumGetPointer(bound));
-    pfree(inter_bound);
-    pfree(not_inter_bound);
-  }
-  else
-    result = inter;
+  Temporal *result = tcontains_geo_tpoint_internal(gs, temp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
