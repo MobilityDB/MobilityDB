@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
+#include <utils/lsyscache.h>  /* for get_typlenbyval */
 #include <utils/timestamp.h>
 
 #include "timetypes.h"
@@ -88,8 +89,8 @@ tinstant_value_copy(const TInstant *inst)
   if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
     return *value;
   /* For base types passed by reference */
-  int typlen = base_type_length(inst->basetypid);
-  size_t value_size = typlen != -1 ? (unsigned int) typlen : VARSIZE(value);
+  int16 typlen =  base_type_length(inst->basetypid);
+  size_t value_size = (typlen != -1) ? (unsigned int) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, value, value_size);
   return PointerGetDatum(result);
@@ -118,41 +119,41 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   /* Create the temporal value */
   TInstant *result;
   size_t value_size;
+  void *value_from;
   /* Copy value */
-  bool byval = base_type_byvalue(basetypid);
-  if (byval)
+  bool typbyval = base_type_byvalue(basetypid);
+  if (typbyval)
   {
     /* For base types passed by value */
     value_size = double_pad(sizeof(Datum));
-    size += value_size;
-    result = palloc0(size);
-    void *value_to = ((char *) result) + value_offset;
-    memcpy(value_to, &value, sizeof(Datum));
+    value_from = &value;
   }
   else
   {
     /* For base types passed by reference */
-    void *value_from = DatumGetPointer(value);
-    int typlen = base_type_length(basetypid);
-    value_size = typlen != -1 ? double_pad((unsigned int) typlen) :
+    value_from = DatumGetPointer(value);
+    int16 typlen = base_type_length(basetypid);
+    value_size = (typlen != -1) ? double_pad((unsigned int) typlen) :
       double_pad(VARSIZE(value_from));
-    size += value_size;
-    result = palloc0(size);
-    void *value_to = ((char *) result) + value_offset;
-    memcpy(value_to, value_from, value_size);
   }
+  size += value_size;
+  result = palloc0(size);
+  void *value_to = ((char *) result) + value_offset;
+  memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
   result->subtype = INSTANT;
   result->basetypid = basetypid;
   result->t = t;
   SET_VARSIZE(result, size);
-  MOBDB_FLAGS_SET_BYVAL(result->flags, byval);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, base_type_continuous(basetypid));
+  MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
+  bool continuous = base_type_continuous(basetypid);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_base_type(basetypid))
   {
-    GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(value);
+    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
     POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
@@ -461,7 +462,7 @@ ArrayType *
 tinstant_sequences_array(const TInstant *inst)
 {
   TSequence *seq = tinstant_to_tsequence(inst,
-    MOBDB_FLAGS_GET_LINEAR(inst->flags));
+    MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
   ArrayType *result = temporalarr_to_array((const Temporal **) &seq, 1);
   pfree(seq);
   return result;

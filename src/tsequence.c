@@ -126,7 +126,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     datum_eq2(value, value2, basetypid, inst1->basetypid))
     return false;
 
-  ensure_base_type_continuous(inst1->basetypid);
+  ensure_base_type_continuous((Temporal *) inst1);
   bool result = false; /* make compiler quiet */
   if (inst1->basetypid == FLOAT8OID)
     result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
@@ -578,6 +578,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   result->subtype = SEQUENCE;
   period_set(&result->period, norminsts[0]->t, norminsts[newcount - 1]->t,
     lower_inc, upper_inc);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
+    MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -1396,8 +1398,8 @@ tsequence_to_string(const TSequence *seq, bool component,
   char **strings = palloc(sizeof(char *) * seq->count);
   size_t outlen = 0;
   char prefix[20];
-  if (! component && base_type_continuous(seq->basetypid) &&
-    ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
+  if (! component && MOBDB_FLAGS_GET_CONTINUOUS(seq->flags) &&
+      ! MOBDB_FLAGS_GET_LINEAR(seq->flags))
     sprintf(prefix, "Interp=Stepwise;");
   else
     prefix[0] = '\0';
@@ -1469,10 +1471,10 @@ tsequence_read(StringInfo buf, Oid basetypid)
 TSequence *
 tintseq_to_tfloatseq(const TSequence *seq)
 {
-  /* It is not necessary to set the linear flag to false since it is already
-   * set by the fact that the input argument is a temporal integer */
   TSequence *result = tsequence_copy(seq);
   result->basetypid = FLOAT8OID;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
@@ -1492,10 +1494,10 @@ tfloatseq_to_tintseq(const TSequence *seq)
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
-  /* It is not necessary to set the linear flag to false since it is already
-   * set by the fact that the input argument has step interpolation */
   TSequence *result = tsequence_copy(seq);
   result->basetypid = INT4OID;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
   for (int i = 0; i < seq->count; i++)
   {
     TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
@@ -2109,7 +2111,7 @@ tsequence_always_eq(const TSequence *seq, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(seq->basetypid) || tgeo_base_type(seq->basetypid))
+  if (tnumber_base_type(seq->basetypid) || tspatial_base_type(seq->basetypid))
     return true;
 
   /* The following test assumes that the sequence is in normal form */
@@ -3186,7 +3188,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
   Datum result = 0;
-  ensure_base_type_continuous(basetypid);
+  ensure_base_type_continuous((Temporal *) inst1);
   if (basetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);

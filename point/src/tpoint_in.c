@@ -358,7 +358,8 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
  * Returns a temporal point from its MF-JSON representation
  */
 Temporal *
-tpoint_from_mfjson_internal(text *mfjson_input, Oid basetypid)
+tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
+  Oid basetypid)
 {
   char *mfjson = text2cstring(mfjson_input);
   char *srs = NULL;
@@ -445,7 +446,7 @@ tpoint_from_mfjson_internal(text *mfjson_input, Oid basetypid)
 
   if (srs)
   {
-    srid = getSRIDbySRS(srs);
+    srid = getSRIDbySRS(fcinfo, srs);
     pfree(srs);
   }
 
@@ -491,7 +492,8 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
   text *mfjson_input = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid basetypid = temporal_basetypid(temptypid);
-  Temporal *result = tpoint_from_mfjson_internal(mfjson_input, basetypid);
+  Temporal *result = tpoint_from_mfjson_internal(fcinfo, mfjson_input,
+    basetypid);
   PG_RETURN_POINTER(result);
 }
 

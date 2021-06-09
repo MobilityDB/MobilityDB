@@ -42,7 +42,7 @@
 #include "period.h"
 #include "periodset.h"
 #include "timeops.h"
-#include "temporal.h"
+#include "temporal_util.h"
 #include "tempcache.h"
 
 /*****************************************************************************

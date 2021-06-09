@@ -32,6 +32,7 @@
 #include "tpoint_parser.h"
 
 #include "temporaltypes.h"
+#include "temporal_util.h"
 #include "tempcache.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
@@ -433,7 +434,7 @@ tpoint_parse(char **str, Oid basetype)
 
   bool linear = base_type_continuous(basetype);
   /* Starts with "Interp=Stepwise" */
-  if (strncasecmp(*str,"Interp=Stepwise;",16) == 0)
+  if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
     /* Move str after the semicolon */
     *str += 16;
@@ -445,10 +446,12 @@ tpoint_parse(char **str, Oid basetype)
   {
     /* Pass the SRID specification */
     *str = bak;
-    result = (Temporal *)tpointinst_parse(str, basetype, true, true, &tpoint_srid);
+    result = (Temporal *) tpointinst_parse(str, basetype, true, true,
+      &tpoint_srid);
   }
   else if (**str == '[' || **str == '(')
-    result = (Temporal *)tpointseq_parse(str, basetype, linear, true, true, &tpoint_srid);
+    result = (Temporal *) tpointseq_parse(str, basetype, linear, true, true,
+      &tpoint_srid);
   else if (**str == '{')
   {
     bak = *str;
@@ -457,12 +460,13 @@ tpoint_parse(char **str, Oid basetype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *)tpointseqset_parse(str, basetype, linear, &tpoint_srid);
+      result = (Temporal *) tpointseqset_parse(str, basetype, linear,
+        &tpoint_srid);
     }
     else
     {
       *str = bak;
-      result = (Temporal *)tpointinstset_parse(str, basetype, &tpoint_srid);
+      result = (Temporal *) tpointinstset_parse(str, basetype, &tpoint_srid);
     }
   }
   return result;

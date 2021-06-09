@@ -183,33 +183,40 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure xxGTZXBL, where
- * xx:unused bits, G:Coordinates are geodetic, T:has T coordinate, 
+ * Macros for manipulating the 'flags' element with structure xGTZXLCB, where
+ * x:unused bit, G:Coordinates are geodetic, T:has T coordinate, 
  * Z:has Z coordinate, X:has value or X coordinate,
- * B:base type passed by value,L: Linear interpolation
+ * B:base type passed by value, L: Linear interpolation, C: Continuous base type
+ * Notice that formally speaking the Linear interpolation flag is only needed
+ * for sequence and sequence set subtypes. To facilate the transformation from
+ * one subtype to another, the linear flag for instant and instant set is set
+ * to the value of the continuous subtype flag.
  *****************************************************************************/
 
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) ((flags) & 0x01))
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x10)>>4))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x20)>>5))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) ((flags) & 0x01))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & 0x02)>>1))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & 0x04)>>2))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x08)>>3))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x10)>>4))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x20)>>5))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x40)>>6))
 
-#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
 /* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
+  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
+#define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
   ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
-#define MOBDB_FLAGS_SET_X(flags, value) \
+#define MOBDB_FLAGS_SET_LINEAR(flags, value) \
   ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
-#define MOBDB_FLAGS_SET_Z(flags, value) \
+#define MOBDB_FLAGS_SET_X(flags, value) \
   ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
-#define MOBDB_FLAGS_SET_T(flags, value) \
+#define MOBDB_FLAGS_SET_Z(flags, value) \
   ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
-#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+#define MOBDB_FLAGS_SET_T(flags, value) \
   ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+#define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
+  ((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling
@@ -470,32 +477,6 @@ extern void _PG_init(void);
  
 extern const char *tempsubtype_name(int16 subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
-
-/* Temporal/base types tests */
-
-extern bool temporal_type(Oid temptypid);
-extern void ensure_temporal_base_type(Oid basetypid);
-extern bool base_type_continuous(Oid basetypid);
-extern void ensure_base_type_continuous(Oid basetypid);
-extern bool base_type_byvalue(Oid basetypid);
-extern size_t base_type_length(Oid basetypid);
-extern bool talpha_base_type(Oid basetypid);
-extern bool tnumber_type(Oid temptypid);
-extern bool tnumber_base_type(Oid basetypid);
-extern void ensure_tnumber_base_type(Oid basetypid);
-extern bool tnumber_range_type(Oid rangetype);
-extern void ensure_tnumber_range_type(Oid rangetype);
-extern bool tgeo_type(Oid temptypid);
-extern bool tgeo_base_type(Oid basetypid);
-extern void ensure_tgeo_base_type(Oid basetypid);
-extern bool type_has_precomputed_trajectory(Oid basetypid);
-extern size_t temporal_bbox_size(Oid basetypid);
-
-/* Oid functions */
-
-extern Oid range_oid_from_base(Oid basetypid);
-extern Oid temporal_oid_from_base(Oid basetypid);
-extern Oid base_oid_from_temporal(Oid temptypid);
 
 /* Parameter tests */
 

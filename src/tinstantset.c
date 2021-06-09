@@ -121,8 +121,9 @@ tinstantset_make1(const TInstant **instants, int count)
   result->count = count;
   result->basetypid = instants[0]->basetypid;
   result->subtype = INSTANTSET;
-  MOBDB_FLAGS_SET_LINEAR(result->flags,
-    MOBDB_FLAGS_GET_LINEAR(instants[0]->flags));
+  bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
   if (tgeo_base_type(instants[0]->basetypid))
@@ -423,21 +424,22 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
   const TInstant **instants1 = palloc(sizeof(TInstant *) * count);
   const TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   int i = 0, j = 0, k = 0;
+  const TInstant *inst1 = tinstantset_inst_n(ti1, i);
+  const TInstant *inst2 = tinstantset_inst_n(ti2, j);
   while (i < ti1->count && j < ti2->count)
   {
-    const TInstant *inst1 = tinstantset_inst_n(ti1, i);
-    const TInstant *inst2 = tinstantset_inst_n(ti2, j);
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
     {
       instants1[k] = inst1;
       instants2[k++] = inst2;
-      i++; j++;
+      inst1 = tinstantset_inst_n(ti1, ++i);
+      inst2 = tinstantset_inst_n(ti2, ++j);
     }
     else if (cmp < 0)
-      i++;
+      inst1 = tinstantset_inst_n(ti1, ++i);
     else
-      j++;
+      inst2 = tinstantset_inst_n(ti2, ++j);
   }
   if (k != 0)
   {
@@ -772,7 +774,7 @@ static TSequence **
 tinstantset_sequences(const TInstantSet *ti)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ti->count);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(ti->flags);
+  bool linear = MOBDB_FLAGS_GET_CONTINUOUS(ti->flags);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
@@ -940,7 +942,7 @@ tinstantset_always_eq(const TInstantSet *ti, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(ti->basetypid) || tgeo_base_type(ti->basetypid))
+  if (tnumber_base_type(ti->basetypid) || tspatial_base_type(ti->basetypid))
     return true;
 
   for (int i = 0; i < ti->count; i++)

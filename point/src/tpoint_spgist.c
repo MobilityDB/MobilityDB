@@ -692,7 +692,7 @@ stbox_spgist_get_stbox(STBOX *result, ScanKeyData scankey)
   {
     memcpy(result, DatumGetSTboxP(scankey.sk_argument), sizeof(STBOX));
   }
-  else if (tgeo_type(scankey.sk_subtype))
+  else if (tspatial_type(scankey.sk_subtype))
   {
     temporal_bbox(result, DatumGetTemporal(scankey.sk_argument));
   }
