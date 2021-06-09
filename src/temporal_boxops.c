@@ -165,13 +165,10 @@ tinstant_make_bbox(void *box, const TInstant *inst)
     MOBDB_FLAGS_SET_X(result->flags, true);
     MOBDB_FLAGS_SET_T(result->flags, true);
   }
-  else if (tspatial_base_type(inst->basetypid))
-  {
-    if (tgeo_base_type(inst->basetypid))
-      tpointinst_make_stbox((STBOX *)box, inst);
-    else
-      tnpointinst_make_stbox((STBOX *)box, inst);
-  }
+  else if (tgeo_base_type(inst->basetypid))
+    tpointinst_make_stbox((STBOX *)box, inst);
+  else if (inst->basetypid == type_oid(T_NPOINT))
+    tnpointinst_make_stbox((STBOX *)box, inst);
   return;
 }
 
@@ -229,13 +226,10 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
     tinstantarr_to_period((Period *) box, instants, count, true, true);
   else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  else if (tspatial_base_type(instants[0]->basetypid))
-  {
-    if (tgeo_base_type(instants[0]->basetypid))
-      tpointinstarr_to_stbox((STBOX *)box, instants, count);
-    else
-      tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
-  }
+  else if (tgeo_base_type(instants[0]->basetypid))
+    tpointinstarr_to_stbox((STBOX *)box, instants, count);
+  else if (instants[0]->basetypid == type_oid(T_NPOINT))
+    tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
   return;
 }
 
@@ -259,21 +253,17 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
       lower_inc, upper_inc);
   else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  else if (tspatial_base_type(instants[0]->basetypid))
+  /* This code is currently not used since for temporal points the bounding
+   * box is computed from the trajectory for efficiency reasons. It is left
+   * here in case this is no longer the case
+  else if (tgeo_base_type(instants[0]->basetypid))
+    tpointinstarr_to_stbox((STBOX *)box, instants, count); */
+  else if (instants[0]->basetypid == type_oid(T_NPOINT))
   {
-    if (!tgeo_base_type(instants[0]->basetypid))
-    {
-      if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
-        tnpointinstarr_linear_to_stbox((STBOX *)box, instants, count);
-      else
-        tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
-    }
-    /* This code is currently not used since for temporal points the bounding
-     * box is computed from the trajectory for efficiency reasons. It is left
-     * here in case this is no longer the case
+    if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
+      tnpointinstarr_linear_to_stbox((STBOX *)box, instants, count);
     else
-      tpointinstarr_to_stbox((STBOX *)box, instants, count);
-    */
+      tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
   }
   return;
 }
@@ -326,13 +316,10 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
     tsequencearr_to_period_internal((Period *) box, sequences, count);
   else if (tnumber_base_type(sequences[0]->basetypid))
     tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
-  else if (tspatial_base_type(sequences[0]->basetypid)) 
-  {
-    if (tgeo_base_type(sequences[0]->basetypid))
-      tpointseqarr_to_stbox((STBOX *)box, sequences, count);
-    else
-      tnpointseqarr_to_stbox((STBOX *)box, sequences, count);
-  }
+  if (tgeo_base_type(sequences[0]->basetypid))
+    tpointseqarr_to_stbox((STBOX *)box, sequences, count);
+  else if (sequences[0]->basetypid == type_oid(T_NPOINT))
+    tnpointseqarr_to_stbox((STBOX *)box, sequences, count);
   return;
 }
 
