@@ -132,13 +132,10 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   bool result = false; /* make compiler quiet */
   if (inst1->basetypid == FLOAT8OID)
     result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
-  else if (tspatial_base_type(inst1->basetypid))
-  {
-    if (tgeo_base_type(inst1->basetypid))
-      result = tpointseq_intersection_value(inst1, inst2, value, t);
-    else
-      result = tnpointseq_intersection_value(inst1, inst2, value, t);
-  }
+  else if (tgeo_base_type(inst1->basetypid))
+    result = tpointseq_intersection_value(inst1, inst2, value, t);
+  else if (inst1->basetypid == type_oid(T_NPOINT))
+    result = tnpointseq_intersection_value(inst1, inst2, value, t);
 
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */

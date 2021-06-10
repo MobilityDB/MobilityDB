@@ -263,9 +263,9 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
   {
     if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
-      tnpointinstarr_linear_to_stbox((STBOX *)box, instants, count);
+      tnpointinstarr_linear_to_stbox((STBOX *) box, instants, count);
     else
-      tnpointinstarr_step_to_stbox((STBOX *)box, instants, count);
+      tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
   }
   else 
     elog(ERROR, "unknown operation for base type: %d", instants[0]->basetypid);
@@ -320,7 +320,7 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
     tsequencearr_to_period_internal((Period *) box, sequences, count);
   else if (tnumber_base_type(sequences[0]->basetypid))
     tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
-  if (tgeo_base_type(sequences[0]->basetypid))
+  else if (tgeo_base_type(sequences[0]->basetypid))
     tpointseqarr_to_stbox((STBOX *) box, sequences, count);
   else if (sequences[0]->basetypid == type_oid(T_NPOINT))
     tnpointseqarr_to_stbox((STBOX *) box, sequences, count);
