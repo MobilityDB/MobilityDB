@@ -602,6 +602,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Get trajectory from temporal point */
     if (tgeo_base_type(temp->basetypid))
       trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
+    else 
+      elog(ERROR, "unknown trajectory function for base type: %d",
+        temp->basetypid);
 
     /* Read the bounds from the gserialized. */
     if ( LW_FAILURE == gserialized_get_gbox_p(trajgs, &gbox) )
