@@ -2611,7 +2611,6 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
       geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom));
       pfree(DatumGetPointer(geom));
     }
-
     return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
       (!ever && same_stbox_stbox_internal(&box1, &box2));
   }

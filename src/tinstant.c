@@ -914,15 +914,12 @@ tinstant_hash(const TInstant *inst)
     value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
   else if (inst->basetypid == TEXTOID)
     value_hash = DatumGetUInt32(call_function1(hashtext, value));
-  else if (tspatial_base_type(inst->basetypid))
+  else if (tgeo_base_type(inst->basetypid))
+    value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
+  else if (inst->basetypid == type_oid(T_NPOINT))
   {
-    if (tgeo_base_type(inst->basetypid))
-      value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
-    else
-    {
-      value_hash = DatumGetUInt32(call_function1(hashint8, value));
-      value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
-    }
+    value_hash = DatumGetUInt32(call_function1(hashint8, value));
+    value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
   }
   /* Apply the hash function according to the timestamp */
   time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));

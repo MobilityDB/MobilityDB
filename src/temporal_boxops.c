@@ -259,7 +259,7 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
    * box is computed from the trajectory for efficiency reasons. It is left
    * here in case this is no longer the case
   else if (tgeo_base_type(instants[0]->basetypid))
-    tpointinstarr_to_stbox((STBOX *)box, instants, count); */
+    tpointinstarr_to_stbox((STBOX *) box, instants, count); */
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
   {
     if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
