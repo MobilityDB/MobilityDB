@@ -255,21 +255,6 @@ tspatial_base_type(Oid basetypid)
 }
 
 /**
- * Returns true if the Oid is a temporal point type
- *
- * @note This function is used for temporal types whose subtype is a geography
- * or a geography.
- */
-bool
-tgeo_type(Oid temptypid)
-{
-  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) || 
-    temptypid == type_oid(T_TNPOINT))
-    return true;
-  return false;
-}
-
-/**
  * Returns true if the Oid is a point base type supported by MobilityDB
  */
 bool
@@ -372,8 +357,6 @@ temporal_oid_from_base(Oid basetypid)
     return type_oid(T_TTEXT);
   if (basetypid == type_oid(T_GEOMETRY))
     return type_oid(T_TGEOMPOINT);
-  if (basetypid == type_oid(T_GEOGRAPHY))
-    return type_oid(T_TGEOGPOINT);
   if (basetypid == type_oid(T_GEOGRAPHY))
     return type_oid(T_TGEOGPOINT);
   if (basetypid == type_oid(T_NPOINT))

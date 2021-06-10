@@ -61,7 +61,6 @@ extern bool tnumber_range_type(Oid rangetype);
 extern void ensure_tnumber_range_type(Oid rangetype);
 extern bool tspatial_type(Oid temptypid);
 extern bool tspatial_base_type(Oid basetypid);
-extern bool tgeo_type(Oid temptypid);
 extern bool tgeo_base_type(Oid basetypid);
 extern void ensure_tgeo_base_type(Oid basetypid);
 extern bool type_has_precomputed_trajectory(Oid basetypid);
