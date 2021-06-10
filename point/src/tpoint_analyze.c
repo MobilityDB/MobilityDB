@@ -612,7 +612,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       /* Skip empties too. */
       continue;
     }
-    tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
+    /* Free trajectory */
+    if (tgeo_base_type(temp->basetypid))
+      tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )

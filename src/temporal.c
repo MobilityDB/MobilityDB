@@ -2600,7 +2600,8 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     memset(&box1, 0, sizeof(STBOX));
     memset(&box2, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
-    geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(value));
+    if (tgeo_base_type(temp->basetypid))
+      geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(value));
     return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
       (!ever && same_stbox_stbox_internal(&box1, &box2));
   }
