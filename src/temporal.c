@@ -340,7 +340,8 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * @param[in] seq True if we a make operation for temporal sequences
  */
 void
-ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge)
+ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge,
+  int16 subtype)
 {
   for (int i = 1; i < count; i++)
   {

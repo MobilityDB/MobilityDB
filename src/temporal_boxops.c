@@ -81,7 +81,7 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
   if (tspatial_base_type(basetypid))
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
-    // result = stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
+    // return stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
     // Problem raised in the test file 51_tpoint_tbl.test.out
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
@@ -255,7 +255,7 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
   /* This case is currently not used since for temporal points the bounding
    * box is computed from the trajectory for efficiency reasons. It is left
    * here in case this is no longer the case
-  else if (geo_base_type(instants[0]->basetypid))
+  else if (tgeo_base_type(instants[0]->basetypid))
     tpointinstarr_to_stbox((STBOX *) box, instants, count); */
   else 
     elog(ERROR, "unknown bounding box function for base type: %d",
