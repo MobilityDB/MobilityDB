@@ -137,20 +137,19 @@ int16
 base_type_length(Oid basetypid)
 {
   ensure_temporal_base_type(basetypid);
-  int16 result = 0;
   if (basetypid == type_oid(T_DOUBLE2))
-    result = 16;
-  else if (basetypid == type_oid(T_DOUBLE3))
-    result = 24;
-  else if (basetypid == type_oid(T_DOUBLE4))
-    result = 32;
-  else if (basetypid == TEXTOID)
-    result = -1;
-  else if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
-    result = -1;
+    return 16;
+  if (basetypid == type_oid(T_DOUBLE3))
+    return 24;
+  if (basetypid == type_oid(T_DOUBLE4))
+    return 32;
+  if (basetypid == TEXTOID)
+    return -1;
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+    return -1;
   else if (basetypid == type_oid(T_NPOINT))
-    result = 16;
-  return result;
+    return 16;
+  elog(ERROR, "unknown operation for base type: %d", basetypid);
 }
 
 /**
@@ -305,6 +304,20 @@ type_has_precomputed_trajectory(Oid basetypid)
 }
 
 /**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+bool
+base_type_without_bbox(Oid basetypid)
+{
+  if (basetypid == type_oid(T_DOUBLE2) || basetypid == type_oid(T_DOUBLE3) ||
+      basetypid == type_oid(T_DOUBLE4))
+    return true;
+  return false;
+}
+
+
+/**
  * Returns the size of the bounding box
  */
 size_t
@@ -316,8 +329,10 @@ temporal_bbox_size(Oid basetypid)
     return sizeof(TBOX);
   if (tspatial_base_type(basetypid))
     return sizeof(STBOX);
-  /* Types without bounding box, for example, tdoubleN */
-  return 0;
+  /* Types without bounding box, such as tdoubleN, must be explicity stated */
+  if (base_type_without_bbox(basetypid))
+    return 0;
+  elog(ERROR, "unknown operation for base type: %d", basetypid);
 }
 
 /*****************************************************************************
@@ -404,29 +419,28 @@ bool
 datum_eq(Datum l, Datum r, Oid type)
 {
   ensure_temporal_base_type(type);
-  bool result = false;
   if (type == BOOLOID || type == INT4OID)
-    result = l == r;
+    return l == r;
   else if (type == FLOAT8OID)
-    result = l == r;
+    return l == r;
     // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (type == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
-  else if (type == type_oid(T_DOUBLE2))
-    result = double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
-  else if (type == type_oid(T_DOUBLE3))
-    result = double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
-  else if (type == type_oid(T_DOUBLE4))
-    result = double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
-  else if (type == type_oid(T_GEOMETRY))
-    //  result = DatumGetBool(call_function2(lwgeom_eq, l, r));
-    result = datum_point_eq(l, r);
-  else if (type == type_oid(T_GEOGRAPHY))
-    //  result = DatumGetBool(call_function2(geography_eq, l, r));
-    result = datum_point_eq(l, r);
+  if (type == TEXTOID)
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+  if (type == type_oid(T_DOUBLE2))
+    return double2_eq((double2 *)DatumGetPointer(l), (double2 *)DatumGetPointer(r));
+  if (type == type_oid(T_DOUBLE3))
+    return double3_eq((double3 *)DatumGetPointer(l), (double3 *)DatumGetPointer(r));
+  if (type == type_oid(T_DOUBLE4))
+    return double4_eq((double4 *)DatumGetPointer(l), (double4 *)DatumGetPointer(r));
+  if (type == type_oid(T_GEOMETRY))
+    //  return DatumGetBool(call_function2(lwgeom_eq, l, r));
+    return datum_point_eq(l, r);
+  if (type == type_oid(T_GEOGRAPHY))
+    // return DatumGetBool(call_function2(geography_eq, l, r));
+    return datum_point_eq(l, r);
   else if (type == type_oid(T_NPOINT))
-    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
-  return result;
+    return npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+  elog(ERROR, "unknown operation for base type: %d", type);
 }
 
 /**
@@ -445,21 +459,20 @@ bool
 datum_lt(Datum l, Datum r, Oid type)
 {
   ensure_temporal_base_type(type);
-  bool result = false;
   if (type == BOOLOID)
-    result = DatumGetBool(l) < DatumGetBool(r);
-  else if (type == INT4OID)
-    result = DatumGetInt32(l) < DatumGetInt32(r);
-  else if (type == FLOAT8OID)
-    result = DatumGetFloat8(l) < DatumGetFloat8(r);
-    // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (type == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-  else if (type == type_oid(T_GEOMETRY))
-    result = DatumGetBool(call_function2(lwgeom_lt, l, r));
-  else if (type == type_oid(T_GEOGRAPHY))
-    result = DatumGetBool(call_function2(geography_lt, l, r));
-  return result;
+    return DatumGetBool(l) < DatumGetBool(r);
+  if (type == INT4OID)
+    return DatumGetInt32(l) < DatumGetInt32(r);
+  if (type == FLOAT8OID)
+    return DatumGetFloat8(l) < DatumGetFloat8(r);
+    // return FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
+  if (type == TEXTOID)
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+  if (type == type_oid(T_GEOMETRY))
+    return DatumGetBool(call_function2(lwgeom_lt, l, r));
+  if (type == type_oid(T_GEOGRAPHY))
+    return DatumGetBool(call_function2(geography_lt, l, r));
+  elog(ERROR, "unknown operation for base type: %d", type);
 }
 
 /**
@@ -505,31 +518,30 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
 {
   ensure_temporal_base_type(typel);
   ensure_temporal_base_type(typer);
-  bool result = false;
   if ((typel == BOOLOID && typer == BOOLOID) ||
     (typel == INT4OID && typer == INT4OID))
-    result = l == r;
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = l == r;
-    // result = FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = (double) DatumGetInt32(l) == DatumGetFloat8(r);
-    // result = FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = DatumGetFloat8(l) == (double) DatumGetInt32(r);
-    // result = FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  else if (typel == TEXTOID && typer == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
+    return l == r;
+  if (typel == FLOAT8OID && typer == FLOAT8OID)
+    return l == r;
+    // return FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
+  if (typel == INT4OID && typer == FLOAT8OID)
+    return (double) DatumGetInt32(l) == DatumGetFloat8(r);
+    // return FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
+  if (typel == FLOAT8OID && typer == INT4OID)
+    return DatumGetFloat8(l) == (double) DatumGetInt32(r);
+    // return FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
+  if (typel == TEXTOID && typer == TEXTOID)
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
     /* This function is never called with doubleN */
-  else if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
-    //  result = DatumGetBool(call_function2(lwgeom_eq, l, r));
-    result = datum_point_eq(l, r);
-  else if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
-    //  result = DatumGetBool(call_function2(geography_eq, l, r));
-    result = datum_point_eq(l, r);
+  if (typel == type_oid(T_GEOMETRY) && typer == type_oid(T_GEOMETRY))
+    //  return DatumGetBool(call_function2(lwgeom_eq, l, r));
+    return datum_point_eq(l, r);
+  if (typel == type_oid(T_GEOGRAPHY) && typer == type_oid(T_GEOGRAPHY))
+    //  return DatumGetBool(call_function2(geography_eq, l, r));
+    return datum_point_eq(l, r);
   else if (typel == type_oid(T_NPOINT) && typer == type_oid(T_NPOINT))
-    result = npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
-  return result;
+    return npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+  elog(ERROR, "unknown operation for base type: %d", typel);
 }
 
 /**
@@ -549,21 +561,20 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
 {
   assert(typel == INT4OID || typel == FLOAT8OID || typel == TEXTOID);
   assert(typer == INT4OID || typer == FLOAT8OID || typer == TEXTOID);
-  bool result = false;
   if (typel == INT4OID && typer == INT4OID)
-    result = DatumGetInt32(l) < DatumGetInt32(r);
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = (double) DatumGetInt32(l) < DatumGetFloat8(r);
+    return DatumGetInt32(l) < DatumGetInt32(r);
+  if (typel == INT4OID && typer == FLOAT8OID)
+    return (double) DatumGetInt32(l) < DatumGetFloat8(r);
     // result = FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = DatumGetFloat8(l) < (double) DatumGetInt32(r);
+  if (typel == FLOAT8OID && typer == INT4OID)
+    return DatumGetFloat8(l) < (double) DatumGetInt32(r);
     // result = FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = DatumGetFloat8(l) < DatumGetFloat8(r);
+  if (typel == FLOAT8OID && typer == FLOAT8OID)
+    return DatumGetFloat8(l) < DatumGetFloat8(r);
     // result = FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
-  else if (typel == TEXTOID && typer == TEXTOID)
-    result = text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
-  return result;
+  if (typel == TEXTOID && typer == TEXTOID)
+    return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
+  elog(ERROR, "unknown operation for base type: %d", typel);
 }
 
 /**
@@ -687,13 +698,12 @@ datum_copy(Datum value, Oid type)
 double
 datum_double(Datum d, Oid basetypid)
 {
-  double result;
   ensure_tnumber_base_type(basetypid);
   if (basetypid == INT4OID)
-    result = (double)(DatumGetInt32(d));
-  else /* basetypid == FLOAT8OID */
-    result = DatumGetFloat8(d);
-  return result;
+    return (double)(DatumGetInt32(d));
+  else if (basetypid == FLOAT8OID)
+    return DatumGetFloat8(d);
+  elog(ERROR, "unknown operation for base type: %d", basetypid);
 }
 
 /**
