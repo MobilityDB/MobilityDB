@@ -87,7 +87,7 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
-  elog(ERROR, "unknown operation for base type: %d", basetypid);
+  elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
 }
 
 /**
@@ -108,7 +108,7 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid)
     return tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
   if (tspatial_base_type(basetypid))
     return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
-  elog(ERROR, "unknown operation for base type: %d", basetypid);
+  elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
 }
 
 /**
@@ -131,7 +131,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
   else if (tspatial_base_type(basetypid))
     stbox_shift_tscale((STBOX *) box, start, duration);
   else
-    elog(ERROR, "unknown operation for base type: %d", basetypid);
+    elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
   return;
 }
 
@@ -168,7 +168,8 @@ tinstant_make_bbox(void *box, const TInstant *inst)
   else if (inst->basetypid == type_oid(T_NPOINT))
     tnpointinst_make_stbox((STBOX *) box, inst);
   else
-    elog(ERROR, "unknown operation for base type: %d", inst->basetypid);
+    elog(ERROR, "unknown bounding box function for base type: %d",
+      inst->basetypid);
   return;
 }
 
@@ -231,7 +232,8 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
     tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
   else 
-    elog(ERROR, "unknown operation for base type: %d", instants[0]->basetypid);
+    elog(ERROR, "unknown bounding box function for base type: %d",
+      instants[0]->basetypid);
   return;
 }
 
@@ -268,7 +270,8 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
       tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
   }
   else 
-    elog(ERROR, "unknown operation for base type: %d", instants[0]->basetypid);
+    elog(ERROR, "unknown bounding box function for base type: %d",
+      instants[0]->basetypid);
   return;
 }
 
@@ -325,7 +328,8 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
   else if (sequences[0]->basetypid == type_oid(T_NPOINT))
     tnpointseqarr_to_stbox((STBOX *) box, sequences, count);
   else 
-    elog(ERROR, "unknown operation for base type: %d", sequences[0]->basetypid);
+    elog(ERROR, "unknown bounding box function for base type: %d",
+      sequences[0]->basetypid);
   return;
 }
 

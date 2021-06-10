@@ -921,6 +921,8 @@ tinstant_hash(const TInstant *inst)
     value_hash = DatumGetUInt32(call_function1(hashint8, value));
     value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
   }
+  else
+    elog(ERROR, "unknown hash function for base type: %d", inst->basetypid);
   /* Apply the hash function according to the timestamp */
   time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
 

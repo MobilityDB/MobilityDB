@@ -136,7 +136,10 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tpointseq_intersection_value(inst1, inst2, value, t);
   else if (inst1->basetypid == type_oid(T_NPOINT))
     result = tnpointseq_intersection_value(inst1, inst2, value, t);
-
+  else
+    elog(ERROR, "unknown intersection function for continuous base type: %d",
+      inst1->basetypid);
+    
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
     *inter = tsequence_value_at_timestamp1(inst1, inst2, LINEAR, *t);
@@ -398,8 +401,7 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_DOUBLE2))
     return double2_collinear(DatumGetDouble2P(value1), DatumGetDouble2P(value2),
       DatumGetDouble2P(value3), ratio);
-  if (basetypid == type_oid(T_GEOMETRY) ||
-    basetypid == type_oid(T_GEOGRAPHY))
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
     bool hasz = (bool) FLAGS_GET_Z(gs->flags);
@@ -415,7 +417,7 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_NPOINT))
     return npoint_collinear(DatumGetNpoint(value1), DatumGetNpoint(value2),
       DatumGetNpoint(value3), ratio);
-  return false;
+  elog(ERROR, "unknown collinear operation for base type: %d", basetypid);
 }
 
 /*****************************************************************************
@@ -860,7 +862,7 @@ tsequencearr_normalize(const TSequence **sequences, int count, int *newcount)
       /* If float/point sequences and collinear last/first segments having the same duration
          ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
       */
-      (datum_eq(last1value, first1value, basetypid) &&
+      (base_type_continuous(basetypid) && datum_eq(last1value, first1value, basetypid) && 
       datum_collinear(basetypid, last2value, first1value, first2value,
         last2->t, first1->t, first2->t))
       ))
@@ -3212,25 +3214,24 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration1 = (long double) (t - inst1->t);
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
-  Datum result = 0;
   ensure_base_type_continuous((Temporal *) inst1);
   if (basetypid == FLOAT8OID)
   {
     double start = DatumGetFloat8(value1);
     double end = DatumGetFloat8(value2);
     double dresult = start + (double) ((long double)(end - start) * ratio);
-    result = Float8GetDatum(dresult);
+    return Float8GetDatum(dresult);
   }
-  else if (basetypid == type_oid(T_DOUBLE2))
+  if (basetypid == type_oid(T_DOUBLE2))
   {
     double2 *start = DatumGetDouble2P(value1);
     double2 *end = DatumGetDouble2P(value2);
     double2 *dresult = palloc(sizeof(double2));
     dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
     dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-    result = Double2PGetDatum(dresult);
+    return Double2PGetDatum(dresult);
   }
-  else if (basetypid == type_oid(T_DOUBLE3))
+  if (basetypid == type_oid(T_DOUBLE3))
   {
     double3 *start = DatumGetDouble3P(value1);
     double3 *end = DatumGetDouble3P(value2);
@@ -3238,9 +3239,9 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     dresult->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
     dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
     dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
-    result = Double3PGetDatum(dresult);
+    return Double3PGetDatum(dresult);
   }
-  else if (basetypid == type_oid(T_DOUBLE4))
+  if (basetypid == type_oid(T_DOUBLE4))
   {
     double4 *start = DatumGetDouble4P(value1);
     double4 *end = DatumGetDouble4P(value2);
@@ -3249,14 +3250,13 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     dresult->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
     dresult->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
     dresult->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
-    result = Double4PGetDatum(dresult);
+    return Double4PGetDatum(dresult);
   }
-  else if (basetypid == type_oid(T_GEOMETRY) ||
-      basetypid == type_oid(T_GEOGRAPHY))
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
   {
-    result = geoseg_interpolate_point(value1, value2, ratio);
+    return geoseg_interpolate_point(value1, value2, ratio);
   }
-  else if (basetypid == type_oid(T_NPOINT))
+  if (basetypid == type_oid(T_NPOINT))
   {
     npoint *np1 = DatumGetNpoint(value1);
     npoint *np2 = DatumGetNpoint(value2);
@@ -3264,7 +3264,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
     npoint *result = npoint_make(np1->rid, pos);
     return PointerGetDatum(result);
   }
-  return result;
+  elog(ERROR, "unknown interpolation function for continuous base type: %d", basetypid);
 }
 
 /**
@@ -3381,7 +3381,8 @@ tsequence_at_timestamp(const TSequence *seq, TimestampTz t)
   else
   {
     const TInstant *inst2 = tsequence_inst_n(seq, n + 1);
-    return tsequence_at_timestamp1(inst1, inst2, MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
+    return tsequence_at_timestamp1(inst1, inst2,
+      MOBDB_FLAGS_GET_LINEAR(seq->flags), t);
   }
 }
 

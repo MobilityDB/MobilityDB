@@ -603,8 +603,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Get trajectory from temporal point */
     if (tgeo_base_type(temp->basetypid))
       trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
-    else /* temp->basetypid == type_oid(T_NPOINT)) */
+    else if (temp->basetypid == type_oid(T_NPOINT))
       trajgs = (GSERIALIZED *) DatumGetPointer(tnpoint_geom(temp));
+    else 
+      elog(ERROR, "unknown trajectory function for base type: %d",
+        temp->basetypid);
 
     /* Read the bounds from the gserialized. */
     if ( LW_FAILURE == gserialized_get_gbox_p(trajgs, &gbox) )
@@ -612,7 +615,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       /* Skip empties too. */
       continue;
     }
-    tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
+    /* Free trajectory */
+    if (tgeo_base_type(temp->basetypid))
+      tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
+    else if (temp->basetypid == type_oid(T_NPOINT))
+      pfree(DatumGetPointer(trajgs));
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )
