@@ -184,7 +184,7 @@ tinstant_merge_array(const TInstant **instants, int count)
   assert(count > 1);
   tinstantarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments */
-  ensure_valid_tinstantarr(instants, count, MERGE, false);
+  ensure_valid_tinstantarr(instants, count, MERGE, INSTANT);
 
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);

@@ -82,7 +82,7 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
   if (tspatial_base_type(basetypid))
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
-    // result = stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
+    // return stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
     // Problem raised in the test file 51_tpoint_tbl.test.out
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function

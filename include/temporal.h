@@ -492,7 +492,7 @@ extern void ensure_same_interpolation(const Temporal *temp1,
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
 extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
-  bool merge, bool isseq);
+  bool merge, int16 subtype);
 extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, Oid type);

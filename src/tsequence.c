@@ -555,7 +555,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
       tinstant_value(instants[count - 2]), instants[0]->basetypid))
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
-  ensure_valid_tinstantarr(instants, count, MERGE_NO, true);
+  ensure_valid_tinstantarr(instants, count, MERGE_NO, SEQUENCE);
   return;
 }
 
