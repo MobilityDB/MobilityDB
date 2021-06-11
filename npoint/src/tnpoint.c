@@ -37,6 +37,8 @@
 #include "temporal_parser.h"
 #include "tempcache.h"
 #include "temporal_util.h"
+#include "lifting.h"
+
 #include "tpoint_spatialfuncs.h"
 #include "tnpoint_static.h"
 #include "tnpoint_parser.h"
@@ -261,6 +263,30 @@ tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tnpoint_set_precision);
+/**
+ * Set the precision of the fraction of the temporal network point to the
+ * number of decimal places
+ */
+PGDLLEXPORT Datum
+tnpoint_set_precision(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Datum size = PG_GETARG_DATUM(1);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  lfinfo.func = (varfunc) &npoint_set_precision_internal;
+  lfinfo.numparam = 2;
+  lfinfo.restypid = temp->basetypid;
+  Temporal *result = tfunc_temporal(temp, size, lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 

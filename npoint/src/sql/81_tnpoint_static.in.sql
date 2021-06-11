@@ -156,6 +156,20 @@ CREATE FUNCTION srid(nsegment)
   LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+CREATE FUNCTION setPrecision(npoint, int)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'npoint_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION setPrecision(nsegment, int)
+  RETURNS nsegment
+  AS 'MODULE_PATHNAME', 'nsegment_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Conversions between network and space
  *****************************************************************************/
 
@@ -316,13 +330,21 @@ CREATE OPERATOR <= (
   PROCEDURE = nsegment_le,
   LEFTARG = nsegment, RIGHTARG = nsegment,
   COMMUTATOR = >=, NEGATOR = >,
+#if MOBDB_PGSQL_VERSION >= 110000
   RESTRICT = scalarlesel, JOIN = scalarlejoinsel
+#else
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+#endif
 );
 CREATE OPERATOR >= (
   PROCEDURE = nsegment_ge,
   LEFTARG = nsegment, RIGHTARG = nsegment,
   COMMUTATOR = <=, NEGATOR = <,
+#if MOBDB_PGSQL_VERSION >= 110000
   RESTRICT = scalargesel, JOIN = scalargejoinsel
+#else
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+#endif  
 );
 CREATE OPERATOR > (
   PROCEDURE = nsegment_gt,

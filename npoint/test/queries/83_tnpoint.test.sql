@@ -59,6 +59,8 @@ SELECT tnpoint_seqset(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-
 SELECT toLinear(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT toLinear(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
 
+SELECT setPrecision(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
+
 -------------------------------------------------------------------------------
 -- Append functions
 -------------------------------------------------------------------------------
