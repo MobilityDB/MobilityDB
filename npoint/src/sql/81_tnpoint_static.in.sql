@@ -239,13 +239,21 @@ CREATE OPERATOR <= (
   PROCEDURE = npoint_le,
   LEFTARG = npoint, RIGHTARG = npoint,
   COMMUTATOR = >=, NEGATOR = >,
+#if MOBDB_PGSQL_VERSION >= 110000
   RESTRICT = scalarlesel, JOIN = scalarlejoinsel
+#else
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+#endif
 );
 CREATE OPERATOR >= (
   PROCEDURE = npoint_ge,
   LEFTARG = npoint, RIGHTARG = npoint,
+#if MOBDB_PGSQL_VERSION >= 110000
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargesel, JOIN = scalargejoinsel
+#else
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+#endif
 );
 CREATE OPERATOR > (
   PROCEDURE = npoint_gt,
