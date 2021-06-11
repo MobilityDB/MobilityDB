@@ -105,6 +105,8 @@ CREATE OPERATOR CLASS gist_tnpoint_ops
 
 /******************************************************************************/
 
+#if MOBDB_PGSQL_VERSION >= 110000
+
 CREATE FUNCTION tnpoint_spgist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
@@ -170,5 +172,6 @@ CREATE OPERATOR CLASS spgist_tnpoint_ops
   FUNCTION  4 stbox_spgist_inner_consistent(internal, internal),
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 tnpoint_spgist_compress(internal);
+#endif
 
 /******************************************************************************/
