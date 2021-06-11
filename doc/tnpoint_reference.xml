@@ -7,7 +7,15 @@
 
 			<sect3>
 				<title>Constructor Functions</title>
-			</sect2>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor for network points</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="nsegment"><varname>nsegment</varname></link>: Constructor for network segments</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
 			<sect3>
 				<title>Accessor Functions</title>

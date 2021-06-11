@@ -35,7 +35,7 @@
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random 2D stbox 
+ * Generate a random fraction between in the range [0,1] 
  */
 CREATE OR REPLACE FUNCTION random_fraction()
   RETURNS float AS $$
@@ -52,7 +52,7 @@ FROM generate_series(1,10) k;
 /**
  * Generate a random network point
  *
- * @param[in] lown, highn Inclusive bounds of the range FOR the identifier of
+ * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  */
 CREATE OR REPLACE FUNCTION random_npoint(lown integer, highn integer)
@@ -70,7 +70,7 @@ FROM generate_series(1,10) k;
 /**
  * Generate a random network segment
  *
- * @param[in] lown, highn Inclusive bounds of the range FOR the identifier of
+ * @param[in] lown, highn Inclusive bounds of the range for the identifier of
  * the network point
  */
 CREATE OR REPLACE FUNCTION random_nsegment(lown integer, highn integer)
@@ -98,6 +98,13 @@ FROM generate_series(1,10) k;
 
 ------------------------------------------------------------------------------
 
+/**
+ * Generate a random temporal network point of instant subtype
+ *
+ * @param[in] lown, highn Inclusive bounds of the range for the identifier of
+ * the network point
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ */
 CREATE OR REPLACE FUNCTION random_tnpoint_inst(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz)
   RETURNS tnpoint AS $$
@@ -113,6 +120,15 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random temporal network point of instant set subtype
+ *
+ * @param[in] lown, highn Inclusive bounds of the range for the identifier of
+ * the network point
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
+ * @param[in] mincard, maxcard Inclusive bounds of the number of instants
+ */
 CREATE OR REPLACE FUNCTION random_tnpoint_instset(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int
   maxcard int)
@@ -140,6 +156,18 @@ FROM generate_series(1,10) k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random temporal network point of sequence subtype
+ *
+ * @param[in] lown, highn Inclusive bounds of the range for the identifier of
+ * the network point
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
+ * @param[in] mincard, maxcard Inclusive bounds of the number of instants
+ * @param[in] linear True when the sequence has linear interpolation
+ * @param[in] fixstart True when this function is called for generating a
+ *    sequence set value and in this case the start timestamp is already fixed
+ */
 CREATE OR REPLACE FUNCTION random_tnpoint_seq(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int, 
   mincard int, maxcard int,
@@ -187,6 +215,18 @@ FROM generate_series (1, 15) AS k;
 
 -------------------------------------------------------------------------------
 
+/**
+ * Generate a random temporal network point of sequence set subtype
+ *
+ * @param[in] lown, highn Inclusive bounds of the range for the identifier of
+ * the network point
+ * @param[in] lowtime, hightime Inclusive bounds of the period
+ * @param[in] maxminutes Maximum number of minutes between consecutive instants
+ * @param[in] mincardseq, maxcardseq Inclusive bounds of the number of instants in a
+ * sequence
+ * @param[in] mincard, maxcard Inclusive bounds of the number of sequences
+ * @param[in] linear True when the sequence set has linear interpolation
+ */
 CREATE OR REPLACE FUNCTION random_tnpoint_seqset(lown integer, highn integer,
   lowtime timestamptz, hightime timestamptz, maxminutes int, 
   mincardseq int, maxcardseq int, mincard int, maxcard int,

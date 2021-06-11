@@ -146,6 +146,18 @@ SELECT srid(nsegment 'nsegment(1,0.5,0.7)');
  5676
 (1 row)
 
+SELECT setPrecision(npoint 'NPoint(1, 0.123456789)', 6);
+    setprecision    
+--------------------
+ NPoint(1,0.123457)
+(1 row)
+
+SELECT setPrecision(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
+         setprecision          
+-------------------------------
+ NSegment(1,0.123457,0.223457)
+(1 row)
+
 SELECT st_astext(npoint 'npoint(1,0.2)'::geometry);
                 st_astext                
 -----------------------------------------
@@ -158,20 +170,20 @@ SELECT st_astext(nsegment 'nsegment(1,0.5,0.7)'::geometry);
  LINESTRING(48.7186629128278 77.7640705101509,34.6506927416814 75.3845848205875)
 (1 row)
 
-SELECT (npoint 'npoint(1,0.2)'::geometry)::npoint;
-            npoint             
--------------------------------
- NPoint(1,0.20000000000000093)
+SELECT setPrecision((npoint 'npoint(1,0.2)'::geometry)::npoint, 6);
+ setprecision  
+---------------
+ NPoint(1,0.2)
 (1 row)
 
-SELECT (nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment;
-      nsegment       
+SELECT setPrecision((nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment, 6);
+    setprecision     
 ---------------------
  NSegment(1,0.5,0.7)
 (1 row)
 
-SELECT (nsegment 'nsegment(1,0.5,0.5)'::geometry)::nsegment;
-      nsegment       
+SELECT setPrecision((nsegment 'nsegment(1,0.5,0.5)'::geometry)::nsegment, 6);
+    setprecision     
 ---------------------
  NSegment(1,0.5,0.5)
 (1 row)

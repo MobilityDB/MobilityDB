@@ -44,6 +44,8 @@
 #include "temporaltypes.h"
 #include "tempcache.h"
 #include "temporal_util.h"
+#include "tnumber_mathfuncs.h"
+
 #include "tpoint_out.h"
 #include "tpoint_spatialfuncs.h"
 #include "tnpoint.h"
@@ -506,6 +508,54 @@ nsegment_end_position(PG_FUNCTION_ARGS)
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   PG_RETURN_FLOAT8(ns->pos2);
 }
+
+/*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
+ * Set the precision of the position of a network point to the number of decimal places
+ */
+Datum
+npoint_set_precision_internal(Datum npt, Datum size)
+{
+  /* Set precision of position */
+  npoint *np = (npoint *) DatumGetPointer(npt);
+  double pos = DatumGetFloat8(datum_round(Float8GetDatum(np->pos), size));
+  return PointerGetDatum(npoint_make(np->rid, pos));
+}
+
+PG_FUNCTION_INFO_V1(npoint_set_precision);
+/**
+ * Set the precision of the position of a network point to the number of decimal places
+ */
+PGDLLEXPORT Datum
+npoint_set_precision(PG_FUNCTION_ARGS)
+{
+  npoint *np = PG_GETARG_NPOINT(0);
+  Datum size = PG_GETARG_DATUM(1);
+  /* Set precision of position */
+  double pos = DatumGetFloat8(datum_round(Float8GetDatum(np->pos), size));
+  npoint *result = npoint_make(np->rid, pos);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(nsegment_set_precision);
+/**
+ * Set the precision of the position of a network point to the number of decimal places
+ */
+PGDLLEXPORT Datum
+nsegment_set_precision(PG_FUNCTION_ARGS)
+{
+  nsegment *ns = PG_GETARG_NSEGMENT(0);
+  Datum size = PG_GETARG_DATUM(1);
+  /* Set precision of positions */
+  double pos1 = DatumGetFloat8(datum_round(Float8GetDatum(ns->pos1), size));
+  double pos2 = DatumGetFloat8(datum_round(Float8GetDatum(ns->pos2), size));
+  nsegment *result = nsegment_make(ns->rid, pos1, pos2);
+  PG_RETURN_POINTER(result);
+}
+
 
 /*****************************************************************************
  * Functions for defining B-tree index

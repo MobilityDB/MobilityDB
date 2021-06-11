@@ -1568,7 +1568,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint_instset;
@@ -1618,7 +1618,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint3D_instset;
@@ -1668,7 +1668,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint_instset;
@@ -1718,7 +1718,7 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the instant set
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint3D_instset;
@@ -1770,7 +1770,8 @@ FROM generate_series(1,10) k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
+ * @param[in] linear True if the sequence has linear interpolation
  * @param[in] srid SRID of the coordinates
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
@@ -1839,7 +1840,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
+ * @param[in] linear True if the sequence has linear interpolation
  * @param[in] srid SRID of the coordinates
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
@@ -1907,7 +1909,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
+ * @param[in] linear True if the sequence has linear interpolation
  * @param[in] srid SRID of the coordinates
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
@@ -1976,7 +1979,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] lowtime, hightime Inclusive bounds of the period
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence
+ * @param[in] linear True if the sequence has linear interpolation
  * @param[in] srid SRID of the coordinates
  * @param[in] fixstart True when this function is called for generating a
  *    sequence set value and in this case the start timestamp is already fixed
@@ -2047,7 +2051,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ * @param[in] linear True if the sequence set has linear interpolation
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint_seqset;
@@ -2106,7 +2111,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ * @param[in] linear True if the sequence set has linear interpolation
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeompoint3D_seqset;
@@ -2171,7 +2177,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ * @param[in] linear True if the sequence set has linear interpolation
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint_seqset;
@@ -2230,7 +2237,8 @@ FROM generate_series(1, 15) AS k;
  * @param[in] maxdelta Maximum value difference between consecutive instants
  * @param[in] maxminutes Maximum number of minutes between consecutive instants
  * @param[in] mincardseq, maxcardseq Inclusive bounds of the cardinality of a sequence
- * @param[in] mincard, maxcard Inclusive bounds of the number of polygons
+ * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the sequence set
+ * @param[in] linear True if the sequence set has linear interpolation
  * @param[in] srid SRID of the coordinates
  */
 DROP FUNCTION IF EXISTS random_tgeogpoint3D_seqset;
