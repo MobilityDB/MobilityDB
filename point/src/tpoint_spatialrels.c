@@ -274,10 +274,9 @@ dwithin_tpointseqset_tpointseqset(TSequenceSet *ts1, TSequenceSet *ts2,
  * Generic spatial relationships for a temporal point and a geometry
  *
  * @param[in] temp Temporal point
- * @param[in] gs Geometry
+ * @param[in] geo Geometry
  * @param[in] param Parameter
- * @param[in] geomfunc Function for geometries
- * @param[in] geogfunc Function for geographies
+ * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  * @param[in] invert True if the arguments should be inverted
  */
@@ -300,8 +299,7 @@ spatialrel_tpoint_geo1(Temporal *temp, Datum geo, Datum param,
  * Generic spatial relationships for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] geomfunc Function for geometries
- * @param[in] geogfunc Function for geographies
+ * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  */
 static Datum
@@ -327,8 +325,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
  * Generic spatial relationships for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] geomfunc Function for geometries
- * @param[in] geogfunc Function for geographies
+ * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the functions
  */
 Datum

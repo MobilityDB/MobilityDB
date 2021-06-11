@@ -72,6 +72,7 @@
  *
  * @param[in] inst1,inst2 Temporal instants defining the segment
  * @param[in] value Base value
+ * @param[in] basetypid Oid of the base type
  * @param[out] t Timestamp
  */
 static bool

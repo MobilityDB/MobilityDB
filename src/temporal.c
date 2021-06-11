@@ -337,7 +337,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * @param[in] count Number of elements in the input array
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
- * @param[in] seq True if we a make operation for temporal sequences
+ * @param[in] subtype Subtype for which the function is called
  */
 void
 ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge,
