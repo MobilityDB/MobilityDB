@@ -122,11 +122,11 @@ CREATE FUNCTION getZ(tgeogpoint)
   AS 'MODULE_PATHNAME', 'tpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setprecision(tgeompoint, int)
+CREATE FUNCTION setPrecision(tgeompoint, int)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'tpoint_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setprecision(tgeogpoint, int)
+CREATE FUNCTION setPrecision(tgeogpoint, int)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'tpoint_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -22,7 +22,7 @@ SELECT extent(inst) FROM tbl_tint_inst;
  TBOX((5,2001-01-12 23:34:00+00),(97,2001-12-27 07:03:00+00))
 (1 row)
 
-SELECT setprecision(extent(inst), 13) FROM tbl_tfloat_inst;
+SELECT setPrecision(extent(inst), 13) FROM tbl_tfloat_inst;
                                        setprecision                                       
 ------------------------------------------------------------------------------------------
  TBOX((3.6493356390856,2001-01-08 00:47:00+00),(99.5110547081567,2001-12-27 08:54:00+00))
@@ -46,7 +46,7 @@ SELECT extent(ti) FROM tbl_tint_instset;
  TBOX((1,2001-01-01 00:34:00+00),(99,2001-12-30 14:46:00+00))
 (1 row)
 
-SELECT setprecision(extent(ti), 13) FROM tbl_tfloat_instset;
+SELECT setPrecision(extent(ti), 13) FROM tbl_tfloat_instset;
                                        setprecision                                       
 ------------------------------------------------------------------------------------------
  TBOX((1.2496102433652,2001-01-05 08:30:00+00),(99.9664310226217,2001-12-22 15:00:00+00))
@@ -70,7 +70,7 @@ SELECT extent(seq) FROM tbl_tint_seq;
  TBOX((1,2001-01-07 09:24:00+00),(99,2001-12-29 20:09:00+00))
 (1 row)
 
-SELECT setprecision(extent(seq), 13) FROM tbl_tfloat_seq;
+SELECT setPrecision(extent(seq), 13) FROM tbl_tfloat_seq;
                                       setprecision                                       
 -----------------------------------------------------------------------------------------
  TBOX((1.5823619421572,2001-01-01 22:27:00+00),(99.917602237314,2001-12-30 11:15:00+00))
@@ -94,7 +94,7 @@ SELECT extent(ts) FROM tbl_tint_seqset;
  TBOX((1,2001-01-01 08:20:00+00),(99,2001-12-25 23:26:00+00))
 (1 row)
 
-SELECT setprecision(extent(ts), 13) FROM tbl_tfloat_seqset;
+SELECT setPrecision(extent(ts), 13) FROM tbl_tfloat_seqset;
                                        setprecision                                       
 ------------------------------------------------------------------------------------------
  TBOX((1.0292634703219,2001-01-02 18:42:00+00),(99.9389337534085,2001-12-29 03:07:00+00))
@@ -118,7 +118,7 @@ SELECT extent(temp) FROM tbl_tint;
  TBOX((1,2001-01-01 08:20:00+00),(99,2001-12-27 07:03:00+00))
 (1 row)
 
-SELECT setprecision(extent(temp), 13) FROM tbl_tfloat;
+SELECT setPrecision(extent(temp), 13) FROM tbl_tfloat;
                                       setprecision                                       
 -----------------------------------------------------------------------------------------
  TBOX((1.0292634703219,2001-01-02 18:42:00+00),(99.917602237314,2001-12-22 08:07:00+00))
