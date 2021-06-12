@@ -41,7 +41,7 @@
 
 extern Datum spgist_temporal_inner_consistent(PG_FUNCTION_ARGS);
 extern Datum spgist_temporal_leaf_consistent(PG_FUNCTION_ARGS);
-extern Datum spgist_temporal_compress(PG_FUNCTION_ARGS);
+extern Datum sptemporal_gist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

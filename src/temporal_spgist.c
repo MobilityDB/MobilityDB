@@ -50,12 +50,12 @@
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spgist_temporal_compress);
+PG_FUNCTION_INFO_V1(sptemporal_gist_compress);
 /**
  * SP-GiST compress function for temporal values
  */
 PGDLLEXPORT Datum
-spgist_temporal_compress(PG_FUNCTION_ARGS)
+sptemporal_gist_compress(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Period *period = palloc(sizeof(Period));

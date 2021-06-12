@@ -31,7 +31,7 @@
 
 #if MOBDB_PGSQL_VERSION >= 110000
 
-CREATE FUNCTION spgist_temporal_compress(internal)
+CREATE FUNCTION sptemporal_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -100,7 +100,7 @@ CREATE OPERATOR CLASS spgist_tbool_ops
   FUNCTION  3  spperiod_gist_picksplit(internal, internal),
   FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
   FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
-  FUNCTION  6  spgist_temporal_compress(internal);
+  FUNCTION  6  sptemporal_gist_compress(internal);
 
 /******************************************************************************/
 
@@ -348,7 +348,7 @@ CREATE OPERATOR CLASS spgist_ttext_ops
   FUNCTION  3  spperiod_gist_picksplit(internal, internal),
   FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
   FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
-  FUNCTION  6  spgist_temporal_compress(internal);
+  FUNCTION  6  sptemporal_gist_compress(internal);
 #endif
 
 /******************************************************************************/
