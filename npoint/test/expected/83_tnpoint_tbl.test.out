@@ -340,30 +340,30 @@ SELECT MAX(array_length(sequences(ts),1)) FROM tbl_tnpoint_seqset;
    9
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint 
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
 WHERE atValue(temp, np) IS NOT NULL;
  count 
 -------
    101
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint 
+SELECT COUNT(*) FROM tbl_tnpoint, tbl_npoint
 WHERE minusValue(temp, np) IS NOT NULL;
  count 
 -------
  10000
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, 
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp 
+SELECT COUNT(*) FROM tbl_tnpoint,
+( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
 WHERE atValues(temp, valuearr) IS NOT NULL;
  count 
 -------
     30
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tnpoint, 
-( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp 
+SELECT COUNT(*) FROM tbl_tnpoint,
+( SELECT array_agg(np) AS valuearr FROM tbl_npoint) tmp
 WHERE minusValues(temp, valuearr) IS NOT NULL;
  count 
 -------
