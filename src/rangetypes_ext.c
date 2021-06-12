@@ -168,6 +168,7 @@ range_copy(const RangeType *range)
   return result;
 }
 
+#if MOBDB_PGSQL_VERSION < 140000
 /**
  * Returns the union of the range values. If strict is true, it is an error
  * that the two input ranges are not adjacent or overlapping.
@@ -212,6 +213,7 @@ range_union_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2,
     result_upper = &upper2;
   return make_range(typcache, result_lower, result_upper, false);
 }
+#endif
 
 /**
  * Normalize an array of ranges, which may be non contiguous.
