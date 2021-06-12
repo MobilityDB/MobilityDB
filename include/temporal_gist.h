@@ -39,7 +39,7 @@
 /*****************************************************************************/
 
 extern Datum gist_temporal_consistent(PG_FUNCTION_ARGS);
-extern Datum gist_temporal_compress(PG_FUNCTION_ARGS);
+extern Datum temporal_gist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
