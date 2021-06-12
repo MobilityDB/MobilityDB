@@ -37,6 +37,12 @@ CREATE FUNCTION tnpoint_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'tnpoint_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#if MOBDB_PGSQL_VERSION < 110000
+CREATE FUNCTION tnpoint_gist_decompress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif
 
 CREATE OPERATOR CLASS gist_tnpoint_ops
   DEFAULT FOR TYPE tnpoint USING gist AS
@@ -98,6 +104,9 @@ CREATE OPERATOR CLASS gist_tnpoint_ops
   FUNCTION  1 tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
   FUNCTION  3 tnpoint_gist_compress(internal),
+#if MOBDB_PGSQL_VERSION < 110000
+  FUNCTION  4  tnpoint_gist_decompress(internal),
+#endif
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal);
