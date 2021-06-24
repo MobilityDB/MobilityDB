@@ -67,10 +67,10 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
 SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
-SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(setprecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(setprecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
 SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;

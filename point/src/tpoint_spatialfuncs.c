@@ -3267,6 +3267,7 @@ tpointinstset_split(const TInstantSet *ti, bool *splits, int count)
  * Split a temporal point into an array of non self-intersecting pieces
  *
  * @param[in] ti Temporal point
+ * @param[in] count Number of elements in the resulting array
  */
 TInstantSet **
 tpointinstset_make_simple1(const TInstantSet *ti, int *count)
@@ -3302,7 +3303,7 @@ tpointinstset_make_simple1(const TInstantSet *ti, int *count)
 /**
  * Split a temporal point into an array of non self-intersecting pieces
  *
- * @param[in] seq Temporal point
+ * @param[in] ti Temporal point
  */
 static ArrayType *
 tpointinstset_make_simple(const TInstantSet *ti)
@@ -3847,7 +3848,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
  * Restricts the temporal sequence point with linear interpolation to the geometry
  *
  * @param[in] seq Temporal point
- * @param[in] gsinter Intersection of the temporal point and the geometry
+ * @param[in] geom Geometry
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **

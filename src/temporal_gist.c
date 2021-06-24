@@ -43,12 +43,12 @@
  * GiST compress method for temporal values
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(gist_temporal_compress);
+PG_FUNCTION_INFO_V1(temporal_gist_compress);
 /**
  * GiST compress method for temporal values
  */
 PGDLLEXPORT Datum
-gist_temporal_compress(PG_FUNCTION_ARGS)
+temporal_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
 
@@ -71,12 +71,12 @@ gist_temporal_compress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 #if MOBDB_PGSQL_VERSION < 110000
-PG_FUNCTION_INFO_V1(gist_temporal_decompress);
+PG_FUNCTION_INFO_V1(temporal_gist_decompress);
 /**
  * GiST decompress method for temporal values (result in a period)
  */
 PGDLLEXPORT Datum
-gist_temporal_decompress(PG_FUNCTION_ARGS)
+temporal_gist_decompress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   PG_RETURN_POINTER(entry);

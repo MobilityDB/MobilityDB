@@ -33,27 +33,27 @@ SET force_parallel_mode=regress;
 -- Extent aggregate function
 -------------------------------------------------------------------------------
 
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeompoint_inst;
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpoint_inst;
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeompoint_instset;
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpoint_instset;
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeompoint_seq;
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpoint_seq;
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoint_seqset;
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoint_seqset;
-SELECT setprecision(extent(temp), 13) FROM tbl_tgeompoint;
-SELECT setprecision(extent(temp), 13) FROM tbl_tgeogpoint;
+SELECT setPrecision(extent(inst), 13) FROM tbl_tgeompoint_inst;
+SELECT setPrecision(extent(inst), 13) FROM tbl_tgeogpoint_inst;
+SELECT setPrecision(extent(ti), 13) FROM tbl_tgeompoint_instset;
+SELECT setPrecision(extent(ti), 13) FROM tbl_tgeogpoint_instset;
+SELECT setPrecision(extent(seq), 13) FROM tbl_tgeompoint_seq;
+SELECT setPrecision(extent(seq), 13) FROM tbl_tgeogpoint_seq;
+SELECT setPrecision(extent(ts), 13) FROM tbl_tgeompoint_seqset;
+SELECT setPrecision(extent(ts), 13) FROM tbl_tgeogpoint_seqset;
+SELECT setPrecision(extent(temp), 13) FROM tbl_tgeompoint;
+SELECT setPrecision(extent(temp), 13) FROM tbl_tgeogpoint;
 
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeompoint3D_inst;
-SELECT setprecision(extent(inst), 13) FROM tbl_tgeogpoint3D_inst;
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeompoint3D_instset;
-SELECT setprecision(extent(ti), 13) FROM tbl_tgeogpoint3D_instset;
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeompoint3D_seq;
-SELECT setprecision(extent(seq), 13) FROM tbl_tgeogpoint3D_seq;
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeompoint3D_seqset;
-SELECT setprecision(extent(ts), 13) FROM tbl_tgeogpoint3D_seqset;
-SELECT setprecision(extent(temp), 13) FROM tbl_tgeompoint3D;
-SELECT setprecision(extent(temp), 13) FROM tbl_tgeogpoint3D;
+SELECT setPrecision(extent(inst), 13) FROM tbl_tgeompoint3D_inst;
+SELECT setPrecision(extent(inst), 13) FROM tbl_tgeogpoint3D_inst;
+SELECT setPrecision(extent(ti), 13) FROM tbl_tgeompoint3D_instset;
+SELECT setPrecision(extent(ti), 13) FROM tbl_tgeogpoint3D_instset;
+SELECT setPrecision(extent(seq), 13) FROM tbl_tgeompoint3D_seq;
+SELECT setPrecision(extent(seq), 13) FROM tbl_tgeogpoint3D_seq;
+SELECT setPrecision(extent(ts), 13) FROM tbl_tgeompoint3D_seqset;
+SELECT setPrecision(extent(ts), 13) FROM tbl_tgeogpoint3D_seqset;
+SELECT setPrecision(extent(temp), 13) FROM tbl_tgeompoint3D;
+SELECT setPrecision(extent(temp), 13) FROM tbl_tgeogpoint3D;
 
 -------------------------------------------------------------------------------
 

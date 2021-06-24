@@ -16,19 +16,19 @@ SELECT geometry 'Point(1 1 1)'::stbox;
  STBOX Z((1,1,1),(1,1,1))
 (1 row)
 
-SELECT setprecision(geography 'Point empty'::stbox, 13);
+SELECT setPrecision(geography 'Point empty'::stbox, 13);
  setprecision 
 --------------
  
 (1 row)
 
-SELECT setprecision(geography 'Point(1 1)'::stbox, 13);
+SELECT setPrecision(geography 'Point(1 1)'::stbox, 13);
                                                       setprecision                                                       
 -------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX((0.9996953606606,0.017449747771,0.0174524064373),(0.9996954202652,0.0174497496337,0.0174524064373))
 (1 row)
 
-SELECT setprecision(geography 'Point(1 1 1)'::stbox, 13);
+SELECT setPrecision(geography 'Point(1 1 1)'::stbox, 13);
                                                        setprecision                                                        
 ---------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX Z((0.9996953606606,0.017449747771,0.0174524057657),(0.9996954202652,0.0174497496337,0.0174524076283))
@@ -94,37 +94,37 @@ SELECT stbox(geometry 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]');
  STBOX ZT((1,1,1,2000-01-01 00:00:00+00),(1,1,1,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setprecision(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
+SELECT setPrecision(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
  setprecision 
 --------------
  
 (1 row)
 
-SELECT setprecision(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
+SELECT setPrecision(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
                                                                               setprecision                                                                               
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9996953606606,0.017449747771,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954202652,0.0174497496337,0.0174524064373,2000-01-01 00:00:00+00))
 (1 row)
 
-SELECT setprecision(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
+SELECT setPrecision(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
                                                                                setprecision                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.9996953606606,0.017449747771,0.0174524057657,2000-01-01 00:00:00+00),(0.9996954202652,0.0174497496337,0.0174524076283,2000-01-01 00:00:00+00))
 (1 row)
 
-SELECT setprecision(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT setPrecision(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
  setprecision 
 --------------
  
 (1 row)
 
-SELECT setprecision(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT setPrecision(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
                                                                               setprecision                                                                               
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9996953606606,0.017449747771,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954202652,0.0174497496337,0.0174524064373,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setprecision(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT setPrecision(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
                                                                                setprecision                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.9996953606606,0.017449747771,0.0174524057657,2000-01-01 00:00:00+00),(0.9996954202652,0.0174497496337,0.0174524076283,2000-01-02 00:00:00+00))
@@ -154,25 +154,25 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
  STBOX T((1,1,2000-01-01 00:00:00+00),(3,3,2000-01-05 00:00:00+00))
 (1 row)
 
-SELECT setprecision(tgeogpoint 'Point(1 1)@2000-01-01'::stbox, 13);
+SELECT setPrecision(tgeogpoint 'Point(1 1)@2000-01-01'::stbox, 13);
                                                                               setprecision                                                                               
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9996953606606,0.017449747771,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954202652,0.0174497496337,0.0174524064373,2000-01-01 00:00:00+00))
 (1 row)
 
-SELECT setprecision(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox, 13);
+SELECT setPrecision(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox, 13);
                                                                               setprecision                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.998781979084,0.017449747771,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954202652,0.0348782390356,0.0348994967025,2000-01-03 00:00:00+00))
 (1 row)
 
-SELECT setprecision(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox, 13);
+SELECT setPrecision(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox, 13);
                                                                               setprecision                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.998781979084,0.017449747771,0.0174524057657,2000-01-01 00:00:00+00),(0.9996954202652,0.0348782390356,0.0348994992673,2000-01-03 00:00:00+00))
 (1 row)
 
-SELECT setprecision(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox, 13);
+SELECT setPrecision(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox, 13);
                                                                               setprecision                                                                              
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.997260928154,0.017449747771,0.0174524057657,2000-01-01 00:00:00+00),(0.9996954202652,0.0522642321885,0.0523359562429,2000-01-05 00:00:00+00))
@@ -270,11 +270,11 @@ SELECT expandTemporal(stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2000-01-04), (1.0, 2.0,
 
 /* Errors */
 SELECT expandTemporal(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', '1 day');
-ERROR:  The temporal value must have time dimension
+ERROR:  The box must have time dimension
 SELECT expandTemporal(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
-ERROR:  The temporal value must have time dimension
+ERROR:  The box must have time dimension
 SELECT expandTemporal(stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
-ERROR:  The temporal value must have time dimension
+ERROR:  The box must have time dimension
 SELECT geometry 'Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1834,17 +1834,17 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' && geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT stbox 'SRID=5676;STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT stbox 'GEODSTBOX T((1,1,1,2001-01-01),(2,2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 ERROR:  The values must be both planar or both geodetic
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT geometry 'Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -3401,11 +3401,11 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' @> geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' @> tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT geometry 'Point(1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -4962,11 +4962,11 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' <@ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' <@ geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' <@ tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT geometry 'Point(1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -6523,11 +6523,11 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-0
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' -|- tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT geometry 'Point(1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
@@ -8084,8 +8084,8 @@ SELECT tgeompoint 'Point(1 1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01
 
 /* Errors */
 SELECT geometry 'SRID=5676;Point(1 1)' ~= tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ~= geometry 'SRID=5676;Point(1 1)';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' ~= tgeompoint 'Point(1 1)@2000-01-01';
-ERROR:  The boxes must be in the same SRID
+ERROR:  Operation on mixed SRID

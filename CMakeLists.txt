@@ -89,7 +89,7 @@ enable_testing()
 # Verify PostgreSQL Version
 #-------------------------------------
 set(PG_MIN_MAJOR_VERSION "10")
-set(PG_MAX_MAJOR_VERISON "13")
+set(PG_MAX_MAJOR_VERSION "14")
 
 find_program(PGCONFIG pg_config)
 if (NOT PGCONFIG)
@@ -108,8 +108,8 @@ execute_process(COMMAND ${PGCONFIG} --version COMMAND sed "-es/.* //" "-es/\\..*
 
 if(${PG_MAJOR_VERSION} LESS ${PG_MIN_MAJOR_VERSION})
 	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, minimum required is ${PG_MIN_MAJOR_VERSION}")
-elseif(${PG_MAX_MAJOR_VERISON} LESS ${PG_MAJOR_VERSION})
-	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERISON}")
+elseif(${PG_MAX_MAJOR_VERSION} LESS ${PG_MAJOR_VERSION})
+	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERSION}")
 endif()
 message("Found compatible ${PG_VERSION_STRING}")
 

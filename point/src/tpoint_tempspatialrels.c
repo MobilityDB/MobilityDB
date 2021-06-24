@@ -125,7 +125,7 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  *
  * @param[in] inst Temporal point
  * @param[in] geom Geometry
- * @param[in] tinter Whether we compute tintersects or tdisjoint
+ * @param[in] func PostGIS function to be called
  */
 static TInstant *
 tinterrel_tpointinst_geom(const TInstant *inst, Datum geom,
@@ -141,7 +141,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom,
  *
  * @param[in] ti Temporal point
  * @param[in] geom Geometry
- * @param[in] tinter Whether we compute tintersects or tdisjoint
+ * @param[in] func PostGIS function to be called
  */
 static TInstantSet *
 tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom,
@@ -164,9 +164,8 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom,
  * interpolation and a geometry
  *
  * @param[in] seq Temporal point
- * @param[in] gsinter Intersection of the trajectory of the temporal point
- *   and the geometry
- * @param[in] tinter Whether we compute tintersects or tdisjoint
+ * @param[in] geom Geometry
+ * @param[in] func PostGIS function to be called
  * @param[out] count Number of elements in the resulting array
  * @pre The temporal point is simple, that is, non self-intersecting
  */
