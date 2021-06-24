@@ -66,6 +66,7 @@
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
+#include "tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c
@@ -602,6 +603,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Get trajectory from temporal point */
     if (tgeo_base_type(temp->basetypid))
       trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
+    else if (temp->basetypid == type_oid(T_NPOINT))
+      trajgs = (GSERIALIZED *) DatumGetPointer(tnpoint_geom(temp));
     else 
       elog(ERROR, "unknown trajectory function for base type: %d",
         temp->basetypid);
@@ -615,6 +618,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Free trajectory */
     if (tgeo_base_type(temp->basetypid))
       tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
+    else if (temp->basetypid == type_oid(T_NPOINT))
+      pfree(DatumGetPointer(trajgs));
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )

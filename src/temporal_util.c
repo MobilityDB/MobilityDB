@@ -47,6 +47,8 @@
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
+#include "tnpoint_static.h"
+
 /*****************************************************************************
  * Temporal/base types tests
  *****************************************************************************/
@@ -61,7 +63,8 @@ temporal_type(Oid temptypid)
 {
   if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
     temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
-    temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT))
+    temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) || 
+    temptypid == type_oid(T_TNPOINT))
     return true;
   return false;
 }
@@ -76,7 +79,8 @@ ensure_temporal_base_type(Oid basetypid)
     basetypid != FLOAT8OID && basetypid != TEXTOID &&
     basetypid != type_oid(T_DOUBLE2) && basetypid != type_oid(T_DOUBLE3) &&
     basetypid != type_oid(T_DOUBLE4) &&
-    basetypid != type_oid(T_GEOMETRY) && basetypid != type_oid(T_GEOGRAPHY))
+    basetypid != type_oid(T_GEOMETRY) && basetypid != type_oid(T_GEOGRAPHY) &&
+    basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown base type: %d", basetypid);
   return;
 }
@@ -89,7 +93,8 @@ base_type_continuous(Oid basetypid)
 {
   if (basetypid == FLOAT8OID || basetypid == type_oid(T_DOUBLE2) ||
     basetypid == type_oid(T_DOUBLE3) || basetypid == type_oid(T_DOUBLE4) ||
-    basetypid == type_oid(T_GEOGRAPHY) || basetypid == type_oid(T_GEOMETRY))
+    basetypid == type_oid(T_GEOGRAPHY) || basetypid == type_oid(T_GEOMETRY) ||
+    basetypid == type_oid(T_NPOINT))
     return true;
   return false;
 }
@@ -142,6 +147,8 @@ base_type_length(Oid basetypid)
     return -1;
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
     return -1;
+  if (basetypid == type_oid(T_NPOINT))
+    return 16;
   elog(ERROR, "unknown base_type_length function for base type: %d", basetypid);
 }
 
@@ -226,7 +233,8 @@ ensure_tnumber_range_type(Oid rangetypid)
 bool
 tspatial_type(Oid temptypid)
 {
-  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT))
+  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) ||
+    temptypid == type_oid(T_TNPOINT))
     return true;
   return false;
 }
@@ -240,7 +248,8 @@ tspatial_type(Oid temptypid)
 bool
 tspatial_base_type(Oid basetypid)
 {
-  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY) ||
+    basetypid == type_oid(T_NPOINT))
     return true;
   return false;
 }
@@ -350,6 +359,8 @@ temporal_oid_from_base(Oid basetypid)
     return type_oid(T_TGEOMPOINT);
   if (basetypid == type_oid(T_GEOGRAPHY))
     return type_oid(T_TGEOGPOINT);
+  if (basetypid == type_oid(T_NPOINT))
+    return type_oid(T_TNPOINT);
   elog(ERROR, "unknown temporal type for base type: %d", basetypid);
 }
 
@@ -373,6 +384,8 @@ base_oid_from_temporal(Oid temptypid)
     return type_oid(T_GEOMETRY);
   if (temptypid == type_oid(T_TGEOGPOINT))
     return type_oid(T_GEOGRAPHY);
+  if (temptypid == type_oid(T_TNPOINT))
+    return type_oid(T_NPOINT);
   elog(ERROR, "unknown base type for temporal type: %d", temptypid);
 }
 
@@ -480,6 +493,8 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
   if (typel == type_oid(T_GEOGRAPHY) && typel == typer)
     //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
+  if (typel == type_oid(T_NPOINT) && typel == typer)
+    return npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
 }
 
@@ -521,6 +536,8 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
     return DatumGetBool(call_function2(lwgeom_lt, l, r));
   if (typel == type_oid(T_GEOGRAPHY) && typel == typer)
     return DatumGetBool(call_function2(geography_lt, l, r));
+  if (typel == type_oid(T_NPOINT) && typel == typer)
+    return npoint_lt_internal(DatumGetNpoint(l), DatumGetNpoint(r));
   elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
 }
 
@@ -1589,4 +1606,3 @@ hypot4d(double x, double y, double z, double m)
 }
 
 /*****************************************************************************/
-

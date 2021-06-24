@@ -58,6 +58,8 @@
 #include "rangetypes_ext.h"
 
 #include "tpoint_spatialfuncs.h"
+#include "tnpoint_static.h"
+#include "tnpoint_spatialfuncs.h"
 
 /*
  * This is required in a SINGLE file for builds against pgsql
@@ -348,6 +350,8 @@ ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge,
     ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
     ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
     ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
+    if (subtype == SEQUENCE && instants[0]->basetypid == type_oid(T_NPOINT))
+      ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
   }
   return;
 }
@@ -2602,6 +2606,12 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
     temporal_bbox(&box1, temp);
     if (tgeo_base_type(temp->basetypid))
       geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(value));
+    else if (temp->basetypid == type_oid(T_NPOINT))
+    {
+      Datum geom = npoint_as_geom_internal(DatumGetNpoint(value));
+      geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom));
+      pfree(DatumGetPointer(geom));
+    }
     return (ever && contains_stbox_stbox_internal(&box1, &box2)) ||
       (!ever && same_stbox_stbox_internal(&box1, &box2));
   }
