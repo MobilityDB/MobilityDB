@@ -621,7 +621,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   double width = box->xmax - box->xmin;
   double height = box->ymax - box->ymin;
   double resx, resy, res, fx, fy;
-  bool preserve_collapsed = false;
+  // bool preserve_collapsed = false;
 
   resx = width / extent;
   resy = height / extent;
@@ -647,14 +647,9 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
 
   /* Snap to integer precision, removing duplicate points */
   Temporal *tpoint3 = tpoint_grid(tpoint2, &grid);
-
-  // if (!lwgeom || lwgeom_is_empty(lwgeom))
-    // return NULL;
-
-  // lwgeom = mvt_clip_and_validate(lwgeom, basic_type, extent, buffer, clip_geom);
-  // if (!lwgeom || lwgeom_is_empty(lwgeom))
-    // return NULL;
-
+  
+  pfree(tpoint1);
+  pfree(tpoint2);
   return tpoint3;
 }
 
@@ -665,11 +660,6 @@ PG_FUNCTION_INFO_V1(AsMVT);
 Datum
 AsMVT(PG_FUNCTION_ARGS)
 {
-  STBOX *bounds = NULL;
-  int32_t extent = 0;
-  int32_t buffer = 0;
-  bool clip_geom = true;
-
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
 
@@ -678,28 +668,45 @@ AsMVT(PG_FUNCTION_ARGS)
     elog(ERROR, "%s: Geometric bounds cannot be null", __func__);
     PG_RETURN_NULL();
   }
-  bounds = PG_GETARG_STBOX_P(1);
+  STBOX *bounds = PG_GETARG_STBOX_P(1);
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     elog(ERROR, "%s: Geometric bounds are too small", __func__);
     PG_RETURN_NULL();
   }
 
-  extent = PG_ARGISNULL(2) ? 4096 : PG_GETARG_INT32(2);
+  int32_t extent = PG_ARGISNULL(2) ? 4096 : PG_GETARG_INT32(2);
   if (extent <= 0)
   {
     elog(ERROR, "%s: Extent must be greater than 0", __func__);
     PG_RETURN_NULL();
   }
 
-  buffer = PG_ARGISNULL(3) ? 256 : PG_GETARG_INT32(3);
-  clip_geom = PG_ARGISNULL(4) ? true : PG_GETARG_BOOL(4);
+  int32_t buffer = PG_ARGISNULL(3) ? 256 : PG_GETARG_INT32(3);
+  bool clip_geom = PG_ARGISNULL(4) ? true : PG_GETARG_BOOL(4);
 
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  
+  /* Clip temporal point immediately, to reduce the number of instants to
+   * be processed. In PostGIS this is done at the last step */
+
+  Temporal *temp1;
+  if (clip_geom)
+  {
+    temp1 = tpoint_at_stbox_internal(temp, bounds);
+    if (temp1 == NULL)
+    {
+      PG_FREE_IF_COPY(temp, 0);
+      PG_RETURN_NULL();
+    }
+  }
+  else
+    temp1 = temp;
+  // TODO pfree(temp1);
 
   /* Bounding box test to drop geometries smaller than the resolution */
   STBOX box;
-  temporal_bbox(&box, temp);
+  temporal_bbox(&box, temp1);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   /* We use half of the square height and width as limit: We use this
@@ -712,7 +719,7 @@ AsMVT(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *result = tpoint_mvt(temp, bounds, extent, buffer, clip_geom);
+  Temporal *result = tpoint_mvt(temp1, bounds, extent, buffer, clip_geom);
 
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
