@@ -1556,6 +1556,24 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
+Temporal *
+tpoint_simplify_internal(Temporal *temp, double eps_dist,
+  double eps_speed)
+{
+  Temporal *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
+    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
+    result = temporal_copy(temp);
+  else if (temp->subtype == SEQUENCE)
+    result = (Temporal *) tpointseq_simplify((TSequence *)temp,
+      eps_dist, eps_speed, 2);
+  else /* temp->subtype == SEQUENCESET */
+    result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp,
+      eps_dist, eps_speed, 2);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(tpoint_simplify);
 /**
  * Simplifies the temporal sequence (set) point using a spatio-temporal
@@ -1568,17 +1586,7 @@ tpoint_simplify(PG_FUNCTION_ARGS)
   double eps_dist = PG_GETARG_FLOAT8(1);
   double eps_speed = PG_GETARG_FLOAT8(2);
 
-  Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
-    ! MOBDB_FLAGS_GET_LINEAR(temp->flags))
-    result = temporal_copy(temp);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) tpointseq_simplify((TSequence *)temp,
-      eps_dist, eps_speed, 2);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) tpointseqset_simplify((TSequenceSet *)temp,
-      eps_dist, eps_speed, 2);
+  Temporal *result = tpoint_simplify_internal(temp, eps_dist, eps_speed);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

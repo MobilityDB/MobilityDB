@@ -25,37 +25,21 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_analytics.h
- * Analytics functions for temporal points.
+ * @file tpoint_mvt.h
+ * Mapbox Vector Tile functions for temporal points.
  */
 
-#ifndef __TPOINT_ANALYTICS_H__
-#define __TPOINT_ANALYTICS_H__
+#ifndef __TPOINT_MVT_H__
+#define __TPOINT_MVT_H__
 
 #include <postgres.h>
-#include <fmgr.h>
+#include <catalog/pg_type.h>
 
-#include "temporaltypes.h"
+#include "temporal.h"
 
 /*****************************************************************************/
 
-/* Convert a temporal point into a PostGIS trajectory geometry/geography */
-
-extern Datum tpoint_to_geo(PG_FUNCTION_ARGS);
-extern Datum geo_to_tpoint(PG_FUNCTION_ARGS);
-
-/* Convert a temporal point and a temporal float into a PostGIS geometry/geography */
-
-extern Datum point_to_geo_measure(PG_FUNCTION_ARGS);
-
-/* Simple Douglas-Peucker-like value simplification for temporal floats and
- * temporal points. */
-
-extern Datum tfloat_simplify(PG_FUNCTION_ARGS);
-extern Datum tpoint_simplify(PG_FUNCTION_ARGS);
-
-extern Temporal *tpoint_simplify_internal(Temporal *temp, double eps_dist,
-  double eps_speed);
+extern Datum AsMVT(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

@@ -39,6 +39,7 @@
 #include "temporaltypes.h"
 #include "tempcache.h"
 #include "tnumber_mathfuncs.h"
+
 #include "postgis.h"
 #include "stbox.h"
 #include "tpoint.h"
@@ -3741,7 +3742,7 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
     *count = 1;
     return result;
   }
-  
+
   /* General case */
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
   int type = lwgeom_inter->type;
@@ -3999,7 +4000,7 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
     tpointseq_minus_geometry1(seq, geom, &count);
   if (sequences == NULL)
     return NULL;
-  
+
   /* It is necessary to sort the sequences */
   tsequencearr_sort((TSequence **) sequences, count);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
