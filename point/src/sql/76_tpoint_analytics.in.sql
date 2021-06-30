@@ -93,4 +93,11 @@ RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'tpoint_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+
+CREATE OR REPLACE FUNCTION AsMVTGeom(tpoint tgeompoint, bounds stbox,
+  extent int4 default 4096, buffer int4 default 256, clip_geom bool default true)
+RETURNS tgeompoint
+AS 'MODULE_PATHNAME','AsMVTGeom'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

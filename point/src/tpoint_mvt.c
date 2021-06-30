@@ -53,7 +53,7 @@
  * Equality test on all dimensions of input.
  */
 TInstantSet *
-tpointinstset_remove_repeated_points(TInstantSet *ti, double tolerance,
+tpointinstset_remove_repeated_points(const TInstantSet *ti, double tolerance,
   int min_points)
 {
   /* No-op on short inputs */
@@ -63,14 +63,14 @@ tpointinstset_remove_repeated_points(TInstantSet *ti, double tolerance,
   double tolsq = tolerance * tolerance;
   double dsq = FLT_MAX;
 
-  TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  instants[0] = (TInstant *) tinstantset_inst_n(ti, 0);
+  const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  instants[0] = tinstantset_inst_n(ti, 0);
   const POINT2D *last = datum_get_point2d_p(tinstant_value(instants[0]));
   int k = 1;
   for (int i = 1; i < ti->count; i++)
   {
     bool last_point = (i == ti->count - 1);
-    TInstant *inst = (TInstant *) tinstantset_inst_n(ti, i);
+    const TInstant *inst = tinstantset_inst_n(ti, i);
     const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
@@ -106,8 +106,8 @@ tpointinstset_remove_repeated_points(TInstantSet *ti, double tolerance,
     last = pt;
   }
   /* Construct the result */
-  TInstantSet *result = tinstantset_make_free(instants, ti->count, MERGE_NO);
-  pfree_array((void **) instants, ti->count);
+  TInstantSet *result = tinstantset_make(instants, ti->count, MERGE_NO);
+  pfree(instants);
   return result;
 }
 
@@ -116,7 +116,7 @@ tpointinstset_remove_repeated_points(TInstantSet *ti, double tolerance,
  * Equality test on x and y dimensions of input.
  */
 TSequence *
-tpointseq_remove_repeated_points(TSequence *seq, double tolerance,
+tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   int min_points)
 {
   /* No-op on short inputs */
@@ -126,14 +126,14 @@ tpointseq_remove_repeated_points(TSequence *seq, double tolerance,
   double tolsq = tolerance * tolerance;
   double dsq = FLT_MAX;
 
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  instants[0] = (TInstant *) tsequence_inst_n(seq, 0);
+  const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  instants[0] = tsequence_inst_n(seq, 0);
   const POINT2D *last = datum_get_point2d_p(tinstant_value(instants[0]));
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
-    TInstant *inst = (TInstant *) tsequence_inst_n(seq, i);
+    const TInstant *inst = tsequence_inst_n(seq, i);
     const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
@@ -169,9 +169,9 @@ tpointseq_remove_repeated_points(TSequence *seq, double tolerance,
     last = pt;
   }
   /* Construct the result */
-  TSequence *result = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+  TSequence *result = tsequence_make(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
-  pfree_array((void **) instants, seq->count);
+  pfree(instants);
   return result;
 }
 
@@ -183,12 +183,12 @@ TSequenceSet *
 tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
   int min_points)
 {
-  TSequence * seq;
+  const TSequence * seq;
 
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    seq = (TSequence *) tsequenceset_seq_n(ts, 0);
+    seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_remove_repeated_points(seq, tolerance,
       min_points);
     TSequenceSet *result = tsequence_to_tsequenceset(seq1);
@@ -205,7 +205,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
   int npoints = 0;
   for (int i = 0; i < ts->count; i++)
   {
-    seq = (TSequence *) tsequenceset_seq_n(ts, i);
+    seq = tsequenceset_seq_n(ts, i);
     /* Don't drop sequences if we are running short of points */
     if (ts->totalcount - npoints > min_points)
     {
@@ -327,7 +327,6 @@ tpointinstset_affine(TInstantSet *ti, const AFFINE *a)
     pfree(gs);
   }
   TInstantSet *result = tinstantset_make_free(instants, ti->count, MERGE_NO);
-  pfree_array((void **) instants, ti->count);
   return result;
 }
 
@@ -371,10 +370,8 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
     pfree(gs);
   }
   /* Construct the result */
-  TSequence *result = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
-  pfree_array((void **) instants, seq->count);
-  return result;
 }
 
 /**
@@ -505,9 +502,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     memcpy(&p_out, &p, sizeof(POINT4D));
   }
   /* Construct the result */
-  TInstantSet *result = tinstantset_make_free(instants, k, MERGE_NO);
-  pfree_array((void **) instants, ti->count);
-  return result;
+  return tinstantset_make_free(instants, k, MERGE_NO);
 }
 
 /*
@@ -554,11 +549,9 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid)
     memcpy(&p_out, &p, sizeof(POINT4D));
   }
   /* Construct the result */
-  TSequence *result = tsequence_make_free(instants, k, seq->period.lower_inc,
+  return tsequence_make_free(instants, k, seq->period.lower_inc,
     k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_LINEAR(seq->flags),
     NORMALIZE);
-  pfree_array((void **) instants, seq->count);
-  return result;
 }
 
 /**
@@ -621,7 +614,6 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   double width = box->xmax - box->xmin;
   double height = box->ymax - box->ymin;
   double resx, resy, res, fx, fy;
-  // bool preserve_collapsed = false;
 
   resx = width / extent;
   resy = height / extent;
@@ -631,10 +623,11 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
 
   /* Remove all non-essential points (under the output resolution) */
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
-  // tpoint_simplify_in_place(tpoint, res, preserve_collapsed);
+  /* Epsilon speed is not taken into account, i.e., parameter set to 0 */
+  Temporal *tpoint2 = tpoint_simplify_internal(tpoint1, res, 0);
 
   /* If geometry has disappeared, you're done */
-  if (tpoint1 == NULL)
+  if (tpoint2 == NULL)
     return NULL;
 
   /* Transform to tile coordinate space */
@@ -643,22 +636,21 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   affine.ifac = 1;
   affine.xoff = -box->xmin * fx;
   affine.yoff = -box->ymax * fy;
-  Temporal *tpoint2 = tpoint_affine(tpoint1, &affine);
+  Temporal *tpoint3 = tpoint_affine(tpoint2, &affine);
 
   /* Snap to integer precision, removing duplicate points */
-  Temporal *tpoint3 = tpoint_grid(tpoint2, &grid);
-  
-  pfree(tpoint1);
-  pfree(tpoint2);
-  return tpoint3;
+  Temporal *tpoint4 = tpoint_grid(tpoint3, &grid);
+
+  pfree(tpoint1); pfree(tpoint2); pfree(tpoint3);
+  return tpoint4;
 }
 
-PG_FUNCTION_INFO_V1(AsMVT);
+PG_FUNCTION_INFO_V1(AsMVTGeom);
 /**
  * Transform to tpoint to Mapbox Vector Tile format
  */
 Datum
-AsMVT(PG_FUNCTION_ARGS)
+AsMVTGeom(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
@@ -686,7 +678,7 @@ AsMVT(PG_FUNCTION_ARGS)
   bool clip_geom = PG_ARGISNULL(4) ? true : PG_GETARG_BOOL(4);
 
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  
+
   /* Clip temporal point immediately, to reduce the number of instants to
    * be processed. In PostGIS this is done at the last step */
 
@@ -702,7 +694,6 @@ AsMVT(PG_FUNCTION_ARGS)
   }
   else
     temp1 = temp;
-  // TODO pfree(temp1);
 
   /* Bounding box test to drop geometries smaller than the resolution */
   STBOX box;
@@ -715,12 +706,16 @@ AsMVT(PG_FUNCTION_ARGS)
   double bounds_height = ((bounds->ymax - bounds->ymin) / extent) / 2.0;
   if (tpoint_width < bounds_width && tpoint_height < bounds_height)
   {
+    if (clip_geom)
+      pfree(temp1);
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
   }
 
   Temporal *result = tpoint_mvt(temp1, bounds, extent, buffer, clip_geom);
 
+  if (clip_geom)
+    pfree(temp1);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
