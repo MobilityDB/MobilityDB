@@ -1124,19 +1124,25 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 TSequenceSet *
 tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 {
+  const TSequence *seq;
+
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tfloatseq_simplify(tsequenceset_seq_n(ts, 0), eps_dist, minpts);
+    seq = tsequenceset_seq_n(ts, 0);
+    TSequence *seq1 = tfloatseq_simplify(seq, eps_dist, minpts);
     TSequenceSet *result = tsequence_to_tsequenceset(seq);
-    pfree(seq);
+    pfree(seq1);
     return result;
   }
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    sequences[i] = tfloatseq_simplify(tsequenceset_seq_n(ts, i), eps_dist, minpts);
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    sequences[i] = tfloatseq_simplify(seq, eps_dist, minpts);
+  }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
@@ -1538,21 +1544,25 @@ TSequenceSet *
 tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   double eps_speed, uint32_t minpts)
 {
+  const TSequence *seq;
+
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tpointseq_simplify(tsequenceset_seq_n(ts, 0),
-      eps_dist, eps_speed, minpts);
+    seq = tsequenceset_seq_n(ts, 0);
+    TSequence *seq1 = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
     TSequenceSet *result = tsequence_to_tsequenceset(seq);
-    pfree(seq);
+    pfree(seq1);
     return result;
   }
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    sequences[i] = tpointseq_simplify(tsequenceset_seq_n(ts, i),
-      eps_dist, eps_speed, minpts);
+  {
+    seq = tsequenceset_seq_n(ts, i);
+    sequences[i] = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
+  }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 

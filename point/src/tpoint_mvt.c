@@ -137,7 +137,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
     const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
-    if (seq->count - k > min_points + i)
+    if (seq->count - i > min_points - k)
     {
       if (tolerance > 0.0)
       {
