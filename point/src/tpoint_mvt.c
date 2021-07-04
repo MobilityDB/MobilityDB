@@ -29,13 +29,18 @@
  * Mapbox Vector Tile functions for temporal points.
  */
 
+#include <postgres.h>
 #include <float.h>
 #include <liblwgeom.h>
+#include <funcapi.h>
+#if MOBDB_PGSQL_VERSION < 120000
+#include <access/htup_details.h>
+#endif
 
 #include "tpoint_mvt.h"
 
 #include "tempcache.h"
-#include "temporaltypes.h"
+#include "temporal.h"
 #include "temporal_util.h"
 
 #include "postgis.h"
@@ -645,6 +650,170 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   return tpoint4;
 }
 
+/*****************************************************************************/
+
+/**
+ * Decouple the points and the timestamps of a temporal point.
+ *
+ * @note The function does not remove consecutive points/instants that are equal.
+ * @param[in] inst Temporal point
+ * @param[out] timesarr Array of timestamps
+ */
+Datum
+tpointinst_decouple(const TInstant *inst, ArrayType **timesarr)
+{
+  *timesarr = timestamparr_to_array(&inst->t, 1);
+  return tinstant_value_copy(inst);
+}
+
+/**
+ * Decouple the points and the timestamps of a temporal point.
+ *
+ * @note The function does not remove consecutive points/instants that are equal.
+ * @param[in] ti Temporal point
+ * @param[out] timesarr Array of timestamps
+ */
+Datum
+tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
+{
+  /* Instantaneous sequence */
+  if (ti->count == 1)
+    return tpointinst_decouple(tinstantset_inst_n(ti, 0), timesarr);
+
+  /* General case */
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
+  TimestampTz *times = palloc(sizeof(TimestampTz) * ti->count);
+  for (int i = 0; i < ti->count; i++)
+  {
+    const TInstant *inst = tinstantset_inst_n(ti, i);
+    Datum value = tinstant_value(inst);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    points[i] = lwgeom_from_gserialized(gs);
+    times[i] = inst->t;
+  }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ti->count,
+    MOBDB_FLAGS_GET_LINEAR(ti->flags));
+  Datum result = PointerGetDatum(geo_serialize(lwgeom));
+  pfree(lwgeom);
+  *timesarr = timestamparr_to_array(times, ti->count);
+  for (int i = 0; i < ti->count; i++)
+    lwpoint_free((LWPOINT *) points[i]);
+  pfree(points);
+  pfree(times);
+  return result;
+}
+
+
+/**
+ * Decouple the points and the timestamps of a temporal point.
+ *
+ * @note The function does not remove consecutive points/instants that are equal.
+ * @param[in] seq Temporal point
+ * @param[out] times Array of timestamps
+ */
+LWGEOM *
+tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
+{
+  /* General case */
+  LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = tsequence_inst_n(seq, i);
+    Datum value = tinstant_value(inst);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    points[i] = lwgeom_from_gserialized(gs);
+    times[i] = inst->t;
+  }
+  LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
+    MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  for (int i = 0; i < seq->count; i++)
+    lwpoint_free((LWPOINT *) points[i]);
+  pfree(points);
+  return result;
+}
+
+/**
+ * Decouple the points and the timestamps of a temporal point.
+ *
+ * @note The function does not remove consecutive points/instants that are equal.
+ * @param[in] seq Temporal point
+ * @param[out] timesarr Array of timestamps
+ */
+Datum
+tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
+{
+  TimestampTz *times = palloc(sizeof(TimestampTz) * seq->count);
+  LWGEOM *lwgeom = tpointseq_decouple1(seq, times);
+  Datum result = PointerGetDatum(geo_serialize(lwgeom));
+  pfree(lwgeom);
+  *timesarr = timestamparr_to_array(times, seq->count);
+  pfree(times);
+  return result;
+}
+
+/**
+ * Decouple the points and the timestamps of a temporal point.
+ *
+ * @note The function does not remove consecutive points/instants that are equal.
+ * @param[in] ts Temporal point
+ * @param[out] Array of timestamps
+ */
+Datum
+tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
+{
+  /* General case */
+  uint32_t colltype = 0;
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
+  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->totalcount);
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, 0);
+    geoms[i] = tpointseq_decouple1(seq, &times[k]);
+    k += seq->count;
+    /* If output type not initialized make geom type as output type */
+    if (! colltype)
+      colltype = lwtype_get_collectiontype(geoms[i]->type);
+    /* If geom type is not compatible with current output type
+     * make output type a collection */
+    else if (colltype != COLLECTIONTYPE &&
+      lwtype_get_collectiontype(geoms[i]->type) != colltype)
+      colltype = COLLECTIONTYPE;
+  }
+  LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
+    geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
+  Datum result = PointerGetDatum(geo_serialize(coll));
+  *timesarr = timestamparr_to_array(times, ts->totalcount);
+  /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
+  pfree(geoms);
+  pfree(times);
+  return result;
+}
+
+/**
+ * Decouple the points and the timestamps of a temporal point.
+ *
+ * @param[in] temp Temporal point
+ * @param[out] Array of timestamps
+ */
+Datum
+tpoint_decouple(const Temporal *temp, ArrayType **timesarr)
+{
+  Datum result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tpointinst_decouple((TInstant *) temp, timesarr);
+  else if (temp->subtype == INSTANTSET)
+    result = tpointinstset_decouple((TInstantSet *) temp, timesarr);
+  else if (temp->subtype == SEQUENCE)
+    result = tpointseq_decouple((TSequence *) temp, timesarr);
+  else /* temp->subtype == SEQUENCESET */
+    result = tpointseqset_decouple((TSequenceSet *) temp, timesarr);
+  return result;
+}
+
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(AsMVTGeom);
 /**
  * Transform to tpoint to Mapbox Vector Tile format
@@ -652,6 +821,12 @@ PG_FUNCTION_INFO_V1(AsMVTGeom);
 Datum
 AsMVTGeom(PG_FUNCTION_ARGS)
 {
+  TupleDesc resultTupleDesc;
+  HeapTuple resultTuple;
+  bool result_is_null[2] = {0,0}; /* needed to say no value is null */
+  Datum result_values[2]; /* used to construct the composite return value */
+  Datum result; /* the actual composite return value */
+
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
 
@@ -712,14 +887,35 @@ AsMVTGeom(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *result = tpoint_mvt(temp1, bounds, extent, buffer, clip_geom);
+  Temporal *temp2 = tpoint_mvt(temp1, bounds, extent, buffer, clip_geom);
+  if (temp2 == NULL)
+  {
+    if (clip_geom)
+      pfree(temp1);
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_NULL();
+  }
+
+  /* Decouple the geometry and the timestamps */
+  ArrayType *timesarr;
+  Datum geom = tpoint_decouple(temp2, &timesarr);
+
+  /* Build a tuple description for the function output */
+  get_call_result_type(fcinfo, NULL, &resultTupleDesc);
+  BlessTupleDesc(resultTupleDesc);
+  /* Store geometry */
+  result_values[0] = geom;
+  /* Store timestamp array */
+  result_values[1] = PointerGetDatum(timesarr);
+  /* Form tuple and return */
+  resultTuple = heap_form_tuple(resultTupleDesc, result_values, result_is_null);
+  result = HeapTupleGetDatum(resultTuple);
 
   if (clip_geom)
     pfree(temp1);
+  pfree(temp2);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************/

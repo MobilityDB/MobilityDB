@@ -235,6 +235,7 @@ extern char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 extern int lwprint_double(double d, int maxdd, char *buf, size_t bufsize);
 extern char getMachineEndian(void);
 extern char lwpoint_same(const LWPOINT *p1, const LWPOINT *p2);
+extern LWPOINT *lwpoint_clone(const LWPOINT *lwgeom);
 
 extern Datum transform(PG_FUNCTION_ARGS);
 extern Datum buffer(PG_FUNCTION_ARGS);

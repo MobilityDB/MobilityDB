@@ -202,17 +202,19 @@ tpointseqset_to_geo(const TSequenceSet *ts)
     seq = tsequenceset_seq_n(ts, 0);
     return tpointseq_to_geo(seq);
   }
+
+  /* General case */
   uint32_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     seq = tsequenceset_seq_n(ts, i);
     geoms[i] = tpointseq_to_geo1(seq);
-    /* Output type not initialized */
+    /* If output type not initialized make geom type as output type */
     if (! colltype)
       colltype = lwtype_get_collectiontype(geoms[i]->type);
-      /* Input type not compatible with output */
-      /* make output type a collection */
+    /* If geom type is not compatible with current output type
+     * make output type a collection */
     else if (colltype != COLLECTIONTYPE &&
       lwtype_get_collectiontype(geoms[i]->type) != colltype)
       colltype = COLLECTIONTYPE;
