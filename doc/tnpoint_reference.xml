@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<sect1>
+		<title>Functions and Operators for Temporal Network Points</title>
+    
+		<sect2>
+		<title>Static Network Types</title>
+
+			<sect3>
+				<title>Constructor Functions</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor for network points</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="nsegment"><varname>nsegment</varname></link>: Constructor for network segments</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Accessor Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="route"><varname>route</varname></link>: Get the route identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="getPosition"><varname>getPosition</varname></link>: Get the position fraction</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="startPosition"><varname>startPosition</varname></link>: Get the start position</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="endPosition"><varname>endPosition</varname></link>: Get the end position</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversion between Network and Space</title>
+
+			</sect3>
+
+			<sect3>
+				<title>Comparison Operators</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="static_eq"><varname>=</varname></link>: Are the values equal?</para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="static_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Functions and Operators for Temporal Network Points</title>
+
+
+			<sect3>
+				<title>Casting for Temporal Network Points</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_tgeompoint"><varname>::</varname></link>: Cast a temporal network point to a temporal geometry point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompoint_tnpoint"><varname>::</varname></link>: Cast a temporal geometry point to a temporal network point</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Modification Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_instset, tnpoint_seq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Get the values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Get the value at a timestamp</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_length"><varname>length</varname></link>: Get the length traversed by the temporal network point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_cumulativeLength"><varname>cumulativeLength</varname></link>: Get the cumulative length traversed by the temporal network point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Get the speed of the temporal network point in units per second</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construct the bounding box from a npoint and, optionally, a timestamp or a period</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Get the time-weighted centroid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Get the temporal azimuth</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Smallest distance ever between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Get the line connecting the nearest approach point between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_atValue"><varname>atValue</varname></link>: Restrict to a value</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname></link>: Restrict to a geometry</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_minusValue"><varname>minusValue</varname></link>: Difference with a value</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_minusGeometry"><varname>minusGeometry</varname></link>: Difference with a geometry</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparison operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparison operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always equal operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_relpos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Relative position operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Get the smallest distance ever between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Get the temporal distance</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Possible spatial relationships</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_tspatialrels"><varname>tcontains, tdisjoint, tintersects, ttouches, tdwithin</varname></link>: Temporal spatial relationships</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Static Network Types</title>
+
+			<sect3>
+				<title>Constructor Functions</title>
+			</sect2>
+
+			<sect3>
+				<title>Accessor Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="route"><varname>route</varname></link>: Get the route identifier</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="getPosition"><varname>getPosition</varname></link>: Get the position fraction</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="startPosition"><varname>startPosition</varname></link>: Get the start position</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="endPosition"><varname>endPosition</varname></link>: Get the end position</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Conversion between Network and Space</title>
+
+			</sect3>
+
+			<sect3>
+				<title>Comparison Operators</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="static_eq"><varname>=</varname></link>: Are the values equal?</para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="static_ne"><varname>&lt;&gt;</varname></link>: Are the values different?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_lt"><varname>&lt;</varname></link>: Is the first value less than the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_gt"><varname>&gt;</varname></link>: Is the first value greater than the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_le"><varname>&lt;=</varname></link>: Is the first value less than or equal to the second one?</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="static_ge"><varname>&gt;=</varname></link>: Is the first value greater than or equal to the second one?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Functions and Operators for Temporal Network Points</title>
+
+
+			<sect3>
+				<title>Casting for Temporal Network Points</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_tgeompoint"><varname>::</varname></link>: Cast a temporal network point to a temporal geometry point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompoint_tnpoint"><varname>::</varname></link>: Cast a temporal geometry point to a temporal network point</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Modification Functions</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_instset, tnpoint_seq, tnpoint_seqset</varname></link>: Transform a temporal network to another subtype</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Get the values</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Get the value at a timestamp</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_length"><varname>length</varname></link>: Get the length traversed by the temporal network point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_cumulativeLength"><varname>cumulativeLength</varname></link>: Get the cumulative length traversed by the temporal network point</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Get the speed of the temporal network point in units per second</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construct the bounding box from a npoint and, optionally, a timestamp or a period</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Get the time-weighted centroid</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Get the temporal azimuth</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal network point at which the two arguments are at the nearest distance</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Smallest distance ever between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Get the line connecting the nearest approach point between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_atValue"><varname>atValue</varname></link>: Restrict to a value</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname></link>: Restrict to a geometry</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_minusValue"><varname>minusValue</varname></link>: Difference with a value</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_minusGeometry"><varname>minusGeometry</varname></link>: Difference with a geometry</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparison operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Temporal comparison operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Ever and always equal operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_relpos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Relative position operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Topological operators</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Get the smallest distance ever between the two arguments</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Get the temporal distance</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Possible spatial relationships</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tnpoint_tspatialrels"><varname>tcontains, tdisjoint, tintersects, ttouches, tdwithin</varname></link>: Temporal spatial relationships</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+	</sect1>

@@ -916,6 +916,11 @@ tinstant_hash(const TInstant *inst)
     value_hash = DatumGetUInt32(call_function1(hashtext, value));
   else if (tgeo_base_type(inst->basetypid))
     value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
+  else if (inst->basetypid == type_oid(T_NPOINT))
+  {
+    value_hash = DatumGetUInt32(call_function1(hashint8, value));
+    value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
+  }
   else
     elog(ERROR, "unknown hash function for base type: %d", inst->basetypid);
   /* Apply the hash function according to the timestamp */

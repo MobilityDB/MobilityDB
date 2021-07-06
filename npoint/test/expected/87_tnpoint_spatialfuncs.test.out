@@ -1,0 +1,1470 @@
+SELECT srid(tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT srid(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT srid(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT srid(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT srid(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT srid(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ srid 
+------
+ 5676
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                st_astext                 
+------------------------------------------
+ POINT(48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ MULTIPOINT(48.7186629128278 77.7640705101509,62.7866330839742 80.1435561997142)
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                                    st_astext                                                     
+------------------------------------------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.0807154867798 81.2081503681839,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                                                                   st_astext                                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GEOMETRYCOLLECTION(POINT(27.2529167893545 77.6566612929513),LINESTRING(69.790368869663 81.4520975905736,69.0807154867798 81.2081503681839,48.7186629128278 77.7640705101509))
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'));
+                                   st_astext                                    
+--------------------------------------------------------------------------------
+ MULTIPOINT(48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                                    st_astext                                                     
+------------------------------------------------------------------------------------------------------------------
+ MULTIPOINT(27.2529167893545 77.6566612929513,48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02}'));
+                st_astext                
+-----------------------------------------
+ POINT(69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint '{[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02], [Npoint(2, 0.1)@2000-01-03, Npoint(2, 0.5)@2000-01-04]}'));
+                                                                                           st_astext                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ MULTILINESTRING((83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.5487374849617 71.8153562862426),(15.8969020444157 94.2216113741267,24.9817138403668 80.9696513091864))
+(1 row)
+
+SELECT ST_AsText(trajectory(tnpoint '{[npoint(2, 0.2)@2000-01-01, npoint(2, 0.3)@2000-01-02],[npoint(1, 0.0)@2000-01-03, npoint(1, 1.0)@2000-01-04]}'));
+                                                                                           st_astext                                                                                            
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ MULTILINESTRING((83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.5487374849617 71.8153562862426),(18.1681049934035 90.9086213578916,20.4393079423913 87.5956313416565))
+(1 row)
+
+SELECT setPrecision(atGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+ setprecision 
+--------------
+ 
+(1 row)
+
+SELECT setPrecision(atGeometry(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+              setprecision              
+----------------------------------------
+ {NPoint(1,0.3)@2000-01-01 00:00:00+00}
+(1 row)
+
+SELECT setPrecision(atGeometry(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                                           setprecision                                                           
+----------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.481784)@2000-01-02 19:37:41.052165+00]}
+(1 row)
+
+SELECT setPrecision(atGeometry(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                                           setprecision                                                           
+----------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.481784)@2000-01-02 19:37:41.052165+00]}
+(1 row)
+
+SELECT setPrecision(atGeometry(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                                             setprecision                                                             
+--------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.4)@2000-01-03 00:00:00+00)}
+(1 row)
+
+SELECT setPrecision(atGeometry(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                                             setprecision                                                             
+--------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.4)@2000-01-03 00:00:00+00)}
+(1 row)
+
+SELECT atGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT atGeometry(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT atGeometry(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT atGeometry(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT atGeometry(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT atGeometry(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+ atgeometry 
+------------
+ 
+(1 row)
+
+SELECT setPrecision(minusGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+             setprecision             
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT setPrecision(minusGeometry(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                 setprecision                                 
+------------------------------------------------------------------------------
+ {NPoint(1,0.5)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT setPrecision(minusGeometry(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                        setprecision                                        
+--------------------------------------------------------------------------------------------
+ {(NPoint(1,0.481784)@2000-01-02 19:37:41.052165+00, NPoint(1,0.5)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT setPrecision(minusGeometry(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                                                               setprecision                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {(NPoint(1,0.481784)@2000-01-02 19:37:41.052165+00, NPoint(1,0.5)@2000-01-03 00:00:00+00], [NPoint(2,0.6)@2000-01-04 00:00:00+00, NPoint(2,0.6)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT setPrecision(minusGeometry(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                       setprecision                       
+----------------------------------------------------------
+ Interp=Stepwise;{[NPoint(1,0.5)@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT setPrecision(minusGeometry(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
+                                                              setprecision                                                              
+----------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[NPoint(1,0.5)@2000-01-03 00:00:00+00], [NPoint(2,0.6)@2000-01-04 00:00:00+00, NPoint(2,0.6)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT minusGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty');
+            minusgeometry             
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT minusGeometry(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty');
+                                                   minusgeometry                                                    
+--------------------------------------------------------------------------------------------------------------------
+ {NPoint(1,0.3)@2000-01-01 00:00:00+00, NPoint(1,0.5)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00}
+(1 row)
+
+SELECT minusGeometry(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+                                                   minusgeometry                                                    
+--------------------------------------------------------------------------------------------------------------------
+ [NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT minusGeometry(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+                                                                                           minusgeometry                                                                                            
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00], [NPoint(2,0.6)@2000-01-04 00:00:00+00, NPoint(2,0.6)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT minusGeometry(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+                                                           minusgeometry                                                            
+------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT minusGeometry(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+                                                                                                   minusgeometry                                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00], [NPoint(2,0.6)@2000-01-04 00:00:00+00, NPoint(2,0.6)@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT round(length(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+   round   
+-----------
+ 21.401680
+(1 row)
+
+SELECT round(length(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+   round   
+-----------
+ 21.401680
+(1 row)
+
+SELECT round(length(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(length(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(cumulativeLength(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+                                             round                                             
+-----------------------------------------------------------------------------------------------
+ [0@2000-01-01 00:00:00+00, 14.267787@2000-01-02 00:00:00+00, 21.40168@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT round(cumulativeLength(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+                                                                                round                                                                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[0@2000-01-01 00:00:00+00, 14.267787@2000-01-02 00:00:00+00, 21.40168@2000-01-03 00:00:00+00], [21.40168@2000-01-04 00:00:00+00, 21.40168@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT round(cumulativeLength(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+                                round                                 
+----------------------------------------------------------------------
+ Interp=Stepwise;[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT round(cumulativeLength(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT round(speed(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+                                                       round                                                       
+-------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;[0.000165@2000-01-01 00:00:00+00, 8.3e-05@2000-01-02 00:00:00+00, 8.3e-05@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT round(speed(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+                                                                                   round                                                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[0.000165@2000-01-01 00:00:00+00, 8.3e-05@2000-01-02 00:00:00+00, 8.3e-05@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT round(speed(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+                                round                                 
+----------------------------------------------------------------------
+ Interp=Stepwise;[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00]
+(1 row)
+
+SELECT round(speed(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
+(1 row)
+
+SELECT ST_AsText(twCentroid(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                st_astext                 
+------------------------------------------
+ POINT(48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(twCentroid(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                st_astext                
+-----------------------------------------
+ POINT(53.4079863032099 78.557232406672)
+(1 row)
+
+SELECT ST_AsText(twCentroid(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                st_astext                 
+------------------------------------------
+ POINT(57.5035819448232 79.2809487026474)
+(1 row)
+
+SELECT ST_AsText(twCentroid(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                st_astext                
+-----------------------------------------
+ POINT(47.4200268930003 78.739519566082)
+(1 row)
+
+SELECT ST_AsText(twCentroid(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                st_astext                
+-----------------------------------------
+ POINT(62.771508434032 80.2029554727531)
+(1 row)
+
+SELECT ST_AsText(twCentroid(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}'));
+                st_astext                
+-----------------------------------------
+ POINT(62.771508434032 80.2029554727531)
+(1 row)
+
+SELECT round(azimuth(tnpoint '[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02]'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[4.381288@2000-01-01 00:00:00+00, 4.544833@2000-01-01 05:03:08.838887+00, 4.544833@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT round(azimuth(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[4.381288@2000-01-01 00:00:00+00, 4.544833@2000-01-01 01:15:44.194436+00, 4.544833@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT round(azimuth(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[4.381288@2000-01-01 00:00:00+00, 4.544833@2000-01-01 01:15:44.194436+00, 4.544833@2000-01-03 00:00:00+00]}
+(1 row)
+
+SELECT round(azimuth(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+ round 
+-------
+ 
+(1 row)
+
+SELECT round(azimuth(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6);
+ round 
+-------
+ 
+(1 row)
+
+SELECT round(azimuth(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[4.381288@2000-01-01 00:00:00+00, 4.544833@2000-01-01 00:50:29.462957+00, 4.544833@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT round(azimuth(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}'), 6);
+                                                            round                                                             
+------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[4.381288@2000-01-01 00:00:00+00, 4.544833@2000-01-01 00:50:29.462957+00, 4.544833@2000-01-02 00:00:00+00]}
+(1 row)
+
+SELECT round(azimuth(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02], [Npoint(1, 0.5)@2000-01-03,Npoint(1, 0.5)@2000-01-04]}'), 6);
+ round 
+-------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.3)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.3)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ nearestapproachinstant 
+------------------------
+ 
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01', npoint 'Npoint(2, 0.5)');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npoint 'Npoint(2, 0.5)');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-02 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.4)@2000-01-02 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.4)@2000-01-02 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(2,0.6)@2000-01-04 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-02 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.4)@2000-01-02 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.4)@2000-01-02 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(2,0.6)@2000-01-04 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Npoint(1, 0.5)@2000-01-01');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Npoint(1, 0.5)@2000-01-01');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.3)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.3)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Npoint(1, 0.5)@2000-01-01');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Npoint(1, 0.5)@2000-01-01');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.5)@2000-01-03 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT nearestApproachInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+        nearestapproachinstant        
+--------------------------------------
+ NPoint(1,0.2)@2000-01-01 00:00:00+00
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))')::numeric, 6);
+  round   
+----------
+ 1.281337
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2000-01-01')::numeric, 6);
+  round   
+----------
+ 1.281337
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT nearestApproachDistance(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT nearestApproachDistance(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
+ nearestapproachdistance 
+-------------------------
+                        
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01', npoint 'Npoint(2, 0.5)')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npoint 'Npoint(2, 0.5)')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)')::numeric, 6);
+  round   
+----------
+ 4.016748
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)')::numeric, 6);
+  round   
+----------
+ 4.016748
+(1 row)
+
+SELECT round(nearestApproachDistance(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 4.016748
+(1 row)
+
+SELECT round(nearestApproachDistance(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+   round   
+-----------
+ 23.952422
+(1 row)
+
+SELECT round(nearestApproachDistance(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 4.016748
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Npoint(1, 0.5)@2000-01-01')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')::numeric, 6);
+   round   
+-----------
+ 14.267787
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+   round   
+-----------
+ 21.392016
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+   round   
+-----------
+ 21.392016
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Npoint(1, 0.5)@2000-01-01')::numeric, 6);
+   round   
+-----------
+ 14.267787
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Npoint(1, 0.5)@2000-01-01')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Npoint(1, 0.5)@2000-01-01')::numeric, 6);
+   round   
+-----------
+ 21.392016
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
+                             st_astext                             
+-------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,50 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(62.7866330839742 80.1435561997142,62.7866330839742 80.1435561997142)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                             st_astext                             
+-------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,50 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(62.7866330839742 80.1435561997142,62.7866330839742 80.1435561997142)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+ st_astext 
+-----------
+ 
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', npoint 'Npoint(2, 0.5)'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npoint 'Npoint(2, 0.5)'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,62.7866330839742 80.1435561997142)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                    
+--------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                    
+--------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(62.7866330839742 80.1435561997142,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(62.7866330839742 80.1435561997142,62.7866330839742 80.1435561997142)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+                                   st_astext                                    
+--------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+                                    st_astext                                    
+---------------------------------------------------------------------------------
+ LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+                                   st_astext                                   
+-------------------------------------------------------------------------------
+ LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+(1 row)
+

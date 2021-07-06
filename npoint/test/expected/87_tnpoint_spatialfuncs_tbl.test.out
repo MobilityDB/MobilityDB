@@ -1,0 +1,147 @@
+SELECT MAX(st_npoints(trajectory(temp))) FROM tbl_tnpoint;
+ max 
+-----
+  46
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE atGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+ count 
+-------
+  2770
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE minusGeometry(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+ count 
+-------
+  9705
+(1 row)
+
+SELECT round(MAX(length(temp))::numeric, 6) FROM tbl_tnpoint;
+    round    
+-------------
+ 1416.060324
+(1 row)
+
+SELECT round(MAX(maxValue(cumulativeLength(temp)))::numeric, 6) FROM tbl_tnpoint;
+    round     
+--------------
+ 14661.268861
+(1 row)
+
+SELECT round(MAX(maxValue(speed(temp)))::numeric, 6) FROM tbl_tnpoint;
+  round   
+----------
+ 2.296945
+(1 row)
+
+SELECT round(azimuth(temp), 13) FROM tbl_tnpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+                                                                                                                                                                                                                      round                                                                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Stepwise;{[3.8656009127568@2001-10-28 20:58:00+00, 0.724008259167@2001-10-28 21:02:00+00, 3.8656009127568@2001-10-28 21:08:00+00, 3.8656009127568@2001-10-28 21:17:00+00]}
+ Interp=Stepwise;{[5.8380974009255@2001-10-28 04:14:00+00, 2.6965047473357@2001-10-28 04:20:00+00, 0.231236502515@2001-10-28 04:23:49.675505+00, 0.231236502515@2001-10-28 04:24:00+00]}
+ Interp=Stepwise;{[1.0823364903908@2001-01-22 00:26:00+00, 1.0823364903908@2001-01-22 00:32:00+00]}
+ Interp=Stepwise;{[3.3253557990614@2001-02-27 01:14:00+00, 1.4574779869469@2001-02-27 01:17:12.364142+00, 1.4574779869469@2001-02-27 01:18:00+00]}
+ Interp=Stepwise;{[1.9002202835845@2001-02-14 08:38:00+00, 5.0418129371743@2001-02-14 08:42:00+00, 5.0418129371743@2001-02-14 08:49:00+00]}
+ Interp=Stepwise;{[2.9413842696122@2001-04-24 06:22:00+00, 6.082976923202@2001-04-24 06:27:00+00, 6.082976923202@2001-04-24 06:28:00+00]}
+ Interp=Stepwise;{[6.1095500812883@2001-05-20 11:48:00+00, 6.0346885641256@2001-05-20 11:49:50.048448+00, 2.8930959105358@2001-05-20 11:51:00+00, 2.9679574276985@2001-05-20 11:51:44.49834+00, 5.0351640878473@2001-05-20 11:53:25.93835+00, 1.8935714342575@2001-05-20 11:54:00+00, 6.1095500812883@2001-05-20 11:55:40.041794+00, 6.1095500812883@2001-05-20 12:06:00+00]}
+ Interp=Stepwise;{[1.6021191551887@2001-01-14 04:14:00+00, 4.7437118087785@2001-01-14 04:15:00+00, 1.6021191551887@2001-01-14 04:23:00+00, 4.7437118087785@2001-01-14 04:26:00+00, 1.6021191551887@2001-01-14 04:28:00+00, 1.6021191551887@2001-01-14 04:33:00+00]}
+ Interp=Stepwise;{[0.882273854142@2001-08-08 01:20:00+00, 4.0238665077318@2001-08-08 01:29:00+00, 0.882273854142@2001-08-08 01:40:00+00, 4.0238665077318@2001-08-08 01:46:00+00, 0.882273854142@2001-08-08 01:53:00+00, 0.882273854142@2001-08-08 01:55:00+00]}
+ Interp=Stepwise;{[4.1267050755019@2001-04-13 10:09:00+00, 0.9851124219121@2001-04-13 10:18:00+00, 4.1267050755019@2001-04-13 10:21:00+00, 0.1297164680391@2001-04-13 10:29:15.539565+00, 3.2713091216289@2001-04-13 10:30:00+00, 0.9851124219121@2001-04-13 10:30:22.969804+00, 4.1267050755019@2001-04-13 10:35:00+00, 0.9851124219121@2001-04-13 10:42:00+00, 4.1267050755019@2001-04-13 10:49:00+00, 4.1267050755019@2001-04-13 10:54:00+00]}
+(10 rows)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE nearestApproachInstant(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE nearestApproachInstant(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE nearestApproachInstant(t1.temp, t2.np) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE nearestApproachInstant(t1.np, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE nearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE nearestApproachDistance(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE nearestApproachDistance(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE nearestApproachDistance(t1.temp, t2.np) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE nearestApproachDistance(t1.np, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE nearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE shortestLine(t1.temp, ST_SetSRID(t2.g, 5676)) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE shortestLine(ST_SetSRID(t1.g, 5676), t2.temp) IS NOT NULL;
+ count 
+-------
+  9400
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE shortestLine(t1.temp, t2.np) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.np, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.np, t2.temp) IS NOT NULL;
+ count 
+-------
+ 10000
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

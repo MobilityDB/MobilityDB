@@ -230,7 +230,7 @@
 				<listitem>
 					<para><varname>random_tgeogpoint3D_instset</varname>: Generar un punto geográfico temporal 3D de subtipo conjunto de instantes aleatorio</para>
 				</listitem>
-				<listitem>
+          <listitem>
 					<para><varname>random_tbool_seq</varname>: Generar un booleano temporal de subtipo secuencia aleatorio</para>
 				</listitem>
 				<listitem>
@@ -285,7 +285,7 @@
 	<sect1>
 		<title>Generación de tablas con valores aleatorios</title>
 
-				<para>Los archivos <varname>create_test_tables_temporal.sql</varname> y <varname>create_test_tables_tpoint.sql</varname> dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.</para>
+		<para>Los archivos <varname>create_test_tables_temporal.sql</varname> y <varname>create_test_tables_tpoint.sql</varname> dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.</para>
 				<programlisting>
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
 RETURNS text AS $$
@@ -580,6 +580,35 @@ SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
   FROM tbl_tgeompoint3D_seqset t2 donde t2.k = t1.k+perc)
 donde t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 				</programlisting>
+	</sect1>
+
+	<sect1>
+	<title>Generador para tipos de red temporales </title>
+		<itemizedlist>
+			<listitem>
+				<para><varname>random_fraction</varname>: Generar una fracción aleatoria en el rango [0,1]</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_npoint</varname>: Genera un punto de red aleatorio</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_nsegment</varname>: Genera un segmento de red aleatorio</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_inst</varname>: Generar un punto de red temporal de subtipo instant aleatorio</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_instset</varname>: Generar un punto de red temporal de subtipo conjunto de instantes aleatorio</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_seq</varname>: Generar un punto de red temporal de subtipo secuencia aleatorio</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_seqset</varname>: Generar un punto de red temporal de subtipo conjunto de secuencias aleatorio</para>
+			</listitem>
+		</itemizedlist>
+
+		<para>El archivo <varname>create_test_tables_tnpoint.sql</varname> da ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba.</para>
 	</sect1>
 
 </appendix>

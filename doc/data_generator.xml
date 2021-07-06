@@ -582,4 +582,32 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 				</programlisting>
 	</sect1>
 
+	<sect1>
+	<title>Generator for Temporal Network Point Types</title>
+		<itemizedlist>
+			<listitem>
+				<para><varname>random_fraction</varname>: Generate a random fraction in the range [0,1]</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_npoint</varname>: Generate a random network point</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_nsegment</varname>: Generate a random network segment</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_inst</varname>: Generate a random temporal network point of instant subtype</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_instset</varname>: Generate a random temporal network point of instant set subtype</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_seq</varname>: Generate a random temporal network point of sequence subtype</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tnpoint_seqset</varname>: Generate a random temporal network point of sequence set subtype</para>
+			</listitem>
+		</itemizedlist>
+
+		<para>El archivo <varname>create_test_tables_tnpoint.sql</varname> da ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba.</para>
+	</sect1>
 </appendix>

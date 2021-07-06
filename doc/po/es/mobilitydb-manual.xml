@@ -9,9 +9,9 @@
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
 <!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
 <!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
+<!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">
-
 
 <!ENTITY geography_support
 "<inlinemediaobject>
@@ -96,6 +96,7 @@
 	&temporal_types;
 	&manipulating_box_types;
 	&manipulating_temporal_types;
+	&temporal_network_points;
 	&reference;
 	&data_generator;
 	<index />

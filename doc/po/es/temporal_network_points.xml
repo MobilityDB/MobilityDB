@@ -1,0 +1,920 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="temporal_network_points">
+	<title>Puntos de red temporales</title>
+
+	<para>Los puntos temporales que hemos considerado hasta ahora representan el movimiento de objetos que pueden moverse libremente en el espacio ya que se supone que pueden cambiar su posición de un lugar a otro sin ninguna restricción de movimiento. Este es el caso de los animales y de los objetos voladores como aviones o drones. Sin embargo, en muchos casos, los objetos no se mueven libremente en el espacio sino dentro de redes integradas espacialmente, como rutas o ferrocarriles. En este caso, es necesario tener en cuenta de las redes integradas al describir los movimientos de estos objetos en movimiento. Los puntos de red temporales tienen en cuenta estos requisitos.</para>
+
+	<para>En comparación con los puntos temporales de espacio libre, los puntos basados en red tienen las siguientes ventajas:</para>
+	<itemizedlist>
+		<listitem>
+			<para>Los puntos de red temporales proporcionan restricciones que reflejan los movimientos reales de los objetos en movimiento.</para>
+		</listitem>
+		<listitem>
+			<para>La información geométrica no se almacena con el punto móvil, sino de una vez por todas en las redes fijas. De esta forma, las representaciones e interpolaciones de la ubicación son más precisas.</para>
+		</listitem>
+		<listitem>
+			<para>Los puntos de red temporales son más eficientes en términos de almacenamiento de datos, actualización de ubicación, formulación de consultas e indexación. Estos aspectos se tratan más adelante en este documento.</para>
+		</listitem>
+	</itemizedlist>
+
+	<para>Los puntos de red temporales se basan en <ulink url="https://pgrouting.org/">pgRouting</ulink>, una extensión de PostgreSQL para desarrollar aplicaciones de enrutamiento de red y realizar análisis de gráficos. Por lo tanto, los puntos de red temporal asumen que la red subyacente está definida en una tabla llamada <varname>ways</varname>, que tiene al menos tres columnas: <varname>gid</varname> que contiene el identificador de ruta único, <varname>length</varname> que contiene la longitud de la ruta y <varname>the_geom</varname> que contiene la geometría de la ruta.</para>
+
+	<para>Hay dos tipos de red estáticos, <varname>npoint</varname> (abreviatura de <emphasis>network point</emphasis>) y <varname>nsegment</varname> (abreviatura de <emphasis>network segment</emphasis>), que representan, respectivamente, un punto y un segmento de una ruta. Un valor <varname>npoint</varname> se compone de un identificador de ruta y un número flotante en el rango [0,1] que determina una posición relativa de la ruta, donde 0 corresponde al comienzo de la ruta y 1 al final de la ruta. Un valor de <varname>nsegment </varname> se compone de un identificador de ruta y dos números flotantes en el rango [0,1] que determinan las posiciones relativas de inicio y finalización. Un valor de <varname>nsegment</varname> cuyas posiciones inicial y final son iguales corresponde a un valor de <varname>npoint</varname>.</para>
+
+	<para>El tipo <varname>npoint</varname> sirve como tipo base para definir el tipo punto de red temporal <varname>tnpoint</varname>. El tipo <varname>tnpoint</varname> tiene una funcionalidad similar al tipo de punto temporal <varname>tgeompoint</varname> con la excepción de que solo considera dos dimensiones. Por lo tanto, todas las funciones y operadores descritos anteriormente para el tipo <varname>tgeompoint</varname> también son aplicables para el tipo <varname>tnpoint</varname>. Además, hay funciones específicas definidas para el tipo <varname>tnpoint</varname>.</para>
+
+	<sect1 id="static_network_types">
+		<title>Tipos de red estáticos</title>
+
+		<para>Un valor <varname>npoint</varname> es un par de la forma <varname>(rid, position)</varname> donde <varname>rid</varname> es un valor <varname>bigint</varname> que representa un identificador de ruta y <varname>position</varname> es un valor <varname>float</varname> en el rango [0,1] que indica su posición relativa. Los valores 0 y 1 de <varname>position</varname> denotan, respectivamente, la posición inicial y final de la ruta. La distancia de la ruta entre un valor de <varname>npoint</varname> y la posición inicial de la ruta con el identificador <varname>rid</varname> se calcula multiplicando <varname>position</varname> por <varname>length</varname>, donde este último es la longitud de la ruta. Ejemplos de entrada de valores de puntos de red son los siguientes:</para>
+		<programlisting>
+SELECT npoint 'Npoint(76, 0.3)';
+SELECT npoint 'Npoint(64, 1.0)';
+		</programlisting>
+
+		<para>La función de constructor para puntos de red tiene un argumento para el identificador de ruta y un argumento para la posición relativa. Un ejemplo de un valor de punto de red definido con la función constructora es el siguiente:</para>
+		<programlisting>
+SELECT npoint(76, 0.3);
+		</programlisting>
+
+		<para>Un valor <varname>nsegment</varname> es un triple de la forma <varname>(rid, startPosition, endPosition)</varname> donde <varname>rid</varname> es un valor <varname>bigint</varname> que representa un identificador de ruta y <varname>startPosition</varname> y <varname>endPosition</varname> son valores de <varname>float</varname> en el rango [0,1] tal que <varname>startPosition &le; endPosition</varname>. Semánticamente, un segmento de red representa un conjunto de puntos de red <varname>(rid, position)</varname> con <varname>startPosition &le; position &le; endPosition</varname>. Si <varname>startPosition = 0</varname> y <varname>endPosition = 1</varname>, el segmento de red es equivalente a la ruta completa. Si <varname>startPosition = endPosition</varname>, el segmento de red representa un único punto de red. Ejemplos de entrada de valores de puntos de red son los siguientes:</para>
+			<programlisting>
+SELECT nsegment 'Nsegment(76, 0.3, 0.5)';
+SELECT nsegment 'Nsegment(64, 0.5, 0.5)';
+SELECT nsegment 'Nsegment(64, 0.0, 1.0)';
+SELECT nsegment 'Nsegment(64, 1.0, 0.0)';
+-- converted to nsegment 'Nsegment(64, 0.0, 1.0)';
+			</programlisting>
+		<para>Como se puede ver en el último ejemplo, los valores <varname>startPosition</varname> y <varname>endPosition</varname> se invertirán para asegurar que la condición <varname>startPosition &le; endPosition</varname> siempre se satisface. La función de constructor para segmentos de red tiene un argumento para el identificador de ruta y dos argumentos opcionales para las posiciones inicial y final. Los ejemplos de valores de segmento de red definidos con la función constructora son los siguientes:</para>
+			<programlisting>
+SELECT nsegment(76, 0.3, 0.3);
+SELECT nsegment(76); -- start and end position assumed to be 0 and 1 respectively
+SELECT nsegment(76, 0.5); -- end position assumed to be 1
+			</programlisting>
+		<para>Los valores del tipo <varname>npoint</varname> se pueden convertir al tipo <varname>nsegment</varname> usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname> como se muestra a continuación.</para>
+			<programlisting>
+SELECT npoint(76, 0.33)::nsegment;
+			</programlisting>
+
+		<para>Los valores de los tipos de red estáticos deben satisfacer varias restricciones para que estén bien definidos. Estas restricciones se dan a continuación.</para>
+		<itemizedlist>
+			<listitem>
+				<para>El identificador de ruta <varname>rid</varname> debe encontrarse en la columna <varname>gid</varname> de la tabla <varname>ways</varname>.</para>
+			</listitem>
+			<listitem>
+				<para>Los valores de <varname>position</varname>, <varname>startPosition</varname> y <varname>endPosition</varname> deben estar en el rango [0,1]. Se genera un error cuando no se cumple una de estas restricciones.</para>
+			</listitem>
+		</itemizedlist>
+		<para>Ejemplos de valores de tipo de red estática incorrectos son los siguientes.</para>
+		<programlisting>
+-- incorrect rid value
+SELECT npoint 'Npoint(87.5, 1.0)';
+-- incorrect position value
+SELECT npoint 'Npoint(87, 2.0)';
+-- rid value not found in the ways table
+SELECT npoint 'Npoint(99999999, 1.0)';
+		</programlisting>
+		<para>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</para>
+
+		<sect2 id="constructor_functions">
+			<title>Funciones de constructor</title>
+
+			<itemizedlist>
+				<listitem id="npoint">
+					<indexterm><primary><varname>npoint</varname></primary></indexterm>
+					<para>Constructor de puntos de red</para>
+					<para><varname>npoint(bigint,double precision): npoint</varname></para>
+					<programlisting>
+SELECT npoint(76, 0.3);
+					</programlisting>
+				</listitem>
+
+				<listitem id="nsegment">
+					<indexterm><primary><varname>nsegment</varname></primary></indexterm>
+					<para>Constructor de segmentos de red</para>
+					<para><varname>nsegment(bigint,double precision,double precision): nsegment</varname></para>
+					<programlisting>
+SELECT nsegment(76, 0.3, 0.5);
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="accessor_functions">
+			<title>Funciones de accesor</title>
+
+			<itemizedlist>
+				<listitem id="route">
+					<indexterm><primary><varname>route</varname></primary></indexterm>
+					<para>Obtener el identificador de ruta</para>
+					<para><varname>route({npoint,nsegment}): bigint</varname></para>
+					<programlisting>
+SELECT route(npoint 'Npoint(63, 0.3)');
+-- 63
+SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
+-- 76
+					</programlisting>
+				</listitem>
+
+				<listitem id="getPosition">
+					<indexterm><primary><varname>getPosition</varname></primary></indexterm>
+					<para>Obtener la fracción de posición</para>
+					<para><varname>getPosition(npoint): float</varname></para>
+					<programlisting>
+SELECT getPosition(npoint 'Npoint(63, 0.3)');
+-- 0.3
+					</programlisting>
+				</listitem>
+
+				<listitem id="startPosition">
+					<indexterm><primary><varname>startPosition</varname></primary></indexterm>
+					<para>Obtener la fracción de posición</para>
+					<para><varname>startPosition(npoint): float</varname></para>
+					<programlisting>
+SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
+-- 0.3
+					</programlisting>
+				</listitem>
+
+				<listitem id="endPosition">
+					<indexterm><primary><varname>endPosition</varname></primary></indexterm>
+					<para>Obtener la posición final</para>
+					<para><varname>endPosition(npoint): float</varname></para>
+					<programlisting>
+SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
+-- 0.5
+					</programlisting>
+				</listitem>
+
+				<listitem id="npoint_srid">
+					<indexterm><primary><varname>SRID</varname></primary></indexterm>
+					<para>Obtener el identificador de referencia espacial</para>
+					<para><varname>SRID({npoint,nsegment}): int</varname></para>
+					<programlisting>
+SELECT SRID(nspoint 'Npoint(76, 0.3)');
+-- 5676
+SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
+-- 5676
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+			<title>Modification Functions</title>
+			<itemizedlist>
+				<listitem id="npoint_setPrecision">
+					<indexterm><primary><varname>npoint_setPrecision</varname></primary></indexterm>
+					<para>Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+					<para><varname>setPrecision({npoint,nsegment},int): {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT setPrecision(npoint(76, 0.123456789), 6);
+--  NPoint(76,0.123457)
+SELECT setPrecision(nsegment(76, 0.123456789, 0.223456789), 6);
+--  NSegment(76,0.123457,0.223457)
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="conversion_network_space">
+			<title>Conversión entre red y espacio</title>
+
+			<para>Los valores de los tipos <varname>npoint</varname> y <varname>nsegment</varname> se pueden convertir al tipo <varname>geometry</varname> usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname> como se muestra a continuación.</para>
+			<itemizedlist>
+				<listitem id="npoint_geometry">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Convertir un punto de red en una geometría</para>
+					<para><varname>{npoint,nsegment}::geometry</varname></para>
+					<programlisting>
+SELECT ST_AsText(npoint(76, 0.33)::geometry);
+-- POINT(21.6338731332283 50.0545869554067)
+SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry);
+-- LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 53.9185062927473)
+SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);
+-- POINT(21.6338731332283 50.0545869554067)
+				</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>De manera similar, los valores de tipo <varname>geometry</varname> de subtipo <varname>point</varname> o <varname>linestring</varname> (restringidos a dos puntos) se pueden convertir, respectivamente, en valores <varname>npoint</varname> y <varname>nsegment</varname> usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname>. Para ello se debe encontrar la ruta que interseca los puntos dados, donde se asume una tolerancia de 0.00001 unidades (dependiendo del sistema de coordenadas) por lo que se considera que un punto y una ruta que están cerca se cruzan. Si no se encuentra dicha ruta, se devuelve un valor nulo.</para>
+			<itemizedlist>
+				<listitem id="geometry_npoint">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Convertir una geometría en un punto de red</para>
+					<para><varname>geometry::{npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;
+-- NPoint(3,0.781413)
+SELECT geometry 'LINESTRING(406.729536784738 702.58583437902,
+  383.570801314823 845.137059419277)'::nsegment;
+-- NSegment(3,0.6,0.9)
+SELECT geometry 'Point(279.3 811.5)'::npoint;
+-- NULL
+SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
+-- NULL
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 id="static_operators">
+			<title>Operadores de comparación</title>
+
+			<para>Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de red estáticos requieren que los argumentos izquierdo y derecho sean del mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan en tipos de red estáticos.</para>
+
+			<itemizedlist>
+				<listitem id="static_eq">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>¿Son iguales los valores?</para>
+					<para><varname>{npoint,nsegment} = {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT npoint 'Npoint(3, 0.5)' = npoint 'Npoint(3, 0.5)';
+-- true
+SELECT nsegment 'Nsegment(3, 0.5, 0.5)' = nsegment 'Nsegment(3, 0.5, 0.6)';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem id="static_ne">
+					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<para>¿Son diferentes los valores?</para>
+					<para><varname>{npoint,nsegment} &lt;&gt; {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT npoint 'Npoint(3, 0.5)' &lt;&gt; npoint 'Npoint(3, 0.6);
+-- true
+SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt;&gt; nsegment 'Nsegment(3, 0.5, 0.5)';
+-- false
+					</programlisting>
+				</listitem>
+
+				<listitem id="static_lt">
+					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+					<para>¿El primer valor es menor que el segundo?</para>
+					<para><varname>{npoint,nsegment} &lt; {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt; nsegment 'Nsegment(3, 0.5, 0.6)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="static_gt">
+					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+					<para>¿El primer valor es mayor que el segundo?</para>
+					<para><varname>{npoint,nsegment} &gt; {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &gt; nsegment 'Nsegment(2, 0.5, 0.5)';
+-- true
+					</programlisting>
+				</listitem>
+
+				<listitem id="static_le">
+					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+					<para>¿El primer valor es menor o igual que el segundo?</para>
+					<para><varname>{npoint,nsegment} &lt;= {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT npoint 'Npoint(1, 0.5)' &lt;= npoint 'Npoint(2, 0.5)';
+-- true
+			</programlisting>
+				</listitem>
+
+				<listitem id="static_ge">
+					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+					<para>¿El primer valor es mayor o igual que el segundo?</para>
+					<para><varname>{npoint,nsegment} &gt;= {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';
+-- true
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+
+	<sect1 id="temp_network_points">
+		<title>Puntos de red temporales</title>
+
+		<para>El tipo de punto de red temporal <varname>tnpoint</varname> permite representar el movimiento de objetos en una red. Corresponde al tipo de punto temporal <varname>tgeompoint</varname> restringido a coordenadas bidimensionales. Como todos los demás tipos temporales, se presenta en cuatro subtipos, a saber, instante, conjunto de instantes, secuencia y conjunto de secuencias. A continuación se dan ejemplos de valores de <varname>tnpoint</varname> en estos subtipos.</para>
+		<programlisting>
+SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01';
+SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02,
+  Npoint(1, 0.5)@2000-01-03}';
+SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
+  Npoint(1, 0.5)@2000-01-03]';
+SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
+  Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}';
+		</programlisting>
+		<para>El tipo de punto de red temporal acepta modificadores de tipo (o <varname>typmod</varname> en la terminología de PostgreSQL). Los valores posibles para el modificador de tipo son <varname>Instant</varname>, <varname>InstantSet</varname>, <varname>Sequence</varname> y <varname>SequenceSet</varname>. Si no se especifica ningún modificador de tipo para una columna, se permiten valores de cualquier subtipo.</para>
+		<programlisting>
+SELECT tnpoint(Sequence) '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
+  Npoint(1, 0.5)@2000-01-03]';
+SELECT tnpoint(Sequence) 'Npoint(1, 0.2)@2000-01-01';
+-- ERROR: Temporal type (Instant) does not match column type (Sequence)
+		</programlisting>
+
+		<para>Los valores de puntos de red temporales del subtipo de secuencia deben definirse en una única ruta. Por lo tanto, se necesita un valor de subtipo de conjunto de secuencias para representar el movimiento de un objeto que atraviesa varias rutas, incluso si no hay un espacio temporal. Por ejemplo, en el siguiente valor</para>
+		<programlisting>
+SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.5)@2001-01-03),
+  [NPoint(2, 0.4)@2001-01-03, NPoint(2, 0.6)@2001-01-04)}';
+		</programlisting>
+		<para>el punto de red cambia su ruta en 2001-01-03. </para>
+
+		<para>Los valores de puntos de red temporal del subtipo de secuencia o conjunto de secuencias se convierten en una forma normal para que los valores equivalentes tengan representaciones idénticas. Para ello, los valores instantáneos consecutivos se fusionan cuando es posible. Tres valores instantáneos consecutivos se pueden fusionar en dos si las funciones lineales que definen la evolución de los valores son las mismas. Los ejemplos de transformación a una forma normal son los siguientes.</para>
+		<programlisting>
+SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-02,
+  NPoint(1, 0.6)@2001-01-03)';
+-- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.6)@2001-01-03)
+SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,
+  NPoint(1, 0.5)@2001-01-03), [NPoint(1, 0.5)@2001-01-03, NPoint(1, 0.7)@2001-01-04)}';
+-- {[NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02, NPoint(1,0.7)@2001-01-04)}
+		</programlisting>
+	</sect1>
+
+	<sect1 id="validity_temporal_network_points">
+		<title>Validez de los puntos de la red temporal</title>
+
+		<para>Los valores de los puntos de la red temporal deben satisfacer las restricciones especificadas en <xref linkend="validity_temporal_types" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Los ejemplos de valores incorrectos son los siguientes.</para>
+		<programlisting>
+-- null values are not allowed
+SELECT tnpoint 'NULL@2001-01-01 08:05:00';
+SELECT tnpoint 'Point(0 0)@NULL';
+-- base type is not a network point
+SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';
+-- multiple routes in a sequence
+SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 09:05:00)';
+		</programlisting>
+	</sect1>
+
+	<sect1 id="constructors_temporal_network_points">
+		<title>Constructores para puntos de red temporales</title>
+
+			<itemizedlist>
+				<listitem id="tnpoint_inst">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor para puntos de red temporal de subtipo instante</para>
+					<para><varname>tnpoint_inst(val npoint,t timestamptz):tnpoint_inst</varname></para>
+					<programlisting>
+SELECT tnpoint_inst('Npoint(1, 0.5)', '2000-01-01');
+-- NPoint(1,0.5)@2000-01-01
+					</programlisting>
+				</listitem>
+
+				<listitem id="tnpoint_instset">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor para puntos de red temporal de subtipo conjunto de instantes</para>
+					<para><varname>tnpoint_instset(tnpoint[]):tnpoint_instset</varname></para>
+					<para><varname>tnpoint_instset(npoint,timestampset):tnpoint_instset</varname></para>
+					<programlisting>
+SELECT tnpoint_instset(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',
+  'Npoint(1, 0.5)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);
+-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.5)@2000-01-03}
+SELECT tnpoint_instset('Npoint(1, 0.3)', '{2000-01-01, 2000-01-03, 2000-01-05}');
+-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, NPoint(1,0.3)@2000-01-05}
+					</programlisting>
+				</listitem>
+
+				<listitem id="tnpoint_seq">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor para puntos de red temporal de subtipo secuencia</para>
+					<para><varname>tnpoint_seq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,</varname></para>
+					<para><varname>  linear boolean=true):tnpoint_seq</varname></para>
+					<para><varname>tnpoint_seq(npoint,period,linear boolean=true):tnpoint_seq</varname></para>
+					<programlisting>
+SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, 0.4)@2000-01-02',
+  'Npoint(1, 0.5)@2000-01-03']);
+-- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03]
+SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', false);
+-- Interp=Stepwise;[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]
+					</programlisting>
+				</listitem>
+
+				<listitem id="tnpoint_seqset">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
+					<para><varname>tnpoint_seqset(tnpoint[]):tnpoint_seqset</varname></para>
+					<para><varname>tnpoint_seqset(npoint,periodset,boolean=true):tnpoint_seqset</varname></para>
+					<programlisting>
+SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,
+  Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]']);
+-- {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, NPoint(1,0.5)@2000-01-03],
+  [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]}
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+	</sect1>
+
+	<sect1 id="casting_temporal_network_types">
+		<title>Conversión de puntos de red temporales</title>
+
+		<para>Un valor de punto de red temporal se puede convertir en y desde un punto de geometría temporal. Esto se puede hacer usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname>. Se devuelve un valor nulo si alguno de los valores de puntos de geometría que componen no se puede convertir en un valor <varname>npoint</varname>.</para>
+		<itemizedlist>
+			<listitem id="tnpoint_tgeompoint">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir un punto de red temporal en un punto de geometría temporal</para>
+				<para><varname>tnpoint::tgeompoint</varname></para>
+				<programlisting>
+SELECT astext((tnpoint '[NPoint(1, 0.2)@2001-01-01,
+  NPoint(1, 0.3)@2001-01-02)')::tgeompoint);
+-- [POINT(23.057077727326 28.7666335767956)@2001-01-01,
+  POINT(48.7117553116406 20.9256801894708)@2001-01-02)
+				</programlisting>
+			</listitem>
+
+			<listitem id="tgeompoint_tnpoint">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Convertir un punto de geometría temporal en un punto de red temporal</para>
+				<para><varname>tgeompoint::tnpoint</varname></para>
+				<programlisting>
+SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
+  POINT(48.7117553116406 20.9256801894708)@2001-01-02)'::tnpoint
+-- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02)
+SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
+  POINT(48.7117553116406 20.9)@2001-01-02)'::tnpoint
+-- NULL
+				</programlisting>
+			</listitem>
+		</itemizedlist>
+		<para>Damos a continuación las funciones y operadores para los tipos de puntos de red.</para>
+	</sect1>
+
+	<sect1 id="functions_temporal_network_points">
+		<title>Funciones y operadores para los tipos de puntos de red</title>
+
+		<para>Todas las funciones para tipos temporales descritas en <xref linkend="manipulating_temporal_types" /> se pueden aplicar para tipos de puntos de red temporales. Por lo tanto, en las firmas de las funciones, la notación <varname>base</varname> también representa un <varname>npoint</varname> y las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y <varname>tgeompoint</varname> también representan un <varname>tnpoint </varname>. Además, las funciones que tienen un argumento de tipo <varname>geometry</varname> aceptan además un argumento de tipo <varname>npoint</varname>. Para evitar la redundancia, a continuación solo presentamos algunos ejemplos de estas funciones y operadores para puntos de red temporales.</para>
+
+		<itemizedlist>
+			<listitem id="tnpoint_transform">
+				<indexterm><primary><varname>tnpoint_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>tnpoint_instset</varname></primary></indexterm>
+				<indexterm><primary><varname>tnpoint_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>tnpoint_seqset</varname></primary></indexterm>
+				<para>Transformar un punto de red temporal en otro subtipo</para>
+				<para><varname>tnpoint_inst(tnpoint): tnpoint_inst</varname></para>
+				<para><varname>tnpoint_instset(tnpoint): tnpoint_instset</varname></para>
+				<para><varname>tnpoint_seq(tnpoint): tnpoint_seq</varname></para>
+				<para><varname>tnpoint_seqset(tnpoint): tnpoint_seqset</varname></para>
+				<programlisting>
+SELECT tnpoints(tnpoint 'NPoint(1, 0.5)@2001-01-01');
+-- {[NPoint(1,0.5)@2001-01-01]}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_getValues">
+				<indexterm><primary><varname>getValues</varname></primary></indexterm>
+				<para>Obtener los valores</para>
+				<para><varname>getValues(tnpoint): npoint[]</varname></para>
+				<programlisting>
+SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}');
+-- {"NPoint(1,0.3)","NPoint(1,0.5)"}
+SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.3)@2012-01-02)}');
+-- {"NPoint(1,0.3)"}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_valueAtTimestamp">
+				<indexterm><primary><varname>valueAtTimestamp</varname></primary></indexterm>
+				<para>Obtener el valor en una marca de tiempo</para>
+				<para><varname>valueAtTimestamp(tnpoint,timestamptz): npoint</varname></para>
+				<programlisting>
+SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)',
+  '2012-01-02');
+-- NPoint(1,0.4)
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_length">
+				<indexterm><primary><varname>length</varname></primary></indexterm>
+				<para>Obtener la longitud atravesada por el punto de red temporal</para>
+				<para><varname>length(tnpoint): float</varname></para>
+				<programlisting>
+SELECT length(tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]');
+-- 54.3757408468784
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_cumulativeLength">
+				<indexterm><primary><varname>cumulativeLength</varname></primary></indexterm>
+				<para>Obtener la longitud acumulada atravesada por el punto de red temporal</para>
+				<para><varname>cumulativeLength(tnpoint): tfloat</varname></para>
+				<programlisting>
+SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02,
+  NPoint(1, 0.5)@2000-01-03], [NPoint(1, 0.6)@2000-01-04, NPoint(1, 0.7)@2000-01-05]}');
+-- {[0@2000-01-01, 54.3757408468784@2000-01-02, 54.3757408468784@2000-01-03],
+  [54.3757408468784@2000-01-04, 81.5636112703177@2000-01-05]}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_speed">
+				<indexterm><primary><varname>speed</varname></primary></indexterm>
+				<para>Obtener la velocidad del punto de red temporal en unidades por segundo</para>
+				<para><varname>speed({tnpoint_seq, tpoint_seqset}): tfloat_seqset</varname></para>
+				<programlisting>
+SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, 0.4)@2000-01-02,
+  NPoint(1, 0.6)@2000-01-03]') * 3600 * 24;
+-- Interp=Stepwise;[21.4016800272077@2000-01-01, 14.2677866848051@2000-01-02,
+  14.2677866848051@2000-01-03]
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_stbox">
+				<indexterm><primary><varname>stbox</varname></primary></indexterm>
+				<para>Construir el cuadro delimitador a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</para>
+				<para><varname>stbox(npoint): stbox</varname></para>
+				<para><varname>stbox(npoint,{timestamptz,period}): stbox</varname></para>
+				<programlisting>
+SELECT stbox(npoint 'NPoint(1,0.3)');
+-- STBOX((48.711754,20.92568),(48.711758,20.925682))
+SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2000-01-01');
+-- STBOX T((62.786633,80.143555,2000-01-01),(62.786636,80.143562,2000-01-01))
+SELECT stbox(npoint 'NPoint(1,0.3)', period '[2000-01-01,2000-01-02]');
+-- STBOX T((62.786633,80.143555,2000-01-01),(62.786636,80.143562,2000-01-02))
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_twCentroid">
+				<indexterm><primary><varname>twCentroid</varname></primary></indexterm>
+				<para>Obtener el centroide ponderado en el tiempo</para>
+				<para><varname>twCentroid(tnpoint): geometry(Point)</varname></para>
+				<programlisting>
+SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2012-01-01,
+  NPoint(1, 0.5)@2012-01-02, NPoint(1, 0.5)@2012-01-03, NPoint(1, 0.7)@2012-01-04)}'));
+-- POINT(79.9787466444847 46.2385558051041)
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_azimuth">
+				<indexterm><primary><varname>azimuth</varname></primary></indexterm>
+				<para>Obtener el acimut temporal</para>
+				<para><varname>azimuth(tnpoint): tfloat</varname></para>
+				<programlisting>
+SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-02]');
+-- {[0.974681063778863@2012-01-01 00:00:00+01,
+  0.974681063778863@2012-01-01 23:54:36.721091+01),
+  [3.68970843029227@2012-01-01 23:54:36.721091+01,
+  3.68970843029227@2012-01-02 00:00:00+01)}
+				</programlisting>
+				<para>Dado que la geometría subyacente asociada a una ruta puede tener varios vértices, el valor de acimut puede cambiar entre instantes del punto de red temporal de entrada, como se muestra en el ejemplo anterior.</para>
+			</listitem>
+
+			<listitem id="tnpoint_nearestApproachInstant">
+				<indexterm><primary><varname>nearestApproachInstant</varname></primary></indexterm>
+				<para>Obtener el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
+				<para><varname>nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}): tpoint</varname></para>
+				<programlisting>
+SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,
+  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');
+-- NPoint(2,0.349928)@2012-01-01 02:59:44.402905+01
+SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,
+  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');
+-- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_nearestApproachDistance">
+				<indexterm><primary><varname>nearestApproachDistance</varname></primary></indexterm>
+				<para>Obtener la distancia más pequeña entre los dos argumentos</para>
+				<para><varname>nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}): float</varname></para>
+				<programlisting>
+SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,
+  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');
+-- 1.41793220500979
+SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,
+  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');
+-- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01
+				</programlisting>
+				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar búsquedas más cercanas utilizando un índice GiST (ver <xref linkend="indexing_temporal_types" />).</para>
+			</listitem>
+
+			<listitem id="tnpoint_shortestLine">
+				<indexterm><primary><varname>shortestLine</varname></primary></indexterm>
+				<para>Obtener la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
+				<para><varname>shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}): geometry</varname></para>
+				<para>The function will only return the first line that it finds if there are more than one</para>
+				<programlisting>
+SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,
+  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- LINESTRING(50.7960725266492 48.8266286733015,50 50)
+SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,
+  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)'));
+-- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 46.4385792121146)
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_atValue">
+				<indexterm><primary><varname>atValue</varname></primary></indexterm>
+				<para>Restringir a un valor</para>
+				<para><varname>atValue(tnpoint,base): tnpoint</varname></para>
+				<programlisting>
+SELECT atValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+  'NPoint(2, 0.5)');
+-- {[NPoint(2,0.5)@2012-01-02]}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_atGeometry">
+				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
+				<para>Restringir a una geometría</para>
+				<para><varname>atGeometry(tnpoint,geometry): tnpoint</varname></para>
+				<programlisting>
+SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+  'Polygon((40 40,40 50,50 50,50 40,40 40))');
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_minusValue">
+				<indexterm><primary><varname>minusValue</varname></primary></indexterm>
+				<para>Diferencia con un valor</para>
+				<para><varname>minusValue(tnpoint,base): tnpoint</varname></para>
+				<programlisting>
+SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+  'NPoint(2, 0.5)');
+-- {[NPoint(2,0.3)@2012-01-01, NPoint(2,0.5)@2012-01-02),
+  (NPoint(2,0.5)@2012-01-02, NPoint(2,0.7)@2012-01-03]}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_minusGeometry">
+				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
+				<para>Diferencia con una geometría</para>
+				<para><varname>minusGeometry(tnpoint,geometry): tnpoint</varname></para>
+				<programlisting>
+SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, 0.7)@2012-01-03]',
+  'Polygon((40 40,40 50,50 50,50 40,40 40))');
+-- {(NPoint(2,0.342593)@2012-01-01 05:06:40.364673+01,
+  NPoint(2,0.7)@2012-01-03 00:00:00+01]}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_comp">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Operadores de comparación tradicionales</para>
+				<para><varname>tnpoint = tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &lt;&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &lt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &lt;= tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &gt;= tnpoint: boolean</varname></para>
+				<programlisting>
+SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-02),
+  [NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-03]}' =
+  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';
+-- true
+SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]}' &lt;&gt;
+  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';
+-- false
+SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;
+  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.6)@2001-01-03]';
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_tcomp">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Operadores de comparación temporales</para>
+				<para><varname>tnpoint #= tnpoint: tbool</varname></para>
+				<para><varname>tnpoint #&lt;&gt; tnpoint: tbool</varname></para>
+				<programlisting>
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' #=
+  npoint 'NPoint(1, 0.3)';
+-- {[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03)}
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.8)@2012-01-03)' #&lt;&gt;
+  tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.7)@2012-01-03)';
+-- {[t@2012-01-01, f@2012-01-02], (t@2012-01-02, t@2012-01-03)}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_ever_always">
+				<indexterm><primary><varname>?=</varname></primary></indexterm>
+				<indexterm><primary><varname>&amp;=</varname></primary></indexterm>
+				<para>Operadores de igualdad siempre y alguna vez</para>
+				<para><varname>tnpoint ?= tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &amp;= tnpoint: boolean</varname></para>
+				<programlisting>
+SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.4)@2012-01-04)' ?= Npoint(1, 0.3);
+-- true
+SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.2)@2012-01-04)' &amp;= Npoint(1, 0.2);
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_relpos">
+				<indexterm><primary><varname>::</varname></primary></indexterm>
+				<para>Operadores de posición relativa</para>
+				<para><varname>tnpoint &lt;&lt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &amp;&lt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &gt;&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &amp;&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &lt;&lt;| tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &amp;&lt;| tnpoint: boolean</varname></para>
+				<para><varname>tnpoint |&gt;&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint |&amp;&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &lt;&lt;# tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &amp;&lt;# tnpoint: boolean</varname></para>
+				<para><varname>tnpoint #&gt;&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint |&amp;&gt; tnpoint: boolean</varname></para>
+				<programlisting>
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &lt;&lt;
+  npoint 'NPoint(1, 0.2)'
+-- false
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &lt;&lt;|
+  stbox(npoint 'NPoint(1, 0.5)')
+-- false
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &amp;&gt;
+  npoint 'NPoint(1, 0.3)'::geometry
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &gt;&gt;#
+  tnpoint '[NPoint(1, 0.3)@2000-01-03, NPoint(1, 0.5)@2000-01-05]'
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_topo">
+				<indexterm><primary><varname>&amp;&amp;</varname></primary></indexterm>
+				<indexterm><primary><varname>&lt;@</varname></primary></indexterm>
+				<indexterm><primary><varname>@&gt;</varname></primary></indexterm>
+				<indexterm><primary><varname>~=</varname></primary></indexterm>
+				<indexterm><primary><varname>-|-</varname></primary></indexterm>
+				<para>Operadores topológicos</para>
+				<para><varname>tnpoint &amp;&amp; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint &lt;@ tnpoint: boolean</varname></para>
+				<para><varname>tnpoint @&gt; tnpoint: boolean</varname></para>
+				<para><varname>tnpoint ~= tnpoint: boolean</varname></para>
+				<para><varname>tnpoint -|- tnpoint: boolean</varname></para>
+				<programlisting>
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &amp;&amp;
+  npoint 'NPoint(1, 0.5)'
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' @&gt;
+  stbox(npoint 'NPoint(1, 0.5)')
+-- true
+SELECT npoint 'NPoint(1, 0.5)'::geometry &lt;@
+  tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]'
+-- true
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' ~=
+  tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.35)@2000-01-02,
+  NPoint(1, 0.5)@2000-01-03]'
+-- true
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_smallestDistance">
+				<indexterm><primary><varname>|=|</varname></primary></indexterm>
+				<para>Obtener la distancia más pequeña entre los dos argumentos</para>
+				<para><varname>tgeompoint |=| tnpoint: float</varname></para>
+				<programlisting>
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' |=|
+  npoint 'NPoint(1, 0.2)';
+-- 2.34988300875063
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' |=|
+  geometry 'Linestring(2 2,2 1,3 1)';
+-- 82.2059262761477
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_distance">
+				<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Obtener la distancia temporal</para>
+				<para><varname>tgeompoint &lt;-&gt; tnpoint: tfloat</varname></para>
+				<programlisting>
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt;
+  npoint 'NPoint(1, 0.2)';
+-- [2.34988300875063@2000-01-02 00:00:00+01, 2.34988300875063@2000-01-03 00:00:00+01]
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt;
+  geometry 'Point(50 50)';
+-- [25.0496666945044@2000-01-01 00:00:00+01, 26.4085688426232@2000-01-03 00:00:00+01]
+SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-&gt;
+  tnpoint '[NPoint(1, 0.3)@2000-01-02, NPoint(1, 0.5)@2000-01-04]'
+-- [2.34988300875063@2000-01-02 00:00:00+01, 2.34988300875063@2000-01-03 00:00:00+01]
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_spatialrels">
+				<indexterm><primary><varname>contains</varname></primary></indexterm>
+				<indexterm><primary><varname>disjoint</varname></primary></indexterm>
+				<indexterm><primary><varname>intersects</varname></primary></indexterm>
+				<indexterm><primary><varname>touches</varname></primary></indexterm>
+				<indexterm><primary><varname>dwithin</varname></primary></indexterm>
+				<para>Relaciones posibles espaciales</para>
+				<para><varname>contains(geometry,tnpoint): boolean</varname></para>
+				<para><varname>disjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
+				<para><varname>intersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
+				<para><varname>touches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
+				<para><varname>dwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean</varname></para>
+				<programlisting>
+SELECT contains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');
+-- false
+SELECT disjoint(npoint 'NPoint(2, 0.0)',
+  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');
+-- true
+SELECT intersects(tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)',
+  tnpoint '[NPoint(2, 0.0)@2012-01-01, NPoint(2, 1)@2012-01-03)');
+-- false
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_tspatialrels">
+				<indexterm><primary><varname>tcontains</varname></primary></indexterm>
+				<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
+				<indexterm><primary><varname>tintersects</varname></primary></indexterm>
+				<indexterm><primary><varname>ttouches</varname></primary></indexterm>
+				<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
+				<para>Relaciones espaciales temporales</para>
+				<para><varname>tcontains(geometry,tnpoint): boolean</varname></para>
+				<para><varname>tdisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
+				<para><varname>tintersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
+				<para><varname>ttouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean</varname></para>
+				<para><varname>tdwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean</varname></para>
+				<programlisting>
+SELECT tdisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');
+-- {[t@2012-01-01 00:00:00+01, t@2012-01-03 00:00:00+01)}
+SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)',
+  tnpoint '[NPoint(1, 0.5)@2012-01-01, NPoint(1, 0.3)@2012-01-03)', 1);
+-- {[t@2012-01-01 00:00:00+01, t@2012-01-01 22:35:55.379053+01],
+  (f@2012-01-01 22:35:55.379053+01, t@2012-01-02 01:24:04.620946+01,
+  t@2012-01-03 00:00:00+01)}
+				</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="aggregate_temporal_network_points">
+		<title>Funciones agregadas para puntos de red temporales</title>
+
+		<para>Las tres funciones agregadas para puntos de red temporales se ilustran a continuación.</para>
+
+		<itemizedlist>
+			<listitem id="tnpoint_tcount">
+				<indexterm><primary><varname>tcount</varname></primary></indexterm>
+				<para>Conteo temporal</para>
+				<para><varname>tcount(tnpoint): {tint_instset,tint_seqset}</varname></para>
+				<programlisting>
+WITH Temp(temp) AS (
+SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )
+SELECT tcount(Temp)
+FROM Temp
+-- {[1@2012-01-01, 2@2012-01-02, 1@2012-01-04, 1@2012-01-05)}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_wcount">
+				<indexterm><primary><varname>wcount</varname></primary></indexterm>
+				<para>Conteo de ventana</para>
+				<para><varname>wcount(tnpoint): {tint_instset,tint_seqset}</varname></para>
+				<programlisting>
+WITH Temp(temp) AS (
+SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )
+SELECT wcount(Temp, '1 day')
+FROM Temp
+-- {[1@2012-01-01, 2@2012-01-02, 3@2012-01-03, 2@2012-01-04, 1@2012-01-05,
+  1@2012-01-06)}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_tcentroid">
+				<indexterm><primary><varname>tcentroid</varname></primary></indexterm>
+				<para>Centroide temporal</para>
+				<para><varname>tcentroid(tnpoint): tgeompoint</varname></para>
+				<programlisting>
+WITH Temp(temp) AS (
+SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' UNION
+SELECT tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)' )
+SELECT astext(tcentroid(Temp))
+FROM Temp
+-- {[POINT(72.451531682218 76.5231414472853)@2012-01-01,
+  POINT(55.7001249027598 72.9552602410653)@2012-01-03)}
+				</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="indexing_temporal_network_points">
+		<title>Indexación de puntos de red temporales</title>
+
+		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de puntos de redes temporales. A continuación, se muestra un ejemplo de creación de índice:</para>
+		<programlisting>
+CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
+		</programlisting>
+		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los puntos de la red temporal, que es un <varname>stbox</varname> y, por lo tanto, almacena las coordenadas absolutas del espacio subyacente.</para>
+
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores:</para>
+		<itemizedlist>
+			<listitem>
+				<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;&gt;</varname>, que solo consideran la dimensión espacial en puntos de la red temporal,</para>
+			</listitem>
+			<listitem>
+				<para><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, <varname>#&gt;&gt;</varname>, que solo consideran la dimensión temporal en puntos de la red temporal,</para>
+			</listitem>
+			<listitem>
+				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>-|-</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta.</para>
+			</listitem>
+		</itemizedlist>
+		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos. Además, un índice GiST puede acelerar las consultas del vecino más cercano que involucran al operador <varname>|=|</varname>.</para>
+	</sect1>
+</chapter>
