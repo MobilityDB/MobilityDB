@@ -11,7 +11,6 @@ point/src/tpoint_datagen.c
 point/src/tpoint_parser.c
 point/src/tpoint_posops.c
 point/src/tpoint_gist.c
-point/src/tpoint_mvt.c
 point/src/tpoint_spgist.c
 point/src/tpoint_tile.c
 point/src/projection_gk.c

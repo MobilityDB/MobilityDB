@@ -1927,11 +1927,11 @@ tpoint_transform(PG_FUNCTION_ARGS)
 static TInstant *
 tpointinst_convert_tgeom_tgeog(const TInstant *inst, bool oper)
 {
-    Datum point = (oper == GEOG_FROM_GEOM) ?
-      call_function1(geography_from_geometry, tinstant_value(inst)) :
-      call_function1(geometry_from_geography, tinstant_value(inst));
-    return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
-      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+  Datum point = (oper == GEOG_FROM_GEOM) ?
+    call_function1(geography_from_geometry, tinstant_value(inst)) :
+    call_function1(geometry_from_geography, tinstant_value(inst));
+  return tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
+    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
 }
 
 /**
@@ -1964,12 +1964,13 @@ tpointinstset_convert_tgeom_tgeog(const TInstantSet *ti, bool oper)
   gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
+  Oid result_oid = (oper == GEOG_FROM_GEOM) ?
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
   for (int i = 0; i < ti->count; i++)
   {
     inst = tinstantset_inst_n(ti, i);
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    instants[i] = tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
-      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    instants[i] = tinstant_make(point, inst->t, result_oid);
     pfree(DatumGetPointer(point));
   }
   lwmpoint_free(lwmpoint);
@@ -2006,12 +2007,13 @@ tpointseq_convert_tgeom_tgeog(const TSequence *seq, bool oper)
   gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  Oid result_oid = (oper == GEOG_FROM_GEOM) ?
+      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    instants[i] = tinstant_make(point, inst->t, (oper == GEOG_FROM_GEOM) ?
-      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    instants[i] = tinstant_make(point, inst->t, result_oid);
     pfree(DatumGetPointer(point));
   }
   lwmpoint_free(lwmpoint);
@@ -2058,10 +2060,10 @@ tpoint_convert_tgeom_tgeog(const Temporal *temp, bool oper)
   return result;
 }
 
-/**
- * Converts the temporal point to a geometry/geography point
- */
 PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
+/**
+ * Converts a temporal geometry point to a temporal geography point
+ */
 PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
@@ -2072,6 +2074,9 @@ tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
+/**
+ * Converts a temporal geography point to a temporal geometry point
+ */
 PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
@@ -2145,7 +2150,7 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
  * Get the X coordinates of the temporal point
  */
 static Datum
-tpoint_get_x_internal(Datum point)
+point_get_x(Datum point)
 {
   POINT4D p;
   datum_get_point4d(&p, point);
@@ -2163,7 +2168,7 @@ tpoint_get_x(PG_FUNCTION_ARGS)
   ensure_tgeo_base_type(temp->basetypid);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &tpoint_get_x_internal;
+  lfinfo.func = (varfunc) &point_get_x;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
@@ -2175,7 +2180,7 @@ tpoint_get_x(PG_FUNCTION_ARGS)
  * Get the Y coordinates of the temporal point
  */
 static Datum
-tpoint_get_y_internal(Datum point)
+point_get_y(Datum point)
 {
   POINT4D p;
   datum_get_point4d(&p, point);
@@ -2193,7 +2198,7 @@ tpoint_get_y(PG_FUNCTION_ARGS)
   ensure_tgeo_base_type(temp->basetypid);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &tpoint_get_y_internal;
+  lfinfo.func = (varfunc) &point_get_y;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
@@ -2205,7 +2210,7 @@ tpoint_get_y(PG_FUNCTION_ARGS)
  * Get the Z coordinates of the temporal point
  */
 static Datum
-tpoint_get_z_internal(Datum point)
+point_get_z(Datum point)
 {
   POINT4D p;
   datum_get_point4d(&p, point);
@@ -2224,7 +2229,7 @@ tpoint_get_z(PG_FUNCTION_ARGS)
   ensure_has_Z_tpoint(temp);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &tpoint_get_z_internal;
+  lfinfo.func = (varfunc) &point_get_z;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
@@ -2459,8 +2464,7 @@ tpointseq_speed(const TSequence *seq)
     speed = datum_point_eq(value1, value2) ? 0 :
       DatumGetFloat8(func(value1, value2)) /
         ((double)(inst2->t - inst1->t) / 1000000);
-    instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t,
-      FLOAT8OID);
+    instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t, FLOAT8OID);
     inst1 = inst2;
     value1 = value2;
   }
@@ -3262,7 +3266,7 @@ tpointinstset_split(const TInstantSet *ti, bool *splits, int count)
       end++;
     /* Construct piece from start to end */
     for (int j = 0; j < end - start; j++)
-      instants[j] = (TInstant *) tinstantset_inst_n(ti, j + start);
+      instants[j] = tinstantset_inst_n(ti, j + start);
     result[k++] = tinstantset_make(instants, end - start, MERGE_NO);
     /* Continue with the next split */
     start = end;
@@ -4043,8 +4047,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
     {
       if (overlaps)
       {
-        sequences[i] = tpointseq_at_geometry(seq, geom,
-          &countseqs[i]);
+        sequences[i] = tpointseq_at_geometry(seq, geom, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }
@@ -4059,8 +4062,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
       }
       else
       {
-        sequences[i] = tpointseq_minus_geometry1(seq, geom,
-          &countseqs[i]);
+        sequences[i] = tpointseq_minus_geometry1(seq, geom, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }
