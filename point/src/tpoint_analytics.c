@@ -2382,7 +2382,7 @@ tpoint_decouple(const Temporal *temp, ArrayType **timesarr)
 
 PG_FUNCTION_INFO_V1(AsMVTGeom);
 /**
- * Transform to tpoint to Mapbox Vector Tile format
+ * Transform the temporal point to Mapbox Vector Tile format
  */
 Datum
 AsMVTGeom(PG_FUNCTION_ARGS)
