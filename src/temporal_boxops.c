@@ -58,6 +58,7 @@
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_boxops.h"
+#include "tnpoint_boxops.h"
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types
@@ -164,6 +165,8 @@ tinstant_make_bbox(void *box, const TInstant *inst)
   }
   else if (tgeo_base_type(inst->basetypid))
     tpointinst_make_stbox((STBOX *) box, inst);
+  else if (inst->basetypid == type_oid(T_NPOINT))
+    tnpointinst_make_stbox((STBOX *) box, inst);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       inst->basetypid);
@@ -226,6 +229,8 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
   else if (tgeo_base_type(instants[0]->basetypid))
     tpointinstarr_to_stbox((STBOX *) box, instants, count);
+  else if (instants[0]->basetypid == type_oid(T_NPOINT))
+    tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
   else 
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
@@ -257,6 +262,13 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
    * here in case this is no longer the case
   else if (tgeo_base_type(instants[0]->basetypid))
     tpointinstarr_to_stbox((STBOX *) box, instants, count); */
+  else if (instants[0]->basetypid == type_oid(T_NPOINT))
+  {
+    if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
+      tnpointinstarr_linear_to_stbox((STBOX *) box, instants, count);
+    else
+      tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
+  }
   else 
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
@@ -313,6 +325,8 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
     tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
   else if (tgeo_base_type(sequences[0]->basetypid))
     tpointseqarr_to_stbox((STBOX *) box, sequences, count);
+  else if (sequences[0]->basetypid == type_oid(T_NPOINT))
+    tnpointseqarr_to_stbox((STBOX *) box, sequences, count);
   else 
     elog(ERROR, "unknown bounding box function for base type: %d",
       sequences[0]->basetypid);

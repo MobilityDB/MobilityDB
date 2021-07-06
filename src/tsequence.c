@@ -54,6 +54,8 @@
 #include "tpoint_boxops.h"
 #include "tpoint_spatialfuncs.h"
 
+#include "tnpoint_spatialfuncs.h"
+
 /*****************************************************************************
  * Compute the intersection, if any, of a segment of a temporal sequence and
  * a value. The functions only return true when there is an intersection at
@@ -133,6 +135,8 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
     result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
   else if (tgeo_base_type(inst1->basetypid))
     result = tpointseq_intersection_value(inst1, inst2, value, t);
+  else if (inst1->basetypid == type_oid(T_NPOINT))
+    result = tnpointseq_intersection_value(inst1, inst2, value, t);
   else
     elog(ERROR, "unknown intersection function for continuous base type: %d",
       inst1->basetypid);
@@ -367,6 +371,21 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
  * Returns true if the three values are collinear
  *
  * @param[in] basetypid Oid of the base type
+ * @param[in] np1,np2,np3 Input values
+ * @param[in] ratio Value in [0,1] representing the duration of the
+ * timestamps associated to `np1` and `np2` divided by the duration
+ * of the timestamps associated to `np1` and `np3`
+ */
+static bool
+npoint_collinear(npoint *np1, npoint *np2, npoint *np3, double ratio)
+{
+  return float_collinear(np1->pos, np2->pos, np3->pos, ratio);
+}
+
+/**
+ * Returns true if the three values are collinear
+ *
+ * @param[in] basetypid Oid of the base type
  * @param[in] value1,value2,value3 Input values
  * @param[in] t1,t2,t3 Input timestamps
  */
@@ -396,6 +415,9 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_DOUBLE4))
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
+  if (basetypid == type_oid(T_NPOINT))
+    return npoint_collinear(DatumGetNpoint(value1), DatumGetNpoint(value2),
+      DatumGetNpoint(value3), ratio);
   elog(ERROR, "unknown collinear operation for base type: %d", basetypid);
 }
 
@@ -899,6 +921,9 @@ tsequence_append_tinstant(const TSequence *seq, const TInstant *inst)
   assert(seq->basetypid == inst->basetypid);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, seq->count - 1);
+  bool isnpoint = inst1->basetypid == type_oid(T_NPOINT);
+  if (isnpoint)
+    ensure_same_rid_tnpointinst(inst, inst1);
   /* Notice that we cannot call ensure_increasing_timestamps since we must
    * take into account the inclusive/exclusive bounds */
   if (inst1->t > inst->t)
@@ -3231,6 +3256,14 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
   {
     return geoseg_interpolate_point(value1, value2, ratio);
+  }
+  if (basetypid == type_oid(T_NPOINT))
+  {
+    npoint *np1 = DatumGetNpoint(value1);
+    npoint *np2 = DatumGetNpoint(value2);
+    double pos = np1->pos + (np2->pos - np1->pos) * ratio;
+    npoint *result = npoint_make(np1->rid, pos);
+    return PointerGetDatum(result);
   }
   elog(ERROR, "unknown interpolation function for continuous base type: %d", basetypid);
 }
