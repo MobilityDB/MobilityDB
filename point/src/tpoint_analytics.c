@@ -1145,7 +1145,7 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    seq = tsequenceset_seq_n(ts, i);
     sequences[i] = tfloatseq_simplify(seq, eps_dist, minpts);
   }
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
@@ -1820,14 +1820,14 @@ tpointinst_affine(TInstant *inst, const AFFINE *a)
 {
   int srid = tpointinst_srid(inst);
   Datum value = tinstant_value(inst);
-  double x, y, z;
+  double x, y;
   LWPOINT *lwpoint;
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
     POINT3DZ p3d = datum_get_point3dz(value);
     x = p3d.x;
     y = p3d.y;
-    z = p3d.z;
+    double z = p3d.z;
     p3d.x = a->afac * x + a->bfac * y + a->cfac * z + a->xoff;
     p3d.y = a->dfac * x + a->efac * y + a->ffac * z + a->yoff;
     p3d.z = a->gfac * x + a->hfac * y + a->ifac * z + a->zoff;
@@ -1862,14 +1862,14 @@ tpointinstset_affine(TInstantSet *ti, const AFFINE *a)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
-    double x, y, z;
+    double x, y;
     LWPOINT *lwpoint;
     if (MOBDB_FLAGS_GET_Z(ti->flags))
     {
       POINT3DZ p3d = datum_get_point3dz(value);
       x = p3d.x;
       y = p3d.y;
-      z = p3d.z;
+      double z = p3d.z;
       p3d.x = a->afac * x + a->bfac * y + a->cfac * z + a->xoff;
       p3d.y = a->dfac * x + a->efac * y + a->ffac * z + a->yoff;
       p3d.z = a->gfac * x + a->hfac * y + a->ifac * z + a->zoff;
@@ -1906,14 +1906,14 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
     Datum value = tinstant_value(inst);
-    double x, y, z;
+    double x, y;
     LWPOINT *lwpoint;
     if (MOBDB_FLAGS_GET_Z(seq->flags))
     {
       POINT3DZ p3d = datum_get_point3dz(value);
       x = p3d.x;
       y = p3d.y;
-      z = p3d.z;
+      double z = p3d.z;
       p3d.x = a->afac * x + a->bfac * y + a->cfac * z + a->xoff;
       p3d.y = a->dfac * x + a->efac * y + a->ffac * z + a->yoff;
       p3d.z = a->gfac * x + a->hfac * y + a->ifac * z + a->zoff;
