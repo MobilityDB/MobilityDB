@@ -2387,38 +2387,21 @@ PG_FUNCTION_INFO_V1(AsMVTGeom);
 Datum
 AsMVTGeom(PG_FUNCTION_ARGS)
 {
-  TupleDesc resultTupleDesc;
-  HeapTuple resultTuple;
-  bool result_is_null[2] = {0,0}; /* needed to say no value is null */
-  Datum result_values[2]; /* used to construct the composite return value */
-  Datum result; /* the actual composite return value */
-
-  if (PG_ARGISNULL(0))
-    PG_RETURN_NULL();
-
-  if (PG_ARGISNULL(1))
-  {
-    elog(ERROR, "%s: Geometric bounds cannot be null", __func__);
-    PG_RETURN_NULL();
-  }
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *bounds = PG_GETARG_STBOX_P(1);
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     elog(ERROR, "%s: Geometric bounds are too small", __func__);
     PG_RETURN_NULL();
   }
-
-  int32_t extent = PG_ARGISNULL(2) ? 4096 : PG_GETARG_INT32(2);
+  int32_t extent = PG_GETARG_INT32(2);
   if (extent <= 0)
   {
     elog(ERROR, "%s: Extent must be greater than 0", __func__);
     PG_RETURN_NULL();
   }
-
-  int32_t buffer = PG_ARGISNULL(3) ? 256 : PG_GETARG_INT32(3);
-  bool clip_geom = PG_ARGISNULL(4) ? true : PG_GETARG_BOOL(4);
-
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  int32_t buffer = PG_GETARG_INT32(3);
+  bool clip_geom = PG_GETARG_BOOL(4);
 
   /* Clip temporal point immediately, to reduce the number of instants to
    * be processed. In PostGIS this is done at the last step */
@@ -2467,8 +2450,15 @@ AsMVTGeom(PG_FUNCTION_ARGS)
   Datum geom = tpoint_decouple(temp2, &timesarr);
 
   /* Build a tuple description for the function output */
+  TupleDesc resultTupleDesc;
   get_call_result_type(fcinfo, NULL, &resultTupleDesc);
   BlessTupleDesc(resultTupleDesc);
+
+  /* Construct the result */
+  HeapTuple resultTuple;
+  bool result_is_null[2] = {0,0}; /* needed to say no value is null */
+  Datum result_values[2]; /* used to construct the composite return value */
+  Datum result; /* the actual composite return value */
   /* Store geometry */
   result_values[0] = geom;
   /* Store timestamp array */

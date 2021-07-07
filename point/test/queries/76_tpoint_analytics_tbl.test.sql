@@ -74,11 +74,11 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT st_astext(geoMeasure(t1.temp, t2.temp)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
-SELECT st_astext(geoMeasure(t1.temp, t2.temp)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(geoMeasure(t1.temp, t2.temp)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(geoMeasure(t1.temp, t2.temp)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
 
-SELECT st_astext(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL;
-SELECT st_astext(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL;
+SELECT ST_AsText(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
 
 -------------------------------------------------------------------------------
 
@@ -90,6 +90,14 @@ SELECT MAX(numInstants(simplify(temp, 4))) FROM tbl_tgeompoint;
 SELECT round(MAX(ST_Length((mvt).geom))::numeric, 6), MAX(array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(temp, stbox 'STBOX((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
+
+SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
+
+SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
 
 -------------------------------------------------------------------------------
 
