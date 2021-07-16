@@ -720,24 +720,24 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
   const POINT4D *B, POINT4D *closest, double *dist)
 {
   GEOGRAPHIC_EDGE e;
-  GEOGRAPHIC_POINT a, proj;
-  double length, /* length from A to the closest point */
+  GEOGRAPHIC_POINT gp, proj;
+  long double length, /* length from A to the closest point */
     seglength; /* length of the segment AB */
   long double result; /* ratio */
 
   /* Initialize target point */
-  geographic_point_init(p->x, p->y, &a);
+  geographic_point_init(p->x, p->y, &gp);
 
   /* Initialize edge */
   geographic_point_init(A->x, A->y, &(e.start));
   geographic_point_init(B->x, B->y, &(e.end));
 
   /* Get the spherical distance between point and edge */
-  *dist = edge_distance_to_point(&e, &a, &proj);
+  *dist = edge_distance_to_point(&e, &gp, &proj);
 
   /* Compute distance from beginning of the segment to closest point */
-  seglength = sphere_distance(&(e.start), &(e.end));
-  length = sphere_distance(&(e.start), &proj);
+  seglength = (long double) sphere_distance(&(e.start), &(e.end));
+  length = (long double) sphere_distance(&(e.start), &proj);
   result = length / seglength;
 
   if (closest)

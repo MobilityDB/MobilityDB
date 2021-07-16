@@ -3261,7 +3261,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   {
     npoint *np1 = DatumGetNpoint(value1);
     npoint *np2 = DatumGetNpoint(value2);
-    double pos = np1->pos + (np2->pos - np1->pos) * ratio;
+    double pos = np1->pos + (double) ((long double)(np2->pos - np1->pos) * ratio);
     npoint *result = npoint_make(np1->rid, pos);
     return PointerGetDatum(result);
   }

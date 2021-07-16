@@ -58,12 +58,26 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
   double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, TimestampTz tmin, TimestampTz tmax)
 {
-  STBOX *result = palloc0(sizeof(STBOX));
-  MOBDB_FLAGS_SET_X(result->flags, hasx);
-  MOBDB_FLAGS_SET_Z(result->flags, hasz);
-  MOBDB_FLAGS_SET_T(result->flags, hast);
-  MOBDB_FLAGS_SET_GEODETIC(result->flags, geodetic);
-  result->srid = srid;
+  /* Note: zero-fill is required here, just as in heap tuples */
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  stbox_set(result, hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, tmin, tmax);
+  return result;
+}
+
+/**
+ * Set the spatiotemporal box from the argument values
+ */
+void
+stbox_set(STBOX *box, bool hasx, bool hasz, bool hast, bool geodetic,
+  int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, TimestampTz tmin, TimestampTz tmax)
+{
+  MOBDB_FLAGS_SET_X(box->flags, hasx);
+  MOBDB_FLAGS_SET_Z(box->flags, hasz);
+  MOBDB_FLAGS_SET_T(box->flags, hast);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+  box->srid = srid;
 
   /* Process X min/max */
   if (hasx)
@@ -75,8 +89,8 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
       xmin = xmax;
       xmax = tmp;
     }
-    result->xmin = xmin;
-    result->xmax = xmax;
+    box->xmin = xmin;
+    box->xmax = xmax;
 
     /* Process Y min/max */
     if (ymin > ymax)
@@ -85,8 +99,8 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
       ymin = ymax;
       ymax = tmp;
     }
-    result->ymin = ymin;
-    result->ymax = ymax;
+    box->ymin = ymin;
+    box->ymax = ymax;
 
     if (hasz || geodetic)
     {
@@ -97,8 +111,8 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
         zmin = zmax;
         zmax = tmp;
       }
-      result->zmin = zmin;
-      result->zmax = zmax;
+      box->zmin = zmin;
+      box->zmax = zmax;
     }
   }
 
@@ -112,10 +126,10 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
       tmin = tmax;
       tmax = ttmp;
     }
-    result->tmin = tmin;
-    result->tmax = tmax;
+    box->tmin = tmin;
+    box->tmax = tmax;
   }
-  return result;
+  return;
 }
 
 /**

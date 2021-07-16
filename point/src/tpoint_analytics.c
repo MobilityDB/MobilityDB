@@ -2213,8 +2213,23 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   /* Snap to integer precision, removing duplicate points */
   Temporal *tpoint4 = tpoint_grid(tpoint3, &grid);
 
+  /* Clip temporal point taking into account the buffer */
+  Temporal *tpoint5;
+  if (clip_geom)
+  {
+    double max = (double) extent + (double) buffer;
+    double min = -(double) buffer;
+    STBOX clip_box;
+    stbox_set(&clip_box, true, false, false, false, 0, min, max, min, max,
+      0, 0, 0, 0);
+    tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
+    pfree(tpoint4);
+  }
+  else
+    tpoint5 = tpoint4;
+
   pfree(tpoint1); pfree(tpoint2); pfree(tpoint3);
-  return tpoint4;
+  return tpoint5;
 }
 
 /*****************************************************************************/
@@ -2403,25 +2418,9 @@ AsMVTGeom(PG_FUNCTION_ARGS)
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);
 
-  /* Clip temporal point immediately, to reduce the number of instants to
-   * be processed. In PostGIS this is done at the last step */
-
-  Temporal *temp1;
-  if (clip_geom)
-  {
-    temp1 = tpoint_at_stbox_internal(temp, bounds);
-    if (temp1 == NULL)
-    {
-      PG_FREE_IF_COPY(temp, 0);
-      PG_RETURN_NULL();
-    }
-  }
-  else
-    temp1 = temp;
-
   /* Bounding box test to drop geometries smaller than the resolution */
   STBOX box;
-  temporal_bbox(&box, temp1);
+  temporal_bbox(&box, temp);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   /* We use half of the square height and width as limit: We use this
@@ -2430,24 +2429,20 @@ AsMVTGeom(PG_FUNCTION_ARGS)
   double bounds_height = ((bounds->ymax - bounds->ymin) / extent) / 2.0;
   if (tpoint_width < bounds_width && tpoint_height < bounds_height)
   {
-    if (clip_geom)
-      pfree(temp1);
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
   }
 
-  Temporal *temp2 = tpoint_mvt(temp1, bounds, extent, buffer, clip_geom);
-  if (temp2 == NULL)
+  Temporal *temp1 = tpoint_mvt(temp, bounds, extent, buffer, clip_geom);
+  if (temp1 == NULL)
   {
-    if (clip_geom)
-      pfree(temp1);
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
   }
 
   /* Decouple the geometry and the timestamps */
   ArrayType *timesarr;
-  Datum geom = tpoint_decouple(temp2, &timesarr);
+  Datum geom = tpoint_decouple(temp1, &timesarr);
 
   /* Build a tuple description for the function output */
   TupleDesc resultTupleDesc;
@@ -2467,9 +2462,7 @@ AsMVTGeom(PG_FUNCTION_ARGS)
   resultTuple = heap_form_tuple(resultTupleDesc, result_values, result_is_null);
   result = HeapTupleGetDatum(resultTuple);
 
-  if (clip_geom)
-    pfree(temp1);
-  pfree(temp2);
+  pfree(temp1);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
