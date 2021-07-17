@@ -608,7 +608,7 @@ temporal_parse(char **str, Oid basetype)
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
   bool linear = base_type_continuous(basetype);
-  /* Starts with "Interp=Stepwise" */
+  /* Starts with "Interp=Stepwise;" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
     /* Move str after the semicolon */

@@ -2532,12 +2532,11 @@ Datum
 tpointinstset_twcentroid(const TInstantSet *ti)
 {
   int srid = tpointinstset_srid(ti);
+  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
   TInstant **instantsx = palloc(sizeof(TInstant *) * ti->count);
   TInstant **instantsy = palloc(sizeof(TInstant *) * ti->count);
-  TInstant **instantsz = NULL; /* keep compiler quiet */
-  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
-  if (hasz)
-    instantsz = palloc(sizeof(TInstant *) * ti->count);
+  TInstant **instantsz = hasz ?
+    instantsz = palloc(sizeof(TInstant *) * ti->count) : NULL;
 
   for (int i = 0; i < ti->count; i++)
   {
@@ -2554,14 +2553,11 @@ tpointinstset_twcentroid(const TInstantSet *ti)
   }
   TInstantSet *tix = tinstantset_make_free(instantsx, ti->count, MERGE_NO);
   TInstantSet *tiy = tinstantset_make_free(instantsy, ti->count, MERGE_NO);
-  TInstantSet *tiz = NULL; /* keep compiler quiet */
-  if (hasz)
-    tiz = tinstantset_make_free(instantsz, ti->count, MERGE_NO);
+  TInstantSet *tiz = hasz ?
+    tinstantset_make_free(instantsz, ti->count, MERGE_NO) : NULL;
   double twavgx = tnumberinstset_twavg(tix);
   double twavgy = tnumberinstset_twavg(tiy);
-  double twavgz = 0;
-  if (hasz)
-    twavgz = tnumberinstset_twavg(tiz);
+  double twavgz = hasz ? tnumberinstset_twavg(tiz) : 0;
   Datum result = point_make(twavgx, twavgy, twavgz, hasz, false, srid);
 
   pfree(tix); pfree(tiy);
@@ -2578,12 +2574,11 @@ Datum
 tpointseq_twcentroid(const TSequence *seq)
 {
   int srid = tpointseq_srid(seq);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   TInstant **instantsx = palloc(sizeof(TInstant *) * seq->count);
   TInstant **instantsy = palloc(sizeof(TInstant *) * seq->count);
-  TInstant **instantsz;
-  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
-  if (hasz)
-    instantsz = palloc(sizeof(TInstant *) * seq->count);
+  TInstant **instantsz = hasz ?
+    palloc(sizeof(TInstant *) * seq->count) : NULL;
 
   for (int i = 0; i < seq->count; i++)
   {
@@ -2604,15 +2599,12 @@ tpointseq_twcentroid(const TSequence *seq)
   TSequence *seqy = tsequence_make_free(instantsy, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
     MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
-  TSequence *seqz;
-  if (hasz)
-    seqz = tsequence_make_free(instantsz, seq->count, seq->period.lower_inc,
-      seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
+  TSequence *seqz = hasz ?
+    tsequence_make_free(instantsz, seq->count, seq->period.lower_inc,
+      seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE) : NULL;
   double twavgx = tnumberseq_twavg(seqx);
   double twavgy = tnumberseq_twavg(seqy);
-  double twavgz = 0;
-  if (hasz)
-    twavgz = tnumberseq_twavg(seqz);
+  double twavgz = hasz ? tnumberseq_twavg(seqz) : 0;
   Datum result = point_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(seqx); pfree(seqy);
   if (hasz)
@@ -2628,20 +2620,18 @@ Datum
 tpointseqset_twcentroid(const TSequenceSet *ts)
 {
   int srid = tpointseqset_srid(ts);
+  bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
   TSequence **sequencesx = palloc(sizeof(TSequence *) * ts->count);
   TSequence **sequencesy = palloc(sizeof(TSequence *) * ts->count);
-  TSequence **sequencesz = NULL; /* keep compiler quiet */
-  bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
-  if (hasz)
-    sequencesz = palloc(sizeof(TSequence *) * ts->count);
+  TSequence **sequencesz = hasz ?
+    palloc(sizeof(TSequence *) * ts->count) : NULL;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     TInstant **instantsx = palloc(sizeof(TInstant *) * seq->count);
     TInstant **instantsy = palloc(sizeof(TInstant *) * seq->count);
-    TInstant **instantsz;
-    if (hasz)
-      instantsz = palloc(sizeof(TInstant *) * seq->count);
+    TInstant **instantsz = hasz ?
+      palloc(sizeof(TInstant *) * seq->count) : NULL;
     for (int j = 0; j < seq->count; j++)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
@@ -2668,15 +2658,12 @@ tpointseqset_twcentroid(const TSequenceSet *ts)
   }
   TSequenceSet *tsx = tsequenceset_make_free(sequencesx, ts->count, NORMALIZE);
   TSequenceSet *tsy = tsequenceset_make_free(sequencesy, ts->count, NORMALIZE);
-  TSequenceSet *tsz = NULL; /* keep compiler quiet */
-  if (hasz)
-    tsz = tsequenceset_make_free(sequencesz, ts->count, NORMALIZE);
+  TSequenceSet *tsz = hasz ?
+    tsequenceset_make_free(sequencesz, ts->count, NORMALIZE) : NULL;
 
   double twavgx = tnumberseqset_twavg(tsx);
   double twavgy = tnumberseqset_twavg(tsy);
-  double twavgz;
-  if (hasz)
-    twavgz = tnumberseqset_twavg(tsz);
+  double twavgz = hasz ? tnumberseqset_twavg(tsz) : 0;
   Datum result = point_make(twavgx, twavgy, twavgz, hasz, false, srid);
   pfree(tsx); pfree(tsy);
   if (hasz)

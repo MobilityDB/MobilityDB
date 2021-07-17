@@ -507,16 +507,16 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
  */
 typedef struct
 {
-  const uint8_t *wkb;  /* Points to start of WKB */
-  size_t wkb_size;     /* Expected size of WKB */
-  bool swap_bytes;     /* Do an endian flip? */
-  uint8_t subtype;     /* Current subtype we are handling */
-  int32_t srid;        /* Current SRID we are handling */
-  bool has_z;          /* Z? */
-  bool is_geodetic;    /* Geodetic? */
-  bool has_srid;       /* SRID? */
-  bool linear;         /* Linear interpolation? */
-  const uint8_t *pos;  /* Current parse position */
+  const uint8_t *wkb;  /**< Points to start of WKB */
+  size_t wkb_size;     /**< Expected size of WKB */
+  bool swap_bytes;     /**< Do an endian flip? */
+  uint8_t subtype;     /**< Current subtype we are handling */
+  int32_t srid;        /**< Current SRID we are handling */
+  bool has_z;          /**< Z? */
+  bool is_geodetic;    /**< Geodetic? */
+  bool has_srid;       /**< SRID? */
+  bool linear;         /**< Linear interpolation? */
+  const uint8_t *pos;  /**< Current parse position */
 } wkb_parse_state;
 
 /**********************************************************************/

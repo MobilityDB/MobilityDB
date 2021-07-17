@@ -1954,8 +1954,8 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
 TInstant *
 tpointinst_grid(const TInstant *inst, const gridspec *grid)
 {
-  bool has_z = MOBDB_FLAGS_GET_Z(inst->flags);
-  if (grid->xsize == 0 && grid->ysize == 0 && (has_z ? grid->zsize == 0 : 1))
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  if (grid->xsize == 0 && grid->ysize == 0 && (hasz ? grid->zsize == 0 : 1))
     return tinstant_copy(inst);
 
   int srid = tpointinst_srid(inst);
@@ -1966,16 +1966,16 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   datum_get_point4d(&p, value);
   double x = p.x;
   double y = p.y;
-  double z = has_z ? p.z : 0;
+  double z = hasz ? p.z : 0;
   if (grid->xsize > 0)
     x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
   if (grid->ysize > 0)
     y = rint((p.y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
-  if (has_z && grid->zsize > 0)
+  if (hasz && grid->zsize > 0)
     z = rint((p.z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
 
   /* Write rounded values into the next instant */
-  LWPOINT *lwpoint = has_z ?
+  LWPOINT *lwpoint = hasz ?
     lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
   lwpoint_free(lwpoint);
@@ -1994,7 +1994,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 TInstantSet *
 tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
 {
-  bool has_z = MOBDB_FLAGS_GET_Z(ti->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
   int srid = tpointinstset_srid(ti);
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   int k = 0;
@@ -2008,20 +2008,20 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     datum_get_point4d(&p, value);
     double x = p.x;
     double y = p.y;
-    double z = has_z ? p.z : 0;
+    double z = hasz ? p.z : 0;
     if (grid->xsize > 0)
       x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
     if (grid->ysize > 0)
       y = rint((p.y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
-    if (has_z && grid->zsize > 0)
+    if (hasz && grid->zsize > 0)
       z = rint((p.z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
 
     /* Skip duplicates */
-    if (i > 1 && prev_p.x == x && prev_p.y == y && (has_z ? prev_p.z == z : 1))
+    if (i > 1 && prev_p.x == x && prev_p.y == y && (hasz ? prev_p.z == z : 1))
       continue;
 
     /* Write rounded values into the next instant */
-    LWPOINT *lwpoint = has_z ?
+    LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
     instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t,
@@ -2040,7 +2040,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
 TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid)
 {
-  bool has_z = MOBDB_FLAGS_GET_Z(seq->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int srid = tpointseq_srid(seq);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   int k = 0;
@@ -2054,20 +2054,20 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid)
     datum_get_point4d(&p, value);
     double x = p.x;
     double y = p.y;
-    double z = has_z ? p.z : 0;
+    double z = hasz ? p.z : 0;
     if (grid->xsize > 0)
       x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
     if (grid->ysize > 0)
       y = rint((p.y - grid->ipy) / grid->ysize) * grid->ysize + grid->ipy;
-    if (has_z && grid->zsize > 0)
+    if (hasz && grid->zsize > 0)
       z = rint((p.z - grid->ipz) / grid->zsize) * grid->zsize + grid->ipz;
 
     /* Skip duplicates */
-    if (i > 1 && prev_p.x == x && prev_p.y == y && (has_z ? prev_p.z == z : 1))
+    if (i > 1 && prev_p.x == x && prev_p.y == y && (hasz ? prev_p.z == z : 1))
       continue;
 
     /* Write rounded values into the next instant */
-    LWPOINT *lwpoint = has_z ?
+    LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
     instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t,
@@ -2303,6 +2303,10 @@ tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
 Datum
 tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
 {
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tpointseq_decouple(tsequenceset_seq_n(ts, 0), timesarr);
+
   /* General case */
   uint32_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);

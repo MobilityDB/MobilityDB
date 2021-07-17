@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -529,21 +529,17 @@ stbox_gist_penalty(PG_FUNCTION_ARGS)
  */
 typedef struct
 {
-  int      entriesCount;  /**< total number of entries being split */
-  STBOX    boundingBox;  /**< minimum bounding box across all entries */
+  int  entriesCount;  /**< total number of entries being split */
+  STBOX boundingBox;  /**< minimum bounding box across all entries */
 
   /** Information about currently selected split follows */
-
-  bool    first;      /**< true if no split was selected yet */
-
-  double    leftUpper;    /**< upper bound of left interval */
-  double    rightLower;    /**< lower bound of right interval */
-
-  float4    ratio;
-  float4    overlap;
-  int      dim;      /**< axis of this split */
-  double    range;      /**< width of general MBR projection to the
-                 **< selected axis */
+  bool first;        /**< true if no split was selected yet */
+  double leftUpper;  /**< upper bound of left interval */
+  double rightLower; /**< lower bound of right interval */
+  float4 ratio;
+  float4 overlap;
+  int  dim;          /**< axis of this split */
+  double range;      /**< width of general MBR projection to the selected axis */
 } ConsiderSplitContext;
 
 /**

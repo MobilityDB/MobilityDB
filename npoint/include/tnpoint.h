@@ -44,17 +44,17 @@
 
 typedef struct
 {
-  int64     rid;       /* route identifier */
-  double    pos;       /* position */
+  int64 rid;        /**< route identifier */
+  double pos;       /**< position */
 } npoint;
 
 /* Network-based segment */
 
 typedef struct
 {
-  int64     rid;      /* route identifier */
-  double    pos1;     /* position1 */
-  double    pos2;     /* position2 */
+  int64 rid;       /**< route identifier */
+  double pos1;     /**< position1 */
+  double pos2;     /**< position2 */
 } nsegment;
 
 /*****************************************************************************

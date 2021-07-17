@@ -490,18 +490,26 @@ FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@
 
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(60,60))', clip_geom := false) AS mvt ) AS t;
+              st_astext              | array_length 
+-------------------------------------+--------------
+ LINESTRING(-8192 12288,12288 -8192) |            2
+(1 row)
+
+SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
-               st_astext                | array_length 
-----------------------------------------+--------------
- MULTILINESTRING((-256 4352,4352 -256)) |            2
+            st_astext            | array_length 
+---------------------------------+--------------
+ LINESTRING(-256 4352,4352 -256) |            2
 (1 row)
 
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
-                       st_astext                       | array_length 
--------------------------------------------------------+--------------
- MULTILINESTRING Z ((-256 4352 38.75,4352 -256 61.25)) |            2
+                   st_astext                    | array_length 
+------------------------------------------------+--------------
+ LINESTRING Z (-256 4352 38.75,4352 -256 61.25) |            2
 (1 row)
 
 set force_parallel_mode=off;
