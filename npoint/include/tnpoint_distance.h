@@ -44,8 +44,21 @@ extern Datum distance_tnpoint_geo(PG_FUNCTION_ARGS);
 extern Datum distance_tnpoint_npoint(PG_FUNCTION_ARGS);
 extern Datum distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 
-extern TSequence *distance_tnpointseq_tnpointseq(const TSequence *seq1, const TSequence *seq2);
-extern Temporal *distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2);
+extern Datum NAI_geometry_tnpoint(PG_FUNCTION_ARGS);
+extern Datum NAI_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum NAI_tnpoint_geometry(PG_FUNCTION_ARGS);
+extern Datum NAI_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum NAD_geometry_tnpoint(PG_FUNCTION_ARGS);
+extern Datum NAD_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum NAD_tnpoint_geometry(PG_FUNCTION_ARGS);
+extern Datum NAD_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum shortestline_geometry_tnpoint(PG_FUNCTION_ARGS);
+extern Datum shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum shortestline_tnpoint_geometry(PG_FUNCTION_ARGS);
+extern Datum shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

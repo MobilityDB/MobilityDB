@@ -2559,7 +2559,7 @@ tpointinstset_twcentroid(const TInstantSet *ti)
     tiz = tinstantset_make_free(instantsz, ti->count, MERGE_NO);
   double twavgx = tnumberinstset_twavg(tix);
   double twavgy = tnumberinstset_twavg(tiy);
-  double twavgz;
+  double twavgz = 0;
   if (hasz)
     twavgz = tnumberinstset_twavg(tiz);
   Datum result = point_make(twavgx, twavgy, twavgz, hasz, false, srid);
@@ -2610,7 +2610,7 @@ tpointseq_twcentroid(const TSequence *seq)
       seq->period.upper_inc, MOBDB_FLAGS_GET_LINEAR(seq->flags), NORMALIZE);
   double twavgx = tnumberseq_twavg(seqx);
   double twavgy = tnumberseq_twavg(seqy);
-  double twavgz;
+  double twavgz = 0;
   if (hasz)
     twavgz = tnumberseq_twavg(seqz);
   Datum result = point_make(twavgx, twavgy, twavgz, hasz, false, srid);

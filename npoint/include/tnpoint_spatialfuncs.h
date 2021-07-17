@@ -53,7 +53,7 @@ extern void ensure_same_srid_tnpoint_npoint(const Temporal *temp,
 extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
   const TInstant *inst2);
 
-/* Interpolation functions */ 
+/* Interpolation functions */
 
 extern bool tnpointseq_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t);
@@ -81,22 +81,6 @@ extern Datum tnpoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tnpoint_azimuth(PG_FUNCTION_ARGS);
 extern Datum tnpoint_at_geometry(PG_FUNCTION_ARGS);
 extern Datum tnpoint_minus_geometry(PG_FUNCTION_ARGS);
-
-extern Datum NAI_geometry_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tnpoint_geometry(PG_FUNCTION_ARGS);
-extern Datum NAI_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_geometry_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tnpoint_geometry(PG_FUNCTION_ARGS);
-extern Datum NAD_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_geometry_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_geometry(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

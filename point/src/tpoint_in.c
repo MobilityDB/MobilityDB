@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -380,7 +380,7 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
   if (jstok->err != json_tokener_success)
   {
     char err[256];
-    snprintf(err, 256, "%s (at offset %d)", 
+    snprintf(err, 256, "%s (at offset %d)",
       json_tokener_error_desc(jstok->err), jstok->char_offset);
     json_tokener_free(jstok);
     json_object_put(poObj);
@@ -403,8 +403,8 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
       errmsg("Invalid 'type' value in MFJSON string")));
 
   /*
-   * Determine type of temporal point and dispatch to the 
-   *  corresponding parse function 
+   * Determine type of temporal point and dispatch to the
+   *  corresponding parse function
    */
   poObjInterp = findMemberByName(poObj, "interpolations");
   if (poObjInterp == NULL)
@@ -624,7 +624,6 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
   s->has_z = false;
   s->is_geodetic = false;
   s->has_srid = false;
-  s->has_srid = false;
   if (wkb_type & MOBDB_WKB_ZFLAG)
     s->has_z = true;
   if (wkb_type & MOBDB_WKB_GEODETICFLAG)
@@ -695,7 +694,7 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
   /* Create the instant point */
   Datum value = point_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
-  TInstant *result = tinstant_make(value, t, (s->is_geodetic) ? 
+  TInstant *result = tinstant_make(value, t, (s->is_geodetic) ?
     type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
   pfree(DatumGetPointer(value));
   return result;
@@ -708,7 +707,7 @@ static TInstant **
 tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 {
   TInstant **result = palloc(sizeof(TInstant *) * count);
-  Oid geotype = (s->is_geodetic) ? 
+  Oid geotype = (s->is_geodetic) ?
     type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
   for (int i = 0; i < count; i++)
   {
@@ -806,7 +805,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
     size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
     wkb_parse_state_check(s, size);
     /* Parse the instants */
-    Oid geotype = (s->is_geodetic) ? 
+    Oid geotype = (s->is_geodetic) ?
       type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)
@@ -917,7 +916,7 @@ tpoint_from_hexewkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
-  int hexwkb_len = hexwkb_len = strlen(hexwkb);
+  int hexwkb_len = strlen(hexwkb);
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
   Temporal *temp = tpoint_from_ewkb_internal(wkb, hexwkb_len/2);
   pfree(hexwkb);

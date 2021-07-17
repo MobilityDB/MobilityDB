@@ -1813,16 +1813,16 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
  *****************************************************************************/
 
 /**
- * Affine transform a temporal point.
+ * Affine transform a temporal point (iterator function)
  */
-TInstant *
-tpointinst_affine(TInstant *inst, const AFFINE *a)
+void
+tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
+  const AFFINE *a, int srid, bool hasz)
 {
-  int srid = tpointinst_srid(inst);
   Datum value = tinstant_value(inst);
   double x, y;
   LWPOINT *lwpoint;
-  if (MOBDB_FLAGS_GET_Z(inst->flags))
+  if (hasz)
   {
     POINT3DZ p3d = datum_get_point3dz(value);
     x = p3d.x;
@@ -1843,10 +1843,23 @@ tpointinst_affine(TInstant *inst, const AFFINE *a)
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
   }
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t,
+  *result = tinstant_make(PointerGetDatum(gs), inst->t,
     type_oid(T_GEOMETRY));
   lwpoint_free(lwpoint);
   pfree(gs);
+  return;
+}
+
+/**
+ * Affine transform a temporal point.
+ */
+TInstant *
+tpointinst_affine(const TInstant *inst, const AFFINE *a)
+{
+  int srid = tpointinst_srid(inst);
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  TInstant *result;
+  tpointinst_affine_iterator(&result, inst, a, srid, hasz);
   return result;
 }
 
@@ -1854,41 +1867,15 @@ tpointinst_affine(TInstant *inst, const AFFINE *a)
  * Affine transform a temporal point.
  */
 TInstantSet *
-tpointinstset_affine(TInstantSet *ti, const AFFINE *a)
+tpointinstset_affine(const TInstantSet *ti, const AFFINE *a)
 {
   int srid = tpointinstset_srid(ti);
+  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    Datum value = tinstant_value(inst);
-    double x, y;
-    LWPOINT *lwpoint;
-    if (MOBDB_FLAGS_GET_Z(ti->flags))
-    {
-      POINT3DZ p3d = datum_get_point3dz(value);
-      x = p3d.x;
-      y = p3d.y;
-      double z = p3d.z;
-      p3d.x = a->afac * x + a->bfac * y + a->cfac * z + a->xoff;
-      p3d.y = a->dfac * x + a->efac * y + a->ffac * z + a->yoff;
-      p3d.z = a->gfac * x + a->hfac * y + a->ifac * z + a->zoff;
-      lwpoint = lwpoint_make3dz(srid, p3d.x, p3d.y, p3d.z);
-    }
-    else
-    {
-      POINT2D p2d = datum_get_point2d(value);
-      x = p2d.x;
-      y = p2d.y;
-      p2d.x = a->afac * x + a->bfac * y + a->xoff;
-      p2d.y = a->dfac * x + a->efac * y + a->yoff;
-      lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
-    }
-    GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[i] = tinstant_make(PointerGetDatum(gs), inst->t,
-      type_oid(T_GEOMETRY));
-    lwpoint_free(lwpoint);
-    pfree(gs);
+    tpointinst_affine_iterator(&instants[i], inst, a, srid, hasz);
   }
   TInstantSet *result = tinstantset_make_free(instants, ti->count, MERGE_NO);
   return result;
@@ -1901,38 +1888,12 @@ TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
   int srid = tpointseq_srid(seq);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    Datum value = tinstant_value(inst);
-    double x, y;
-    LWPOINT *lwpoint;
-    if (MOBDB_FLAGS_GET_Z(seq->flags))
-    {
-      POINT3DZ p3d = datum_get_point3dz(value);
-      x = p3d.x;
-      y = p3d.y;
-      double z = p3d.z;
-      p3d.x = a->afac * x + a->bfac * y + a->cfac * z + a->xoff;
-      p3d.y = a->dfac * x + a->efac * y + a->ffac * z + a->yoff;
-      p3d.z = a->gfac * x + a->hfac * y + a->ifac * z + a->zoff;
-      lwpoint = lwpoint_make3dz(srid, p3d.x, p3d.y, p3d.z);
-    }
-    else
-    {
-      POINT2D p2d = datum_get_point2d(value);
-      x = p2d.x;
-      y = p2d.y;
-      p2d.x = a->afac * x + a->bfac * y + a->xoff;
-      p2d.y = a->dfac * x + a->efac * y + a->yoff;
-      lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
-    }
-    GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[i] = tinstant_make(PointerGetDatum(gs), inst->t,
-      type_oid(T_GEOMETRY));
-    lwpoint_free(lwpoint);
-    pfree(gs);
+    tpointinst_affine_iterator(&instants[i], inst, a, srid, hasz);
   }
   /* Construct the result */
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
