@@ -449,7 +449,7 @@ tnpoint_trajectory(PG_FUNCTION_ARGS)
 /**
  * Determines the spatial equality for network points.
  * Two network points may be have different rid but represent the same
- * geographical point at the intersection of the two rids
+ * spatial point at the intersection of the two rids
  */
 bool
 npoint_same_internal(const npoint *np1, const npoint *np2)

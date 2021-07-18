@@ -963,6 +963,10 @@
 				<listitem>
 					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal </para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1528,13 +1532,16 @@
 			</sect3>
 
 			<sect3>
-				<title>Conversión entre red y espacio</title>
+				<title>Funciones espaciales</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Convertir un punto de red en una geometría</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Convertir una geometría en un punto de red</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="npoint_same"><varname>equals</varname></link>: Igualdad espacial para puntos de red</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

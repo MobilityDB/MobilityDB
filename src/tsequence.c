@@ -370,7 +370,6 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
 /**
  * Returns true if the three values are collinear
  *
- * @param[in] basetypid Oid of the base type
  * @param[in] np1,np2,np3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
  * timestamps associated to `np1` and `np2` divided by the duration

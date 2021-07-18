@@ -98,8 +98,8 @@ CREATE TYPE geom_times AS (
   times timestamptz[]
 );
 
-CREATE OR REPLACE FUNCTION AsMVTGeom(tpoint tgeompoint, bounds stbox,
-  extent int4 DEFAULT 4096, buffer int4 DEFAULT 256, clip_geom bool DEFAULT TRUE)
+CREATE OR REPLACE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
+  extent int4 DEFAULT 4096, buffer int4 DEFAULT 256, clip bool DEFAULT TRUE)
 -- RETURNS tgeompoint
 RETURNS geom_times
 AS 'MODULE_PATHNAME','AsMVTGeom'
