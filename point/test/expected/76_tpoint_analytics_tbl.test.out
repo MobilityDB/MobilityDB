@@ -512,5 +512,12 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@
  LINESTRING Z (-256 4352 38.75,4352 -256 61.25) |            2
 (1 row)
 
+/* Errors */
+SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(40,40))');
+ERROR:  AsMVTGeom: Geometric bounds are too small
+SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(60,60))', 0);
+ERROR:  AsMVTGeom: Extent must be greater than 0
 set force_parallel_mode=off;
 SET

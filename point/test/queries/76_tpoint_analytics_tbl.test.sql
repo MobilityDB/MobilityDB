@@ -107,6 +107,12 @@ SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
 
+/* Errors */
+SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(40,40))');
+SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((40,40),(60,60))', 0);
+
 -------------------------------------------------------------------------------
 
 -- set parallel_tuple_cost=100;

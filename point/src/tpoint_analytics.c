@@ -1983,7 +1983,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   /* Construct the result */
   TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t,
     type_oid(T_GEOMETRY));
-  lwpoint_free(lwpoint);
+  /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
 }
@@ -2383,13 +2383,17 @@ AsMVTGeom(PG_FUNCTION_ARGS)
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);
 
-  /* Bounding box test to drop geometries smaller than the resolution */
+  /* Contrary to what is done in PostGIS we do not use the following filter
+   * to enable the visualization of temporal points with instant subtype.
+   * The PostGIS filter adapted to MobilityDB follows.
+
+  / * Bounding box test to drop geometries smaller than the resolution * /
   STBOX box;
   temporal_bbox(&box, temp);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
-  /* We use half of the square height and width as limit: We use this
-   * and not area so it works properly with lines */
+  / * We use half of the square height and width as limit: We use this
+   * and not area so it works properly with lines * /
   double bounds_width = ((bounds->xmax - bounds->xmin) / extent) / 2.0;
   double bounds_height = ((bounds->ymax - bounds->ymin) / extent) / 2.0;
   if (tpoint_width < bounds_width && tpoint_height < bounds_height)
@@ -2397,6 +2401,7 @@ AsMVTGeom(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
   }
+  */
 
   Temporal *temp1 = tpoint_mvt(temp, bounds, extent, buffer, clip_geom);
   if (temp1 == NULL)
