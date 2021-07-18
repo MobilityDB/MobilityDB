@@ -2156,12 +2156,9 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
 
   /* Remove all non-essential points (under the output resolution) */
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
+
   /* Epsilon speed is not taken into account, i.e., parameter set to 0 */
   Temporal *tpoint2 = tpoint_simplify_internal(tpoint1, res, 0);
-
-  /* If geometry has disappeared, you're done */
-  if (tpoint2 == NULL)
-    return NULL;
 
   /* Transform to tile coordinate space */
   affine.afac = fx;

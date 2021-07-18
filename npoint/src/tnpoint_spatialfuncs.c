@@ -361,9 +361,7 @@ tnpointseqset_geom(const TSequenceSet *ts)
   {
     nsegment **segments = tnpointseqset_positions(ts, &count);
     result = nsegmentarr_to_geom_internal(segments, count);
-    for (int i = 0; i < count; i++)
-      pfree(segments[i]);
-    pfree(segments);
+    pfree_array((void **) segments, count);
   }
   else
   {
@@ -449,7 +447,7 @@ tnpoint_trajectory(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Determines the geographical equality for network points.
+ * Determines the spatial equality for network points.
  * Two network points may be have different rid but represent the same
  * geographical point at the intersection of the two rids
  */
@@ -468,7 +466,7 @@ npoint_same_internal(const npoint *np1, const npoint *np2)
 
 PG_FUNCTION_INFO_V1(npoint_same);
 /**
- * Determines the geographical equality for network points
+ * Determines the spatial equality for network points
  */
 PGDLLEXPORT Datum
 npoint_same(PG_FUNCTION_ARGS)
@@ -919,9 +917,7 @@ tnpointseq_azimuth2(TSequence **result, const TSequence *seq)
     /* Resulting sequence has stepwise interpolation */
     result[l++] = tsequence_make((const TInstant **) allinstants, n,
       lower_inc, true, false, true);
-    for (int j = 0; j < n; j++)
-      pfree(allinstants[j]);
-    pfree(allinstants);
+    pfree_array((void **) allinstants, n);
   }
   pfree(instants);
   pfree(countinsts);

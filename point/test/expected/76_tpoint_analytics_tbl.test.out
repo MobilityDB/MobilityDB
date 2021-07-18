@@ -512,6 +512,30 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@
  LINESTRING Z (-256 4352 38.75,4352 -256 61.25) |            2
 (1 row)
 
+SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2000-01-01], [Point(100 100)@2000-04-10]}',
+  stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
+   st_astext   | array_length 
+---------------+--------------
+ POINT(0 4096) |            1
+(1 row)
+
+SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-02-10, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
+                       st_astext                       | array_length 
+-------------------------------------------------------+--------------
+ LINESTRING(0 4096,4351.99999999925 -255.999999999246) |            2
+(1 row)
+
+SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-02-10, Point(100 100)@2000-04-10]',
+  stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
+                       st_astext                       | array_length 
+-------------------------------------------------------+--------------
+ LINESTRING(0 4096,4351.99999999925 -255.999999999246) |            2
+(1 row)
+
 /* Errors */
 SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(40,40))');
