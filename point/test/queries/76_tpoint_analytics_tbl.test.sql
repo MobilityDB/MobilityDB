@@ -96,7 +96,7 @@ FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@
   stbox 'STBOX((0,0),(1000,1000))') AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
-  stbox 'STBOX((40,40),(60,60))', clip_geom := false) AS mvt ) AS t;
+  stbox 'STBOX((40,40),(60,60))', clip := false) AS mvt ) AS t;
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
