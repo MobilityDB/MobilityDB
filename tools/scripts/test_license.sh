@@ -2,21 +2,21 @@
 
 # This test checks that all source files correctly have license headers
 
-EXCLUDE_LIST="png|jpeg|control|pdf"
+EXCLUDE_LIST="control.in|\.out|\.xz|\.cmake|\.md|\.txt"
+DOC_EXCLUDE_LIST="\.png|\.svg|\.po|\.pot|\.pdf|\.sh|\.sty|\.vsdx|\.tx|po/es"
 
 mylicensecheck() {
-    licensecheck -r --copyright -l 30 --tail 0 -i "$EXCLUDE_LIST" "$1"
+    licensecheck -r --copyright -l 30 --tail 0 -i "$1" "$2"
 }
 
 DIR=$(git rev-parse --show-toplevel)
 
 pushd "${DIR}" > /dev/null || exit
-missing=$(! { mylicensecheck src & mylicensecheck  point &  mylicensecheck include;}  | grep "No copyright\|UNKNOWN")
-missing1=$(mylicensecheck doc  | grep "No copyright")
-missing2=$(grep --files-without-match 'Creative Commons' doc/*/*.rst)
+missing=$(! { mylicensecheck ${EXCLUDE_LIST} src & mylicensecheck ${EXCLUDE_LIST}  point & mylicensecheck ${EXCLUDE_LIST} npoint & mylicensecheck ${EXCLUDE_LIST} include;}  | grep "No copyright\|UNKNOWN")
+missing1=$(mylicensecheck ${DOC_EXCLUDE_LIST} doc  | grep "No copyright")
+#missing2=$(grep --files-without-match 'Creative Commons' doc/*.xml)
 popd > /dev/null || exit
 
-#mylicensecheck doc
 error=0
 if [[ $missing ]]; then
   echo " ****************************************************"
