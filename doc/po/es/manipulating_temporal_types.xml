@@ -1674,6 +1674,31 @@ scale_linear(
 				</figure>
 			</listitem>
 
+			<listitem id="asMVTGeom">
+				<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
+				<para>Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile. El resultado es un par compuesto de un valor <varname>geometry</varname> y una matriz de valores asociados de <varname>timestamptz</varname> &Z_support;</para>
+				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip_geom=TRUE): geom_times</varname></para>
+				<para>The parameters are as follows:</para>
+				<itemizedlist>
+					<listitem><varname>tpoint</varname> es el punto temporal para transformar</listitem>
+					<listitem><varname>bounds</varname> es un <varname>stbox</varname> que define los límites del contenido del mosaico sin búfer en el espacio de coordenadas del mosaico</listitem>
+					<listitem><varname>extent</varname> es la extensión del mosaico en el espacio de coordenadas del mosaico</listitem>
+					<listitem><varname>buffer</varname> es la distancia del búfer en el espacio de coordenadas de mosaico</listitem>
+					<listitem><varname>clip</varname> es un booleano que determina si las geometrías resultantes y las marcas de tiempo deben recortarse o no</listitem>
+				</itemizedlist>
+				<programlisting>
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-01-02]',
+  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
+-- LINESTRING(-256 4352,4352 -256) | {"2000-01-01 09:18:00+01","2000-01-01 14:42:00+01"}
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-01-02]',
+  stbox 'STBOX((40,40),(60,60))', clip:=false) AS mvt ) AS t;
+-- LINESTRING(-8192 12288,12288 -8192) | {"2000-01-01 00:00:00+01",
+  "2000-01-02 00:00:00+01"}
+				</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 

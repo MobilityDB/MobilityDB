@@ -87,6 +87,12 @@ set min_parallel_table_scan_size=0;
 SET
 set max_parallel_workers_per_gather=2;
 SET
+SELECT numTimestamps(tunion(ts)) from tbl_timestampset_big;
+ numtimestamps 
+---------------
+         55883
+(1 row)
+
 SELECT extent(temp::period) FROM tbl_tfloat_big;
                       extent                      
 --------------------------------------------------

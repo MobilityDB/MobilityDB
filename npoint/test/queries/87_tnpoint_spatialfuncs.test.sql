@@ -72,6 +72,9 @@ SELECT minusGeometry(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-0
 SELECT minusGeometry(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty');
 SELECT minusGeometry(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty');
 
+SELECT equals(npoint(1, 0.5), npoint(1, 0.50000001));
+SELECT equals(npoint(1, 0.7744007411523213), npoint(2, 0.6952992297355585));
+
 SELECT round(length(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);
 SELECT round(length(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}')::numeric, 6);
 SELECT round(length(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')::numeric, 6);

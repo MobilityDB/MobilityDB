@@ -58,9 +58,21 @@ TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax)
 {
-  TBOX *result = palloc0(sizeof(TBOX));
-  MOBDB_FLAGS_SET_X(result->flags, hasx);
-  MOBDB_FLAGS_SET_T(result->flags, hast);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
+  tbox_set(result, hasx, hast, xmin, xmax, tmin, tmax);
+  return result;
+}
+
+/**
+ * Set the temporal box from the argument values
+ */
+void
+tbox_set(TBOX *box, bool hasx, bool hast, double xmin, double xmax,
+  TimestampTz tmin, TimestampTz tmax)
+{
+  MOBDB_FLAGS_SET_X(box->flags, hasx);
+  MOBDB_FLAGS_SET_T(box->flags, hast);
   if (hasx)
   {
     if (xmin > xmax)
@@ -69,8 +81,8 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
       xmin = xmax;
       xmax = tmp;
     }
-    result->xmin = xmin;
-    result->xmax = xmax;
+    box->xmin = xmin;
+    box->xmax = xmax;
   }
   if (hast)
   {
@@ -80,10 +92,10 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
       tmin = tmax;
       tmax = ttmp;
     }
-    result->tmin = tmin;
-    result->tmax = tmax;
+    box->tmin = tmin;
+    box->tmax = tmax;
   }
-  return result;
+  return;
 }
 
 /**

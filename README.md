@@ -16,6 +16,7 @@ The MobilityDB project is managed by a [steering committee](https://github.com/M
 
 Benefits
 --------
+
 *   Compact geospatial trajectory data storage
 
 *   Rich mobility analytics
@@ -32,16 +33,14 @@ Benefits
 
 *   Database adapters to access MobilityDB from Python are also available
 
-   *   [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
-
-   *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB
+    *   [MobilityDB-python](https://github.com/MobilityDB/MobilityDB-python) supports both the [psycopg2](https://www.psycopg.org/) and the [asyncpg](https://github.com/MagicStack/asyncpg) adapters for PostgreSQL and uses the [postgis](https://github.com/tilery/python-postgis) adapter for PostGIS. This package is developed by the MobilityDB Team.
+    *   [MobilityDB SQLAlchemy](https://github.com/adonmo/mobilitydb-sqlalchemy) is another independent package that provides extensions to [SQLAlchemy](https://www.sqlalchemy.org/) for interacting with MobilityDB
 
 *   Data generator and benchmark tool based on the [BerlinMOD](http://dna.fernuni-hagen.de/secondo/BerlinMOD/BerlinMOD.html) benchmark. The data generator takes input data from [Open Street Map](https://www.openstreetmap.org/) and uses [pgRouting](https://pgrouting.org/) to generate routes between pairs of source and target locations.
 
     *   [MobilityDB-BerlinMOD](https://github.com/MobilityDB/MobilityDB-BerlinMOD)
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
-
 
 Mailing Lists
 ------------
@@ -61,6 +60,7 @@ Branches
 
 Status
 ------
+
 The extension is under development. We are planning to release the first version in 2021.
 
 Requirements
@@ -81,6 +81,7 @@ apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj
 
 Building & Installation
 -----------------------
+
 Here is the gist:
 ```bash
 git clone https://github.com/MobilityDB/MobilityDB
@@ -215,5 +216,6 @@ Let us know how you use MobilityDB in your applications to report it here.
 
 Licenses
 --------
+
 *   MobilityDB code is provided under the [PostgreSQL License](https://github.com/MobilityDB/MobilityDB/blob/master/LICENSE.txt).
 *   MobilityDB documentation is provided under the [Creative Commons Attribution-Share Alike 3.0 License 3](https://creativecommons.org/licenses/by-sa/3.0/).

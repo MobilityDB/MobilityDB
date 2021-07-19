@@ -85,6 +85,8 @@ src/sql/99_tempcache.in.sql
 include(CTest)
 enable_testing()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 #-------------------------------------
 # Verify PostgreSQL Version
 #-------------------------------------
@@ -96,23 +98,32 @@ if (NOT PGCONFIG)
 	message(FATAL_ERROR "Could not find pg_config")
 endif ()
 execute_process(COMMAND ${PGCONFIG} --version OUTPUT_VARIABLE PG_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(
-		COMMAND ${PGCONFIG} --version
-		COMMAND sed "-es/.* //"
-		COMMAND sed "s/[A-Za-z].*$//"
-		COMMAND sed "s/[A-Za-z].*$//"
-		COMMAND tr "." " "
-		COMMAND awk "{printf \"%d%04d\", $1, $2}"
-		OUTPUT_VARIABLE PG_FULL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${PGCONFIG} --version COMMAND sed "-es/.* //" "-es/\\..*//" OUTPUT_VARIABLE PG_MAJOR_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-if(${PG_MAJOR_VERSION} LESS ${PG_MIN_MAJOR_VERSION})
-	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, minimum required is ${PG_MIN_MAJOR_VERSION}")
-elseif(${PG_MAX_MAJOR_VERSION} LESS ${PG_MAJOR_VERSION})
-	message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERSION}")
+if(PG_VERSION_STRING)
+	# Remove the string "PostgreSQL " from the beginning
+	string(REGEX REPLACE "^[A-Za-z]+ (.*)" "\\1" PG_VERSION ${PG_VERSION_STRING})
+	# Get the position of first whitespace character
+	string(FIND ${PG_VERSION} " " wsloc)
+	# Remove build information such as "(Ubuntu 13.3-1.pgdg16.04+1)" at the end
+	string(SUBSTRING ${PG_VERSION} 0 ${wsloc} PG_VERSION)
+	# Replace XbetaY XalphaY XrcY -> X.0
+	string(REGEX REPLACE "^([0-9]+)[beta|alpha|rc|devel].*" "\\1.0" PG_VERSION ${PG_VERSION})
+	# Get major version
+	string(REGEX REPLACE "([0-9]+)\\.[0-9]+" "\\1" PG_MAJOR_VERSION "${PG_VERSION}")
+	# Get minor version
+	string(REGEX REPLACE "[0-9]+\\.([0-9]+)" "\\1" PG_MINOR_VERSION "${PG_VERSION}")
+	# Test compatible version
+	if(${PG_MAJOR_VERSION} LESS ${PG_MIN_MAJOR_VERSION})
+		message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, minimum required is ${PG_MIN_MAJOR_VERSION}")
+	elseif(${PG_MAX_MAJOR_VERSION} LESS ${PG_MAJOR_VERSION})
+		message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERSION}")
+	endif()
+	# Set compilation constant for PostgreSQL version-dependent code
+	set(PG_FULL_VERSION ${PG_MAJOR_VERSION}0000)
+	message("Found compatible ${PG_VERSION_STRING}")
+else ()
+	message("PostgreSQL not found")
 endif()
-message("Found compatible ${PG_VERSION_STRING}")
-
 
 set(MOBDB_DEFS -DMOBDB_PGSQL_VERSION=${PG_FULL_VERSION} -DMOBDB_PGSQL_VERSION_STR="${PG_VERSION_STRING}")
 add_definitions(${MOBDB_DEFS})
@@ -120,6 +131,20 @@ add_definitions(${MOBDB_DEFS})
 execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARIABLE PostgreSQL_ACTUAL_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
+
+message(STATUS "POSTGRESQL_INCLUDE_DIRS = ${PostgreSQL_ACTUAL_INCLUDE_DIR}")
+if(WIN32)
+    include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR}/port/win32)
+    if(MSVC)
+        include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR}/port/win32_msvc/)
+    endif(MSVC)
+endif(WIN32)
+
+if(WIN32)
+    message(STATUS "LINK_DIRECTORIES = ${PostgreSQL_LIBRARY_DIRS}")
+    link_directories(${PostgreSQL_LIBRARY_DIRS})
+    link_libraries(postgres)
+endif()
 include_directories("include")
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
@@ -154,32 +179,53 @@ endif ()
 find_library(HAS_LWGEOM lwgeom)
 if (HAS_LWGEOM)
 	MESSAGE(STATUS "Found LWGEOM at ${HAS_LWGEOM} - compiling with PostGIS support")
-	if(NOT EXISTS "${PostgreSQL_EXTLIB_DIR}/postgis-2.5.so")
-		message(FATAL_ERROR "Could not find postgis-2.5.so; only PostGIS 2.5 is currently supported")
+	if(NOT EXISTS "${PostgreSQL_EXTLIB_DIR}/postgis-2.5.so" AND NOT EXISTS "${PostgreSQL_EXTLIB_DIR}/postgis-2.5.dll")
+		message(FATAL_ERROR "Could not find postgis-2.5; only PostGIS 2.5 is currently supported")
+	endif()
+
+	if (LWGEOM_ROOT)
+		include_directories(${LWGEOM_ROOT}/include)
+		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
+	endif()
+	if (PROJ_INCLUDE_DIR)
+		include_directories(${PROJ_INCLUDE_DIR})
+	endif()
+	if (JSONC_INCLUDE_DIR)
+		include_directories(${JSONC_INCLUDE_DIR})
+		MESSAGE(STATUS "Using custom jsonc include dir ${JSONC_INCLUDE_DIR}")
 	endif()
 else()
-    message(FATAL_ERROR "Could not find lwgeom; ")
-endif ()
+	message(FATAL_ERROR "Could not find lwgeom;")
+endif()
 
 include("test/scripts/test.cmake")
 include("point/point.cmake")
 include("npoint/npoint.cmake")
 
-find_library(HAS_GSLCBLAS gslcblas)
 find_library(HAS_GSL gsl)
+find_library(HAS_GSLCBLAS gslcblas)
 if (HAS_GSL AND HAS_GSLCBLAS)
-   MESSAGE(STATUS "Found GSL at ${HAS_GSL}, Found GSLCBLAS at ${HAS_GSLCBLAS}")
-   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSL}) # GSL)
-   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSLCBLAS}) # GSLCBLAS)
-   include_directories(${GSL_INCLUDE_DIR})
-   include_directories(${GSLCBLAS_INCLUDE_DIR})
+	MESSAGE(STATUS "Found GSL at ${HAS_GSL}, Found GSLCBLAS at ${HAS_GSLCBLAS}")
+	target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSL}) # GSL)
+	target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_GSLCBLAS}) # GSLCBLAS)
+	include_directories(${GSL_INCLUDE_DIR})
+	include_directories(${GSLCBLAS_INCLUDE_DIR})
 else()
-    message(FATAL_ERROR "Could not find gsl or gslcblas; ")
+	message(FATAL_ERROR "Could not find gsl or gslcblas; ")
+endif ()
+
+find_library(HAS_LIBPROTOBUF protobuf-c)
+if (HAS_LIBPROTOBUF)
+	MESSAGE(STATUS "Found LIBPROTOBUF at ${HAS_LIBPROTOBUF}")
+	target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LIBPROTOBUF}) # LIBPROTOBUF)
+	include_directories(${LIBPROTOBUF_INCLUDE_DIR})
+else()
+	message(FATAL_ERROR "Could not find protobuf-c; ")
 endif ()
 
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
-       add_definitions(-D NO_FFSL)
+	add_definitions(-D NO_FFSL)
 endif()
 
 add_custom_command(
@@ -207,9 +253,9 @@ install(FILES "${CMAKE_BINARY_DIR}/${CONTROLOUT}" DESTINATION "${PostgreSQL_SHAR
 install(FILES "${CMAKE_BINARY_DIR}/${SQLOUT}" DESTINATION "${PostgreSQL_SHARE_DIR}/extension")
 
 add_custom_target(install_restart
-                  $(MAKE) install
-                  COMMAND systemctl restart postgresql
-                  DEPENDS ${PROJECT_NAME}
-                  COMMENT "Restarting PostgreSQL")
+	$(MAKE) install
+	COMMAND systemctl restart postgresql
+	DEPENDS ${PROJECT_NAME}
+	COMMENT "Restarting PostgreSQL")
 
 

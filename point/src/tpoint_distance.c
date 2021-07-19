@@ -133,8 +133,8 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   edge_distance_to_point(&e, &closest1, &proj);
 
   /* Compute distance from beginning of the segment to closest point */
-  double seglength = sphere_distance(&(e.start), &(e.end));
-  double length = sphere_distance(&(e.start), &closest1);
+  long double seglength = sphere_distance(&(e.start), &(e.end));
+  long double length = sphere_distance(&(e.start), &closest1);
   *fraction = length / seglength;
 
   return result;

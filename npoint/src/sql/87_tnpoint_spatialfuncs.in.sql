@@ -65,6 +65,16 @@ CREATE FUNCTION minusGeometry(tnpoint, geometry)
   AS 'MODULE_PATHNAME', 'tnpoint_minus_geometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+
+/*****************************************************************************
+ * Equals
+ *****************************************************************************/
+
+CREATE FUNCTION equals(npoint, npoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'npoint_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Length
  *****************************************************************************/

@@ -177,8 +177,8 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 			</itemizedlist>
 		</sect2>
 
-		<sect2 id="conversion_network_space">
-			<title>Conversion between Network and Space</title>
+		<sect2 id="spatial_functions">
+			<title>Spatial Functions</title>
 
 			<para>Values of the <varname>npoint</varname> and <varname>nsegment</varname> types can be converted to the <varname>geometry</varname> type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown next.</para>
 			<itemizedlist>
@@ -213,6 +213,25 @@ SELECT geometry 'Point(279.3 811.5)'::npoint;
 -- NULL
 SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 -- NULL
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+
+			<para>Two <varname>npoint</varname> values may be have different route identifiers but may represent the same spatial point at the intersection of the two routes. Function <varname>equals</varname> is used for testing spatial equality of network points.</para>
+			<itemizedlist>
+				<listitem id="npoint_same">
+					<indexterm><primary><varname>::</varname></primary></indexterm>
+					<para>Spatial equality for network points</para>
+					<para><varname>equals(npoint, npoint)::Boolean</varname></para>
+					<programlisting>
+WITH inter(geom) AS (
+  SELECT st_intersection(t1.the_geom, t2.the_geom)
+  FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2),
+fractions(f1, f2) AS (
+  SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2.the_geom, i.geom)
+  FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)
+SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;
+-- true
 					</programlisting>
 				</listitem>
 			</itemizedlist>

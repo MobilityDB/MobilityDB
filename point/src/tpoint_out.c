@@ -765,12 +765,12 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
  *
  * The format of the MobilityDB binary format builds upon the one of PostGIS.
  * In particular, many of the flags defined in liblwgeom.h such as  WKB_NDR vs
- * WKB_XDR (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc. 
+ * WKB_XDR (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc.
  * In addition, we need additional flags such as MOBDB_WKB_LINEAR_INTERP for
  * linear interporation, etc.
- * 
- * The binary format obviously depends on the subtype of the temporal type 
- * (instant, instant set, ...). The specific binary format is specified in 
+ *
+ * The binary format obviously depends on the subtype of the temporal type
+ * (instant, instant set, ...). The specific binary format is specified in
  * the function corresponding to the subtype below.
  *****************************************************************************/
 
@@ -964,9 +964,7 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 static size_t
 tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
 {
-  int dims = 2;
-  if (hasz)
-    dims = 3;
+  int dims = hasz ? 3 : 2;
   /* size of the TInstant array */
   size_t size = dims * npoints * WKB_DOUBLE_SIZE + npoints * WKB_TIMESTAMP_SIZE;
   return size;
@@ -1075,7 +1073,7 @@ tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 /**
  * Writes into the buffer the flag containing the temporal type and
  * other characteristics represented in Well-Known Binary (WKB) format.
- * In binary format it is a byte as follows 
+ * In binary format it is a byte as follows
  * LSGZxTTT
  * L = Linear, S = SRID, G = Geodetic, Z = has Z, x = unused bit
  * TTT = Temporal subtype with values 1 to 4
@@ -1134,7 +1132,7 @@ coords_ts_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 /**
  * Writes into the buffer the temporal instant point represented in
  * Well-Known Binary (WKB) format as follows
- * - Endian 
+ * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
  * - Output of a single instant by function coords_ts_to_wkb_buf
@@ -1155,7 +1153,7 @@ tpointinst_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 /**
  * Writes into the buffer the temporal instant set point represented in
  * Well-Known Binary (WKB) format as follows
- * - Endian 
+ * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
  * - Number of instants
@@ -1212,7 +1210,7 @@ tpointseq_wkb_bounds(const TSequence *seq, uint8_t *buf, uint8_t variant)
 /**
  * Writes into the buffer the temporal sequence point represented in
  * Well-Known Binary (WKB) format as follows
- * - Endian 
+ * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
  * - Number of instants
@@ -1246,7 +1244,7 @@ tpointseq_to_wkb_buf(const TSequence *seq, uint8_t *buf, uint8_t variant)
 /**
  * Writes into the buffer the temporal sequence set point represented in
  * Well-Known Binary (WKB) format as follows
- * - Endian 
+ * - Endian
  * - Linear, SRID, Geodetic, Z, Temporal Subtype
  * - SRID (if requested)
  * - Number of sequences

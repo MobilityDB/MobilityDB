@@ -47,10 +47,10 @@
  */
 typedef struct
 {
-  TimestampTz  lower;  /**< lower bound value */
-  TimestampTz  upper;  /**< upper bound value */
-  bool lower_inc;      /**< lower bound is inclusive (vs exclusive) */
-  bool upper_inc;      /**< upper bound is inclusive (vs exclusive) */
+  TimestampTz lower;    /**< lower bound value */
+  TimestampTz upper;    /**< upper bound value */
+  bool lower_inc;       /**< lower bound is inclusive (vs exclusive) */
+  bool upper_inc;       /**< upper bound is inclusive (vs exclusive) */
 } Period;
 
 /**

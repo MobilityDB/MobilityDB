@@ -140,7 +140,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   else
     elog(ERROR, "unknown intersection function for continuous base type: %d",
       inst1->basetypid);
-    
+
   if (result && inter != NULL)
     /* We are sure it is linear interpolation */
     *inter = tsequence_value_at_timestamp1(inst1, inst2, LINEAR, *t);
@@ -370,7 +370,6 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
 /**
  * Returns true if the three values are collinear
  *
- * @param[in] basetypid Oid of the base type
  * @param[in] np1,np2,np3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
  * timestamps associated to `np1` and `np2` divided by the duration
@@ -863,7 +862,7 @@ tsequencearr_normalize(const TSequence **sequences, int count, int *newcount)
       /* If float/point sequences and collinear last/first segments having the same duration
          ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
       */
-      (base_type_continuous(basetypid) && datum_eq(last1value, first1value, basetypid) && 
+      (base_type_continuous(basetypid) && datum_eq(last1value, first1value, basetypid) &&
       datum_collinear(basetypid, last2value, first1value, first2value,
         last2->t, first1->t, first2->t))
       ))
@@ -3114,7 +3113,7 @@ tnumberseq_restrict_ranges1(TSequence **result, const TSequence *seq,
      * Compute first the tnumberseq_at_ranges, then compute its complement
      * Notice that in this case due to rounoff errors it may be the case
      * that temp is not equal to merge(atRanges(temp, .),minusRanges(temp, .),
-     * since we kept the range values instead of the projected values when 
+     * since we kept the range values instead of the projected values when
      * computing atRanges
      */
     TSequenceSet *ts = tnumberseq_restrict_ranges(seq, newranges, newcount,
@@ -3261,7 +3260,7 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   {
     npoint *np1 = DatumGetNpoint(value1);
     npoint *np2 = DatumGetNpoint(value2);
-    double pos = np1->pos + (np2->pos - np1->pos) * ratio;
+    double pos = np1->pos + (double) ((long double)(np2->pos - np1->pos) * ratio);
     npoint *result = npoint_make(np1->rid, pos);
     return PointerGetDatum(result);
   }

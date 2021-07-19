@@ -953,6 +953,10 @@
 				<listitem>
 					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1520,13 +1524,16 @@
 			</sect3>
 
 			<sect3>
-				<title>Conversion between Network and Space</title>
+				<title>Spatial Functions</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Cast a network point to a geometry</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Cast a geometry to a network point</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="npoint_same"><varname>equals</varname></link>: Spatial equality for network points</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

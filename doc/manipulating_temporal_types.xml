@@ -1683,6 +1683,31 @@ scale_linear(
 				</figure>
 			</listitem>
 
+			<listitem id="asMVTGeom">
+				<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
+				<para>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile. The result is a couple composed of a <varname>geometry</varname> value and an array of associated <varname>timestamptz</varname> values &Z_support;</para>
+				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip_geom=TRUE): geom_times</varname></para>
+				<para>Los parámetros sont los siguientes:</para>
+				<itemizedlist>
+					<listitem><varname>tpoint</varname> is the temporal point to transform</listitem>
+					<listitem><varname>bounds</varname> is an <varname>stbox</varname> defining the bounds of the tile contents without buffer in tile coordinate space</listitem>
+					<listitem><varname>extent</varname> is the tile extent in tile coordinate space</listitem>
+					<listitem><varname>buffer</varname> is the buffer distance in tile coordinate space</listitem>
+					<listitem><varname>clip</varname> is a Boolean that determines if the resulting geometries and timestamps should be clipped or not</listitem>
+				</itemizedlist>
+				<programlisting>
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-01-02]',
+  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
+-- LINESTRING(-256 4352,4352 -256) | {"2000-01-01 09:18:00+01","2000-01-01 14:42:00+01"}
+SELECT ST_AsText((mvt).geom), (mvt).times
+FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-01-02]',
+  stbox 'STBOX((40,40),(60,60))', clip:=false) AS mvt ) AS t;
+-- LINESTRING(-8192 12288,12288 -8192) | {"2000-01-01 00:00:00+01",
+  "2000-01-02 00:00:00+01"}
+				</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 

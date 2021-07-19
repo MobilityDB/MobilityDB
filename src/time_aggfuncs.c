@@ -642,26 +642,6 @@ time_tunion_combinefn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(time_tcount_combinefn);
-/**
- * Combine function for temporal count aggregate of time types
- */
-PGDLLEXPORT Datum
-time_tcount_combinefn(PG_FUNCTION_ARGS)
-{
-  SkipList *state1 = PG_ARGISNULL(0) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(0);
-  SkipList *state2 = PG_ARGISNULL(1) ? NULL :
-    (SkipList *) PG_GETARG_POINTER(1);
-  if (state1 == NULL && state2 == NULL)
-    PG_RETURN_NULL();
-
-  SkipList *result = time_agg_combinefn(fcinfo, state1, state2);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Aggregate final functions for time types
  *****************************************************************************/
