@@ -1,0 +1,78 @@
+name: Test posgresSQL versions
+
+# 4 * 1 * 2 = 8 jobs are triggered
+# Test for supported postgres version
+# - except: MobilityDB does not support 9.6
+# Allow manual trigger
+
+on:
+  workflow_dispatch:
+  push:
+    branch_ignore: gh-pages
+  pull_request:
+    branch_ignore: gh-pages
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+        fail-fast: false
+        matrix:
+          psql: [10,11,12,13]
+          postgis: [2.5]
+          os: [ubuntu-latest, ubuntu-18.04]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: get postgres version
+        run: |
+          sudo service postgresql start
+          pgver=$(psql --version | grep -Po '(?<=psql \(PostgreSQL\) )[^;]+(?=\.\d \()')
+          echo "PGVER=${pgver}" >> $GITHUB_ENV
+          PGP=5433
+          if [ "${{ matrix.psql }}" == "${pgver}" ]; then PGP=5432; fi
+          echo "PGPORT=${PGP}" >> $GITHUB_ENV
+
+      - name: Add PostgreSQL APT repository
+        run: |
+          sudo apt-get install curl ca-certificates gnupg
+          curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ \
+            $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            liblwgeom-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libprotobuf-c-dev \
+            postgresql-${{ matrix.psql }} \
+            postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
+            postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }}-scripts \
+            postgresql-server-dev-${{ matrix.psql }}
+          ls /usr/lib/postgresql/${{ matrix.psql }}/lib/postgis*
+          xzcat --version
+
+      - name: Configure for gcc
+        run: |
+          export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
+          mkdir build
+          cd build
+          cmake ..
+
+      - name: Build
+        run: |
+          cd build
+          make -j 4
+          sudo make install
+
+      - name: Test
+        run: |
+          export PATH="/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH"
+          cd build
+          make test
