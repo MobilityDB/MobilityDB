@@ -35,7 +35,7 @@ cp -r images "$installpathES"/
 
 ############# Doxygen Documentation ##############
 
-cd "$(dirname $0)"/.. || exit
+cd "$(dirname "$0")"/.. || exit
 
 ( cat Doxyfile ; echo "OUTPUT_DIRECTORY=$installpath/api" ) | doxygen -
 
