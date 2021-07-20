@@ -53,4 +53,3 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})
 set(SQL "${SQL};${SQLPOINT}")
 set(CONTROLIN "${CONTROLIN};point/control.in")
 
-include("point/test/scripts/test.cmake")
