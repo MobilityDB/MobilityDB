@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
 <chapter id="temporal_types">
 	<title>Tipos temporales</title>
 	<para>Hay seis tipos temporales nativos, a saber <varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, que se basan, respectivamente, en los tipos de base <varname>bool</varname>, <varname>int</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname> y <varname>geography</varname> (los dos últimos tipos restringidos a puntos 2D o 3D con dimensión Z).</para>

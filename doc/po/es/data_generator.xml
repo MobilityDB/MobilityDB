@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
 <appendix id ="data_generator">
 	<title>Generador de datos sintéticos</title>
 	<para>
@@ -559,7 +568,7 @@ donde t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 				<programlisting>
 DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
 CREATE TABLE tbl_tgeompoint3D_seqset AS
-SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31', 
+SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
   10, 10, 5, 10, 5, 10, 3812) AS ts
 FROM generate_series(1, size) AS k;
 /* Add perc duplicates */
