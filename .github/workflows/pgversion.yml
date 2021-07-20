@@ -71,6 +71,13 @@ jobs:
           make -j 4
           sudo make install
 
+      - name: test install
+        run: |
+          sudo service postgresql start
+          sudo -u postgres createdb -p ${PGPORT}  ___pgr___test___
+          sudo -u postgres psql -p ${PGPORT}  -d ___pgr___test___ -c "CREATE EXTENSION mobilitydb CASCADE"
+
+
       - name: Test
         run: |
           export PATH="/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH"
