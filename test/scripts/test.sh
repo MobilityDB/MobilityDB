@@ -1,17 +1,33 @@
 #!/bin/bash
 
-#set -e
-set -o pipefail
+set -e
+#set -o pipefail
 
 CMD=$1
-BUILDDIR=$2
+BUILDDIR="@CMAKE_BINARY_DIR@"
+
 WORKDIR=$BUILDDIR/tmptest
-EXTFILE=$BUILDDIR/*--*.sql
+
+EXTFILE="$BUILDDIR/@SQLOUT@"
 SOFILE=$(echo "$BUILDDIR"/lib*.so)
+
+
+BIN_DIR=$(@PGCONFIG@ --bindir)
+
+
 PSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=0 postgres"
 FAILPSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=1 postgres"
 DBDIR=$WORKDIR/db
-PGCTL="pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''" # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
+
+#define an alias to run pg_ctl
+run_ctl () {
+  "${BIN_DIR}/pg_ctl" -w -D "$DBDIR" -l "$WORKDIR/log/postgres.log" -o -k -o "$WORKDIR/lock" -o -h -o  "$@"
+  reeturn $?
+}
+
+
+PGCTL="${BIN_DIR}/pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''"
+# -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
 #FIXME: this is cheating
 PGSODIR=$(pg_config --pkglibdir)
@@ -21,9 +37,9 @@ case $CMD in
 setup)
 	rm -rf "$WORKDIR"
 	mkdir -p "$WORKDIR"/db "$WORKDIR"/lock "$WORKDIR"/out "$WORKDIR"/log
-	initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
+	${BIN_DIR}/initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
 
-	if [ ! -z "$POSTGIS" ]; then
+	if [ -n "$POSTGIS" ]; then
 		POSTGIS=$(basename "$POSTGIS" .so)
 		echo "shared_preload_libraries = '$POSTGIS'" >> "$WORKDIR"/db/postgresql.conf
 	fi
@@ -35,14 +51,12 @@ setup)
 	echo "min_parallel_table_scan_size = 0" >> "$WORKDIR"/db/postgresql.conf
 	echo "min_parallel_index_scan_size = 0" >> "$WORKDIR"/db/postgresql.conf
 
-	$PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log
+	$PGCTL start 2>&1 | tee "$WORKDIR/log/pg_start.log"
 	if [ "$?" != "0" ]; then
 		sleep 2
-		$PGCTL status
-
-		if [ "$?" != "0" ]; then
+		if ! run_ctl status; then
 			echo "Failed to start PostgreSQL" >&2
-			$PGCTL stop
+			run_ctl stop
 			exit 1
 		fi
 	fi
@@ -51,12 +65,15 @@ setup)
 	;;
 
 create_ext)
-	$PGCTL status || $PGCTL start
+  echo "starting create extension" >> "$WORKDIR"/log/create_ext.log
+  $PGCTL status || $PGCTL start
+  echo "create extension 1" >> "$WORKDIR"/log/create_ext.log
 
-	if [ ! -z "$POSTGIS" ]; then
+	if [ -n "$POSTGIS" ]; then
 		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
 	fi
-	sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
+  echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
+	#sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
 
 	exit 0
 	;;
