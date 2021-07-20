@@ -5,9 +5,11 @@ if [ "$#" != "1" ]; then
 	exit 1
 fi
 
-installpath=$1
-
 cd $(dirname "$0") || exit
+
+############# English Documentation ##############
+
+installpath=$1
 
 mkdir -p "$installpath"
 
@@ -17,12 +19,6 @@ dbtoepub -o "$installpath"/mobilitydb-manual.epub mobilitydb-manual.xml
 
 cp docbook.css "$installpath"/
 cp -r images "$installpath"/
-
-## doxygen
-cd ..
-( cat Doxyfile ; echo "OUTPUT_DIRECTORY=$installpath/api" ) | doxygen -
-
-cd doc || exit
 
 ############# Spanish Translation ##############
 
@@ -36,3 +32,11 @@ dbtoepub -o "$installpathES"/mobilitydb-manual.epub po/es/mobilitydb-manual.xml
 
 cp docbook.css "$installpathES"/
 cp -r images "$installpathES"/
+
+############# Doxygen Documentation ##############
+
+cd $(dirname $0)/.. || exit
+
+( cat Doxyfile ; echo "OUTPUT_DIRECTORY=$installpath/api" ) | doxygen -
+
+
