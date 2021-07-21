@@ -28,24 +28,24 @@ point/src/tpoint_analytics.c
 )
 
 set(SQLPOINT
-point/src/sql/50_stbox.in.sql
-point/src/sql/51_tpoint.in.sql
-point/src/sql/52_tpoint_in.in.sql
-point/src/sql/53_tpoint_out.in.sql
-point/src/sql/54_tpoint_compops.in.sql
-point/src/sql/55_geography_functions.in.sql
-point/src/sql/56_tpoint_spatialfuncs.in.sql
-point/src/sql/57_tpoint_tile.in.sql
-point/src/sql/58_tpoint_boxops.in.sql
-point/src/sql/60_tpoint_posops.in.sql
-point/src/sql/62_tpoint_distance.in.sql
-point/src/sql/64_tpoint_aggfuncs.in.sql
-point/src/sql/66_tpoint_spatialrels.in.sql
-point/src/sql/68_tpoint_tempspatialrels.in.sql
-point/src/sql/70_tpoint_gist.in.sql
-point/src/sql/72_tpoint_spgist.in.sql
-point/src/sql/74_tpoint_datagen.in.sql
-point/src/sql/76_tpoint_analytics.in.sql
+sql/point/50_stbox.in.sql
+sql/point/51_tpoint.in.sql
+sql/point/52_tpoint_in.in.sql
+sql/point/53_tpoint_out.in.sql
+sql/point/54_tpoint_compops.in.sql
+sql/point/55_geography_functions.in.sql
+sql/point/56_tpoint_spatialfuncs.in.sql
+sql/point/57_tpoint_tile.in.sql
+sql/point/58_tpoint_boxops.in.sql
+sql/point/60_tpoint_posops.in.sql
+sql/point/62_tpoint_distance.in.sql
+sql/point/64_tpoint_aggfuncs.in.sql
+sql/point/66_tpoint_spatialrels.in.sql
+sql/point/68_tpoint_tempspatialrels.in.sql
+sql/point/70_tpoint_gist.in.sql
+sql/point/72_tpoint_spgist.in.sql
+sql/point/74_tpoint_datagen.in.sql
+sql/point/76_tpoint_analytics.in.sql
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})
