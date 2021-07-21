@@ -30,7 +30,7 @@ add_test(
   )
 
 set_tests_properties(setup PROPERTIES
-  DEPENDS buid
+  DEPENDS build
   FIXTURES_SETUP DBSETUP
   RESOURCE_LOCK DBLOCK)
 
