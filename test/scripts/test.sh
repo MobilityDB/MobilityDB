@@ -39,7 +39,7 @@ setup)
   # Does not need a parameter
 	rm -rf "$WORKDIR"
 	mkdir -p "$WORKDIR"/db "$WORKDIR"/lock "$WORKDIR"/out "$WORKDIR"/log
-	${BIN_DIR}/initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
+	"${BIN_DIR}"/initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
 
 	if [ -n "$POSTGIS" ]; then
 		POSTGIS=$(basename "$POSTGIS" .so)
