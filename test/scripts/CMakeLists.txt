@@ -1,7 +1,7 @@
 set(CTEST_PARALLEL_LEVEL 1)
 
 #TODO find xycat (or suitable decompressor)
-set(UNCOMPRESS xycat)
+set(UNCOMPRESS xzcat)
 
 configure_file(test.sh test.sh @ONLY)
 
