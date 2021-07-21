@@ -2177,8 +2177,9 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   {
     double max = (double) extent + (double) buffer;
     double min = -(double) buffer;
+    int srid = tpoint_srid_internal(tpoint);
     STBOX clip_box;
-    stbox_set(&clip_box, true, false, false, false, 0, min, max, min, max,
+    stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
       0, 0, 0, 0);
     tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
     pfree(tpoint4);
