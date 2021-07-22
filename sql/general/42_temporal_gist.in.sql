@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -91,7 +91,7 @@ CREATE OPERATOR CLASS gist_tbool_ops
   FUNCTION  3  tbool_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
   FUNCTION  4  period_gist_decompress(internal),
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal);
@@ -190,7 +190,7 @@ CREATE FUNCTION tnumber_gist_decompress(internal)
   RETURNS internal
 AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
 
 CREATE OPERATOR CLASS gist_tint_ops
   DEFAULT FOR TYPE tint USING gist AS
@@ -266,7 +266,7 @@ CREATE OPERATOR CLASS gist_tint_ops
   FUNCTION  3  tint_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
   FUNCTION  4  tnumber_gist_decompress(internal),
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
@@ -357,7 +357,7 @@ CREATE OPERATOR CLASS gist_tfloat_ops
   FUNCTION  3  tfloat_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
   FUNCTION  4  tnumber_gist_decompress(internal),
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
@@ -410,7 +410,7 @@ CREATE OPERATOR CLASS gist_ttext_ops
   FUNCTION  3  ttext_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
   FUNCTION  4  period_gist_decompress(internal),
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal);

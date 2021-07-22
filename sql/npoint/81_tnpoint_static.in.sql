@@ -253,21 +253,13 @@ CREATE OPERATOR <= (
   PROCEDURE = npoint_le,
   LEFTARG = npoint, RIGHTARG = npoint,
   COMMUTATOR = >=, NEGATOR = >,
-#if MOBDB_PGSQL_VERSION >= 110000
-  RESTRICT = scalarlesel, JOIN = scalarlejoinsel
-#else
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-#endif
+  RESTRICT = @SCALAR_LE@, JOIN = @JOIN_LE@
 );
 CREATE OPERATOR >= (
   PROCEDURE = npoint_ge,
   LEFTARG = npoint, RIGHTARG = npoint,
-#if MOBDB_PGSQL_VERSION >= 110000
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargesel, JOIN = scalargejoinsel
-#else
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
-#endif
+  RESTRICT = @SCALAR_GE@, JOIN = @JOIN_GE@
 );
 CREATE OPERATOR > (
   PROCEDURE = npoint_gt,
@@ -338,21 +330,13 @@ CREATE OPERATOR <= (
   PROCEDURE = nsegment_le,
   LEFTARG = nsegment, RIGHTARG = nsegment,
   COMMUTATOR = >=, NEGATOR = >,
-#if MOBDB_PGSQL_VERSION >= 110000
-  RESTRICT = scalarlesel, JOIN = scalarlejoinsel
-#else
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
-#endif
+  RESTRICT = @SCALAR_LE@, JOIN = @JOIN_LE@
 );
 CREATE OPERATOR >= (
   PROCEDURE = nsegment_ge,
   LEFTARG = nsegment, RIGHTARG = nsegment,
   COMMUTATOR = <=, NEGATOR = <,
-#if MOBDB_PGSQL_VERSION >= 110000
-  RESTRICT = scalargesel, JOIN = scalargejoinsel
-#else
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
-#endif  
+  RESTRICT = @SCALAR_GE@, JOIN = @JOIN_GE@
 );
 CREATE OPERATOR > (
   PROCEDURE = nsegment_gt,
