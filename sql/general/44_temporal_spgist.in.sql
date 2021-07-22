@@ -6,58 +6,65 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /*
- * temporal_gist.sql
- * R-tree GiST index for temporal types
+ * temporal_spgist.sql
+ * Quad-tree SP-GiST index for temporal types
  */
 
-CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
+CREATE FUNCTION sptemporal_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE FUNCTION tbox_spgist_config(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_spgist_choose(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_spgist_picksplit(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_spgist_inner_consistent(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_spgist_leaf_consistent(internal, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_gist_union(internal, internal)
-  RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_gist_penalty(internal, internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_gist_picksplit(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
+CREATE FUNCTION sptnumber_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/******************************************************************************/
 
-CREATE OPERATOR CLASS gist_tbool_ops
-  DEFAULT FOR TYPE tbool USING gist AS
-  STORAGE period,
+CREATE OPERATOR CLASS spgist_tbool_ops
+  DEFAULT FOR TYPE tbool USING spgist AS
   -- overlaps
   OPERATOR  3    && (tbool, period),
   OPERATOR  3    && (tbool, tbool),
@@ -86,31 +93,17 @@ CREATE OPERATOR CLASS gist_tbool_ops
   OPERATOR  31    #&> (tbool, period),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  tbool_gist_consistent(internal, tbool, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
-  FUNCTION  3  tbool_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  1  spperiod_gist_config(internal, internal),
+  FUNCTION  2  spperiod_gist_choose(internal, internal),
+  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
+  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
+  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
+  FUNCTION  6  sptemporal_gist_compress(internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbox_gist_distance'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR CLASS tbox_gist_ops
-  DEFAULT FOR TYPE tbox USING gist AS
-  STORAGE tbox,
+CREATE OPERATOR CLASS tbox_spgist_ops
+  DEFAULT FOR TYPE tbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (tbox, tbox),
   OPERATOR  1    << (tbox, tint),
@@ -147,10 +140,6 @@ CREATE OPERATOR CLASS tbox_gist_ops
   OPERATOR  17    -|- (tbox, tbox),
   OPERATOR  17    -|- (tbox, tint),
   OPERATOR  17    -|- (tbox, tfloat),
-  -- nearest approach distance
-  OPERATOR  25    |=| (tbox, tbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tbox, tint) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tbox, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbox, tbox),
   OPERATOR  28    &<# (tbox, tint),
@@ -168,33 +157,16 @@ CREATE OPERATOR CLASS tbox_gist_ops
   OPERATOR  31    #&> (tbox, tint),
   OPERATOR  31    #&> (tbox, tfloat),
   -- functions
-  FUNCTION  1  tbox_gist_consistent(internal, tbox, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  1  tbox_spgist_config(internal, internal),
+  FUNCTION  2  tbox_spgist_choose(internal, internal),
+  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION tint_gist_consistent(internal, tint, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if MOBDB_PGSQL_VERSION < 110000
-CREATE FUNCTION tnumber_gist_decompress(internal)
-  RETURNS internal
-AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
-
-CREATE OPERATOR CLASS gist_tint_ops
-  DEFAULT FOR TYPE tint USING gist AS
-  STORAGE tbox,
+CREATE OPERATOR CLASS spgist_tint_ops
+  DEFAULT FOR TYPE tint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tint, intrange),
   OPERATOR  1    << (tint, tbox),
@@ -240,10 +212,6 @@ CREATE OPERATOR CLASS gist_tint_ops
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   OPERATOR  17    -|- (tint, tfloat),
-  -- nearest approach distance
-  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tint, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tbox),
   OPERATOR  28    &<# (tint, tint),
@@ -261,31 +229,17 @@ CREATE OPERATOR CLASS gist_tint_ops
   OPERATOR  31    #&> (tint, tint),
   OPERATOR  31    #&> (tint, tfloat),
   -- functions
-  FUNCTION  1  tint_gist_consistent(internal, tint, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  3  tint_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  tnumber_gist_decompress(internal),
-#endif
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  1  tbox_spgist_config(internal, internal),
+  FUNCTION  2  tbox_spgist_choose(internal, internal),
+  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  sptnumber_gist_compress(internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION tfloat_gist_consistent(internal, tfloat, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR CLASS gist_tfloat_ops
-  DEFAULT FOR TYPE tfloat USING gist AS
-  STORAGE tbox,
+CREATE OPERATOR CLASS spgist_tfloat_ops
+  DEFAULT FOR TYPE tfloat USING spgist AS
   -- strictly left
   OPERATOR  1    << (tfloat, floatrange),
   OPERATOR  1    << (tfloat, tbox),
@@ -331,10 +285,6 @@ CREATE OPERATOR CLASS gist_tfloat_ops
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tint),
   OPERATOR  17    -|- (tfloat, tfloat),
-  -- nearest approach distance
-  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tfloat, tint) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tbox),
   OPERATOR  28    &<# (tfloat, tint),
@@ -352,31 +302,17 @@ CREATE OPERATOR CLASS gist_tfloat_ops
   OPERATOR  31    #&> (tfloat, tint),
   OPERATOR  31    #&> (tfloat, tfloat),
   -- functions
-  FUNCTION  1  tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  3  tfloat_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  tnumber_gist_decompress(internal),
-#endif
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  1  tbox_spgist_config(internal, internal),
+  FUNCTION  2  tbox_spgist_choose(internal, internal),
+  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
+  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  sptnumber_gist_compress(internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR CLASS gist_ttext_ops
-  DEFAULT FOR TYPE ttext USING gist AS
-  STORAGE period,
+CREATE OPERATOR CLASS spgist_ttext_ops
+  DEFAULT FOR TYPE ttext USING spgist AS
   -- overlaps
   OPERATOR  3    && (ttext, period),
   OPERATOR  3    && (ttext, ttext),
@@ -405,14 +341,11 @@ CREATE OPERATOR CLASS gist_ttext_ops
   OPERATOR  31    #&> (ttext, period),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  ttext_gist_consistent(internal, ttext, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
-  FUNCTION  3  ttext_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  1  spperiod_gist_config(internal, internal),
+  FUNCTION  2  spperiod_gist_choose(internal, internal),
+  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
+  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
+  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
+  FUNCTION  6  sptemporal_gist_compress(internal);
 
 /******************************************************************************/

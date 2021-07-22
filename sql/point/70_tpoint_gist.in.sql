@@ -46,7 +46,7 @@ CREATE FUNCTION tpoint_gist_decompress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
 CREATE FUNCTION stbox_gist_picksplit(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'stbox_gist_picksplit'
@@ -245,7 +245,7 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
   FUNCTION  3  tpoint_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
   FUNCTION  4  tpoint_gist_decompress(internal),
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
@@ -296,7 +296,7 @@ CREATE OPERATOR CLASS gist_tgeogpoint_ops
   FUNCTION  3  tpoint_gist_compress(internal),
 #if MOBDB_PGSQL_VERSION < 110000
   FUNCTION  4  tpoint_gist_decompress(internal),
-#endif
+#endif //MOBDB_PGSQL_VERSION < 110000
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),

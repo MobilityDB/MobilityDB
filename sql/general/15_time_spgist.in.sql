@@ -6,67 +6,63 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
 
 /*
- * time_gist.sql
- * R-tree GiST index for time types
+ * time_spgist.sql
+ * Quad-tree SP-GiST index for time types
  */
 
-CREATE FUNCTION gist_timestampset_consistent(internal, timestampset, smallint, oid, internal)
+CREATE FUNCTION spperiod_gist_config(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spperiod_gist_choose(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spperiod_gist_picksplit(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spperiod_gist_inner_consistent(internal, internal)
+  RETURNS void
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION spperiod_gist_leaf_consistent(internal, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
+  AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_gist_union(internal, internal)
+CREATE FUNCTION sptimestampset_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampset_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'timestampset_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if MOBDB_PGSQL_VERSION < 110000
-CREATE FUNCTION period_gist_decompress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif
-CREATE FUNCTION period_gist_penalty(internal, internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_gist_picksplit(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_gist_same(period, period, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_gist_fetch(internal)
+CREATE FUNCTION spperiodset_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_timestampset_ops
-  DEFAULT FOR TYPE timestampset USING gist AS
-  STORAGE period,
+/******************************************************************************/
+
+CREATE OPERATOR CLASS spgist_timestampset_ops
+  DEFAULT FOR TYPE timestampset USING spgist AS
+--  STORAGE period,
   -- overlaps
   OPERATOR  3    && (timestampset, timestampset),
   OPERATOR  3    && (timestampset, period),
@@ -104,30 +100,17 @@ CREATE OPERATOR CLASS gist_timestampset_ops
   OPERATOR  31    #&> (timestampset, period),
   OPERATOR  31    #&> (timestampset, periodset),
   -- functions
-  FUNCTION  1  gist_timestampset_consistent(internal, timestampset, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
-  FUNCTION  3  timestampset_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  1  spperiod_gist_config(internal, internal),
+  FUNCTION  2  spperiod_gist_choose(internal, internal),
+  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
+  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
+  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
+  FUNCTION  6  sptimestampset_gist_compress(internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION period_gist_consistent(internal, period, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'period_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR CLASS period_gist_ops
-  DEFAULT FOR TYPE period USING gist AS
-  STORAGE period,
+CREATE OPERATOR CLASS spperiod_gist_ops
+  DEFAULT FOR TYPE period USING spgist AS
   -- overlaps
   OPERATOR  3    && (period, timestampset),
   OPERATOR  3    && (period, period),
@@ -166,31 +149,17 @@ CREATE OPERATOR CLASS period_gist_ops
   OPERATOR  31    #&> (period, period),
   OPERATOR  31    #&> (period, periodset),
   -- functions
-  FUNCTION  1  period_gist_consistent(internal, period, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
-  FUNCTION  3  period_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal),
-  FUNCTION  9  period_gist_fetch(internal);
+  FUNCTION  1  spperiod_gist_config(internal, internal),
+  FUNCTION  2  spperiod_gist_choose(internal, internal),
+  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
+  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
+  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
-CREATE FUNCTION gist_periodset_consistent(internal, periodset, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION periodset_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'periodset_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR CLASS gist_periodset_ops
-  DEFAULT FOR TYPE periodset USING gist AS
-  STORAGE period,
+CREATE OPERATOR CLASS spgist_periodset_ops
+  DEFAULT FOR TYPE periodset USING spgist AS
+--  STORAGE period,
   -- overlaps
   OPERATOR  3    && (periodset, timestampset),
   OPERATOR  3    && (periodset, period),
@@ -206,7 +175,7 @@ CREATE OPERATOR CLASS gist_periodset_ops
   -- adjacent
   OPERATOR  17    -|- (periodset, period),
   OPERATOR  17    -|- (periodset, periodset),
-  -- equals
+-- equals
   OPERATOR  18    = (periodset, periodset),
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
@@ -229,14 +198,11 @@ CREATE OPERATOR CLASS gist_periodset_ops
   OPERATOR  31    #&> (periodset, period),
   OPERATOR  31    #&> (periodset, periodset),
   -- functions
-  FUNCTION  1  gist_periodset_consistent(internal, periodset, smallint, oid, internal),
-  FUNCTION  2  period_gist_union(internal, internal),
-  FUNCTION  3  periodset_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif
-  FUNCTION  5  period_gist_penalty(internal, internal, internal),
-  FUNCTION  6  period_gist_picksplit(internal, internal),
-  FUNCTION  7  period_gist_same(period, period, internal);
+  FUNCTION  1  spperiod_gist_config(internal, internal),
+  FUNCTION  2  spperiod_gist_choose(internal, internal),
+  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
+  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
+  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
+  FUNCTION  6  spperiodset_gist_compress(internal);
 
 /******************************************************************************/

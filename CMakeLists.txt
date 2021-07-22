@@ -52,36 +52,6 @@ src/tnumber_selfuncs.c
 src/tnumber_spgist.c
 src/ttext_textfuncs.c
 )
-
-set(SQL
-src/sql/00_catalog.in.sql
-src/sql/01_period.in.sql
-src/sql/03_timestampset.in.sql
-src/sql/05_periodset.in.sql
-src/sql/07_rangetypes_ext.in.sql
-src/sql/11_timeops.in.sql
-src/sql/13_time_gist.in.sql
-src/sql/15_time_spgist.in.sql
-src/sql/17_time_aggfuncs.in.sql
-src/sql/19_geo_constructors.in.sql
-src/sql/20_doublen.in.sql
-src/sql/21_tbox.in.sql
-src/sql/22_temporal.in.sql
-src/sql/23_temporal_tile.in.sql
-src/sql/24_tnumber_mathfuncs.in.sql
-src/sql/26_tbool_boolops.in.sql
-src/sql/27_ttext_textfuncs.in.sql
-src/sql/28_temporal_compops.in.sql
-src/sql/32_temporal_boxops.in.sql
-src/sql/34_temporal_posops.in.sql
-src/sql/36_tnumber_distance.in.sql
-src/sql/38_temporal_aggfuncs.in.sql
-src/sql/40_temporal_waggfuncs.in.sql
-src/sql/42_temporal_gist.in.sql
-src/sql/44_temporal_spgist.in.sql
-src/sql/99_tempcache.in.sql
-)
-
 include(CTest)
 enable_testing()
 
@@ -162,12 +132,12 @@ string(TOLOWER ${CMAKE_PROJECT_NAME} LCNAME)
 set(CONTROLIN "control.in")
 set(CONTROLOUT "${LCNAME}.control")
 set(SQLPP "${LCNAME}--${MOBILITYDB_VERSION}.sql.c")
-set(SQLOUT "${LCNAME}--${MOBILITYDB_VERSION}.sql")
+set(MOBILITYDB_EXTENSION_FILE "${LCNAME}--${MOBILITYDB_VERSION}.sql")
 
 execute_process(COMMAND ${PGCONFIG} --sharedir OUTPUT_VARIABLE PostgreSQL_SHARE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
 execute_process(COMMAND ${PGCONFIG} --pkglibdir OUTPUT_VARIABLE PostgreSQL_EXTLIB_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
 
-add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${SQLOUT})
+add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/${CONTROLOUT})
 
 add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS})
@@ -228,20 +198,7 @@ if(NOT HAS_FFSL)
 	add_definitions(-D NO_FFSL)
 endif()
 
-add_custom_command(
-	OUTPUT ${SQLPP}
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/sqlin
-	COMMAND cp ${SQL} ${CMAKE_BINARY_DIR}/sqlin/
-	COMMAND cd ${CMAKE_BINARY_DIR}/sqlin/ && find -type f | sort | xargs cat > ${CMAKE_BINARY_DIR}/${SQLPP}
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-	DEPENDS ${SQL})
-
-add_custom_command(
-	OUTPUT ${SQLOUT}
-	COMMAND "${CMAKE_C_COMPILER}" ${MOBDB_DEFS} -E ${SQLPP} | grep -v '^\#' > ${SQLOUT}
-	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-	DEPENDS ${SQLPP})
-
+add_subdirectory(sql)
 add_custom_command(
 	OUTPUT ${CONTROLOUT}
 	COMMAND cat ${CONTROLIN} | sed -e's/LIBNAME/${CMAKE_PROJECT_NAME}/' -e's/VERSION/${MOBILITYDB_VERSION}/'  > ${CMAKE_BINARY_DIR}/${CONTROLOUT}
@@ -250,12 +207,10 @@ add_custom_command(
 
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION "${PostgreSQL_EXTLIB_DIR}")
 install(FILES "${CMAKE_BINARY_DIR}/${CONTROLOUT}" DESTINATION "${PostgreSQL_SHARE_DIR}/extension")
-install(FILES "${CMAKE_BINARY_DIR}/${SQLOUT}" DESTINATION "${PostgreSQL_SHARE_DIR}/extension")
+install(FILES "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}" DESTINATION "${PostgreSQL_SHARE_DIR}/extension")
 
 add_custom_target(install_restart
 	$(MAKE) install
 	COMMAND systemctl restart postgresql
 	DEPENDS ${PROJECT_NAME}
 	COMMENT "Restarting PostgreSQL")
-
-
