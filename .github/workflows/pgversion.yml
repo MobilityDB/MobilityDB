@@ -75,7 +75,7 @@ jobs:
         run: |
           sudo service postgresql start
           sudo -u postgres createdb -p ${PGPORT}  ___pgr___test___
-          sudo -u postgres psql -p ${PGPORT}  -d ___pgr___test___ -c "CREATE EXTENSION mobilitydb CASCADE"
+          sudo -u postgres psql -p ${PGPORT}  -d ___pgr___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
 
 
       - name: Test
