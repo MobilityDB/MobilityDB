@@ -281,7 +281,8 @@ dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   Datum dist = PG_GETARG_DATUM(2);
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE, &sync1, &sync2))
+  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+    &sync1, &sync2))
   {
     PG_FREE_IF_COPY(temp1, 0);
     PG_FREE_IF_COPY(temp2, 1);

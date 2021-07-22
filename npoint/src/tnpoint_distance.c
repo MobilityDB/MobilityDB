@@ -130,7 +130,8 @@ distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE, &sync1, &sync2))
+  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+    &sync1, &sync2))
     return NULL;
 
   Temporal *geomsync1 = tnpoint_as_tgeompoint_internal(sync1);
@@ -518,7 +519,8 @@ shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE, &sync1, &sync2))
+  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+    &sync1, &sync2))
   {
     PG_FREE_IF_COPY(temp1, 0);
     PG_FREE_IF_COPY(temp2, 1);

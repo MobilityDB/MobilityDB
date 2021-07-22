@@ -284,7 +284,7 @@ Datum
 spatialrel_tpoint_geo1(Temporal *temp, Datum geo, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert)
 {
-  Datum traj = tpoint_trajectory_internal(temp);  
+  Datum traj = tpoint_trajectory_internal(temp);
   Datum result;
   assert(numparam == 2 || numparam == 3);
   if (numparam == 2)
@@ -490,7 +490,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *sync1, *sync2;
   /* Returns false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE,
+  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
   {
     PG_FREE_IF_COPY(temp1, 0);
