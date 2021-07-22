@@ -198,7 +198,7 @@ else()
 	message(FATAL_ERROR "Could not find lwgeom;")
 endif()
 
-include("test/scripts/test.cmake")
+add_subdirectory(test)
 include("point/point.cmake")
 include("npoint/npoint.cmake")
 
