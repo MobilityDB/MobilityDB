@@ -1,0 +1,64 @@
+# one word definitions
+if (${PG_FULL_VERSION} GREATER_EQUAL 110000)
+  set(JOIN_LE "scalarlejoinsel")
+  set(JOIN_GE "scalargejoinsel")
+
+  set(SCALAR_LE "scalarlesel")
+  set(SCALAR_GE "scalargesel")
+
+else()
+  set(JOIN_LE "scalarltjoinsel")
+  set(JOIN_GE "scalargtjoinsel")
+
+  set(SCALAR_LE "scalarltsel")
+  set(SCALAR_GE "scalargtsel")
+endif()
+
+macro(process_file f srcdir bindir)
+  file(READ ${srcdir}/${f}.in.sql CURR_CONTENTS)
+  if (${PG_FULL_VERSION} GREATER_EQUAL 110000)
+    string(REGEX REPLACE "#if MOBDB_PGSQL_VERSION >= 110000" "-- if MOBDB_PGSQL_VERSION >= 110000" CURR_CONTENTS "${CURR_CONTENTS}")
+    string(REGEX REPLACE "#endif //MOBDB_PGSQL_VERSION >= 110000" "-- endif MOBDB_PGSQL_VERSION >= 110000" CURR_CONTENTS "${CURR_CONTENTS}")
+
+    string(REGEX REPLACE "#if MOBDB_PGSQL_VERSION < 110000" "/* --if MOBDB_PGSQL_VERSION < 110000" CURR_CONTENTS "${CURR_CONTENTS}")
+    string(REGEX REPLACE "#endif //MOBDB_PGSQL_VERSION < 110000" "-- endif MOBDB_PGSQL_VERSION < 110000 */" CURR_CONTENTS "${CURR_CONTENTS}")
+    if (${PG_FULL_VERSION} GREATER_EQUAL 120000)
+      string(REGEX REPLACE "#if MOBDB_PGSQL_VERSION >= 120000" "-- if MOBDB_PGSQL_VERSION >= 120000" CURR_CONTENTS "${CURR_CONTENTS}")
+      string(REGEX REPLACE "#endif //MOBDB_PGSQL_VERSION >= 120000" "-- endif MOBDB_PGSQL_VERSION >= 120000" CURR_CONTENTS "${CURR_CONTENTS}")
+    else()
+      string(REGEX REPLACE "#if MOBDB_PGSQL_VERSION >= 120000" "/* -- if MOBDB_PGSQL_VERSION >= 120000" CURR_CONTENTS "${CURR_CONTENTS}")
+      string(REGEX REPLACE "#endif //MOBDB_PGSQL_VERSION >= 120000" "-- endif MOBDB_PGSQL_VERSION >= 120000 */" CURR_CONTENTS "${CURR_CONTENTS}")
+    endif()
+  else()
+    string(REGEX REPLACE "#if MOBDB_PGSQL_VERSION >= 110000" "/* -- if MOBDB_PGSQL_VERSION >= 110000" CURR_CONTENTS "${CURR_CONTENTS}")
+    string(REGEX REPLACE "#endif //MOBDB_PGSQL_VERSION >= 110000" "-- endif MOBDB_PGSQL_VERSION >= 110000 */" CURR_CONTENTS "${CURR_CONTENTS}")
+
+    string(REGEX REPLACE "#if MOBDB_PGSQL_VERSION < 110000" "-- if MOBDB_PGSQL_VERSION < 110000" CURR_CONTENTS "${CURR_CONTENTS}")
+    string(REGEX REPLACE "#endif //MOBDB_PGSQL_VERSION < 110000" "-- endif MOBDB_PGSQL_VERSION < 110000" CURR_CONTENTS "${CURR_CONTENTS}")
+  endif()
+
+  file(WRITE ${bindir}/${f}.sql.in "${CURR_CONTENTS}")
+endmacro()
+
+
+add_subdirectory(general)
+if (HAS_LWGEOM)
+  add_subdirectory(point)
+  add_subdirectory(npoint)
+endif()
+
+list(SORT PROJECT_SQL_FILES)
+
+add_custom_target(all_sql_files ALL
+  DEPENDS ${PROJECT_SQL_FILES})
+
+if (PROJECT_VERBOSE)
+  message(STATUS "PROJECT_SQL_FILES=${PROJECT_SQL_FILES}")
+endif()
+
+foreach (f ${PROJECT_SQL_FILES})
+  file(READ ${f} CURR_CONTENTS)
+  file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in "${CURR_CONTENTS}")
+endforeach()
+
+configure_file(${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE} COPYONLY)
