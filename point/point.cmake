@@ -27,29 +27,7 @@ point/src/tpoint_tempspatialrels.c
 point/src/tpoint_analytics.c
 )
 
-set(SQLPOINT
-point/src/sql/50_stbox.in.sql
-point/src/sql/51_tpoint.in.sql
-point/src/sql/52_tpoint_in.in.sql
-point/src/sql/53_tpoint_out.in.sql
-point/src/sql/54_tpoint_compops.in.sql
-point/src/sql/55_geography_functions.in.sql
-point/src/sql/56_tpoint_spatialfuncs.in.sql
-point/src/sql/57_tpoint_tile.in.sql
-point/src/sql/58_tpoint_boxops.in.sql
-point/src/sql/60_tpoint_posops.in.sql
-point/src/sql/62_tpoint_distance.in.sql
-point/src/sql/64_tpoint_aggfuncs.in.sql
-point/src/sql/66_tpoint_spatialrels.in.sql
-point/src/sql/68_tpoint_tempspatialrels.in.sql
-point/src/sql/70_tpoint_gist.in.sql
-point/src/sql/72_tpoint_spgist.in.sql
-point/src/sql/74_tpoint_datagen.in.sql
-point/src/sql/76_tpoint_analytics.in.sql
-)
-
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCPOINT})
 
-set(SQL "${SQL};${SQLPOINT}")
 set(CONTROLIN "${CONTROLIN};point/control.in")
 

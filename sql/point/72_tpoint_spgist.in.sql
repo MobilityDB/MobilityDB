@@ -29,8 +29,6 @@
  * Oct-tree SP-GiST index for temporal points.
  */
 
-#if MOBDB_PGSQL_VERSION >= 110000
-
 CREATE FUNCTION stbox_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
@@ -191,7 +189,7 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
   OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
-#endif
+#endif //MOBDB_PGSQL_VERSION >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tgeompoint, stbox),
   OPERATOR  28    &<# (tgeompoint, tgeompoint),
@@ -257,7 +255,7 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
   OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
-#endif
+#endif //MOBDB_PGSQL_VERSION >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tgeogpoint, stbox),
   OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
@@ -277,6 +275,5 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
   FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  tpoint_spgist_compress(internal);
-#endif
 
 /******************************************************************************/
