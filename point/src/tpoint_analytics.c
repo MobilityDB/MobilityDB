@@ -947,7 +947,7 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
    * The operation is synchronization without adding crossings */
-  if (!intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE,
+  if (!intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
   {
     PG_FREE_IF_COPY(tpoint, 0);

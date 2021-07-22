@@ -110,7 +110,7 @@
 /** Enumeration for the intersection/synchronization functions */
 typedef enum
 {
-  SYNCHRONIZE,
+  SYNCHRONIZE_NOCROSS,
   SYNCHRONIZE_CROSS,
 } TIntersection;
 

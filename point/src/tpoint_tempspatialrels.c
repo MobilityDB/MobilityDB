@@ -1343,7 +1343,7 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   Temporal *sync1, *sync2;
   /* Return false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE,
+  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
     return NULL;
 
