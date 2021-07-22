@@ -2172,7 +2172,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   Temporal *tpoint4 = tpoint_grid(tpoint3, &grid);
 
   /* Clip temporal point taking into account the buffer */
-  Temporal *tpoint5;
+  Temporal *tpoint6;
   if (clip_geom)
   {
     double max = (double) extent + (double) buffer;
@@ -2181,14 +2181,16 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
     STBOX clip_box;
     stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
       0, 0, 0, 0);
-    tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
-    pfree(tpoint4);
+    Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
+    /* We need to grid again the result of the clipping */
+    tpoint6 = tpoint_grid(tpoint5, &grid);
+    pfree(tpoint4); pfree(tpoint5);
   }
   else
-    tpoint5 = tpoint4;
+    tpoint6 = tpoint4;
 
   pfree(tpoint1); pfree(tpoint2); pfree(tpoint3);
-  return tpoint5;
+  return tpoint6;
 }
 
 /*****************************************************************************/

@@ -71,6 +71,8 @@ void
 tbox_set(TBOX *box, bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   MOBDB_FLAGS_SET_X(box->flags, hasx);
   MOBDB_FLAGS_SET_T(box->flags, hast);
   if (hasx)

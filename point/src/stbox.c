@@ -73,6 +73,8 @@ stbox_set(STBOX *box, bool hasx, bool hasz, bool hast, bool geodetic,
   int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, TimestampTz tmin, TimestampTz tmax)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   MOBDB_FLAGS_SET_X(box->flags, hasx);
   MOBDB_FLAGS_SET_Z(box->flags, hasz);
   MOBDB_FLAGS_SET_T(box->flags, hast);
