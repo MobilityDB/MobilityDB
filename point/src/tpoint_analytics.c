@@ -2385,7 +2385,7 @@ AsMVTGeom(PG_FUNCTION_ARGS)
 
   /* Contrary to what is done in PostGIS we do not use the following filter
    * to enable the visualization of temporal points with instant subtype.
-   * The PostGIS filter adapted to MobilityDB follows.
+   * PostGIS filtering adapted to MobilityDB would be as follows.
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBOX box;

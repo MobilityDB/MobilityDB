@@ -1678,7 +1678,7 @@ scale_linear(
 				</programlisting>
 				<figure id="figspeed" float="start"><title>Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS.</title>
 					<mediaobject>
-						<imageobject><imagedata scale='30' fileref='../../images/speed.png'/></imageobject>
+						<imageobject><imagedata scale='30' fileref='../images/speed.png'/></imageobject>
 					</mediaobject>
 				</figure>
 			</listitem>
@@ -2579,7 +2579,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 		<!-- <figure id="tiling" float="start"><title>Multidimensional tiling for temporal floats.</title> -->
 			<mediaobject>
-				<imageobject><imagedata scale='75' fileref='../../images/tiling.pdf'/></imageobject>
+				<imageobject><imagedata scale='75' fileref='../images/tiling.pdf'/></imageobject>
 			</mediaobject>
 		<!-- </figure> -->
 
