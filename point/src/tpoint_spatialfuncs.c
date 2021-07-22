@@ -3857,43 +3857,65 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
    * temporal points */
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple1(seq, &countsimple);
-  /* Allocate memory for the result */
-  Period ***periods = palloc(sizeof(Period *) * countsimple);
-  int *countpers = palloc0(sizeof(int) * countsimple);
+  Period **allperiods;
   int totalcount = 0;
-  /* Loop for every simple piece of the sequence */
-  for (int i = 0; i < countsimple; i++)
+
+  if (countsimple == 1)
   {
-    Datum traj = tpointseq_trajectory(simpleseqs[i]);
+    /* Particular case when the input sequence is simple */
+    pfree_array((void **) simpleseqs, countsimple);
+    Datum traj = tpointseq_trajectory(seq);
     Datum inter = call_function2(intersection, traj, geom);
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
-    {
-      periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,
-        &countpers[i]);
-      totalcount += countpers[i];
-    }
+      allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
     pfree(DatumGetPointer(inter));
     POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
+    if (totalcount == 0)
+    {
+      *count = 0;
+      return NULL;
+    }
   }
-  pfree_array((void **) simpleseqs, countsimple);
-  if (totalcount == 0)
+  else
   {
-    *count = 0;
-    return NULL;
+    /* General case: Allocate memory for the result */
+    Period ***periods = palloc(sizeof(Period *) * countsimple);
+    int *countpers = palloc0(sizeof(int) * countsimple);
+    /* Loop for every simple piece of the sequence */
+    for (int i = 0; i < countsimple; i++)
+    {
+      Datum traj = tpointseq_trajectory(simpleseqs[i]);
+      Datum inter = call_function2(intersection, traj, geom);
+      GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
+      if (! gserialized_is_empty(gsinter))
+      {
+        periods[i] = tpointseq_interperiods(simpleseqs[i], gsinter,
+          &countpers[i]);
+        totalcount += countpers[i];
+      }
+      pfree(DatumGetPointer(inter));
+      POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
+    }
+    pfree_array((void **) simpleseqs, countsimple);
+    if (totalcount == 0)
+    {
+      *count = 0;
+      return NULL;
+    }
+    /* Assemble the periods into a single array */
+    allperiods = palloc(sizeof(Period *) * totalcount);
+    int k = 0;
+    for (int i = 0; i < countsimple; i++)
+    {
+      for (int j = 0; j < countpers[i]; j++)
+        allperiods[k++] = periods[i][j];
+      if (countpers[i] != 0)
+        pfree(periods[i]);
+    }
+    /* It is necessary to sort the periods */
+    periodarr_sort(allperiods, totalcount);
   }
-  /* Assemble the periods into a single array */
-  Period **allperiods = palloc(sizeof(Period *) * totalcount);
-  int k = 0;
-  for (int i = 0; i < countsimple; i++)
-  {
-    for (int j = 0; j < countpers[i]; j++)
-      allperiods[k++] = periods[i][j];
-    if (countpers[i] != 0)
-      pfree(periods[i]);
-  }
-  /* It is necessary to sort the periods */
-  periodarr_sort(allperiods, totalcount);
   PeriodSet *ps = periodset_make_free(allperiods, totalcount, NORMALIZE);
   TSequence **result = palloc(sizeof(TSequence *) * totalcount);
   *count = tsequence_at_periodset(result, seq, ps);
