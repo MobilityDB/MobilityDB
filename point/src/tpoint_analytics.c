@@ -60,26 +60,28 @@
 #include "tpoint_spatialrels.h"
 #include "tpoint_spatialfuncs.h"
 
+/* Timestamps in PostgreSQL are encoded as MICROseconds since '2000-01-01'
+ * while Unix epoch are encoded as MILLIseconds since '1970-01-01'.
+ * Therefore the value used for conversions is computed as follows
+ * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
+ * which results in 946684800 */
+#define DELTA_UNIX_POSTGRES_EPOCH 946684800
+
 /*****************************************************************************
  * Convert a temporal point into a PostGIS trajectory geometry/geography
- * The M coordinates encode the timestamps in number of seconds since '1970-01-01'
+ * The M coordinates encode the timestamps in Unix epoch
  *****************************************************************************/
 
 /**
  * Converts the point and the timestamp into a PostGIS geometry/geography
- * point where the M coordinate encodes the timestamp in number of seconds
- * since '1970-01-01'
+ * point where the M coordinate encodes the timestamp in Unix epoch
  */
 static LWPOINT *
 point_to_trajpoint(Datum point, TimestampTz t)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
   int32 srid = gserialized_get_srid(gs);
-  /* The internal representation of timestamps in PostgreSQL is in
-   * microseconds since '2000-01-01'. Therefore we need to compute
-   * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
-   * which results in 946684800 */
-  double epoch = ((double) t / 1e6) + 946684800;
+  double epoch = ((double) t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   LWPOINT *result;
   if (FLAGS_GET_Z(gs->flags))
   {
@@ -98,7 +100,7 @@ point_to_trajpoint(Datum point, TimestampTz t)
 /**
  * Converts the temporal instant point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  */
 static Datum
 tpointinst_to_geo(const TInstant *inst)
@@ -112,7 +114,7 @@ tpointinst_to_geo(const TInstant *inst)
 /**
  * Converts the temporal instant set point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  */
 static Datum
 tpointinstset_to_geo(const TInstantSet *ti)
@@ -144,7 +146,7 @@ tpointinstset_to_geo(const TInstantSet *ti)
 /**
  * Converts the temporal sequence point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  */
 static LWGEOM *
 tpointseq_to_geo1(const TSequence *seq)
@@ -180,7 +182,7 @@ tpointseq_to_geo1(const TSequence *seq)
 /**
  * Converts the temporal sequence point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  */
 static Datum
 tpointseq_to_geo(const TSequence *seq)
@@ -193,7 +195,7 @@ tpointseq_to_geo(const TSequence *seq)
 /**
  * Converts the temporal sequence set point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  */
 static Datum
 tpointseqset_to_geo(const TSequenceSet *ts)
@@ -238,7 +240,7 @@ tpointseqset_to_geo(const TSequenceSet *ts)
 /**
  * Converts the temporal sequence point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  *
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
@@ -276,7 +278,7 @@ tpointseq_to_geo_segmentize1(LWGEOM **result, const TSequence *seq)
 /**
  * Converts the temporal sequence point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  *
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
@@ -308,7 +310,7 @@ tpointseq_to_geo_segmentize(const TSequence *seq)
 /**
  * Converts the temporal sequence set point into a PostGIS trajectory
  * geometry/geography where the M coordinates encode the timestamps in
- * number of seconds since '1970-01-01'
+ * Unix epoch
  *
  * Version when the resulting value is a MultiLinestring M, where each
  * component is a segment of two points.
@@ -386,13 +388,12 @@ tpoint_to_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Convert trajectory geometry/geography where the M coordinates encode the
- * timestamps in number of seconds since '1970-01-01' into a temporal point.
+ * timestamps in Unix epoch into a temporal point.
  *****************************************************************************/
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in number of seconds since '1970-01-01' into a
- * temporal instant point.
+ * encode the timestamps in Unix epoch into a temporal instant point.
  */
 static TInstant *
 trajpoint_to_tpointinst(LWPOINT *lwpoint)
@@ -404,13 +405,13 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   if (hasz)
   {
     POINT4D point = getPoint4d(lwpoint->point, 0);
-    t = (TimestampTz) ((point.m - 946684800) * 1e6);
+    t = (TimestampTz) ((point.m - DELTA_UNIX_POSTGRES_EPOCH) * 1e6);
     lwpoint1 = lwpoint_make3dz(lwpoint->srid, point.x, point.y, point.z);
   }
   else
   {
     POINT3DM point = getPoint3dm(lwpoint->point, 0);
-    t = (TimestampTz) ((point.m - 946684800) * 1e6);
+    t = (TimestampTz) ((point.m - DELTA_UNIX_POSTGRES_EPOCH) * 1e6);
     lwpoint1 = lwpoint_make2d(lwpoint->srid, point.x, point.y);
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
@@ -424,8 +425,7 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in number of seconds since '1970-01-01' into a
- * temporal instant point.
+ * encode the timestamps in Unix epoch into a temporal instant point.
  */
 static TInstant *
 geo_to_tpointinst(GSERIALIZED *gs)
@@ -439,8 +439,7 @@ geo_to_tpointinst(GSERIALIZED *gs)
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in number of seconds since '1970-01-01' into a
- * temporal instant set point.
+ * encode the timestamps in Unix epoch into a temporal instant set point.
  */
 static TInstantSet *
 geo_to_tpointinstset(GSERIALIZED *gs)
@@ -483,8 +482,7 @@ geo_to_tpointinstset(GSERIALIZED *gs)
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in number of seconds since '1970-01-01' into a
- * temporal sequence point.
+ * encode the timestamps in Unix epoch into a temporal sequence point.
  */
 static TSequence *
 geo_to_tpointseq(GSERIALIZED *gs)
@@ -537,8 +535,7 @@ geo_to_tpointseq(GSERIALIZED *gs)
 
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in number of seconds since '1970-01-01' into a
- * temporal sequence set point.
+ * encode the timestamps in Unix epoch into a temporal sequence set point.
  */
 static TSequenceSet *
 geo_to_tpointseqset(GSERIALIZED *gs)
@@ -582,8 +579,7 @@ geo_to_tpointseqset(GSERIALIZED *gs)
 PG_FUNCTION_INFO_V1(geo_to_tpoint);
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
- * encode the timestamps in number of seconds since '1970-01-01' into a
- * temporal point.
+ * encode the timestamps in Unix epoch into a temporal point.
  */
 PGDLLEXPORT Datum
 geo_to_tpoint(PG_FUNCTION_ARGS)
@@ -2038,7 +2034,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
  * Stick a temporal point to the given grid specification.
  */
 TSequence *
-tpointseq_grid(const TSequence *seq, const gridspec *grid)
+tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
   int srid = tpointseq_srid(seq);
@@ -2076,6 +2072,12 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid)
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
   }
+  if (filter_pts && k == 1)
+  {
+    pfree_array((void **) instants, 1);
+    return NULL;
+  }
+
   /* Construct the result */
   return tsequence_make_free(instants, k, k > 1 ? seq->period.lower_inc : true,
     k > 1 ? seq->period.upper_inc : true, MOBDB_FLAGS_GET_LINEAR(seq->flags),
@@ -2086,22 +2088,29 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid)
  * Stick a temporal point to the given grid specification.
  */
 TSequenceSet *
-tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid)
+tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid, bool filter_pts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ts, 0), grid);
+    TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ts, 0), grid, filter_pts);
+    if (seq == NULL)
+      return NULL;
     TSequenceSet *result = tsequence_to_tsequenceset(seq);
     pfree(seq);
     return result;
   }
 
   /* General case */
+  int k = 0;
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    sequences[i] = tpointseq_grid(tsequenceset_seq_n(ts, i), grid);
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
+  {
+    TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ts, i), grid, filter_pts);
+    if (seq != NULL)
+      sequences[k++] = seq;
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
@@ -2112,7 +2121,7 @@ tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid)
  * are collapsed into one single instant.
  */
 Temporal *
-tpoint_grid(const Temporal *temp, const gridspec *grid)
+tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2121,9 +2130,10 @@ tpoint_grid(const Temporal *temp, const gridspec *grid)
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_grid((TInstantSet *) temp, grid);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) tpointseq_grid((TSequence *) temp, grid);
+    result = (Temporal *) tpointseq_grid((TSequence *) temp, grid, filter_pts);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid);
+    result = (Temporal *) tpointseqset_grid((TSequenceSet *) temp, grid,
+      filter_pts);
   return result;
 }
 
@@ -2168,8 +2178,8 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   affine.yoff = -box->ymax * fy;
   Temporal *tpoint3 = tpoint_affine(tpoint2, &affine);
 
-  /* Snap to integer precision, removing duplicate points */
-  Temporal *tpoint4 = tpoint_grid(tpoint3, &grid);
+  /* Snap to integer precision, removing duplicate and single points */
+  Temporal *tpoint4 = tpoint_grid(tpoint3, &grid, true);
 
   /* Clip temporal point taking into account the buffer */
   Temporal *tpoint6;
@@ -2183,7 +2193,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
       0, 0, 0, 0);
     Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
     /* We need to grid again the result of the clipping */
-    tpoint6 = tpoint_grid(tpoint5, &grid);
+    tpoint6 = tpoint_grid(tpoint5, &grid, true);
     pfree(tpoint4); pfree(tpoint5);
   }
   else
@@ -2200,12 +2210,13 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
  *
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] inst Temporal point
- * @param[out] timesarr Array of timestamps
+ * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
 Datum
 tpointinst_decouple(const TInstant *inst, ArrayType **timesarr)
 {
-  *timesarr = timestamparr_to_array(&inst->t, 1);
+  Datum epoch = Int32GetDatum((inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH);
+  *timesarr = datumarr_to_array(&epoch, 1, INT4OID);
   return tinstant_value_copy(inst);
 }
 
@@ -2214,7 +2225,7 @@ tpointinst_decouple(const TInstant *inst, ArrayType **timesarr)
  *
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] ti Temporal point
- * @param[out] timesarr Array of timestamps
+ * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
 Datum
 tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
@@ -2225,20 +2236,20 @@ tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
 
   /* General case */
   LWGEOM **points = palloc(sizeof(LWGEOM *) * ti->count);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ti->count);
+  Datum *times = palloc(sizeof(Datum) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     points[i] = lwgeom_from_gserialized(gs);
-    times[i] = inst->t;
+    times[i] = Int32GetDatum((inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH);
   }
   LWGEOM *lwgeom = lwpointarr_make_trajectory(points, ti->count,
     MOBDB_FLAGS_GET_LINEAR(ti->flags));
   Datum result = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
-  *timesarr = timestamparr_to_array(times, ti->count);
+  *timesarr = datumarr_to_array(times, ti->count, INT4OID);
   for (int i = 0; i < ti->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);
@@ -2252,9 +2263,10 @@ tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] seq Temporal point
  * @param[out] times Array of timestamps
+ * @note The timestamps are returned in Unix epoch
  */
 LWGEOM *
-tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
+tpointseq_decouple1(const TSequence *seq, Datum *times)
 {
   /* General case */
   LWGEOM **points = palloc(sizeof(LWGEOM *) * seq->count);
@@ -2264,7 +2276,7 @@ tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
     Datum value = tinstant_value(inst);
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     points[i] = lwgeom_from_gserialized(gs);
-    times[i] = inst->t;
+    times[i] = Int32GetDatum((inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH);
   }
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count,
     MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -2279,16 +2291,16 @@ tpointseq_decouple1(const TSequence *seq, TimestampTz *times)
  *
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] seq Temporal point
- * @param[out] timesarr Array of timestamps
+ * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
 Datum
 tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
 {
-  TimestampTz *times = palloc(sizeof(TimestampTz) * seq->count);
+  Datum *times = palloc(sizeof(Datum) * seq->count);
   LWGEOM *lwgeom = tpointseq_decouple1(seq, times);
   Datum result = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
-  *timesarr = timestamparr_to_array(times, seq->count);
+  *timesarr = datumarr_to_array(times, seq->count, INT4OID);
   pfree(times);
   return result;
 }
@@ -2298,7 +2310,7 @@ tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
  *
  * @note The function does not remove consecutive points/instants that are equal.
  * @param[in] ts Temporal point
- * @param[out] timesarr Array of timestamps
+ * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
 Datum
 tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
@@ -2310,7 +2322,7 @@ tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
   /* General case */
   uint32_t colltype = 0;
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * ts->count);
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->totalcount);
+  Datum *times = palloc(sizeof(Datum) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
@@ -2329,7 +2341,7 @@ tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
   Datum result = PointerGetDatum(geo_serialize(coll));
-  *timesarr = timestamparr_to_array(times, ts->totalcount);
+  *timesarr = datumarr_to_array(times, ts->totalcount, INT4OID);
   /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
   pfree(geoms);
   pfree(times);
@@ -2340,7 +2352,7 @@ tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
  * Decouple the points and the timestamps of a temporal point.
  *
  * @param[in] temp Temporal point
- * @param[out] timesarr Array of timestamps
+ * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
 Datum
 tpoint_decouple(const Temporal *temp, ArrayType **timesarr)

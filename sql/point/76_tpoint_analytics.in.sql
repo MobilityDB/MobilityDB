@@ -95,7 +95,7 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE geom_times AS (
   geom geometry,
-  times timestamptz[]
+  times integer[]
 );
 
 CREATE OR REPLACE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
