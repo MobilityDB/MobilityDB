@@ -31,5 +31,5 @@ script:
 after_failure: ../test/scripts/print_fail.sh
 
 after_success: |
-   [ "$COVERAGE" == "1" ] && coveralls --exclude src/debug --exclude point/src/debug --exclude include --exclude point/include --exclude src/sql --exclude point/src/sql --exclude doc --exclude test --exclude point/test --gcov-options '\-lp' -r .. -b .
+   [ "$COVERAGE" == "1" ] && coveralls --exclude cmake --exclude doc --exclude include --exclude sql --exclude src --exclude test --exclude tools --gcov-options '\-lp' -r .. -b .
 
