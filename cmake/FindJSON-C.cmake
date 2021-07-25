@@ -14,7 +14,6 @@ find_library(JSON-C_LIBRARIES
 find_path(JSON-C_INCLUDE_DIRS
   NAMES json-c/json.h
   HINTS /usr/include/json-c
-  DOC "json-c headers"
   )
 
 
@@ -22,7 +21,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(JSON-C
   FOUND_VAR JSON-C_FOUND
   REQUIRED_VARS JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES
-FAIL_MESSAGE "Could NOT find json-c")
+  FAIL_MESSAGE "Could NOT find json-c")
 
 if (JSON-C_FOUND)
   mark_as_advanced(JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
