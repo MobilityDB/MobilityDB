@@ -118,8 +118,6 @@ if (APPLE)
 endif ()
 
 find_package(JSON-C REQUIRED)
-message(STATUS "JSON-C_INCLUDE_DIRs=${JSON-C_INCLUDE_DIRS}")
-message(STATUS "JSON-C_LIBRARIES=${JSON-C_LIBRARIES}")
 include_directories(${JSON-C_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${JSON-C_LIBRARIES})
 
