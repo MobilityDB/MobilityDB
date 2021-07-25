@@ -49,7 +49,6 @@ jobs:
           sudo apt-get install -y \
             liblwgeom-dev \
             libproj-dev \
-            libjson-c-dev \
             postgresql-${{ matrix.psql }} \
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }}-scripts \
