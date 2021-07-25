@@ -13,7 +13,7 @@ WORKDIR=$BUILDDIR/tmptest
 #SOFILE=$(echo "$BUILDDIR"/lib*.so)
 
 
-BIN_DIR=$(@PGCONFIG@ --bindir)
+BIN_DIR=@POSTGRESQL_BIN_DIR@
 
 
 PSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=0 postgres"
@@ -30,8 +30,8 @@ run_ctl () {
 PGCTL="${BIN_DIR}/pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''"
 # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
+PGSODIR=@POSTGRESQL_DYNLIB_DIR@
 #FIXME: this is cheating
-PGSODIR=$(pg_config --pkglibdir)
 POSTGIS=$(find "$PGSODIR" -name 'postgis-2.5.so' | head -1)
 
 case $CMD in

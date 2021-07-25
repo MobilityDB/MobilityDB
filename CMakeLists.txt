@@ -71,6 +71,7 @@ if (NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
 
+#[[
 find_program(PGCONFIG pg_config)
 if (NOT PGCONFIG)
 	message(FATAL_ERROR "Could not find pg_config")
@@ -101,6 +102,7 @@ if(PG_VERSION_STRING)
 else ()
 	message("PostgreSQL not found")
 endif()
+]]
 
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
@@ -138,8 +140,6 @@ set(CONTROLOUT "${MOBILITYDB_LOWERCASE_NAME}.control")
 set(SQLPP "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql.c")
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql")
 
-execute_process(COMMAND ${PGCONFIG} --sharedir OUTPUT_VARIABLE PostgreSQL_SHARE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
-execute_process(COMMAND ${PGCONFIG} --pkglibdir OUTPUT_VARIABLE PostgreSQL_EXTLIB_DIR OUTPUT_STRIP_TRAILING_WHITESPACE) # FIXME: I don't think this work on Windows
 
 add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/${CONTROLOUT})
@@ -153,7 +153,7 @@ endif ()
 find_library(HAS_LWGEOM lwgeom)
 if (HAS_LWGEOM)
 	MESSAGE(STATUS "Found LWGEOM at ${HAS_LWGEOM} - compiling with PostGIS support")
-	if(NOT EXISTS "${PostgreSQL_EXTLIB_DIR}/postgis-2.5.so" AND NOT EXISTS "${PostgreSQL_EXTLIB_DIR}/postgis-2.5.dll")
+  if(NOT EXISTS "${POSTGRESQL_DYNLIB_DIR}/postgis-2.5.so" AND NOT EXISTS "${POSTGRESQL_DYNLIB_DIR}/postgis-2.5.dll")
 		message(FATAL_ERROR "Could not find postgis-2.5; only PostGIS 2.5 is currently supported")
 	endif()
 
@@ -210,11 +210,13 @@ add_custom_command(
 	DEPENDS ${CONTROLIN})
 
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
-install(FILES "${CMAKE_BINARY_DIR}/${CONTROLOUT}" DESTINATION "${POSTGRES_SHARE_DIR}/extension")
-install(FILES "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}" DESTINATION "${POSTGRES_SHARE_DIR}/extension")
+install(FILES "${CMAKE_BINARY_DIR}/${CONTROLOUT}" DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
+install(FILES "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}" DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
 
+#[[
 add_custom_target(install_restart
 	$(MAKE) install
 	COMMAND systemctl restart postgresql
 	DEPENDS ${PROJECT_NAME}
 	COMMENT "Restarting PostgreSQL")
+]]
