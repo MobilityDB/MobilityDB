@@ -144,14 +144,6 @@ typedef enum
  *****************************************************************************/
 
 #define MOBDB_VERSION_STR "MobilityDB 1.0 beta 3"
-/* TODO This is taken care by the build*/
-#ifndef POSTGRESQL_VERSION_NUMBER
-#error Unconfigured source code -- please run cmake
-#endif
-/* TODO This is taken care by the build*/
-#ifndef POSTGRESQL_VERSION_STRING
-#error Unconfigured source code -- please run cmake
-#endif
 
 /* TODO this is fixed will be impossible to make it work with other versions of postgis */
 #define MOBDB_POSTGIS_VERSION 25
