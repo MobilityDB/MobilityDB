@@ -8,6 +8,7 @@ endif()
 
 project(MobilityDB VERSION 1.0)
 set(MOBILITYDB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+string(TOLOWER ${CMAKE_PROJECT_NAME} LCNAME)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
@@ -102,28 +103,25 @@ else ()
 	message("PostgreSQL not found")
 endif()
 
-message(STATUS "PG_FULL_VERSION=${PG_FULL_VERSION}")
-message(STATUS "PG_VERSION_STRING=${PG_VERSION_STRING}")
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
-execute_process(COMMAND ${PGCONFIG} --includedir --includedir-server OUTPUT_VARIABLE PostgreSQL_ACTUAL_INCLUDE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR})
-
-message(STATUS "POSTGRESQL_INCLUDE_DIRS = ${PostgreSQL_ACTUAL_INCLUDE_DIR}")
+include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
 if(WIN32)
-    include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR}/port/win32)
+    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
     if(MSVC)
-        include_directories(${PostgreSQL_ACTUAL_INCLUDE_DIR}/port/win32_msvc/)
-    endif(MSVC)
-endif(WIN32)
+        include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+    endif()
+endif()
 
 if(WIN32)
-    message(STATUS "LINK_DIRECTORIES = ${PostgreSQL_LIBRARY_DIRS}")
-    link_directories(${PostgreSQL_LIBRARY_DIRS})
+    link_directories(${POSTGRESQL_LIBRARIES})
     link_libraries(postgres)
 endif()
+#--------------------------------
+
+
 include_directories("include")
+#--------------------------------
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -135,7 +133,6 @@ endif ()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
-string(TOLOWER ${CMAKE_PROJECT_NAME} LCNAME)
 
 set(CONTROLIN "control.in")
 set(CONTROLOUT "${LCNAME}.control")
