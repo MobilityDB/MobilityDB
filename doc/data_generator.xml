@@ -15,7 +15,7 @@
 	</para>
 
 	<para>
-		MobilityDB provides a simple synthetic data generator that can be used for such purposes. In particular, such a data generator was used for generating the database used for the regression tests in MobilityDB. The data generator is programmed in PL/pgSQL so it can be easily customized. It is located in the directories <varname>src/datagen</varname> in the github repository. In this appendix, we briefly introduce the basic functionality of the generator. We first list the functions generating random values for the various PostgreSQL, PostGIS, and MobilityDB data types, and then give examples how to use these functions for generating tables of such values. The parameters of the functions are not specified, please refer to the source files where detailed explanations about the various parameters can be found.
+    MobilityDB provides a simple synthetic data generator that can be used for such purposes. In particular, such a data generator was used for generating the database used for the regression tests in MobilityDB. The data generator is programmed in PL/pgSQL so it can be easily customized. It is located in the directory <ulink url="https://github.com/MobilityDB/MobilityDB/datagen">datagen</ulink> in the github repository. In this appendix, we briefly introduce the basic functionality of the generator. We first list the functions generating random values for the various PostgreSQL, PostGIS, and MobilityDB data types, and then give examples how to use these functions for generating tables of such values. The parameters of the functions are not specified, please refer to the source files where detailed explanations about the various parameters can be found.
 	</para>
 
 	<sect1>
@@ -294,7 +294,13 @@
 	<sect1>
 		<title>Generation of Tables with Random Values</title>
 
-				<para>The files <varname>create_test_tables_temporal.sql</varname> and <varname>create_test_tables_tpoint.sql</varname> provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.</para>
+    <para>
+      The files
+      <ulink url="https://github.com/MobilityDB/MobilityDB/datagen/general/create_test_tables_temporal.sql">create_test_tables_temporal.sql</ulink> and
+      <ulink url="https://github.com/MobilityDB/MobilityDB/datagen/point/create_test_tables_tpoint.sql">create_test_tables_tpoint.sql</ulink>
+      provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.
+    </para>
+
 				<programlisting>
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
 RETURNS text AS $$

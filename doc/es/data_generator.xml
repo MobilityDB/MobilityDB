@@ -15,7 +15,7 @@
 	</para>
 
 	<para>
-		MobilityDB proporciona un generador simple de datos sintéticos que se puede utilizar para tales fines. En particular, se utilizó este generador de datos para generar la base de datos utilizada para las pruebas de regresión en MobilityDB. El generador de datos está programado en PL/pgSQL para que se pueda personalizar fácilmente. Se encuentra en los directorios <varname>src/datagen</varname> en el repositorio de github. En este apéndice, presentamos brevemente la funcionalidad básica del generador. Primero enumeramos las funciones que generan valores aleatorios para varios tipos de datos de PostgreSQL, PostGIS y MobilityDB y luego damos ejemplos de cómo se usan estas funciones para generar tablas de dichos valores. Los parámetros de las funciones no están especificados, consulte los archivos fuente donde se pueden encontrar explicaciones detalladas sobre los distintos parámetros.
+    MobilityDB proporciona un generador simple de datos sintéticos que se puede utilizar para tales fines. En particular, se utilizó este generador de datos para generar la base de datos utilizada para las pruebas de regresión en MobilityDB. El generador de datos está programado en PL/pgSQL para que se pueda personalizar fácilmente. Se encuentra en el directorio <ulink url="https://github.com/MobilityDB/MobilityDB/datagen">datagen</ulink> en el repositorio de github. En este apéndice, presentamos brevemente la funcionalidad básica del generador. Primero enumeramos las funciones que generan valores aleatorios para varios tipos de datos de PostgreSQL, PostGIS y MobilityDB y luego damos ejemplos de cómo se usan estas funciones para generar tablas de dichos valores. Los parámetros de las funciones no están especificados, consulte los archivos fuente donde se pueden encontrar explicaciones detalladas sobre los distintos parámetros.
 	</para>
 
 	<sect1>
@@ -294,7 +294,13 @@
 	<sect1>
 		<title>Generación de tablas con valores aleatorios</title>
 
-		<para>Los archivos <varname>create_test_tables_temporal.sql</varname> y <varname>create_test_tables_tpoint.sql</varname> dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.</para>
+    <para>
+      Los archivos
+      <ulink url="https://github.com/MobilityDB/MobilityDB/datagen/general/create_test_tables_temporal.sql">create_test_tables_temporal.sql</ulink> and
+      <ulink url="https://github.com/MobilityDB/MobilityDB/datagen/point/create_test_tables_tpoint.sql">create_test_tables_tpoint.sql</ulink>
+        dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.
+    </para>
+
 				<programlisting>
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
 RETURNS text AS $$
