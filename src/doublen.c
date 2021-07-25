@@ -43,7 +43,7 @@
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 

@@ -51,7 +51,7 @@
 #include <access/relscan.h>
 #include <access/visibilitymap.h>
 #include <access/skey.h>
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 #include <catalog/pg_collation.h>
 #else
 #include <catalog/pg_collation_d.h>
@@ -80,7 +80,7 @@
  * This function is exported only after PostgreSQL version 12
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION < 120000
+#if POSTGRESQL_VERSION_NUMBER < 120000
 /**
  * Equal selectivity for var = const case
  *
@@ -347,7 +347,7 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
   if (cachedOp == SAME_OP)
   {
     Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     selec = var_eq_const(vardata, operator, PeriodGetDatum(period),
       false, false, false);
 #else

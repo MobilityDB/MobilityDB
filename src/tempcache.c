@@ -46,7 +46,7 @@
 
 #include "tempcache.h"
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/tableam.h>
 #endif
 #include <access/heapam.h>
@@ -172,14 +172,14 @@ populate_temptype_cache()
      * where it is stored in a table.
      */
     Oid catalog = RelnameGetRelid("mobdb_temptype");
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     Relation rel = heap_open(catalog, AccessShareLock);
 #else
     Relation rel = table_open(catalog, AccessShareLock);
 #endif
     TupleDesc tupDesc = rel->rd_att;
     ScanKeyData scandata;
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
     TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
 #else
     HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
@@ -207,7 +207,7 @@ populate_temptype_cache()
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     heap_close(rel, AccessShareLock);
 #else
     table_close(rel, AccessShareLock);
@@ -310,14 +310,14 @@ populate_operators()
      * it is stored in a table. See the fill_opcache function below.
      */
     Oid catalog = RelnameGetRelid("mobilitydb_opcache");
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     Relation rel = heap_open(catalog, AccessShareLock);
 #else
     Relation rel = table_open(catalog, AccessShareLock);
 #endif
     TupleDesc tupDesc = rel->rd_att;
     ScanKeyData scandata;
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
     TableScanDesc scan = table_beginscan_catalog(rel, 0, &scandata);
 #else
     HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
@@ -333,7 +333,7 @@ populate_operators()
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     heap_close(rel, AccessShareLock);
 #else
     table_close(rel, AccessShareLock);
@@ -386,7 +386,7 @@ PGDLLEXPORT Datum
 fill_opcache(PG_FUNCTION_ARGS)
 {
   Oid catalog = RelnameGetRelid("mobilitydb_opcache");
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
   Relation rel = heap_open(catalog, AccessExclusiveLock);
 #else
   Relation rel = table_open(catalog, AccessExclusiveLock);
@@ -417,7 +417,7 @@ fill_opcache(PG_FUNCTION_ARGS)
       }
     pfree(lst);
   }
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
   heap_close(rel, AccessExclusiveLock);
 #else
   table_close(rel, AccessExclusiveLock);

@@ -35,7 +35,7 @@
  */
 
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 
 #include "postgres.h"
 #include "utils/array.h"

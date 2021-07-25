@@ -750,7 +750,7 @@ call_recv(Oid type, StringInfo buf)
 /**
  * Call PostgreSQL function with 1 argument
  */
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 Datum
 call_function1(PGFunction func, Datum arg1)
 {
@@ -814,7 +814,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
     elog(ERROR, "function %p returned NULL", (void *) func);
   return result;
 }
-#else /* MOBDB_PGSQL_VERSION < 120000 */
+#else /* POSTGRESQL_VERSION_NUMBER < 120000 */
 /**
  * Call PostgreSQL function with 1 argument
  */
@@ -886,7 +886,7 @@ call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
 
 /* CallerFInfoFunctionCall 1 to 3 are provided by PostGIS */
 
-#if MOBDB_PGSQL_VERSION < 120000
+#if POSTGRESQL_VERSION_NUMBER < 120000
 Datum
 CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collation,
   Datum arg1, Datum arg2, Datum arg3, Datum arg4)
@@ -1195,7 +1195,7 @@ period_sort_cmp(const Period **l, const Period **r)
 static int
 range_sort_cmp(const RangeType **l, const RangeType **r)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   return DatumGetInt32(call_function2(range_cmp, RangeTypeGetDatum(*l),
     RangeTypeGetDatum(*r)));
 #else

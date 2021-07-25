@@ -36,7 +36,7 @@
 #include <utils/timestamp.h>
 #include <access/gist.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 
@@ -418,7 +418,7 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
  * GiST decompress method
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 PG_FUNCTION_INFO_V1(tpoint_gist_decompress);
 /**
  * GiST decompress method for temporal point types (result in an stbox)

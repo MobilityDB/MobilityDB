@@ -31,7 +31,7 @@
  * These functions are based on those in the file `rangetypes_spgist.c`.
  */
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if POSTGRESQL_VERSION_NUMBER >= 110000
 
 #include "temporal_spgist.h"
 

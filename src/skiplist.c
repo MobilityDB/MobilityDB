@@ -576,7 +576,7 @@ static void
 aggstate_write(SkipList *state, StringInfo buf)
 {
   void **values = skiplist_values(state);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   pq_sendint(buf, (uint32) state->elemtype, 4);
   pq_sendint(buf, (uint32) state->length, 4);
 #else
@@ -602,7 +602,7 @@ aggstate_write(SkipList *state, StringInfo buf)
     Oid basetypid = InvalidOid;
     if (state->length > 0)
       basetypid = ((Temporal *) values[0])->basetypid;
-  #if MOBDB_PGSQL_VERSION < 110000
+  #if POSTGRESQL_VERSION_NUMBER < 110000
     pq_sendint(buf, basetypid, 4);
   #else
     pq_sendint32(buf, basetypid);

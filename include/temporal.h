@@ -42,7 +42,7 @@
 #include "tbox.h"
 #include "stbox.h"
 
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
 #ifndef USE_FLOAT4_BYVAL
 #error Postgres needs to be configured with USE_FLOAT4_BYVAL
 #endif
@@ -144,13 +144,16 @@ typedef enum
  *****************************************************************************/
 
 #define MOBDB_VERSION_STR "MobilityDB 1.0 beta 3"
-#ifndef MOBDB_PGSQL_VERSION
+/* TODO This is taken care by the build*/
+#ifndef POSTGRESQL_VERSION_NUMBER
 #error Unconfigured source code -- please run cmake
 #endif
+/* TODO This is taken care by the build*/
 #ifndef MOBDB_PGSQL_VERSION_STR
 #error Unconfigured source code -- please run cmake
 #endif
 
+/* TODO this is fixed will be impossible to make it work with other versions of postgis */
 #define MOBDB_POSTGIS_VERSION 25
 #define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
