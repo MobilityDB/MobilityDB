@@ -97,7 +97,6 @@ if(PG_VERSION_STRING)
 		message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERSION}")
 	endif()
 	# Set compilation constant for PostgreSQL version-dependent code
-	set(PG_FULL_VERSION ${PG_MAJOR_VERSION}0000)
 	message("Found compatible ${PG_VERSION_STRING}")
 else ()
 	message("PostgreSQL not found")
