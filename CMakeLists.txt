@@ -71,39 +71,6 @@ if (NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
 
-#[[
-find_program(PGCONFIG pg_config)
-if (NOT PGCONFIG)
-	message(FATAL_ERROR "Could not find pg_config")
-endif ()
-execute_process(COMMAND ${PGCONFIG} --version OUTPUT_VARIABLE PG_VERSION_STRING OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-if(PG_VERSION_STRING)
-	# Remove the string "PostgreSQL " from the beginning
-	string(REGEX REPLACE "^[A-Za-z]+ (.*)" "\\1" PG_VERSION ${PG_VERSION_STRING})
-	# Get the position of first whitespace character
-	string(FIND ${PG_VERSION} " " wsloc)
-	# Remove build information such as "(Ubuntu 13.3-1.pgdg16.04+1)" at the end
-	string(SUBSTRING ${PG_VERSION} 0 ${wsloc} PG_VERSION)
-	# Replace XbetaY XalphaY XrcY -> X.0
-	string(REGEX REPLACE "^([0-9]+)[beta|alpha|rc|devel].*" "\\1.0" PG_VERSION ${PG_VERSION})
-	# Get major version
-	string(REGEX REPLACE "([0-9]+)\\.[0-9]+" "\\1" PG_MAJOR_VERSION "${PG_VERSION}")
-	# Get minor version
-	string(REGEX REPLACE "[0-9]+\\.([0-9]+)" "\\1" PG_MINOR_VERSION "${PG_VERSION}")
-	# Test compatible version
-	if(${PG_MAJOR_VERSION} LESS ${PG_MIN_MAJOR_VERSION})
-		message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, minimum required is ${PG_MIN_MAJOR_VERSION}")
-	elseif(${PG_MAX_MAJOR_VERSION} LESS ${PG_MAJOR_VERSION})
-		message(FATAL_ERROR "Wrong PostgreSQL version: found ${PG_VERSION_STRING}, maximum supported is ${PG_MAX_MAJOR_VERSION}")
-	endif()
-	# Set compilation constant for PostgreSQL version-dependent code
-	message("Found compatible ${PG_VERSION_STRING}")
-else ()
-	message("PostgreSQL not found")
-endif()
-]]
-
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
 include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
@@ -212,11 +179,3 @@ add_custom_command(
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
 install(FILES "${CMAKE_BINARY_DIR}/${CONTROLOUT}" DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
 install(FILES "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}" DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
-
-#[[
-add_custom_target(install_restart
-	$(MAKE) install
-	COMMAND systemctl restart postgresql
-	DEPENDS ${PROJECT_NAME}
-	COMMENT "Restarting PostgreSQL")
-]]
