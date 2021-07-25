@@ -134,11 +134,11 @@ if (HAS_LWGEOM)
 		include_directories(${LWGEOM_ROOT}/include)
 		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
 	endif()
+  ]]
 	if (JSONC_INCLUDE_DIR)
 		include_directories(${JSONC_INCLUDE_DIR})
 		MESSAGE(STATUS "Using custom jsonc include dir ${JSONC_INCLUDE_DIR}")
 	endif()
-  ]]
 	if (PROJ_INCLUDE_DIR)
 		include_directories(${PROJ_INCLUDE_DIR})
 	endif()
