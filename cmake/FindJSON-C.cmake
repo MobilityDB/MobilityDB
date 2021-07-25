@@ -17,14 +17,12 @@ find_path(JSON-C_INCLUDE_DIRS
   DOC "json-c headers"
   )
 
-if (JSON-C_INCLUDE_DIRS AND JSON-C_LIBRARIES)
 
-  include(FindPackageHandleStandardArgs)
-  find_package_handle_standard_args(JSON-C
-    FOUND_VAR JSON-C_FOUND
-    REQUIRED_VARS JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(JSON-C
+  FOUND_VAR JSON-C_FOUND
+  REQUIRED_VARS JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
 
-  if (JSONC_FOUND)
-    mark_as_advanced(JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
-  endif()
+if (JSON-C_FOUND)
+  mark_as_advanced(JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
 endif()
