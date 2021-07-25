@@ -1,32 +1,30 @@
 # - Find json-c
 # Find the PostgreSQL includes and client library
 # This module defines
-#  JSON_INCLUDE_DIR
-#  JSON_LIBRARIES
+#  JSONC_INCLUDE_DIR
+#  JSONC_LIBRARIES
 #
 # Copyright (c) 2021, Vicky Vergara <vicky@georepublic.org>
 
-find_package (PkgConfig)
-pkg_check_modules(JSONC_PKG json-c)
+find_library(JSON-C_LIBRARIES
+  NAMES json-c
+  HINTS /lib /lib64 /usr/lib /usr/lib64
+  )
 
-if (JSONC_PKG_FOUND)
-    set (JSONC_LIBRARIES ${JSONC_PKG_LIBRARIES})
-    set (JSONC_INCLUDE_DIRS ${JSONC_PKG_INCLUDE_DIRS})
-else ()
-    find_library(JSONC_LIBRARIES
-        NAMES json-c json
-        HINTS /lib /lib64 /usr/lib /usr/lib64
-    )
+find_path(JSON-C_INCLUDE_DIRS
+  NAMES json-c/json.h
+  HINTS /usr/include/json-c
+  DOC "json-c headers"
+  )
 
-    find_path(JSONC_INCLUDE_DIRS
-        NAMES json.h
-        HINTS /usr/include/json /usr/include/json-c
-        DOC "json-c headers"
-    )
-endif ()
+if (JSON-C_INCLUDE_DIRS AND JSON-C_LIBRARIES)
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(json-c
-    DEFAULT_MSG JSONC_LIBRARIES JSONC_INCLUDE_DIRS
-)
-mark_as_advanced(JSONC_INCLUDE_DIRS JSONC_LIBRARIES)
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(JSON-C
+    FOUND_VAR JSON-C_FOUND
+    REQUIRED_VARS JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
+
+  if (JSONC_FOUND)
+    mark_as_advanced(JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
+  endif()
+endif()
