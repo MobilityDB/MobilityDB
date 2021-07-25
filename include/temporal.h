@@ -149,7 +149,7 @@ typedef enum
 #error Unconfigured source code -- please run cmake
 #endif
 /* TODO This is taken care by the build*/
-#ifndef MOBDB_PGSQL_VERSION_STR
+#ifndef POSTGRESQL_VERSION_STRING
 #error Unconfigured source code -- please run cmake
 #endif
 
