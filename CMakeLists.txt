@@ -121,7 +121,7 @@ find_package(JSON-C REQUIRED)
 include_directories(${JSON-C_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${JSON-C_LIBRARIES})
 
-find_package(PROJ)
+find_package(PROJ REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${PROJ_LIBRARIES})
 include_directories(${PROJ_INCLUDE_DIRS})
 
