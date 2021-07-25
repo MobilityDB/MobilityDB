@@ -126,6 +126,10 @@ if (HAS_LWGEOM)
 		message(FATAL_ERROR "Could not find postgis-2.5; only PostGIS 2.5 is currently supported")
 	endif()
 
+  message(STATUS "LWGEOM_ROOT=${LWGEOM_ROOT}")
+  message(STATUS "PROJ_INCLUDE_DIR=${PROJ_INCLUDE_DIR}")
+  message(STATUS "JSONC_INCLUDE_DIR=${JSONC_INCLUDE_DIR}")
+  #[[
 	if (LWGEOM_ROOT)
 		include_directories(${LWGEOM_ROOT}/include)
 		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
@@ -137,6 +141,7 @@ if (HAS_LWGEOM)
 		include_directories(${JSONC_INCLUDE_DIR})
 		MESSAGE(STATUS "Using custom jsonc include dir ${JSONC_INCLUDE_DIR}")
 	endif()
+  ]]
 else()
 	message(FATAL_ERROR "Could not find lwgeom;")
 endif()
