@@ -155,6 +155,7 @@ else()
 	message(FATAL_ERROR "Could not find gsl or gslcblas; ")
 endif ()
 
+#[[
 find_library(HAS_LIBPROTOBUF protobuf-c)
 if (HAS_LIBPROTOBUF)
 	MESSAGE(STATUS "Found LIBPROTOBUF at ${HAS_LIBPROTOBUF}")
@@ -163,6 +164,7 @@ if (HAS_LIBPROTOBUF)
 else()
 	message(FATAL_ERROR "Could not find protobuf-c; ")
 endif ()
+]]
 
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
