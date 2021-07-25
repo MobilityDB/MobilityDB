@@ -135,8 +135,8 @@ if (HAS_LWGEOM)
 	endif()
 
   message(STATUS "LWGEOM_ROOT=${LWGEOM_ROOT}")
-  message(STATUS "PROJ_INCLUDE_DIR=${PROJ_INCLUDE_DIR}")
   #[[
+  message(STATUS "PROJ_INCLUDE_DIR=${PROJ_INCLUDE_DIR}")
 	if (LWGEOM_ROOT)
 		include_directories(${LWGEOM_ROOT}/include)
 		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
