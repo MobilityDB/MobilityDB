@@ -117,6 +117,10 @@ if (APPLE)
 	SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
 endif ()
 
+find_package(JSON-C REQUIRED)
+message(STATUS "JSONC_INCLUDE_DIRs=${JSONC_INCLUDE_DIRS}")
+include_directories(${JSONC_INCLUDE_DIRS})
+
 find_library(HAS_LWGEOM lwgeom)
 if (HAS_LWGEOM)
   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LWGEOM})
@@ -128,17 +132,12 @@ if (HAS_LWGEOM)
 
   message(STATUS "LWGEOM_ROOT=${LWGEOM_ROOT}")
   message(STATUS "PROJ_INCLUDE_DIR=${PROJ_INCLUDE_DIR}")
-  message(STATUS "JSONC_INCLUDE_DIR=${JSONC_INCLUDE_DIR}")
   #[[
 	if (LWGEOM_ROOT)
 		include_directories(${LWGEOM_ROOT}/include)
 		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
 	endif()
   ]]
-	if (JSONC_INCLUDE_DIR)
-		include_directories(${JSONC_INCLUDE_DIR})
-		MESSAGE(STATUS "Using custom jsonc include dir ${JSONC_INCLUDE_DIR}")
-	endif()
 	if (PROJ_INCLUDE_DIR)
 		include_directories(${PROJ_INCLUDE_DIR})
 	endif()
