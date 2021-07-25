@@ -121,6 +121,10 @@ find_package(JSON-C REQUIRED)
 include_directories(${JSON-C_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${JSON-C_LIBRARIES})
 
+find_package(PROJ)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${PROJ_LIBRARIES})
+include_directories(${PROJ_INCLUDE_DIRS})
+
 find_library(HAS_LWGEOM lwgeom)
 if (HAS_LWGEOM)
   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LWGEOM})
@@ -137,10 +141,10 @@ if (HAS_LWGEOM)
 		include_directories(${LWGEOM_ROOT}/include)
 		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
 	endif()
-  ]]
 	if (PROJ_INCLUDE_DIR)
 		include_directories(${PROJ_INCLUDE_DIR})
 	endif()
+  ]]
 else()
 	message(FATAL_ERROR "Could not find lwgeom;")
 endif()
