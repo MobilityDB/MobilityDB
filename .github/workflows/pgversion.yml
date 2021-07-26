@@ -1,4 +1,4 @@
-name: Test posgresSQL versions
+name: Test PostgreSQL versions
 
 # 4 * 1 * 2 = 8 jobs are triggered
 # Test for supported postgres version
@@ -98,6 +98,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          cd build
           coveralls --verbose --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
 
 
