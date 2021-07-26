@@ -119,6 +119,8 @@ endif ()
 
 # Currently does not work with other versions of PostGIS
 find_package(POSTGIS 2.5 EXACT REQUIRED)
+add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
+add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
 find_package(JSON-C REQUIRED)
 include_directories(${JSON-C_INCLUDE_DIRS})

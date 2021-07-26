@@ -579,7 +579,7 @@ mobilitydb_full_version(PG_FUNCTION_ARGS)
   text *result;
 
   snprintf(ver, 128, "%s, %s, %s", MOBDB_VERSION_STR,
-    POSTGRESQL_VERSION_STRING, MOBDB_POSTGIS_VERSION_STR);
+    POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
   ver[127] = '\0';
 
   result = cstring_to_text(ver);

@@ -12,6 +12,8 @@
 # POSTGIS_FOUND             - Set to true when PostGIS is found.
 # POSTGIS_LIBRARY           - if we ever need to link it
 # POSTGIS_CONTROL           - if we ever need to see the contents
+# POSTGIS_VERSION           - The full numbers
+# POSTGIS_VERSION_STR       - The th PostGIS prefix
 
 if (POSTGIS_FOUND)
   return()
@@ -31,7 +33,12 @@ find_file(POSTGIS_CONTROL  postgis.control
 
 file(READ ${POSTGIS_CONTROL} control_contents)
 string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" POSTGIS_VERSION ${control_contents})
-message(STATUS "POSTGIS_VERSION ${POSTGIS_VERSION}")
+set(POSTGIS_VERSION_STR "PostGIS ${POSTGIS_VERSION}")
+string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\1" POSTGIS_VERSION_MAYOR ${POSTGIS_VERSION})
+string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\2" POSTGIS_VERSION_MINOR ${POSTGIS_VERSION})
+string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\3" POSTGIS_VERSION_MICRO ${POSTGIS_VERSION})
+math(EXPR POSTGIS_VERSION_NUMBER "${POSTGIS_VERSION_MAYOR} * 10000 + ${POSTGIS_VERSION_MINOR} * 100 + ${POSTGIS_VERSION_MICRO}")
+
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(POSTGIS
@@ -41,8 +48,9 @@ find_package_handle_standard_args(POSTGIS
   FAIL_MESSAGE "Could NOT find PostGIS")
 
 if (POSTGIS_FOUND)
-  mark_as_advanced(POSTGIS_LIBRARY POSTGIS_CONTROL POSTGIS_VERSION)
+  mark_as_advanced(POSTGIS_LIBRARY POSTGIS_CONTROL POSTGIS_VERSION POSTGIS_VERSION_STR)
 endif()
 
 message(STATUS POSTGIS_LIBRARY ${POSTGIS_LIBRARY})
 message(STATUS POSTGIS_CONTROL ${POSTGIS_CONTROL})
+message(STATUS POSTGIS_VERSION_STR ${POSTGIS_VERSION_STR})

@@ -145,9 +145,6 @@ typedef enum
 
 #define MOBDB_VERSION_STR "MobilityDB 1.0 beta 3"
 
-/* TODO this is fixed will be impossible to make it work with other versions of postgis */
-#define MOBDB_POSTGIS_VERSION 25
-#define MOBDB_POSTGIS_VERSION_STR "PostGIS 2.5"
 
 /*****************************************************************************
  * Concrete subtype of temporal types
