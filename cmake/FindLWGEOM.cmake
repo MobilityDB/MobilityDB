@@ -8,7 +8,7 @@
 # Copyright (c) 2021, Vicky Vergara <vicky@georepublic.org>
 
 find_library(LWGEOM_LIBRARIES
-  NAMES lwgeom-2.5
+  NAMES lwgeom
   PATHS
      /lib /lib64 /usr/lib /usr/lib64
   )
