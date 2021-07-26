@@ -25,10 +25,10 @@ jobs:
           os: [ubuntu-latest, ubuntu-18.04]
           coverage: [0]
           include:
-            psql: 13
-            postgis: 2.5
-            os: ubuntu-latest
-            coverage: 1
+            - psql: 13
+              postgis: 2.5
+              os: ubuntu-latest
+              coverage: 1
 
     steps:
       - uses: actions/checkout@v2
