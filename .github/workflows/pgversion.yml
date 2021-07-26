@@ -98,6 +98,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          coveralls --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
+          coveralls --verbose --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
 
 
