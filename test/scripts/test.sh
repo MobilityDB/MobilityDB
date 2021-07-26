@@ -30,9 +30,9 @@ run_ctl () {
 PGCTL="${BIN_DIR}/pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''"
 # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
-PGSODIR=@POSTGRESQL_DYNLIB_DIR@
+#PGSODIR=@POSTGRESQL_DYNLIB_DIR@
 #FIXME: this is cheating
-POSTGIS=$(find "$PGSODIR" -name 'postgis-2.5.so' | head -1)
+#POSTGIS=$(find "$PGSODIR" -name 'postgis-2.5.so' | head -1)
 
 case $CMD in
 setup)
@@ -41,10 +41,10 @@ setup)
 	mkdir -p "$WORKDIR"/db "$WORKDIR"/lock "$WORKDIR"/out "$WORKDIR"/log
 	"${BIN_DIR}"/initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
 
-	if [ -n "$POSTGIS" ]; then
-		POSTGIS=$(basename "$POSTGIS" .so)
-		echo "shared_preload_libraries = '$POSTGIS'" >> "$WORKDIR"/db/postgresql.conf
-	fi
+	#if [ -n "$POSTGIS" ]; then
+	#	POSTGIS=$(basename "$POSTGIS" .so)
+	#	echo "shared_preload_libraries = '$POSTGIS'" >> "$WORKDIR"/db/postgresql.conf
+	#fi
 	echo "max_locks_per_transaction = 128" >> "$WORKDIR"/db/postgresql.conf
 	echo "timezone = 'UTC'" >> "$WORKDIR"/db/postgresql.conf
 	echo "parallel_tuple_cost = 100" >> "$WORKDIR"/db/postgresql.conf
@@ -72,9 +72,9 @@ create_ext)
   $PGCTL status || $PGCTL start
   echo "create extension 1" >> "$WORKDIR"/log/create_ext.log
 
-	if [ -n "$POSTGIS" ]; then
-		echo "CREATE EXTENSION postgis;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
-	fi
+	#if [ -n "$POSTGIS" ]; then
+		echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
+	#fi
   echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
 	#sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
 
