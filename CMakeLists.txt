@@ -117,6 +117,8 @@ if (APPLE)
 	SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
 endif ()
 
+find_package(POSTGIS 2.5 EXACT REQUIRED)
+
 find_package(JSON-C REQUIRED)
 include_directories(${JSON-C_INCLUDE_DIRS})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${JSON-C_LIBRARIES})
