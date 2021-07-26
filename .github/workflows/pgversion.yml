@@ -95,10 +95,14 @@ jobs:
 
       - name: Generate coverage
         if: matrix.coverage == '1'
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           cd build
-          coveralls --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
+          lcov --capture --directory . --output-file=lcov.info
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "build"
 
 
