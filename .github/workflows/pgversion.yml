@@ -53,7 +53,7 @@ jobs:
             postgresql-${{ matrix.psql }} \
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
             postgresql-server-dev-${{ matrix.psql }}
-          ls /usr/lib/postgresql/${{ matrix.psql }}/lib/*postgis*
+          ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
           xzcat --version
 
       - name: Configure for gcc
