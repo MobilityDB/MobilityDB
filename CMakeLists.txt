@@ -130,21 +130,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME} ${LWGEOM_LIBRARIES})
 include_directories(${LWGEOM_INCLUDE_DIRS})
 
 set(HAS_LWGEOM "${LWGEOM_FOUND}")
-#[[
-find_library(HAS_LWGEOM lwgeom)
-if (HAS_LWGEOM)
-  target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LWGEOM})
-
-	MESSAGE(STATUS "Found LWGEOM at ${HAS_LWGEOM} - compiling with PostGIS support")
-  if(NOT EXISTS "${POSTGRESQL_DYNLIB_DIR}/postgis-2.5.so" AND NOT EXISTS "${POSTGRESQL_DYNLIB_DIR}/postgis-2.5.dll")
-		message(FATAL_ERROR "Could not find postgis-2.5; only PostGIS 2.5 is currently supported")
-	endif()
-
-  message(STATUS "LWGEOM_ROOT=${LWGEOM_ROOT}")
-else()
-	message(FATAL_ERROR "Could not find lwgeom;")
-endif()
-]]
 
 add_subdirectory(test)
 include("point/point.cmake")
