@@ -117,6 +117,7 @@ if (APPLE)
 	SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
 endif ()
 
+# Currently does not work with other versions of PostGIS
 find_package(POSTGIS 2.5 EXACT REQUIRED)
 
 find_package(JSON-C REQUIRED)
@@ -131,7 +132,6 @@ find_package(LWGEOM REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${LWGEOM_LIBRARIES})
 include_directories(${LWGEOM_INCLUDE_DIRS})
 
-set(HAS_LWGEOM "${LWGEOM_FOUND}")
 
 add_subdirectory(test)
 include("point/point.cmake")

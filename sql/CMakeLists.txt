@@ -42,10 +42,8 @@ endmacro()
 
 
 add_subdirectory(general)
-if (HAS_LWGEOM)
-  add_subdirectory(point)
-  add_subdirectory(npoint)
-endif()
+add_subdirectory(point)
+add_subdirectory(npoint)
 
 list(SORT PROJECT_SQL_FILES)
 
