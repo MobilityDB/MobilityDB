@@ -98,8 +98,10 @@ jobs:
         run: |
           cd build
           lcov --capture --directory . --output-file=lcov.info
+          ls -l lcov.info
 
       - name: Coveralls
+        if: matrix.coverage == '1'
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
