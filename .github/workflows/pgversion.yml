@@ -50,6 +50,7 @@ jobs:
             liblwgeom-dev \
             libproj-dev \
             libjson-c-dev \
+            libgsl-dev \
             postgresql-${{ matrix.psql }} \
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
             postgresql-server-dev-${{ matrix.psql }}
