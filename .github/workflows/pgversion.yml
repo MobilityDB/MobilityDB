@@ -52,7 +52,6 @@ jobs:
             libjson-c-dev \
             postgresql-${{ matrix.psql }} \
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
-            postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }}-scripts \
             postgresql-server-dev-${{ matrix.psql }}
           ls /usr/lib/postgresql/${{ matrix.psql }}/lib/postgis*
           xzcat --version
