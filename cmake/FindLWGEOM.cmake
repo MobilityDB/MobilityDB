@@ -24,7 +24,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LWGEOM
   FOUND_VAR LWGEOM_FOUND
   REQUIRED_VARS LWGEOM_INCLUDE_DIRS PROJ_LIBRARIES
-  FAIL_MESSAGE "Could NOT find proj")
+  FAIL_MESSAGE "Could NOT find lwgeom")
 
 if (LWGEOM_FOUND)
   mark_as_advanced(LWGEOM_INCLUDE_DIRS PROJ_LIBRARIES)
