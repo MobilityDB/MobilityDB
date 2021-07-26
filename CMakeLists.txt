@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.2)
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
         message(FATAL_ERROR "In-source builds not allowed.
@@ -131,6 +131,10 @@ include_directories(${PROJ_INCLUDE_DIRS})
 find_package(LWGEOM REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${LWGEOM_LIBRARIES})
 include_directories(${LWGEOM_INCLUDE_DIRS})
+
+find_package(GSL REQUIRED)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${GSL_LIBRARY})
+target_link_libraries(${CMAKE_PROJECT_NAME} ${GSL_CLBAS_LIBRARY})
 
 
 add_subdirectory(test)
