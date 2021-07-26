@@ -135,16 +135,6 @@ if (HAS_LWGEOM)
 	endif()
 
   message(STATUS "LWGEOM_ROOT=${LWGEOM_ROOT}")
-  #[[
-  message(STATUS "PROJ_INCLUDE_DIR=${PROJ_INCLUDE_DIR}")
-	if (LWGEOM_ROOT)
-		include_directories(${LWGEOM_ROOT}/include)
-		MESSAGE(STATUS "Using custom liblwgeom root ${LWGEOM_ROOT}")
-	endif()
-	if (PROJ_INCLUDE_DIR)
-		include_directories(${PROJ_INCLUDE_DIR})
-	endif()
-  ]]
 else()
 	message(FATAL_ERROR "Could not find lwgeom;")
 endif()
@@ -164,17 +154,6 @@ if (HAS_GSL AND HAS_GSLCBLAS)
 else()
 	message(FATAL_ERROR "Could not find gsl or gslcblas; ")
 endif ()
-
-#[[
-find_library(HAS_LIBPROTOBUF protobuf-c)
-if (HAS_LIBPROTOBUF)
-	MESSAGE(STATUS "Found LIBPROTOBUF at ${HAS_LIBPROTOBUF}")
-	target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LIBPROTOBUF}) # LIBPROTOBUF)
-	include_directories(${LIBPROTOBUF_INCLUDE_DIR})
-else()
-	message(FATAL_ERROR "Could not find protobuf-c; ")
-endif ()
-]]
 
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
