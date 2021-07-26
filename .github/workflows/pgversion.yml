@@ -97,9 +97,11 @@ jobs:
         if: matrix.coverage == '1'
         env:
           COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd build
+          echo $COVERALLS_REPO_TOKEN
+          echo $GITHUB_TOKEN
           coveralls --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
 
 
