@@ -100,6 +100,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd build
-          coveralls --repo-token ${{ secrets.COVERALLS_REPO_TOKEN }} --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
+          coveralls --repo-token COVERALLS_REPO_TOKEN --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
 
 
