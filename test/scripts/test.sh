@@ -8,13 +8,7 @@ BUILDDIR="@CMAKE_BINARY_DIR@"
 
 WORKDIR=$BUILDDIR/tmptest
 
-#TODO clean
-#EXTFILE="$BUILDDIR/@MOBILITYDB_EXTENSION_FILE@"
-#SOFILE=$(echo "$BUILDDIR"/lib*.so)
-
-
 BIN_DIR=@POSTGRESQL_BIN_DIR@
-
 
 PSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=0 postgres"
 FAILPSQL="psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=1 postgres"
@@ -30,10 +24,6 @@ run_ctl () {
 PGCTL="${BIN_DIR}/pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''"
 # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
-#PGSODIR=@POSTGRESQL_DYNLIB_DIR@
-#FIXME: this is cheating
-#POSTGIS=$(find "$PGSODIR" -name 'postgis-2.5.so' | head -1)
-
 case $CMD in
 setup)
   # Does not need a parameter
@@ -41,10 +31,6 @@ setup)
 	mkdir -p "$WORKDIR"/db "$WORKDIR"/lock "$WORKDIR"/out "$WORKDIR"/log
 	"${BIN_DIR}"/initdb -D "$DBDIR" 2>&1 | tee "$WORKDIR"/log/initdb.log
 
-	#if [ -n "$POSTGIS" ]; then
-	#	POSTGIS=$(basename "$POSTGIS" .so)
-	#	echo "shared_preload_libraries = '$POSTGIS'" >> "$WORKDIR"/db/postgresql.conf
-	#fi
 	echo "max_locks_per_transaction = 128" >> "$WORKDIR"/db/postgresql.conf
 	echo "timezone = 'UTC'" >> "$WORKDIR"/db/postgresql.conf
 	echo "parallel_tuple_cost = 100" >> "$WORKDIR"/db/postgresql.conf
