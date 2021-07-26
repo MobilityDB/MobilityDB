@@ -93,10 +93,9 @@ jobs:
           cd build
           make test
 
-      - name: Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate coverage
         if: matrix.coverage == '1'
         run: |
           coveralls --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
+
+
