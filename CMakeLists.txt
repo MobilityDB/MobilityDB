@@ -137,6 +137,7 @@ add_subdirectory(test)
 include("point/point.cmake")
 include("npoint/npoint.cmake")
 
+#[[
 find_library(HAS_GSL gsl)
 find_library(HAS_GSLCBLAS gslcblas)
 if (HAS_GSL AND HAS_GSLCBLAS)
@@ -148,6 +149,7 @@ if (HAS_GSL AND HAS_GSLCBLAS)
 else()
 	message(FATAL_ERROR "Could not find gsl or gslcblas; ")
 endif ()
+]]
 
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
