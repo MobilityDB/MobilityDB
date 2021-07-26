@@ -125,6 +125,12 @@ find_package(PROJ REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${PROJ_LIBRARIES})
 include_directories(${PROJ_INCLUDE_DIRS})
 
+find_package(LWGEOM REQUIRED)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${LWGEOM_LIBRARIES})
+include_directories(${LWGEOM_INCLUDE_DIRS})
+
+set(HAS_LWGEOM "${LWGEOM_FOUND}")
+#[[
 find_library(HAS_LWGEOM lwgeom)
 if (HAS_LWGEOM)
   target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LWGEOM})
@@ -138,6 +144,7 @@ if (HAS_LWGEOM)
 else()
 	message(FATAL_ERROR "Could not find lwgeom;")
 endif()
+]]
 
 add_subdirectory(test)
 include("point/point.cmake")
