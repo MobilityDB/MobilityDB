@@ -137,7 +137,8 @@ include_directories("include")
 add_subdirectory("src")
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
-add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS} ${PROJECT_OBJECTS})
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
+add_library(${CMAKE_PROJECT_NAME} MODULE ${PROJECT_OBJECTS})
 
 
 #--------------------------------

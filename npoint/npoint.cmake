@@ -1,5 +1,5 @@
 add_definitions(-DWITH_POSTGIS)
-
+#[[
 set(SRCNPOINT
 npoint/src/tnpoint.c
 npoint/src/tnpoint_aggfuncs.c
@@ -17,4 +17,5 @@ npoint/src/tnpoint_tempspatialrels.c
 )
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRCNPOINT})
+]]
 set(CONTROLIN "${CONTROLIN};npoint/control.in")
