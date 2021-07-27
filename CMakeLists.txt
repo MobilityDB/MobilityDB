@@ -134,8 +134,9 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 # Must go before target_link_libraries
 
 include_directories("include")
-add_subdirectory("src/general")
+add_subdirectory("src")
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
+set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
 add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS} ${PROJECT_OBJECTS})
 
 
