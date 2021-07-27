@@ -41,12 +41,12 @@ CREATE FUNCTION timestampset_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'timestampset_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 CREATE FUNCTION period_gist_decompress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif //MOBDB_PGSQL_VERSION < 110000
+#endif //POSTGRESQL_VERSION_NUMBER < 110000
 CREATE FUNCTION period_gist_penalty(internal, internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
@@ -107,9 +107,9 @@ CREATE OPERATOR CLASS gist_timestampset_ops
   FUNCTION  1  gist_timestampset_consistent(internal, timestampset, smallint, oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  timestampset_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  4  period_gist_decompress(internal),
-#endif //MOBDB_PGSQL_VERSION < 110000
+#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal);
@@ -169,9 +169,9 @@ CREATE OPERATOR CLASS period_gist_ops
   FUNCTION  1  period_gist_consistent(internal, period, smallint, oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  period_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  4  period_gist_decompress(internal),
-#endif //MOBDB_PGSQL_VERSION < 110000
+#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal),
@@ -232,9 +232,9 @@ CREATE OPERATOR CLASS gist_periodset_ops
   FUNCTION  1  gist_periodset_consistent(internal, periodset, smallint, oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  periodset_gist_compress(internal),
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  4  period_gist_decompress(internal),
-#endif //MOBDB_PGSQL_VERSION < 110000
+#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal);

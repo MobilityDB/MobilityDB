@@ -32,7 +32,7 @@
  * `rangetypes_spgist.c`.
  */
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if POSTGRESQL_VERSION_NUMBER >= 110000
 
 #include "time_spgist.h"
 

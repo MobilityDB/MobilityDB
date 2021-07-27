@@ -44,7 +44,7 @@ extern const char *range_to_string(const RangeType *range);
 extern Datum lower_datum(const RangeType *range);
 extern Datum upper_datum(const RangeType *range);
 
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
 extern bool lower_inc(RangeType *range);
 extern bool upper_inc(RangeType *range);
 #else

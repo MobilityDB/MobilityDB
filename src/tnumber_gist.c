@@ -39,7 +39,7 @@
 #include <access/gist.h>
 #include <utils/builtins.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 
@@ -205,7 +205,7 @@ tnumber_index_get_tbox(FunctionCallInfo fcinfo, TBOX *query, Oid subtype)
   memset(query, 0, sizeof(TBOX));
   if (tnumber_range_type(subtype))
   {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(1);
 #else
   RangeType *range = PG_GETARG_RANGE_P(1);
@@ -352,7 +352,7 @@ tnumber_gist_compress(PG_FUNCTION_ARGS)
  * GiST decompress method
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 PG_FUNCTION_INFO_V1(tnumber_gist_decompress);
 /**
  * GiST decompress method for temporal numbers (result in a temporal box)

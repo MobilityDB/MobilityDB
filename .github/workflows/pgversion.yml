@@ -50,12 +50,11 @@ jobs:
             liblwgeom-dev \
             libproj-dev \
             libjson-c-dev \
-            libprotobuf-c-dev \
+            libgsl-dev \
             postgresql-${{ matrix.psql }} \
             postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }} \
-            postgresql-${{ matrix.psql }}-postgis-${{ matrix.postgis }}-scripts \
             postgresql-server-dev-${{ matrix.psql }}
-          ls /usr/lib/postgresql/${{ matrix.psql }}/lib/postgis*
+          ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
           xzcat --version
 
       - name: Configure for gcc

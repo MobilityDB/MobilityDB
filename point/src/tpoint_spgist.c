@@ -89,7 +89,7 @@
  * that we don't yet have as infinity.
  */
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if POSTGRESQL_VERSION_NUMBER >= 110000
 
 #include "tpoint_spgist.h"
 
@@ -98,7 +98,7 @@
 #include <utils/timestamp.h>
 #include <utils/builtins.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 
@@ -113,7 +113,7 @@
 #include "tpoint_distance.h"
 #include "tpoint_gist.h"
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 /* To avoid including "access/spgist_private.h" since it conflicts with the
  * EPSILON constant defined there and also in MobilityDB */
 extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
@@ -452,7 +452,7 @@ overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
   return (cube_box->left.tmin >= query->tmin);
 }
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
  * Lower bound for the distance between query and cube_box.
  * @note The temporal dimension is only taken into account for returning
@@ -729,7 +729,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   else
     cube_box = initCubeSTbox(centroid);
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   /*
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
@@ -749,7 +749,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->nNodes; i++)
       out->nodeNumbers[i] = i;
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
     if (in->norderbys > 0 && in->nNodes > 0)
     {
       double *distances = palloc0(sizeof(double) * in->norderbys);
@@ -783,7 +783,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
 #endif
@@ -873,7 +873,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     {
       out->traversalValues[out->nNodes] = next_cube_box;
       out->nodeNumbers[out->nNodes] = octant;
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
       if (in->norderbys > 0)
       {
         double *distances = palloc(sizeof(double) * in->norderbys);
@@ -915,7 +915,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   Datum leaf = in->leafDatum;
 #endif
   STBOX *key = DatumGetSTboxP(in->leafDatum);
@@ -945,7 +945,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       break;
   }
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   if (res && in->norderbys > 0)
   {
     out->distances = spg_key_orderbys_distances(leaf, true, in->orderbys,

@@ -409,7 +409,7 @@ PG_FUNCTION_INFO_V1(range_to_tbox);
 PGDLLEXPORT Datum
 range_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
 #else
   RangeType *range = PG_GETARG_RANGE_P(0);
@@ -588,7 +588,7 @@ PG_FUNCTION_INFO_V1(range_timestamp_to_tbox);
 PGDLLEXPORT Datum
 range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
 #else
   RangeType *range = PG_GETARG_RANGE_P(0);
@@ -612,7 +612,7 @@ PG_FUNCTION_INFO_V1(range_period_to_tbox);
 PGDLLEXPORT Datum
 range_period_to_tbox(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
 #else
   RangeType *range = PG_GETARG_RANGE_P(0);

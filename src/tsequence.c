@@ -1452,7 +1452,7 @@ tsequence_to_string(const TSequence *seq, bool component,
 void
 tsequence_write(const TSequence *seq, StringInfo buf)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   pq_sendint(buf, (uint32) seq->count, 4);
 #else
   pq_sendint32(buf, seq->count);
@@ -2691,7 +2691,7 @@ tnumberseq_restrict_range1(TSequence **result,
   /* Constant segment (step or linear interpolation) */
   if (datum_eq(value1, value2, basetypid))
   {
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
 #else
     contains = range_contains_elem_internal(typcache, range, value1);
@@ -2709,7 +2709,7 @@ tnumberseq_restrict_range1(TSequence **result,
   if (! linear)
   {
     int k = 0;
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     contains = range_contains_elem_internal(typcache, (RangeType *) range, value1);
 #else
     contains = range_contains_elem_internal(typcache, range, value1);
@@ -2722,7 +2722,7 @@ tnumberseq_restrict_range1(TSequence **result,
         lower_inclu, false, linear, NORMALIZE_NO);
       pfree(instants[1]);
     }
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
     contains = range_contains_elem_internal(typcache, (RangeType *) range, value2);
 #else
     contains = range_contains_elem_internal(typcache, range, value2);
@@ -2741,7 +2741,7 @@ tnumberseq_restrict_range1(TSequence **result,
   RangeType *valuerange = increasing ?
     range_make(value1, value2, lower_inclu, upper_inclu, basetypid) :
     range_make(value2, value1, upper_inclu, lower_inclu, basetypid);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
     PointerGetDatum(valuerange), PointerGetDatum(range)));
 #else

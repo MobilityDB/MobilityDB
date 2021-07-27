@@ -32,7 +32,7 @@
 #include <postgres.h>
 #include <assert.h>
 #include <funcapi.h>
-#if MOBDB_PGSQL_VERSION < 120000
+#if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
 #include <liblwgeom.h>

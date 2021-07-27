@@ -62,7 +62,7 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
  * GiST decompress method for temporal values
  *****************************************************************************/
 
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 PG_FUNCTION_INFO_V1(tnpoint_gist_decompress);
 /**
  * GiST decompress method for temporal values (result in a period)

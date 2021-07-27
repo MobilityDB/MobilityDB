@@ -1,8 +1,8 @@
 # Postgres version dependant files
-if (${PG_FULL_VERSION} GREATER_EQUAL 110000)
+if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
   set(FILE_15 15_time_spgist)
   set(FILE_44 44_temporal_spgist)
-  if (${PG_FULL_VERSION} GREATER_EQUAL 120000)
+  if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 120000)
     set(FILE_19 19_geo_constructors)
   endif()
 endif()
