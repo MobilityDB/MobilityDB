@@ -41,7 +41,7 @@
 #include <utils/rangetypes.h>
 
 #include "temporal.h"
-#include "postgis.h"
+#include "point/postgis.h"
 
 /*****************************************************************************/
 

@@ -29,7 +29,7 @@
  * Input of temporal points in WKT, EWKT and MF-JSON format
  */
 
-#include "tpoint_in.h"
+#include "point/tpoint_in.h"
 
 #include <assert.h>
 #include <float.h>
@@ -38,10 +38,10 @@
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
-#include "postgis.h"
-#include "tpoint.h"
-#include "tpoint_parser.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/tpoint.h"
+#include "point/tpoint_parser.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Input in MFJSON format

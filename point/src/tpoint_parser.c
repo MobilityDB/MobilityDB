@@ -29,15 +29,15 @@
  * Functions for parsing temporal points.
  */
 
-#include "tpoint_parser.h"
+#include "point/tpoint_parser.h"
 
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "general/temporal_parser.h"
-#include "stbox.h"
+#include "point/stbox.h"
 
 /*****************************************************************************/
 

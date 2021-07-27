@@ -74,7 +74,7 @@
 #include "general/time_selfuncs.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal_analyze.h"
-#include "tpoint.h"
+#include "point/tpoint.h"
 
 /*****************************************************************************
  * This function is exported only after PostgreSQL version 12

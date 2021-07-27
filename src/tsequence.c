@@ -50,9 +50,9 @@
 #include "general/temporal_boxops.h"
 #include "general/rangetypes_ext.h"
 
-#include "tpoint.h"
-#include "tpoint_boxops.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_spatialfuncs.h"
 
 #include "tnpoint_spatialfuncs.h"
 

@@ -55,9 +55,9 @@
 #include "general/temporal_util.h"
 #include "general/rangetypes_ext.h"
 #include "general/tbox.h"
-#include "tpoint.h"
-#include "stbox.h"
-#include "tpoint_boxops.h"
+#include "point/tpoint.h"
+#include "point/stbox.h"
+#include "point/tpoint_boxops.h"
 #include "tnpoint_boxops.h"
 
 /*****************************************************************************

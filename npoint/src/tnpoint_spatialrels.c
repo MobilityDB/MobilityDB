@@ -38,7 +38,7 @@
 #include "tnpoint_spatialrels.h"
 
 #include "general/lifting.h"
-#include "tpoint_spatialrels.h"
+#include "point/tpoint_spatialrels.h"
 #include "tnpoint.h"
 #include "tnpoint_static.h"
 #include "tnpoint_spatialfuncs.h"

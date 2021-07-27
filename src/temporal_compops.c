@@ -36,7 +36,7 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic dispatch function

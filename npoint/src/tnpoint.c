@@ -39,7 +39,7 @@
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "tnpoint_static.h"
 #include "tnpoint_parser.h"
 

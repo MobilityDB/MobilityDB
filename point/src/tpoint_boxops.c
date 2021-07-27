@@ -39,7 +39,7 @@
  * the space and the time dimensions.
  */
 
-#include "tpoint_boxops.h"
+#include "point/tpoint_boxops.h"
 
 #include <assert.h>
 #include <utils/builtins.h>
@@ -50,9 +50,9 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-#include "tpoint.h"
-#include "stbox.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint.h"
+#include "point/stbox.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions computing the bounding box at the creation of a temporal point

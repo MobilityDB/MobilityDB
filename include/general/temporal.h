@@ -40,7 +40,7 @@
 
 #include "timetypes.h"
 #include "tbox.h"
-#include "stbox.h"
+#include "point/stbox.h"
 
 #if POSTGRESQL_VERSION_NUMBER < 130000
 #ifndef USE_FLOAT4_BYVAL

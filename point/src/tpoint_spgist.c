@@ -91,7 +91,7 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 110000
 
-#include "tpoint_spgist.h"
+#include "point/tpoint_spgist.h"
 
 #include <float.h>
 #include <access/spgist.h>
@@ -108,10 +108,10 @@
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 #include "general/tnumber_spgist.h"
-#include "tpoint.h"
-#include "tpoint_boxops.h"
-#include "tpoint_distance.h"
-#include "tpoint_gist.h"
+#include "point/tpoint.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_distance.h"
+#include "point/tpoint_gist.h"
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 /* To avoid including "access/spgist_private.h" since it conflicts with the

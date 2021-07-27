@@ -46,8 +46,8 @@
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 
-#include "tpoint_out.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint_out.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "tnpoint.h"
 #include "tnpoint_parser.h"
 

@@ -42,9 +42,9 @@
 
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
-#include "stbox.h"
-#include "tpoint_boxops.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/stbox.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "tnpoint.h"
 #include "tnpoint_static.h"
 #include "tnpoint_spatialfuncs.h"

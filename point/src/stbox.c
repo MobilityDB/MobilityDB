@@ -29,7 +29,7 @@
  * Functions for spatiotemporal bounding boxes.
  */
 
-#include "stbox.h"
+#include "point/stbox.h"
 
 #include <assert.h>
 #include <utils/builtins.h>
@@ -39,9 +39,9 @@
 #include "general/periodset.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
-#include "tpoint.h"
-#include "tpoint_parser.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_parser.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /* Buffer size for input and output of STBOX */
 #define MAXSTBOXLEN    256

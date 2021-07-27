@@ -29,7 +29,7 @@
  * R-tree GiST index for temporal points.
  */
 
-#include "tpoint_gist.h"
+#include "point/tpoint_gist.h"
 
 #include <assert.h>
 #include <float.h>
@@ -43,11 +43,11 @@
 #include "general/time_gist.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
-#include "tpoint.h"
+#include "point/tpoint.h"
 #include "general/tnumber_gist.h"
-#include "tpoint_boxops.h"
-#include "tpoint_distance.h"
-#include "tpoint_posops.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_distance.h"
+#include "point/tpoint_posops.h"
 
 /*****************************************************************************
  * GiST consistent methods

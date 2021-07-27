@@ -44,15 +44,15 @@
  * Only `dwithin` and `intersects` are supported for 3D geometries.
  */
 
-#include "tpoint_spatialrels.h"
+#include "point/tpoint_spatialrels.h"
 
 #include <assert.h>
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
-#include "tpoint_distance.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_distance.h"
 
 /*****************************************************************************
  * Spatial relationship functions

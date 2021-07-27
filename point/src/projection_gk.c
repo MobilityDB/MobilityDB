@@ -33,7 +33,7 @@
  * of MobilityDB and Secondo.
  */
 
-#include "projection_gk.h"
+#include "point/projection_gk.h"
 
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
@@ -41,9 +41,9 @@
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/lifting.h"
-#include "postgis.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
 
 double Pi   = 3.1415926535897932384626433832795028841971693993751058209749445923078164;
 double awgs = 6378137.0;

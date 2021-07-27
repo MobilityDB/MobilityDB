@@ -45,10 +45,10 @@
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <liblwgeom.h>
-#include "postgis.h"
-#include "tpoint_boxops.h"
-#include "tpoint_posops.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_posops.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "tnpoint.h"
 #include "tnpoint_static.h"
 #include "tnpoint_boxops.h"

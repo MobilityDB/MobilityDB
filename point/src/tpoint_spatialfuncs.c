@@ -29,7 +29,7 @@
  * Spatial functions for temporal points.
  */
 
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint_spatialfuncs.h"
 
 #include <assert.h>
 #include <liblwgeom.h>
@@ -41,11 +41,11 @@
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
 
-#include "postgis.h"
-#include "stbox.h"
-#include "tpoint.h"
-#include "tpoint_boxops.h"
-#include "tpoint_spatialrels.h"
+#include "point/postgis.h"
+#include "point/stbox.h"
+#include "point/tpoint.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_spatialrels.h"
 
 /*****************************************************************************
  * PostGIS cache functions

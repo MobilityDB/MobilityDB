@@ -31,7 +31,7 @@
  * The only functions currently provided are extent and temporal centroid.
  */
 
-#include "tpoint_aggfuncs.h"
+#include "point/tpoint_aggfuncs.h"
 
 #include <assert.h>
 
@@ -41,8 +41,8 @@
 #include "general/doublen.h"
 #include "general/skiplist.h"
 #include "general/temporal_aggfuncs.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic functions

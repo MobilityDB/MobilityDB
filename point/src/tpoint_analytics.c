@@ -29,7 +29,7 @@
  * Analytic functions for temporal points and temporal floats.
  */
 
-#include "tpoint_analytics.h"
+#include "point/tpoint_analytics.h"
 
 #include <assert.h>
 #include <float.h>
@@ -53,12 +53,12 @@
 #include "general/lifting.h"
 #include "general/tnumber_mathfuncs.h"
 
-#include "postgis.h"
-#include "geography_funcs.h"
-#include "tpoint.h"
-#include "tpoint_boxops.h"
-#include "tpoint_spatialrels.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/geography_funcs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_spatialrels.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /* Timestamps in PostgreSQL are encoded as MICROseconds since '2000-01-01'
  * while Unix epoch are encoded as MILLIseconds since '1970-01-01'.

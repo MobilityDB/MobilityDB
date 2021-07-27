@@ -57,7 +57,7 @@
 #include "general/temporal_parser.h"
 #include "general/rangetypes_ext.h"
 
-#include "tpoint_spatialfuncs.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "tnpoint_static.h"
 #include "tnpoint_spatialfuncs.h"
 

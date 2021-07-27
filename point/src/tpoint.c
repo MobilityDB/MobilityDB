@@ -29,7 +29,7 @@
  * Basic functions for temporal points.
  */
 
-#include "tpoint.h"
+#include "point/tpoint.h"
 
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
@@ -39,10 +39,10 @@
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "general/temporal_compops.h"
-#include "stbox.h"
-#include "tpoint_parser.h"
-#include "tpoint_boxops.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/stbox.h"
+#include "point/tpoint_parser.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Miscellaneous functions

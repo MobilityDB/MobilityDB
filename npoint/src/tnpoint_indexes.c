@@ -32,7 +32,7 @@
 #include "tnpoint_indexes.h"
 
 #include <access/gist.h>
-#include "tpoint.h"
+#include "point/tpoint.h"
 #include "tnpoint.h"
 
 /*****************************************************************************

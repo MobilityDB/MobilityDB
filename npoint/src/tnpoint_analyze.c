@@ -37,10 +37,10 @@
 #include "general/time_analyze.h"
 #include "general/temporal.h"
 #include "general/temporal_analyze.h"
-#include "postgis.h"
-#include "tpoint.h"
-#include "tpoint_selfuncs.h"
-#include "tpoint_analyze.h"
+#include "point/postgis.h"
+#include "point/tpoint.h"
+#include "point/tpoint_selfuncs.h"
+#include "point/tpoint_analyze.h"
 #include "tnpoint_spatialfuncs.h"
 
 /*****************************************************************************/

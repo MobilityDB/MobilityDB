@@ -29,7 +29,7 @@
  * Distance functions for temporal points.
  */
 
-#include "tpoint_distance.h"
+#include "point/tpoint_distance.h"
 
 #include <assert.h>
 #include <float.h>
@@ -44,12 +44,12 @@
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
-#include "postgis.h"
-#include "geography_funcs.h"
-#include "tpoint.h"
-#include "tpoint_boxops.h"
-#include "tpoint_spatialrels.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/geography_funcs.h"
+#include "point/tpoint.h"
+#include "point/tpoint_boxops.h"
+#include "point/tpoint_spatialrels.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 

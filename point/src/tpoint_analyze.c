@@ -49,7 +49,7 @@
  * the subtype. Please refer to file temporal_analyze.c for more information.
  */
 
-#include "tpoint_analyze.h"
+#include "point/tpoint_analyze.h"
 
 #include <assert.h>
 #include <float.h>
@@ -63,9 +63,9 @@
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/temporal_analyze.h"
-#include "postgis.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "tnpoint_spatialfuncs.h"
 
 /*****************************************************************************

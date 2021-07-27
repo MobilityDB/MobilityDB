@@ -41,8 +41,8 @@
 #include <utils/builtins.h>
 #include <liblwgeom.h>
 
-#include "postgis.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/tpoint_spatialfuncs.h"
 
 extern void lwerror(const char *fmt, ...);
 

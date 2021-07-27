@@ -32,7 +32,7 @@
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  */
 
-#include "tpoint_datagen.h"
+#include "point/tpoint_datagen.h"
 
 #include <access/htup_details.h>
 #include <access/tupdesc.h>    /* for * () */
@@ -53,9 +53,9 @@
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
-#include "postgis.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
+#include "point/postgis.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 

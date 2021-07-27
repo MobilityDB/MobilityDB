@@ -64,7 +64,7 @@
  *   which amounts to solve the equation distance(seg1(t), seg2(t)) = d.
  */
 
-#include "tpoint_tempspatialrels.h"
+#include "point/tpoint_tempspatialrels.h"
 
 #include <assert.h>
 #include <utils/timestamp.h>
@@ -75,9 +75,9 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tbool_boolops.h"
-#include "tpoint.h"
-#include "tpoint_spatialfuncs.h"
-#include "tpoint_spatialrels.h"
+#include "point/tpoint.h"
+#include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_spatialrels.h"
 
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships

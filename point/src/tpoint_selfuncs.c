@@ -29,17 +29,17 @@
  * Functions for selectivity estimation of operators on temporal points
  */
 
-#include "tpoint_selfuncs.h"
+#include "point/tpoint_selfuncs.h"
 
 #include <assert.h>
 #include <float.h>
 
 #include "general/period.h"
 #include "general/temporal_selfuncs.h"
-#include "stbox.h"
-#include "tpoint.h"
-#include "tpoint_analyze.h"
-#include "tpoint_boxops.h"
+#include "point/stbox.h"
+#include "point/tpoint.h"
+#include "point/tpoint_analyze.h"
+#include "point/tpoint_boxops.h"
 
 /*****************************************************************************
  * PostGIS functions copied from the file gserialized_estimate.c since they
