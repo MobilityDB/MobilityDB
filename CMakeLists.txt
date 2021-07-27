@@ -13,50 +13,6 @@ string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 
-#[[
-set(SRCS
-src/geo_constructors.c
-src/doublen.c
-src/lifting.c
-src/period.c
-src/periodset.c
-src/rangetypes_ext.c
-src/skiplist.c
-src/tbool_boolops.c
-src/tbox.c
-src/tempcache.c
-src/temporal.c
-src/tinstant.c
-src/tinstantset.c
-src/tsequence.c
-src/tsequenceset.c
-src/temporal_aggfuncs.c
-src/temporal_analyze.c
-src/temporal_boxops.c
-src/temporal_compops.c
-src/temporal_gist.c
-src/tnumber_mathfuncs.c
-src/temporal_parser.c
-src/temporal_posops.c
-src/temporal_selfuncs.c
-src/temporal_spgist.c
-src/temporal_tile.c
-src/temporal_util.c
-src/temporal_waggfuncs.c
-src/timeops.c
-src/timestampset.c
-src/time_aggfuncs.c
-src/time_analyze.c
-src/time_gist.c
-src/time_selfuncs.c
-src/time_spgist.c
-src/tnumber_distance.c
-src/tnumber_gist.c
-src/tnumber_selfuncs.c
-src/tnumber_spgist.c
-src/ttext_textfuncs.c
-)
-]]
 include(CTest)
 enable_testing()
 
@@ -64,10 +20,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(CheckCCompilerFlag)
 if(NOT WIN32)
-    CHECK_C_COMPILER_FLAG("-fPIC" C_COMPILER_SUPPORTS_FPIC)
-    if(C_COMPILER_SUPPORTS_FPIC)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ")
-    endif()
+  CHECK_C_COMPILER_FLAG("-fPIC" C_COMPILER_SUPPORTS_FPIC)
+  if(C_COMPILER_SUPPORTS_FPIC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ")
+  endif()
 endif()
 
 #-------------------------------------
