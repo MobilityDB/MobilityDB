@@ -33,13 +33,13 @@ include(CheckCCompilerFlag)
 if(NOT WIN32)
   CHECK_C_COMPILER_FLAG("-fPIC" C_COMPILER_SUPPORTS_FPIC)
   if(C_COMPILER_SUPPORTS_FPIC)
-    add_definitions("-fPIC")
+    add_definitions(-fPIC)
   endif()
 endif()
 
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
-	add_definitions(-D NO_FFSL)
+	add_definitions(-DNO_FFSL)
 endif()
 
 #-------------------------------------
@@ -68,6 +68,11 @@ if(WIN32)
     link_directories(${POSTGRESQL_LIBRARIES})
     link_libraries(postgres)
 endif()
+
+# Currently does not work with other versions of PostGIS
+find_package(POSTGIS 2.5 EXACT REQUIRED)
+add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
+add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
 #--------------------------------
 
@@ -101,11 +106,6 @@ add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
 #--------------------------------
 # other requirements
 #--------------------------------
-
-# Currently does not work with other versions of PostGIS
-find_package(POSTGIS 2.5 EXACT REQUIRED)
-add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
-add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
 find_package(JSON-C REQUIRED)
 include_directories(${JSON-C_INCLUDE_DIRS})
