@@ -67,7 +67,8 @@ jobs:
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
         run: |
-          sudo apt-get -y install lcov
+          # sudo apt-get -y install lcov
+          pip install --user cpp-coveralls
 
       - name: Configure for gcc
         run: |
@@ -93,17 +94,25 @@ jobs:
           cd build
           make test
 
-      - name: Generate coverage
+      # - name: Generate coverage
+        # if: matrix.coverage == '1'
+        # run: |
+          # cd build
+          # lcov --capture --directory . --output-file=lcov.info
+
+      # - name: Coveralls
+        # if: matrix.coverage == '1'
+        # uses: coverallsapp/github-action@master
+        # with:
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
+          # path-to-lcov: "./build/lcov.info"
+
+     - name: Coverage
+        with:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         if: matrix.coverage == '1'
         run: |
           cd build
-          lcov --capture --directory . --output-file=lcov.info
-
-      - name: Coveralls
-        if: matrix.coverage == '1'
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: "./build/lcov.info"
+          coveralls --include src --include point --include npoint --gcov-options '\-lp' -r .. -b .
 
 
