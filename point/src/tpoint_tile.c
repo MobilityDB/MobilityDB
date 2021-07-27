@@ -38,11 +38,11 @@
 #include <liblwgeom.h>
 
 #include "tpoint_tile.h"
-#include "period.h"
-#include "timeops.h"
-#include "temporal.h"
-#include "temporal_util.h"
-#include "temporal_tile.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
+#include "general/temporal_tile.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 
