@@ -34,13 +34,13 @@
 #include <assert.h>
 #include <math.h>
 #include <access/htup_details.h>
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 #include <catalog/pg_collation.h>
 #else
 #include <catalog/pg_collation_d.h>
 #endif
 #include <utils/builtins.h>
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 #include <utils/selfuncs.h>
@@ -475,7 +475,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
   hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
   for (i = 0; i < nhist; i++)
   {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
     range_deserialize(typcache, DatumGetRangeType(hslot.values[i]),
               &hist_lower[i], &hist_upper[i], &empty);
 #else
@@ -670,7 +670,7 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
   Oid consttype = ((Const *) other)->consttype;
 
   if (tnumber_range_type(consttype))
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
     range_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
 #else
     range_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
@@ -836,7 +836,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     if (MOBDB_FLAGS_GET_X(box->flags))
     {
       value_oprid = oper_oid(EQ_OP, basetypid, basetypid);
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
       selec *= var_eq_const(vardata, value_oprid, PointerGetDatum(range),
         false, false, false);
 #else
@@ -848,7 +848,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     if (MOBDB_FLAGS_GET_T(box->flags))
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
       selec *= var_eq_const(vardata, period_oprid, PeriodGetDatum(&period),
         false, false, false);
 #else

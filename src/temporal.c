@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
 #include <access/tuptoaster.h>
 #else
 #include <access/heaptoast.h>
@@ -579,7 +579,7 @@ mobilitydb_full_version(PG_FUNCTION_ARGS)
   text *result;
 
   snprintf(ver, 128, "%s, %s, %s", MOBDB_VERSION_STR,
-    MOBDB_PGSQL_VERSION_STR, MOBDB_POSTGIS_VERSION_STR);
+    POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
   ver[127] = '\0';
 
   result = cstring_to_text(ver);
@@ -1862,7 +1862,7 @@ tnumber_value_range(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   RangeType *result = tnumber_value_range_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   PG_RETURN_RANGE(result);
 #else
   PG_RETURN_RANGE_P(result);
@@ -3337,7 +3337,7 @@ Datum
 tnumber_restrict_range(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(1);
 #else
   RangeType *range = PG_GETARG_RANGE_P(1);

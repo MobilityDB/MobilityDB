@@ -598,7 +598,7 @@ Datum
 boxop_range_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
 #else
   RangeType *range = PG_GETARG_RANGE_P(0);
@@ -630,7 +630,7 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(1);
 #else
   RangeType *range = PG_GETARG_RANGE_P(1);

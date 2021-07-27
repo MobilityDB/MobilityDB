@@ -1,6 +1,6 @@
 # Postgres version dependant files
 
-if (${PG_FULL_VERSION} GREATER_EQUAL 110000)
+if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
   set(FILE_72 72_tpoint_spgist)
 endif()
 

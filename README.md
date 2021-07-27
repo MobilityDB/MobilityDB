@@ -93,12 +93,6 @@ sudo make install
 psql -c 'CREATE EXTENSION MobilityDB CASCADE'
 ```
 
-You should also set the following in postgresql.conf:
-```bash
-shared_preload_libraries = 'postgis-2.5'
-max_locks_per_transaction = 128
-```
-
 Docker Container
 -----------------
 

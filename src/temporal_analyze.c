@@ -62,12 +62,12 @@
 
 #include <assert.h>
 #include <math.h>
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
 #include <access/tuptoaster.h>
 #else
 #include <access/heaptoast.h>
 #endif
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
 #include <catalog/pg_collation.h>
 #include <catalog/pg_operator.h>
 #else

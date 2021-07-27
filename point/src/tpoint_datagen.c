@@ -43,7 +43,7 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #else
 /* Radians per degree, a.k.a. PI / 180 */

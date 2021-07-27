@@ -1,4 +1,3 @@
-target_link_libraries(${CMAKE_PROJECT_NAME} ${HAS_LWGEOM}) # postgis)
 add_definitions(-DWITH_POSTGIS)
 
 include_directories("npoint/include")

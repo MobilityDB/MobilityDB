@@ -101,10 +101,11 @@ sudo make install
 				</programlisting>
 			</para>
 			<para>
-				Once MobilityDB is installed, it needs to be enabled in each individual database you want to use it in.
+        Once MobilityDB is installed, it needs to be enabled in each individual database you want to use it in.
+        In this example, PostGIS 2.5.5 is been used:
 				<programlisting>
 createdb mobility
-psql mobility -c 'CREATE EXTENSION PostGIS'
+psql mobility -c "CREATE EXTENSION PostGIS WITH VERSION '2.5.5'"
 psql mobility -c 'CREATE EXTENSION MobilityDB'
 				</programlisting>
 			</para>

@@ -656,7 +656,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
 void
 tsequenceset_write(const TSequenceSet *ts, StringInfo buf)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   pq_sendint(buf, (uint32) ts->count, 4);
 #else
   pq_sendint32(buf, ts->count);

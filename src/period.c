@@ -492,7 +492,7 @@ PG_FUNCTION_INFO_V1(tstzrange_to_period);
 PGDLLEXPORT Datum
 tstzrange_to_period(PG_FUNCTION_ARGS)
 {
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
 #else
   RangeType *range = PG_GETARG_RANGE_P(0);
@@ -862,7 +862,7 @@ period_hash(PG_FUNCTION_ARGS)
   PG_RETURN_UINT32(result);
 }
 
-#if MOBDB_PGSQL_VERSION >= 110000
+#if POSTGRESQL_VERSION_NUMBER >= 110000
 /*
  * Returns 64-bit value by hashing a value to a 64-bit value, with a seed.
  * Otherwise, similar to period_hash.

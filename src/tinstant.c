@@ -268,7 +268,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
   bytea *bt = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
   bytea *bv = call_send(inst->basetypid, tinstant_value(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
   pq_sendint(buf, VARSIZE(bv) - VARHDRSZ, 4) ;
 #else
   pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
@@ -627,7 +627,7 @@ tnumberinst_restrict_range_test(const TInstant *inst, const RangeType *range,
 {
   Datum d = tinstant_value(inst);
   TypeCacheEntry *typcache = lookup_type_cache(range->rangetypid, TYPECACHE_RANGE_INFO);
-#if MOBDB_PGSQL_VERSION < 130000
+#if POSTGRESQL_VERSION_NUMBER < 130000
   bool contains = range_contains_elem_internal(typcache, (RangeType *) range, d);
 #else
   bool contains = range_contains_elem_internal(typcache, range, d);

@@ -35,7 +35,7 @@
 #include <assert.h>
 #include <float.h>
 #include <funcapi.h>
-#if MOBDB_PGSQL_VERSION < 120000
+#if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
 #include <utils/builtins.h>
@@ -316,7 +316,7 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
     RangeType *bounds = PG_GETARG_RANGE(0);
 #else
     RangeType *bounds = PG_GETARG_RANGE_P(0);
@@ -1491,7 +1491,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       if (j == first_bucket || j == last_bucket)
       {
         RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, basetypid);
-#if MOBDB_PGSQL_VERSION < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
         RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
           PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
 #else

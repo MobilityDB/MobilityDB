@@ -37,7 +37,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#if MOBDB_PGSQL_VERSION >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
 
