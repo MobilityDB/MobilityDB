@@ -143,7 +143,6 @@ typedef enum
  * Compatibility with older versions of PostgreSQL
  *****************************************************************************/
 
-#define MOBDB_VERSION_STR "MobilityDB 1.0 beta 3"
 
 
 /*****************************************************************************

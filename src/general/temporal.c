@@ -563,7 +563,7 @@ PG_FUNCTION_INFO_V1(mobilitydb_version);
 PGDLLEXPORT Datum
 mobilitydb_version(PG_FUNCTION_ARGS)
 {
-  char *ver = MOBDB_VERSION_STR;
+  char *ver = MOBILITYDB_VERSION_STR;
   text *result = cstring_to_text(ver);
   PG_RETURN_TEXT_P(result);
 }
@@ -578,7 +578,7 @@ mobilitydb_full_version(PG_FUNCTION_ARGS)
   char ver[128];
   text *result;
 
-  snprintf(ver, 128, "%s, %s, %s", MOBDB_VERSION_STR,
+  snprintf(ver, 128, "%s, %s, %s", MOBILITYDB_VERSION_STR,
     POSTGRESQL_VERSION_STRING, POSTGIS_VERSION_STR);
   ver[127] = '\0';
 
