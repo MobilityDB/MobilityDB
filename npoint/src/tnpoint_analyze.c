@@ -33,10 +33,10 @@
 
 #include <commands/vacuum.h>
 
-#include "period.h"
-#include "time_analyze.h"
-#include "temporal.h"
-#include "temporal_analyze.h"
+#include "general/period.h"
+#include "general/time_analyze.h"
+#include "general/temporal.h"
+#include "general/temporal_analyze.h"
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_selfuncs.h"

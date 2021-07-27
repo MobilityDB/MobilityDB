@@ -38,7 +38,7 @@
  * sum and the last one stores the count of the values. The final function
  * computes the average from the `doubleN` values.
 */
-#include "doublen.h"
+#include "general/doublen.h"
 
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>

@@ -31,8 +31,8 @@
 
 #include "tnpoint_parser.h"
 
-#include "temporaltypes.h"
-#include "temporal_parser.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_parser.h"
 #include "tnpoint.h"
 #include "tnpoint_static.h"
 

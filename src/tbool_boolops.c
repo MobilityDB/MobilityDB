@@ -29,10 +29,10 @@
  * Temporal Boolean operators (and, or, not).
  */
 
-#include "tbool_boolops.h"
+#include "general/tbool_boolops.h"
 
-#include "temporaltypes.h"
-#include "lifting.h"
+#include "general/temporaltypes.h"
+#include "general/lifting.h"
 
 /*****************************************************************************
  * Boolean operations functions on datums

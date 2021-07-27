@@ -33,13 +33,13 @@
  * - `before`, `overbefore`, `after`, `overafter`for the time dimension
  */
 
-#include "temporal_posops.h"
+#include "general/temporal_posops.h"
 
 #include <assert.h>
 
-#include "timeops.h"
-#include "temporal.h"
-#include "temporal_boxops.h"
+#include "general/timeops.h"
+#include "general/temporal.h"
+#include "general/temporal_boxops.h"
 
 /*****************************************************************************/
 /* Period op Temporal */

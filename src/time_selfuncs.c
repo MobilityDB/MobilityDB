@@ -32,7 +32,7 @@
  * Estimates are based on histograms of lower and upper bounds.
  */
 
-#include "time_selfuncs.h"
+#include "general/time_selfuncs.h"
 
 #include <assert.h>
 #include <math.h>
@@ -43,12 +43,12 @@
 #include <utils/timestamp.h>
 #include <math.h>
 
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "time_analyze.h"
-#include "tempcache.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/time_analyze.h"
+#include "general/tempcache.h"
 
 /*****************************************************************************/
 

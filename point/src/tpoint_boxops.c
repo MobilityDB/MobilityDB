@@ -45,11 +45,11 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#include "timestampset.h"
-#include "periodset.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "temporal_boxops.h"
+#include "general/timestampset.h"
+#include "general/periodset.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/temporal_boxops.h"
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_spatialfuncs.h"

@@ -40,21 +40,21 @@
  * the value and the time dimensions.
  */
 
-#include "temporal_boxops.h"
+#include "general/temporal_boxops.h"
 
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "rangetypes_ext.h"
-#include "tbox.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/rangetypes_ext.h"
+#include "general/tbox.h"
 #include "tpoint.h"
 #include "stbox.h"
 #include "tpoint_boxops.h"

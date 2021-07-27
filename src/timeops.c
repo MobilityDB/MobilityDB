@@ -29,16 +29,16 @@
  * Operators for time types.
  */
 
-#include "timeops.h"
+#include "general/timeops.h"
 
 #include <assert.h>
 #include <utils/timestamp.h>
 
-#include "period.h"
-#include "periodset.h"
-#include "timestampset.h"
-#include "tempcache.h"
-#include "temporal_util.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timestampset.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
 
 typedef enum
 {

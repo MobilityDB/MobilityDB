@@ -29,7 +29,7 @@
  * Functions manipulating skiplists
  */
 
-#include "skiplist.h"
+#include "general/skiplist.h"
 
 #include <assert.h>
 #include <executor/spi.h>
@@ -38,12 +38,12 @@
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
 
-#include "skiplist.h"
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporal_util.h"
+#include "general/skiplist.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists

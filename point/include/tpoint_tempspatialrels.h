@@ -36,7 +36,7 @@
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 
-#include "temporal.h"
+#include "general/temporal.h"
 
 /* Compute either the tintersects or the tdisjoint relationship */
 #define TINTERSECTS true

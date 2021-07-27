@@ -34,8 +34,8 @@
 #include <assert.h>
 #include <float.h>
 
-#include "period.h"
-#include "temporal_selfuncs.h"
+#include "general/period.h"
+#include "general/temporal_selfuncs.h"
 #include "stbox.h"
 #include "tpoint.h"
 #include "tpoint_analyze.h"

@@ -34,11 +34,11 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
-#include "temporal_compops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
+#include "general/temporal_compops.h"
 #include "stbox.h"
 #include "tpoint_parser.h"
 #include "tpoint_boxops.h"

@@ -34,19 +34,19 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 110000
 
-#include "time_spgist.h"
+#include "general/time_spgist.h"
 
 #include <assert.h>
 #include <access/spgist.h>
 #include <utils/timestamp.h>
 
-#include "timetypes.h"
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "time_gist.h"
-#include "temporal_util.h"
-#include "tempcache.h"
+#include "general/timetypes.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/time_gist.h"
+#include "general/temporal_util.h"
+#include "general/tempcache.h"
 
 /*****************************************************************************
  * SP-GiST config function

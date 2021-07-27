@@ -31,19 +31,19 @@
  * These functions are based on those in the file `rangetypes_gist.c`.
  */
 
-#include "time_gist.h"
+#include "general/time_gist.h"
 
 #include <assert.h>
 #include <access/gist.h>
 #include <utils/timestamp.h>
 
-#include "timetypes.h"
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporal_util.h"
-#include "tempcache.h"
+#include "general/timetypes.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporal_util.h"
+#include "general/tempcache.h"
 
 /*****************************************************************************
  * GiST consistent methods

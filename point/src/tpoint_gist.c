@@ -40,11 +40,11 @@
 #include <utils/float.h>
 #endif
 
-#include "time_gist.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
+#include "general/time_gist.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
 #include "tpoint.h"
-#include "tnumber_gist.h"
+#include "general/tnumber_gist.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"
 #include "tpoint_posops.h"

@@ -31,12 +31,12 @@
 
 #include "tpoint_parser.h"
 
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "tempcache.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/tempcache.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
-#include "temporal_parser.h"
+#include "general/temporal_parser.h"
 #include "stbox.h"
 
 /*****************************************************************************/

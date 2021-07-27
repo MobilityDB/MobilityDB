@@ -35,7 +35,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 
-#include "temporaltypes.h"
+#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 

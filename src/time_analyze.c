@@ -39,17 +39,17 @@
  * come from different tuples. In theory, the standard scalar selectivity
  * functions could be used with the combined histogram.
  */
-#include "time_analyze.h"
+#include "general/time_analyze.h"
 
 #include <assert.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
 
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "temporal.h"
-#include "tempcache.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/temporal.h"
+#include "general/tempcache.h"
 
 static void timetype_compute_stats(CachedType type, VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows);

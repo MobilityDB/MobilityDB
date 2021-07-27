@@ -102,12 +102,12 @@
 #include <utils/float.h>
 #endif
 
-#include "period.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "tempcache.h"
-#include "tnumber_spgist.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/tempcache.h"
+#include "general/tnumber_spgist.h"
 #include "tpoint.h"
 #include "tpoint_boxops.h"
 #include "tpoint_distance.h"

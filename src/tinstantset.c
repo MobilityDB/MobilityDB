@@ -29,7 +29,7 @@
  * Basic functions for temporal instant sets.
  */
 
-#include "tinstantset.h"
+#include "general/tinstantset.h"
 
 #include <assert.h>
 #include <libpq/pqformat.h>
@@ -37,16 +37,16 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 
-#include "timetypes.h"
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "temporal_boxops.h"
-#include "rangetypes_ext.h"
+#include "general/timetypes.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/temporal_boxops.h"
+#include "general/rangetypes_ext.h"
 
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"

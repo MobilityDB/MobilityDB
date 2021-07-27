@@ -34,13 +34,13 @@
  * moment which is both correct and simple.
  */
 
-#include "temporal_parser.h"
+#include "general/temporal_parser.h"
 
-#include "periodset.h"
-#include "period.h"
-#include "timestampset.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
+#include "general/periodset.h"
+#include "general/period.h"
+#include "general/timestampset.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************/
 

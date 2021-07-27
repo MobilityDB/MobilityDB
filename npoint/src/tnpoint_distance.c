@@ -31,9 +31,9 @@
 
 #include "tnpoint_distance.h"
 
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_distance.h"
 #include "tnpoint.h"

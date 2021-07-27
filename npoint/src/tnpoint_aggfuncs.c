@@ -35,7 +35,7 @@
 
 #include <assert.h>
 
-#include "temporal_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_aggfuncs.h"

@@ -34,7 +34,7 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "temporal.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 

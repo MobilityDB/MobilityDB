@@ -44,7 +44,7 @@
  * The invalid combinations will be initialized to 0.
  */
 
-#include "tempcache.h"
+#include "general/tempcache.h"
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <access/tableam.h>
@@ -54,7 +54,7 @@
 #include <catalog/namespace.h>
 #include <utils/rel.h>
 
-#include "temporaltypes.h"
+#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 

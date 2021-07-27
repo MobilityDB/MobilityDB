@@ -37,7 +37,7 @@
 #include <postgres.h>
 #include <liblwgeom.h>
 
-#include "temporal.h"
+#include "general/temporal.h"
 #include "tpoint.h"
 
 /*****************************************************************************/

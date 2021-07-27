@@ -32,7 +32,7 @@
 #ifndef __TPOINT_TILE_H__
 #define __TPOINT_TILE_H__
 
-#include "temporal.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 

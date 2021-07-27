@@ -41,10 +41,10 @@
 #include <executor/spi.h>
 #include <liblwgeom.h>
 
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "tnumber_mathfuncs.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/tnumber_mathfuncs.h"
 
 #include "tpoint_out.h"
 #include "tpoint_spatialfuncs.h"

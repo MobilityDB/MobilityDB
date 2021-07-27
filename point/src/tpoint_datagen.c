@@ -50,9 +50,9 @@
 #define RADIANS_PER_DEGREE 0.0174532925199432957692
 #endif
 
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"

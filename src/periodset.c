@@ -29,18 +29,18 @@
  * Basic functions for set of disjoint periods.
  */
 
-#include "periodset.h"
+#include "general/periodset.h"
 
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#include "timestampset.h"
-#include "period.h"
-#include "timeops.h"
-#include "temporal_util.h"
-#include "temporal_parser.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporal_util.h"
+#include "general/temporal_parser.h"
 
 /*****************************************************************************
  * General functions

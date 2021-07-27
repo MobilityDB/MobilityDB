@@ -36,8 +36,8 @@
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 
-#include "temporal.h"
-#include "skiplist.h"
+#include "general/temporal.h"
+#include "general/skiplist.h"
 
 /*****************************************************************************/
 

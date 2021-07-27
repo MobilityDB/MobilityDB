@@ -30,14 +30,14 @@
  * is taken into account for indexing, currently, tbool and ttext.
  */
 
-#include "temporal_gist.h"
+#include "general/temporal_gist.h"
 
 #include <access/gist.h>
 
-#include "timetypes.h"
-#include "temporal.h"
-#include "tempcache.h"
-#include "time_gist.h"
+#include "general/timetypes.h"
+#include "general/temporal.h"
+#include "general/tempcache.h"
+#include "general/time_gist.h"
 
 /*****************************************************************************
  * GiST compress method for temporal values

@@ -29,12 +29,12 @@
  * Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
-#include "ttext_textfuncs.h"
+#include "general/ttext_textfuncs.h"
 
 #include <utils/builtins.h>
-#include "temporal.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 
 /*****************************************************************************
  * Textual functions on datums

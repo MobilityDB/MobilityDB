@@ -30,19 +30,19 @@
  * two Boolean values stating whether the bounds are inclusive or not.
  */
 
-#include "period.h"
+#include "general/period.h"
 
 #include <assert.h>
 #include <access/hash.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
-#include "periodset.h"
-#include "timeops.h"
-#include "temporal.h"
-#include "temporal_util.h"
-#include "temporal_parser.h"
-#include "rangetypes_ext.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
+#include "general/temporal_parser.h"
+#include "general/rangetypes_ext.h"
 
 /*****************************************************************************
  * Utility functions

@@ -29,7 +29,7 @@
  * Miscellaneous utility functions for temporal types.
  */
 
-#include "temporal_util.h"
+#include "general/temporal_util.h"
 
 #include <assert.h>
 #include <catalog/pg_collation.h>
@@ -39,10 +39,10 @@
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
 
-#include "period.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "doublen.h"
+#include "general/period.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/doublen.h"
 
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"

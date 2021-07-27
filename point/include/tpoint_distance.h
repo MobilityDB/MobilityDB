@@ -38,7 +38,7 @@
 #include <catalog/pg_type.h>
 #include <float.h>
 
-#include "temporal.h"
+#include "general/temporal.h"
 #include <liblwgeom.h>
 #include "tpoint.h"
 

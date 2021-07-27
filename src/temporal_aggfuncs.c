@@ -29,7 +29,7 @@
  * Temporal aggregate functions
  */
 
-#include "temporal_aggfuncs.h"
+#include "general/temporal_aggfuncs.h"
 
 #include <assert.h>
 #include <math.h>
@@ -39,16 +39,16 @@
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
 
-#include "skiplist.h"
-#include "period.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "tbool_boolops.h"
-#include "temporal_boxops.h"
-#include "doublen.h"
-#include "time_aggfuncs.h"
+#include "general/skiplist.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/tbool_boolops.h"
+#include "general/temporal_boxops.h"
+#include "general/doublen.h"
+#include "general/time_aggfuncs.h"
 
 TInstant **
 tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,

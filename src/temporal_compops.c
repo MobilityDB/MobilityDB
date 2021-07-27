@@ -29,13 +29,13 @@
  * Temporal comparison operators (=, <>, <, >, <=, >=).
  */
 
-#include "temporal_compops.h"
+#include "general/temporal_compops.h"
 
 #include <utils/lsyscache.h>
 
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 #include "tpoint_spatialfuncs.h"
 
 /*****************************************************************************

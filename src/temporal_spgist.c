@@ -33,18 +33,18 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 110000
 
-#include "temporal_spgist.h"
+#include "general/temporal_spgist.h"
 
 #include <assert.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
 
-#include "timetypes.h"
-#include "tempcache.h"
-#include "period.h"
-#include "time_gist.h"
-#include "time_spgist.h"
-#include "temporaltypes.h"
+#include "general/timetypes.h"
+#include "general/tempcache.h"
+#include "general/period.h"
+#include "general/time_gist.h"
+#include "general/time_spgist.h"
+#include "general/temporaltypes.h"
 
 /*****************************************************************************
  * SP-GiST compress functions

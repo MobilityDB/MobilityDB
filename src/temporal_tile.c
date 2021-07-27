@@ -41,14 +41,14 @@
 #include <utils/builtins.h>
 #include <utils/datetime.h>
 
-#include "temporal_tile.h"
-#include "tempcache.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "rangetypes_ext.h"
-#include "temporal.h"
-#include "temporal_util.h"
+#include "general/temporal_tile.h"
+#include "general/tempcache.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/rangetypes_ext.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * Number bucket functions

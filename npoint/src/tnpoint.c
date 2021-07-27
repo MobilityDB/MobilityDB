@@ -33,11 +33,11 @@
 
 #include <assert.h>
 
-#include "temporaltypes.h"
-#include "temporal_parser.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_parser.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 
 #include "tpoint_spatialfuncs.h"
 #include "tnpoint_static.h"

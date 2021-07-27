@@ -44,14 +44,14 @@
 #include <utils/float.h>
 #endif
 
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
-#include "tnumber_mathfuncs.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
+#include "general/tnumber_mathfuncs.h"
 
 #include "postgis.h"
 #include "geography_funcs.h"

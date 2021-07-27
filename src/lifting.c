@@ -133,15 +133,15 @@
  * @endcode
  */
 
-#include "lifting.h"
+#include "general/lifting.h"
 
 #include <assert.h>
 #include <utils/timestamp.h>
 
-#include "period.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * Functions where the argument is a temporal type.

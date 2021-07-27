@@ -58,7 +58,7 @@
  * the statistics for the temporal part are stored in slots 1 and 2.
  */
 
-#include "temporal_analyze.h"
+#include "general/temporal_analyze.h"
 
 #include <assert.h>
 #include <math.h>
@@ -81,13 +81,13 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 
-#include "period.h"
-#include "time_analyze.h"
-#include "rangetypes_ext.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "temporal_analyze.h"
+#include "general/period.h"
+#include "general/time_analyze.h"
+#include "general/rangetypes_ext.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/temporal_analyze.h"
 
 /*
  * To avoid consuming too much memory, IO and CPU load during analysis, and/or

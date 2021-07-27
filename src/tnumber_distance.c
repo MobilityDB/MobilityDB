@@ -29,7 +29,7 @@
  * Distance functions for temporal numbers.
  */
 
-#include "tnumber_distance.h"
+#include "general/tnumber_distance.h"
 
 #include <assert.h>
 #include <float.h>
@@ -41,12 +41,12 @@
 #include <utils/float.h>
 #endif
 
-#include "period.h"
-#include "timeops.h"
-#include "rangetypes_ext.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/rangetypes_ext.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 
 /*****************************************************************************
  * Temporal distance

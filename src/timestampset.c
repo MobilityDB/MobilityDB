@@ -29,16 +29,16 @@
  * Basic functions for set of (distinct) timestamps.
  */
 
-#include "timestampset.h"
+#include "general/timestampset.h"
 
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
-#include "temporal.h"
-#include "temporal_parser.h"
-#include "period.h"
-#include "temporal_util.h"
+#include "general/temporal.h"
+#include "general/temporal_parser.h"
+#include "general/period.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
  * General functions

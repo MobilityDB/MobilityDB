@@ -35,9 +35,9 @@
 #include <float.h>
 #include <json-c/json.h>
 
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_parser.h"

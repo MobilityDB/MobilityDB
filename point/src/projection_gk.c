@@ -38,9 +38,9 @@
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <liblwgeom.h>
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "lifting.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/lifting.h"
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"

@@ -29,20 +29,20 @@
  * Aggregate functions for time types
  */
 
-#include "time_aggfuncs.h"
+#include "general/time_aggfuncs.h"
 
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
 
-#include "skiplist.h"
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
+#include "general/skiplist.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 
 TimestampTz *
 timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2, int count2,

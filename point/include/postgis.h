@@ -310,7 +310,7 @@ extern Datum geography_lt(PG_FUNCTION_ARGS);
 #define PG_GETARG_GSERIALIZED_P(varno) ((GSERIALIZED *)PG_DETOAST_DATUM(PG_GETARG_DATUM(varno)))
 #define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
 
-#include "temporal.h"
+#include "general/temporal.h"
 #include <liblwgeom.h>
 
 #endif /* __TEMPORAL_POSTGIS_H__ */

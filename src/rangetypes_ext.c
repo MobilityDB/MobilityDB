@@ -31,16 +31,16 @@
  * These operators have been submitted as a PR to PostgreSQL.
  */
 
-#include "rangetypes_ext.h"
+#include "general/rangetypes_ext.h"
 
 #include <assert.h>
 #include <float.h>
 #include <utils/builtins.h>
 
-#include "temporal.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "tnumber_mathfuncs.h"
+#include "general/temporal.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
  * Generic range functions

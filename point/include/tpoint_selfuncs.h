@@ -39,7 +39,7 @@
 #include <catalog/pg_statistic.h>
 #include <utils/selfuncs.h>
 
-#include "tempcache.h"
+#include "general/tempcache.h"
 #include "tpoint.h"
 #include "tpoint_analyze.h"
 

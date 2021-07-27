@@ -29,17 +29,17 @@
  * Temporal mathematical operators (+, -, *, /) and functions (round, degrees).
  */
 
-#include "tnumber_mathfuncs.h"
+#include "general/tnumber_mathfuncs.h"
 
 #include <assert.h>
 #include <math.h>
 #include <utils/builtins.h>
 
-#include "period.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 
 /*****************************************************************************
  * Miscellaneous functions on datums

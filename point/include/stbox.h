@@ -41,7 +41,7 @@
 #endif
 #include <liblwgeom.h>
 
-#include "timetypes.h"
+#include "general/timetypes.h"
 
 /*****************************************************************************
  * Struct definition

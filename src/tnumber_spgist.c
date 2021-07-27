@@ -92,7 +92,7 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 110000
 
-#include "tnumber_spgist.h"
+#include "general/tnumber_spgist.h"
 
 #include <access/spgist.h>
 #include <utils/timestamp.h>
@@ -102,10 +102,10 @@
 #include <utils/float.h>
 #endif
 
-#include "temporal_util.h"
-#include "tempcache.h"
-#include "temporal_boxops.h"
-#include "tnumber_gist.h"
+#include "general/temporal_util.h"
+#include "general/tempcache.h"
+#include "general/temporal_boxops.h"
+#include "general/tnumber_gist.h"
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 /* To avoid including "access/spgist_private.h" since it conflicts with the

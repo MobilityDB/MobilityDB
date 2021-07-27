@@ -29,20 +29,20 @@
  * Functions for temporal bounding boxes.
  */
 
-#include "tbox.h"
+#include "general/tbox.h"
 
 #include <assert.h>
 #include <utils/builtins.h>
 
-#include "tempcache.h"
-#include "timestampset.h"
-#include "period.h"
-#include "periodset.h"
-#include "rangetypes_ext.h"
-#include "temporal.h"
-#include "temporal_parser.h"
-#include "temporal_util.h"
-#include "tnumber_mathfuncs.h"
+#include "general/tempcache.h"
+#include "general/timestampset.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/rangetypes_ext.h"
+#include "general/temporal.h"
+#include "general/temporal_parser.h"
+#include "general/temporal_util.h"
+#include "general/tnumber_mathfuncs.h"
 
 /** Buffer size for input and output of TBOX values */
 #define MAXTBOXLEN    128

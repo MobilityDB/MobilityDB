@@ -38,8 +38,8 @@
 #include <catalog/pg_type.h>
 #include <liblwgeom.h>
 
-#include "temporal.h"
-#include "temporal_util.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
 #include "stbox.h"
 
 /*****************************************************************************/

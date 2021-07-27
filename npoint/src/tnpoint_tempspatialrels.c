@@ -39,10 +39,10 @@
 
 #include <liblwgeom.h>
 
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "lifting.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/lifting.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_spatialrels.h"
 #include "tpoint_tempspatialrels.h"

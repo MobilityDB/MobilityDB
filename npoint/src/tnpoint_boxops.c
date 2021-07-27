@@ -40,8 +40,8 @@
 
 #include <utils/timestamp.h>
 
-#include "temporaltypes.h"
-#include "temporal_util.h"
+#include "general/temporaltypes.h"
+#include "general/temporal_util.h"
 #include "stbox.h"
 #include "tpoint_boxops.h"
 #include "tpoint_spatialfuncs.h"

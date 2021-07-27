@@ -35,12 +35,12 @@
 
 #include <assert.h>
 
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "doublen.h"
-#include "skiplist.h"
-#include "temporal_aggfuncs.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/doublen.h"
+#include "general/skiplist.h"
+#include "general/temporal_aggfuncs.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"
 

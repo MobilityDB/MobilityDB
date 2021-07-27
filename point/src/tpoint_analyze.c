@@ -57,12 +57,12 @@
 #include <executor/spi.h>
 #include <utils/lsyscache.h>
 
-#include "period.h"
-#include "time_analyze.h"
-#include "temporal.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "temporal_analyze.h"
+#include "general/period.h"
+#include "general/time_analyze.h"
+#include "general/temporal.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/temporal_analyze.h"
 #include "postgis.h"
 #include "tpoint.h"
 #include "tpoint_spatialfuncs.h"

@@ -29,7 +29,7 @@
  * Basic functions for temporal types of any subtype.
  */
 
-#include "temporal.h"
+#include "general/temporal.h"
 
 #include <assert.h>
 #include <access/heapam.h>
@@ -48,14 +48,14 @@
 #include <utils/rel.h>
 #include <utils/timestamp.h>
 
-#include "period.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
-#include "temporal_boxops.h"
-#include "temporal_parser.h"
-#include "rangetypes_ext.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
+#include "general/temporal_boxops.h"
+#include "general/temporal_parser.h"
+#include "general/rangetypes_ext.h"
 
 #include "tpoint_spatialfuncs.h"
 #include "tnpoint_static.h"

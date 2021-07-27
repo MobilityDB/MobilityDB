@@ -34,12 +34,12 @@
 #include <assert.h>
 #include <liblwgeom.h>
 
-#include "period.h"
-#include "periodset.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "tnumber_mathfuncs.h"
+#include "general/period.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/tnumber_mathfuncs.h"
 
 #include "postgis.h"
 #include "stbox.h"

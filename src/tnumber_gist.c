@@ -31,7 +31,7 @@
  * These functions are based on those in the file `gistproc.c`.
  */
 
-#include "tnumber_gist.h"
+#include "general/tnumber_gist.h"
 
 #include <assert.h>
 #include <float.h>
@@ -43,15 +43,15 @@
 #include <utils/float.h>
 #endif
 
-#include "rangetypes_ext.h"
-#include "period.h"
-#include "timeops.h"
-#include "time_gist.h"
-#include "temporal_util.h"
-#include "tempcache.h"
-#include "temporal_boxops.h"
-#include "temporal_posops.h"
-#include "tnumber_distance.h"
+#include "general/rangetypes_ext.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/time_gist.h"
+#include "general/temporal_util.h"
+#include "general/tempcache.h"
+#include "general/temporal_boxops.h"
+#include "general/temporal_posops.h"
+#include "general/tnumber_distance.h"
 
 /*****************************************************************************
  * GiST consistent methods

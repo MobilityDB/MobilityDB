@@ -32,7 +32,7 @@
 #ifndef __TNPOINT_PARSER_H__
 #define __TNPOINT_PARSER_H__
 
-#include "temporal.h"
+#include "general/temporal.h"
 #include "tnpoint.h"
 
 /*****************************************************************************/

@@ -34,11 +34,11 @@
 #include <assert.h>
 #include <utils/builtins.h>
 
-#include "period.h"
-#include "timestampset.h"
-#include "periodset.h"
-#include "temporal_util.h"
-#include "tnumber_mathfuncs.h"
+#include "general/period.h"
+#include "general/timestampset.h"
+#include "general/periodset.h"
+#include "general/temporal_util.h"
+#include "general/tnumber_mathfuncs.h"
 #include "tpoint.h"
 #include "tpoint_parser.h"
 #include "tpoint_spatialfuncs.h"

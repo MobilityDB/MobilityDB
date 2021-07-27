@@ -41,9 +41,9 @@
 #include <utils/float.h>
 #endif
 
-#include "period.h"
-#include "timeops.h"
-#include "temporaltypes.h"
+#include "general/period.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
 #include "postgis.h"
 #include "geography_funcs.h"
 #include "tpoint.h"

@@ -34,11 +34,11 @@
 #include <assert.h>
 #include <float.h>
 
-#include "periodset.h"
-#include "timeops.h"
-#include "temporaltypes.h"
-#include "tempcache.h"
-#include "temporal_util.h"
+#include "general/periodset.h"
+#include "general/timeops.h"
+#include "general/temporaltypes.h"
+#include "general/tempcache.h"
+#include "general/temporal_util.h"
 #include "tpoint_spatialfuncs.h"
 #include "tpoint_distance.h"
 #include "tpoint_boxops.h"
