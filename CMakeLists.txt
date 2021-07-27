@@ -13,6 +13,7 @@ string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 
+#[[
 set(SRCS
 src/geo_constructors.c
 src/doublen.c
@@ -55,10 +56,19 @@ src/tnumber_selfuncs.c
 src/tnumber_spgist.c
 src/ttext_textfuncs.c
 )
+]]
 include(CTest)
 enable_testing()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include(CheckCCompilerFlag)
+if(NOT WIN32)
+    CHECK_C_COMPILER_FLAG("-fPIC" C_COMPILER_SUPPORTS_FPIC)
+    if(C_COMPILER_SUPPORTS_FPIC)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ")
+    endif()
+endif()
 
 #-------------------------------------
 # Verify PostgreSQL Version
@@ -123,7 +133,11 @@ add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 # Belongs to MobilityDB
 # Must go before target_link_libraries
 
-add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS})
+include_directories("include")
+add_subdirectory("src/general")
+set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
+add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS} ${PROJECT_OBJECTS})
+
 
 #--------------------------------
 
@@ -151,7 +165,6 @@ endif()
 #--------------------------------
 # Belongs to MobilityDB
 
-include_directories("include")
 include("point/point.cmake")
 include("npoint/npoint.cmake")
 
