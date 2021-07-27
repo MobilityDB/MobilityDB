@@ -94,6 +94,14 @@ jobs:
           cd build
           make test
 
+      - name: Coverage
+        with:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        if: matrix.coverage == '1'
+        run: |
+          cd build
+          coveralls --include src --include point --include npoint --gcov-options '\-lp' -r .. -b .
+
       # - name: Generate coverage
         # if: matrix.coverage == '1'
         # run: |
@@ -106,13 +114,5 @@ jobs:
         # with:
           # github-token: ${{ secrets.GITHUB_TOKEN }}
           # path-to-lcov: "./build/lcov.info"
-
-     - name: Coverage
-        with:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        if: matrix.coverage == '1'
-        run: |
-          cd build
-          coveralls --include src --include point --include npoint --gcov-options '\-lp' -r .. -b .
 
 
