@@ -29,17 +29,17 @@
  * Temporal distance for temporal network points.
  */
 
-#include "tnpoint_distance.h"
+#include "npoint/tnpoint_distance.h"
 
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
-#include "tnpoint_spatialfuncs.h"
-#include "tnpoint_tempspatialrels.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_tempspatialrels.h"
 
 /*****************************************************************************
  * Temporal distance

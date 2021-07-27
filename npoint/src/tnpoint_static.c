@@ -32,7 +32,7 @@
  * They are kept if needed in the future.
  */
 
-#include "tnpoint_static.h"
+#include "npoint/tnpoint_static.h"
 
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
@@ -48,8 +48,8 @@
 
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "tnpoint.h"
-#include "tnpoint_parser.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_parser.h"
 
 /** Buffer size for input and output of npoint values */
 #define MAXNPOINTLEN    128

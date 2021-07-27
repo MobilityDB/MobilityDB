@@ -58,8 +58,8 @@
 #include "general/rangetypes_ext.h"
 
 #include "point/tpoint_spatialfuncs.h"
-#include "tnpoint_static.h"
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*
  * This is required in a SINGLE file for builds against pgsql

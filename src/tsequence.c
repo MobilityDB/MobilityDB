@@ -54,7 +54,7 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Compute the intersection, if any, of a segment of a temporal sequence and

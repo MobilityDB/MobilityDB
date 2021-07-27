@@ -31,7 +31,7 @@
  *  These functions are only stubs, they need to be written TODO
  */
 
-#include "tnpoint_selfuncs.h"
+#include "npoint/tnpoint_selfuncs.h"
 
 /*
  *  Selectivity functions for temporal types operators.  These are bogus --

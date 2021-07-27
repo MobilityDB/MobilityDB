@@ -33,7 +33,7 @@
  * tcontains, tdisjoint, tintersects, ttouches, and tdwithin
  */
 
-#include "tnpoint_tempspatialrels.h"
+#include "npoint/tnpoint_tempspatialrels.h"
 
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
@@ -46,10 +46,10 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 #include "point/tpoint_tempspatialrels.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
-#include "tnpoint_spatialfuncs.h"
-#include "tnpoint_distance.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_distance.h"
 
 /*****************************************************************************
  * Generic functions

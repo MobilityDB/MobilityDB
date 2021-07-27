@@ -35,13 +35,13 @@
  * contains, disjoint, intersects, touches, and dwithin
  */
 
-#include "tnpoint_spatialrels.h"
+#include "npoint/tnpoint_spatialrels.h"
 
 #include "general/lifting.h"
 #include "point/tpoint_spatialrels.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic binary functions for tnpoint <rel> geo

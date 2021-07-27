@@ -31,7 +31,7 @@
  * The only function currently provided is temporal centroid.
  */
 
-#include "tnpoint_aggfuncs.h"
+#include "npoint/tnpoint_aggfuncs.h"
 
 #include <assert.h>
 
@@ -39,7 +39,7 @@
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_aggfuncs.h"
-#include "tnpoint.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

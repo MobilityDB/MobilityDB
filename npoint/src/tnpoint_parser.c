@@ -29,12 +29,12 @@
  * Functions for parsing static network types.
  */
 
-#include "tnpoint_parser.h"
+#include "npoint/tnpoint_parser.h"
 
 #include "general/temporaltypes.h"
 #include "general/temporal_parser.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 

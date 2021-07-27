@@ -40,7 +40,7 @@
  * arguments is a stbox.
  */
 
-#include "tnpoint_posops.h"
+#include "npoint/tnpoint_posops.h"
 
 #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
@@ -49,10 +49,10 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_posops.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
-#include "tnpoint_boxops.h"
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_boxops.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Generic box functions

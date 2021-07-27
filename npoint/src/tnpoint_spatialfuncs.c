@@ -29,7 +29,7 @@
  * Geospatial functions for temporal network points.
  */
 
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 #include <assert.h>
 #include <float.h>
@@ -42,10 +42,10 @@
 #include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_distance.h"
 #include "point/tpoint_boxops.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
-#include "tnpoint_distance.h"
-#include "tnpoint_tempspatialrels.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_distance.h"
+#include "npoint/tnpoint_tempspatialrels.h"
 
 /*****************************************************************************
  * Parameter tests

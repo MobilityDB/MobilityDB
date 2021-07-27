@@ -47,7 +47,7 @@
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
-#include "tnpoint_static.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************
  * Temporal/base types tests

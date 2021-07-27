@@ -29,7 +29,7 @@
  * Functions for gathering statistics from temporal network point columns
  */
 
-#include "tnpoint_analyze.h"
+#include "npoint/tnpoint_analyze.h"
 
 #include <commands/vacuum.h>
 
@@ -41,7 +41,7 @@
 #include "point/tpoint.h"
 #include "point/tpoint_selfuncs.h"
 #include "point/tpoint_analyze.h"
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************/
 

@@ -66,7 +66,7 @@
 #include "point/postgis.h"
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c

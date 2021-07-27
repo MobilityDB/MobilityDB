@@ -58,7 +58,7 @@
 #include "point/tpoint.h"
 #include "point/stbox.h"
 #include "point/tpoint_boxops.h"
-#include "tnpoint_boxops.h"
+#include "npoint/tnpoint_boxops.h"
 
 /*****************************************************************************
  * Functions on generic bounding boxes of temporal types

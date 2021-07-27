@@ -29,11 +29,11 @@
  * R-tree GiST and SP-GiST indexes for temporal network points.
  */
 
-#include "tnpoint_indexes.h"
+#include "npoint/tnpoint_indexes.h"
 
 #include <access/gist.h>
 #include "point/tpoint.h"
-#include "tnpoint.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************
  * GiST compress function

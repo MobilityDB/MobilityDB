@@ -29,7 +29,7 @@
  * Basic functions for temporal network points.
  */
 
-#include "tnpoint.h"
+#include "npoint/tnpoint.h"
 
 #include <assert.h>
 
@@ -40,8 +40,8 @@
 #include "general/lifting.h"
 
 #include "point/tpoint_spatialfuncs.h"
-#include "tnpoint_static.h"
-#include "tnpoint_parser.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_parser.h"
 
 /*****************************************************************************
  * Input/output functions

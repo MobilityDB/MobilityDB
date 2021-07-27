@@ -36,7 +36,7 @@
  * the space and the time dimensions.
  */
 
-#include "tnpoint_boxops.h"
+#include "npoint/tnpoint_boxops.h"
 
 #include <utils/timestamp.h>
 
@@ -45,9 +45,9 @@
 #include "point/stbox.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
-#include "tnpoint.h"
-#include "tnpoint_static.h"
-#include "tnpoint_spatialfuncs.h"
+#include "npoint/tnpoint.h"
+#include "npoint/tnpoint_static.h"
+#include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
  * Transform a temporal npoint to a STBOX
