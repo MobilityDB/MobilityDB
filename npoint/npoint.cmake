@@ -1,7 +1,5 @@
 add_definitions(-DWITH_POSTGIS)
 
-include_directories("npoint/include")
-
 set(SRCNPOINT
 npoint/src/tnpoint.c
 npoint/src/tnpoint_aggfuncs.c

@@ -88,9 +88,6 @@ endif()
 #--------------------------------
 
 
-include_directories("include")
-#--------------------------------
-
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
 	if (WITH_COVERAGE)
@@ -111,7 +108,6 @@ set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSIO
 add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/${CONTROLOUT})
 
-add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS})
 
 if (APPLE)
 	SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
@@ -121,6 +117,15 @@ endif ()
 find_package(POSTGIS 2.5 EXACT REQUIRED)
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
+
+
+#--------------------------------
+# Belongs to MobilityDB
+# Must go before target_link_libraries
+
+add_library(${CMAKE_PROJECT_NAME} MODULE ${SRCS})
+
+#--------------------------------
 
 find_package(JSON-C REQUIRED)
 include_directories(${JSON-C_INCLUDE_DIRS})
@@ -138,18 +143,24 @@ find_package(GSL REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} ${GSL_LIBRARY})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${GSL_CLBAS_LIBRARY})
 
-
-add_subdirectory(test)
-include("point/point.cmake")
-include("npoint/npoint.cmake")
-
-
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
 	add_definitions(-D NO_FFSL)
 endif()
 
+#--------------------------------
+# Belongs to MobilityDB
+
+include_directories("include")
+include("point/point.cmake")
+include("npoint/npoint.cmake")
+
+
+add_subdirectory(test)
+
+
 add_subdirectory(sql)
+
 add_custom_command(
 	OUTPUT ${CONTROLOUT}
 	COMMAND cat ${CONTROLIN} | sed -e's/LIBNAME/${CMAKE_PROJECT_NAME}/' -e's/VERSION/${MOBILITYDB_VERSION}/'  > ${CMAKE_BINARY_DIR}/${CONTROLOUT}

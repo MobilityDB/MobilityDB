@@ -1,7 +1,5 @@
 add_definitions(-DWITH_POSTGIS)
 
-include_directories("point/include")
-
 set(SRCPOINT
 point/src/stbox.c
 point/src/tpoint_aggfuncs.c
