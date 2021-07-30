@@ -88,9 +88,6 @@ endif ()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
 
-if (APPLE)
-	SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
-endif ()
 
 #--------------------------------
 # Belongs to MobilityDB
@@ -102,6 +99,15 @@ set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
+
+if(APPLE)
+  set_target_properties(${MOBILITYDB_LIB_NAME}
+    PROPERTIES
+    LINK_FLAGS "-Wl ,-undefined,dynamic_lookup -bundle_loader ${POSTGRESQL_EXECUTABLE} -bundle")
+endif()
+if(WIN32 AND MSVC)
+  set_target_properties(${PROJECT_LIB_NAME} PROPERTIES PREFIX "lib")
+endif()
 
 #--------------------------------
 # other requirements
