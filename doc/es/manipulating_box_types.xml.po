@@ -1,0 +1,2520 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.kde.org\n"
+"POT-Creation-Date: 2021-07-29 09:35+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <kde-i18n-doc@kde.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Tag: title
+#: manipulating_box_types.xml:12
+#, no-c-format
+msgid "Manipulating Bounding Box Types"
+msgstr "Manipulación de tipos cuadro delimitador"
+
+#. Tag: para
+#: manipulating_box_types.xml:13
+#, no-c-format
+msgid ""
+"We present next the functions and operators for bounding box types. These "
+"functions and operators are polimorhic, that is, their argumentos can be of "
+"various types and their result type may depend on the type of the arguments. "
+"To express this in the signature of the operators, we use the following "
+"notation:"
+msgstr ""
+"A continuación presentamos las funciones y operadores para tipos cuadro "
+"delimitador. Estas funciones y operadores son polimórficos, es decir, sus "
+"argumentos pueden ser de varios tipos y el tipo del resultado puede depender "
+"del tipo de los argumentos. Para expresar esto, usamos la siguiente notación:"
+
+#. Tag: para
+#: manipulating_box_types.xml:17
+#, no-c-format
+msgid ""
+"<varname>box</varname> represents any bounding box type, that is, "
+"<varname>tbox</varname> or <varname>stbox</varname>."
+msgstr ""
+"<varname>box</varname> representa cualquier tipos cuadro delimitador, es "
+"decir <varname>tbox</varname> o <varname>stbox</varname>."
+
+#. Tag: para
+#: manipulating_box_types.xml:20
+#, no-c-format
+msgid ""
+"In the following, we specify with the symbol &Z_support; that the function "
+"supports 3D points and with the symbol &geography_support; that the function "
+"is available for geographies."
+msgstr ""
+"A continuación, especificamos con el símbolo &Z_support; que la función "
+"admite puntos 3D y con el símbolo &geography_support; que la función está "
+"disponible para geografías."
+
+#. Tag: title
+#: manipulating_box_types.xml:23
+#, no-c-format
+msgid "Input/Output of Bounding Box Types"
+msgstr "Entrada/salida de tipos cuadro delimitador"
+
+#. Tag: para
+#: manipulating_box_types.xml:24
+#, no-c-format
+msgid ""
+"A <varname>tbox</varname> is composed of a numeric value and/or time "
+"dimensions. For each dimension, minimum and maximum values are given. "
+"Examples of input of <varname>tbox</varname> values are as follows:"
+msgstr ""
+"Un <varname>tbox</varname> se compone de dimensiones de valor numérico y/o "
+"de tiempo. Para cada dimensión, se dan los valores mínimos y máximos. "
+"Ejemplos de entrada de valores <varname>tbox</varname> son los siguientes:"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:25
+#, no-c-format
+msgid ""
+"-- Both value and time dimensions\n"
+"SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))';\n"
+"-- Only value dimension\n"
+"SELECT tbox 'TBOX((1.0,), (2.0,))';\n"
+"-- Only time dimension\n"
+"SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';"
+msgstr ""
+"-- Dimensiones de valor y tiempo\n"
+"SELECT tbox 'TBOX((1.0, 2000-01-01), (2.0, 2000-01-02))';\n"
+"-- Sólo dimensión de valor\n"
+"SELECT tbox 'TBOX((1.0,), (2.0,))';\n"
+"-- Sólo dimensión de tiempo\n"
+"SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))';"
+
+#. Tag: para
+#: manipulating_box_types.xml:28
+#, no-c-format
+msgid ""
+"An <varname>stbox</varname> is composed of a spatial value and/or time "
+"dimensions, where the coordinates of the spatial value dimension may be 2D "
+"or 3D. For each dimension, minimum and maximum values are given. The "
+"coordinates may be Cartesian (planar) or geodetic (spherical). The SRID of "
+"the coordinates may be specified; if it is not the case, a value of 0 "
+"(unknown) and 4326 (corresponding to WGS84) is assumed, respectively, for "
+"planar and geodetic boxes. Examples of input of <varname>stbox</varname> "
+"values are as follows:"
+msgstr ""
+"Un <varname>stbox</varname> se compone de dimensiones de valor espacial y/o "
+"de tiempo, donde las coordenadas de la dimensión de valor espacial pueden "
+"ser 2D o 3D. Para cada dimensión, se dan los valores mínimos y máximos. Las "
+"coordenadas pueden ser cartesianas (planas) o geodésicas (esféricas). Se "
+"puede especificar el SRID de las coordenadas; si no es el caso, se asume un "
+"valor de 0 (desconocido) y 4326 (correspondiente a WGS84), respectivamente, "
+"para coordenadas planas y geodésicas. Ejemplos de entrada de valores "
+"<varname>stbox</varname> son los siguientes:"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:29
+#, no-c-format
+msgid ""
+"-- Only value dimension with X and Y coordinates\n"
+"SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';\n"
+"-- Only value dimension with X, Y, and Z coordinates\n"
+"SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';\n"
+"-- Both value (with X and Y coordinates) and time dimensions\n"
+"SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';\n"
+"-- Both value (with X, Y, and Z coordinates) and time dimensions\n"
+"SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, "
+"2001-01-04))';\n"
+"-- Only time dimension\n"
+"SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';\n"
+"-- Only value dimension with X, Y, and Z geodetic coordinates\n"
+"SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';\n"
+"-- Both value (with X, Y and Z geodetic coordinates) and time dimension\n"
+"SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, "
+"2001-01-04))';\n"
+"-- Only time dimension for geodetic box\n"
+"SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';\n"
+"-- SRID is given\n"
+"SELECT stbox 'SRID=5676;STBOX T((1.0, 2.0, 2001-01-04), (1.0, 2.0, "
+"2001-01-04))';\n"
+"SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';"
+msgstr ""
+"-- Sólo dimensión de valor con coordenadas X e Y\n"
+"SELECT stbox 'STBOX((1.0, 2.0), (1.0, 2.0))';\n"
+"-- Sólo dimensión de valor con coordenadas X, Y y Z\n"
+"SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';\n"
+"-- Dimensiones de valor (con coordenadas X e Y) y de tiempo\n"
+"SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-03), (1.0, 2.0, 2001-01-03))';\n"
+"-- Dimensiones de valor (con coordenadas X, Y y Z) y de tiempo\n"
+"SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, "
+"2001-01-04))';\n"
+"-- Sólo dimensión de tiempo\n"
+"SELECT stbox 'STBOX T(( , , 2001-01-03), ( , , 2001-01-03))';\n"
+"-- Sólo dimensión de valores con coordenadas geodéticas X, Y y Z\n"
+"SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';\n"
+"-- Dimensiones de valor (con coordenadas geodéticas X, Y y Z) y de tiempo\n"
+"SELECT stbox 'GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-04), (1.0, 2.0, 3.0, "
+"2001-01-04))';\n"
+"-- Sólo dimensión temporal para cuadro geodético\n"
+"SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';\n"
+"-- Se indica el SRID\n"
+"SELECT stbox 'SRID=5676;STBOX T((1.0, 2.0, 2001-01-04), (1.0, 2.0, "
+"2001-01-04))';\n"
+"SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';"
+
+#. Tag: title
+#: manipulating_box_types.xml:34
+#, no-c-format
+msgid "Constructor Functions"
+msgstr "Funciones de constructor"
+
+#. Tag: para
+#: manipulating_box_types.xml:36
+#, no-c-format
+msgid ""
+"Type <varname>tbox</varname> has several constructor functions depending on "
+"whether the value and/or the time dimensions are given. These functions have "
+"two arguments for the minimum and maximum <varname>float</varname> values "
+"and/or two arguments for the minimum and maximum <varname>timestamptz</"
+"varname> values."
+msgstr ""
+"El tipo <varname>tbox</varname> tiene varias funciones constructoras "
+"dependiendo de si se dan las dimensiones de valor y/o de tiempo. Estas "
+"funciones tienen dos argumentos para los valores mínimo y máximo de tipo "
+"<varname>float</varname> y/o dos argumentos para los valores mínimo y máximo "
+"de tipo <varname>timestamptz</varname> ."
+
+#. Tag: varname
+#: manipulating_box_types.xml:42
+#, no-c-format
+msgid "tbox"
+msgstr "tbox"
+
+#. Tag: para
+#: manipulating_box_types.xml:43
+#, no-c-format
+msgid "Constructor for <varname>tbox</varname>"
+msgstr "Constructor para <varname>tbox</varname>"
+
+#. Tag: varname
+#: manipulating_box_types.xml:44
+#, no-c-format
+msgid "tbox(float,float): tbox"
+msgstr "tbox(float,float): tbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:45
+#, no-c-format
+msgid "tboxt(timestamptz,timestamptz): tbox"
+msgstr "tboxt(timestamptz,timestamptz): tbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:46
+#, no-c-format
+msgid "tbox(float,timestamptz,float,timestamptz): tbox"
+msgstr "tbox(float,timestamptz,float,timestamptz): tbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:47
+#, no-c-format
+msgid ""
+"-- Both value and time dimensions\n"
+"SELECT tbox(1.0, '2001-01-01', 2.0, '2001-01-02');\n"
+"-- Only value dimension\n"
+"SELECT tbox(1.0, 2.0);\n"
+"-- Only time dimension\n"
+"SELECT tboxt('2001-01-01', '2001-01-02');"
+msgstr ""
+"-- Dimensiones de valores y de tiempo\n"
+"SELECT tbox(1.0, '2001-01-01', 2.0, '2001-01-02');\n"
+"-- Sólo dimensión de valores\n"
+"SELECT tbox(1.0, 2.0);\n"
+"-- Sólo dimensión de tiempo\n"
+"SELECT tboxt('2001-01-01', '2001-01-02');"
+
+#. Tag: para
+#: manipulating_box_types.xml:51
+#, no-c-format
+msgid ""
+"Type <varname>stbox</varname> has several constructor functions depending on "
+"whether the coordinates and/or the time dimensions are given. Furthermore, "
+"the coordinates can be 2D or 3D and can be either Cartesian or geodetic. "
+"These functions have several arguments for the minimum and maximum "
+"coordinate values and/or two arguments for the minimum and maximum "
+"<varname>timestamptz</varname> values. The SRID can be specified in an "
+"optional last argument. If not given, a value 0 (respectively 4326) is "
+"assumed by default for planar (respectively geodetic) boxes."
+msgstr ""
+"El tipo <varname>stbox</varname> tiene varias funciones constructoras "
+"dependiendo de si se dan las dimensiones de coordenadas y/o de tiempo. "
+"Además, las coordenadas pueden ser 2D o 3D y pueden ser cartesianas o "
+"geodésicas. Estas funciones tienen varios argumentos para los valores de "
+"coordenadas mínimo y máximo y/o dos argumentos para el valor mínimo y el "
+"máximo de <varname>timestamptz</varname>. El SRID se puede especificar en un "
+"último argumento opcional. Si no se da, se asume un valor 0 (respectivamente "
+"4326) por defecto para coordenadas planas (respectivamente geodésicas)."
+
+#. Tag: varname
+#: manipulating_box_types.xml:57
+#, no-c-format
+msgid "stbox"
+msgstr "stbox"
+
+#. Tag: para
+#: manipulating_box_types.xml:58
+#, no-c-format
+msgid "Constructor for <varname>stbox</varname>"
+msgstr "Constructor para <varname>stbox</varname>"
+
+#. Tag: varname
+#: manipulating_box_types.xml:59
+#, no-c-format
+msgid "stbox(float,float,float,float,integer): stbox"
+msgstr "stbox(float,float,float,float,integer): stbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:60
+#, no-c-format
+msgid "stbox(float,float,float,float,float,float,integer): stbox"
+msgstr "stbox(float,float,float,float,float,float,integer): stbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:61
+#, no-c-format
+msgid ""
+"stbox(float,float,float,timestamptz,float,float,float,timestamptz,integer): "
+"stbox"
+msgstr ""
+"stbox(float,float,float,timestamptz,float,float,float,timestamptz,integer): "
+"stbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:62
+#, no-c-format
+msgid "stboxt(timestamptz,timestamptz,integer): stbox"
+msgstr "stboxt(timestamptz,timestamptz,integer): stbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:63
+#, no-c-format
+msgid "stbox(float,float,timestamptz,float,float,timestamptz,integer): stbox"
+msgstr "stbox(float,float,timestamptz,float,float,timestamptz,integer): stbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:64
+#, no-c-format
+msgid "stbox(geo,{timestamp,period}): stbox"
+msgstr "stbox(geo, {timestamp,period}): stbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:65
+#, no-c-format
+msgid ""
+"-- Only value dimension with X and Y coordinates\n"
+"SELECT stbox(1.0, 2.0, 1.0, 2.0);\n"
+"-- Only value dimension with X, Y, and Z coordinates\n"
+"SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);\n"
+"-- Only value dimension with X, Y, and Z coordinates and SRID\n"
+"SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);\n"
+"-- Both value (with X and Y coordinates) and time dimensions\n"
+"SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');\n"
+"-- Both value (with X, Y, and Z coordinates) and time dimensions\n"
+"SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');\n"
+"-- Only time dimension\n"
+"SELECT stboxt('2001-01-03', '2001-01-03');\n"
+"-- Only value dimension with X, Y, and Z geodetic coordinates\n"
+"SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);\n"
+"--  Both value (with X, Y, and Z geodetic coordinates) and time dimensions\n"
+"SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');\n"
+"-- Only time dimension for geodetic box\n"
+"SELECT geodstboxt('2001-01-03', '2001-01-03');\n"
+"SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, "
+"2012-01-05]');\n"
+"-- \"STBOX ZT((1,1,1,2012-01-03),(2,2,2,2012-01-05))\"\n"
+"SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, "
+"2012-01-05]');\n"
+"-- \"GEODSTBOX T((0.99878198,0.017449748,0.017452406,2012-01-03),\n"
+"(0.99969542,0.034878239,0.034899499,2012-01-05))\""
+msgstr ""
+"-- Sólo dimensión de valores con coordenadas X e Y\n"
+"SELECT stbox(1.0, 2.0, 1.0, 2.0);\n"
+"-- Sólo dimensión de valores con coordenadas X, Y y Z\n"
+"SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);\n"
+"-- Sólo dimensión de valores con coordenadas X, Y y Z con SRID\n"
+"SELECT stbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);\n"
+"-- Dimensiones de valor (con coordenadas X e Y) y de tiempo\n"
+"SELECT stboxt(1.0, 2.0, '2001-01-03', 1.0, 2.0, '2001-01-03');\n"
+"-- Dimensiones de valor (con coordenadas X, Y y Z) y de tiempo\n"
+"SELECT stbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-04');\n"
+"-- Sólo dimensión de tiempo\n"
+"SELECT stboxt('2001-01-03', '2001-01-03');\n"
+"-- Sólo dimensión de valores con coordenadas geodéticas X, Y y Z\n"
+"SELECT geodstbox(1.0, 2.0, 3.0, 1.0, 2.0, 3.0);\n"
+"-- Dimensiones de valor (con coordenadas geodéticas X, Y y Z) y de tiempo\n"
+"SELECT geodstbox(1.0, 2.0, 3.0, '2001-01-04', 1.0, 2.0, 3.0, '2001-01-03');\n"
+"-- Sólo dimensión de tiempo para cuadro geodético\n"
+"SELECT geodstboxt('2001-01-03', '2001-01-03');\n"
+"SELECT stbox(geometry 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, "
+"2012-01-05]');\n"
+"-- \"STBOX ZT((1,1,1,2012-01-03),(2,2,2,2012-01-05))\"\n"
+"SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', period '[2012-01-03, "
+"2012-01-05]');\n"
+"-- \"GEODSTBOX T((0.99878198,0.017449748,0.017452406,2012-01-03),\n"
+"(0.99969542,0.034878239,0.034899499,2012-01-05))\""
+
+#. Tag: title
+#: manipulating_box_types.xml:71
+#, no-c-format
+msgid "Casting"
+msgstr "Conversiones de tipo"
+
+#. Tag: varname
+#: manipulating_box_types.xml:75 manipulating_box_types.xml:82
+#: manipulating_box_types.xml:90 manipulating_box_types.xml:97
+#, no-c-format
+msgid "<varname>::</varname>"
+msgstr "<varname>::</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:76
+#, no-c-format
+msgid "Cast a <varname>tbox</varname> to another type"
+msgstr "Convertir un <varname>tbox</varname> a otro tipo"
+
+#. Tag: varname
+#: manipulating_box_types.xml:77
+#, no-c-format
+msgid "tbox::{floatrange,period}"
+msgstr "tbox::{floatrange,period}"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:78
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::floatrange;\n"
+"-- \"[1,2]\"\n"
+"SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::period;\n"
+"-- \"[2000-01-01, 2000-01-02]\""
+msgstr ""
+"SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::floatrange;\n"
+"-- \"[1,2]\"\n"
+"SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))'::period;\n"
+"-- \"[2000-01-01, 2000-01-02]\""
+
+#. Tag: para
+#: manipulating_box_types.xml:83
+#, no-c-format
+msgid "Cast another type to a <varname>tbox</varname>"
+msgstr "Convertir otro tipo a un <varname>tbox</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:84
+#, no-c-format
+msgid "<varname>{integer,float,numeric,intrange,floatrange}::tbox</varname>,"
+msgstr "<varname>{integer,float,numeric,intrange,floatrange}::tbox</varname>,"
+
+#. Tag: varname
+#: manipulating_box_types.xml:85
+#, no-c-format
+msgid "{timestamptz,timestampset,period,periodset,tint,tfloat}::tbox"
+msgstr "{timestamptz,timestampset,period,periodset,tint,tfloat}::tbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:86
+#, no-c-format
+msgid ""
+"SELECT floatrange '(1.0, 2.0)'::tbox;\n"
+"-- \"TBOX((1,),(2,))\"\n"
+"SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::"
+"tbox;\n"
+"-- \"TBOX((,2001-01-01),(,2001-01-04))\""
+msgstr ""
+"SELECT floatrange '(1.0, 2.0)'::tbox;\n"
+"-- \"TBOX((1,),(2,))\"\n"
+"SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::"
+"tbox;\n"
+"-- \"TBOX((,2001-01-01),(,2001-01-04))\""
+
+#. Tag: para
+#: manipulating_box_types.xml:91
+#, no-c-format
+msgid "Cast an <varname>stbox</varname> to a another type"
+msgstr "Convertir un <varname>stbox</varname> a otro tipo"
+
+#. Tag: varname
+#: manipulating_box_types.xml:92
+#, no-c-format
+msgid "stbox::{period,box2d,box3d}"
+msgstr "stbox::{period,box2d,box3d}"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:93
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-03))'::"
+"period;\n"
+"-- \"[2000-01-01, 2000-01-03]\"\n"
+"SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box2d;\n"
+"-- \"BOX(1 1,3 3)\"\n"
+"SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;\n"
+"-- \"BOX3D(1 1 1,3 3 3)\""
+msgstr ""
+"SELECT stbox 'STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-03))'::"
+"period;\n"
+"-- \"[2000-01-01, 2000-01-03]\"\n"
+"SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box2d;\n"
+"-- \"BOX(1 1,3 3)\"\n"
+"SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;\n"
+"-- \"BOX3D(1 1 1,3 3 3)\""
+
+#. Tag: para
+#: manipulating_box_types.xml:98
+#, no-c-format
+msgid "Cast another type to an <varname>stbox</varname>"
+msgstr "Convertir otro tipo a un <varname>stbox</varname>"
+
+#. Tag: varname
+#: manipulating_box_types.xml:99
+#, no-c-format
+msgid "{geometry,geography,box2d,box3d}::stbox"
+msgstr "{geometry,geography,box2d,box3d}::stbox"
+
+#. Tag: varname
+#: manipulating_box_types.xml:100
+#, no-c-format
+msgid ""
+"{timestamptz,timestampset,period,periodset,tgeompoint,tgeogpoint}::stbox"
+msgstr ""
+"{timestamptz,timestampset,period,periodset,tgeompoint,tgeogpoint}::stbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:101
+#, no-c-format
+msgid ""
+"SELECT geometry 'Linestring(1 1,2 2)'::stbox;\n"
+"-- \"STBOX((1,1),(2,2))\"\n"
+"SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::"
+"stbox;\n"
+"-- \"STBOX T((,,2001-01-01),(,,2001-01-04))\""
+msgstr ""
+"SELECT geometry 'Linestring(1 1,2 2)'::stbox;\n"
+"-- \"STBOX((1,1),(2,2))\"\n"
+"SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::"
+"stbox;\n"
+"-- \"STBOX T((,,2001-01-01),(,,2001-01-04))\""
+
+#. Tag: title
+#: manipulating_box_types.xml:107
+#, no-c-format
+msgid "Accessor Functions"
+msgstr "Funciones de accesor"
+
+#. Tag: varname
+#: manipulating_box_types.xml:111
+#, no-c-format
+msgid "hasX"
+msgstr "hasX"
+
+#. Tag: para
+#: manipulating_box_types.xml:112
+#, no-c-format
+msgid "Has X dimension?"
+msgstr "¿Tiene dimension X?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:113
+#, no-c-format
+msgid "hasX(box): boolean"
+msgstr "hasX(box): boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:114
+#, no-c-format
+msgid ""
+"SELECT hasX(tbox 'TBOX((, 2000-01-01), (, 2000-01-03))');\n"
+"-- false\n"
+"SELECT hasX(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- true"
+msgstr ""
+"SELECT hasX(tbox 'TBOX((, 2000-01-01), (, 2000-01-03))');\n"
+"-- false\n"
+"SELECT hasX(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:118
+#, no-c-format
+msgid "hasZ"
+msgstr "hasZ"
+
+#. Tag: para
+#: manipulating_box_types.xml:119
+#, no-c-format
+msgid "Has Z dimension?"
+msgstr "¿Tiene dimension Z?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:120
+#, no-c-format
+msgid "hasZ(stbox): boolean"
+msgstr "hasZ(stbox): boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:121
+#, no-c-format
+msgid ""
+"SELECT hasZ(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- false"
+msgstr ""
+"SELECT hasZ(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- false"
+
+#. Tag: varname
+#: manipulating_box_types.xml:125
+#, no-c-format
+msgid "hasT"
+msgstr "hasT"
+
+#. Tag: para
+#: manipulating_box_types.xml:126
+#, no-c-format
+msgid "Has T dimension?"
+msgstr "¿Tiene dimension T?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:127
+#, no-c-format
+msgid "hasT(box): boolean"
+msgstr "hasT(box): boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:128
+#, no-c-format
+msgid ""
+"SELECT hasT(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');\n"
+"-- true\n"
+"SELECT hasT(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- false"
+msgstr ""
+"SELECT hasT(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');\n"
+"-- true\n"
+"SELECT hasT(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- false"
+
+#. Tag: varname
+#: manipulating_box_types.xml:132
+#, no-c-format
+msgid "Xmin"
+msgstr "Xmin"
+
+#. Tag: para
+#: manipulating_box_types.xml:133
+#, no-c-format
+msgid "Get the minimum X value"
+msgstr "Obtener el valor mínimo de X"
+
+#. Tag: varname
+#: manipulating_box_types.xml:134
+#, no-c-format
+msgid "Xmin(box): float"
+msgstr "Xmin(box): float"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:135
+#, no-c-format
+msgid ""
+"SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');\n"
+"-- 1\n"
+"SELECT Xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 1"
+msgstr ""
+"SELECT Xmin(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');\n"
+"-- 1\n"
+"SELECT Xmin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 1"
+
+#. Tag: varname
+#: manipulating_box_types.xml:139
+#, no-c-format
+msgid "Xmax"
+msgstr "Xmax"
+
+#. Tag: para
+#: manipulating_box_types.xml:140
+#, no-c-format
+msgid "Get the maximum X value"
+msgstr "Obtener el valor máximo de X"
+
+#. Tag: varname
+#: manipulating_box_types.xml:141
+#, no-c-format
+msgid "Xmax(box): float"
+msgstr "Xmax(box): float"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:142
+#, no-c-format
+msgid ""
+"SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');\n"
+"-- 3\n"
+"SELECT Xmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 3"
+msgstr ""
+"SELECT Xmax(tbox 'TBOX((1.0, 2000-01-01), (3.0, 2000-01-03))');\n"
+"-- 3\n"
+"SELECT Xmax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 3"
+
+#. Tag: varname
+#: manipulating_box_types.xml:146
+#, no-c-format
+msgid "Ymin"
+msgstr "Ymin"
+
+#. Tag: para
+#: manipulating_box_types.xml:147
+#, no-c-format
+msgid "Get the minimum Y value"
+msgstr "Obtener el valor mínimo de Y"
+
+#. Tag: varname
+#: manipulating_box_types.xml:148
+#, no-c-format
+msgid "Ymin(stbox): float"
+msgstr "Ymin(stbox): float"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:149
+#, no-c-format
+msgid ""
+"SELECT Ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 2"
+msgstr ""
+"SELECT Ymin(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 2"
+
+#. Tag: varname
+#: manipulating_box_types.xml:153
+#, no-c-format
+msgid "Ymax"
+msgstr "Ymax"
+
+#. Tag: para
+#: manipulating_box_types.xml:154
+#, no-c-format
+msgid "Get the maximum Y value"
+msgstr "Obtener el valor máximo de Y"
+
+#. Tag: varname
+#: manipulating_box_types.xml:155
+#, no-c-format
+msgid "Ymax(stbox): float"
+msgstr "Ymax(stbox): float"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:156
+#, no-c-format
+msgid ""
+"SELECT Ymax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 4"
+msgstr ""
+"SELECT Ymax(stbox 'STBOX((1.0, 2.0), (3.0, 4.0))');\n"
+"-- 4"
+
+#. Tag: varname
+#: manipulating_box_types.xml:160
+#, no-c-format
+msgid "Zmin"
+msgstr "Zmin"
+
+#. Tag: para
+#: manipulating_box_types.xml:161
+#, no-c-format
+msgid "Get the minimum Z value"
+msgstr "Obtener el valor mínimo de Z"
+
+#. Tag: varname
+#: manipulating_box_types.xml:162
+#, no-c-format
+msgid "Zmin(stbox): float"
+msgstr "Zmin(stbox): float"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:163
+#, no-c-format
+msgid ""
+"SELECT Zmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');\n"
+"-- 3"
+msgstr ""
+"SELECT Zmin(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');\n"
+"-- 3"
+
+#. Tag: varname
+#: manipulating_box_types.xml:167
+#, no-c-format
+msgid "Zmax"
+msgstr "Zmax"
+
+#. Tag: para
+#: manipulating_box_types.xml:168
+#, no-c-format
+msgid "Get the maximum Z value"
+msgstr "Obtener el valor máximo de Z"
+
+#. Tag: varname
+#: manipulating_box_types.xml:169
+#, no-c-format
+msgid "Zmax(stbox): float"
+msgstr "Zmax(stbox): float"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:170
+#, no-c-format
+msgid ""
+"SELECT Zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');\n"
+"-- 6"
+msgstr ""
+"SELECT Zmax(stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))');\n"
+"-- 6"
+
+#. Tag: varname
+#: manipulating_box_types.xml:174
+#, no-c-format
+msgid "Tmin"
+msgstr "Tmin"
+
+#. Tag: para
+#: manipulating_box_types.xml:175
+#, no-c-format
+msgid "Get the minimum T value"
+msgstr "Obtener el valor mínimo de T"
+
+#. Tag: varname
+#: manipulating_box_types.xml:176
+#, no-c-format
+msgid "Tmin(box): timestamptz"
+msgstr "Tmin(box): timestamptz"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:177
+#, no-c-format
+msgid ""
+"SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');\n"
+"-- \"2001-01-01\""
+msgstr ""
+"SELECT Tmin(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');\n"
+"-- \"2001-01-01\""
+
+#. Tag: varname
+#: manipulating_box_types.xml:181
+#, no-c-format
+msgid "Tmax"
+msgstr "Tmax"
+
+#. Tag: para
+#: manipulating_box_types.xml:182
+#, no-c-format
+msgid "Get the maximum T value"
+msgstr "Obtener el valor máximo de T"
+
+#. Tag: varname
+#: manipulating_box_types.xml:183
+#, no-c-format
+msgid "Tmax(box): timestamptz"
+msgstr "Tmax(box): timestamptz"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:184
+#, no-c-format
+msgid ""
+"SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');\n"
+"-- \"2001-01-03\""
+msgstr ""
+"SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');\n"
+"-- \"2001-01-03\""
+
+#. Tag: title
+#: manipulating_box_types.xml:190
+#, no-c-format
+msgid "Modification Functions"
+msgstr "Funciones de modificación"
+
+#. Tag: para
+#: manipulating_box_types.xml:192
+#, no-c-format
+msgid ""
+"The functions given next expand the bounding boxes on the value and the time "
+"dimension or set the precision of the value dimension. These functions raise "
+"an error if the corresponding dimension is not present."
+msgstr ""
+"Las funciones dadas a continuación expanden los cuadros delimitadores en la "
+"dimensión de valor y de tiempo o establecen la precisión de la dimensión de "
+"valor. Estas funciones generan un error si la dimensión correspondiente no "
+"está presente."
+
+#. Tag: varname
+#: manipulating_box_types.xml:197
+#, no-c-format
+msgid "expandValue"
+msgstr "expandValue"
+
+#. Tag: para
+#: manipulating_box_types.xml:198
+#, no-c-format
+msgid "Expand the numeric value dimension of the bounding box by a float value"
+msgstr ""
+"Extender la dimensión de valor numérico del cuadro delimitador con un valor "
+"flotante"
+
+#. Tag: varname
+#: manipulating_box_types.xml:199
+#, no-c-format
+msgid "expandValue(tbox,float): tbox"
+msgstr "expandValue(tbox,float): tbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:200
+#, no-c-format
+msgid ""
+"SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);\n"
+"-- \"TBOX((0,2012-01-01),(3,2012-01-03))\"\n"
+"SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);\n"
+"-- The box must have value dimension"
+msgstr ""
+"SELECT expandValue(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', 1);\n"
+"-- \"TBOX((0,2012-01-01),(3,2012-01-03))\"\n"
+"SELECT expandValue(tbox 'TBOX((,2012-01-01),(,2012-01-03))', 1);\n"
+"-- The box must have value dimension"
+
+#. Tag: varname
+#: manipulating_box_types.xml:204
+#, no-c-format
+msgid "expandSpatial"
+msgstr "expandSpatial"
+
+#. Tag: para
+#: manipulating_box_types.xml:205
+#, no-c-format
+msgid "Expand the spatial value dimension of the bounding box by a float value"
+msgstr ""
+"Extender la dimensión de valor espacial del cuadro delimitador con un valor "
+"flotante"
+
+#. Tag: varname
+#: manipulating_box_types.xml:206
+#, no-c-format
+msgid "expandSpatial(stbox,float): stbox"
+msgstr "expandSpatial(stbox,float): stbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:207
+#, no-c-format
+msgid ""
+"SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),"
+"(2,2,2,2012-01-03))', 1);\n"
+"-- \"STBOX ZT((0,0,0,2012-01-01),(3,3,3,2012-01-03))\"\n"
+"SELECT expandSpatial(stbox 'STBOX T((,2012-01-01),(,2012-01-03))', 1);\n"
+"-- The box must have XY dimension"
+msgstr ""
+"SELECT expandSpatial(stbox 'STBOX ZT((1,1,1,2012-01-01),"
+"(2,2,2,2012-01-03))', 1);\n"
+"-- \"STBOX ZT((0,0,0,2012-01-01),(3,3,3,2012-01-03))\"\n"
+"SELECT expandSpatial(stbox 'STBOX T((,2012-01-01),(,2012-01-03))', 1);\n"
+"-- The box must have XY dimension"
+
+#. Tag: varname
+#: manipulating_box_types.xml:211
+#, no-c-format
+msgid "expandTemporal"
+msgstr "expandTemporal"
+
+#. Tag: para
+#: manipulating_box_types.xml:212
+#, no-c-format
+msgid "Expand the temporal dimension of the bounding box by a time interval"
+msgstr ""
+"Extender la dimensión temporal del cuadro delimitador con un intervalo de "
+"tiempo"
+
+#. Tag: varname
+#: manipulating_box_types.xml:213
+#, no-c-format
+msgid "expandTemporal(box,interval): box"
+msgstr "expandTemporal(box,interval): box"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:214
+#, no-c-format
+msgid ""
+"SELECT expandTemporal(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', interval "
+"'1 day');\n"
+"-- \"TBOX((1,2011-12-31),(2,2012-01-04))\"\n"
+"SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),"
+"(2,2,2,2012-01-03))',\n"
+"        interval '1 day');\n"
+"-- \"STBOX ZT((1,1,1,2011-12-31),(2,2,2,2012-01-04))\""
+msgstr ""
+"SELECT expandTemporal(tbox 'TBOX((1,2012-01-01),(2,2012-01-03))', interval "
+"'1 day');\n"
+"-- \"TBOX((1,2011-12-31),(2,2012-01-04))\"\n"
+"SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),"
+"(2,2,2,2012-01-03))',\n"
+"  interval '1 day');\n"
+"-- \"STBOX ZT((1,1,1,2011-12-31),(2,2,2,2012-01-04))\""
+
+#. Tag: varname
+#: manipulating_box_types.xml:218
+#, no-c-format
+msgid "setPrecision"
+msgstr "setPrecision"
+
+#. Tag: para
+#: manipulating_box_types.xml:219
+#, no-c-format
+msgid ""
+"Round the value or the coordinates of the bounding box to a number of "
+"decimal places"
+msgstr ""
+"Redondear el valor o las coordenadas del cuadro delimitador a un número de "
+"decimales"
+
+#. Tag: varname
+#: manipulating_box_types.xml:220
+#, no-c-format
+msgid "setPrecision(box,integer): box"
+msgstr "setPrecision(box,integer): box"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:221
+#, no-c-format
+msgid ""
+"SELECT setPrecision(tbox 'TBOX((1.12345, 2000-01-01), (2.12345, "
+"2000-01-02))', 2);\n"
+"-- \"TBOX((1.12,2000-01-01),(2.12,2000-01-02))\"\n"
+"SELECT setPrecision(stbox 'STBOX T((1.12345, 1.12345, 2000-01-01),\n"
+"        (2.12345, 2.12345, 2000-01-02))', 2);\n"
+"-- \"STBOX T((1.12,1.12,2000-01-01),(2.12,2.12,2000-01-02))\""
+msgstr ""
+"SELECT setPrecision(tbox 'TBOX((1.12345, 2000-01-01), (2.12345, "
+"2000-01-02))', 2);\n"
+"-- \"TBOX((1.12,2000-01-01),(2.12,2000-01-02))\"\n"
+"SELECT setPrecision(stbox 'STBOX T((1.12345, 1.12345, 2000-01-01),\n"
+"  (2.12345, 2.12345, 2000-01-02))', 2);\n"
+"-- \"STBOX T((1.12,1.12,2000-01-01),(2.12,2.12,2000-01-02))\""
+
+#. Tag: title
+#: manipulating_box_types.xml:228
+#, no-c-format
+msgid "Spatial Reference System Functions"
+msgstr "Funciones del sistema de referencia espacial"
+
+#. Tag: varname
+#: manipulating_box_types.xml:232
+#, no-c-format
+msgid "SRID"
+msgstr "SRID"
+
+#. Tag: para
+#: manipulating_box_types.xml:233
+#, no-c-format
+msgid "Get the spatial reference identifier &Z_support; &geography_support;"
+msgstr "Obtener el identificador de referencia espacial"
+
+#. Tag: varname
+#: manipulating_box_types.xml:234
+#, no-c-format
+msgid "SRID(stbox): integer"
+msgstr "SRID(stbox): integer"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:235
+#, no-c-format
+msgid ""
+"SELECT SRID(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, "
+"2000-01-02))');\n"
+"-- 0\n"
+"SELECT SRID(stbox 'SRID=5676;STBOX T((1.0, 2.0, 2000-01-01), (4.0, 5.0, "
+"2000-01-02))');\n"
+"-- 5676\n"
+"SELECT SRID(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');\n"
+"-- 4326"
+msgstr ""
+"SELECT SRID(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, "
+"2000-01-02))');\n"
+"-- 0\n"
+"SELECT SRID(stbox 'SRID=5676;STBOX T((1.0, 2.0, 2000-01-01), (4.0, 5.0, "
+"2000-01-02))');\n"
+"-- 5676\n"
+"SELECT SRID(geodstbox 'GEODSTBOX T((, , 2000-01-01), (, , 2000-01-02))');\n"
+"-- 4326"
+
+#. Tag: varname
+#: manipulating_box_types.xml:239
+#, no-c-format
+msgid "setSRID"
+msgstr "setSRID"
+
+#. Tag: para
+#: manipulating_box_types.xml:240
+#, no-c-format
+msgid "Set the spatial reference identifier &Z_support; &geography_support;"
+msgstr "Especificar el identificador de referencia espacial"
+
+#. Tag: varname
+#: manipulating_box_types.xml:241
+#, no-c-format
+msgid "setSRID(stbox): stbox"
+msgstr "setSRID(stbox): stbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:242
+#, no-c-format
+msgid ""
+"SELECT setSRID(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01),\n"
+"  (4.0, 5.0, 6.0, 2000-01-02))', 5676);\n"
+"-- \"SRID=5676;STBOX ZT((1,2,3,2000-01-01),(4,5,6,2000-01-02))\""
+msgstr ""
+"SELECT setSRID(stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01),\n"
+"  (4.0, 5.0, 6.0, 2000-01-02))', 5676);\n"
+"-- \"SRID=5676;STBOX ZT((1,2,3,2000-01-01),(4,5,6,2000-01-02))\""
+
+#. Tag: varname
+#: manipulating_box_types.xml:246
+#, no-c-format
+msgid "transform"
+msgstr "transform"
+
+#. Tag: para
+#: manipulating_box_types.xml:247
+#, no-c-format
+msgid "Transform to a different spatial reference"
+msgstr "Transformar a una referencia espacial diferente"
+
+#. Tag: varname
+#: manipulating_box_types.xml:248
+#, no-c-format
+msgid "transform(stbox,integer): stbox &Z_support; &geography_support;"
+msgstr "transform(stbox,integer): stbox"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:249
+#, no-c-format
+msgid ""
+"SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, "
+"2000-01-01),\n"
+"  (6.575317, 51.553167, 2000-01-02))', 3812);\n"
+"-- \"SRID=3812;STBOX T((502773.429980817,511805.120401577,2000-01-01),\n"
+"  (803028.908264815,751590.742628986,2000-01-02))\""
+msgstr ""
+"SELECT transform(stbox 'SRID=4326;STBOX T((2.340088, 49.400250, "
+"2000-01-01),\n"
+"  (6.575317, 51.553167, 2000-01-02))', 3812);\n"
+"-- \"SRID=3812;STBOX T((502773.429980817,511805.120401577,2000-01-01),\n"
+"  (803028.908264815,751590.742628986,2000-01-02))\""
+
+#. Tag: title
+#: manipulating_box_types.xml:255
+#, no-c-format
+msgid "Aggregate Functions"
+msgstr "Funciones aggregadas"
+
+#. Tag: varname
+#: manipulating_box_types.xml:259
+#, no-c-format
+msgid "extent"
+msgstr "extent"
+
+#. Tag: para
+#: manipulating_box_types.xml:260
+#, no-c-format
+msgid "Bounding box extent"
+msgstr "Extensión del cuadro delimitador"
+
+#. Tag: varname
+#: manipulating_box_types.xml:261
+#, no-c-format
+msgid "extent(box): box"
+msgstr "extent(box): box"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:262
+#, no-c-format
+msgid ""
+"WITH boxes(b) AS (\n"
+"  SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' UNION\n"
+"  SELECT tbox 'TBOX((5, 2000-01-05),(7, 2000-01-07))' UNION\n"
+"  SELECT tbox 'TBOX((6, 2000-01-06),(8, 2000-01-08))'\n"
+")\n"
+"SELECT extent(b) FROM boxes;\n"
+"-- TBOX((1,2000-01-01 00:00:00+01),(8,2000-01-08 00:00:00+01))\n"
+"WITH boxes(b) AS (\n"
+"  SELECT stbox 'STBOX Z((1, 1, 1),(3, 3, 3))' UNION\n"
+"  SELECT stbox 'STBOX Z((5, 5, 5),(7, 7, 7))' UNION\n"
+"  SELECT stbox 'STBOX Z((6, 6, 6),(8, 8, 8))'\n"
+")\n"
+"SELECT extent(b) FROM boxes;\n"
+"-- STBOX Z((1,1,1),(8,8,8))"
+msgstr ""
+"WITH boxes(b) AS (\n"
+"  SELECT tbox 'TBOX((1, 2000-01-01),(3, 2000-01-03))' UNION\n"
+"  SELECT tbox 'TBOX((5, 2000-01-05),(7, 2000-01-07))' UNION\n"
+"  SELECT tbox 'TBOX((6, 2000-01-06),(8, 2000-01-08))'\n"
+")\n"
+"SELECT extent(b) FROM boxes;\n"
+"-- TBOX((1,2000-01-01 00:00:00+01),(8,2000-01-08 00:00:00+01))\n"
+"WITH boxes(b) AS (\n"
+"  SELECT stbox 'STBOX Z((1, 1, 1),(3, 3, 3))' UNION\n"
+"  SELECT stbox 'STBOX Z((5, 5, 5),(7, 7, 7))' UNION\n"
+"  SELECT stbox 'STBOX Z((6, 6, 6),(8, 8, 8))'\n"
+")\n"
+"SELECT extent(b) FROM boxes;\n"
+"-- STBOX Z((1,1,1),(8,8,8))"
+
+#. Tag: title
+#: manipulating_box_types.xml:268
+#, no-c-format
+msgid "Comparison Operators"
+msgstr "Operadores de comparación"
+
+#. Tag: para
+#: manipulating_box_types.xml:270
+#, no-c-format
+msgid ""
+"The traditional comparison operators (<varname>=</varname>, <varname>&lt;</"
+"varname>, and so on) can be applied to box types. Excepted equality and "
+"inequality, the other comparison operators are not useful in the real world "
+"but allow B-tree indexes to be constructed on box types. These operators "
+"compare first the timestamps and if those are equal, compare the values."
+msgstr ""
+"Los operadores de comparación tradicionales (<varname>=</varname>, "
+"<varname>&lt;</varname>, etc.) se pueden aplicar a tipos de cuadro "
+"delimitador. Exceptuando la igualdad y la no igualdad, los otros operadores "
+"de comparación no son útiles en el mundo real pero permiten construir "
+"índices de árbol B en tipos de cuadro delimitador. Estos operadores comparan "
+"primero los valores de tiempo y, si son iguales, comparan los valores."
+
+#. Tag: varname
+#: manipulating_box_types.xml:274
+#, no-c-format
+msgid "<varname>=</varname>"
+msgstr "<varname>=</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:275
+#, no-c-format
+msgid "Are the bounding boxes equal?"
+msgstr "¿Son iguales los cuadros delimitadores?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:276
+#, no-c-format
+msgid "box = box: boolean"
+msgstr "box = box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:277
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' =\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';\n"
+"-- false"
+msgstr ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' =\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))';\n"
+"-- false"
+
+#. Tag: varname
+#: manipulating_box_types.xml:281
+#, no-c-format
+msgid "&lt;&gt;"
+msgstr "&lt;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:282
+#, no-c-format
+msgid "Are the bounding boxes different?"
+msgstr "¿Son diferentes los cuadros delimitadores?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:283
+#, no-c-format
+msgid "box &lt;&gt; box: boolean"
+msgstr "box &lt;&gt; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:284
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;&gt;\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;&gt;\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:288
+#, no-c-format
+msgid "&lt;"
+msgstr "&lt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:289
+#, no-c-format
+msgid "Is the first bounding box less than the second one?"
+msgstr "¿Es el primer cuadro delimitador menor que el segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:290
+#, no-c-format
+msgid "box &lt; box: boolean"
+msgstr "box &lt; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:291
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;\n"
+"  tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;\n"
+"  tbox 'TBOX((1, 2012-01-03), (2, 2012-01-05))'\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:295
+#, no-c-format
+msgid "&gt;"
+msgstr "&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:296
+#, no-c-format
+msgid "Is the first bounding box greater than the second one?"
+msgstr "¿Es el primer cuadro delimitador mayor que el segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:297
+#, no-c-format
+msgid "box &gt; box: boolean"
+msgstr "box &gt; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:298
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1, 2012-01-03), (1, 2012-01-04))' &gt;\n"
+"  tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1, 2012-01-03), (1, 2012-01-04))' &gt;\n"
+"  tbox 'TBOX((1, 2012-01-01), (2, 2012-01-05))'\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:302
+#, no-c-format
+msgid "&lt;="
+msgstr "&lt;="
+
+#. Tag: para
+#: manipulating_box_types.xml:303
+#, no-c-format
+msgid "Is the first bounding box less than or equal to the second one?"
+msgstr "¿Es el primer cuadro delimitador menor o igual que el segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:304
+#, no-c-format
+msgid "box &lt;= box: boolean"
+msgstr "box &lt;= box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:305
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;=\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &lt;=\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:309
+#, no-c-format
+msgid "&gt;="
+msgstr "&gt;="
+
+#. Tag: para
+#: manipulating_box_types.xml:310
+#, no-c-format
+msgid "Is the first bounding box greater than or equal to the second one?"
+msgstr "¿Es el primer cuadro delimitador mayor o igual que el segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:311
+#, no-c-format
+msgid "box &gt;= box: boolean"
+msgstr "box &gt;= box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:312
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'\n"
+"-- false"
+msgstr ""
+"SELECT tbox 'TBOX((1, 2012-01-01), (1, 2012-01-04))' &gt;=\n"
+"  tbox 'TBOX((2, 2012-01-03), (2, 2012-01-05))'\n"
+"-- false"
+
+#. Tag: title
+#: manipulating_box_types.xml:318
+#, no-c-format
+msgid "Set Operators"
+msgstr "Operadores de conjuntos"
+
+#. Tag: para
+#: manipulating_box_types.xml:320
+#, no-c-format
+msgid ""
+"The set operators for box types are union (<varname>+</varname>) and "
+"intersection (<varname>*</varname>). In the case of union, the operands must "
+"have exactly the same dimensions, otherwise an error is raised. Furthermore, "
+"if the operands do not overlap on all the dimensions and error is raised, "
+"since in this would result in a box with disjoint values, which cannot be "
+"represented. The operator computes the union on all dimensions that are "
+"present in both arguments. In the case of intersection, the operands must "
+"have at least one common dimension, otherwise an error is raised. The "
+"operator computes the intersection on all dimensions that are present in "
+"both arguments."
+msgstr ""
+"Los operadores de conjuntos para los tipos de cuadro delimitador son la "
+"unión (<varname>+</varname>) y la intersección (<varname>*</varname>). En el "
+"caso de la unión, los operandos deben tener exactamente las mismas "
+"dimensiones, de lo contrario se genera un error. Además, si los operandos no "
+"se superponen en todas las dimensiones se genera un error, ya que esto daría "
+"como resultado una caja con valores disjuntos, que no se puede representar. "
+"El operador calcula la unión en todas las dimensiones que están presentes en "
+"ambos argumentos. En el caso de intersección, los operandos deben tener al "
+"menos una dimensión común, de lo contrario se genera un error. El operador "
+"calcula la intersección en todas las dimensiones que están presentes en "
+"ambos argumentos."
+
+#. Tag: varname
+#: manipulating_box_types.xml:324
+#, no-c-format
+msgid "<varname>+</varname>"
+msgstr "<varname>+</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:325
+#, no-c-format
+msgid "Union of the bounding boxes"
+msgstr "Unión de los cuadros delimitadores"
+
+#. Tag: varname
+#: manipulating_box_types.xml:326
+#, no-c-format
+msgid "box + box: box"
+msgstr "box + box: box"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:327
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +\n"
+"  tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';\n"
+"-- \"TBOX((1,2001-01-01),(4,2001-01-04))\"\n"
+"SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))' +\n"
+"  stbox 'STBOX T((2,2,2001-01-01),(3,3,2001-01-03))';\n"
+"-- ERROR:  Boxes must be of the same dimensionality\n"
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-02))' +\n"
+"  tbox 'TBOX((2,2001-01-03),(4,2001-01-04))';\n"
+"-- ERROR:  Result of box union would not be contiguous"
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' +\n"
+"  tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';\n"
+"-- \"TBOX((1,2001-01-01),(4,2001-01-04))\"\n"
+"SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))' +\n"
+"  stbox 'STBOX T((2,2,2001-01-01),(3,3,2001-01-03))';\n"
+"-- ERROR:  Boxes must be of the same dimensionality\n"
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-02))' +\n"
+"  tbox 'TBOX((2,2001-01-03),(4,2001-01-04))';\n"
+"-- ERROR:  Result of box union would not be contiguous"
+
+#. Tag: varname
+#: manipulating_box_types.xml:331
+#, no-c-format
+msgid "<varname>*</varname>"
+msgstr "<varname>*</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:332
+#, no-c-format
+msgid "Intersection of the bounding boxes"
+msgstr "Intersección de los cuadros delimitadores"
+
+#. Tag: varname
+#: manipulating_box_types.xml:333
+#, no-c-format
+msgid "box * box: box"
+msgstr "box * box: box"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:334
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' *\n"
+"  tbox 'TBOX((,2001-01-02),(,2001-01-04))';\n"
+"-- \"TBOX((,2001-01-02),(,2001-01-03))\"\n"
+"SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(3,3,3,2001-01-02))' *\n"
+"  stbox 'STBOX((2,2),(4,4))';\n"
+"-- \"STBOX((2,2),(3,3))\""
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' *\n"
+"  tbox 'TBOX((,2001-01-02),(,2001-01-04))';\n"
+"-- \"TBOX((,2001-01-02),(,2001-01-03))\"\n"
+"SELECT stbox 'STBOX ZT((1,1,1,2001-01-01),(3,3,3,2001-01-02))' *\n"
+"  stbox 'STBOX((2,2),(4,4))';\n"
+"-- \"STBOX((2,2),(3,3))\""
+
+#. Tag: title
+#: manipulating_box_types.xml:340
+#, no-c-format
+msgid "Topological Operators"
+msgstr "Operadores topológicos"
+
+#. Tag: para
+#: manipulating_box_types.xml:342
+#, no-c-format
+msgid ""
+"There are five topological operators: overlaps (<varname>&amp;&amp;</"
+"varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</"
+"varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</"
+"varname>). The operators verify the topological relationship between the "
+"bounding boxes taking into account the value and/or the time dimension for "
+"as many dimensions that are present on both arguments."
+msgstr ""
+"Hay cinco operadores topológicos: superposición (<varname>&amp;&amp;</"
+"varname>), contiene (<varname>@&gt;</varname>), es contenido (<varname>&lt;"
+"@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</"
+"varname>). Los operadores verifican la relación topológica entre los cuadros "
+"delimitadores teniendo en cuenta la dimensión de valor y/o de tiempo para "
+"todas las dimensiones que estén presentes en ambos argumentos."
+
+#. Tag: para
+#: manipulating_box_types.xml:344
+#, no-c-format
+msgid "The topological operators for bounding boxes are given next."
+msgstr ""
+"Los operadores topológicos para los cuadros delimitadores se dan a "
+"continuación."
+
+#. Tag: varname
+#: manipulating_box_types.xml:348
+#, no-c-format
+msgid "&amp;&amp;"
+msgstr "&amp;&amp;"
+
+#. Tag: para
+#: manipulating_box_types.xml:349
+#, no-c-format
+msgid "Do the bounding boxes overlap?"
+msgstr "¿Se superponen los cuadros delimitadores?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:350
+#, no-c-format
+msgid "box &amp;&amp; box: boolean"
+msgstr "box &amp;&amp; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:351
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' &amp;&amp;\n"
+"  tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))'&amp;&amp;\n"
+"  stbox 'STBOX T((,2001-01-02),(,2001-01-02))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(3,2001-01-03))' &amp;&amp;\n"
+"  tbox 'TBOX((2,2001-01-02),(4,2001-01-04))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))'&amp;&amp;\n"
+"  stbox 'STBOX T((,2001-01-02),(,2001-01-02))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:355
+#, no-c-format
+msgid "@&gt;"
+msgstr "@&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:356
+#, no-c-format
+msgid "Does the first bounding box contain the second one?"
+msgstr "¿Contiene el primer cuadro delimitador el segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:357
+#, no-c-format
+msgid "box @&gt; box: boolean"
+msgstr "box @&gt; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:358
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(4,2001-01-04))' @&gt;\n"
+"  tbox 'TBOX((2,2001-01-01),(3,2001-01-02))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;\n"
+"  stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(4,2001-01-04))' @&gt;\n"
+"  tbox 'TBOX((2,2001-01-01),(3,2001-01-02))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX Z((1,1,1),(3,3,3))' @&gt;\n"
+"  stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:362
+#, no-c-format
+msgid "&lt;@"
+msgstr "&lt;@"
+
+#. Tag: para
+#: manipulating_box_types.xml:363
+#, no-c-format
+msgid "Is the first bounding box contained in the second one?"
+msgstr "¿Está el primer cuadro delimitador contenido en el segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:364
+#, no-c-format
+msgid "box &lt;@ box: boolean"
+msgstr "box &lt;@ box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:365
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' &lt;@\n"
+"  tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' &lt;@\n"
+"  stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' &lt;@\n"
+"  tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' &lt;@\n"
+"  stbox 'STBOX ZT((1,1,1,2001-01-01),(2,2,2,2001-01-02))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:369
+#, no-c-format
+msgid "<varname>~=</varname>"
+msgstr "<varname>~=</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:370
+#, no-c-format
+msgid "Are the bounding boxes equal in their common dimensions?"
+msgstr "¿Son los cuadros delimitadores iguales en sus dimensiones comunes?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:371
+#, no-c-format
+msgid "box ~= box: boolean"
+msgstr "box ~= box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:372
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' ~=\n"
+"  tbox 'TBOX((,2001-01-01),(,2001-01-02))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' ~=\n"
+"  stbox 'STBOX Z((1,1,1),(3,3,3))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' ~=\n"
+"  tbox 'TBOX((,2001-01-01),(,2001-01-02))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' ~=\n"
+"  stbox 'STBOX Z((1,1,1),(3,3,3))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:376
+#, no-c-format
+msgid "<varname>-|-</varname>"
+msgstr "<varname>-|-</varname>"
+
+#. Tag: para
+#: manipulating_box_types.xml:377
+#, no-c-format
+msgid "Are the bounding boxes adjacent?"
+msgstr "¿Son los cuadros delimitadores adyacentes?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:378
+#, no-c-format
+msgid "box -|- box: boolean"
+msgstr "box -|- box: boolean"
+
+#. Tag: para
+#: manipulating_box_types.xml:379
+#, no-c-format
+msgid ""
+"Two boxes are adjacent if they share <emphasis>n</emphasis> dimensions and "
+"their intersection is at most of <emphasis>n</emphasis>-1 dimensions."
+msgstr ""
+"Dos cuadros delimitadores son adyacentes si comparten <emphasis>n</emphasis> "
+"dimensiones y si su intersección tiene como máximo <emphasis>n</emphasis>-1 "
+"dimensiones."
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:380
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|-\n"
+"  tbox 'TBOX((,2001-01-02),(,2001-01-03))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-\n"
+"  stbox 'STBOX T((2,2,2001-01-03),(4,4,2001-01-04))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' -|-\n"
+"  tbox 'TBOX((,2001-01-02),(,2001-01-03))';\n"
+"-- true\n"
+"SELECT stbox 'STBOX T((1,1,2001-01-01),(3,3,2001-01-03))' -|-\n"
+"  stbox 'STBOX T((2,2,2001-01-03),(4,4,2001-01-04))';\n"
+"-- true"
+
+#. Tag: title
+#: manipulating_box_types.xml:386
+#, no-c-format
+msgid "Relative Position Operators"
+msgstr "Operadores de posición relativa"
+
+#. Tag: para
+#: manipulating_box_types.xml:388
+#, no-c-format
+msgid ""
+"These operators consider the relative position of the bounding boxes. The "
+"operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, "
+"<varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the "
+"X value for the <varname>tbox</varname> type and the X coordinates for the "
+"<varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, "
+"<varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|"
+"&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</"
+"varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;"
+"</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> "
+"consider the Z coordinates for the <varname>stbox</varname> type, and the "
+"operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, "
+"<varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider "
+"the time dimension for the <varname>tbox</varname> and <varname>stbox</"
+"varname> types. The operators raise an error if both boxes do not have the "
+"required dimension."
+msgstr ""
+"Estos operadores consideran la posición relativa de los cuadros "
+"delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;"
+"</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> "
+"consideran el valor X para el tipo <varname>tbox</varname> y las coordenadas "
+"X para el tipo <varname>stbox</varname>, los operadores <varname>&lt;&lt;|</"
+"varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y "
+"<varname>|&amp;&gt;</varname> consideran las coordenadas Y para el tipo "
+"<varname>stbox</varname>, los operadores <varname>&lt;&lt;/</varname>, "
+"<varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;"
+"&gt;</varname> consideran las coordenadas Z para el tipo <varname>stbox</"
+"varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</"
+"varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> "
+"consideran la dimensión de tiempo para los tipos <varname>tbox</varname> y "
+"<varname>stbox</varname>. Los operadores generan un error si ambos cuadros "
+"delimitadores no tienen la dimensión requerida."
+
+#. Tag: para
+#: manipulating_box_types.xml:390
+#, no-c-format
+msgid ""
+"The operators for the numeric value dimension of the <varname>tbox</varname> "
+"type are given next."
+msgstr ""
+"Los operadores para la dimensión de valor numérico del tipo <varname>tbox</"
+"varname> se dan a continuación."
+
+#. Tag: varname
+#: manipulating_box_types.xml:394 manipulating_box_types.xml:425
+#, no-c-format
+msgid "&lt;&lt;"
+msgstr "&lt;&lt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:395
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box strictly less than those of the "
+"second one?"
+msgstr ""
+"¿Son los valores X del primer cuadro delimitador estrictamente menores que "
+"los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:396
+#, no-c-format
+msgid "tbox &lt;&lt; tbox: boolean"
+msgstr "tbox &lt;&lt; tbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:397
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;\n"
+"  tbox 'TBOX((3,2012-01-03),(4,2012-01-04))';\n"
+"-- true\n"
+"SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;\n"
+"  tbox 'TBOX((,2012-01-03),(,2012-01-04))';\n"
+"-- ERROR:  Boxes must have X dimension"
+msgstr ""
+"SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;\n"
+"  tbox 'TBOX((3,2012-01-03),(4,2012-01-04))';\n"
+"-- true\n"
+"SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &lt;&lt;\n"
+"  tbox 'TBOX((,2012-01-03),(,2012-01-04))';\n"
+"-- ERROR:  Boxes must have X dimension"
+
+#. Tag: varname
+#: manipulating_box_types.xml:401 manipulating_box_types.xml:432
+#, no-c-format
+msgid "&gt;&gt;"
+msgstr "&gt;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:402
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box strictly greater than those of "
+"the second one?"
+msgstr ""
+"¿Son los valores X del primer cuadro delimitador estrictamente mayores que "
+"los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:403
+#, no-c-format
+msgid "tbox &gt;&gt; tbox: boolean"
+msgstr "tbox &gt;&gt; tbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:404
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((3,2012-01-03),(4,2012-01-04))' &gt;&gt;\n"
+"  tbox 'TBOX((1,2012-01-01),(2,2012-01-02))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((3,2012-01-03),(4,2012-01-04))' &gt;&gt;\n"
+"  tbox 'TBOX((1,2012-01-01),(2,2012-01-02))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:408 manipulating_box_types.xml:439
+#, no-c-format
+msgid "&amp;&lt;"
+msgstr "&amp;&lt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:409
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box not greater than those of the "
+"second one?"
+msgstr ""
+"¿No son los valores X del primer cuadro delimitador mayores que los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:410
+#, no-c-format
+msgid "tbox &amp;&lt; tbox: boolean"
+msgstr "tbox &amp;&lt; tbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:411
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2012-01-01),(4,2012-01-04))' &amp;&lt;\n"
+"  tbox 'TBOX((3,2012-01-03),(4,2012-01-04))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2012-01-01),(4,2012-01-04))' &amp;&lt;\n"
+"  tbox 'TBOX((3,2012-01-03),(4,2012-01-04))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:415 manipulating_box_types.xml:446
+#, no-c-format
+msgid "&amp;&gt;"
+msgstr "&amp;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:416
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box not less than those of the second "
+"one?"
+msgstr ""
+"¿No son los valores X del primer cuadro delimitador menores que los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:417
+#, no-c-format
+msgid "tbox &amp;&gt; tbox: boolean"
+msgstr "tbox &amp;&gt; tbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:418
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;\n"
+"  tbox 'TBOX((1,2012-01-01),(4,2012-01-04))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2012-01-01),(2,2012-01-02))' &amp;&gt;\n"
+"  tbox 'TBOX((1,2012-01-01),(4,2012-01-04))';\n"
+"-- true"
+
+#. Tag: para
+#: manipulating_box_types.xml:421
+#, no-c-format
+msgid ""
+"The operators for the spatial value dimension of the <varname>stbox</"
+"varname> type are given next."
+msgstr ""
+"Los operadores para la dimensión de valor espacial del tipo <varname>stbox</"
+"varname> se dan a continuación."
+
+#. Tag: para
+#: manipulating_box_types.xml:426
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box strictly to the left of those of "
+"the second one?"
+msgstr ""
+"¿Están los valores X del primer cuadro delimitador estrictamente a la "
+"izquierda de los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:427
+#, no-c-format
+msgid "stbox &lt;&lt; stbox: boolean"
+msgstr "stbox &lt;&lt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:428
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt; stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt; stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+
+#. Tag: para
+#: manipulating_box_types.xml:433
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box strictly to the right of those of "
+"the second one?"
+msgstr ""
+"¿Están los valores X del primer cuadro delimitador estrictamente a la "
+"derecha de los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:434
+#, no-c-format
+msgid "stbox &gt;&gt; stbox: boolean"
+msgstr "stbox &gt;&gt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:435
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &gt;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &gt;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+
+#. Tag: para
+#: manipulating_box_types.xml:440
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box not to the right of those of the "
+"second one?"
+msgstr ""
+"¿No están los valores X del primer cuadro delimitador a la derecha de los "
+"del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:441
+#, no-c-format
+msgid "stbox &amp;&lt; stbox: boolean"
+msgstr "stbox &amp;&lt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:442
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt; stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt; stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+
+#. Tag: para
+#: manipulating_box_types.xml:447
+#, no-c-format
+msgid ""
+"Are the X values of the first bounding box not to the left of those of the "
+"second one?"
+msgstr ""
+"¿No están los valores X del primer cuadro delimitador a la izquierda de los "
+"del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:448
+#, no-c-format
+msgid "stbox &amp;&gt; stbox: boolean"
+msgstr "stbox &amp;&gt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:449
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &amp;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' &amp;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:453
+#, no-c-format
+msgid "&lt;&lt;|"
+msgstr "&lt;&lt;|"
+
+#. Tag: para
+#: manipulating_box_types.xml:454
+#, no-c-format
+msgid ""
+"Are the Y values of the first bounding box strictly below of those of the "
+"second one?"
+msgstr ""
+"¿Están los valores de Y del primer cuadro delimitador estrictamente debajo "
+"de los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:455
+#, no-c-format
+msgid "stbox &lt;&lt;| stbox: boolean"
+msgstr "stbox &lt;&lt;| stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:456
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;| stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;| stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:460
+#, no-c-format
+msgid "|&gt;&gt;"
+msgstr "|&gt;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:461
+#, no-c-format
+msgid ""
+"Are the Y values of the first bounding box strictly above of those of the "
+"second one?"
+msgstr ""
+"¿Están los valores de Y del primer cuadro delimitador estrictamente arriba "
+"de los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:462
+#, no-c-format
+msgid "stbox |&gt;&gt; stbox: boolean"
+msgstr "stbox |&gt;&gt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:463
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&gt;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&gt;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:467
+#, no-c-format
+msgid "&amp;&lt;|"
+msgstr "&amp;&lt;|"
+
+#. Tag: para
+#: manipulating_box_types.xml:468
+#, no-c-format
+msgid ""
+"Are the Y values of the first bounding box not above of those of the second "
+"one?"
+msgstr ""
+"¿No están los valores de Y del primer cuadro delimitador arriba de los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:469
+#, no-c-format
+msgid "stbox &amp;&lt;| stbox: boolean"
+msgstr "stbox &amp;&lt;| stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:470
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;| stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;| stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:474
+#, no-c-format
+msgid "|&amp;&gt;"
+msgstr "|&amp;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:475
+#, no-c-format
+msgid ""
+"Are the Y values of the first bounding box not below of those of the second "
+"one?"
+msgstr ""
+"¿No están los valores de Y del primer cuadro delimitador debajo de los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:476
+#, no-c-format
+msgid "stbox |&amp;&gt; stbox: boolean"
+msgstr "stbox |&amp;&gt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:477
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&amp;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- false"
+msgstr ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' |&amp;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- false"
+
+#. Tag: varname
+#: manipulating_box_types.xml:481
+#, no-c-format
+msgid "&lt;&lt;/"
+msgstr "&lt;&lt;/"
+
+#. Tag: para
+#: manipulating_box_types.xml:482
+#, no-c-format
+msgid ""
+"Are the Z values of the first bounding box strictly in front of those of the "
+"second one?"
+msgstr ""
+"¿Están los valores Z del primer cuadro delimitador estrictamente delante de "
+"los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:483
+#, no-c-format
+msgid "stbox &lt;&lt;/ stbox: boolean"
+msgstr "stbox &lt;&lt;/ stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:484
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';"
+msgstr ""
+"SELECT stbox 'STBOX Z((1,1,1),(2,2,2))' &lt;&lt;/ stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';"
+
+#. Tag: varname
+#: manipulating_box_types.xml:488
+#, no-c-format
+msgid "/&gt;&gt;"
+msgstr "/&gt;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:489
+#, no-c-format
+msgid ""
+"Are the Z values of the first bounding box strictly back of those of the "
+"second one?"
+msgstr ""
+"¿Están los valores Z del primer cuadro delimitador estrictamente detrás de "
+"los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:490
+#, no-c-format
+msgid "stbox /&gt;&gt; stbox: boolean"
+msgstr "stbox /&gt;&gt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:491
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&gt;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:495
+#, no-c-format
+msgid "&amp;&lt;/"
+msgstr "&amp;&lt;/"
+
+#. Tag: para
+#: manipulating_box_types.xml:496
+#, no-c-format
+msgid ""
+"Are the Z values of the first bounding box not back of those of the second "
+"one?"
+msgstr ""
+"¿No están los valores Z del primer cuadro delimitador detrás de los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:497
+#, no-c-format
+msgid "stbox &amp;&lt;/ stbox: boolean"
+msgstr "stbox &amp;&lt;/ stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:498
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((1,1,1),(4,4,4))' &amp;&lt;/ stbox 'STBOX Z((3,3,3),"
+"(4,4,4))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:502
+#, no-c-format
+msgid "/&amp;&gt;"
+msgstr "/&amp;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:503
+#, no-c-format
+msgid ""
+"Are the Z values of the first bounding box not in front of those of the "
+"second one?"
+msgstr ""
+"¿No están los valores Z del primer cuadro delimitador delante de los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:504
+#, no-c-format
+msgid "stbox /&amp;&gt; stbox: boolean"
+msgstr "stbox /&amp;&gt; stbox: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:505
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX Z((3,3,3),(4,4,4))' /&amp;&gt; stbox 'STBOX Z((1,1,1),"
+"(2,2,2))';\n"
+"-- true"
+
+#. Tag: para
+#: manipulating_box_types.xml:509
+#, no-c-format
+msgid ""
+"The operators for the time dimension of the <varname>tbox</varname> and "
+"<varname>stbox</varname> types are as follows."
+msgstr ""
+"Los operadores para la dimensión temporal de los tipos <varname>tbox</"
+"varname> y <varname>stbox</varname> son los siguientes."
+
+#. Tag: varname
+#: manipulating_box_types.xml:512
+#, no-c-format
+msgid "&lt;&lt;#"
+msgstr "&lt;&lt;#"
+
+#. Tag: para
+#: manipulating_box_types.xml:513
+#, no-c-format
+msgid ""
+"Are the T values of the first bounding box strictly before those of the "
+"second one?"
+msgstr ""
+"¿Son los valores de T del primer cuadro delimitador estrictamente anteriores "
+"a los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:514
+#, no-c-format
+msgid "box &lt;&lt;# box: boolean"
+msgstr "box &lt;&lt;# box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:515
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))' &lt;&lt;#\n"
+"  tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2000-01-01),(2,2000-01-02))' &lt;&lt;#\n"
+"  tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:519
+#, no-c-format
+msgid "#&gt;&gt;"
+msgstr "#&gt;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:520
+#, no-c-format
+msgid ""
+"Are the T values of the first bounding box strictly after those of the "
+"second one?"
+msgstr ""
+"¿Son los valores de T del primer cuadro delimitador estrictamente "
+"posteriores a los del segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:521
+#, no-c-format
+msgid "box #&gt;&gt; box: boolean"
+msgstr "box #&gt;&gt; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:522
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))'  #&gt;&gt;\n"
+"  stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))'  #&gt;&gt;\n"
+"  stbox 'STBOX T((1,1,2000-01-01),(2,2,2000-01-02))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:526
+#, no-c-format
+msgid "&amp;&lt;#"
+msgstr "&amp;&lt;#"
+
+#. Tag: para
+#: manipulating_box_types.xml:527
+#, no-c-format
+msgid ""
+"Are the T values of the first bounding box not after those of the second one?"
+msgstr ""
+"¿No son los valores de T del primer cuadro delimitador posteriores a los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:528
+#, no-c-format
+msgid "box &amp;&lt;# box: boolean"
+msgstr "box &amp;&lt;# box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:529
+#, no-c-format
+msgid ""
+"SELECT tbox 'TBOX((1,2000-01-01),(4,2000-01-04))' &amp;&lt;#\n"
+"  tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';\n"
+"-- true"
+msgstr ""
+"SELECT tbox 'TBOX((1,2000-01-01),(4,2000-01-04))' &amp;&lt;#\n"
+"  tbox 'TBOX((3,2000-01-03),(4,2000-01-04)))';\n"
+"-- true"
+
+#. Tag: varname
+#: manipulating_box_types.xml:533
+#, no-c-format
+msgid "#&amp;&gt;"
+msgstr "#&amp;&gt;"
+
+#. Tag: para
+#: manipulating_box_types.xml:534
+#, no-c-format
+msgid ""
+"Are the T values of the first bounding box not before those of the second "
+"one?"
+msgstr ""
+"¿No son los valores de T del primer cuadro delimitador anteriores a los del "
+"segundo?"
+
+#. Tag: varname
+#: manipulating_box_types.xml:535
+#, no-c-format
+msgid "box #&amp;&gt; box: boolean"
+msgstr "box #&amp;&gt; box: boolean"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:536
+#, no-c-format
+msgid ""
+"SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;\n"
+"  stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))';\n"
+"-- true"
+msgstr ""
+"SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;\n"
+"  stbox 'STBOX T((3,3,2000-01-03),(4,4,2000-01-04))';\n"
+"-- true"
+
+#. Tag: title
+#: manipulating_box_types.xml:542
+#, no-c-format
+msgid "Indexing of Box Types"
+msgstr "Indexación de los tipos cuadro delimitador"
+
+#. Tag: para
+#: manipulating_box_types.xml:543
+#, no-c-format
+msgid ""
+"GiST and SP-GiST indexes can be created for table columns of the "
+"<varname>tbox</varname> and <varname>stbox</varname> types. An example of "
+"creation of a GiST index in a column <varname>Box</varname> of type "
+"<varname>stbox</varname> in a table <varname>Trips</varname> is as follows:"
+msgstr ""
+"Se pueden crear índices GiST y SP-GiST para columnas de tablas de los tipos "
+"<varname>tbox</varname> y <varname>stbox</varname>. Un ejemplo de creación "
+"de un índice GiST en una columna <varname>Box</varname> de tipo "
+"<varname>stbox</varname> en una tabla <varname>Trips</varname> es el "
+"siguiente:"
+
+#. Tag: programlisting
+#: manipulating_box_types.xml:544
+#, no-c-format
+msgid ""
+"CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);\n"
+"CREATE INDEX Trips_Box_Idx ON Trips USING GIST(bbox);"
+msgstr ""
+"CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);\n"
+"CREATE INDEX Trips_Box_Idx ON Trips USING GIST(Box);"
+
+#. Tag: para
+#: manipulating_box_types.xml:546
+#, no-c-format
+msgid ""
+"A GiST or SP-GiST index can accelerate queries involving the following "
+"operators: <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, "
+"<varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname>, "
+"<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;"
+"</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, "
+"<varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;"
+"&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, "
+"<varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;"
+"&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</"
+"varname>, and <varname>#&amp;&gt;</varname>."
+msgstr ""
+"Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los "
+"siguientes operadores: <varname>&amp;&amp;</varname>, <varname>&lt;@</"
+"varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</"
+"varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, "
+"<varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;"
+"&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</"
+"varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;/</varname>, "
+"<varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;"
+"&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, "
+"<varname>&amp;&lt;#</varname> y <varname>#&amp;&gt;</varname>."
+
+#. Tag: para
+#: manipulating_box_types.xml:548
+#, no-c-format
+msgid ""
+"In addition, B-tree indexes can be created for table columns of a bounding "
+"box type. For these index types, basically the only useful operation is "
+"equality. There is a B-tree sort ordering defined for values of bounding box "
+"types, with corresponding <varname>&lt;</varname> and <varname>&gt;</"
+"varname> operators, but the ordering is rather arbitrary and not usually "
+"useful in the real world. The B-tree support is primarily meant to allow "
+"sorting internally in queries, rather than creation of actual indexes."
+msgstr ""
+"Además, se pueden crear índices de árbol B para columnas de tablas de un "
+"tipo cuadro delimitador. Para estos tipos de índices, básicamente la única "
+"operación útil es la igualdad. Hay un orden de clasificación de árbol B "
+"definido para valores de tipos cuadro delimitador con los correspondientes "
+"operadores <varname>&lt;</varname> y <varname>&gt;</varname>, pero el orden "
+"es bastante arbitrario y no suele ser útil en el mundo real. El soporte de "
+"árbol B está destinado principalmente a permitir la clasificación interna en "
+"las consultas, en lugar de la creación de índices reales."

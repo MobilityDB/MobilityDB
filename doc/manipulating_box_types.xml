@@ -11,12 +11,13 @@
 <chapter id="manipulating_box_types">
 	<title>Manipulating Bounding Box Types</title>
 	<para>We present next the functions and operators for bounding box types. These functions and operators are polimorhic, that is, their argumentos can be of various types and their result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:</para>
+
 	<itemizedlist>
 		<listitem>
 			<para><varname>box</varname> represents any bounding box type, that is, <varname>tbox</varname> or <varname>stbox</varname>.</para>
 		</listitem>
 	</itemizedlist>
-  <para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
+	<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
 
 	<sect1 id="input_output_box_tyes">
 		<title>Input/Output of Bounding Box Types</title>
@@ -59,7 +60,8 @@ SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 	<sect1 id="constructor_box_types">
 		<title>Constructor Functions</title>
 
-		<para>Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have two arguments for the minimum and maximum <varname>float</varname> values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values.
+		<para>
+			Type <varname>tbox</varname> has several constructor functions depending on whether the value and/or the time dimensions are given. These functions have two arguments for the minimum and maximum <varname>float</varname> values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values.
 		</para>
 
 		<itemizedlist>
@@ -80,7 +82,8 @@ SELECT tboxt('2001-01-01', '2001-01-02');
 			</listitem>
 		</itemizedlist>
 
-		<para>Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes.
+		<para>
+			Type <varname>stbox</varname> has several constructor functions depending on whether the coordinates and/or the time dimensions are given. Furthermore, the coordinates can be 2D or 3D and can be either Cartesian or geodetic. These functions have several arguments for the minimum and maximum coordinate values and/or two arguments for the minimum and maximum <varname>timestamptz</varname> values. The SRID can be specified in an optional last argument. If not given, a value 0 (respectively 4326) is assumed by default for planar (respectively geodetic) boxes.
 		</para>
 
 		<itemizedlist>
@@ -171,7 +174,7 @@ SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;
 				<para><varname>{geometry,geography,box2d,box3d}::stbox</varname></para>
 				<para><varname>{timestamptz,timestampset,period,periodset,tgeompoint,tgeogpoint}::stbox</varname></para>
 				<programlisting>
-select geometry 'Linestring(1 1,2 2)'::stbox;
+SELECT geometry 'Linestring(1 1,2 2)'::stbox;
 -- "STBOX((1,1),(2,2))"
 SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 -- "STBOX T((,,2001-01-01),(,,2001-01-04))"
@@ -307,7 +310,8 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 	<sect1 id ="modification_box_tyes">
 			<title>Modification Functions</title>
 
-			<para>The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
+			<para>
+				The functions given next expand the bounding boxes on the value and the time dimension or set the precision of the value dimension. These functions raise an error if the corresponding dimension is not present.
 			</para>
 			<itemizedlist>
 				<listitem id="expandValue">
@@ -856,12 +860,11 @@ SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;
 
 	<sect1 id ="indexing_box_types">
 		<title>Indexing of Box Types</title>
-
 		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>tbox</varname> and <varname>stbox</varname> types. An example of creation of a GiST index in a column <varname>Box</varname> of type <varname>stbox</varname> in a table <varname>Trips</varname> is as follows:
-				<programlisting>
+			<programlisting>
 CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);
 CREATE INDEX Trips_Box_Idx ON Trips USING GIST(bbox);
-				</programlisting>
+			</programlisting>
 		</para>
 		<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>,  <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname>, and <varname>#&amp;&gt;</varname>.</para>
 
