@@ -144,7 +144,7 @@ SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 
 				<listitem id="getPosition">
 					<indexterm><primary><varname>getPosition</varname></primary></indexterm>
-					<para>Get the position fraction</para>
+					<para>Get the position</para>
 					<para><varname>getPosition(npoint): float</varname></para>
 					<programlisting>
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
@@ -171,7 +171,13 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
 					</programlisting>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2 id="spatial_functions">
+			<title>Spatial Functions</title>
+
+			<itemizedlist>
 				<listitem id="npoint_srid">
 					<indexterm><primary><varname>SRID</varname></primary></indexterm>
 					<para>Get the spatial reference identifier</para>
@@ -184,10 +190,6 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 					</programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
-
-		<sect2 id="spatial_functions">
-			<title>Spatial Functions</title>
 
 			<para>Values of the <varname>npoint</varname> and <varname>nsegment</varname> types can be converted to the <varname>geometry</varname> type using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation as shown next.</para>
 			<itemizedlist>
@@ -482,7 +484,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 				<para><varname>tnpoint_seq(tnpoint): tnpoint_seq</varname></para>
 				<para><varname>tnpoint_seqset(tnpoint): tnpoint_seqset</varname></para>
 				<programlisting>
-SELECT tnpoints(tnpoint 'NPoint(1, 0.5)@2001-01-01');
+SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- {[NPoint(1,0.5)@2001-01-01]}
 				</programlisting>
 			</listitem>
@@ -610,7 +612,7 @@ SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,
 
 			<listitem id="tnpoint_nearestApproachDistance">
 				<indexterm><primary><varname>nearestApproachDistance</varname></primary></indexterm>
-				<para>Smallest distance ever between the two arguments</para>
+				<para>Get the smallest distance ever between the two arguments</para>
 				<para><varname>nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}): float</varname></para>
 				<programlisting>
 SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,
@@ -878,7 +880,7 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)'
 	</sect1>
 
 	<sect1 id="aggregate_temporal_network_points">
-		<title>Aggregate Functions for Temporal Network Points</title>
+		<title>Aggregate Functions</title>
 
 		<para>The three aggregate functions for temporal network points are illustrated next.</para>
 
