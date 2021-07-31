@@ -11,12 +11,18 @@
 <chapter id="time_types_range_types">
 	<title>Time Types and Range Types</title>
 
-	<para>Temporal types are based on four time types: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>.</para>
+	<para>
+		Temporal types are based on four time types: the <varname>timestamptz</varname> type provided by PostgreSQL and three new types which are <varname>period</varname>, <varname>timestampset</varname>, and <varname>periodset</varname>.
+	</para>
 
-	<para>The <varname>period</varname> type is a specialized version of the <varname>tstzrange</varname> (short for timestamp with time zone range) type provided by PostgreSQL. Type <varname>period</varname> has similar functionality as type <varname>tstzrange</varname> but has a more efficient implementation, in particular it is of fixed length while the <varname>tstzrange</varname> type is of variable length. Furthermore, empty periods and infinite bounds are not allowed in <varname>period</varname> values, while they are allowed in <varname>tstzrange</varname> values.</para>
+	<para>
+		The <varname>period</varname> type is a specialized version of the <varname>tstzrange</varname> (short for timestamp with time zone range) type provided by PostgreSQL. Type <varname>period</varname> has similar functionality as type <varname>tstzrange</varname> but has a more efficient implementation, in particular it is of fixed length while the <varname>tstzrange</varname> type is of variable length. Furthermore, empty periods and infinite bounds are not allowed in <varname>period</varname> values, while they are allowed in <varname>tstzrange</varname> values.
+	</para>
 
-	<para>A value of the <varname>period</varname> type has two bounds, the lower bound and the upper bound, which are <varname>timestamptz</varname> values. The bounds can be inclusive or exclusive. An inclusive bound means that the boundary instant is included in the period, while an exclusive bound means that the boundary instant is not included in the period. In the text form of a <varname>period</varname> value, inclusive and exclusive lower bounds are represented, respectively, by &ldquo;<varname>[</varname>&rdquo; and &ldquo;<varname>(</varname>&rdquo;. Likewise, inclusive and exclusive upper bounds are represented, respectively, by &ldquo;<varname>]</varname>&rdquo; and &ldquo;<varname>)</varname>&rdquo;. In a <varname>period</varname> value, the lower bound must be less than or equal to the upper bound. A <varname>period</varname> value with equal and inclusive bounds is called an <emphasis>instantaneous period</emphasis> and corresponds to a <varname>timestamptz</varname> value. Examples of <varname>period</varname> values are as follows:
-		<programlisting>
+	<para>
+		A value of the <varname>period</varname> type has two bounds, the lower bound and the upper bound, which are <varname>timestamptz</varname> values. The bounds can be inclusive or exclusive. An inclusive bound means that the boundary instant is included in the period, while an exclusive bound means that the boundary instant is not included in the period. In the text form of a <varname>period</varname> value, inclusive and exclusive lower bounds are represented, respectively, by &ldquo;<varname>[</varname>&rdquo; and &ldquo;<varname>(</varname>&rdquo;. Likewise, inclusive and exclusive upper bounds are represented, respectively, by &ldquo;<varname>]</varname>&rdquo; and &ldquo;<varname>)</varname>&rdquo;. In a <varname>period</varname> value, the lower bound must be less than or equal to the upper bound. A <varname>period</varname> value with equal and inclusive bounds is called an <emphasis>instantaneous period</emphasis> and corresponds to a <varname>timestamptz</varname> value. Examples of <varname>period</varname> values are as follows:
+	</para>
+	<programlisting>
 SELECT period '[2012-01-01 08:00:00, 2012-01-03 09:30:00)';
 -- Instant period
 SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';
@@ -24,11 +30,12 @@ SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00]';
 SELECT period '[2012-01-01 08:10:00, 2012-01-01 08:00:00]';
 -- Erroneous period: empty period
 SELECT period '[2012-01-01 08:00:00, 2012-01-01 08:00:00)';
-		</programlisting>
-	</para>
+	</programlisting>
 
-	<para>The <varname>timestampset</varname> type represents a set of different <varname>timestamptz</varname> values. A <varname>timestampset</varname> value must contain at least one element, in which case it corresponds to a <varname>timestamptz</varname> value. The elements composing a <varname>timestampset</varname> value must be ordered. Examples of <varname>timestampset</varname> values are as follows:
-		<programlisting>
+	<para>
+		The <varname>timestampset</varname> type represents a set of different <varname>timestamptz</varname> values. A <varname>timestampset</varname> value must contain at least one element, in which case it corresponds to a <varname>timestamptz</varname> value. The elements composing a <varname>timestampset</varname> value must be ordered. Examples of <varname>timestampset</varname> values are as follows:
+	</para>
+	<programlisting>
 SELECT timestampset '{2012-01-01 08:00:00, 2012-01-03 09:30:00}';
 -- Singleton timestampset
 SELECT timestampset '{2012-01-01 08:00:00}';
@@ -36,11 +43,12 @@ SELECT timestampset '{2012-01-01 08:00:00}';
 SELECT timestampset '{2012-01-01 08:10:00, 2012-01-01 08:00:00}';
 -- Erroneous timestampset: duplicate elements
 SELECT timestampset '{2012-01-01 08:00:00, 2012-01-01 08:00:00}';
-		</programlisting>
-	</para>
+	</programlisting>
 
-	<para>Finally, the <varname>periodset</varname> type represents a set of disjoint <varname>period</varname> values. A <varname>periodset</varname> value must contain at least one element, in which case it corresponds to a <varname>period</varname> value. The elements composing a <varname>periodset</varname> value must be ordered. Examples of <varname>periodset</varname> values are as follows:
-		<programlisting>
+	<para>
+		Finally, the <varname>periodset</varname> type represents a set of disjoint <varname>period</varname> values. A <varname>periodset</varname> value must contain at least one element, in which case it corresponds to a <varname>period</varname> value. The elements composing a <varname>periodset</varname> value must be ordered. Examples of <varname>periodset</varname> values are as follows:
+	</para>
+	<programlisting>
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
   [2012-01-01 08:20:00, 2012-01-01 08:40:00]}';
 -- Singleton periodset
@@ -51,48 +59,53 @@ SELECT periodset '{[2012-01-01 08:20:00, 2012-01-01 08:40:00],
 -- Erroneous periodset: overlapping elements
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00],
   [2012-01-01 08:05:00, 2012-01-01 08:15:00]}';
-		</programlisting>
-	</para>
+	</programlisting>
 
-	<para>Values of the <varname>periodset</varname> type are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive adjacent period values are merged when possible. An example of transformation into normal form is as follows:
-		<programlisting>
+	<para>
+		Values of the <varname>periodset</varname> type are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive adjacent period values are merged when possible. An example of transformation into normal form is as follows:
+	</para>
+	<programlisting>
 SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
   [2012-01-01 08:10:00, 2012-01-01 08:10:00], (2012-01-01 08:10:00, 2012-01-01 08:20:00]}';
 -- "{[2012-01-01 08:00:00+00,2012-01-01 08:20:00+00]}"
-		</programlisting>
-	</para>
+	</programlisting>
 
-	<para>Besides the built-in range types provided by PostgreSQL, MobilityDB defines two additional range types: <varname>intrange</varname> (another name for <varname>int4range</varname>) and <varname>floatrange</varname>.</para>
+	<para>
+		Besides the built-in range types provided by PostgreSQL, MobilityDB defines two additional range types: <varname>intrange</varname> (another name for <varname>int4range</varname>) and <varname>floatrange</varname>.
+	</para>
 
 	<sect1 id ="functions_operations_time_types">
 		<title>Functions and Operators for Time Types and Range Types</title>
 
-		<para>We present next the functions and operators for time and range types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
-			<itemizedlist>
-				<listitem>
-					<para>A set of types such as <varname>{period,timestampset,periodset}</varname> represents any of the types listed,</para>
-				</listitem>
-				<listitem>
-					<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
-				</listitem>
-				<listitem>
-					<para><varname>number</varname> represents any number type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
-				</listitem>
-				<listitem>
-					<para><varname>range</varname> represents any number range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
-				</listitem>
-				<listitem>
-					<para><varname>type[]</varname> represents an array of <varname>type</varname>.
-					</para>
-				</listitem>
-			</itemizedlist>
+		<para>
+			We present next the functions and operators for time and range types. These functions and operators are polymorphic, that is, their arguments may be of several types, and the result type may depend on the type of the arguments. To express this in the signature of the operators, we use the following notation:
 		</para>
+		<itemizedlist>
+			<listitem>
+				<para>A set of types such as <varname>{period,timestampset,periodset}</varname> represents any of the types listed,</para>
+			</listitem>
+			<listitem>
+				<para><varname>time</varname> represents any time type, that is, <varname>timestamptz</varname>, <varname>period</varname>, <varname>timestampset</varname>, or <varname>periodset</varname>,</para>
+			</listitem>
+			<listitem>
+				<para><varname>number</varname> represents any number type, that is, <varname>integer</varname> or <varname>float</varname>,</para>
+			</listitem>
+			<listitem>
+				<para><varname>range</varname> represents any number range type, that is, <varname>intrange</varname> or <varname>floatrange</varname>.</para>
+			</listitem>
+			<listitem>
+				<para><varname>type[]</varname> represents an array of <varname>type</varname>.</para>
+			</listitem>
+		</itemizedlist>
 
-		<para>As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows:
-			<programlisting>
+		<para>
+			As an example, the signature of the contains operator (<varname>@&gt;</varname>) is as follows:
+		</para>
+		<programlisting>
 {timestampset, period, periodset} @&gt; time: boolean
-			</programlisting>
-		In the following, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
+		</programlisting>
+		<para>
+			In the following, for conciseness, the time part of the timestamps is omitted in the examples. Recall that in that case PostgreSQL assumes the time <varname>00:00:00</varname>.
 		</para>
 
 		<sect2>
@@ -108,7 +121,7 @@ SELECT periodset '{[2012-01-01 08:00:00, 2012-01-01 08:10:00),
 					<programlisting>
 -- Period defined with two arguments
 SELECT period('2012-01-01 08:00:00', '2012-01-03 08:00:00');
---  [2012-01-01 08:00:00+01, 2012-01-03 08:00:00+01)
+-- [2012-01-01 08:00:00+01, 2012-01-03 08:00:00+01)
 -- Period defined with four arguments
 SELECT period('2012-01-01 08:00:00', '2012-01-03 09:30:00', false, true);
 -- (2012-01-01 08:00:00+01, 2012-01-03 09:30:00+01]
@@ -147,7 +160,6 @@ SELECT periodset(ARRAY[period '[2012-01-01 08:00:00, 2012-01-01 08:10:00]',
 
 		<sect2>
 			<title>Casting</title>
-
 			<para>Values of the <varname>timestamptz</varname>, <varname>tstzrange</varname>, or the time types can be converted to one another using the function <varname>CAST</varname> or using the <varname>::</varname> notation.
 			</para>
 
@@ -227,7 +239,7 @@ SELECT memSize(periodset '{[2012-01-01, 2012-01-02], [2012-01-03, 2012-01-04],
 					<programlisting>
 SELECT lower(period '[2011-01-01, 2011-01-05)');
 -- "2011-01-01"
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="upper">
@@ -825,8 +837,8 @@ WITH periods(ps) AS (
 )
 SELECT tunion(ps) FROM periods;
 -- "{[2000-01-01, 2000-01-04], [2000-01-05, 2000-01-06], [2000-01-07, 2000-01-08]}"
-						</programlisting>
-					</listitem>
+					</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 	</sect1>
@@ -835,11 +847,11 @@ SELECT tunion(ps) FROM periods;
 		<title>Indexing of Time Types</title>
 
 		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> types. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
-				<programlisting>
+			<programlisting>
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During period);
 CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
-				</programlisting>
+			</programlisting>
 		</para>
 		<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname>.</para>
 		<para>In addition, B-tree indexes can be created for table columns of a time type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of time types with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>

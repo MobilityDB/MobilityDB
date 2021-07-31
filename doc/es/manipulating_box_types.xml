@@ -17,6 +17,7 @@
 			<para><varname>box</varname> representa cualquier tipos cuadro delimitador, es decir <varname>tbox</varname> o <varname>stbox</varname>.</para>
 		</listitem>
 	</itemizedlist>
+  <para>A continuación, especificamos con el símbolo &Z_support; que la función admite puntos 3D y con el símbolo &geography_support; que la función está disponible para geografías.</para>
 
 	<sect1 id="input_output_box_tyes">
 		<title>Entrada/salida de tipos cuadro delimitador</title>
@@ -52,14 +53,16 @@ SELECT stbox 'GEODSTBOX T(( , , 2001-01-03), ( , , 2001-01-03))';
 -- Se indica el SRID
 SELECT stbox 'SRID=5676;STBOX T((1.0, 2.0, 2001-01-04), (1.0, 2.0, 2001-01-04))';
 SELECT stbox 'SRID=4326;GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
-		</programlisting>
+			</programlisting>
 		</para>
 	</sect1>
 
 	<sect1 id="constructor_box_types">
 		<title>Funciones de constructor</title>
 
-		<para>El tipo <varname>tbox</varname> tiene varias funciones constructoras dependiendo de si se dan las dimensiones de valor y/o de tiempo. Estas funciones tienen dos argumentos para los valores mínimo y máximo  de tipo <varname>float</varname> y/o dos argumentos para los valores mínimo y máximo de tipo <varname>timestamptz</varname> . </para>
+		<para>
+			El tipo <varname>tbox</varname> tiene varias funciones constructoras dependiendo de si se dan las dimensiones de valor y/o de tiempo. Estas funciones tienen dos argumentos para los valores mínimo y máximo  de tipo <varname>float</varname> y/o dos argumentos para los valores mínimo y máximo de tipo <varname>timestamptz</varname> .
+		</para>
 
 		<itemizedlist>
 			<listitem id="tbox">
@@ -79,7 +82,9 @@ SELECT tboxt('2001-01-01', '2001-01-02');
 			</listitem>
 		</itemizedlist>
 
-		<para>El tipo <varname>stbox</varname> tiene varias funciones constructoras dependiendo de si se dan las dimensiones de coordenadas y/o de tiempo. Además, las coordenadas pueden ser 2D o 3D y pueden ser cartesianas o geodésicas. Estas funciones tienen varios argumentos para los valores de coordenadas mínimo y máximo y/o dos argumentos para el valor mínimo y el máximo de <varname>timestamptz</varname>. El SRID se puede especificar en un último argumento opcional. Si no se da, se asume un valor 0 (respectivamente 4326) por defecto para coordenadas planas (respectivamente geodésicas). </para>
+		<para>
+			El tipo <varname>stbox</varname> tiene varias funciones constructoras dependiendo de si se dan las dimensiones de coordenadas y/o de tiempo. Además, las coordenadas pueden ser 2D o 3D y pueden ser cartesianas o geodésicas. Estas funciones tienen varios argumentos para los valores de coordenadas mínimo y máximo y/o dos argumentos para el valor mínimo y el máximo de <varname>timestamptz</varname>. El SRID se puede especificar en un último argumento opcional. Si no se da, se asume un valor 0 (respectivamente 4326) por defecto para coordenadas planas (respectivamente geodésicas).
+		</para>
 
 		<itemizedlist>
 			<listitem id="stbox">
@@ -168,7 +173,8 @@ SELECT stbox 'STBOX Z((1 1 1),(3 3 3))'::box3d;
 				<para>Convertir otro tipo a un <varname>stbox</varname></para>
 				<para><varname>{geometry,geography,box2d,box3d}::stbox</varname></para>
 				<para><varname>{timestamptz,timestampset,period,periodset,tgeompoint,tgeogpoint}::stbox</varname></para>
-				<programlisting>select geometry 'Linestring(1 1,2 2)'::stbox;
+				<programlisting>
+SELECT geometry 'Linestring(1 1,2 2)'::stbox;
 -- "STBOX((1,1),(2,2))"
 SELECT periodset '{(2001-01-01,2001-01-02), (2001-01-03,2001-01-04)}'::stbox;
 -- "STBOX T((,,2001-01-01),(,,2001-01-04))"
@@ -304,7 +310,9 @@ SELECT Tmax(stbox 'GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-03))');
 	<sect1 id ="modification_box_tyes">
 			<title>Funciones de modificación</title>
 
-			<para>Las funciones dadas a continuación expanden los cuadros delimitadores en la dimensión de valor y de tiempo o establecen la precisión de la dimensión de valor. Estas funciones generan un error si la dimensión correspondiente no está presente. </para>
+			<para>
+				Las funciones dadas a continuación expanden los cuadros delimitadores en la dimensión de valor y de tiempo o establecen la precisión de la dimensión de valor. Estas funciones generan un error si la dimensión correspondiente no está presente.
+			</para>
 			<itemizedlist>
 				<listitem id="expandValue">
 					<indexterm><primary><varname>expandValue</varname></primary></indexterm>
@@ -856,7 +864,7 @@ SELECT stbox 'STBOX T((1,1,2000-01-01),(3,3,2000-01-03))' #&amp;&gt;
 			<programlisting>
 CREATE TABLE Trips(TripID integer PRIMARY KEY, Trip tgeompoint, Box stbox);
 CREATE INDEX Trips_Box_Idx ON Trips USING GIST(Box);
-				</programlisting>
+			</programlisting>
 		</para>
 		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores: <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>~=</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>&amp;&lt;#</varname> y <varname>#&amp;&gt;</varname>.</para>
 

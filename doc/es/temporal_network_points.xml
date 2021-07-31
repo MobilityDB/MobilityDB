@@ -52,13 +52,13 @@ SELECT nsegment 'Nsegment(76, 0.3, 0.5)';
 SELECT nsegment 'Nsegment(64, 0.5, 0.5)';
 SELECT nsegment 'Nsegment(64, 0.0, 1.0)';
 SELECT nsegment 'Nsegment(64, 1.0, 0.0)';
--- converted to nsegment 'Nsegment(64, 0.0, 1.0)';
+-- convertido a nsegment 'Nsegment(64, 0.0, 1.0)';
 			</programlisting>
 		<para>Como se puede ver en el último ejemplo, los valores <varname>startPosition</varname> y <varname>endPosition</varname> se invertirán para asegurar que la condición <varname>startPosition &le; endPosition</varname> siempre se satisface. La función de constructor para segmentos de red tiene un argumento para el identificador de ruta y dos argumentos opcionales para las posiciones inicial y final. Los ejemplos de valores de segmento de red definidos con la función constructora son los siguientes:</para>
 			<programlisting>
 SELECT nsegment(76, 0.3, 0.3);
-SELECT nsegment(76); -- start and end position assumed to be 0 and 1 respectively
-SELECT nsegment(76, 0.5); -- end position assumed to be 1
+SELECT nsegment(76); -- se asume que las posiciones inicial y final son 0 y 1 respectivamente
+SELECT nsegment(76, 0.5); -- se asume que la posición final es 1
 			</programlisting>
 		<para>Los valores del tipo <varname>npoint</varname> se pueden convertir al tipo <varname>nsegment</varname> usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname> como se muestra a continuación.</para>
 			<programlisting>
@@ -109,6 +109,23 @@ SELECT nsegment(76, 0.3, 0.5);
 			</itemizedlist>
 		</sect2>
 
+		<sect2>
+			<title>Funciones de transformación</title>
+			<itemizedlist>
+				<listitem id="npoint_setPrecision">
+					<indexterm><primary><varname>npoint_setPrecision</varname></primary></indexterm>
+					<para>Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+					<para><varname>setPrecision({npoint,nsegment},int): {npoint,nsegment}</varname></para>
+					<programlisting>
+SELECT setPrecision(npoint(76, 0.123456789), 6);
+--  NPoint(76,0.123457)
+SELECT setPrecision(nsegment(76, 0.123456789, 0.223456789), 6);
+--  NSegment(76,0.123457,0.223457)
+					</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 id="accessor_functions">
 			<title>Funciones de accesor</title>
 
@@ -127,7 +144,7 @@ SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 
 				<listitem id="getPosition">
 					<indexterm><primary><varname>getPosition</varname></primary></indexterm>
-					<para>Obtener la fracción de posición</para>
+					<para>Obtener la posición</para>
 					<para><varname>getPosition(npoint): float</varname></para>
 					<programlisting>
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
@@ -137,7 +154,7 @@ SELECT getPosition(npoint 'Npoint(63, 0.3)');
 
 				<listitem id="startPosition">
 					<indexterm><primary><varname>startPosition</varname></primary></indexterm>
-					<para>Obtener la fracción de posición</para>
+					<para>Obtener la posición inicial</para>
 					<para><varname>startPosition(npoint): float</varname></para>
 					<programlisting>
 SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
@@ -154,7 +171,13 @@ SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
 					</programlisting>
 				</listitem>
+			</itemizedlist>
+		</sect2>
 
+		<sect2 id="spatial_functions">
+			<title>Funciones espaciales</title>
+
+			<itemizedlist>
 				<listitem id="npoint_srid">
 					<indexterm><primary><varname>SRID</varname></primary></indexterm>
 					<para>Obtener el identificador de referencia espacial</para>
@@ -167,27 +190,6 @@ SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');
 					</programlisting>
 				</listitem>
 			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Funciones de transformación</title>
-			<itemizedlist>
-				<listitem id="npoint_setPrecision">
-					<indexterm><primary><varname>npoint_setPrecision</varname></primary></indexterm>
-					<para>Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
-					<para><varname>setPrecision({npoint,nsegment},int): {npoint,nsegment}</varname></para>
-					<programlisting>
-SELECT setPrecision(npoint(76, 0.123456789), 6);
---  NPoint(76,0.123457)
-SELECT setPrecision(nsegment(76, 0.123456789, 0.223456789), 6);
---  NSegment(76,0.123457,0.223457)
-					</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2 id="spatial_functions">
-			<title>Funciones espaciales</title>
 
 			<para>Los valores de los tipos <varname>npoint</varname> y <varname>nsegment</varname> se pueden convertir al tipo <varname>geometry</varname> usando un <varname>CAST</varname> explícito o usando la notación <varname>::</varname> como se muestra a continuación.</para>
 			<itemizedlist>
@@ -359,16 +361,16 @@ SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,
 	</sect1>
 
 	<sect1 id="validity_temporal_network_points">
-		<title>Validez de los puntos de la red temporal</title>
+		<title>Validez de los puntos de red temporal</title>
 
-		<para>Los valores de los puntos de la red temporal deben satisfacer las restricciones especificadas en <xref linkend="validity_temporal_types" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Los ejemplos de valores incorrectos son los siguientes.</para>
+		<para>Los valores de los puntos de red temporal deben satisfacer las restricciones especificadas en <xref linkend="validity_temporal_types" /> para que estén bien definidos. Se genera un error cuando no se cumple una de estas restricciones. Ejemplos de valores incorrectos son los siguientes.</para>
 		<programlisting>
--- null values are not allowed
+-- no se permiten valores nulos
 SELECT tnpoint 'NULL@2001-01-01 08:05:00';
 SELECT tnpoint 'Point(0 0)@NULL';
--- base type is not a network point
+-- el tipo base no es un punto de red
 SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';
--- multiple routes in a sequence
+-- múltiples rutas en una secuencia
 SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, 0.2)@2001-01-01 09:05:00)';
 		</programlisting>
 	</sect1>
@@ -482,8 +484,18 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 				<para><varname>tnpoint_seq(tnpoint): tnpoint_seq</varname></para>
 				<para><varname>tnpoint_seqset(tnpoint): tnpoint_seqset</varname></para>
 				<programlisting>
-SELECT tnpoints(tnpoint 'NPoint(1, 0.5)@2001-01-01');
+SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');
 -- {[NPoint(1,0.5)@2001-01-01]}
+				</programlisting>
+			</listitem>
+
+			<listitem id="tnpoint_setPrecision">
+				<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
+				<para>Establecer la precisión de la fracción del punto de red temporal en el número de lugares decimales</para>
+				<para><varname>setPrecision(tnpoint,integer): tnpoint</varname></para>
+				<programlisting>
+SELECT setPrecision(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, 0.5)@2012-01-02)}', 6);
+-- {[NPoint(1,0.123457)@2012-01-01 00:00:00+01, NPoint(1,0.5)@2012-01-02 00:00:00+01)}
 				</programlisting>
 			</listitem>
 
@@ -868,7 +880,7 @@ SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)'
 	</sect1>
 
 	<sect1 id="aggregate_temporal_network_points">
-		<title>Funciones agregadas para puntos de red temporales</title>
+		<title>Funciones agregadas</title>
 
 		<para>Las tres funciones agregadas para puntos de red temporales se ilustran a continuación.</para>
 

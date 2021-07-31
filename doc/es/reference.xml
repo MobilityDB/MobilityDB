@@ -37,12 +37,15 @@
 				<listitem>
 					<para><link linkend="timestamptz_cast"><varname>timestamptz::time</varname></link>: Convertir un <varname>timestamptz</varname> a otro tipo de tiempo</para>
 				</listitem>
+
 				<listitem>
 					<para><link linkend="timestampset_cast"><varname>timestampset::periodset</varname></link>: Convertir un <varname>timestampset</varname> a un <varname>periodset</varname></para>
 				</listitem>
+
 				<listitem>
 					<para><link linkend="period_cast"><varname>period::type</varname></link>: Convertir un <varname>period</varname> a otro tipo de tiempo</para>
 				</listitem>
+
 				<listitem>
 					<para><link linkend="tstzrange_cast"><varname>tstzrange::period</varname></link>: Convertir un <varname>tstzrange</varname> a un <varname>period</varname></para>
 				</listitem>
@@ -247,7 +250,6 @@
 			</itemizedlist>
 		</sect2>
 
-
 		<sect2>
 			<title>Funciones agregadas</title>
 
@@ -401,7 +403,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Funciones aggregadas</title>
+			<title>Funciones agregadas</title>
 
 			<itemizedlist>
 				<listitem>
@@ -1347,7 +1349,6 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
-
 		</sect2>
 
 		<sect2>
@@ -1365,7 +1366,7 @@
 		</sect2>
 
 		<sect2>
-			<title>Relaciones espaciales para puntos temporales</title>
+			<title>Relaciones espaciales</title>
 
 			<sect3>
 				<title>Relaciones posibles </title>
@@ -1507,6 +1508,7 @@
 					<listitem>
 						<para><link linkend="npoint"><varname>npoint</varname></link>: Constructor para puntos de red</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="nsegment"><varname>nsegment</varname></link>: Constructor para segmentos de red</para>
 					</listitem>
@@ -1528,14 +1530,21 @@
 					<listitem>
 						<para><link linkend="route"><varname>route</varname></link>: Obtener el identificador de ruta</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="getPosition"><varname>getPosition</varname></link>: Obtener la fracción de posición</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="startPosition"><varname>startPosition</varname></link>: Obtener la posición inicial</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="endPosition"><varname>endPosition</varname></link>: Obtener la posición final</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="npoint_srid"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1546,9 +1555,11 @@
 					<listitem>
 						<para><link linkend="npoint_geometry"><varname>::</varname></link>: Convertir un punto de red en una geometría</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="geometry_npoint"><varname>::</varname></link>: Convertir una geometría en un punto de red</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="npoint_same"><varname>equals</varname></link>: Igualdad espacial para puntos de red</para>
 					</listitem>
@@ -1561,18 +1572,23 @@
 					<listitem>
 						<para><link linkend="static_eq"><varname>=</varname></link>: ¿Son iguales los valores?</para>
 						</listitem>
+
 					<listitem>
 						<para><link linkend="static_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores?</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="static_lt"><varname>&lt;</varname></link>: ¿El primer valor es menor que el segundo?</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="static_gt"><varname>&gt;</varname></link>: ¿El primer valor es mayor que el segundo?</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="static_le"><varname>&lt;=</varname></link>: ¿El primer valor es menor o igual que el segundo?</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="static_ge"><varname>&gt;=</varname></link>: ¿El primer valor es mayor o igual que el segundo?</para>
 					</listitem>
@@ -1581,20 +1597,23 @@
 		</sect2>
 
 		<sect2>
-			<title>Funciones y operadores para puntos de red temporales</title>
+			<title>Puntos de red temporales</title>
 
 			<sect3>
-				<title>Constructores para puntos de red temporales</title>
+				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_inst"><varname>tnpoint_inst</varname></link>: Constructor para puntos de red temporal de subtipo instante</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_instset"><varname>tnpoint_instset</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de instantes</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_seq"><varname>tnpoint_seq</varname></link>: Constructor para puntos de red temporal de subtipo secuencia</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_seqset"><varname>tnpoint_seqset</varname></link>: Constructor para puntos de red temporal de subtipo conjunto de secuencias</para>
 					</listitem>
@@ -1602,11 +1621,12 @@
 			</sect3>
 
 			<sect3>
-				<title>Conversión de tipos para puntos de red temporales</title>
+				<title>Conversión de tipos</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_tgeompoint"><varname>::</varname></link>: Convertir un punto de red temporal en un punto de geometría temporal</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tgeompoint_tnpoint"><varname>::</varname></link>: Convertir un punto de geometría temporal en un punto de red temporal</para>
 					</listitem>
@@ -1614,83 +1634,108 @@
 			</sect3>
 
 			<sect3>
-				<title>Funciones y operadores para puntos de red temporales</title>
+				<title>Funciones y operadores</title>
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_transform"><varname>tnpoint_inst, tnpoint_instset, tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red temporal en otro subtipo</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la fracción del punto de red temporal en el número de posiciones decimales</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_getValues"><varname>getValues</varname></link>: Obtener los valores</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Obtener el valor en una marca de tiempo</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_length"><varname>length</varname></link>: Obtener la longitud atravesada por el punto de red temporal</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_cumulativeLength"><varname>cumulativeLength</varname></link>: Obtener la longitud acumulada atravesada por el punto de red temporal</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_speed"><varname>speed</varname></link>: Obtener la velocidad del punto de red temporal en unidades por segundo</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_stbox"><varname>stbox</varname></link>: Construir el cuadro delimitador a partir de un punto de red y, opcionalmente, una marca de tiempo o un período</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_twCentroid"><varname>twCentroid</varname></link>: Obtener el centroide ponderado en el tiempo</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto de red temporal en el que los dos argumentos están a la distancia más cercana</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Obtener la distancia más pequeña entre los dos argumentos</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_shortestLine"><varname>shortestLine</varname></link>: Obtener la línea que conecta el punto de aproximación más cercano entre los dos argumentos</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_atValue"><varname>atValue</varname></link>: Restringir a un valor</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_atGeometry"><varname>atGeometry</varname></link>: Restringir a una geometría</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_minusValue"><varname>minusValue</varname></link>: Diferencia con un valor</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_minusGeometry"><varname>minusGeometry</varname></link>: Diferencia con una geometría</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_comp"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Operadores de comparación tradicionales</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_tcomp"><varname>#=, #&lt;&gt;</varname></link>: Operadores de comparación temporales</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_ever_always"><varname>?=, &amp;=</varname></link>: Operadores de igualdad siempre y alguna vez</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_relpos"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, &amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, &amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición relativa</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_topo"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, -|-</varname></link>: Operadores topológicos</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_smallestDistance"><varname>|=|</varname></link>: Obtener la distancia más pequeña entre los dos argumentos</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia temporal</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_spatialrels"><varname>contains, disjoint, intersects, touches, dwithin</varname></link>: Relaciones espaciales posibles</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_tspatialrels"><varname>tcontains, tdisjoint, tintersects, ttouches, tdwithin</varname></link>: Relaciones espaciales temporales</para>
 					</listitem>
@@ -1698,14 +1743,17 @@
 			</sect3>
 
 			<sect3>
-				<title>Funciones agregadas para puntos de red temporales</title>
+				<title>Funciones agregadas</title>
+
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tnpoint_tcount"><varname>tcount</varname></link>: Conteo temporal</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_wcount"><varname>wcount</varname></link>: Conteo de ventana</para>
 					</listitem>
+
 					<listitem>
 						<para><link linkend="tnpoint_tcentroid"><varname>tcentroid</varname></link>: Centroide temporal</para>
 					</listitem>

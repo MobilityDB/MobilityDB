@@ -82,8 +82,10 @@
 		</listitem>
 	</itemizedlist>
 
-	<para>Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en <emphasis>cada instante</emphasis>, lo que da un valor temporal como resultado. En ese caso, la operación sólo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <varname>#&lt;</varname>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
-		<programlisting>
+	<para>
+		Una forma común de generalizar las operaciones tradicionales a los tipos temporales es aplicar la operación en <emphasis>cada instante</emphasis>, lo que da un valor temporal como resultado. En ese caso, la operación sólo se define en la intersección de las extensiones temporales de los operandos; si las extensiones temporales son disjuntas, el resultado es nulo. Por ejemplo, los operadores de comparación temporal, como <varname>#&lt;</varname>, determinan si los valores tomados por sus operandos en cada instante satisfacen la condición y devuelven un booleano temporal. A continuación se dan ejemplos de las diversas generalizaciones de los operadores.
+	</para>
+	<programlisting>
 -- Comparación temporal
 SELECT tint '[2@2001-01-01, 2@2001-01-03)' #&lt; tfloat '[1@2001-01-01, 3@2001-01-03)';
 -- "{[f@2001-01-01, f@2001-01-02], (t@2001-01-02, t@2001-01-03)}"
@@ -100,11 +102,12 @@ geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))');
 SELECT tgeompoint '[Point(0 0)@2001-01-01 08:00:00, Point(0 1)@2001-01-03 08:10:00)' &lt;-&gt;
 tgeompoint '[Point(0 0)@2001-01-02 08:05:00, Point(1 1)@2001-01-05 08:15:00)';
 -- "[0.5@2001-01-02 08:05:00+00, 0.745184033794557@2001-01-03 08:10:00+00)"
-		</programlisting>
-	</para>
+	</programlisting>
 
-	<para>Otro requisito común es determinar si los operandos satisfacen <emphasis>alguna vez</emphasis> o <emphasis>siempre</emphasis> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez/siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
-		<programlisting>
+	<para>
+		Otro requisito común es determinar si los operandos satisfacen <emphasis>alguna vez</emphasis> o <emphasis>siempre</emphasis> una condición con respecto a una operación. Estos se pueden obtener aplicando los operadores de comparación alguna vez/siempre. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). A continuación se dan ejemplos de operadores de comparación alguna vez y siempre.
+	</para>
+	<programlisting>
 -- ¿Se cruzan los operandos alguna vez?
 SELECT tintersects(tgeompoint '[Point(0 1)@2001-01-01, Point(3 1)@2001-01-04)',
   geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))') ?= true;
@@ -121,15 +124,21 @@ SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
 SELECT (tfloat '[1@2001-01-01, 3@2001-01-03)' #&lt;
   tfloat '[2@2001-01-01, 4@2001-01-03)') %= true;
 -- true
-		</programlisting>
-		Por razones de eficiencia, algunas operaciones comunes con la semántica alguna vez o siempre se proporcionan de forma nativa. Por ejemplo, la función <varname>intersects</varname> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.</para>
+	</programlisting>
+	<para>
+		Por razones de eficiencia, algunas operaciones comunes con la semántica alguna vez o siempre se proporcionan de forma nativa. Por ejemplo, la función <varname>intersects</varname> determina si hay un instante en el que los dos argumentos se cruzan espacialmente.
+	</para>
 
-	<para>A continuación describimos las funciones y operadores para tipos temporales. Para mayor concisión, en los ejemplos usamos principalmente secuencias compuestas por dos instantes.</para>
+	<para>
+		A continuación describimos las funciones y operadores para tipos temporales. Para mayor concisión, en los ejemplos usamos principalmente secuencias compuestas por dos instantes.
+	</para>
 
 	<sect1 id="input_output_temporal_types">
 		<title>Entrada/salida de tipos temporales</title>
-		<para>Un valor de instante es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Un valor de secuencia es un conjunto de valores <varname>v1@t1,...,vn@tn</varname> delimitado por límites superior e inferior, que pueden ser inclusivo (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>&rsquo; y &lsquo;<varname>)</varname>&rsquo;). Ejemplos de entrada de valores temporales unitarios son los siguientes:
-			<programlisting>
+		<para>
+			Un valor de instante es un par de la forma <varname>v@t</varname>, donde <varname>v</varname> es un valor del tipo de base y <varname>t</varname> es un valor de <varname>timestamptz</varname>. Un valor de secuencia es un conjunto de valores <varname>v1@t1,...,vn@tn</varname> delimitado por límites superior e inferior, que pueden ser inclusivo (representados por &lsquo;<varname>[</varname>&rsquo; y &lsquo;<varname>]</varname>&rsquo;) o exclusivos (representados por &lsquo;<varname>(</varname>&rsquo; y &lsquo;<varname>)</varname>&rsquo;). Ejemplos de entrada de valores temporales unitarios son los siguientes:
+		</para>
+		<programlisting>
 SELECT tbool 'true@2001-01-01 08:00:00';
 SELECT tint '1@2001-01-01 08:00:00';
 SELECT tfloat '1.5@2001-01-01 08:00:00';
@@ -143,14 +152,17 @@ SELECT tfloat '[1.5@2001-01-01 08:00:00]';  -- Instant sequence
 SELECT ttext '[BBB@2001-01-01 08:00:00, BBB@2001-01-03 08:00:00]';
 SELECT tgeompoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 0)@2017-01-01 08:05:00)';
 SELECT tgeogpoint '[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00,
-Point(0 0)@2017-01-01 08:10:00)';
-			</programlisting>
+  Point(0 0)@2017-01-01 08:10:00)';
+		</programlisting>
+
+		<para>
+			La extensión temporal de un valor de instante es un sólo instante, mientras que la extensión temporal de un valor de secuencia es un período definido por el primer y último instantes, así como por los límites superior e inferior.
 		</para>
 
-		<para>La extensión temporal de un valor de instante es un sólo instante, mientras que la extensión temporal de un valor de secuencia es un período definido por el primer y último instantes, así como por los límites superior e inferior.</para>
-
-		<para>Un valor temporal de conjunto es un conjunto <varname>{v1,...,vn}</varname> donce cada <varname>vi</varname> es un valor unitario del tipo correspondiente. Ejemplos de entrada de valores temporales de conjunto son los siguientes:
-			<programlisting>
+		<para>
+			Un valor temporal de conjunto es un conjunto <varname>{v1,...,vn}</varname> donce cada <varname>vi</varname> es un valor unitario del tipo correspondiente. Ejemplos de entrada de valores temporales de conjunto son los siguientes:
+		</para>
+		<programlisting>
 SELECT tbool '{true@2001-01-01 08:00:00, false@2001-01-03 08:00:00}';
 SELECT tint '{1@2001-01-01 08:00:00, 2@2001-01-03 08:00:00}';
 SELECT tfloat '{1.0@2001-01-01 08:00:00, 2.0@2001-01-03 08:00:00}';
@@ -169,11 +181,15 @@ SELECT tgeompoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05
   [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
 SELECT tgeogpoint '{[Point(0 0)@2017-01-01 08:00:00, Point(0 1)@2017-01-01 08:05:00),
   [Point(0 1)@2017-01-01 08:10:00, Point(1 1)@2017-01-01 08:15:00)}';
-			</programlisting>
-			La extensión temporal de un valor de conjunto de instantes es un conjunto de marcas de tiempo, mientras que la extensión temporal de un valor de conjunto de secuencias es un conjunto de períodos.</para>
+		</programlisting>
+		<para>
+			La extensión temporal de un valor de conjunto de instantes es un conjunto de marcas de tiempo, mientras que la extensión temporal de un valor de conjunto de secuencias es un conjunto de períodos.
+		</para>
 
-		<para>Los valores de secuencia o conjunto de secuencias cuyo tipo de base es continuo pueden especificar que la interpolación es escalonada. Si no se especifica, se supone que la interpolación es lineal por defecto.
-			<programlisting>
+		<para>
+			Los valores de secuencia o conjunto de secuencias cuyo tipo de base es continuo pueden especificar que la interpolación es escalonada. Si no se especifica, se supone que la interpolación es lineal por defecto.
+		</para>
+		<programlisting>
 -- Interpolación lineal por defecto
 SELECT tfloat '[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
 SELECT tgeompoint '{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
@@ -182,32 +198,41 @@ SELECT tgeompoint '{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
 SELECT tfloat 'Interp=Stepwise;[2.5@2001-01-01, 3@2001-01-03, 1@2001-01-04]';
 SELECT tgeompoint 'Interp=Stepwise;{[Point(2.5 2.5)@2001-01-01, Point(3 3)@2001-01-03],
   [Point(1 1)@2001-01-04, Point(1 1)@2001-01-04]}';
-			</programlisting>
-			Para los valores de subtipo conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.</para>
+		</programlisting>
+		<para>
+			Para los valores de subtipo conjunto de secuencias se supone que todas las secuencias componentes tienen la misma interpolación, ya sea por escalonada o lineal, como en los ejemplos anteriores.
+		</para>
 
-		<para>Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación extendida de texto conocido (EWKT) de la siguiente manera:
-			<programlisting>
+		<para>
+			Para los puntos temporales, es posible especificar el identificador de referencia espacial (SRID) utilizando la representación extendida de texto conocido (EWKT) de la siguiente manera:
+		</para>
+		<programlisting>
 SELECT tgeompoint 'SRID=5435;[Point(0 0)@2000-01-01,Point(0 1)@2000-01-02]'
-			</programlisting>
+		</programlisting>
+		<para>
 			Todas las geometrías componentes serán entonces del SRID dado. Además, cada geometría componente puede especificar su SRID con el formato EWKT como en el siguiente ejemplo
-			<programlisting>
+		</para>
+		<programlisting>
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=5435;Point(0 1)@2000-01-02]'
-			</programlisting>
+		</programlisting>
+		<para>
 			Se genera un error si las geometrías componentes no están todas en el mismo SRID o si el SRID de una geometría componente es diferente al del punto temporal.
-			<programlisting>
+		</para>
+		<programlisting>
 SELECT tgeompoint '[SRID=5435;Point(0 0)@2000-01-01,SRID=4326;Point(0 1)@2000-01-02]';
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
 SELECT tgeompoint 'SRID=5435;[SRID=4326;Point(0 0)@2000-01-01,
   SRID=4326;Point(0 1)@2000-01-02]'
 -- ERROR: Geometry SRID (4326) does not match temporal type SRID (5435)
-			</programlisting>
-		</para>
+		</programlisting>
 	</sect1>
 
 	<sect1 id="constructor_temporal_tyes">
 		<title>Funciones de constructor</title>
 
-		<para>Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo; y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.</para>
+		<para>
+			Cada tipo temporal tiene una función de constructor con el mismo nombre que el tipo y un sufijo para el subtipo, donde los sufijos &lsquo;<varname>_inst</varname>&rsquo;, &lsquo;<varname>_instset</varname>&rsquo;, &lsquo;<varname>_seq</varname>&rsquo; y &lsquo;<varname>_seqset</varname>&rsquo; corresponden, respectivamente, a los subtipos instante, conjunto de instantes, secuencia y conjunto de secuencias. Ejemplos son <varname>tint_seq</varname> o <varname>tgeompoint_seqset</varname>. El uso de la función de constructor suele ser más conveniente que escribir una constante literal.
+		</para>
 
 		<itemizedlist>
 			<listitem>
@@ -424,7 +449,9 @@ SELECT asText((tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02)')::tge
 			</listitem>
 		</itemizedlist>
 
-		<para>Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <emphasis>trayectorias</emphasis>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.</para>
+		<para>
+			Una forma común de almacenar puntos temporales en PostGIS es representarlos como geometrías de tipo <varname>LINESTRING M</varname> y utilizar la dimensión M para codificar marcas de tiempo como segundos desde 1970-01-01 00:00:00. Estas geometrías aumentadas con tiempo, llamadas <emphasis>trayectorias</emphasis>, se pueden validar con la función <varname>ST_IsValidTrajectory</varname> para verificar quel el valor M está creciendo de cada vértice al siguiente. Las trayectorias se pueden manipular con las funciones <varname>ST_ClosestPointOfApproach</varname>, <varname>ST_DistanceCPA</varname> y <varname>ST_CPAWithin</varname>. Los valores de puntos temporales se pueden convertir a/desde trayectorias de PostGIS.
+		</para>
 
 		<itemizedlist>
 			<listitem id="tgeompoint_geometry">
@@ -889,7 +916,7 @@ SELECT timestampN(tfloat '{[1@2012-01-01, 2@2012-01-03),
 
 			<listitem id="ttype_timestamps">
 				<indexterm><primary><varname>timestamps</varname></primary></indexterm>
-				<para>Obtner las marcas de tiempo diferentes</para>
+				<para>Obtener las marcas de tiempo diferentes</para>
 				<para><varname>timestamps(ttype): timestamptz[]</varname></para>
 				<programlisting>
 SELECT timestamps(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
@@ -1191,7 +1218,7 @@ SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2000-01-01, POINT(3 4)@2000-0
 
 			<listitem id="tgeompointFromEWKT">
 				<indexterm><primary><varname>tgeompointFromEWKT</varname></primary></indexterm>
-				<para>Entrar un punto temporal geométrico en una representación de texto conocido (Well-Known Text o WKT) &Z_support;</para>
+				<para>Entrar un punto temporal geométrico en una representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support;</para>
 				<para><varname>tgeompointFromEWKT(text): tgeompoint</varname></para>
 				<programlisting>
 SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[POINT(1 2)@2000-01-01,
@@ -1202,7 +1229,7 @@ SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[POINT(1 2)@2000-01-01,
 
 			<listitem id="tgeogpointFromEWKT">
 				<indexterm><primary><varname>tgeogpointFromEWKT</varname></primary></indexterm>
-				<para>Entrar un punto temporal geográfico en una representación de texto conocido (Well-Known Text o WKT) &Z_support; &geography_support;</para>
+				<para>Entrar un punto temporal geográfico en una representación extendida de texto conocido (Extended Well-Known Text o EWKT) &Z_support; &geography_support;</para>
 				<para><varname>tgeogpointFromEWKT(text): tgeogpoint</varname></para>
 				<programlisting>
 SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2000-01-01,
@@ -1521,10 +1548,10 @@ SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01,
 				<para>La función <varname>nearestApproachInstant</varname> generaliza the la función PostGIS <varname>ST_ClosestPointOfApproach</varname>. Primero, la última función requiere que ambos argumentos sean trayectorias. Segundo, la función <varname>nearestApproachInstant</varname> devuelve tanto el punto como la marca de tiempo del punto de aproximación más cercano, mientras que la función PostGIS sólo proporciona la marca de tiempo como se muestra a continuación.</para>
 				<programlisting>
 SELECT to_timestamp(ST_ClosestPointOfApproach(
-tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-  Point(0 0 0)@2012-01-05)'::geometry,
-tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-  Point(2 2 2)@2012-01-06)'::geometry));
+  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
+    Point(0 0 0)@2012-01-05)'::geometry,
+  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
+    Point(2 2 2)@2012-01-06)'::geometry));
 -- "2012-01-03 12:00:00+00"
 				</programlisting>
 			</listitem>
@@ -1545,7 +1572,7 @@ SELECT nearestApproachDistance(
     Point(0 0 0)@2012-01-05)',
   tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
     Point(2 2 2)@2012-01-06)');
--- "0.5"
+-- 0.5
 				</programlisting>
 				<para>La función <varname>nearestApproachDistance</varname> tiene un operador asociado <varname>|=|</varname> que se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (see <xref linkend="operators_temporal_types" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 				<programlisting>
@@ -1554,7 +1581,7 @@ SELECT ST_DistanceCPA(
     Point(0 0 0)@2012-01-05)'::geometry,
   tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
     Point(2 2 2)@2012-01-06)'::geometry);
--- "0.5"
+-- 0.5
 				</programlisting>
 			</listitem>
 
@@ -1601,7 +1628,8 @@ SELECT ST_CPAWithin(
 				<para><varname>simplify(tpoint,distance float,speed float): tpoint</varname></para>
 				<para>La primera versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento, que se especifica en las unidades del sistema de coordenadas. La segunda versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento siempre que la diferencia de velocidad entre el punto y el punto correspondiente en la versión simplificada sea menor que la velocidad pasada como tercer argumento, que se especifica en unidades por segundo. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>
 
-				<programlisting>-- Solo distancia especificada
+				<programlisting>
+-- Solo distancia especificada
 SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
   Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
   Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 1.5)));
@@ -1659,9 +1687,10 @@ SELECT st_astext(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01,
 -- "MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))"
 				</programlisting>
 				<para>Una visualización típica de los datos de movilidad es mostrar en un mapa la trayectoria del objeto móvil utilizando diferentes colores según la velocidad. <xref linkend="figspeed" /> muestra el resultado de la consulta a continuación usando una rampa de color en QGIS.</para>
-				<programlisting>WITH Temp(t) AS (
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
-  Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
+				<programlisting>
+WITH Temp(t) AS (
+  SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
+    Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
 )
 SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true))
 FROM Temp;
@@ -1669,11 +1698,12 @@ FROM Temp;
   (3 1 1.41,4 0 1.41))"
 				</programlisting>
 				<para>La siguiente expresión se usa en QGIS para lograr esto. La función <varname>scale_linear</varname> transforma el valor M de cada segmento componente al rango [0, 1]. Este valor luego se pasa a la función <varname>ramp_color</varname>.</para>
-				<programlisting>ramp_color(
-'RdYlBu',
-scale_linear(
-  m(start_point(geometry_n($geometry,@geometry_part_num))),
-  0, 2, 0, 1)
+				<programlisting>
+ramp_color(
+  'RdYlBu',
+  scale_linear(
+    m(start_point(geometry_n($geometry,@geometry_part_num))),
+    0, 2, 0, 1)
 )
 				</programlisting>
 				<figure id="figspeed" float="start"><title>Visualización de la velocidad de un objeto móvil usando una rampa de color en QGIS.</title>
@@ -1706,7 +1736,6 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 -- LINESTRING(-8192 12288,12288 -8192) | {946681200,946767600}
 				</programlisting>
 			</listitem>
-
 		</itemizedlist>
 	</sect1>
 
@@ -2060,7 +2089,7 @@ SELECT asText(minusStbox(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-
 		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) requieren que los operandos izquierdo y derecho sean del mismo tipo base. Excepto la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten que los índices de árbol B se construyan sobre tipos temporales. Estos operadores comparan los períodos delimitadores (ver <xref linkend="time_comp_operators" />), después los cuadros delimitadores (ver <xref linkend="comparison_box_types" />) y si son iguales, entonces la comparación depende del subtipo. Para los valores de instante, primero comparan las marcas de tiempo y, si son iguales, comparan los valores. Para los valores de secuencia y conjunto de instantes, comparan los primeros N instantes, donde N es el mínimo del número de instantes que componen ambos valores. Finalmente, para los valores de conjuntos de secuencias, comparan los primeros N valores de secuencia, donde N es el mínimo del número de secuencias que componen ambos valores.</para>
 
 		<para>Los operadores de igualdad y no igualdad consideran la representación equivalente para diferentes subtipos como se muestra a continuación.
-				<programlisting>
+			<programlisting>
 SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
 -- true
 SELECT tfloat '1.5@2001-01-01' = tfloat '[1.5@2001-01-01]';
@@ -2073,7 +2102,7 @@ SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}' =
 SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
   tgeogpoint '{[Point(1 1 1)@2001-01-01], [Point(2 2 2)@2001-01-02]}';
 -- true
-				</programlisting>
+			</programlisting>
 		</para>
 
 		<itemizedlist>
@@ -2558,8 +2587,8 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 	<sect1>
 		<title>Operadores de cuadro delimitador</title>
-		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en <xref linkend="temporal_types" />, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en <xref linkend="casting_box_types" />, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
 
+		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en <xref linkend="temporal_types" />, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en <xref linkend="casting_box_types" />, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
 
 		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposicion (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), está contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
 
@@ -2587,6 +2616,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 		</para>
 
 		<para>Muchas de las funciones de esta sección son <emphasis>funciones de retorno de conjuntos</emphasis> (también conocidas como <emphasis>funciones de tabla</emphasis>) ya que normalmente devuelven más de un valor. En este caso, las funciones están marcadas con el símbolo &SRF;.</para>
+
 		<sect2 id="bucket_functions">
 			<title>Operaciones de intervalos</title>
 
@@ -2672,12 +2702,13 @@ SELECT timeBucket(timestamptz '2020-05-01', interval '2 days', timestamptz '2020
 					<indexterm><primary><varname>periodBucket</varname></primary></indexterm>
 					<para>Obtener el período en el espacio de intervalos que contiene la marca de tiempo de entrada.</para>
 					<para>Si el origen no se especifica, su valor se establece por defecto en lunes 3 de enero de 2000.</para>
-					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03'): period</varname></para>
+					<para><varname>periodBucket(time timestamptz,duration interval,origin timestamptz='2000-01-03'):</varname></para>
+					<para><varname>  period</varname></para>
 					<programlisting>
-SELECT periodBucket(2, interval '2 days');
--- [2000-01-07, 2000-01-09)
-SELECT periodBucket(2, interval '2 days', '2020-06-15');
--- [2020-06-19, 2020-06-21)
+SELECT periodBucket('2000-01-04', interval '1 week');
+-- [2000-01-03, 2000-01-10)
+SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
+-- [1999-12-31, 2000-01-07)
 					</programlisting>
 				</listitem>
 
@@ -2769,14 +2800,12 @@ SELECT multidimTile(geometry 'Point(1 1)', '2000-01-01', 2.0, '2 days', 'Point(1
 -- STBOX T((1,1,1999-12-31),(3,3,2000-01-02))
 					</programlisting>
 				</listitem>
-
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
+		<sect2 id="split_functions">
 			<title>Operaciones de fragmentación</title>
 			<para>Estas operaciones fragmentan un valor temporal con respecto a una secuencia de intervalos (ver <xref linkend="bucket_functions" />) o una malla multidimensional (ver <xref linkend="grid_functions" />).</para>
-
 			<itemizedlist>
 				<listitem id="valueSplit">
 					<indexterm><primary><varname>valueSplit</varname></primary></indexterm>
@@ -2802,20 +2831,20 @@ SELECT valueSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 2.0, 1.0);
 
 				<listitem id="timeSplit">
 					<indexterm><primary><varname>timeSplit</varname></primary></indexterm>
-					<para>Fragmentar el valor temporal con respecto a intervalos de tiempo. &SRF;</para>
+					<para>Fragmentar el valor temporal con respecto a intervalos de tiempo. &Z_support; &SRF;</para>
 					<para><varname>timeSplit(value ttype,duration interval,origin timestamptz='2000-01-03'):</varname></para>
 					<para><varname>  setof time_temp</varname></para>
 					<para>Si el origen del tiempo no se especifica, su valor se establece por defecto en el lunes 3 de enero de 2000.</para>
 					<programlisting>
-SELECT (sp).time, (sp).temp
-FROM (SELECT timeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', '2 days') AS sp) t;
+SELECT (ts).time, (ts).temp
+FROM (SELECT timeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', '2 days') AS ts) t;
 -- 2011-12-31 | [1@2012-01-01, 2@2012-01-02)
    2012-01-02 | [2@2012-01-02, 4@2012-01-04)
    2012-01-04 | [4@2012-01-04, 6@2012-01-06)
    ...
-SELECT (tb).time, astext((tb).temp) AS temp
+SELECT (ts).time, astext((ts).temp) AS temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-10]',
-  '2 days', '2012-01-01') AS tb) AS t;
+  '2 days', '2012-01-01') AS ts) AS t;
 -- 2012-01-01 | [POINT Z (1 1 1)@2012-01-01, POINT Z (3 3 3)@2012-01-03)
    2012-01-03 | [POINT Z (3 3 3)@2012-01-03, POINT Z (5 5 5)@2012-01-05)
    2012-01-05 | [POINT Z (5 5 5)@2012-01-05, POINT Z (7 7 7)@2012-01-07)
@@ -2896,6 +2925,7 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 
 	<sect1>
 		<title>Operadores de distancia</title>
+
 		<para>Hay dos operadores de distancia. El primero, denotado <varname>|=|</varname>, calcula la distancia entre un punto temporal y una geometría o entre dos puntos temporales en su punto de aproximación más cercano, que es un número flotante. Esto es lo mismo que la función <varname>nearestApproachDistance</varname> discutida antes, pero como operador se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (ver <xref linkend="indexing_temporal_types" />).</para>
 
 		<para>Por otro lado, el operador de distancia temporal, denotado <varname>&lt;-&gt;</varname>, calcula la distancia en cada instante de la intersección de las extensiones temporales de sus argumentos y da como resultado un número flotante temporal. Calcular la distancia temporal es útil en muchas aplicaciones de movilidad. Por ejemplo, un grupo en movimiento (también conocido como convoy o bandada) se define como un conjunto de objetos que se mueven cerca unos de otros durante un intervalo de tiempo prolongado. Esto requiere calcular la distancia temporal entre dos objetos en movimiento.</para>
@@ -2940,7 +2970,7 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 	</sect1>
 
 	<sect1 id="topological_relationships_temporal_points">
-		<title>Relaciones espaciales para puntos temporales</title>
+		<title>Relaciones espaciales</title>
 
 		<para>Las relaciones topológicas como <varname>ST_Intersects</varname> y las relaciones de distancia como <varname>ST_DWithin</varname> pueden ser generalizadas a los puntos temporales. Los argumentos de estas funciones generalizadas son un punto temporal y un tipo base (es decir, un <varname>geometry</varname> o un <varname>geography</varname>) o dos puntos temporales. Además, ambos argumentos deben ser del mismo tipo base, es decir, estas funciones no permiten merzclar un punto de geometría temporal (o una geometría) y un punto de geografía temporal (o una geografía).</para>
 
@@ -2955,39 +2985,52 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 			</listitem>
 		</itemizedlist>
 
-		<para>La semántica de las relaciones posibles varía según la relación y el tipo de argumentos. Por ejemplo, la siguiente consulta
-			<programlisting>
+		<para>
+			La semántica de las relaciones posibles varía según la relación y el tipo de argumentos. Por ejemplo, la siguiente consulta
+		</para>
+		<programlisting>
 SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
-			</programlisting>
+		</programlisting>
+		<para>
 			comprueba si el punto temporal se cruzó alguna vez con la geometría, ya que la consulta es conceptualmente equivalente a la siguiente
-			<programlisting>
+		</para>
+		<programlisting>
 SELECT ST_Intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   geometry 'Linestring(0 1,1 1)');
-			</programlisting>
+		</programlisting>
+		<para>
 			donde la segunda geometría se obtiene aplicando la función <varname>trajectory</varname> al punto temporal. Por otro lado, la consulta
-			<programlisting>
+		</para>
+		<programlisting>
 SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
-			</programlisting>
+		</programlisting>
+		<para>
 			comprueba si la geometría siempre contiene el punto temporal. Finalmente, la siguiente consulta
-			<programlisting>
+		</para>
+		<programlisting>
 SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
   tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
-			</programlisting>
+		</programlisting>
+		<para>
 			comprueba si los puntos temporales pueden cruzarse en el espacio independientemente del tiempo, ya que la consulta anterior es conceptualmente equivalente a la siguiente
-			<programlisting>
-SELECT ST_Intersects('Linestring(0 1,1 0)', 'Linestring(0 0,1 1)');
-			</programlisting>
 		</para>
+		<programlisting>
+SELECT ST_Intersects('Linestring(0 1,1 0)', 'Linestring(0 0,1 1)');
+		</programlisting>
 
-		<para>Las relaciones posibles se utilizan normalmente en combinación con un índice espacio-temporal al calcular las relaciones temporales. Por ejemplo, la siguiente consulta
-			<programlisting>
+		<para>
+			Las relaciones posibles se utilizan normalmente en combinación con un índice espacio-temporal al calcular las relaciones temporales. Por ejemplo, la siguiente consulta
+		</para>
+		<programlisting>
 SELECT T.TripId, R.RegionId, tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
 WHERE intersects(T.Trip, R.Geom)
-			</programlisting>
-			que verifica si un viaje <varname>T</varname> (que es un punto temporal) se cruza con una región <varname>R</varname> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <varname>T.Trip</varname> dado que la función <varname>intersects</varname> realiza automáticamente la comparación del cuadro delimitador <varname>T.Trip &amp;&amp; R.Geom</varname>. Esto se explica más adelante en este documento.</para>
+		</programlisting>
+		<para>
+			que verifica si un viaje <varname>T</varname> (que es un punto temporal) se cruza con una región <varname>R</varname> (que es una geometría) beneficiará de un índice espacio-temporal en la columna <varname>T.Trip</varname> dado que la función <varname>intersects</varname> realiza automáticamente la comparación del cuadro delimitador <varname>T.Trip &amp;&amp; R.Geom</varname>. Esto se explica más adelante en este documento.
+		</para>
 
 		<para>No todas las relaciones espaciales disponibles en PostGIS tienen una generalización significativa para los puntos temporales. Se define una versión generalizada de las siguientes relaciones para los puntos geométricos temporales: <varname>intersects</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>contains</varname>, y <varname>touches</varname>, mientras que para los puntos geográficos temporales solo se definen las tres primeras. Además, no todas las combinaciones de parámetros son significativas para una función generalizada dada. Por ejemplo, mientras que <varname>tcontains(geometry,tpoint)</varname> es significativo, <varname>tcontains(tpoint,geometry)</varname> es significativo solo cuando la geometría es un solo punto, y <varname>tcontains(tpoint,tpoint)</varname> es equivalente a <varname>tintersects(tpoint, geometry)</varname>. Por esta razón, solo se define la primera combinación de parámetros para <varname>contains</varname> y <varname>tcontains</varname>.</para>
 
@@ -3004,7 +3047,7 @@ WHERE intersects(T.Trip, R.Geom)
 SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 -- true
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="disjoint">
@@ -3015,7 +3058,7 @@ SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 -- false
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="dwithin">
@@ -3029,7 +3072,7 @@ SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint 'Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02', 1)
 -- false
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="intersects">
@@ -3054,7 +3097,7 @@ SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(0 1)@2012-01-03)');
 -- true
-				</programlisting>
+					</programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3070,7 +3113,7 @@ SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
 -- "{[f@2012-01-01, f@2012-01-02], (t@2012-01-02, f@2012-01-03, f@2012-01-04)}"
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="tdisjoint">
@@ -3084,7 +3127,7 @@ SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
 -- "{[t@2012-01-01, f@2012-01-03], (t@2012-01-03, t@2012-01-05)}"
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="tdwithin">
@@ -3098,7 +3141,7 @@ SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
   tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
 -- "{[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}"
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="tintersects">
@@ -3109,11 +3152,11 @@ SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
 SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
 -- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, t@2012-01-03],
-(f@2012-01-03, f@2012-01-04]}"
+  (f@2012-01-03, f@2012-01-04]}"
 SELECT tintersects(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
 -- "{[f@2012-01-01, t@2012-01-03], (f@2012-01-03, f@2012-01-05)}"
-				</programlisting>
+					</programlisting>
 				</listitem>
 
 				<listitem id="ttouches">
@@ -3124,7 +3167,7 @@ SELECT tintersects(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 SELECT ttouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)');
 -- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04]}"
-				</programlisting>
+					</programlisting>
 				</listitem>
 			</itemizedlist>
 			</sect2>
@@ -3332,12 +3375,14 @@ SELECT mobilitydb_full_version();
 	<sect1 id="indexing_temporal_types">
 		<title>Indexación de tipos temporales</title>
 		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de tipos temporales. El índice GiST implementa un árbol R para tipos alfanuméricos temporales y para tipos de puntos temporales. El índice SP-GiST implementa un árbol cuádruple para tipos alfanuméricos temporales y un árbol óctuple para tipos de puntos temporales. Ejemplos de creación de índices son los siguientes:
-				<programlisting>CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
+			<programlisting>
+CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
-				</programlisting>
+			</programlisting>
 		</para>
 
-		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en <xref linkend="temporal_types" />, estos son <itemizedlist>
+		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para los tipos temporales. Como se explica en <xref linkend="temporal_types" />, estos son
+			<itemizedlist>
 				<listitem>
 					<para>el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>,</para>
 				</listitem>
@@ -3352,7 +3397,8 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 			</itemizedlist>
 		</para>
 
-		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte <xref linkend="operators_temporal_types" /> para obtener más información): <itemizedlist>
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores (consulte <xref linkend="operators_temporal_types" /> para obtener más información):
+			<itemizedlist>
 				<listitem>
 					<para><varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&gt;&gt;</varname>, que sólo consideran la dimensión de valores en tipos alfanuméricos temporales,</para>
 				</listitem>
@@ -3374,7 +3420,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 		<para>Además, un índice GiST puede acelerar las consultas de vecinos más cercanos que involucran el operador <varname>|=|</varname>.</para>
 
 		<para>Por ejemplo, dado el índice definido anteriormente en la tabla <varname>Department</varname> y una consulta que implica una condición con el operador <varname>&amp;&amp;</varname> (superposición), si el argumento derecho es un flotante temporal, entonces se consideran tanto el valor como las dimensiones de tiempo para filtrar las tuplas de la relación, mientras que si el argumento derecho es un valor flotante, un rango flotante o un tipo de tiempo, entonces el valor o la dimensión de tiempo se utilizará para filtrar las tuplas de la relación. Además, se puede construir un cuadro delimitador a partir de un valor/rango y/o una marca de tiempo/período, que se puede usar para filtrar las tuplas de la relación. Ejemplos de consultas que utilizan el índice en la tabla <varname>Department</varname> definida anteriormente se dan a continuación.
-				<programlisting>
+			<programlisting>
 SELECT * FROM Department WHERE NoEmps &amp;&amp; 5;
 SELECT * FROM Department WHERE NoEmps &amp;&amp; intrange '[1, 5)';
 SELECT * FROM Department WHERE NoEmps &amp;&amp; timestamptz '2012-04-01';
@@ -3383,11 +3429,11 @@ SELECT * FROM Department WHERE NoEmps &amp;&amp;
 tbox(intrange '[1, 5)', period '[2012-04-01, 2012-05-01)');
 SELECT * FROM Department WHERE NoEmps &amp;&amp;
 tfloat '{[1@2012-01-01, 1@2012-02-01), [5@2012-04-01, 5@2012-05-01)}';
-				</programlisting>
+			</programlisting>
 		</para>
 
 		<para>Del mismo modo, los ejemplos de consultas que utilizan el índice en la tabla <varname>Trips</varname> definida anteriormente se dan a continuación.
-				<programlisting>
+			<programlisting>
 SELECT * FROM Trips WHERE Trip &amp;&amp; geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))';
 SELECT * FROM Trips WHERE Trip &amp;&amp; timestamptz '2001-01-01';
 SELECT * FROM Trips WHERE Trip &amp;&amp; period '[2001-01-01, 2001-01-05)';
@@ -3395,13 +3441,13 @@ SELECT * FROM Trips WHERE Trip &amp;&amp;
 stbox(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))', period '[2001-01-01, 2001-01-05]');
 SELECT * FROM Trips WHERE Trip &amp;&amp;
 tgeompoint '{[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02, Point(1 1)@2001-01-05)}';
-				</programlisting>
+			</programlisting>
 		</para>
 
 		<para>Finalmente, se pueden crear índices de árbol B para columnas de tabla de todos los tipos temporales. Para este tipo de índice, la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos temporales, con los correspondientes operadores <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname> y <varname>&gt;=</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte de árbol B para tipos temporales está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 
 		<para>Para acelerar varias de las funciones en <xref linkend="manipulating_temporal_types" />, se puede agregar en la cláusula <varname>WHERE</varname> de las consultas una comparación de cuadro delimitador que hace uso de los índices disponibles. Por ejemplo, este sería típicamente el caso de las funciones que proyectan los tipos temporales a las dimensiones de valor/espacio y/o tiempo. Esto filtrará las tuplas con un índice como se muestra en la siguiente consulta.
-				<programlisting>
+			<programlisting>
 SELECT atPeriod(T.Trip, period(2001-01-01, 2001-01-02))
 FROM Trips T
 -- Filtro de índice con cuadro delimitador
@@ -3410,7 +3456,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 		</para>
 
 		<para>En el caso de los puntos temporales, todas las relaciones espaciales con la semántica posible (ver <xref linkend="topological_relationships_temporal_points" />) incluyen automáticamente una comparación de cuadro delimitador que hará uso de cualquier índice que esté disponible en los puntos temporales. Por esta razón, la primera versión de las relaciones se usa típicamente para filtrar las tuplas con la ayuda de un índice al calcular las relaciones temporales como se muestra en la siguiente consulta.
-				<programlisting>
+			<programlisting>
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R
 -- Filtro de índice con cuadro delimitador
@@ -3425,7 +3471,8 @@ WHERE intersects(T.Trip, R.Geom);
 			<title>Colecta de estadísticas</title>
 			<para>El planificador de PostgreSQL se basa en información estadística sobre el contenido de las tablas para generar el plan de ejecución más eficiente para las consultas. Estas estadísticas incluyen una lista de algunos de los valores más comunes en cada columna y un histograma que muestra la distribución aproximada de datos en cada columna. Para tablas grandes, se toma una muestra aleatoria del contenido de la tabla, en lugar de examinar cada fila. Esto permite analizar tablas grandes en poco tiempo. La información estadística es recopilada por el comando <varname>ANALYZE</varname> y es almacenada en la tabla de catálogo <varname>pg_statistic</varname>. Dado que diferentes tipos de estadísticas pueden ser apropiados para diferentes tipos de datos, la tabla sólo almacena estadísticas muy generales (como el número de valores nulos) en columnas dedicadas. Todo lo demás se almacena en cinco &ldquo;slots&rdquo;, que son pares de columnas de matriz que almacenan las estadísticas de una columna de un tipo arbitrario.</para>
 
-			<para>Las estadísticas recopiladas para tipos de tiempo y tipos temporales se basan en las recopiladas por PostgreSQL para tipos escalares y tipos de rango. Para tipos escalares, como <varname>float</varname>, se recopilan las siguientes estadísticas: <orderedlist numeration="arabic">
+			<para>Las estadísticas recopiladas para tipos de tiempo y tipos temporales se basan en las recopiladas por PostgreSQL para tipos escalares y tipos de rango. Para tipos escalares, como <varname>float</varname>, se recopilan las siguientes estadísticas:
+				<orderedlist numeration="arabic">
 					<listitem>
 						<para>fracción de valores nulos,</para>
 					</listitem>
@@ -3447,7 +3494,8 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>Para los tipos de rango, como <varname>tstzrange</varname>, se recopilan tres histogramas adicionales: <orderedlist continuation="continues" numeration="arabic">
+			<para>Para los tipos de rango, como <varname>tstzrange</varname>, se recopilan tres histogramas adicionales:
+				<orderedlist continuation="continues" numeration="arabic">
 					<listitem>
 						<para>histograma de longitud de rangos no vacíos,</para>
 					</listitem>
@@ -3457,14 +3505,15 @@ WHERE intersects(T.Trip, R.Geom);
 				</orderedlist>
 			</para>
 
-			<para>Para geometrías, además de (1)&#x2013;(3), se recopilan las siguientes estadísticas: <orderedlist continuation="continues" numeration="arabic">
-						<listitem>
-							<para>número de dimensiones de los valores, cuadro delimitador N-dimensional, número de filas en la tabla, número de filas en la muestra, número de valores no nulos,</para>
-						</listitem>
-						<listitem>
-							<para>Histograma N-dimensional que divide el cuadro delimitador en varias celdas y mantiene la proporción de valores que se cruzan con cada celda.</para>
-						</listitem>
-					</orderedlist>
+			<para>Para geometrías, además de (1)&#x2013;(3), se recopilan las siguientes estadísticas:
+				<orderedlist continuation="continues" numeration="arabic">
+					<listitem>
+						<para>número de dimensiones de los valores, cuadro delimitador N-dimensional, número de filas en la tabla, número de filas en la muestra, número de valores no nulos,</para>
+					</listitem>
+					<listitem>
+						<para>Histograma N-dimensional que divide el cuadro delimitador en varias celdas y mantiene la proporción de valores que se cruzan con cada celda.</para>
+					</listitem>
+				</orderedlist>
 			</para>
 
 			<para>Las estadísticas recopiladas para columnas de los nuevos tipos de tiempo <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname> replican las recopiladas por PostgreSQL para <varname>tstzrange</varname>. Esto es claro para el tipo <varname>period</varname>, que es equivalente a <varname>tszrange</varname>, excepto que los períodos no pueden estar vacíos. Para los tipos <varname>timestampset</varname> y <varname>periodset</varname>, un valor se convierte en su cuadro delimitador que es un <varname>period</varname> y luego se recopilan las estadísticas del tipo <varname>period</varname>.</para>
@@ -3481,9 +3530,11 @@ WHERE intersects(T.Trip, R.Geom);
 				</itemizedlist>
 			</para>
 
-			<para>Las siguientes estadísticas se recopilan para la dimensión de valores: <itemizedlist>
+			<para>Las siguientes estadísticas se recopilan para la dimensión de valores:
+				<itemizedlist>
 					<listitem>
-						<para>Para columnas de tipos temporales con interpolación escalonada (es decir, <varname>tbool</varname>, <varname>ttext</varname> o <varname>tint</varname>): <itemizedlist>
+						<para>Para columnas de tipos temporales con interpolación escalonada (es decir, <varname>tbool</varname>, <varname>ttext</varname> o <varname>tint</varname>):
+							<itemizedlist>
 								<listitem>
 									<para>Para el subtipo instante, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
 								</listitem>
@@ -3496,9 +3547,10 @@ WHERE intersects(T.Trip, R.Geom);
 					</listitem>
 
 					<listitem>
-						<para>Para columnas de tipos temporales flotantes (es decir, <varname>tfloat</varname>): <itemizedlist>
+						<para>Para columnas de tipos temporales flotantes (es decir, <varname>tfloat</varname>):
+							<itemizedlist>
 								<listitem>
-									<para>Para valores instantáneos, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
+									<para>Para el subtipo instante, las estadísticas (4)&#x2013;(6) se recopilan para los valores.</para>
 								</listitem>
 								<listitem>
 									<para>Para todas los demás subtipos, las estadísticas (7)&#x2013;(8) se recopilan por los rangos delimitadores de valores.</para>
@@ -3516,6 +3568,7 @@ WHERE intersects(T.Trip, R.Geom);
 
 		<sect2>
 			<title>Estimación de la selectividad de los operadores</title>
+
 			<para>Los operadores booleanos en PostgreSQL se pueden asociar con dos funciones de selectividad, que calculan la probabilidad de que un valor de un tipo dado coincida con un criterio dado. Estas funciones de selectividad se basan en las estadísticas recopiladas. Hay dos tipos de funciones de selectividad. Las funciones de selectividad de <emphasis>restricción</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>column OP constant</varname>. Por otro lado, las funciones de selectividad de <emphasis>unión</emphasis> intentan estimar el porcentaje de filas en una tabla que satisfacen una condición en la cláusula <varname>WHERE</varname> de la forma <varname>table1.column1 OP table2.column2</varname>.</para>
 
 			<para>MobilityDB define 23 clases de operadores booleanos (como<varname>=</varname>, <varname>&lt;</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;&lt;</varname>, etc.), cada uno de los cuales puede tener como argumentos izquierdo o derecho un tipo PostgreSQL (como <varname>integer</varname>, <varname>timestamptz</varname>, etc.) o un nuevo tipo MobilityDB (como <varname>period</varname>, <varname>tint_seq</varname>, etc.). Como consecuencia, existe un número muy elevado de operadores con diferentes argumentos a considerar para las funciones de selectividad. El enfoque adoptado fue agrupar estas combinaciones en clases correspondientes a las dimensiones de valor o de tiempo. Las clases corresponden al tipo de estadísticas recopiladas como se explica en la sección anterior.</para>
