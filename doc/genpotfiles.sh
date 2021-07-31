@@ -14,7 +14,7 @@ fi
 while IFS= read -r -d '' file
 do
   echo "Processing $file file...";
-  filename=$(basename $file .xml)
+  filename=$(basename "$file" .xml)
   xml2pot "${file}" > "$filename.pot";
 done <  <(find . -maxdepth 1 -name '*.xml' -print0)
 
