@@ -1341,11 +1341,11 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceSlice"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
+						<para><link linkend="spaceSplit"><varname>spaceSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatial grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeSlice"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
+						<para><link linkend="spaceTimeSplit"><varname>spaceTimeSplit</varname></link>: Fragment the temporal point with respect to tiles in a spatiotemporal grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1519,7 +1519,7 @@
 				<title>Modification Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="nsegment_setPrecision"><varname>setPrecision</varname></link>: Set the precision of the position(s) of the network point or the network segment to the number of decimal places</para>
+						<para><link linkend="npoint_setPrecision"><varname>setPrecision</varname></link>: Set the precision of the position(s) of the network point or the network segment to the number of decimal places</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

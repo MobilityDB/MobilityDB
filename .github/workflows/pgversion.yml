@@ -1,4 +1,4 @@
-name: Test PostgreSQL versions
+name: Test posgresSQL versions
 
 # 4 * 1 * 2 = 8 jobs are triggered
 # Test for supported postgres version
@@ -23,12 +23,6 @@ jobs:
           psql: [10,11,12,13]
           postgis: [2.5]
           os: [ubuntu-latest, ubuntu-18.04]
-          coverage: [0]
-          include:
-            - psql: 13
-              postgis: 2.5
-              os: ubuntu-latest
-              coverage: 1
 
     steps:
       - uses: actions/checkout@v2
@@ -41,14 +35,12 @@ jobs:
           PGP=5433
           if [ "${{ matrix.psql }}" == "${pgver}" ]; then PGP=5432; fi
           echo "PGPORT=${PGP}" >> $GITHUB_ENV
-
       - name: Add PostgreSQL APT repository
         run: |
           sudo apt-get install curl ca-certificates gnupg
           curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
           sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ \
             $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -62,56 +54,23 @@ jobs:
             postgresql-server-dev-${{ matrix.psql }}
           ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
           xzcat --version
-
-      - name: Install coverall dependencies
-        if: matrix.coverage == '1'
-        run: |
-          sudo apt-get -y install lcov
-          # pip install --user cpp-coveralls
-
       - name: Configure for gcc
         run: |
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake -DWITH_COVERAGE=${{ matrix.coverage }} ..
-
+          cmake ..
       - name: Build
         run: |
           cd build
           make -j 4
           sudo make install
-
       - name: test install
         run: |
           sudo service postgresql start
-          sudo -u postgres createdb -p ${PGPORT}  ___mobdb___test___
-          sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
-
+          sudo -u postgres createdb -p ${PGPORT}  ___pgr___test___
+          sudo -u postgres psql -p ${PGPORT}  -d ___pgr___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
       - name: Test
         run: |
           cd build
           make test
-
-      # - name: Generate coverage
-        # if: matrix.coverage == '1'
-        # env:
-          # COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_TOKEN }}"
-        # run: |
-          # cd build
-          # coveralls --include npoint --include point --include src --gcov-options '\-lp' -r .. -b .
-
-      - name: Generate coverage
-        if: matrix.coverage == '1'
-        run: |
-          cd build
-          lcov --capture --directory . --output-file=lcov.info
-
-      - name: Coveralls
-        if: matrix.coverage == '1'
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: "./build/lcov.info"
-
-
