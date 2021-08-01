@@ -86,28 +86,28 @@
 			<para>
 				Extracting the tar ball
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 tar xvfz MobilityDB-&last_release_version;.tar.gz
 cd MobilityDB-&last_release_version;
-			</programlisting>
+</programlisting>
 			<para>
 				To compile assuming you have all the dependencies in your search path
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 mkdir build
 cd build
 cmake  ..
 make
 sudo make install
-			</programlisting>
+</programlisting>
 			<para>
 				Once MobilityDB is installed, it needs to be enabled in each individual database you want to use it in. In this example, PostGIS 2.5.5 is been used:
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 createdb mobility
 psql mobility -c "CREATE EXTENSION PostGIS WITH VERSION '2.5.5'"
 psql mobility -c 'CREATE EXTENSION MobilityDB'
-			</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="get_sources">
@@ -123,9 +123,9 @@ psql mobility -c 'CREATE EXTENSION MobilityDB'
 			<para>
 				To download this release:
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
-			</programlisting>
+</programlisting>
 			<para>
 				Go to <xref linkend="short_version" /> to the extract and compile instructions.
 			</para>
@@ -137,11 +137,11 @@ wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v
 			<para>
 				To download the repository
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 git clone https://github.com/MobilityDB/MobilityDB.git
 cd MobilityDB
 git checkout v1.0
-			</programlisting>
+</programlisting>
 			<para>
 				Go to <xref linkend="short_version" /> to the compile instructions (there is no tar ball).
 			</para>
@@ -151,16 +151,16 @@ git checkout v1.0
 			<para>
 				MobilityDB is an extension that depends on PostGIS. Enabling PostGIS before enabling MobilityDB in the database can be done as follows
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 CREATE EXTENSION postgis;
 CREATE EXTENSION mobilitydb;
-			</programlisting>
+</programlisting>
 			<para>
 				Alternatively, this can be done in a single command by using <varname>CASCADE</varname>, which installs the required PostGIS extension before installing the MobilityDB extension
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 CREATE EXTENSION mobilitydb CASCADE;
-			</programlisting>
+</programlisting>
 		</sect2>
 		<sect2 id="dependencies">
 			<title>Dependencies</title>
@@ -198,13 +198,13 @@ CREATE EXTENSION mobilitydb CASCADE;
 			</para>
 
 			<para>Database dependencies</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 sudo apt-get install postgresql-13 postgresql-server-dev-13 postgresql-13-postgis
-			</programlisting>
+</programlisting>
 			<para>Build dependencies</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 sudo apt-get install cmake gcc libgsl-dev
-			</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="configuring">
@@ -213,14 +213,14 @@ sudo apt-get install cmake gcc libgsl-dev
 				MobilityDB uses the <varname>cmake</varname> system to do the configuration. The build directory must be different from the source directory.
 			</para>
 			<para>To create the build directory</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 mkdir build
-			</programlisting>
+</programlisting>
 			<para>To see the variables that can be configured</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 cd build
 cmake -L ..
-			</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="build_install">
@@ -231,19 +231,19 @@ cmake -L ..
 			<para>
 				The following instructions start from <varname>path/to/MobilityDB</varname> on a Linux system
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 mkdir build
 cd build
 cmake ..
 make
 sudo make install
-			</programlisting>
+</programlisting>
 			<para>
 				When the configuration changes
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 rm -rf build
-			</programlisting>
+</programlisting>
 			<para>
 				and start the build process as mentioned above.
 			</para>
@@ -257,21 +257,21 @@ rm -rf build
 			<para>
 				To run all the tests
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 ctest
-			</programlisting>
+</programlisting>
 			<para>
 				To run a given test file
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 ctest -R '21_tbox'
-			</programlisting>
+</programlisting>
 			<para>
 				To run a set of given test files you can use wildcards
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 ctest -R '22_*'
-			</programlisting>
+</programlisting>
 		</sect2>
 	</sect1>
 
@@ -289,11 +289,11 @@ ctest -R '22_*'
 				<listitem><para>If your problem is unreported, create a <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">new issue</ulink> for it.</para></listitem>
 				<listitem><para>In your report include explicit instructions to replicate your issue. The best tickets include the exact SQL necessary to replicate a problem. Please also, note the operating system and versions of MobilityDB, PostGIS, and PostgreSQL.</para></listitem>
 				<listitem><para>It is recommended to use the following wrapper on the problem to pin point the step that is causing the problem.
-					<programlisting>
+					<programlisting xml:space="preserve">
 SET client_min_messages TO debug;
 &lt;your code&gt;
 SET client_min_messages TO notice;
-					</programlisting>
+</programlisting>
 				</para></listitem>
 			</orderedlist>
 		</sect2>
