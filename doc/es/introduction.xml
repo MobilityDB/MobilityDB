@@ -86,14 +86,14 @@
 			<para>
 				Extraer el tar ball
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 tar xvfz MobilityDB-&last_release_version;.tar.gz
 cd MobilityDB-&last_release_version;
 			</programlisting>
 			<para>
 				Para compilar asumiendo que tiene todas las dependencias en su ruta de búsqueda
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 mkdir build
 cd build
 cmake  ..
@@ -103,7 +103,7 @@ sudo make install
 			<para>
 				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos individual en la que desee usarlo. En éste ejemplo se usa la versión 2.5.5 de PostGIS.
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 createdb mobility
 psql mobility -c "CREATE EXTENSION PostGIS WITH VERSION'2.5.5'"
 psql mobility -c 'CREATE EXTENSION MobilityDB'
@@ -123,7 +123,7 @@ psql mobility -c 'CREATE EXTENSION MobilityDB'
 			<para>
 				Para descargar esta versión:
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
 			</programlisting>
 			<para>
@@ -137,7 +137,7 @@ wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v
 			<para>
 				Para descargar el repositorio
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 git clone https://github.com/MobilityDB/MobilityDB.git
 cd MobilityDB
 git checkout v1.0
@@ -151,14 +151,14 @@ git checkout v1.0
 			<para>
 				MobilityDB es una extensión que depende de PostGIS. Habilitar PostGIS antes de habilitar MobilityDB en la base de datos se puede hacer de la siguiente manera
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 CREATE EXTENSION postgis;
 CREATE EXTENSION mobilitydb;
 			</programlisting>
 			<para>
 				Alternativamente, esto se puede hacer con un solo comando usando <varname>CASCADE</varname>, que instala la extensión PostGIS requerida antes de instalar la extensión MobilityDB
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 CREATE EXTENSION mobilitydb CASCADE;
 				</programlisting>
 		</sect2>
@@ -198,11 +198,11 @@ CREATE EXTENSION mobilitydb CASCADE;
 			</para>
 
 			<para>Dependencias de base de datos</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 sudo apt-get install postgresql-13 postgresql-server-dev-13 postgresql-13-postgis
 			</programlisting>
 			<para>Dependencias de construcción</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 sudo apt-get install cmake gcc libgsl-dev
 				</programlisting>
 		</sect2>
@@ -213,11 +213,11 @@ sudo apt-get install cmake gcc libgsl-dev
 				MobilityDB usa el sistema <varname>cmake</varname> para realizar la configuración. El directorio de compilación deber ser diferente del directorio de origen.
 			</para>
 			<para>Para crear el directorio de compilación</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 mkdir build
 			</programlisting>
 			<para>Para ver las variables que se pueden configurar</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 cd build
 cmake -L ..
 			</programlisting>
@@ -231,7 +231,7 @@ cmake -L ..
 			<para>
 				Las siguientes instrucciones comienzan desde <varname>path/to/MobilityDB</varname> en un sistema Linux
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 mkdir build
 cd build
 cmake ..
@@ -241,7 +241,7 @@ sudo make install
 			<para>
 				Cuando cambia la configuración
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 rm -rf build
 			</programlisting>
 			<para>
@@ -257,19 +257,19 @@ rm -rf build
 			<para>
 				Para ejecutar todas las pruebas
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 ctest
 				</programlisting>
 			<para>
 				Para ejecutar un archivo de prueba dado
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 ctest -R '21_tbox'
 			</programlisting>
 			<para>
 				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
 			</para>
-			<programlisting>
+			<programlisting xml:space="preserve">
 ctest -R '22_*'
 			</programlisting>
 		</sect2>
@@ -289,7 +289,7 @@ ctest -R '22_*'
 				<listitem><para>Si su problema no se ha informado, cree un <ulink url="https://github.com/MobilityDB/MobilityDB/issues/new">nuevo asunto</ulink> para ello.</para></listitem>
 				<listitem><para>En su informe, incluya instrucciones explícitas para replicar su problema. Las mejores etradas incluyen consultas SQL exactas que se necesitan para reproducir un problema. Reporte también el sistema operativo y las versiones de MobilityDB, PostGIS y PostgreSQL.</para></listitem>
 				<listitem><para>Se recomienda utilizar el siguiente envoltorio en su problema para determinar el paso que está causando el problema.
-					<programlisting>
+					<programlisting xml:space="preserve">
 SET client_min_messages TO debug;
 &lt;your code&gt;
 SET client_min_messages TO notice;
