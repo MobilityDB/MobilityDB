@@ -2755,7 +2755,7 @@ msgstr ""
 #: temporal_network_points.xml:543
 #, no-c-format
 msgid "ttouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
-msgstr ""
+msgstr "ttouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
 
 #. Tag: varname
 #: temporal_network_points.xml:544

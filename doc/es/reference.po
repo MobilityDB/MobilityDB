@@ -3039,7 +3039,7 @@ msgstr ""
 #: reference.xml:1344
 #, no-c-format
 msgid ""
-"<link linkend=\"spaceSlice\"><varname>spaceSplit</varname></link>: Fragment "
+"<link linkend=\"spaceSplit\"><varname>spaceSplit</varname></link>: Fragment "
 "the temporal point with respect to tiles in a spatial grid"
 msgstr ""
 "<link linkend=\"spaceSplit\"><varname>spaceSplit</varname></link>: "
@@ -3050,7 +3050,7 @@ msgstr ""
 #: reference.xml:1348
 #, no-c-format
 msgid ""
-"<link linkend=\"spaceTimeSlice\"><varname>spaceTimeSplit</varname></link>: "
+"<link linkend=\"spaceTimeSplit\"><varname>spaceTimeSplit</varname></link>: "
 "Fragment the temporal point with respect to tiles in a spatiotemporal grid"
 msgstr ""
 "<link linkend=\"spaceTimeSplit\"><varname>spaceTimeSplit</varname></link>: "
@@ -3357,11 +3357,11 @@ msgstr ""
 #: reference.xml:1522
 #, no-c-format
 msgid ""
-"<link linkend=\"nsegment_setPrecision\"><varname>setPrecision</varname></"
+"<link linkend=\"npoint_setPrecision\"><varname>setPrecision</varname></"
 "link>: Set the precision of the position(s) of the network point or the "
 "network segment to the number of decimal places"
 msgstr ""
-"<link linkend=\"nsegment_setPrecision\"><varname>setPrecision</varname></"
+"<link linkend=\"npoint_setPrecision\"><varname>setPrecision</varname></"
 "link>: Establecer la precisión de la(s) posición(es) del punto de red or el "
 "segmento de red en el número de posiciones decimales"
 
