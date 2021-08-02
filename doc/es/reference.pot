@@ -1,0 +1,3965 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Esteban Zimanyi <estebanzimanyi@gmail.com>, 2021
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.kde.org\n"
+"POT-Creation-Date: 2021-07-31 21:52+0000\n"
+"PO-Revision-Date: 2021-08-02 14:46+0000\n"
+"Last-Translator: Esteban Zimanyi <estebanzimanyi@gmail.com>, 2021\n"
+"Language-Team: Spanish (https://www.transifex.com/mobilitydb/teams/114013/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Tag: title
+#: reference.xml:12
+#, no-c-format
+msgid "MobilityDB Reference"
+msgstr "Referencia de MobilityDB"
+
+#. Tag: title
+#: reference.xml:15
+#, no-c-format
+msgid "Functions and Operators for Time Types and Range Types"
+msgstr "Funciones y operadores para tipos de tiempo y tipos de rango"
+
+#. Tag: title
+#: reference.xml:18 reference.xml:280 reference.xml:572 reference.xml:1506
+#, no-c-format
+msgid "Constructor Functions"
+msgstr "Funciones de constructor"
+
+#. Tag: para
+#: reference.xml:21
+#, no-c-format
+msgid ""
+"<link linkend=\"period\"><varname>period</varname></link>: Constructor for "
+"<varname>period</varname>"
+msgstr ""
+"<link linkend=\"period\"><varname>period</varname></link>: Constructor para "
+"<varname>period</varname>"
+
+#. Tag: para
+#: reference.xml:25
+#, no-c-format
+msgid ""
+"<link linkend=\"timestampset\"><varname>timestampset</varname></link>: "
+"Constructor for <varname>timestampset</varname>"
+msgstr ""
+"<link linkend=\"timestampset\"><varname>timestampset</varname></link>: "
+"Constructor para <varname>timestampset</varname>"
+
+#. Tag: para
+#: reference.xml:29
+#, no-c-format
+msgid ""
+"<link linkend=\"periodset\"><varname>periodset</varname></link>: Constructor"
+" for <varname>periodset</varname>"
+msgstr ""
+"<link linkend=\"periodset\"><varname>periodset</varname></link>: Constructor"
+" para <varname>periodset</varname>"
+
+#. Tag: title
+#: reference.xml:35 reference.xml:293 reference.xml:593 reference.xml:1624
+#, no-c-format
+msgid "Casting"
+msgstr "Conversión de tipos"
+
+#. Tag: para
+#: reference.xml:38
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"timestamptz_cast\"><varname>timestamptz::time</varname></link>: "
+"Cast a <varname>timestamptz</varname> to another time type"
+msgstr ""
+"<link "
+"linkend=\"timestamptz_cast\"><varname>timestamptz::time</varname></link>: "
+"Convertir un <varname>timestamptz</varname> a otro tipo de tiempo"
+
+#. Tag: para
+#: reference.xml:42
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"timestampset_cast\"><varname>timestampset::periodset</varname></link>:"
+" Cast a <varname>timestampset</varname> to a <varname>periodset</varname>"
+msgstr ""
+"<link "
+"linkend=\"timestampset_cast\"><varname>timestampset::periodset</varname></link>:"
+" Convertir un <varname>timestampset</varname> a un "
+"<varname>periodset</varname>"
+
+#. Tag: para
+#: reference.xml:46
+#, no-c-format
+msgid ""
+"<link linkend=\"period_cast\"><varname>period::type</varname></link>: Cast a"
+" <varname>period</varname> to another time type"
+msgstr ""
+"<link linkend=\"period_cast\"><varname>period::type</varname></link>: "
+"Convertir un <varname>period</varname> a otro tipo de tiempo"
+
+#. Tag: para
+#: reference.xml:50
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tstzrange_cast\"><varname>tstzrange::period</varname></link>: Cast"
+" a <varname>tstzrange</varname> to a <varname>period</varname>"
+msgstr ""
+"<link "
+"linkend=\"tstzrange_cast\"><varname>tstzrange::period</varname></link>: "
+"Convertir un <varname>tstzrange</varname> a un <varname>period</varname>"
+
+#. Tag: title
+#: reference.xml:56 reference.xml:315 reference.xml:662 reference.xml:1528
+#, no-c-format
+msgid "Accessor Functions"
+msgstr "Funciones de accesor"
+
+#. Tag: para
+#: reference.xml:60
+#, no-c-format
+msgid ""
+"<link linkend=\"time_memSize\"><varname>memSize</varname></link>: Get the "
+"memory size in bytes"
+msgstr ""
+"<link linkend=\"time_memSize\"><varname>memSize</varname></link>: Obtener el"
+" tamaño de la memoria en bytes"
+
+#. Tag: para
+#: reference.xml:64
+#, no-c-format
+msgid ""
+"<link linkend=\"lower\"><varname>lower</varname></link>: Get the lower bound"
+msgstr ""
+"<link linkend=\"lower\"><varname>lower</varname></link>: Obtener el límite "
+"inferior"
+
+#. Tag: para
+#: reference.xml:68
+#, no-c-format
+msgid ""
+"<link linkend=\"upper\"><varname>upper</varname></link>: Get the upper bound"
+msgstr ""
+"<link linkend=\"upper\"><varname>upper</varname></link>: Obtener el límite "
+"superior"
+
+#. Tag: para
+#: reference.xml:72
+#, no-c-format
+msgid ""
+"<link linkend=\"lower_inc\"><varname>lower_inc</varname></link>: Is the "
+"lower bound inclusive?"
+msgstr ""
+"<link linkend=\"lower_inc\"><varname>lower_inc</varname></link>: ¿Es el "
+"límite inferior inclusivo?"
+
+#. Tag: para
+#: reference.xml:76
+#, no-c-format
+msgid ""
+"<link linkend=\"upper_inc\"><varname>upper_inc</varname></link>: Is the "
+"upper bound inclusive?"
+msgstr ""
+"<link linkend=\"upper_inc\"><varname>upper_inc</varname></link>: ¿Es el "
+"límite superior inclusivo?"
+
+#. Tag: para
+#: reference.xml:80
+#, no-c-format
+msgid ""
+"<link linkend=\"time_duration\"><varname>duration</varname></link>: Get the "
+"duration"
+msgstr ""
+"<link linkend=\"time_duration\"><varname>duration</varname></link>: Obtener "
+"el intervalo de tiempo"
+
+#. Tag: para
+#: reference.xml:84
+#, no-c-format
+msgid ""
+"<link linkend=\"time_timespan\"><varname>timespan</varname></link>: Get the "
+"timespan ignoring the potential time gaps"
+msgstr ""
+"<link linkend=\"time_timespan\"><varname>timespan</varname></link>: Obtener "
+"el intervalo de tiempo ignorando las posibles brechas de tiempo"
+
+#. Tag: para
+#: reference.xml:88
+#, no-c-format
+msgid ""
+"<link linkend=\"period\"><varname>period</varname></link>: Get the period on"
+" which the timestamp set or period set is defined ignoring the potential "
+"time gaps"
+msgstr ""
+"<link linkend=\"period\"><varname>period</varname></link>: Obtener el "
+"período en el que se define el conjunto de marcas de tiempo o el conjunto de"
+" períodos ignorando las posibles brechas de tiempo"
+
+#. Tag: para
+#: reference.xml:92
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"time_numTimestamps\"><varname>numTimestamps</varname></link>: Get "
+"the number of different timestamps"
+msgstr ""
+"<link "
+"linkend=\"time_numTimestamps\"><varname>numTimestamps</varname></link>: "
+"Obtener el número de marcas de tiempo diferentes"
+
+#. Tag: para
+#: reference.xml:96
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"time_startTimestamp\"><varname>startTimestamp</varname></link>: "
+"Get the start timestamp"
+msgstr ""
+"<link "
+"linkend=\"time_startTimestamp\"><varname>startTimestamp</varname></link>: "
+"Obtener la marca de tiempo inicial"
+
+#. Tag: para
+#: reference.xml:100
+#, no-c-format
+msgid ""
+"<link linkend=\"time_endTimestamp\"><varname>endTimestamp</varname></link>: "
+"Get the end timestamp"
+msgstr ""
+"<link linkend=\"time_endTimestamp\"><varname>endTimestamp</varname></link>: "
+"Obtener la marca de tiempo final"
+
+#. Tag: para
+#: reference.xml:104
+#, no-c-format
+msgid ""
+"<link linkend=\"time_timestampN\"><varname>timestampN</varname></link>: Get "
+"the n-th different timestamp"
+msgstr ""
+"<link linkend=\"time_timestampN\"><varname>timestampN</varname></link>: "
+"Obtener la enésima marca de tiempo diferente"
+
+#. Tag: para
+#: reference.xml:108
+#, no-c-format
+msgid ""
+"<link linkend=\"time_timestamps\"><varname>timestamps</varname></link>: Get "
+"the different timestamps"
+msgstr ""
+"<link linkend=\"time_timestamps\"><varname>timestamps</varname></link>: "
+"Obtener las marcas de tiempo diferentes"
+
+#. Tag: para
+#: reference.xml:112
+#, no-c-format
+msgid ""
+"<link linkend=\"numPeriods\"><varname>numPeriods</varname></link>: Get the "
+"number of periods"
+msgstr ""
+"<link linkend=\"numPeriods\"><varname>numPeriods</varname></link>: Obtener "
+"el número de períodos"
+
+#. Tag: para
+#: reference.xml:116
+#, no-c-format
+msgid ""
+"<link linkend=\"startPeriod\"><varname>startPeriod</varname></link>: Get the"
+" start period"
+msgstr ""
+"<link linkend=\"startPeriod\"><varname>startPeriod</varname></link>: Obtener"
+" el período inicial"
+
+#. Tag: para
+#: reference.xml:120
+#, no-c-format
+msgid ""
+"<link linkend=\"endPeriod\"><varname>endPeriod</varname></link>: Get the end"
+" period"
+msgstr ""
+"<link linkend=\"endPeriod\"><varname>endPeriod</varname></link>: Obtener el "
+"período final"
+
+#. Tag: para
+#: reference.xml:124
+#, no-c-format
+msgid ""
+"<link linkend=\"periodN\"><varname>periodN</varname></link>: Get the n-th "
+"period"
+msgstr ""
+"<link linkend=\"periodN\"><varname>periodN</varname></link>: Obtener el "
+"enésimo período"
+
+#. Tag: para
+#: reference.xml:128
+#, no-c-format
+msgid ""
+"<link linkend=\"periods\"><varname>periods</varname></link>: Get the periods"
+msgstr ""
+"<link linkend=\"periods\"><varname>periods</varname></link>: Obtener los "
+"períodos"
+
+#. Tag: title
+#: reference.xml:134 reference.xml:366 reference.xml:1519
+#, no-c-format
+msgid "Modification Functions"
+msgstr "Funciones de modificación"
+
+#. Tag: para
+#: reference.xml:138
+#, no-c-format
+msgid ""
+"<link linkend=\"time_shift\"><varname>shift</varname></link>: Shift the time"
+" value by an interval"
+msgstr ""
+"<link linkend=\"time_shift\"><varname>shift</varname></link>: Desplazar el "
+"valor de tiempo con un intervalo"
+
+#. Tag: para
+#: reference.xml:142
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"floatrange_setPrecision\"><varname>setPrecision</varname></link>: "
+"Round the bounds of a float range to a number of decimal places"
+msgstr ""
+"<link "
+"linkend=\"floatrange_setPrecision\"><varname>setPrecision</varname></link>: "
+"Redondear los límites de un rango flotante a un número de decimales"
+
+#. Tag: title
+#: reference.xml:148 reference.xml:416 reference.xml:1101 reference.xml:1570
+#, no-c-format
+msgid "Comparison Operators"
+msgstr "Operadores de comparación"
+
+#. Tag: para
+#: reference.xml:152
+#, no-c-format
+msgid ""
+"<link linkend=\"time_eq\"><varname>=</varname></link>: Are the time values "
+"equal?"
+msgstr ""
+"<link linkend=\"time_eq\"><varname>=</varname></link>: ¿Son iguales los "
+"valores de tiempo?"
+
+#. Tag: para
+#: reference.xml:156
+#, no-c-format
+msgid ""
+"<link linkend=\"time_ne\"><varname>&lt;&gt;</varname></link>: Are the time "
+"values different?"
+msgstr ""
+"<link linkend=\"time_ne\"><varname>&lt;&gt;</varname></link>: ¿Son "
+"diferentes los valores de tiempo?"
+
+#. Tag: para
+#: reference.xml:160
+#, no-c-format
+msgid ""
+"<link linkend=\"time_lt\"><varname>&lt;</varname></link>: Is the first time "
+"value less than the second one?"
+msgstr ""
+"<link linkend=\"time_lt\"><varname>&lt;</varname></link>: ¿Es el primer "
+"valor de tiempo menor que el segundo?"
+
+#. Tag: para
+#: reference.xml:164
+#, no-c-format
+msgid ""
+"<link linkend=\"time_gt\"><varname>&gt;</varname></link>: Is the first time "
+"value greater than the second one?"
+msgstr ""
+"<link linkend=\"time_gt\"><varname>&gt;</varname></link>: ¿Es el primer "
+"valor de tiempo mayor que el segundo?"
+
+#. Tag: para
+#: reference.xml:168
+#, no-c-format
+msgid ""
+"<link linkend=\"time_le\"><varname>&lt;=</varname></link>: Is the first time"
+" value less than or equal to the second one?"
+msgstr ""
+"<link linkend=\"time_le\"><varname>&lt;=</varname></link>: ¿Es el primer "
+"valor de tiempo menor o igual que el segundo?"
+
+#. Tag: para
+#: reference.xml:172
+#, no-c-format
+msgid ""
+"<link linkend=\"time_ge\"><varname>&gt;=</varname></link>: Is the first time"
+" value greater than or equal to the second one?"
+msgstr ""
+"<link linkend=\"time_ge\"><varname>&gt;=</varname></link>: ¿Es el primer "
+"valor de tiempo mayor o igual que el segundo?"
+
+#. Tag: title
+#: reference.xml:178 reference.xml:445
+#, no-c-format
+msgid "Set Operators"
+msgstr "Operadores de conjuntos"
+
+#. Tag: para
+#: reference.xml:182
+#, no-c-format
+msgid ""
+"<link linkend=\"time_union\"><varname>+</varname></link>: Union of the time "
+"values"
+msgstr ""
+"<link linkend=\"time_union\"><varname>+</varname></link>: Unión de valores "
+"de tiempo"
+
+#. Tag: para
+#: reference.xml:186
+#, no-c-format
+msgid ""
+"<link linkend=\"time_intersection\"><varname>*</varname></link>: "
+"Intersection of the time values"
+msgstr ""
+"<link linkend=\"time_intersection\"><varname>*</varname></link>: "
+"Intersección de valores de tiempo"
+
+#. Tag: para
+#: reference.xml:190
+#, no-c-format
+msgid ""
+"<link linkend=\"time_difference\"><varname>-</varname></link>: Difference of"
+" the time values"
+msgstr ""
+"<link linkend=\"time_difference\"><varname>-</varname></link>: Diferencia de"
+" valores de tiempo"
+
+#. Tag: title
+#: reference.xml:196
+#, no-c-format
+msgid "Topological and Relative Position Operators"
+msgstr "Operadores topológicos y de posición relativa"
+
+#. Tag: para
+#: reference.xml:200
+#, no-c-format
+msgid ""
+"<link linkend=\"time_overlaps\"><varname>&amp;&amp;</varname></link>: Do the"
+" time values overlap (have instants in common)?"
+msgstr ""
+"<link linkend=\"time_overlaps\"><varname>&amp;&amp;</varname></link>: ¿Se "
+"superponen los valores de tiempo (tienen instantes en común)?"
+
+#. Tag: para
+#: reference.xml:204
+#, no-c-format
+msgid ""
+"<link linkend=\"time_contains\"><varname>@&gt;</varname></link>: Does the "
+"first time value contain the second one?"
+msgstr ""
+"<link linkend=\"time_contains\"><varname>@&gt;</varname></link>: ¿Contiene "
+"el primer valor de tiempo el segundo?"
+
+#. Tag: para
+#: reference.xml:208
+#, no-c-format
+msgid ""
+"<link linkend=\"time_containedby\"><varname>&lt;@</varname></link>: Is the "
+"first time value contained by the second one?"
+msgstr ""
+"<link linkend=\"time_containedby\"><varname>&lt;@</varname></link>: ¿Está el"
+" primer valor de tiempo contenido en el segundo?"
+
+#. Tag: para
+#: reference.xml:212
+#, no-c-format
+msgid ""
+"<link linkend=\"time_adjacent\"><varname>-|-</varname></link>: Is the first "
+"time value adjacent to the second one?"
+msgstr ""
+"<link linkend=\"time_adjacent\"><varname>-|-</varname></link>: ¿Es el primer"
+" valor de tiempo adyacente al segundo?"
+
+#. Tag: para
+#: reference.xml:216
+#, no-c-format
+msgid ""
+"<link linkend=\"range_left\"><varname>&lt;&lt;</varname></link>: Is the "
+"first number or range value scritly left of the second one?"
+msgstr ""
+"<link linkend=\"range_left\"><varname>&lt;&lt;</varname></link>: ¿Está el "
+"primer número o valor de rango estrictamente a la izquierda del segundo?"
+
+#. Tag: para
+#: reference.xml:220
+#, no-c-format
+msgid ""
+"<link linkend=\"range_right\"><varname>&gt;&gt;</varname></link>: Is the "
+"first number or range value strictly right of the second one?"
+msgstr ""
+"<link linkend=\"range_right\"><varname>&gt;&gt;</varname></link>: ¿Está el "
+"primer número o valor de rango estrictamente a la izquierda del segundo?"
+
+#. Tag: para
+#: reference.xml:224
+#, no-c-format
+msgid ""
+"<link linkend=\"range_overleft\"><varname>&amp;&lt;</varname></link>: Is the"
+" first number or range value not to the right of the second one?"
+msgstr ""
+"<link linkend=\"range_overleft\"><varname>&amp;&lt;</varname></link>: ¿No "
+"está el primer número o valor de rango a la derecha del segundo?"
+
+#. Tag: para
+#: reference.xml:228
+#, no-c-format
+msgid ""
+"<link linkend=\"range_overright\"><varname>&amp;&gt;</varname></link>: Is "
+"the first number or range value not to the left of the second one?"
+msgstr ""
+"<link linkend=\"range_overright\"><varname>&amp;&gt;</varname></link>: ¿No "
+"está el primer número o valor de rango a la izquierda del segundo?"
+
+#. Tag: para
+#: reference.xml:232
+#, no-c-format
+msgid ""
+"<link linkend=\"range_adjacent\"><varname>-|-</varname></link>: Is the first"
+" number or range value adjacent to the second one?"
+msgstr ""
+"<link linkend=\"range_adjacent\"><varname>-|-</varname></link>: ¿Es el "
+"primer número o valor de rango adyacente al segundo?"
+
+#. Tag: para
+#: reference.xml:236
+#, no-c-format
+msgid ""
+"<link linkend=\"time_before\"><varname>&lt;&lt;#</varname></link>: Is the "
+"first time value scritly before the second one?"
+msgstr ""
+"<link linkend=\"time_before\"><varname>&lt;&lt;#</varname></link>: ¿Es el "
+"primer valor de tiempo estrictamente anterior al segundo?"
+
+#. Tag: para
+#: reference.xml:240
+#, no-c-format
+msgid ""
+"<link linkend=\"time_after\"><varname>#&gt;&gt;</varname></link>: Is the "
+"first time value strictly after the second one?"
+msgstr ""
+"<link linkend=\"time_after\"><varname>#&gt;&gt;</varname></link>: ¿Es el "
+"primer valor de tiempo estrictamente posterior al segundo?"
+
+#. Tag: para
+#: reference.xml:244
+#, no-c-format
+msgid ""
+"<link linkend=\"time_overbefore\"><varname>&amp;&lt;#</varname></link>: Is "
+"the first time value not after the second one?"
+msgstr ""
+"<link linkend=\"time_overbefore\"><varname>&amp;&lt;#</varname></link>: ¿No "
+"es el primer valor de tiempo posterior al segundo?"
+
+#. Tag: para
+#: reference.xml:248
+#, no-c-format
+msgid ""
+"<link linkend=\"time_overafter\"><varname>#&amp;&gt;</varname></link>: Is "
+"the first time value not before the second one?"
+msgstr ""
+"<link linkend=\"time_overafter\"><varname>#&amp;&gt;</varname></link>: ¿No "
+"es el primer valor de tiempo anterior al segundo?"
+
+#. Tag: title
+#: reference.xml:254 reference.xml:406 reference.xml:1423 reference.xml:1746
+#, no-c-format
+msgid "Aggregate Functions"
+msgstr "Funciones agregadas"
+
+#. Tag: para
+#: reference.xml:258
+#, no-c-format
+msgid ""
+"<link linkend=\"time_tcount\"><varname>tcount</varname></link>: Temporal "
+"count"
+msgstr ""
+"<link linkend=\"time_tcount\"><varname>tcount</varname></link>: Conteo "
+"temporal"
+
+#. Tag: para
+#: reference.xml:262
+#, no-c-format
+msgid ""
+"<link linkend=\"time_extent\"><varname>extent</varname></link>: Bounding "
+"period"
+msgstr ""
+"<link linkend=\"time_extent\"><varname>extent</varname></link>: Extensión "
+"del período delimitador"
+
+#. Tag: para
+#: reference.xml:266
+#, no-c-format
+msgid ""
+"<link linkend=\"range_extent\"><varname>extent</varname></link>: Bounding "
+"range"
+msgstr ""
+"<link linkend=\"range_extent\"><varname>extent</varname></link>: Extensión "
+"del rango delimitador"
+
+#. Tag: para
+#: reference.xml:270
+#, no-c-format
+msgid "<link linkend=\"tunion\"><varname>tunion</varname></link>: Temporal union"
+msgstr "<link linkend=\"tunion\"><varname>tunion</varname></link>: Unión temporal"
+
+#. Tag: title
+#: reference.xml:277
+#, no-c-format
+msgid "Functions and Operators for Box Types"
+msgstr "Funciones y operadores para tipos de cuadro delimitadores"
+
+#. Tag: para
+#: reference.xml:283
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox\"><varname>tbox</varname></link>: Constructor for "
+"<varname>tbox</varname>"
+msgstr ""
+"<link linkend=\"tbox\"><varname>tbox</varname></link>: Constructor para "
+"<varname>tbox</varname>"
+
+#. Tag: para
+#: reference.xml:287
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox\"><varname>stbox, stboxt</varname></link>: Constructor"
+" for <varname>stbox</varname>"
+msgstr ""
+"<link linkend=\"stbox\"><varname>stbox, stboxt</varname></link>: Constructor"
+" para <varname>stbox</varname>"
+
+#. Tag: para
+#: reference.xml:297
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox_cast_to\"><varname>tbox::type</varname></link>: Cast a "
+"<varname>tbox</varname> to another type"
+msgstr ""
+"<link linkend=\"tbox_cast_to\"><varname>tbox::type</varname></link>: "
+"Convertir un <varname>tbox</varname> a otro tipo"
+
+#. Tag: para
+#: reference.xml:301
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox_cast_from\"><varname>type::tbox</varname></link>: Cast "
+"another type to a <varname>tbox</varname>"
+msgstr ""
+"<link linkend=\"tbox_cast_from\"><varname>type::tbox</varname></link>: "
+"Convertir otro tipo a un <varname>tbox</varname>"
+
+#. Tag: para
+#: reference.xml:305
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_cast_to\"><varname>stbox::type</varname></link>: Cast "
+"an <varname>stbox</varname> to anoter type"
+msgstr ""
+"<link linkend=\"stbox_cast_to\"><varname>stbox::type</varname></link>: "
+"Convertir un <varname>stbox</varname> a otro tipo"
+
+#. Tag: para
+#: reference.xml:309
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_cast_from\"><varname>type::stbox</varname></link>: "
+"Cast another type to an <varname>stbox</varname>"
+msgstr ""
+"<link linkend=\"stbox_cast_from\"><varname>type::stbox</varname></link>: "
+"Convertir otro tipo a un <varname>stbox</varname>"
+
+#. Tag: para
+#: reference.xml:319
+#, no-c-format
+msgid "<link linkend=\"hasX\"><varname>hasX</varname></link>: Has X dimension?"
+msgstr ""
+"<link linkend=\"hasX\"><varname>hasX</varname></link>: ¿Tiene dimension X?"
+
+#. Tag: para
+#: reference.xml:323
+#, no-c-format
+msgid "<link linkend=\"hasZ\"><varname>hasZ</varname></link>: Has Z dimension?"
+msgstr ""
+"<link linkend=\"hasZ\"><varname>hasZ</varname></link>: ¿Tiene dimension Z?"
+
+#. Tag: para
+#: reference.xml:327
+#, no-c-format
+msgid "<link linkend=\"hasT\"><varname>hasT</varname></link>: Has T dimension?"
+msgstr ""
+"<link linkend=\"hasT\"><varname>hasT</varname></link>: ¿Tiene dimension T?"
+
+#. Tag: para
+#: reference.xml:331
+#, no-c-format
+msgid ""
+"<link linkend=\"Xmin\"><varname>Xmin</varname></link>: Get the minimum X "
+"value"
+msgstr ""
+"<link linkend=\"Xmin\"><varname>Xmin</varname></link>: Obtener el valor "
+"mínimo de X"
+
+#. Tag: para
+#: reference.xml:335
+#, no-c-format
+msgid ""
+"<link linkend=\"Xmax\"><varname>Xmax</varname></link>: Get the maximum X "
+"value"
+msgstr ""
+"<link linkend=\"Xmax\"><varname>Xmax</varname></link>: Obtener el valor "
+"máximo de X"
+
+#. Tag: para
+#: reference.xml:339
+#, no-c-format
+msgid ""
+"<link linkend=\"Ymin\"><varname>Ymin</varname></link>: Get the minimum Y "
+"value"
+msgstr ""
+"<link linkend=\"Ymin\"><varname>Ymin</varname></link>: Obtener el valor "
+"mínimo de Y"
+
+#. Tag: para
+#: reference.xml:343
+#, no-c-format
+msgid ""
+"<link linkend=\"Ymax\"><varname>Ymax</varname></link>: Get the maximum Y "
+"value"
+msgstr ""
+"<link linkend=\"Ymax\"><varname>Ymax</varname></link>: Obtener el valor "
+"máximo de Y"
+
+#. Tag: para
+#: reference.xml:347
+#, no-c-format
+msgid ""
+"<link linkend=\"Zmin\"><varname>Zmin</varname></link>: Get the minimum Z "
+"value"
+msgstr ""
+"<link linkend=\"Zmin\"><varname>Zmin</varname></link>: Obtener el valor "
+"mínimo de Z"
+
+#. Tag: para
+#: reference.xml:351
+#, no-c-format
+msgid ""
+"<link linkend=\"Zmax\"><varname>Zmax</varname></link>: Get the maximum Z "
+"value"
+msgstr ""
+"<link linkend=\"Zmax\"><varname>Zmax</varname></link>: Obtener el valor "
+"máximo de Z"
+
+#. Tag: para
+#: reference.xml:355
+#, no-c-format
+msgid ""
+"<link linkend=\"Tmin\"><varname>Tmin</varname></link>: Get the minimum T "
+"value"
+msgstr ""
+"<link linkend=\"Tmin\"><varname>Tmin</varname></link>: Obtener el valor "
+"mínimo de T"
+
+#. Tag: para
+#: reference.xml:359
+#, no-c-format
+msgid ""
+"<link linkend=\"Tmax\"><varname>Tmax</varname></link>: Get the maximum T "
+"value"
+msgstr ""
+"<link linkend=\"Tmax\"><varname>Tmax</varname></link>: Obtener el valor "
+"máximo de T"
+
+#. Tag: para
+#: reference.xml:369
+#, no-c-format
+msgid ""
+"<link linkend=\"expandValue\"><varname>expandValue</varname></link>: Expand "
+"the numeric value dimension of the bounding box by a float value"
+msgstr ""
+"<link linkend=\"expandValue\"><varname>expandValue</varname></link>: "
+"Extender la dimensión de valor numérico del cuadro delimitador con un valor "
+"flotante"
+
+#. Tag: para
+#: reference.xml:373
+#, no-c-format
+msgid ""
+"<link linkend=\"expandSpatial\"><varname>expandSpatial</varname></link>: "
+"Expand the spatial value dimension of the bounding box by a float value"
+msgstr ""
+"<link linkend=\"expandSpatial\"><varname>expandSpatial</varname></link>: "
+"Extender la dimensión de valor espacial del cuadro delimitador con un valor "
+"flotante"
+
+#. Tag: para
+#: reference.xml:377
+#, no-c-format
+msgid ""
+"<link linkend=\"expandTemporal\"><varname>expandTemporal</varname></link>: "
+"Expand the temporal dimension of the bounding box by a time interval"
+msgstr ""
+"<link linkend=\"expandTemporal\"><varname>expandTemporal</varname></link>: "
+"Extender la dimensión temporal del cuadro delimitador con un intervalo de "
+"tiempo"
+
+#. Tag: para
+#: reference.xml:381
+#, no-c-format
+msgid ""
+"<link linkend=\"box_setPrecision\"><varname>setPrecision</varname></link>: "
+"Round the value or the coordinates of the bounding box to a number of "
+"decimal places"
+msgstr ""
+"<link linkend=\"box_setPrecision\"><varname>setPrecision</varname></link>: "
+"Redondear el valor o las coordenadas del cuadro delimitador a un número de "
+"decimales"
+
+#. Tag: title
+#: reference.xml:388
+#, no-c-format
+msgid "Spatial Reference System Functions"
+msgstr "Funciones del sistema de referencia espacial"
+
+#. Tag: para
+#: reference.xml:392
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_SRID\"><varname>SRID</varname></link>: Get the spatial"
+" reference identifier"
+msgstr ""
+"<link linkend=\"stbox_SRID\"><varname>SRID</varname></link>: Obtener el "
+"identificador de referencia espacial"
+
+#. Tag: para
+#: reference.xml:396
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_setSRID\"><varname>setSRID</varname></link>: Set the "
+"spatial reference identifier"
+msgstr ""
+"<link linkend=\"stbox_setSRID\"><varname>setSRID</varname></link>: "
+"Especificar el identificador de referencia espacial"
+
+#. Tag: para
+#: reference.xml:400
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_transform\"><varname>transform</varname></link>: "
+"Transform to a different spatial reference"
+msgstr ""
+"<link linkend=\"stbox_transform\"><varname>transform</varname></link>: "
+"Transformar a una referencia espacial diferente"
+
+#. Tag: para
+#: reference.xml:410
+#, no-c-format
+msgid ""
+"<link linkend=\"box_extent\"><varname>extent</varname></link>: Bounding box "
+"extent"
+msgstr ""
+"<link linkend=\"box_extent\"><varname>extent</varname></link>: Extensión del"
+" cuadro delimitador"
+
+#. Tag: para
+#: reference.xml:419
+#, no-c-format
+msgid ""
+"<link linkend=\"box_eq\"><varname>=</varname></link>: Are the bounding boxes"
+" equal?"
+msgstr ""
+"<link linkend=\"box_eq\"><varname>=</varname></link>: ¿Son iguales los "
+"cuadros delimitadores?"
+
+#. Tag: para
+#: reference.xml:423
+#, no-c-format
+msgid ""
+"<link linkend=\"box_ne\"><varname>&lt;&gt;</varname></link>: Are the "
+"bounding boxes different?"
+msgstr ""
+"<link linkend=\"box_ne\"><varname>&lt;&gt;</varname></link>: ¿Son diferentes"
+" los cuadros delimitadores?"
+
+#. Tag: para
+#: reference.xml:427
+#, no-c-format
+msgid ""
+"<link linkend=\"box_lt\"><varname>&lt;</varname></link>: Is the first "
+"bouding box less than the second one?"
+msgstr ""
+"<link linkend=\"box_lt\"><varname>&lt;</varname></link>: ¿Es el primer "
+"cuadro delimitador menor que el segundo?"
+
+#. Tag: para
+#: reference.xml:431
+#, no-c-format
+msgid ""
+"<link linkend=\"box_gt\"><varname>&gt;</varname></link>: Is the first "
+"bouding box greater than the second one?"
+msgstr ""
+"<link linkend=\"box_gt\"><varname>&gt;</varname></link>: ¿Es el primer "
+"cuadro delimitador mayor que el segundo?"
+
+#. Tag: para
+#: reference.xml:435
+#, no-c-format
+msgid ""
+"<link linkend=\"box_le\"><varname>&lt;=</varname></link>: Is the first "
+"bouding box less than or equal to the second one?"
+msgstr ""
+"<link linkend=\"box_le\"><varname>&lt;=</varname></link>: ¿Es el primer "
+"cuadro delimitador menor o igual que el segundo?"
+
+#. Tag: para
+#: reference.xml:439
+#, no-c-format
+msgid ""
+"<link linkend=\"box_ge\"><varname>&gt;=</varname></link>: Is the first "
+"bouding box greater than or equal to the second one?"
+msgstr ""
+"<link linkend=\"box_ge\"><varname>&gt;=</varname></link>: ¿Es el primer "
+"cuadro delimitador menor que el segundo?"
+
+#. Tag: para
+#: reference.xml:448
+#, no-c-format
+msgid ""
+"<link linkend=\"box_union\"><varname>+</varname></link>: Union of the "
+"bounding boxes"
+msgstr ""
+"<link linkend=\"box_union\"><varname>+</varname></link>: Union de los "
+"cuadros delimitadores"
+
+#. Tag: para
+#: reference.xml:452
+#, no-c-format
+msgid ""
+"<link linkend=\"box_intersection\"><varname>*</varname></link>: Intersection"
+" of the bounding boxes"
+msgstr ""
+"<link linkend=\"box_intersection\"><varname>*</varname></link>: Intersección"
+" de los cuadros delimitadores"
+
+#. Tag: title
+#: reference.xml:458
+#, no-c-format
+msgid "Topological Operators"
+msgstr "Operadores topológicos"
+
+#. Tag: para
+#: reference.xml:461
+#, no-c-format
+msgid ""
+"<link linkend=\"box_overlap\"><varname>&amp;&amp;</varname></link>: Do the "
+"bounding boxes overlap?"
+msgstr ""
+"<link linkend=\"box_overlap\"><varname>&amp;&amp;</varname></link>: ¿Se "
+"superponen los cuadros delimitadores?"
+
+#. Tag: para
+#: reference.xml:465
+#, no-c-format
+msgid ""
+"<link linkend=\"box_contains\"><varname>@&gt;</varname></link>: Does the "
+"first bounding box contain the second one?"
+msgstr ""
+"<link linkend=\"box_contains\"><varname>@&gt;</varname></link>: ¿Contiene el"
+" primer cuadro delimitador el segundo?"
+
+#. Tag: para
+#: reference.xml:469
+#, no-c-format
+msgid ""
+"<link linkend=\"box_containedby\"><varname>&lt;@</varname></link>: Is the "
+"first bounding box contained in the second one?"
+msgstr ""
+"<link linkend=\"box_containedby\"><varname>&lt;@</varname></link>: ¿Está el "
+"primer cuadro delimitador contenido en el segundo?"
+
+#. Tag: para
+#: reference.xml:473
+#, no-c-format
+msgid ""
+"<link linkend=\"box_same\"><varname>~=</varname></link>: Are the bounding "
+"boxes equal in their common dimensions?"
+msgstr ""
+"<link linkend=\"box_same\"><varname>~=</varname></link>: ¿Son los cuadros "
+"delimitadores iguales en sus dimensiones comunes?"
+
+#. Tag: para
+#: reference.xml:477
+#, no-c-format
+msgid ""
+"<link linkend=\"box_adjacent\"><varname>-|-</varname></link>: Are the "
+"bounding boxes adjacent?"
+msgstr ""
+"<link linkend=\"box_adjacent\"><varname>-|-</varname></link>: ¿Son los "
+"cuadros delimitadores adyacentes?"
+
+#. Tag: title
+#: reference.xml:483
+#, no-c-format
+msgid "Relative Position Operators"
+msgstr "Operadores de posición relativa"
+
+#. Tag: para
+#: reference.xml:486
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox_left\"><varname>&lt;&lt;</varname></link>: Are the X "
+"values of the first bounding box strictly less than those of the second one?"
+msgstr ""
+"<link linkend=\"tbox_left\"><varname>&lt;&lt;</varname></link>: ¿Son los "
+"valores X del primer cuadro delimitador estrictamente mayores que los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:490
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox_right\"><varname>&gt;&gt;</varname></link>: Are the X "
+"values of the first bounding box strictly greater than those of the second "
+"one?"
+msgstr ""
+"<link linkend=\"tbox_right\"><varname>&gt;&gt;</varname></link>: ¿Son los "
+"valores X del primer cuadro delimitador estrictamente mayores que los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:494
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox_overleft\"><varname>&amp;&lt;</varname></link>: Are the"
+" X values of the first bounding box not greater than those of the second "
+"one?"
+msgstr ""
+"<link linkend=\"tbox_overleft\"><varname>&amp;&lt;</varname></link>: ¿No son"
+" los valores X del primer cuadro delimitador mayores que los del segundo?"
+
+#. Tag: para
+#: reference.xml:498
+#, no-c-format
+msgid ""
+"<link linkend=\"tbox_overright\"><varname>&amp;&gt;</varname></link>: Are "
+"the X values of the first bounding box not less than those of the second "
+"one?"
+msgstr ""
+"<link linkend=\"tbox_overright\"><varname>&amp;&gt;</varname></link>: ¿No "
+"son los valores X del primer cuadro delimitador menores que los del segundo?"
+
+#. Tag: para
+#: reference.xml:502
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_left\"><varname>&lt;&lt;</varname></link>: Are the X "
+"values of the first bounding box strictly to the left of those of the second"
+" one?"
+msgstr ""
+"<link linkend=\"stbox_left\"><varname>&lt;&lt;</varname></link>: ¿Están los "
+"valores X del primer cuadro delimitador estrictamente a la izquierda de los "
+"del segundo?"
+
+#. Tag: para
+#: reference.xml:506
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_right\"><varname>&gt;&gt;</varname></link>: Are the X "
+"values of the first bounding box strictly to the right of those of the "
+"second one?"
+msgstr ""
+"<link linkend=\"stbox_right\"><varname>&gt;&gt;</varname></link>: ¿Están los"
+" valores X del primer cuadro delimitador estrictamente a la derecha de los "
+"del segundo?"
+
+#. Tag: para
+#: reference.xml:510
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_overleft\"><varname>&amp;&lt;</varname></link>: Are "
+"the X values of the first bounding box not to the right of those of the "
+"second one?"
+msgstr ""
+"<link linkend=\"stbox_overleft\"><varname>&amp;&lt;</varname></link>: ¿No "
+"están los valores X del primer cuadro delimitador a la derecha de los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:514
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_overright\"><varname>&amp;&gt;</varname></link>: Are "
+"the X values of the first bounding box not to the left of those of the "
+"second one?"
+msgstr ""
+"<link linkend=\"stbox_overright\"><varname>&amp;&gt;</varname></link>: ¿No "
+"están los valores X del primer cuadro delimitador a la izquierda de los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:518
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_below\"><varname>&lt;&lt;|</varname></link>: Are the Y"
+" values of the first bounding box strictly below of those of the second one?"
+msgstr ""
+"<link linkend=\"stbox_below\"><varname>&lt;&lt;|</varname></link>: ¿Están "
+"los valores de Y del primer cuadro delimitador estrictamente debajo de los "
+"del segundo?"
+
+#. Tag: para
+#: reference.xml:522
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_above\"><varname>|&gt;&gt;</varname></link>: Are the Y"
+" values of the first bounding box strictly above of those of the second one?"
+msgstr ""
+"<link linkend=\"stbox_above\"><varname>|&gt;&gt;</varname></link>: ¿Están "
+"los valores de Y del primer cuadro delimitador estrictamente arriba de los "
+"del segundo?"
+
+#. Tag: para
+#: reference.xml:526
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_overbelow\"><varname>&amp;&lt;|</varname></link>: Are "
+"the Y values of the first bounding box not above of those of the second one?"
+msgstr ""
+"<link linkend=\"stbox_overbelow\"><varname>&amp;&lt;|</varname></link>: ¿No "
+"están los valores de Y del primer cuadro delimitador debajo de los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:530
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_overabove\"><varname>|&amp;&gt;</varname></link>: Are "
+"the Y values of the first bounding box not below of those of the second one?"
+msgstr ""
+"<link linkend=\"stbox_overabove\"><varname>|&amp;&gt;</varname></link>: ¿No "
+"están los valores de Y del primer cuadro delimitador debajo de los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:534
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_front\"><varname>&lt;&lt;/</varname></link>: Are the Z"
+" values of the first bounding box strictly in front of those of the second "
+"one?"
+msgstr ""
+"<link linkend=\"stbox_front\"><varname>&lt;&lt;/</varname></link>: ¿Están "
+"los valores Z del primer cuadro delimitador estrictamente delante de los del"
+" segundo?"
+
+#. Tag: para
+#: reference.xml:538
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_back\"><varname>/&gt;&gt;</varname></link>: Are the Z "
+"values of the first bounding box strictly back of those of the second one?"
+msgstr ""
+"<link linkend=\"stbox_back\"><varname>/&gt;&gt;</varname></link>: ¿Están los"
+" valores Z del primer cuadro delimitador estrictamente detrás de los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:542
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_overfront\"><varname>&amp;&lt;/</varname></link>: Are "
+"the Z values of the first bounding box not back of those of the second one?"
+msgstr ""
+"<link linkend=\"stbox_overfront\"><varname>&amp;&lt;/</varname></link>: ¿No "
+"están los valores Z del primer cuadro delimitador detrás de los del segundo?"
+
+#. Tag: para
+#: reference.xml:546
+#, no-c-format
+msgid ""
+"<link linkend=\"stbox_overback\"><varname>/&amp;&gt;</varname></link>: Are "
+"the Z values of the first bounding box not in front of those of the second "
+"one?"
+msgstr ""
+"<link linkend=\"stbox_overback\"><varname>/&amp;&gt;</varname></link>: ¿No "
+"están los valores Z del primer cuadro delimitador delante de los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:550
+#, no-c-format
+msgid ""
+"<link linkend=\"box_before\"><varname>&lt;&lt;#</varname></link>: Are the T "
+"values of the first bounding box strictly before those of the second one?"
+msgstr ""
+"<link linkend=\"box_before\"><varname>&lt;&lt;#</varname></link>: ¿Son los "
+"valores de T del primer cuadro delimitador estrictamente anteriores a los "
+"del segundo?"
+
+#. Tag: para
+#: reference.xml:554
+#, no-c-format
+msgid ""
+"<link linkend=\"box_after\"><varname>#&gt;&gt;</varname></link>: Are the T "
+"values of the first bounding box strictly after those of the second one?"
+msgstr ""
+"<link linkend=\"box_after\"><varname>#&gt;&gt;</varname></link>: ¿Son los "
+"valores de T del primer cuadro delimitador estrictamente posteriores a los "
+"del segundo?"
+
+#. Tag: para
+#: reference.xml:558
+#, no-c-format
+msgid ""
+"<link linkend=\"box_overbefore\"><varname>&amp;&lt;#</varname></link>: Are "
+"the T values of the first bounding box not after those of the second one?"
+msgstr ""
+"<link linkend=\"box_overbefore\"><varname>&amp;&lt;#</varname></link>: ¿No "
+"son los valores de T del primer cuadro delimitador posteriores a los del "
+"segundo?"
+
+#. Tag: para
+#: reference.xml:562
+#, no-c-format
+msgid ""
+"<link linkend=\"box_overafter\"><varname>#&amp;&gt;</varname></link>: Are "
+"the T values of the first bounding box not before those of the second one?"
+msgstr ""
+"<link linkend=\"box_overafter\"><varname>#&amp;&gt;</varname></link>: ¿No "
+"son los valores de T del primer cuadro delimitador anteriores a los del "
+"segundo?"
+
+#. Tag: title
+#: reference.xml:569
+#, no-c-format
+msgid "Functions and Operators for Temporal Types"
+msgstr "Funciones y operadores para tipos temporales"
+
+#. Tag: para
+#: reference.xml:575
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_inst\"><varname>ttype_inst</varname></link>: "
+"Constructor for temporal types of instant subtype"
+msgstr ""
+"<link linkend=\"ttype_inst\"><varname>ttype_inst</varname></link>: "
+"Constructor para tipos temporales de subtipo instante"
+
+#. Tag: para
+#: reference.xml:579
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_instset\"><varname>ttype_instset</varname></link>: "
+"Constructor for temporal types of instant set subtype"
+msgstr ""
+"<link linkend=\"ttype_instset\"><varname>ttype_instset</varname></link>: "
+"Constructor para tipos temporales de subtipo conjunto de instantes"
+
+#. Tag: para
+#: reference.xml:583
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_seq\"><varname>ttype_seq</varname></link>: Constructor"
+" for temporal types of sequence subtype"
+msgstr ""
+"<link linkend=\"ttype_seq\"><varname>ttype_seq</varname></link>: Constructor"
+" para tipos temporales de subtipo secuencia"
+
+#. Tag: para
+#: reference.xml:587
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_seqset\"><varname>ttype_seqset</varname></link>: "
+"Constructor for temporal types of sequence set subtype"
+msgstr ""
+"<link linkend=\"ttype_seqset\"><varname>ttype_seqset</varname></link>: "
+"Constructor para tipos temporales de subtipo conjunto de secuencias"
+
+#. Tag: para
+#: reference.xml:597
+#, no-c-format
+msgid ""
+"<link linkend=\"temporal_period\"><varname>ttype::period</varname></link>: "
+"Cast a temporal value to a period"
+msgstr ""
+"<link linkend=\"temporal_period\"><varname>ttype::period</varname></link>: "
+"Convertir un valor temporal a un período"
+
+#. Tag: para
+#: reference.xml:601
+#, no-c-format
+msgid ""
+"<link linkend=\"tnumber_range\"><varname>tnumber::range</varname></link>: "
+"Cast a temporal number to a range"
+msgstr ""
+"<link linkend=\"tnumber_range\"><varname>tnumber::range</varname></link>: "
+"Convertir un número temporal a un rango"
+
+#. Tag: para
+#: reference.xml:605
+#, no-c-format
+msgid ""
+"<link linkend=\"tnumber_tbox\"><varname>tnumber::tbox</varname></link>: Cast"
+" a temporal number to a <varname>tbox</varname>"
+msgstr ""
+"<link linkend=\"tnumber_tbox\"><varname>tnumber::tbox</varname></link>: "
+"Convertir un número temporal number a un <varname>tbox</varname>"
+
+#. Tag: para
+#: reference.xml:609
+#, no-c-format
+msgid ""
+"<link linkend=\"tpoint_stbox\"><varname>ttype::period</varname></link>: Cast"
+" a temporal point to an <varname>stbox</varname>"
+msgstr ""
+"<link linkend=\"tpoint_stbox\"><varname>tpoint::stbox</varname></link>: "
+"Convertir un punto temporal a un <varname>stbox</varname>"
+
+#. Tag: para
+#: reference.xml:613
+#, no-c-format
+msgid ""
+"<link linkend=\"tint_tfloat\"><varname>tint::tfloat</varname></link>: Cast a"
+" temporal integer to a temporal float"
+msgstr ""
+"<link linkend=\"tint_tfloat\"><varname>tint::tfloat</varname></link>: "
+"Convertir un entero temporal en un flotante temporal"
+
+#. Tag: para
+#: reference.xml:617
+#, no-c-format
+msgid ""
+"<link linkend=\"tfloat_tint\"><varname>tfloat::tint</varname></link>: Cast a"
+" temporal float to a temporal integer"
+msgstr ""
+"<link linkend=\"tfloat_tint\"><varname>tfloat::tint</varname></link>: "
+"Convertir un flotante temporal en un entero temporal"
+
+#. Tag: para
+#: reference.xml:621
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompoint_tgeogpoint\"><varname>tgeompoint::tgeogpoint</varname></link>:"
+" Cast a temporal geometry point to a temporal geography point"
+msgstr ""
+"<link "
+"linkend=\"tgeompoint_tgeogpoint\"><varname>tgeompoint::tgeogpoint</varname></link>:"
+" Convertir un punto geométrico temporal en un punto geográfico temporal"
+
+#. Tag: para
+#: reference.xml:625
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpoint_tgeompoint\"><varname>tgeogpoint::tgeompoint</varname></link>:"
+" Cast a temporal geography point to a temporal geometry point"
+msgstr ""
+"<link "
+"linkend=\"tgeogpoint_tgeompoint\"><varname>tgeogpoint::tgeompoint</varname></link>:"
+" Convertir un punto geográfico temporal en un punto geométrico temporal"
+
+#. Tag: para
+#: reference.xml:629
+#, no-c-format
+msgid ""
+"<link linkend=\"tgeompoint_geometry\"><varname>tgeompoint::geometry, "
+"tgeogpoint::geography</varname></link>: Cast a temporal point to a PostGIS "
+"trajectory"
+msgstr ""
+"<link linkend=\"tgeompoint_geometry\"><varname>tgeompoint::geometry, "
+"tgeogpoint::geography</varname></link>: Convertir un punto temporal en una "
+"trayectoria PostGIS"
+
+#. Tag: para
+#: reference.xml:633
+#, no-c-format
+msgid ""
+"<link linkend=\"geometry_tgeompoint\"><varname>geometry::tgeompoint, "
+"geography::tgeogpoint</varname></link>: Cast a PostGIS trajectory to a "
+"temporal point"
+msgstr ""
+"<link linkend=\"geometry_tgeompoint\"><varname>geometry::tgeompoint, "
+"geography::tgeogpoint</varname></link>: Convertir una trayectoria PostGIS en"
+" un punto temporal"
+
+#. Tag: title
+#: reference.xml:639
+#, no-c-format
+msgid "Transformation Functions"
+msgstr "Funciones de transformación"
+
+#. Tag: para
+#: reference.xml:643
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_transform\"><varname>ttype_inst, ttype_instset, "
+"ttype_seq, ttype_seqset</varname></link>: Transform a temporal value to "
+"another subtype"
+msgstr ""
+"<link linkend=\"ttype_transform\"><varname>ttype_inst, ttype_instset, "
+"ttype_seq, ttype_seqset</varname></link>: Transformar un valor temporal en "
+"otro subtipo"
+
+#. Tag: para
+#: reference.xml:647
+#, no-c-format
+msgid ""
+"<link linkend=\"toLinear\"><varname>toLinear</varname></link>: Transform a "
+"temporal value with continuous base type from stepwise to linear "
+"interpolation"
+msgstr ""
+"<link linkend=\"toLinear\"><varname>toLinear</varname></link>: Transformar "
+"un valor temporal con tipo de base continuo de interpolación escalonada a "
+"lineal"
+
+#. Tag: para
+#: reference.xml:651
+#, no-c-format
+msgid ""
+"<link linkend=\"appendInstant\"><varname>appendInstant</varname></link>: "
+"Append a temporal instant to a temporal value"
+msgstr ""
+"<link linkend=\"appendInstant\"><varname>appendInstant</varname></link>: "
+"Anexar un instante temporal a un valor temporal"
+
+#. Tag: para
+#: reference.xml:655
+#, no-c-format
+msgid ""
+"<link linkend=\"merge\"><varname>merge</varname></link>: Merge temporal "
+"values"
+msgstr ""
+"<link linkend=\"merge\"><varname>merge</varname></link>: Fusionar los "
+"valores temporales"
+
+#. Tag: para
+#: reference.xml:665
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_memSize\"><varname>memSize</varname></link>: Get the "
+"memory size in bytes"
+msgstr ""
+"<link linkend=\"ttype_memSize\"><varname>memSize</varname></link>: Obtener "
+"el tamaño de la memoria en bytes"
+
+#. Tag: para
+#: reference.xml:669
+#, no-c-format
+msgid ""
+"<link linkend=\"tempSubtype\"><varname>tempSubtype</varname></link>: Get the"
+" temporal subtype"
+msgstr ""
+"<link linkend=\"tempSubtype\"><varname>tempSubtype</varname></link>: Obtener"
+" el subtipo temporal"
+
+#. Tag: para
+#: reference.xml:673
+#, no-c-format
+msgid ""
+"<link linkend=\"interpolation\"><varname>interpolation</varname></link>: Get"
+" the interpolation"
+msgstr ""
+"<link linkend=\"interpolation\"><varname>interpolation</varname></link>: "
+"Obtener la interpolación"
+
+#. Tag: para
+#: reference.xml:677
+#, no-c-format
+msgid ""
+"<link linkend=\"getValue\"><varname>getValue</varname></link>: Get the value"
+msgstr ""
+"<link linkend=\"getValue\"><varname>getValue</varname></link>: Obtener el "
+"valor"
+
+#. Tag: para
+#: reference.xml:681
+#, no-c-format
+msgid ""
+"<link linkend=\"getValues\"><varname>getValues</varname></link>: Get the "
+"values"
+msgstr ""
+"<link linkend=\"getValues\"><varname>getValues</varname></link>: Obtener los"
+" valores"
+
+#. Tag: para
+#: reference.xml:685
+#, no-c-format
+msgid ""
+"<link linkend=\"startValue\"><varname>startValue</varname></link>: Get the "
+"start value"
+msgstr ""
+"<link linkend=\"startValue\"><varname>startValue</varname></link>: Obtener "
+"el valor inicial"
+
+#. Tag: para
+#: reference.xml:689
+#, no-c-format
+msgid ""
+"<link linkend=\"endValue\"><varname>endValue</varname></link>: Get the end "
+"value"
+msgstr ""
+"<link linkend=\"endValue\"><varname>endValue</varname></link>: Obtener el "
+"valor final"
+
+#. Tag: para
+#: reference.xml:693
+#, no-c-format
+msgid ""
+"<link linkend=\"minValue\"><varname>minValue</varname></link>: Get the "
+"minimum value"
+msgstr ""
+"<link linkend=\"minValue\"><varname>minValue</varname></link>: Obtener el "
+"valor mínimo"
+
+#. Tag: para
+#: reference.xml:697
+#, no-c-format
+msgid ""
+"<link linkend=\"maxValue\"><varname>maxValue</varname></link>: Get the "
+"maximum value"
+msgstr ""
+"<link linkend=\"maxValue\"><varname>maxValue</varname></link>: Obtener el "
+"valor máximo"
+
+#. Tag: para
+#: reference.xml:701
+#, no-c-format
+msgid ""
+"<link linkend=\"valueRange\"><varname>valueRange</varname></link>: Get the "
+"value range"
+msgstr ""
+"<link linkend=\"valueRange\"><varname>valueRange</varname></link>: Obtener "
+"el rango de valores"
+
+#. Tag: para
+#: reference.xml:705
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"valueAtTimestamp\"><varname>valueAtTimestamp</varname></link>: Get"
+" the value at a timestamp"
+msgstr ""
+"<link "
+"linkend=\"valueAtTimestamp\"><varname>valueAtTimestamp</varname></link>: "
+"Obtener el valor en una marca de tiempo"
+
+#. Tag: para
+#: reference.xml:709
+#, no-c-format
+msgid ""
+"<link linkend=\"getTimestamp\"><varname>getTimestamp</varname></link>: Get "
+"the timestamp"
+msgstr ""
+"<link linkend=\"getTimestamp\"><varname>getTimestamp</varname></link>: "
+"Obtener la marca de tiempo"
+
+#. Tag: para
+#: reference.xml:713
+#, no-c-format
+msgid "<link linkend=\"getTime\"><varname>getTime</varname></link>: Get the time"
+msgstr ""
+"<link linkend=\"getTime\"><varname>getTime</varname></link>: Obtener el "
+"tiempo"
+
+#. Tag: para
+#: reference.xml:717
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_duration\"><varname>duration</varname></link>: Get the"
+" duration"
+msgstr ""
+"<link linkend=\"ttype_duration\"><varname>duration</varname></link>: Obtener"
+" el intervalo de tiempo"
+
+#. Tag: para
+#: reference.xml:721
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_timespan\"><varname>timespan</varname></link>: Get the"
+" timespan ignoring the potential time gaps"
+msgstr ""
+"<link linkend=\"ttype_timespan\"><varname>timespan</varname></link>: Obtener"
+" el intervalo de tiempo ignorando las posibles brechas de tiempo"
+
+#. Tag: para
+#: reference.xml:725
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_period\"><varname>period</varname></link>: Get the "
+"period on which the temporal value is defined ignoring the potential time "
+"gaps"
+msgstr ""
+"<link linkend=\"ttype_period\"><varname>period</varname></link>: Obtener el "
+"período en el que está definido el valor temporal ignorando las posibles "
+"brechas de tiempo"
+
+#. Tag: para
+#: reference.xml:729
+#, no-c-format
+msgid ""
+"<link linkend=\"numInstants\"><varname>numInstants</varname></link>: Get the"
+" number of different instants"
+msgstr ""
+"<link linkend=\"numInstants\"><varname>numInstants</varname></link>: Obtener"
+" el número de instantes diferentes"
+
+#. Tag: para
+#: reference.xml:733
+#, no-c-format
+msgid ""
+"<link linkend=\"startInstant\"><varname>startInstant</varname></link>: Get "
+"the start instant"
+msgstr ""
+"<link linkend=\"startInstant\"><varname>startInstant</varname></link>: "
+"Obtener el instante inicial"
+
+#. Tag: para
+#: reference.xml:737
+#, no-c-format
+msgid ""
+"<link linkend=\"endInstant\"><varname>endInstant</varname></link>: Get the "
+"end instant"
+msgstr ""
+"<link linkend=\"endInstant\"><varname>endInstant</varname></link>: Obtener "
+"el instante final"
+
+#. Tag: para
+#: reference.xml:741
+#, no-c-format
+msgid ""
+"<link linkend=\"instantN\"><varname>instantN</varname></link>: Get the n-th "
+"different instant"
+msgstr ""
+"<link linkend=\"instantN\"><varname>instantN</varname></link>: Obtener el "
+"enésimo instante diferente"
+
+#. Tag: para
+#: reference.xml:745
+#, no-c-format
+msgid ""
+"<link linkend=\"instants\"><varname>instants</varname></link>: Get the "
+"different instants"
+msgstr ""
+"<link linkend=\"instants\"><varname>instants</varname></link>: Obtener los "
+"instantes diferentes"
+
+#. Tag: para
+#: reference.xml:749
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"ttype_numTimestamps\"><varname>numTimestamps</varname></link>: Get"
+" the number of different timestamps"
+msgstr ""
+"<link "
+"linkend=\"ttype_numTimestamps\"><varname>numTimestamps</varname></link>: "
+"Obtener el número de marcas de tiempo diferentes"
+
+#. Tag: para
+#: reference.xml:753
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"ttype_startTimestamp\"><varname>startTimestamp</varname></link>: "
+"Get the start timestamp"
+msgstr ""
+"<link "
+"linkend=\"ttype_startTimestamp\"><varname>startTimestamp</varname></link>: "
+"Obtener la marca de tiempo inicial"
+
+#. Tag: para
+#: reference.xml:757
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_endTimestamp\"><varname>endTimestamp</varname></link>:"
+" Get the end timestamp"
+msgstr ""
+"<link linkend=\"ttype_endTimestamp\"><varname>endTimestamp</varname></link>:"
+" Obtener la marca de tiempo final"
+
+#. Tag: para
+#: reference.xml:761
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_timestampN\"><varname>timestampN</varname></link>: Get"
+" the n-th different timestamp"
+msgstr ""
+"<link linkend=\"ttype_timestampN\"><varname>timestampN</varname></link>: "
+"Obtener la enésima marca de tiempo diferente"
+
+#. Tag: para
+#: reference.xml:765
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_timestamps\"><varname>timestamps</varname></link>: Get"
+" the different timestamps"
+msgstr ""
+"<link linkend=\"ttype_timestamps\"><varname>timestamps</varname></link>: "
+"Obtener las marcas de tiempo diferentes"
+
+#. Tag: para
+#: reference.xml:769
+#, no-c-format
+msgid ""
+"<link linkend=\"numSequences\"><varname>numSequences</varname></link>: Get "
+"the number of sequences"
+msgstr ""
+"<link linkend=\"numSequences\"><varname>numSequences</varname></link>: "
+"Obtener el número de secuencias"
+
+#. Tag: para
+#: reference.xml:773
+#, no-c-format
+msgid ""
+"<link linkend=\"startSequence\"><varname>startSequence</varname></link>: Get"
+" the start sequence"
+msgstr ""
+"<link linkend=\"startSequence\"><varname>startSequence</varname></link>: "
+"Obtener la secuencia inicial"
+
+#. Tag: para
+#: reference.xml:777
+#, no-c-format
+msgid ""
+"<link linkend=\"endSequence\"><varname>endSequence</varname></link>: Get the"
+" end sequence"
+msgstr ""
+"<link linkend=\"endSequence\"><varname>endSequence</varname></link>: Obtener"
+" la secuencia final"
+
+#. Tag: para
+#: reference.xml:781
+#, no-c-format
+msgid ""
+"<link linkend=\"sequenceN\"><varname>sequenceN</varname></link>: Get the "
+"n-th sequence"
+msgstr ""
+"<link linkend=\"sequenceN\"><varname>sequenceN</varname></link>: Obtener la "
+"enésima secuencia"
+
+#. Tag: para
+#: reference.xml:785
+#, no-c-format
+msgid ""
+"<link linkend=\"sequences\"><varname>sequences</varname></link>: Get the "
+"sequences"
+msgstr ""
+"<link linkend=\"sequences\"><varname>sequences</varname></link>: Obtener las"
+" secuencias"
+
+#. Tag: para
+#: reference.xml:789
+#, no-c-format
+msgid ""
+"<link linkend=\"segments\"><varname>segments</varname></link>: Get the "
+"segments"
+msgstr ""
+"<link linkend=\"segments\"><varname>segments</varname></link>: Obtener los "
+"segmentos"
+
+#. Tag: para
+#: reference.xml:793
+#, no-c-format
+msgid ""
+"<link linkend=\"shift\"><varname>shift</varname></link>: Shift the time span"
+" of the temporal value by an interval"
+msgstr ""
+"<link linkend=\"shift\"><varname>shift</varname></link>: Desplazar el "
+"intervalo de tiempo del valor temporal con un intervalo"
+
+#. Tag: para
+#: reference.xml:797
+#, no-c-format
+msgid ""
+"<link linkend=\"tscale\"><varname>tscale</varname></link>: Scale the time "
+"span of the temporal value to an interval"
+msgstr ""
+"<link linkend=\"tscale\"><varname>tscale</varname></link>: Escalear el "
+"intervalo de tiempo del valor temporal a un intervalo."
+
+#. Tag: para
+#: reference.xml:801
+#, no-c-format
+msgid ""
+"<link linkend=\"shiftTscale\"><varname>shiftTscale</varname></link>: Shift "
+"and scale the time span the temporal value with the intervals"
+msgstr ""
+"<link linkend=\"shiftTscale\"><varname>shiftTscale</varname></link>: "
+"Desplazar y escalear el intervalo de tiempo del valor temporal a los dos "
+"intervalos."
+
+#. Tag: para
+#: reference.xml:805
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"intersectsTimestamp\"><varname>intersectsTimestamp</varname></link>:"
+" Does the temporal value intersect the timestamp?"
+msgstr ""
+"<link "
+"linkend=\"intersectsTimestamp\"><varname>intersectsTimestamp</varname></link>:"
+" ¿Se cruza el valor temporal con la marca de tiempo?"
+
+#. Tag: para
+#: reference.xml:809
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"intersectsTimestampSet\"><varname>intersectsTimestampSet</varname></link>:"
+" Does the temporal value intersect the timestamp set?"
+msgstr ""
+"<link "
+"linkend=\"intersectsTimestampSet\"><varname>intersectsTimestampSet</varname></link>:"
+" ¿Se cruza el valor temporal con el conjunto de marcas tiempo?"
+
+#. Tag: para
+#: reference.xml:813
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"intersectsPeriod\"><varname>intersectsPeriod</varname></link>: "
+"Does the temporal value intersect the period?"
+msgstr ""
+"<link "
+"linkend=\"intersectsPeriod\"><varname>intersectsPeriod</varname></link>: ¿Se"
+" cruza el valor temporal con el período?"
+
+#. Tag: para
+#: reference.xml:817
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"intersectsPeriodSet\"><varname>intersectsPeriodSet</varname></link>:"
+" Does the temporal value intersect the period set?"
+msgstr ""
+"<link "
+"linkend=\"intersectsPeriodSet\"><varname>intersectsPeriodSet</varname></link>:"
+" ¿Se cruza el valor temporal con el conjunto de períodos?"
+
+#. Tag: para
+#: reference.xml:821
+#, no-c-format
+msgid ""
+"<link linkend=\"twAvg\"><varname>twAvg</varname></link>: Get the time-"
+"weighted average"
+msgstr ""
+"<link linkend=\"twAvg\"><varname>twAvg</varname></link>: Obtener el promedio"
+" ponderado en el tiempo"
+
+#. Tag: title
+#: reference.xml:827 reference.xml:1553
+#, no-c-format
+msgid "Spatial Functions"
+msgstr "Funciones espaciales"
+
+#. Tag: para
+#: reference.xml:831
+#, no-c-format
+msgid ""
+"<link linkend=\"asText\"><varname>asText</varname></link>: Get the Well-"
+"Known Text (WKT) representation"
+msgstr ""
+"<link linkend=\"asText\"><varname>asText</varname></link>: Obtener la "
+"representación de texto conocido (Well-Known Text o WKT)"
+
+#. Tag: para
+#: reference.xml:835
+#, no-c-format
+msgid ""
+"<link linkend=\"asEWKT\"><varname>asEWKT</varname></link>: Get the Extended "
+"Well-Known Text (EWKT) representation"
+msgstr ""
+"<link linkend=\"asEWKT\"><varname>asEWKT</varname></link>: Obtener la "
+"representación extendida de texto conocido (Extended Well-Known Text o EWKT)"
+
+#. Tag: para
+#: reference.xml:839
+#, no-c-format
+msgid ""
+"<link linkend=\"asMFJSON\"><varname>asMFJSON</varname></link>: Get the "
+"Moving Features JSON representation"
+msgstr ""
+"<link linkend=\"asMFJSON\"><varname>asMFJSON</varname></link>: Obtener la "
+"representación JSON de características móviles (Moving Features)"
+
+#. Tag: para
+#: reference.xml:843
+#, no-c-format
+msgid ""
+"<link linkend=\"asBinary\"><varname>asBinary</varname></link>: Get the Well-"
+"Known Binary (WKB) representation"
+msgstr ""
+"<link linkend=\"asBinary\"><varname>asBinary</varname></link>: Obtener la "
+"representación binaria conocida (Well-Known Binary o WKB)"
+
+#. Tag: para
+#: reference.xml:847
+#, no-c-format
+msgid ""
+"<link linkend=\"asEWKB\"><varname>asEWKB</varname></link>: Get the Extended "
+"Well-Known Binary (EWKB) representation"
+msgstr ""
+"<link linkend=\"asEWKB\"><varname>asEWKB</varname></link>: Obtener la "
+"representación extendida binaria conocida (Extended Well-Known Binary o "
+"EWKB)"
+
+#. Tag: para
+#: reference.xml:851
+#, no-c-format
+msgid ""
+"<link linkend=\"asHexEWKB\"><varname>asHexEWKB</varname></link>: Get the "
+"Hexadecimal Extended Well-Known Binary (EWKB) representation as text"
+msgstr ""
+"<link linkend=\"asHexEWKB\"><varname>asHexEWKB</varname></link>: Obtener la "
+"representación hexadecimal extendida binaria conocida (Hexadecimal Extended "
+"Well-Known Binary o EWKB) en formato texto"
+
+#. Tag: para
+#: reference.xml:855
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompointFromText\"><varname>tgeompointFromText</varname></link>:"
+" Input a temporal geometry point from a Well-Known Text (WKT) representation"
+msgstr ""
+"<link "
+"linkend=\"tgeompointFromText\"><varname>tgeompointFromText</varname></link>:"
+" Entrar un punto temporal geométrico en representación de texto conocido "
+"(Well-Known Text o WKT)"
+
+#. Tag: para
+#: reference.xml:859
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpointFromText\"><varname>tgeogpointFromText</varname></link>:"
+" Input a temporal geography point from a Well-Known Text (WKT) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeogpointFromText\"><varname>tgeogpointFromText</varname></link>:"
+" Entrar un punto temporal geográfico en representación de texto conocido "
+"(Well-Known Text o WKT)"
+
+#. Tag: para
+#: reference.xml:863
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompointFromEWKT\"><varname>tgeompointFromEWKT</varname></link>:"
+" Input a temporal geometry point from an Extended Well-Known Text (EWKT) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeompointFromEWKT\"><varname>tgeompointFromEWKT</varname></link>:"
+" Entrar un punto temporal geométrico en representación extendida de texto "
+"conocido (Extended Well-Known Text o EWKT)"
+
+#. Tag: para
+#: reference.xml:867
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpointFromEWKT\"><varname>tgeogpointFromEWKT</varname></link>:"
+" Input a temporal geography point from an Extended Well-Known Text (EWKT) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeogpointFromEWKT\"><varname>tgeogpointFromEWKT</varname></link>:"
+" Entrar un punto temporal geográfico en representación extendida de texto "
+"conocido (Extended Well-Known Text o EWKT)"
+
+#. Tag: para
+#: reference.xml:871
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompointFromMFJSON\"><varname>tgeompointFromMFJSON</varname></link>:"
+" Input a temporal geometry point from a Moving Features JSON representation"
+msgstr ""
+"<link "
+"linkend=\"tgeompointFromMFJSON\"><varname>tgeompointFromMFJSON</varname></link>:"
+" Entrar un punto temporal geométrico en una representación JSON de "
+"características móviles (Moving Features)"
+
+#. Tag: para
+#: reference.xml:875
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpointFromMFJSON\"><varname>tgeogpointFromMFJSON</varname></link>:"
+" Input a temporal geography geometry point from a Moving Features JSON "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeogpointFromMFJSON\"><varname>tgeogpointFromMFJSON</varname></link>:"
+" Entrar un punto temporal geográfico en una representación JSON de "
+"características móviles (Moving Features)"
+
+#. Tag: para
+#: reference.xml:879
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompointFromBinary\"><varname>tgeompointFromBinary</varname></link>:"
+" Input a temporal geometry point from a Well-Known Binary (WKB) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeompointFromBinary\"><varname>tgeompointFromBinary</varname></link>:"
+" Entrar un punto temporal geométrico en representación binaria conocida "
+"(Well-Known Binary o WKB)"
+
+#. Tag: para
+#: reference.xml:883
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpointFromBinary\"><varname>tgeogpointFromBinary</varname></link>:"
+" Input a temporal geography point from a Well-Known Binary (WKB) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeogpointFromBinary\"><varname>tgeogpointFromBinary</varname></link>:"
+" Entrar un punto temporal geográfico en representación binaria conocida "
+"(Well-Known Binary o WKB)"
+
+#. Tag: para
+#: reference.xml:887
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompointFromEWKB\"><varname>tgeompointFromEWKB</varname></link>:"
+" Input a temporal geometry point from an Extended Well-Known Binary (EWKB) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeompointFromEWKB\"><varname>tgeompointFromEWKB</varname></link>:"
+" Entrar un punto temporal geométrico en una representación extendida binaria"
+" conocida (Extended Well-Known Binary o EWKB)"
+
+#. Tag: para
+#: reference.xml:891
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpointFromEWKB\"><varname>tgeogpointFromEWKB</varname></link>:"
+" Input a temporal geography point from an Extended Well-Known Binary (EWKB) "
+"representation"
+msgstr ""
+"<link "
+"linkend=\"tgeogpointFromEWKB\"><varname>tgeogpointFromEWKB</varname></link>:"
+" Entrar un punto temporal geográfico en una representación extendida binaria"
+" conocida (Extended Well-Known Binary o EWKB)"
+
+#. Tag: para
+#: reference.xml:895
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompointFromHexEWKB\"><varname>tgeompointFromHexEWKB</varname></link>:"
+" Input a temporal geometry point from an Hexadecimal Extended Well-Known "
+"Binary (EWKB) representation as text"
+msgstr ""
+"<link "
+"linkend=\"tgeompointFromHexEWKB\"><varname>tgeompointFromHexEWKB</varname></link>:"
+" Entrar un punto temporal geométrico en representación hexadecimal extendida"
+" binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato"
+" texto"
+
+#. Tag: para
+#: reference.xml:899
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeogpointFromHexEWKB\"><varname>tgeogpointFromHexEWKB</varname></link>:"
+" Input a temporal geography point from an Hexadecimal Extended Well-Known "
+"Binary (EWKB) representation as text"
+msgstr ""
+"<link "
+"linkend=\"tgeogpointFromHexEWKB\"><varname>tgeogpointFromHexEWKB</varname></link>:"
+" Entrar un punto temporal geográfico en representación hexadecimal extendida"
+" binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato"
+" texto"
+
+#. Tag: para
+#: reference.xml:903
+#, no-c-format
+msgid ""
+"<link linkend=\"tpoint_SRID\"><varname>SRID</varname></link>: Get the "
+"spatial reference identifier"
+msgstr ""
+"<link linkend=\"tpoint_SRID\"><varname>SRID</varname></link>: Obtener el "
+"identificador de referencia espacial"
+
+#. Tag: para
+#: reference.xml:907
+#, no-c-format
+msgid ""
+"<link linkend=\"tpoint_setSRID\"><varname>setSRID</varname></link>: Set the "
+"spatial reference identifier"
+msgstr ""
+"<link linkend=\"tpoint_setSRID\"><varname>setSRID</varname></link>: "
+"Establecer el identificador de referencia espacial"
+
+#. Tag: para
+#: reference.xml:911
+#, no-c-format
+msgid ""
+"<link linkend=\"tpoint_transform\"><varname>transform</varname></link>: "
+"Transform to a different spatial reference"
+msgstr ""
+"<link linkend=\"tpoint_transform\"><varname>transform</varname></link>: "
+"Transformar a una referencia espacial diferente"
+
+#. Tag: para
+#: reference.xml:915
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tpoint_setPrecision\"><varname>setPrecision</varname></link>: "
+"Round the coordinate values to a number of decimal places"
+msgstr ""
+"<link "
+"linkend=\"tpoint_setPrecision\"><varname>setPrecision</varname></link>: "
+"Redondear los valores de las coordenadas a un número de decimales"
+
+#. Tag: para
+#: reference.xml:919
+#, no-c-format
+msgid ""
+"<link linkend=\"getX\"><varname>getX</varname></link>: Get the X coordinate "
+"values as a temporal float"
+msgstr ""
+"<link linkend=\"getX\"><varname>getX</varname></link>: Obtener los valores "
+"de las coordenadas X como un número flotante temporal"
+
+#. Tag: para
+#: reference.xml:923
+#, no-c-format
+msgid ""
+"<link linkend=\"getY\"><varname>getY</varname></link>: Get the Y coordinate "
+"values as a temporal float"
+msgstr ""
+"<link linkend=\"getY\"><varname>getY</varname></link>: Obtener los valores "
+"de las coordenadas Y como un número flotante temporal"
+
+#. Tag: para
+#: reference.xml:927
+#, no-c-format
+msgid ""
+"<link linkend=\"getZ\"><varname>getZ</varname></link>: Get the Z coordinate "
+"values as a temporal float"
+msgstr ""
+"<link linkend=\"getZ\"><varname>getZ</varname></link>: Obtener los valores "
+"de las coordenadas Z como un número flotante temporal"
+
+#. Tag: para
+#: reference.xml:931
+#, no-c-format
+msgid ""
+"<link linkend=\"length\"><varname>length</varname></link>: Get the length "
+"traversed by the temporal point"
+msgstr ""
+"<link linkend=\"isSimple\"><varname>isSimple</varname></link>: Devuelve "
+"verdadero si el punto temporal no se auto-intersecta espacialmente"
+
+#. Tag: para
+#: reference.xml:935
+#, no-c-format
+msgid ""
+"<link linkend=\"isSimple\"><varname>isSimple</varname></link>: Returns true "
+"if the temporal point does not spatially self-intersect"
+msgstr ""
+"<link linkend=\"makeSimple\"><varname>makeSimple</varname></link>: Devuelve "
+"una matriz de fragmentos del punto temporal que son simples"
+
+#. Tag: para
+#: reference.xml:939
+#, no-c-format
+msgid ""
+"<link linkend=\"makeSimple\"><varname>makeSimple</varname></link>: Returns "
+"an array of fragments of the temporal point which are simple"
+msgstr ""
+"<link linkend=\"length\"><varname>length</varname></link>: Obtener la "
+"longitud atravesada por el punto temporal"
+
+#. Tag: para
+#: reference.xml:943
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"cumulativeLength\"><varname>cumulativeLength</varname></link>: Get"
+" the cumulative length traversed by the temporal point"
+msgstr ""
+"<link "
+"linkend=\"cumulativeLength\"><varname>cumulativeLength</varname></link>: "
+"Obtener la longitud acumulada atravesada por el punto temporal"
+
+#. Tag: para
+#: reference.xml:947
+#, no-c-format
+msgid ""
+"<link linkend=\"speed\"><varname>speed</varname></link>: Get the speed of "
+"the temporal point in units per second"
+msgstr ""
+"<link linkend=\"speed\"><varname>speed</varname></link>: Obtener la "
+"velocidad del punto temporal en unidades por segundo"
+
+#. Tag: para
+#: reference.xml:951
+#, no-c-format
+msgid ""
+"<link linkend=\"twCentroid\"><varname>twCentroid</varname></link>: Get the "
+"time-weighted centroid"
+msgstr ""
+"<link linkend=\"twCentroid\"><varname>twCentroid</varname></link>: Obtener "
+"el centroide ponderado en el tiempo"
+
+#. Tag: para
+#: reference.xml:955
+#, no-c-format
+msgid ""
+"<link linkend=\"azimuth\"><varname>azimuth</varname></link>: Get the "
+"temporal azimuth"
+msgstr ""
+"<link linkend=\"azimuth\"><varname>azimuth</varname></link>: Obtener el "
+"acimut temporal"
+
+#. Tag: para
+#: reference.xml:959
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"nearestApproachInstant\"><varname>nearestApproachInstant</varname></link>:"
+" Get the instant of the first temporal point at which the two arguments are "
+"at the nearest distance"
+msgstr ""
+"<link "
+"linkend=\"nearestApproachInstant\"><varname>nearestApproachInstant</varname></link>:"
+" Obtener el instante del primer punto temporal en el que los dos argumentos "
+"están a la distancia más cercana"
+
+#. Tag: para
+#: reference.xml:963
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"nearestApproachDistance\"><varname>nearestApproachDistance</varname></link>:"
+" Get the smallest distance ever"
+msgstr ""
+"<link "
+"linkend=\"nearestApproachDistance\"><varname>nearestApproachDistance</varname></link>:"
+" Obtener la distancia más pequeña que haya existido"
+
+#. Tag: para
+#: reference.xml:967
+#, no-c-format
+msgid ""
+"<link linkend=\"shortestLine\"><varname>shortestLine</varname></link>: Get "
+"the line connecting the nearest approach point"
+msgstr ""
+"<link linkend=\"shortestLine\"><varname>shortestLine</varname></link>: "
+"Obtener la línea que conecta el punto de aproximación más cercano"
+
+#. Tag: para
+#: reference.xml:971
+#, no-c-format
+msgid ""
+"<link linkend=\"simplify\"><varname>simplify</varname></link>: Simplify a "
+"temporal point using a generalization of the Douglas-Peucker algorithm"
+msgstr ""
+"<link linkend=\"simplify\"><varname>simplify</varname></link>: Simplificar "
+"un punto temporal usando una generalización del algoritmo de Douglas-Peucker"
+
+#. Tag: para
+#: reference.xml:975
+#, no-c-format
+msgid ""
+"<link linkend=\"geoMeasure\"><varname>geoMeasure</varname></link>: Construct"
+" a geometry/geography with M measure from a temporal point and a temporal "
+"float"
+msgstr ""
+"<link linkend=\"geoMeasure\"><varname>geoMeasure</varname></link>: Construir"
+" una geometría/geografía con medida M a partir de un punto temporal y un "
+"número flotante temporal"
+
+#. Tag: para
+#: reference.xml:979
+#, no-c-format
+msgid ""
+"<link linkend=\"asMVTGeom\"><varname>asMVTGeom</varname></link>: Transform a"
+" temporal geometric point into the coordinate space of a Mapbox Vector Tile"
+msgstr ""
+"<link linkend=\"asMVTGeom\"><varname>asMVTGeom</varname></link>: Transformar"
+" un punto geométrico temporal en el espacio de coordenadas de un Mapbox "
+"Vector Tile"
+
+#. Tag: title
+#: reference.xml:985
+#, no-c-format
+msgid "Restriction Functions"
+msgstr "Funciones de restricción"
+
+#. Tag: para
+#: reference.xml:989
+#, no-c-format
+msgid ""
+"<link linkend=\"atValue\"><varname>atValue</varname></link>: Restrict to a "
+"value"
+msgstr ""
+"<link linkend=\"atValue\"><varname>atValue</varname></link>: Restringir a un"
+" valor"
+
+#. Tag: para
+#: reference.xml:993
+#, no-c-format
+msgid ""
+"<link linkend=\"atValues\"><varname>atValues</varname></link>: Restrict to "
+"an array of values"
+msgstr ""
+"<link linkend=\"atValues\"><varname>atValues</varname></link>: Restringir a "
+"una matriz de valores"
+
+#. Tag: para
+#: reference.xml:997
+#, no-c-format
+msgid ""
+"<link linkend=\"atRange\"><varname>atRange</varname></link>: Restrict to a "
+"range"
+msgstr ""
+"<link linkend=\"atRange\"><varname>atRange</varname></link>: Restringir a un"
+" rango de valores"
+
+#. Tag: para
+#: reference.xml:1001
+#, no-c-format
+msgid ""
+"<link linkend=\"atRanges\"><varname>atRanges</varname></link>: Restrict to "
+"an array of ranges"
+msgstr ""
+"<link linkend=\"atRanges\"><varname>atRanges</varname></link>: Restringir a "
+"una matriz de rangos de valores"
+
+#. Tag: para
+#: reference.xml:1005
+#, no-c-format
+msgid ""
+"<link linkend=\"atMin\"><varname>atMin</varname></link>: Restrict to the "
+"minimum value"
+msgstr ""
+"<link linkend=\"atMin\"><varname>atMin</varname></link>: Restringir al valor"
+" mínimo"
+
+#. Tag: para
+#: reference.xml:1009
+#, no-c-format
+msgid ""
+"<link linkend=\"atMax\"><varname>atMax</varname></link>: Restrict to the "
+"maximum value"
+msgstr ""
+"<link linkend=\"atMax\"><varname>atMax</varname></link>: Restringir al valor"
+" máximo"
+
+#. Tag: para
+#: reference.xml:1013
+#, no-c-format
+msgid ""
+"<link linkend=\"atGeometry\"><varname>atGeometry</varname></link>: Restrict "
+"to a geometry"
+msgstr ""
+"<link linkend=\"atGeometry\"><varname>atGeometry</varname></link>: "
+"Restringir a una geometría"
+
+#. Tag: para
+#: reference.xml:1017
+#, no-c-format
+msgid ""
+"<link linkend=\"atTimestamp\"><varname>atTimestamp</varname></link>: "
+"Restrict to a timestamp"
+msgstr ""
+"<link linkend=\"atTimestamp\"><varname>atTimestamp</varname></link>: "
+"Restringir a una marca de tiempo"
+
+#. Tag: para
+#: reference.xml:1021
+#, no-c-format
+msgid ""
+"<link linkend=\"atTimestampSet\"><varname>atTimestampSet</varname></link>: "
+"Restrict to a timestamp set"
+msgstr ""
+"<link linkend=\"atTimestampSet\"><varname>atTimestampSet</varname></link>: "
+"Restringir a un conjunto de marcas de tiempo"
+
+#. Tag: para
+#: reference.xml:1025
+#, no-c-format
+msgid ""
+"<link linkend=\"atPeriod\"><varname>atPeriod</varname></link>: Restrict to a"
+" period"
+msgstr ""
+"<link linkend=\"atPeriod\"><varname>atPeriod</varname></link>: Restringir a "
+"un período"
+
+#. Tag: para
+#: reference.xml:1029
+#, no-c-format
+msgid ""
+"<link linkend=\"atPeriodSet\"><varname>atPeriodSet</varname></link>: "
+"Restrict to a period set"
+msgstr ""
+"<link linkend=\"atPeriodSet\"><varname>atPeriodSet</varname></link>: "
+"Restringir a un conjunto de períodos"
+
+#. Tag: para
+#: reference.xml:1033
+#, no-c-format
+msgid ""
+"<link linkend=\"atTbox\"><varname>atTbox</varname></link>: Restrict to a "
+"<varname>tbox</varname>"
+msgstr ""
+"<link linkend=\"atTbox\"><varname>atTbox</varname></link>: Restringir a un "
+"<varname>tbox</varname>"
+
+#. Tag: para
+#: reference.xml:1037
+#, no-c-format
+msgid ""
+"<link linkend=\"atStbox\"><varname>atStbox</varname></link>: Restrict to an "
+"<varname>stbox</varname>"
+msgstr ""
+"<link linkend=\"atStbox\"><varname>atStbox</varname></link>: Restringir a un"
+" <varname>stbox</varname>"
+
+#. Tag: title
+#: reference.xml:1043
+#, no-c-format
+msgid "Difference Functions"
+msgstr "Funciones de diferencia"
+
+#. Tag: para
+#: reference.xml:1047
+#, no-c-format
+msgid ""
+"<link linkend=\"minusValue\"><varname>minusValue</varname></link>: "
+"Difference with a value"
+msgstr ""
+"<link linkend=\"minusValue\"><varname>minusValue</varname></link>: "
+"Diferencia con un valor"
+
+#. Tag: para
+#: reference.xml:1051
+#, no-c-format
+msgid ""
+"<link linkend=\"minusValues\"><varname>minusValues</varname></link>: "
+"Difference with an array of values"
+msgstr ""
+"<link linkend=\"minusValues\"><varname>minusValues</varname></link>: "
+"Diferencia con una matriz de valores"
+
+#. Tag: para
+#: reference.xml:1055
+#, no-c-format
+msgid ""
+"<link linkend=\"minusRange\"><varname>minusRange</varname></link>: "
+"Difference with a range"
+msgstr ""
+"<link linkend=\"minusRange\"><varname>minusRange</varname></link>: "
+"Diferencia con un rango de valores"
+
+#. Tag: para
+#: reference.xml:1059
+#, no-c-format
+msgid ""
+"<link linkend=\"minusRanges\"><varname>minusRanges</varname></link>: "
+"Difference with an array of ranges"
+msgstr ""
+"<link linkend=\"minusRanges\"><varname>minusRanges</varname></link>: "
+"Diferencia con una matriz de rangos de valores"
+
+#. Tag: para
+#: reference.xml:1063
+#, no-c-format
+msgid ""
+"<link linkend=\"minusMin\"><varname>minusMin</varname></link>: Difference "
+"with the minimum value"
+msgstr ""
+"<link linkend=\"minusMin\"><varname>minusMin</varname></link>: Diferencia "
+"con el valor mínimo"
+
+#. Tag: para
+#: reference.xml:1067
+#, no-c-format
+msgid ""
+"<link linkend=\"minusMax\"><varname>minusMax</varname></link>: Difference "
+"with the maximum value"
+msgstr ""
+"<link linkend=\"minusMax\"><varname>minusMax</varname></link>: Diferencia "
+"con el valor máximo"
+
+#. Tag: para
+#: reference.xml:1071
+#, no-c-format
+msgid ""
+"<link linkend=\"minusGeometry\"><varname>minusGeometry</varname></link>: "
+"Difference with a geometry"
+msgstr ""
+"<link linkend=\"minusGeometry\"><varname>minusGeometry</varname></link>: "
+"Diferencia con una geometría"
+
+#. Tag: para
+#: reference.xml:1075
+#, no-c-format
+msgid ""
+"<link linkend=\"minusTimestamp\"><varname>minusTimestamp</varname></link>: "
+"Difference with a timestamp"
+msgstr ""
+"<link linkend=\"minusTimestamp\"><varname>minusTimestamp</varname></link>: "
+"Diferencia con una marca de tiempo"
+
+#. Tag: para
+#: reference.xml:1079
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"minusTimestampSet\"><varname>minusTimestampSet</varname></link>: "
+"Difference with a timestamp set"
+msgstr ""
+"<link "
+"linkend=\"minusTimestampSet\"><varname>minusTimestampSet</varname></link>: "
+"Diferencia con un conjunto de marcas de tiempo"
+
+#. Tag: para
+#: reference.xml:1083
+#, no-c-format
+msgid ""
+"<link linkend=\"minusPeriod\"><varname>minusPeriod</varname></link>: "
+"Difference with period"
+msgstr ""
+"<link linkend=\"minusPeriod\"><varname>minusPeriod</varname></link>: "
+"Diferencia con un período"
+
+#. Tag: para
+#: reference.xml:1087
+#, no-c-format
+msgid ""
+"<link linkend=\"minusPeriodSet\"><varname>minusPeriodSet</varname></link>: "
+"Difference with a period set"
+msgstr ""
+"<link linkend=\"minusPeriodSet\"><varname>minusPeriodSet</varname></link>: "
+"Diferencia con un conjunto de períodos"
+
+#. Tag: para
+#: reference.xml:1091
+#, no-c-format
+msgid ""
+"<link linkend=\"minusTbox\"><varname>minusTbox</varname></link>: Difference "
+"with a <varname>tbox</varname>"
+msgstr ""
+"<link linkend=\"minusTbox\"><varname>minusTbox</varname></link>: Diferencia "
+"con un <varname>tbox</varname>"
+
+#. Tag: para
+#: reference.xml:1095
+#, no-c-format
+msgid ""
+"<link linkend=\"minusStbox\"><varname>minusStbox</varname></link>: "
+"Difference with an <varname>stbox</varname>"
+msgstr ""
+"<link linkend=\"minusStbox\"><varname>minusStbox</varname></link>: "
+"Diferencia con un <varname>stbox</varname>"
+
+#. Tag: para
+#: reference.xml:1105
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_eq\"><varname>=</varname></link>: Are the temporal "
+"values equal?"
+msgstr ""
+"<link linkend=\"ttype_eq\"><varname>=</varname></link>: ¿Son iguales los "
+"valores temporales?"
+
+#. Tag: para
+#: reference.xml:1109
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_ne\"><varname>&lt;&gt;</varname></link>: Are the "
+"temporal values different?"
+msgstr ""
+"<link linkend=\"ttype_ne\"><varname>&lt;&gt;</varname></link>: ¿Son "
+"diferentes los valores temporales?"
+
+#. Tag: para
+#: reference.xml:1113
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_lt\"><varname>&lt;</varname></link>: Is the first "
+"temporal value less than the second one?"
+msgstr ""
+"<link linkend=\"ttype_lt\"><varname>&lt;</varname></link>: ¿Es el primer "
+"valor temporal menor que el segundo?"
+
+#. Tag: para
+#: reference.xml:1117
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_gt\"><varname>&gt;</varname></link>: Is the first "
+"temporal value greater than the second one?"
+msgstr ""
+"<link linkend=\"ttype_gt\"><varname>&gt;</varname></link>: ¿Es el primer "
+"valor temporal mayor que el segundo?"
+
+#. Tag: para
+#: reference.xml:1121
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_le\"><varname>&lt;=</varname></link>: Is the first "
+"temporal value less than or equal to the second one?"
+msgstr ""
+"<link linkend=\"ttype_le\"><varname>&lt;=</varname></link>: ¿Es el primer "
+"valor temporal menor o igual que el segundo?"
+
+#. Tag: para
+#: reference.xml:1125
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_ge\"><varname>&gt;=</varname></link>: Is the first "
+"temporal value greater than or equal to the second one?"
+msgstr ""
+"<link linkend=\"ttype_ge\"><varname>&gt;=</varname></link>: ¿Es el primer "
+"valor temporal mayor o igual que el segundo?"
+
+#. Tag: title
+#: reference.xml:1131
+#, no-c-format
+msgid "Ever and Always Comparison Operators"
+msgstr "Operadores de comparación siempre y alguna vez"
+
+#. Tag: para
+#: reference.xml:1135
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_eveq\"><varname>?=</varname></link>: Is the temporal "
+"value ever equal to the value?"
+msgstr ""
+"<link linkend=\"ttype_eveq\"><varname>?=</varname></link>: ¿Es el valor "
+"temporal alguna vez igual al valor?"
+
+#. Tag: para
+#: reference.xml:1139
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_evne\"><varname>?&lt;&gt;</varname></link>: Is the "
+"temporal value ever different from the value?"
+msgstr ""
+"<link linkend=\"ttype_evne\"><varname>?&lt;&gt;</varname></link>: ¿Es el "
+"valor temporal alguna vez diferente del valor?"
+
+#. Tag: para
+#: reference.xml:1143
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_evlt\"><varname>?&lt;</varname></link>: Is the "
+"temporal value ever less than the value?"
+msgstr ""
+"<link linkend=\"ttype_evlt\"><varname>?&lt;</varname></link>: ¿Es el valor "
+"temporal alguna vez menor que el valor?"
+
+#. Tag: para
+#: reference.xml:1147
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_evgt\"><varname>?&gt;</varname></link>: Is the "
+"temporal value ever greater than the value?"
+msgstr ""
+"<link linkend=\"ttype_evgt\"><varname>?&gt;</varname></link>: ¿Es el valor "
+"temporal alguna vez mayor que el valor?"
+
+#. Tag: para
+#: reference.xml:1151
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_evle\"><varname>?&lt;=</varname></link>: Is the "
+"temporal value ever less than or equal to the value?"
+msgstr ""
+"<link linkend=\"ttype_evle\"><varname>?&lt;=</varname></link>: ¿Es el valor "
+"temporal alguna vez menor o igual que el valor?"
+
+#. Tag: para
+#: reference.xml:1155
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_evge\"><varname>?&gt;=</varname></link>: Is the "
+"temporal value ever greater than or equal to the value?"
+msgstr ""
+"<link linkend=\"ttype_evge\"><varname>?&gt;=</varname></link>: ¿Es el valor "
+"temporal alguna vez mayor o igual que el valor?"
+
+#. Tag: para
+#: reference.xml:1159
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_aleq\"><varname>%=</varname></link>: Is the temporal "
+"value always equal to the value?"
+msgstr ""
+"<link linkend=\"ttype_aleq\"><varname>%=</varname></link>: ¿Es el valor "
+"temporal siempre igual que el valor?"
+
+#. Tag: para
+#: reference.xml:1163
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_alne\"><varname>%&lt;&gt;</varname></link>: Is the "
+"temporal value always different to the value?"
+msgstr ""
+"<link linkend=\"ttype_alne\"><varname>%&lt;&gt;</varname></link>: ¿Es el "
+"valor temporal siempre diferente que el valor?"
+
+#. Tag: para
+#: reference.xml:1167
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_allt\"><varname>%&lt;</varname></link>: Is the "
+"temporal value always less than the value?"
+msgstr ""
+"<link linkend=\"ttype_allt\"><varname>%&lt;</varname></link>: ¿Es el valor "
+"temporal siempre menor que el valor?"
+
+#. Tag: para
+#: reference.xml:1171
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_algt\"><varname>%&gt;</varname></link>: Is the "
+"temporal value always greater than the value?"
+msgstr ""
+"<link linkend=\"ttype_algt\"><varname>%&gt;</varname></link>: ¿Es el valor "
+"temporal siempre mayor que el valor?"
+
+#. Tag: para
+#: reference.xml:1175
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_alle\"><varname>%&lt;=</varname></link>: Is the "
+"temporal value always less than or equal to the value?"
+msgstr ""
+"<link linkend=\"ttype_alle\"><varname>%&lt;=</varname></link>: ¿Es el valor "
+"temporal siempre menor o igual que el valor?"
+
+#. Tag: para
+#: reference.xml:1179
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_alge\"><varname>%&gt;=</varname></link>: Is the "
+"temporal value always greater than or equal to the value?"
+msgstr ""
+"<link linkend=\"ttype_alge\"><varname>%&gt;=</varname></link>: ¿Es el valor "
+"temporal siempre mayor o igual que el valor?"
+
+#. Tag: title
+#: reference.xml:1185
+#, no-c-format
+msgid "Temporal Comparison Operators"
+msgstr "Operadores de comparación temporal"
+
+#. Tag: para
+#: reference.xml:1189
+#, no-c-format
+msgid "<link linkend=\"ttype_teq\"><varname>#=</varname></link>: Temporal equal"
+msgstr "<link linkend=\"ttype_teq\"><varname>#=</varname></link>: Igual temporal"
+
+#. Tag: para
+#: reference.xml:1193
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_tne\"><varname>#&lt;&gt;</varname></link>: Temporal "
+"different"
+msgstr ""
+"<link linkend=\"ttype_tne\"><varname>#&lt;&gt;</varname></link>: Diferente "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1197
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_tlt\"><varname>#&lt;</varname></link>: Temporal less "
+"than"
+msgstr ""
+"<link linkend=\"ttype_tlt\"><varname>#&lt;</varname></link>: Menor que "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1201
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_tgt\"><varname>#&gt;</varname></link>: Temporal "
+"greater than"
+msgstr ""
+"<link linkend=\"ttype_tgt\"><varname>#&gt;</varname></link>: Mayor que "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1205
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_tle\"><varname>#&lt;=</varname></link>: Temporal less "
+"than or equal to"
+msgstr ""
+"<link linkend=\"ttype_tle\"><varname>#&lt;=</varname></link>: Menor o igual "
+"que temporal"
+
+#. Tag: para
+#: reference.xml:1209
+#, no-c-format
+msgid ""
+"<link linkend=\"ttype_tge\"><varname>#&gt;=</varname></link>: Temporal "
+"greater than or equal to"
+msgstr ""
+"<link linkend=\"ttype_tge\"><varname>#&gt;=</varname></link>: Mayor o igual "
+"que temporal"
+
+#. Tag: title
+#: reference.xml:1215
+#, no-c-format
+msgid "Mathematical Functions and Operators"
+msgstr "Funciones y operadores matemáticos"
+
+#. Tag: para
+#: reference.xml:1219
+#, no-c-format
+msgid ""
+"<link linkend=\"tnumber_add\"><varname>+</varname></link>: Temporal addition"
+msgstr ""
+"<link linkend=\"tnumber_add\"><varname>+</varname></link>: Adición temporal"
+
+#. Tag: para
+#: reference.xml:1223
+#, no-c-format
+msgid ""
+"<link linkend=\"tnumber_sub\"><varname>-</varname></link>: Temporal "
+"subtraction"
+msgstr "<link linkend=\"tnumber_sub\"><varname>-</varname></link>: Resta temporal"
+
+#. Tag: para
+#: reference.xml:1227
+#, no-c-format
+msgid ""
+"<link linkend=\"tnumber_mult\"><varname>*</varname></link>: Temporal "
+"multiplication"
+msgstr ""
+"<link linkend=\"tnumber_mult\"><varname>*</varname></link>: Multiplicación "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1231
+#, no-c-format
+msgid ""
+"<link linkend=\"tnumber_div\"><varname>/</varname></link>: Temporal division"
+msgstr ""
+"<link linkend=\"tnumber_div\"><varname>/</varname></link>: División temporal"
+
+#. Tag: para
+#: reference.xml:1235
+#, no-c-format
+msgid ""
+"<link linkend=\"round\"><varname>round</varname></link>: Round the values to"
+" a number of decimal places"
+msgstr ""
+"<link linkend=\"round\"><varname>round</varname></link>: Redondear los "
+"valores a un número de posiciones decimales"
+
+#. Tag: para
+#: reference.xml:1239
+#, no-c-format
+msgid ""
+"<link linkend=\"degrees\"><varname>degrees</varname></link>: Convert from "
+"radians to degrees"
+msgstr ""
+"<link linkend=\"degrees\"><varname>degrees</varname></link>: Convertir de "
+"radianes a grados"
+
+#. Tag: para
+#: reference.xml:1243
+#, no-c-format
+msgid ""
+"<link linkend=\"derivative\"><varname>derivative</varname></link>: Get the "
+"derivative over time of the temporal float in units per second"
+msgstr ""
+"<link linkend=\"derivative\"><varname>derivative</varname></link>: Obtener "
+"la derivada sobre el tiempo del número temporal en unidades por segundo"
+
+#. Tag: title
+#: reference.xml:1249
+#, no-c-format
+msgid "Boolean Operators"
+msgstr "Operadores booleanos"
+
+#. Tag: para
+#: reference.xml:1252
+#, no-c-format
+msgid "<link linkend=\"tbool_and\"><varname>&amp;</varname></link>: Temporal and"
+msgstr "<link linkend=\"tbool_and\"><varname>&amp;</varname></link>: Y temporal"
+
+#. Tag: para
+#: reference.xml:1256
+#, no-c-format
+msgid "<link linkend=\"tbool_or\"><varname>|</varname></link>: Temporal or"
+msgstr "<link linkend=\"tbool_or\"><varname>|</varname></link>: O temporal"
+
+#. Tag: para
+#: reference.xml:1260
+#, no-c-format
+msgid "<link linkend=\"tbool_not\"><varname>~</varname></link>: Temporal not"
+msgstr "<link linkend=\"tbool_not\"><varname>~</varname></link>: No temporal"
+
+#. Tag: title
+#: reference.xml:1266
+#, no-c-format
+msgid "Text Functions and Operators"
+msgstr "Funciones y operadores de texto"
+
+#. Tag: para
+#: reference.xml:1270
+#, no-c-format
+msgid ""
+"<link linkend=\"ttext_concat\"><varname>||</varname></link>: Temporal text "
+"concatenation"
+msgstr ""
+"<link linkend=\"ttext_concat\"><varname>||</varname></link>: Concatenación "
+"de texto temporal"
+
+#. Tag: para
+#: reference.xml:1274
+#, no-c-format
+msgid ""
+"<link linkend=\"ttext_upper\"><varname>upper</varname></link>: Transform to "
+"uppercase"
+msgstr ""
+"<link linkend=\"ttext_upper\"><varname>upper</varname></link>: Transformar a"
+" mayúsculas"
+
+#. Tag: para
+#: reference.xml:1278
+#, no-c-format
+msgid ""
+"<link linkend=\"ttext_lower\"><varname>lower</varname></link>: Transform to "
+"lowercase"
+msgstr ""
+"<link linkend=\"ttext_lower\"><varname>lower</varname></link>: Transformar a"
+" minúsculas"
+
+#. Tag: title
+#: reference.xml:1284
+#, no-c-format
+msgid "Multidimensional Tiling"
+msgstr "Mosaicos multidimensionales"
+
+#. Tag: title
+#: reference.xml:1287
+#, no-c-format
+msgid "Bucket Functions"
+msgstr "Operaciones de intervalos"
+
+#. Tag: para
+#: reference.xml:1291
+#, no-c-format
+msgid ""
+"<link linkend=\"bucketList\"><varname>bucketList</varname></link>: Returns a"
+" set of couples (index, bucket) that cover the range or period with buckets "
+"of the same width or duration aligned with the origin"
+msgstr ""
+"<link linkend=\"bucketList\"><varname>bucketList</varname></link>: Obtener "
+"un conjunto de parejas (índice, intervalo) que cubre el rango o el período "
+"con intervalos de la misma amplitud alineados con el origen"
+
+#. Tag: para
+#: reference.xml:1295
+#, no-c-format
+msgid ""
+"<link linkend=\"valueBucket\"><varname>valueBucket</varname></link>: Returns"
+" the start value of the bucket that contains the input number."
+msgstr ""
+"<link linkend=\"valueBucket\"><varname>valueBucket</varname></link>: Obtener"
+" el valor inicial del intervalo que contiene el número de entrada."
+
+#. Tag: para
+#: reference.xml:1299
+#, no-c-format
+msgid ""
+"<link linkend=\"rangeBucket\"><varname>rangeBucket</varname></link>: Returns"
+" the range in the bucket space that contains the input number"
+msgstr ""
+"<link linkend=\"rangeBucket\"><varname>rangeBucket</varname></link>: Obtener"
+" el rango en el espacio de intervalos contiene el número de entrada."
+
+#. Tag: para
+#: reference.xml:1303
+#, no-c-format
+msgid ""
+"<link linkend=\"timeBucket\"><varname>timeBucket</varname></link>: Returns "
+"the start timestamp of the bucket that contains the input timestamp."
+msgstr ""
+"<link linkend=\"timeBucket\"><varname>timeBucket</varname></link>: Obtener "
+"el valor inicial del intervalo que contiene la marca de tiempo de entrada."
+
+#. Tag: para
+#: reference.xml:1307
+#, no-c-format
+msgid ""
+"<link linkend=\"periodBucket\"><varname>periodBucket</varname></link>: "
+"Returns a period in the bucket space that contains the input timestamp"
+msgstr ""
+"<link linkend=\"periodBucket\"><varname>periodBucket</varname></link>: "
+"Obtener el período en el espacio de intervalos que contiene la marca de "
+"tiempo de entrada."
+
+#. Tag: title
+#: reference.xml:1314
+#, no-c-format
+msgid "Grid Functions"
+msgstr "Operaciones de malla"
+
+#. Tag: para
+#: reference.xml:1318
+#, no-c-format
+msgid ""
+"<link linkend=\"multidimGrid\"><varname>multidimGrid</varname></link>: "
+"Returns a set of couples (index, tile) that covers the box with "
+"multidimensional tiles of the same size and duration."
+msgstr ""
+"<link linkend=\"multidimGrid\"><varname>multidimGrid</varname></link>: "
+"Obtener un conjunto de parejas (índices, mosaico) que cubre el cuadro "
+"delimitador con mosaicos multidimensionales del mismo tamaño y duración"
+
+#. Tag: para
+#: reference.xml:1322
+#, no-c-format
+msgid ""
+"<link linkend=\"multidimTile\"><varname>multidimTile</varname></link>: "
+"Returns the tile of the multidimensional grid that contains the value and "
+"the timestamp"
+msgstr ""
+"<link linkend=\"multidimTile\"><varname>multidimTile</varname></link>: "
+"Obtener el mosaico de la malla multidimensional que contiene el valor y la "
+"marca de tiempo"
+
+#. Tag: title
+#: reference.xml:1328
+#, no-c-format
+msgid "Split Functions"
+msgstr "Operaciones de fragmentación"
+
+#. Tag: para
+#: reference.xml:1332
+#, no-c-format
+msgid ""
+"<link linkend=\"valueSplit\"><varname>valueSplit</varname></link>: Fragment "
+"the temporal number with respect to value buckets"
+msgstr ""
+"<link linkend=\"valueSplit\"><varname>valueSplit</varname></link>: "
+"Fragmentar el número temporal con respecto a intervalos de valores"
+
+#. Tag: para
+#: reference.xml:1336
+#, no-c-format
+msgid ""
+"<link linkend=\"timeSplit\"><varname>timeSplit</varname></link>: Fragment "
+"the temporal value with respect to time buckets"
+msgstr ""
+"<link linkend=\"timeSplit\"><varname>timeSplit</varname></link>: Fragmentar "
+"el valor temporal con respecto a intervalos de tiempo"
+
+#. Tag: para
+#: reference.xml:1340
+#, no-c-format
+msgid ""
+"<link linkend=\"valueTimeSplit\"><varname>valueTimeSplit</varname></link>: "
+"Fragment the temporal number with respect to the tiles in a value-time grid"
+msgstr ""
+"<link linkend=\"valueTimeSplit\"><varname>valueTimeSplit</varname></link>: "
+"Fragmentar el número temporal con respecto a los mosaicos de una malla de "
+"valores y de tiempo"
+
+#. Tag: para
+#: reference.xml:1344
+#, no-c-format
+msgid ""
+"<link linkend=\"spaceSplit\"><varname>spaceSplit</varname></link>: Fragment "
+"the temporal point with respect to tiles in a spatial grid"
+msgstr ""
+"<link linkend=\"spaceSplit\"><varname>spaceSplit</varname></link>: "
+"Fragmentar el punto temporal con respecto a los mosaicos de una malla "
+"espacial"
+
+#. Tag: para
+#: reference.xml:1348
+#, no-c-format
+msgid ""
+"<link linkend=\"spaceTimeSplit\"><varname>spaceTimeSplit</varname></link>: "
+"Fragment the temporal point with respect to tiles in a spatiotemporal grid"
+msgstr ""
+"<link linkend=\"spaceTimeSplit\"><varname>spaceTimeSplit</varname></link>: "
+"Fragmentar el punto temporal con respecto a los mosaicos de una malla "
+"espacio-temporal"
+
+#. Tag: title
+#: reference.xml:1355
+#, no-c-format
+msgid "Distance Operators"
+msgstr "Operadores de distancia"
+
+#. Tag: para
+#: reference.xml:1359
+#, no-c-format
+msgid ""
+"<link linkend=\"smallest_distance\"><varname>|=|</varname></link>: Get the "
+"smallest distance ever"
+msgstr ""
+"<link linkend=\"smallest_distance\"><varname>|=|</varname></link>: Obtener "
+"la distancia mínima que haya existido"
+
+#. Tag: para
+#: reference.xml:1363
+#, no-c-format
+msgid ""
+"<link linkend=\"distance\"><varname>&lt;-&gt;</varname></link>: Get the "
+"temporal distance"
+msgstr ""
+"<link linkend=\"distance\"><varname>&lt;-&gt;</varname></link>: Obtener la "
+"distancia temporal"
+
+#. Tag: title
+#: reference.xml:1369
+#, no-c-format
+msgid "Spatial Relationships"
+msgstr "Relaciones espaciales"
+
+#. Tag: title
+#: reference.xml:1372
+#, no-c-format
+msgid "Possible Relationships"
+msgstr "Relaciones posibles"
+
+#. Tag: para
+#: reference.xml:1375
+#, no-c-format
+msgid "<link linkend=\"contains\"><varname>contains</varname></link>: May contain"
+msgstr ""
+"<link linkend=\"contains\"><varname>contains</varname></link>: Puede "
+"contener"
+
+#. Tag: para
+#: reference.xml:1379
+#, no-c-format
+msgid ""
+"<link linkend=\"disjoint\"><varname>disjoint</varname></link>: May be "
+"disjoint"
+msgstr ""
+"<link linkend=\"disjoint\"><varname>disjoint</varname></link>: Puede ser "
+"disjunto"
+
+#. Tag: para
+#: reference.xml:1383
+#, no-c-format
+msgid ""
+"<link linkend=\"dwithin\"><varname>dwithin</varname></link>: May be at "
+"distance within"
+msgstr ""
+"<link linkend=\"dwithin\"><varname>dwithin</varname></link>: Puede estar a "
+"distancia de"
+
+#. Tag: para
+#: reference.xml:1387
+#, no-c-format
+msgid ""
+"<link linkend=\"intersects\"><varname>intersects</varname></link>: May "
+"intersect"
+msgstr ""
+"<link linkend=\"intersects\"><varname>intersects</varname></link>: Puede "
+"cruzarse"
+
+#. Tag: para
+#: reference.xml:1391
+#, no-c-format
+msgid "<link linkend=\"touches\"><varname>touches</varname></link>: May touch"
+msgstr "<link linkend=\"touches\"><varname>touches</varname></link>: Puede tocar"
+
+#. Tag: title
+#: reference.xml:1397
+#, no-c-format
+msgid "Temporal Relationships"
+msgstr "Relaciones temporales"
+
+#. Tag: para
+#: reference.xml:1400
+#, no-c-format
+msgid ""
+"<link linkend=\"tcontains\"><varname>tcontains</varname></link>: Temporal "
+"contains"
+msgstr ""
+"<link linkend=\"tcontains\"><varname>tcontains</varname></link>: Contiene "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1404
+#, no-c-format
+msgid ""
+"<link linkend=\"tdisjoint\"><varname>tdisjoint</varname></link>: Temporal "
+"disjoint"
+msgstr ""
+"<link linkend=\"tdisjoint\"><varname>tdisjoint</varname></link>: Disjunto "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1408
+#, no-c-format
+msgid ""
+"<link linkend=\"tdwithin\"><varname>tdwithin</varname></link>: Temporal "
+"distance within"
+msgstr ""
+"<link linkend=\"tdwithin\"><varname>tdwithin</varname></link>: Estar a "
+"distancia de temporal"
+
+#. Tag: para
+#: reference.xml:1412
+#, no-c-format
+msgid ""
+"<link linkend=\"tintersects\"><varname>tintersects</varname></link>: "
+"Temporal intersects"
+msgstr ""
+"<link linkend=\"tintersects\"><varname>tintersects</varname></link>: "
+"Intersección temporal"
+
+#. Tag: para
+#: reference.xml:1416
+#, no-c-format
+msgid ""
+"<link linkend=\"ttouches\"><varname>ttouches</varname></link>: Temporal "
+"touches"
+msgstr ""
+"<link linkend=\"ttouches\"><varname>ttouches</varname></link>: Toca temporal"
+
+#. Tag: para
+#: reference.xml:1427
+#, no-c-format
+msgid "<link linkend=\"tcount\"><varname>tcount</varname></link>: Temporal count"
+msgstr ""
+"<link linkend=\"tcount\"><varname>tcount</varname></link>: Conteo temporal"
+
+#. Tag: para
+#: reference.xml:1431
+#, no-c-format
+msgid ""
+"<link linkend=\"extent\"><varname>extent</varname></link>: Bounding box "
+"extent"
+msgstr ""
+"<link linkend=\"extent\"><varname>extent</varname></link>: Extensión del "
+"cuadro delimitador"
+
+#. Tag: para
+#: reference.xml:1435
+#, no-c-format
+msgid "<link linkend=\"tand\"><varname>tand</varname></link>: Temporal and"
+msgstr "<link linkend=\"tand\"><varname>tand</varname></link>: Y temporal"
+
+#. Tag: para
+#: reference.xml:1439
+#, no-c-format
+msgid "<link linkend=\"tor\"><varname>tor</varname></link>: Temporal or"
+msgstr "<link linkend=\"tor\"><varname>tor</varname></link>: O temporal"
+
+#. Tag: para
+#: reference.xml:1443
+#, no-c-format
+msgid "<link linkend=\"tmin\"><varname>tmin</varname></link>: Temporal minimum"
+msgstr "<link linkend=\"tmin\"><varname>tmin</varname></link>: Mínimo temporal"
+
+#. Tag: para
+#: reference.xml:1447
+#, no-c-format
+msgid "<link linkend=\"tmax\"><varname>tmax</varname></link>: Temporal maximum"
+msgstr "<link linkend=\"tmax\"><varname>tmax</varname></link>: Máximo temporal"
+
+#. Tag: para
+#: reference.xml:1451
+#, no-c-format
+msgid "<link linkend=\"tsum\"><varname>tsum</varname></link>: Temporal sum"
+msgstr "<link linkend=\"tsum\"><varname>tsum</varname></link>: Suma temporal"
+
+#. Tag: para
+#: reference.xml:1455
+#, no-c-format
+msgid "<link linkend=\"tavg\"><varname>tavg</varname></link>: Temporal average"
+msgstr "<link linkend=\"tavg\"><varname>tavg</varname></link>: Promedio temporal"
+
+#. Tag: para
+#: reference.xml:1459
+#, no-c-format
+msgid "<link linkend=\"wmin\"><varname>wmin</varname></link>: Window minimum"
+msgstr "<link linkend=\"wmin\"><varname>wmin</varname></link>: Mínimo de ventana"
+
+#. Tag: para
+#: reference.xml:1463
+#, no-c-format
+msgid "<link linkend=\"wmax\"><varname>wmax</varname></link>: Window maximum"
+msgstr "<link linkend=\"wmax\"><varname>wmax</varname></link>: Máximo de ventana"
+
+#. Tag: para
+#: reference.xml:1467
+#, no-c-format
+msgid "<link linkend=\"wcount\"><varname>wcount</varname></link>: Window count"
+msgstr ""
+"<link linkend=\"wcount\"><varname>wcount</varname></link>: Conteo de ventana"
+
+#. Tag: para
+#: reference.xml:1471
+#, no-c-format
+msgid "<link linkend=\"wsum\"><varname>wsum</varname></link>: Window sum"
+msgstr "<link linkend=\"wsum\"><varname>wsum</varname></link>: Suma de ventana"
+
+#. Tag: para
+#: reference.xml:1475
+#, no-c-format
+msgid "<link linkend=\"wavg\"><varname>wavg</varname></link>: Window average"
+msgstr ""
+"<link linkend=\"wavg\"><varname>wavg</varname></link>: Promedio de ventana"
+
+#. Tag: para
+#: reference.xml:1479
+#, no-c-format
+msgid ""
+"<link linkend=\"tcentroid\"><varname>tcentroid</varname></link>: Temporal "
+"centroid"
+msgstr ""
+"<link linkend=\"tcentroid\"><varname>tcentroid</varname></link>: Centroide "
+"temporal"
+
+#. Tag: title
+#: reference.xml:1486
+#, no-c-format
+msgid "Utility Functions"
+msgstr "Funciones de utilidad"
+
+#. Tag: para
+#: reference.xml:1489
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"mobilitydb_version\"><varname>mobilitydb_version</varname></link>:"
+" Get the version of the MobilityDB extension"
+msgstr ""
+"<link "
+"linkend=\"mobilitydb_version\"><varname>mobilitydb_version</varname></link>:"
+" Versión de la extensión MobilityDB"
+
+#. Tag: para
+#: reference.xml:1493
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"mobilitydb_full_version\"><varname>mobilitydb_full_version</varname></link>:"
+" Get the versions of the MobilityDB extension and its dependencies"
+msgstr ""
+"<link "
+"linkend=\"mobilitydb_full_version\"><varname>mobilitydb_full_version</varname></link>:"
+" Versión de la extensión MobilityDB y de sus dependencias"
+
+#. Tag: title
+#: reference.xml:1500
+#, no-c-format
+msgid "Functions and Operators for Temporal Network Points"
+msgstr "Funciones y operadores para puntos de red temporales"
+
+#. Tag: title
+#: reference.xml:1503
+#, no-c-format
+msgid "Static Network Types"
+msgstr "Tipos de red estáticos"
+
+#. Tag: para
+#: reference.xml:1509
+#, no-c-format
+msgid ""
+"<link linkend=\"npoint\"><varname>npoint</varname></link>: Constructor for "
+"network points"
+msgstr ""
+"<link linkend=\"npoint\"><varname>npoint</varname></link>: Constructor para "
+"puntos de red"
+
+#. Tag: para
+#: reference.xml:1513
+#, no-c-format
+msgid ""
+"<link linkend=\"nsegment\"><varname>nsegment</varname></link>: Constructor "
+"for network segments"
+msgstr ""
+"<link linkend=\"nsegment\"><varname>nsegment</varname></link>: Constructor "
+"para segmentos de red"
+
+#. Tag: para
+#: reference.xml:1522
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"npoint_setPrecision\"><varname>setPrecision</varname></link>: Set "
+"the precision of the position(s) of the network point or the network segment"
+" to the number of decimal places"
+msgstr ""
+"<link "
+"linkend=\"npoint_setPrecision\"><varname>setPrecision</varname></link>: "
+"Establecer la precisión de la(s) posición(es) del punto de red or el "
+"segmento de red en el número de posiciones decimales"
+
+#. Tag: para
+#: reference.xml:1531
+#, no-c-format
+msgid ""
+"<link linkend=\"route\"><varname>route</varname></link>: Get the route "
+"identifier"
+msgstr ""
+"<link linkend=\"route\"><varname>route</varname></link>: Obtener el "
+"identificador de ruta"
+
+#. Tag: para
+#: reference.xml:1535
+#, no-c-format
+msgid ""
+"<link linkend=\"getPosition\"><varname>getPosition</varname></link>: Get the"
+" position fraction"
+msgstr ""
+"<link linkend=\"getPosition\"><varname>getPosition</varname></link>: Obtener"
+" la fracción de posición"
+
+#. Tag: para
+#: reference.xml:1539
+#, no-c-format
+msgid ""
+"<link linkend=\"startPosition\"><varname>startPosition</varname></link>: Get"
+" the start position"
+msgstr ""
+"<link linkend=\"startPosition\"><varname>startPosition</varname></link>: "
+"Obtener la posición inicial"
+
+#. Tag: para
+#: reference.xml:1543
+#, no-c-format
+msgid ""
+"<link linkend=\"endPosition\"><varname>endPosition</varname></link>: Get the"
+" end position"
+msgstr ""
+"<link linkend=\"endPosition\"><varname>endPosition</varname></link>: Obtener"
+" la posición final"
+
+#. Tag: para
+#: reference.xml:1547
+#, no-c-format
+msgid ""
+"<link linkend=\"npoint_srid\"><varname>SRID</varname></link>: Get the "
+"spatial reference identifier"
+msgstr ""
+"<link linkend=\"npoint_srid\"><varname>SRID</varname></link>: Obtener el "
+"identificador de referencia espacial"
+
+#. Tag: para
+#: reference.xml:1556
+#, no-c-format
+msgid ""
+"<link linkend=\"npoint_geometry\"><varname>::</varname></link>: Cast a "
+"network point to a geometry"
+msgstr ""
+"<link linkend=\"npoint_geometry\"><varname>::</varname></link>: Convertir un"
+" punto de red en una geometría"
+
+#. Tag: para
+#: reference.xml:1560
+#, no-c-format
+msgid ""
+"<link linkend=\"geometry_npoint\"><varname>::</varname></link>: Cast a "
+"geometry to a network point"
+msgstr ""
+"<link linkend=\"geometry_npoint\"><varname>::</varname></link>: Convertir "
+"una geometría en un punto de red"
+
+#. Tag: para
+#: reference.xml:1564
+#, no-c-format
+msgid ""
+"<link linkend=\"npoint_same\"><varname>equals</varname></link>: Spatial "
+"equality for network points"
+msgstr ""
+"<link linkend=\"npoint_same\"><varname>equals</varname></link>: Igualdad "
+"espacial para puntos de red"
+
+#. Tag: para
+#: reference.xml:1573
+#, no-c-format
+msgid ""
+"<link linkend=\"static_eq\"><varname>=</varname></link>: Are the values "
+"equal?"
+msgstr ""
+"<link linkend=\"static_eq\"><varname>=</varname></link>: ¿Son iguales los "
+"valores?"
+
+#. Tag: para
+#: reference.xml:1577
+#, no-c-format
+msgid ""
+"<link linkend=\"static_ne\"><varname>&lt;&gt;</varname></link>: Are the "
+"values different?"
+msgstr ""
+"<link linkend=\"static_ne\"><varname>&lt;&gt;</varname></link>: ¿Son "
+"diferentes los valores?"
+
+#. Tag: para
+#: reference.xml:1581
+#, no-c-format
+msgid ""
+"<link linkend=\"static_lt\"><varname>&lt;</varname></link>: Is the first "
+"value less than the second one?"
+msgstr ""
+"<link linkend=\"static_lt\"><varname>&lt;</varname></link>: ¿El primer valor"
+" es menor que el segundo?"
+
+#. Tag: para
+#: reference.xml:1585
+#, no-c-format
+msgid ""
+"<link linkend=\"static_gt\"><varname>&gt;</varname></link>: Is the first "
+"value greater than the second one?"
+msgstr ""
+"<link linkend=\"static_gt\"><varname>&gt;</varname></link>: ¿El primer valor"
+" es mayor que el segundo?"
+
+#. Tag: para
+#: reference.xml:1589
+#, no-c-format
+msgid ""
+"<link linkend=\"static_le\"><varname>&lt;=</varname></link>: Is the first "
+"value less than or equal to the second one?"
+msgstr ""
+"<link linkend=\"static_le\"><varname>&lt;=</varname></link>: ¿El primer "
+"valor es menor o igual que el segundo?"
+
+#. Tag: para
+#: reference.xml:1593
+#, no-c-format
+msgid ""
+"<link linkend=\"static_ge\"><varname>&gt;=</varname></link>: Is the first "
+"value greater than or equal to the second one?"
+msgstr ""
+"<link linkend=\"static_ge\"><varname>&gt;=</varname></link>: ¿El primer "
+"valor es mayor o igual que el segundo?"
+
+#. Tag: title
+#: reference.xml:1600
+#, no-c-format
+msgid "Temporal Network Points"
+msgstr "Puntos de red temporales"
+
+#. Tag: title
+#: reference.xml:1603
+#, no-c-format
+msgid "Constructors"
+msgstr "Constructores"
+
+#. Tag: para
+#: reference.xml:1606
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_inst\"><varname>tnpoint_inst</varname></link>: "
+"Constructor for temporal network points of instant subtype"
+msgstr ""
+"<link linkend=\"tnpoint_inst\"><varname>tnpoint_inst</varname></link>: "
+"Constructor para puntos de red temporal de subtipo instante"
+
+#. Tag: para
+#: reference.xml:1610
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_instset\"><varname>tnpoint_instset</varname></link>:"
+" Constructors for temporal network points of instant set subtype"
+msgstr ""
+"<link linkend=\"tnpoint_instset\"><varname>tnpoint_instset</varname></link>:"
+" Constructor para puntos de red temporal de subtipo conjunto de instantes"
+
+#. Tag: para
+#: reference.xml:1614
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_seq\"><varname>tnpoint_seq</varname></link>: "
+"Constructor for temporal network points of sequence subtype"
+msgstr ""
+"<link linkend=\"tnpoint_seq\"><varname>tnpoint_seq</varname></link>: "
+"Constructor para puntos de red temporal de subtipo secuencia"
+
+#. Tag: para
+#: reference.xml:1618
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_seqset\"><varname>tnpoint_seqset</varname></link>: "
+"Constructor for temporal network points of sequence set subtype"
+msgstr ""
+"<link linkend=\"tnpoint_seqset\"><varname>tnpoint_seqset</varname></link>: "
+"Constructor para puntos de red temporal de subtipo conjunto de secuencias"
+
+#. Tag: para
+#: reference.xml:1627
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_tgeompoint\"><varname>tnpoint::tgeompoint</varname></link>:"
+" Cast a temporal network point to a temporal geometry point"
+msgstr ""
+"<link linkend=\"tnpoint_tgeompoint\"><varname>::</varname></link>: Convertir"
+" un punto de red temporal en un punto de geometría temporal"
+
+#. Tag: para
+#: reference.xml:1631
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tgeompoint_tnpoint\"><varname>tgeompoint::tnpoint</varname></link>:"
+" Cast a temporal geometry point to a temporal network point"
+msgstr ""
+"<link linkend=\"tgeompoint_tnpoint\"><varname>::</varname></link>: Convertir"
+" un punto de geometría temporal en un punto de red temporal"
+
+#. Tag: title
+#: reference.xml:1637
+#, no-c-format
+msgid "Functions and Operators"
+msgstr "Funciones y operadores"
+
+#. Tag: para
+#: reference.xml:1640
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_transform\"><varname>tnpoint_inst, tnpoint_instset, "
+"tnpoint_seq, tnpoint_seqset</varname></link>: Transform a temporal network "
+"to another subtype"
+msgstr ""
+"<link linkend=\"tnpoint_transform\"><varname>tnpoint_inst, tnpoint_instset, "
+"tnpoint_seq, tnpoint_seqset</varname></link>: Transformar un punto de red "
+"temporal en otro subtipo"
+
+#. Tag: para
+#: reference.xml:1644
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_setPrecision\"><varname>setPrecision</varname></link>: Set"
+" the precision of the fraction of the temporal network point to the number "
+"of decimal places"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_setPrecision\"><varname>setPrecision</varname></link>: "
+"Establecer la precisión de la fracción del punto de red temporal en el "
+"número de posiciones decimales"
+
+#. Tag: para
+#: reference.xml:1648
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_getValues\"><varname>getValues</varname></link>: Get"
+" the values"
+msgstr ""
+"<link linkend=\"tnpoint_getValues\"><varname>getValues</varname></link>: "
+"Obtener los valores"
+
+#. Tag: para
+#: reference.xml:1652
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_valueAtTimestamp\"><varname>valueAtTimestamp</varname></link>:"
+" Get the value at a timestamp"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_valueAtTimestamp\"><varname>valueAtTimestamp</varname></link>:"
+" Obtener el valor en una marca de tiempo"
+
+#. Tag: para
+#: reference.xml:1656
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_length\"><varname>length</varname></link>: Get the "
+"length traversed by the temporal network point"
+msgstr ""
+"<link linkend=\"tnpoint_length\"><varname>length</varname></link>: Obtener "
+"la longitud atravesada por el punto de red temporal"
+
+#. Tag: para
+#: reference.xml:1660
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_cumulativeLength\"><varname>cumulativeLength</varname></link>:"
+" Get the cumulative length traversed by the temporal network point"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_cumulativeLength\"><varname>cumulativeLength</varname></link>:"
+" Obtener la longitud acumulada atravesada por el punto de red temporal"
+
+#. Tag: para
+#: reference.xml:1664
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_speed\"><varname>speed</varname></link>: Get the "
+"speed of the temporal network point in units per second"
+msgstr ""
+"<link linkend=\"tnpoint_speed\"><varname>speed</varname></link>: Obtener la "
+"velocidad del punto de red temporal en unidades por segundo"
+
+#. Tag: para
+#: reference.xml:1668
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_stbox\"><varname>stbox</varname></link>: Construct "
+"the bounding box from a npoint and, optionally, a timestamp or a period"
+msgstr ""
+"<link linkend=\"tnpoint_stbox\"><varname>stbox</varname></link>: Construir "
+"el cuadro delimitador a partir de un punto de red y, opcionalmente, una "
+"marca de tiempo o un período"
+
+#. Tag: para
+#: reference.xml:1672
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_twCentroid\"><varname>twCentroid</varname></link>: "
+"Get the time-weighted centroid"
+msgstr ""
+"<link linkend=\"tnpoint_twCentroid\"><varname>twCentroid</varname></link>: "
+"Obtener el centroide ponderado en el tiempo"
+
+#. Tag: para
+#: reference.xml:1676
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_azimuth\"><varname>azimuth</varname></link>: Get the"
+" temporal azimuth"
+msgstr ""
+"<link linkend=\"tnpoint_azimuth\"><varname>azimuth</varname></link>: Obtener"
+" el acimut temporal"
+
+#. Tag: para
+#: reference.xml:1680
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_nearestApproachInstant\"><varname>nearestApproachInstant</varname></link>:"
+" Get the instant of the first temporal network point at which the two "
+"arguments are at the nearest distance"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_nearestApproachInstant\"><varname>nearestApproachInstant</varname></link>:"
+" Obtener el instante del primer punto de red temporal en el que los dos "
+"argumentos están a la distancia más cercana"
+
+#. Tag: para
+#: reference.xml:1684
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_nearestApproachDistance\"><varname>nearestApproachDistance</varname></link>:"
+" Smallest distance ever between the two arguments"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_nearestApproachDistance\"><varname>nearestApproachDistance</varname></link>:"
+" Obtener la distancia más pequeña entre los dos argumentos"
+
+#. Tag: para
+#: reference.xml:1688
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_shortestLine\"><varname>shortestLine</varname></link>: Get"
+" the line connecting the nearest approach point between the two arguments"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_shortestLine\"><varname>shortestLine</varname></link>: "
+"Obtener la línea que conecta el punto de aproximación más cercano entre los "
+"dos argumentos"
+
+#. Tag: para
+#: reference.xml:1692
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_atValue\"><varname>atValue</varname></link>: "
+"Restrict to a value"
+msgstr ""
+"<link linkend=\"tnpoint_atValue\"><varname>atValue</varname></link>: "
+"Restringir a un valor"
+
+#. Tag: para
+#: reference.xml:1696
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_atGeometry\"><varname>atGeometry</varname></link>: "
+"Restrict to a geometry"
+msgstr ""
+"<link linkend=\"tnpoint_atGeometry\"><varname>atGeometry</varname></link>: "
+"Restringir a una geometría"
+
+#. Tag: para
+#: reference.xml:1700
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_minusValue\"><varname>minusValue</varname></link>: "
+"Difference with a value"
+msgstr ""
+"<link linkend=\"tnpoint_minusValue\"><varname>minusValue</varname></link>: "
+"Diferencia con un valor"
+
+#. Tag: para
+#: reference.xml:1704
+#, no-c-format
+msgid ""
+"<link "
+"linkend=\"tnpoint_minusGeometry\"><varname>minusGeometry</varname></link>: "
+"Difference with a geometry"
+msgstr ""
+"<link "
+"linkend=\"tnpoint_minusGeometry\"><varname>minusGeometry</varname></link>: "
+"Diferencia con una geometría"
+
+#. Tag: para
+#: reference.xml:1708
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_comp\"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, "
+"&gt;=</varname></link>: Traditional comparison operators"
+msgstr ""
+"<link linkend=\"tnpoint_comp\"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, "
+"&gt;=</varname></link>: Operadores de comparación tradicionales"
+
+#. Tag: para
+#: reference.xml:1712
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_tcomp\"><varname>#=, #&lt;&gt;</varname></link>: "
+"Temporal comparison operators"
+msgstr ""
+"<link linkend=\"tnpoint_tcomp\"><varname>#=, #&lt;&gt;</varname></link>: "
+"Operadores de comparación temporales"
+
+#. Tag: para
+#: reference.xml:1716
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_ever_always\"><varname>?=, &amp;=</varname></link>: "
+"Ever and always equal operators"
+msgstr ""
+"<link linkend=\"tnpoint_ever_always\"><varname>?=, &amp;=</varname></link>: "
+"Operadores de igualdad siempre y alguna vez"
+
+#. Tag: para
+#: reference.xml:1720
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_relpos\"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, "
+"&amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, "
+"&amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Relative position "
+"operators"
+msgstr ""
+"<link linkend=\"tnpoint_relpos\"><varname>&lt;&lt;, &amp;&lt;, &gt;&gt;, "
+"&amp;&gt;, &lt;&lt;|, &amp;&lt;|, |&gt;&gt;, |&amp;&gt;, &lt;&lt;#, "
+"&amp;&lt;#, #&gt;&gt;, |&amp;&gt;</varname></link>: Operadores de posición "
+"relativa"
+
+#. Tag: para
+#: reference.xml:1724
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_topo\"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, "
+"-|-</varname></link>: Topological operators"
+msgstr ""
+"<link linkend=\"tnpoint_topo\"><varname>&amp;&amp;, &lt;@, @&gt;, ~=, "
+"-|-</varname></link>: Operadores topológicos"
+
+#. Tag: para
+#: reference.xml:1728
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_smallestDistance\"><varname>|=|</varname></link>: "
+"Get the smallest distance ever between the two arguments"
+msgstr ""
+"<link linkend=\"tnpoint_smallestDistance\"><varname>|=|</varname></link>: "
+"Obtener la distancia más pequeña entre los dos argumentos"
+
+#. Tag: para
+#: reference.xml:1732
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_distance\"><varname>&lt;-&gt;</varname></link>: Get "
+"the temporal distance"
+msgstr ""
+"<link linkend=\"tnpoint_distance\"><varname>&lt;-&gt;</varname></link>: "
+"Obtener la distancia temporal"
+
+#. Tag: para
+#: reference.xml:1736
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_spatialrels\"><varname>contains, disjoint, "
+"intersects, touches, dwithin</varname></link>: Possible spatial "
+"relationships"
+msgstr ""
+"<link linkend=\"tnpoint_spatialrels\"><varname>contains, disjoint, "
+"intersects, touches, dwithin</varname></link>: Relaciones espaciales "
+"posibles"
+
+#. Tag: para
+#: reference.xml:1740
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_tspatialrels\"><varname>tcontains, tdisjoint, "
+"tintersects, ttouches, tdwithin</varname></link>: Temporal spatial "
+"relationships"
+msgstr ""
+"<link linkend=\"tnpoint_tspatialrels\"><varname>tcontains, tdisjoint, "
+"tintersects, ttouches, tdwithin</varname></link>: Relaciones espaciales "
+"temporales"
+
+#. Tag: para
+#: reference.xml:1750
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_tcount\"><varname>tcount</varname></link>: Temporal "
+"count"
+msgstr ""
+"<link linkend=\"tnpoint_tcount\"><varname>tcount</varname></link>: Conteo "
+"temporal"
+
+#. Tag: para
+#: reference.xml:1754
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_wcount\"><varname>tcount</varname></link>: Window "
+"count"
+msgstr ""
+"<link linkend=\"tnpoint_wcount\"><varname>wcount</varname></link>: Conteo de"
+" ventana"
+
+#. Tag: para
+#: reference.xml:1758
+#, no-c-format
+msgid ""
+"<link linkend=\"tnpoint_tcentroid\"><varname>tcentroid</varname></link>: "
+"Temporal centroid"
+msgstr ""
+"<link linkend=\"tnpoint_tcentroid\"><varname>tcentroid</varname></link>: "
+"Centroide temporal"
