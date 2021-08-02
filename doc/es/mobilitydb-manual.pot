@@ -1,0 +1,103 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+# Translators:
+# Esteban Zimanyi <estebanzimanyi@gmail.com>, 2021
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.kde.org\n"
+"POT-Creation-Date: 2021-07-31 21:52+0000\n"
+"PO-Revision-Date: 2021-08-02 14:46+0000\n"
+"Last-Translator: Esteban Zimanyi <estebanzimanyi@gmail.com>, 2021\n"
+"Language-Team: Spanish (https://www.transifex.com/mobilitydb/teams/114013/es/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Tag: title
+#: mobilitydb-manual.xml:60
+#, no-c-format
+msgid "MobilityDB &last_release_version; User's Manual"
+msgstr "MobilityDB &last_release_version; Manual de usuario"
+
+#. Tag: author
+#: mobilitydb-manual.xml:61
+#, no-c-format
+msgid "<firstname>Esteban</firstname> <surname>Zimányi</surname>"
+msgstr "<firstname>Esteban</firstname> <surname>Zimányi</surname>"
+
+#. Tag: orgname
+#: mobilitydb-manual.xml:65
+#, no-c-format
+msgid "Université libre de Bruxelles, Belgium"
+msgstr "Université libre de Bruxelles, Belgium"
+
+#. Tag: para
+#: mobilitydb-manual.xml:71
+#, no-c-format
+msgid ""
+"MobilityDB is an extension to the <ulink "
+"url=\"https://www.postgresql.org/\">PostgreSQL</ulink> database system and "
+"its spatial extension <ulink url=\"http://postgis.net/\">PostGIS</ulink>. It"
+" allows temporal and spatio-temporal objects to be stored in the database, "
+"that is, objects whose attribute values and/or location evolves in time. "
+"MobilityDB includes functions for analysis and processing of temporal and "
+"spatio-temporal objects and provides support for GiST and SP-GiST indexes. "
+"MobilityDB is open source and its code is available on <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB\">Github</ulink>. An adapter "
+"for the Python programming language is also available on <ulink "
+"url=\"https://github.com/MobilityDB/python-mobilityDB\">Github</ulink>."
+msgstr ""
+"MobilityDB es una extensión del sistema de base de datos <ulink "
+"url=\"https://www.postgresql.org/\">PostgreSQL</ulink> y su extensión "
+"espacial <ulink url=\"http://postgis.net/\">PostGIS</ulink>. Permite "
+"almacenar en la base de datos objetos temporales y espacio-temporales, es "
+"decir, objetos cuyos valores de atributo y/o ubicación evolucionan en el "
+"tiempo. MobilityDB incluye funciones para el análisis y procesamiento de "
+"objetos temporales y espacio-temporales y proporciona soporte para índices "
+"GiST y SP-GiST. MobilityDB es de código abierto y su código está disponible "
+"en <ulink url=\"https://github.com/MobilityDB/MobilityDB\"> Github</ulink>. "
+"También está disponible un adaptador para el lenguaje de programación Python"
+" en <ulink url=\"https://github.com/MobilityDB/python-"
+"mobilityDB\">Github</ulink>."
+
+#. Tag: para
+#: mobilitydb-manual.xml:83
+#, no-c-format
+msgid ""
+"MobilityDB is developed by the Computer &amp; Decision Engineering "
+"Department of the Université Libre de Bruxelles (ULB) under the direction of"
+" Prof. Esteban Zimányi. ULB is an OGC Associate Member and member of the OGC"
+" Moving Feature Standard Working Group (<ulink "
+"url=\"https://www.ogc.org/projects/groups/movfeatswg\">MF-SWG</ulink>)."
+msgstr ""
+"MobilityDB es desarrollado por el Departamento de Ingeniería Informática y "
+"de Decisiones de la Université libre de Bruxelles (ULB) bajo la dirección "
+"del Prof. Esteban Zimányi. ULB es un miembro asociado de OGC y miembro del "
+"Grupo de trabajo de estandardización de características móviles de OGC "
+"(<ulink url=\"https://www.ogc.org/projects/groups/movfeatswg\">MF-"
+"SWG</ulink>)."
+
+#. Tag: para
+#: mobilitydb-manual.xml:95
+#, no-c-format
+msgid ""
+"This is the manual for MobilityDB v1.0. The MobilityDB Manual is licensed "
+"under a <ulink url=\"https://creativecommons.org/licenses/by-"
+"sa/3.0/\">Creative Commons Attribution-Share Alike 3.0 License 3</ulink>. "
+"Feel free to use this material any way you like, but we ask that you "
+"attribute credit to the MobilityDB Project and wherever possible, a link "
+"back to <ulink "
+"url=\"https://github.com/MobilityDB/MobilityDB\">MobilityDB</ulink>."
+msgstr ""
+"Este es el manual de MobilityDB v1.0. El manual de MobilityDB tiene una "
+"licencia <ulink url=\"https://creativecommons.org/licenses/by-"
+"sa/3.0/\">Creative Commons Attribution-Share Alike 3.0 License 3</ulink>. No"
+" dude en utilizar este material como desee, pero le pedimos que atribuya "
+"crédito al proyecto MobilityDB y, siempre que sea posible, un enlace a "
+"<ulink url=\"https://github.com/MobilityDB/MobilityDB\">MobilityDB</ulink>."
