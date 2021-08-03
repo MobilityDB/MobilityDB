@@ -352,6 +352,8 @@ msgstr ""
 #, no-c-format
 msgid "To compile assuming you have all the dependencies in your search path"
 msgstr ""
+"Para compilar asumiendo que tiene todas las dependencias en su ruta de "
+"búsqueda"
 
 #. Tag: programlisting
 #: introduction.xml:93
@@ -363,6 +365,11 @@ msgid ""
 "make\n"
 "sudo make install"
 msgstr ""
+"mkdir build\n"
+"cd build\n"
+"cmake  ..\n"
+"make\n"
+"sudo make install"
 
 #. Tag: para
 #: introduction.xml:94
@@ -371,6 +378,9 @@ msgid ""
 "Once MobilityDB is installed, it needs to be enabled in each individual "
 "database you want to use it in. In this example, PostGIS 2.5.5 is been used:"
 msgstr ""
+"Una vez que MobilityDB está instalado, debe habilitarse en cada base de "
+"datos individual en la que desee usarlo. En éste ejemplo se usa la versión "
+"2.5.5 de PostGIS."
 
 #. Tag: programlisting
 #: introduction.xml:97
@@ -380,12 +390,15 @@ msgid ""
 "psql mobility -c \"CREATE EXTENSION PostGIS WITH VERSION '2.5.5'\"\n"
 "psql mobility -c 'CREATE EXTENSION MobilityDB'"
 msgstr ""
+"createdb mobility\n"
+"psql mobility -c \"CREATE EXTENSION PostGIS WITH VERSION'2.5.5'\"\n"
+"psql mobility -c 'CREATE EXTENSION MobilityDB'"
 
 #. Tag: title
 #: introduction.xml:101
 #, no-c-format
 msgid "Get the Sources"
-msgstr ""
+msgstr "Obtener las fuentes"
 
 #. Tag: para
 #: introduction.xml:102
@@ -394,18 +407,20 @@ msgid ""
 "The MobilityDB latest release can be found in <ulink url=\"https://github."
 "com/MobilityDB/MobilityDB/releases/latest\"></ulink>"
 msgstr ""
+"La última versión de MobilityDB se puede encontrar en <ulink url=\"https://"
+"github.com/MobilityDB/MobilityDB/releases/latest\"></ulink>"
 
 #. Tag: emphasis
 #: introduction.xml:107
 #, no-c-format
 msgid "wget"
-msgstr ""
+msgstr "wget"
 
 #. Tag: para
 #: introduction.xml:110
 #, no-c-format
 msgid "To download this release:"
-msgstr ""
+msgstr "Para descargar esta versión:"
 
 #. Tag: programlisting
 #: introduction.xml:113
@@ -414,6 +429,8 @@ msgid ""
 "wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/"
 "archive/v1.0.tar.gz"
 msgstr ""
+"wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/"
+"archive/v1.0.tar.gz"
 
 #. Tag: para
 #: introduction.xml:114
@@ -422,18 +439,20 @@ msgid ""
 "Go to <xref linkend=\"short_version\"/> to the extract and compile "
 "instructions."
 msgstr ""
+"Ir a <xref linkend=\"short_version\"/> a las instrucciones de extracción y "
+"compilación."
 
 #. Tag: emphasis
 #: introduction.xml:119
 #, no-c-format
 msgid "<emphasis>git</emphasis>"
-msgstr ""
+msgstr "<emphasis>git</emphasis>"
 
 #. Tag: para
 #: introduction.xml:122
 #, no-c-format
 msgid "To download the repository"
-msgstr ""
+msgstr "Para descargar el repositorio"
 
 #. Tag: programlisting
 #: introduction.xml:125
@@ -443,6 +462,9 @@ msgid ""
 "cd MobilityDB\n"
 "git checkout v1.0"
 msgstr ""
+"git clone https://github.com/MobilityDB/MobilityDB.git\n"
+"cd MobilityDB\n"
+"git checkout v1.0"
 
 #. Tag: para
 #: introduction.xml:126
@@ -451,12 +473,14 @@ msgid ""
 "Go to <xref linkend=\"short_version\"/> to the compile instructions (there "
 "is no tar ball)."
 msgstr ""
+"Ir a <xref linkend=\"short_version\"/> a las instrucciones de compilación "
+"(no hay tar ball)."
 
 #. Tag: title
 #: introduction.xml:131
 #, no-c-format
 msgid "Enabling the Database"
-msgstr ""
+msgstr "Habilitación de la base de datos"
 
 #. Tag: para
 #: introduction.xml:132
@@ -465,6 +489,9 @@ msgid ""
 "MobilityDB is an extension that depends on PostGIS. Enabling PostGIS before "
 "enabling MobilityDB in the database can be done as follows"
 msgstr ""
+"MobilityDB es una extensión que depende de PostGIS. Habilitar PostGIS antes "
+"de habilitar MobilityDB en la base de datos se puede hacer de la siguiente "
+"manera"
 
 #. Tag: programlisting
 #: introduction.xml:135
@@ -473,6 +500,8 @@ msgid ""
 "CREATE EXTENSION postgis;\n"
 "CREATE EXTENSION mobilitydb;"
 msgstr ""
+"CREATE EXTENSION postgis;\n"
+"CREATE EXTENSION mobilitydb;"
 
 #. Tag: para
 #: introduction.xml:136
@@ -482,24 +511,27 @@ msgid ""
 "<varname>CASCADE</varname>, which installs the required PostGIS extension "
 "before installing the MobilityDB extension"
 msgstr ""
+"Alternativamente, esto se puede hacer con un solo comando usando "
+"<varname>CASCADE</varname>, que instala la extensión PostGIS requerida antes "
+"de instalar la extensión MobilityDB"
 
 #. Tag: programlisting
 #: introduction.xml:139
 #, no-c-format
 msgid "CREATE EXTENSION mobilitydb CASCADE;"
-msgstr ""
+msgstr "CREATE EXTENSION mobilitydb CASCADE;"
 
 #. Tag: title
 #: introduction.xml:142
 #, no-c-format
 msgid "Dependencies"
-msgstr ""
+msgstr "Dependencias"
 
 #. Tag: emphasis
 #: introduction.xml:145
 #, no-c-format
 msgid "Compilation Dependencies"
-msgstr ""
+msgstr "Dependencias de compilación"
 
 #. Tag: para
 #: introduction.xml:148
@@ -508,6 +540,8 @@ msgid ""
 "To be able to compile MobilityDB, make sure that the following dependencies "
 "are met:"
 msgstr ""
+"Para poder compilar MobilityDB, asegúrese de que se cumplan las siguientes "
+"dependencias:"
 
 #. Tag: para
 #: introduction.xml:152
@@ -516,6 +550,9 @@ msgid ""
 "GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can "
 "be used but may cause problems compiling some dependencies such as PostGIS."
 msgstr ""
+"Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros "
+"compiladores ANSI C, pero pueden causar problemas al compilar algunas "
+"dependencias como PostGIS."
 
 #. Tag: para
 #: introduction.xml:153
@@ -525,6 +562,9 @@ msgid ""
 "3.1 or higher. For many systems, GNU make is the default version of make. "
 "Check the version by invoking <filename>make -v</filename>."
 msgstr ""
+"GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión "
+"3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada "
+"de make. Verifique la versión invocando <filename>make -v</filename>."
 
 #. Tag: para
 #: introduction.xml:154
@@ -535,6 +575,10 @@ msgid ""
 "for using SP-GiST indexes for MobilityDB you need at least PostgreSQL "
 "version 11."
 msgstr ""
+"PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url="
+"\"http://www.postgresql.org\">http://www.postgresql.org</ulink>. Tenga en "
+"cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la "
+"versión 11 de PostgreSQL."
 
 #. Tag: para
 #: introduction.xml:155
@@ -545,6 +589,10 @@ msgid ""
 "currently <emphasis role=\"bold\">not supported</emphasis>, this is planned "
 "for future releases of MobilityDB."
 msgstr ""
+"PostGIS versión 2.5. PostGIS está disponible en <ulink url=\"https://postgis."
+"net/\">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior "
+"de PostGIS <emphasis role=\"bold\">no es compatible</emphasis>, esto está "
+"previsto para futuras versiones de MobilityDB."
 
 #. Tag: para
 #: introduction.xml:156
@@ -554,6 +602,9 @@ msgid ""
 "gnu.org/software/gsl/\">https://www.gnu.org/software/gsl/</ulink>. GSL is "
 "used for the random number generators."
 msgstr ""
+"Biblioteca científica GNU (GSL). GSL está disponible en <ulink url=\"https://"
+"www.gnu.org/software/gsl/\"> https://www.gnu.org/software/gsl/</ulink>. GSL "
+"se utiliza para los generadores de números aleatorios."
 
 #. Tag: para
 #: introduction.xml:158
@@ -565,18 +616,24 @@ msgid ""
 "to <ulink url=\"http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS"
 "\">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>."
 msgstr ""
+"Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, "
+"GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en "
+"MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/"
+"PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="
+"\"http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS\">http://"
+"trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>."
 
 #. Tag: emphasis
 #: introduction.xml:163
 #, no-c-format
 msgid "Optional Dependencies"
-msgstr ""
+msgstr "Dependencias opcionales"
 
 #. Tag: para
 #: introduction.xml:166
 #, no-c-format
 msgid "For user's documentation"
-msgstr ""
+msgstr "Para la documentación del usuario"
 
 #. Tag: para
 #: introduction.xml:168
@@ -586,6 +643,9 @@ msgid ""
 "documentation. Docbook is available from <ulink url=\"http://www.docbook.org/"
 "\">http://www.docbook.org/</ulink>"
 msgstr ""
+"DocBook (<varname>xsltproc</varname>) es necesario para crear la "
+"documentación. Docbook está disponible en <ulink url=\"http://www.docbook."
+"org/\">http://www.docbook.org/</ulink>"
 
 #. Tag: para
 #: introduction.xml:169
@@ -595,18 +655,21 @@ msgid ""
 "documentation in PDF format. DBLatex is available from <ulink url=\"http://"
 "dblatex.sourceforge.net/\">http://dblatex.sourceforge.net/</ulink>"
 msgstr ""
+"DBLatex (<filename>dblatex</filename>) es necesario para crear la "
+"documentación en formato PDF. DBLatex está disponible en <ulink url=\"http://"
+"dblatex.sourceforge.net/\">http://dblatex.sourceforge.net/</ulink>"
 
 #. Tag: emphasis
 #: introduction.xml:173
 #, no-c-format
 msgid "Example: Installing dependencies on Linux"
-msgstr ""
+msgstr "Ejemplo: instalar dependencias en Linux"
 
 #. Tag: para
 #: introduction.xml:176
 #, no-c-format
 msgid "Database dependencies"
-msgstr ""
+msgstr "Dependencias de base de datos"
 
 #. Tag: programlisting
 #: introduction.xml:177
@@ -615,24 +678,26 @@ msgid ""
 "sudo apt-get install postgresql-13 postgresql-server-dev-13 postgresql-13-"
 "postgis"
 msgstr ""
+"sudo apt-get install postgresql-13 postgresql-server-dev-13 postgresql-13-"
+"postgis"
 
 #. Tag: para
 #: introduction.xml:178
 #, no-c-format
 msgid "Build dependencies"
-msgstr ""
+msgstr "Dependencias de construcción"
 
 #. Tag: programlisting
 #: introduction.xml:179
 #, no-c-format
 msgid "sudo apt-get install cmake gcc libgsl-dev"
-msgstr ""
+msgstr "sudo apt-get install cmake gcc libgsl-dev"
 
 #. Tag: title
 #: introduction.xml:183
 #, no-c-format
 msgid "Configuring"
-msgstr ""
+msgstr "Configuración"
 
 #. Tag: para
 #: introduction.xml:184
@@ -641,24 +706,27 @@ msgid ""
 "MobilityDB uses the <varname>cmake</varname> system to do the configuration. "
 "The build directory must be different from the source directory."
 msgstr ""
+"MobilityDB usa el sistema <varname>cmake</varname> para realizar la "
+"configuración. El directorio de compilación deber ser diferente del "
+"directorio de origen."
 
 #. Tag: para
 #: introduction.xml:187
 #, no-c-format
 msgid "To create the build directory"
-msgstr ""
+msgstr "Para crear el directorio de compilación"
 
 #. Tag: programlisting
 #: introduction.xml:188
 #, no-c-format
 msgid "mkdir build"
-msgstr ""
+msgstr "mkdir build"
 
 #. Tag: para
 #: introduction.xml:189
 #, no-c-format
 msgid "To see the variables that can be configured"
-msgstr ""
+msgstr "Para ver las variables que se pueden configurar"
 
 #. Tag: programlisting
 #: introduction.xml:190
@@ -667,12 +735,14 @@ msgid ""
 "cd build\n"
 "cmake -L .."
 msgstr ""
+"cd build\n"
+"cmake -L .."
 
 #. Tag: title
 #: introduction.xml:194
 #, no-c-format
 msgid "Build and Install"
-msgstr ""
+msgstr "Construir e instalar"
 
 #. Tag: para
 #: introduction.xml:195
@@ -683,6 +753,10 @@ msgid ""
 "Support for Windows is planned. We are looking for volunteers to help us to "
 "test MobilityDB on multiple platforms."
 msgstr ""
+"Tenga en cuenta que la versión actual de MobilityDB solo se ha probado en "
+"sistemas Linux. Puede funcionar en otros sistemas similares a UNIX, pero no "
+"se ha probado. Está previsto el soporte para Windows. Buscamos voluntarios "
+"que nos ayuden a probar MobilityDB en múltiples plataformas."
 
 #. Tag: para
 #: introduction.xml:198
@@ -691,6 +765,8 @@ msgid ""
 "The following instructions start from <varname>path/to/MobilityDB</varname> "
 "on a Linux system"
 msgstr ""
+"Las siguientes instrucciones comienzan desde <varname>path/to/MobilityDB</"
+"varname> en un sistema Linux"
 
 #. Tag: programlisting
 #: introduction.xml:201
@@ -702,30 +778,35 @@ msgid ""
 "make\n"
 "sudo make install"
 msgstr ""
+"mkdir build\n"
+"cd build\n"
+"cmake ..\n"
+"make\n"
+"sudo make install"
 
 #. Tag: para
 #: introduction.xml:202
 #, no-c-format
 msgid "When the configuration changes"
-msgstr ""
+msgstr "Cuando cambia la configuración"
 
 #. Tag: programlisting
 #: introduction.xml:205
 #, no-c-format
 msgid "rm -rf build"
-msgstr ""
+msgstr "rm -rf build"
 
 #. Tag: para
 #: introduction.xml:206
 #, no-c-format
 msgid "and start the build process as mentioned above."
-msgstr ""
+msgstr "e inicie el proceso de construcción como se mencionó anteriormente."
 
 #. Tag: title
 #: introduction.xml:212
 #, no-c-format
 msgid "Testing"
-msgstr ""
+msgstr "Pruebas"
 
 #. Tag: para
 #: introduction.xml:213
@@ -734,48 +815,53 @@ msgid ""
 "MobilityDB uses <varname>ctest</varname>, the CMake test driver program, for "
 "testing. This program will run the tests and report results."
 msgstr ""
+"MobilityDB utiliza <varname>ctest</varname>, el programa controlador de "
+"pruebas de CMake, para realizar pruebas. Este programa ejecutará las pruebas "
+"e informará los resultados."
 
 #. Tag: para
 #: introduction.xml:216
 #, no-c-format
 msgid "To run all the tests"
-msgstr ""
+msgstr "Para ejecutar todas las pruebas"
 
 #. Tag: programlisting
 #: introduction.xml:219
 #, no-c-format
 msgid "ctest"
-msgstr ""
+msgstr "ctest"
 
 #. Tag: para
 #: introduction.xml:220
 #, no-c-format
 msgid "To run a given test file"
-msgstr ""
+msgstr "Para ejecutar un archivo de prueba dado"
 
 #. Tag: programlisting
 #: introduction.xml:223
 #, no-c-format
 msgid "ctest -R '21_tbox'"
-msgstr ""
+msgstr "ctest -R '21_tbox'"
 
 #. Tag: para
 #: introduction.xml:224
 #, no-c-format
 msgid "To run a set of given test files you can use wildcards"
 msgstr ""
+"Para ejecutar un conjunto de archivos de prueba determinados se pueden "
+"utilizar comodines"
 
 #. Tag: programlisting
 #: introduction.xml:227
 #, no-c-format
 msgid "ctest -R '22_*'"
-msgstr ""
+msgstr "ctest -R '22_*'"
 
 #. Tag: title
 #: introduction.xml:232
 #, no-c-format
 msgid "Support"
-msgstr ""
+msgstr "Soporte"
 
 #. Tag: para
 #: introduction.xml:233
@@ -784,12 +870,15 @@ msgid ""
 "MobilityDB community support is available through the MobilityDB github "
 "page, documentation, tutorials, mailing lists and others."
 msgstr ""
+"El soporte de la comunidad de MobilityDB está disponible a través de la "
+"página github de MobilityDB, documentación, tutoriales, listas de correo y "
+"otros."
 
 #. Tag: title
 #: introduction.xml:236
 #, no-c-format
 msgid "Reporting Problems"
-msgstr ""
+msgstr "Reporte de problemas"
 
 #. Tag: para
 #: introduction.xml:237
@@ -799,6 +888,9 @@ msgid ""
 "MobilityDB/MobilityDB/issues\">issue tracker</ulink>. Please follow these "
 "steps:"
 msgstr ""
+"Los errores son registrados y manejados en un <ulink url=\"https://github."
+"com/MobilityDB/MobilityDB/issues\">issue tracker</ulink>. Por favor siga los "
+"siguientes pasos:"
 
 #. Tag: para
 #: introduction.xml:241
@@ -808,6 +900,10 @@ msgid ""
 "add any extra context you might have found, or at least indicate that you "
 "too are having the problem. This will help us prioritize common issues."
 msgstr ""
+"Busque las entradas para ver si su problema ya ha sido informado. Si es así, "
+"agregue cualquier contexto adicional que haya encontrado, o al menos indique "
+"que usted también está teniendo el problema. Esto nos ayudará a priorizar "
+"los problemas comunes."
 
 #. Tag: para
 #: introduction.xml:242
@@ -816,6 +912,8 @@ msgid ""
 "If your problem is unreported, create a <ulink url=\"https://github.com/"
 "MobilityDB/MobilityDB/issues/new\">new issue</ulink> for it."
 msgstr ""
+"Si su problema no se ha informado, cree un <ulink url=\"https://github.com/"
+"MobilityDB/MobilityDB/issues/new\">nuevo asunto</ulink> para ello."
 
 #. Tag: para
 #: introduction.xml:243
@@ -826,6 +924,10 @@ msgid ""
 "also, note the operating system and versions of MobilityDB, PostGIS, and "
 "PostgreSQL."
 msgstr ""
+"En su informe, incluya instrucciones explícitas para replicar su problema. "
+"Las mejores etradas incluyen consultas SQL exactas que se necesitan para "
+"reproducir un problema. Reporte también el sistema operativo y las versiones "
+"de MobilityDB, PostGIS y PostgreSQL."
 
 #. Tag: para
 #: introduction.xml:244
@@ -834,6 +936,8 @@ msgid ""
 "It is recommended to use the following wrapper on the problem to pin point "
 "the step that is causing the problem."
 msgstr ""
+"Se recomienda utilizar el siguiente envoltorio en su problema para "
+"determinar el paso que está causando el problema."
 
 #. Tag: programlisting
 #: introduction.xml:245
@@ -843,12 +947,15 @@ msgid ""
 "&lt;your code&gt;\n"
 "SET client_min_messages TO notice;"
 msgstr ""
+"SET client_min_messages TO debug;\n"
+"&lt;your code&gt;\n"
+"SET client_min_messages TO notice;"
 
 #. Tag: title
 #: introduction.xml:251
 #, no-c-format
 msgid "Mailing Lists"
-msgstr ""
+msgstr "Listas de correo"
 
 #. Tag: para
 #: introduction.xml:252
@@ -857,6 +964,8 @@ msgid ""
 "There are two mailing lists for MobilityDB hosted on OSGeo mailing list "
 "server:"
 msgstr ""
+"Hay dos listas de correo para MobilityDB alojadas en el servidor de listas "
+"de correo OSGeo:"
 
 #. Tag: para
 #: introduction.xml:256
@@ -866,6 +975,9 @@ msgid ""
 "mobilitydb-users\">http://lists.osgeo.org/mailman/listinfo/mobilitydb-users</"
 "ulink>"
 msgstr ""
+"Lista de correo de usuarios: <ulink url=\"http://lists.osgeo.org/mailman/"
+"listinfo/mobilitydb-users\">http://lists.osgeo.org/mailman/listinfo/"
+"mobilitydb-users</ulink>"
 
 #. Tag: para
 #: introduction.xml:257
@@ -875,6 +987,9 @@ msgid ""
 "mobilitydb-dev\">http://lists.osgeo.org/mailman/listinfo/mobilitydb-dev</"
 "ulink>"
 msgstr ""
+"Lista de distribución de desarrolladores: <ulink url=\"http://lists.osgeo."
+"org/mailman/listinfo/mobilitydb-dev\">http://lists.osgeo.org/mailman/"
+"listinfo/mobilitydb-dev</ulink>"
 
 #. Tag: para
 #: introduction.xml:259
@@ -883,3 +998,5 @@ msgid ""
 "For general questions and topics about how to use MobilityDB, please write "
 "to the user mailing list."
 msgstr ""
+"Para preguntas generales y temas sobre cómo usar MobilityDB, escriba a la "
+"lista de correo de usuarios."
