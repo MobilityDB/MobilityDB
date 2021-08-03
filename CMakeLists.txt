@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.2)
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
-        message(FATAL_ERROR "In-source builds not allowed.
-        Please make a new directory (called a build directory) and run CMake from there.
-        You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
+  message(FATAL_ERROR "
+  In-source builds not allowed.
+  Please make a new directory (called a build directory) and run CMake from there.
+  You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
 endif()
+
+#-------------------------------------
+# MobilityDB project definitions
+#-------------------------------------
 
 project(MobilityDB VERSION 1.0.0)
 set(MOBILITYDB_VERSION "${MobilityDB_VERSION}")
@@ -26,9 +31,11 @@ enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #-------------------------------------
-# special cases of compiler flags
+# Set compiler flags and definitions
 #-------------------------------------
 
+# Generate position-independent code (PIC) suitable for use in a shared library,
+# if supported for the target machine
 include(CheckCCompilerFlag)
 if(NOT WIN32)
   CHECK_C_COMPILER_FLAG("-fPIC" C_COMPILER_SUPPORTS_FPIC)
@@ -37,57 +44,57 @@ if(NOT WIN32)
   endif()
 endif()
 
+add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+if (CMAKE_COMPILER_IS_GNUCC)
+  if (WITH_COVERAGE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+  endif ()
+endif ()
+
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+
 check_symbol_exists(ffsl "string.h" HAS_FFSL)
 if(NOT HAS_FFSL)
-	add_definitions(-DNO_FFSL)
+  add_definitions(-DNO_FFSL)
 endif()
 
 #-------------------------------------
-# Verify PostgreSQL Version
+# Verify PostgreSQL version
 #-------------------------------------
+
 set(PG_MIN_MAJOR_VERSION "10")
 set(PG_MAX_MAJOR_VERSION "14")
 
-#--------------------------------
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
 if (NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
 
-add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
+add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER}
+  -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
 include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
 if(WIN32)
-    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
-    if(MSVC)
-        include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
-    endif()
+  include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32)
+  if(MSVC)
+    include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR}/port/win32_msvc/)
+  endif()
 endif()
 
 if(WIN32)
-    link_directories(${POSTGRESQL_LIBRARIES})
-    link_libraries(postgres)
+  link_directories(${POSTGRESQL_LIBRARIES})
+  link_libraries(postgres)
 endif()
+
+#-------------------------------------
+# Verify PostGIS version
+#-------------------------------------
 
 # Currently does not work with other versions of PostGIS
 find_package(POSTGIS 2.5 EXACT REQUIRED)
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
-
-#--------------------------------
-
-
-add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
-if (CMAKE_COMPILER_IS_GNUCC)
-	if (WITH_COVERAGE)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
-		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
-	endif ()
-endif ()
-
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-
-
 
 #--------------------------------
 # Belongs to MobilityDB
@@ -142,3 +149,10 @@ install(TARGETS ${MOBILITYDB_LIB_NAME} DESTINATION "${POSTGRESQL_DYNLIB_DIR}")
 install(
   FILES "${CMAKE_BINARY_DIR}/mobilitydb.control"  "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}"
   DESTINATION "${POSTGRESQL_SHARE_DIR}/extension")
+
+#-----------------------------------------------------------------------------
+# DOCUMENTATION
+#-----------------------------------------------------------------------------
+
+add_subdirectory(doxygen)
+# add_subdirectory(doc)
