@@ -158,7 +158,4 @@ install(
 # DOCUMENTATION
 #-----------------------------------------------------------------------------
 
-# Developers documentation
 add_subdirectory(doxygen)
-# TODO Users documentation
-# add_subdirectory(doc)
