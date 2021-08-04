@@ -42,9 +42,9 @@ setup)
 	
 	if ! $PGCTL start 2>&1 | tee "$WORKDIR/log/pg_start.log"; then
 		sleep 2
-		if ! run_ctl status; then
+		if ! $PGCTL status; then
 			echo "Failed to start PostgreSQL" >&2
-			run_ctl stop
+			$PGCTL stop
 			exit 1
 		fi
 	fi
