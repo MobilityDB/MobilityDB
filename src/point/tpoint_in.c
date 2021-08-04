@@ -364,7 +364,7 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
   char *mfjson = text2cstring(mfjson_input);
   char *srs = NULL;
   int srid = 0;
-  Temporal *result;
+  Temporal *result = NULL;
 
   json_tokener *jstok = NULL;
   json_object *poObj = NULL;

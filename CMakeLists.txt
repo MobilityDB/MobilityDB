@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.2)
 
+#-------------------------------------
+# Disable in-source builds
+#-------------------------------------
+
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
   message(FATAL_ERROR "
   In-source builds not allowed.
@@ -117,7 +121,7 @@ if(WIN32 AND MSVC)
 endif()
 
 #--------------------------------
-# other requirements
+# Other requirements
 #--------------------------------
 
 find_package(JSON-C REQUIRED)
@@ -125,12 +129,12 @@ include_directories(${JSON-C_INCLUDE_DIRS})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
 
 find_package(PROJ REQUIRED)
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 include_directories(${PROJ_INCLUDE_DIRS})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 
 find_package(LWGEOM REQUIRED)
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
 include_directories(${LWGEOM_INCLUDE_DIRS})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
 
 find_package(GSL REQUIRED)
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
@@ -155,4 +159,3 @@ install(
 #-----------------------------------------------------------------------------
 
 add_subdirectory(doxygen)
-# add_subdirectory(doc)
