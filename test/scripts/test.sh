@@ -38,8 +38,9 @@ setup)
 	echo "force_parallel_mode = off" >> "$WORKDIR"/db/postgresql.conf
 	echo "min_parallel_table_scan_size = 0" >> "$WORKDIR"/db/postgresql.conf
 	echo "min_parallel_index_scan_size = 0" >> "$WORKDIR"/db/postgresql.conf
-
-	if ! run_ctl start 2>&1 | tee "$WORKDIR/log/pg_start.log"; then
+	echo "shared_preload_libraries = postgis-2.5.so" >> "$WORKDIR"/db/postgresql.conf
+	
+	if ! $PGCTL start 2>&1 | tee "$WORKDIR/log/pg_start.log"; then
 		sleep 2
 		if ! run_ctl status; then
 			echo "Failed to start PostgreSQL" >&2
