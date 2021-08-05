@@ -55,7 +55,7 @@ setup)
 create_ext)
   # Does not need a parameter
   echo "starting create extension" >> "$WORKDIR"/log/create_ext.log
-  echo "status $(run_ctl status)" >> "$WORKDIR"/log/create_ext.log
+  echo "status $PGCTL status" >> "$WORKDIR"/log/create_ext.log
   $PGCTL status || $PGCTL start
   echo "create extension 1" >> "$WORKDIR"/log/create_ext.log
 
@@ -70,7 +70,7 @@ create_ext)
 
 teardown)
   # Does not need a parameter
-	run_ctl stop || true
+	$PGCTL stop || true
 	exit 0
 	;;
 

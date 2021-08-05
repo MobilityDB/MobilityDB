@@ -2,7 +2,7 @@
 add_test(
   NAME load_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
-  COMMAND test.sh run_passfail load_tables "data/load.sql.xz"
+  COMMAND test.sh run_passfail load_tables "${PROJECT_SOURCE_DIR}/test/general/data/load.sql.xz"
   )
 
 set_tests_properties(load_tables PROPERTIES
