@@ -2169,6 +2169,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
 
   /* Epsilon speed is not taken into account, i.e., parameter set to 0 */
   Temporal *tpoint2 = tpoint_simplify_internal(tpoint1, res, 0);
+  pfree(tpoint1);
 
   /* Transform to tile coordinate space */
   affine.afac = fx;
@@ -2177,30 +2178,29 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   affine.xoff = -box->xmin * fx;
   affine.yoff = -box->ymax * fy;
   Temporal *tpoint3 = tpoint_affine(tpoint2, &affine);
+  pfree(tpoint2);
 
   /* Snap to integer precision, removing duplicate and single points */
   Temporal *tpoint4 = tpoint_grid(tpoint3, &grid, true);
+  pfree(tpoint3);
+  if (tpoint4 == NULL || !clip_geom)
+    return tpoint4;
 
   /* Clip temporal point taking into account the buffer */
-  Temporal *tpoint6;
-  if (clip_geom)
-  {
-    double max = (double) extent + (double) buffer;
-    double min = -(double) buffer;
-    int srid = tpoint_srid_internal(tpoint);
-    STBOX clip_box;
-    stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
-      0, 0, 0, 0);
-    Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
-    /* We need to grid again the result of the clipping */
-    tpoint6 = tpoint_grid(tpoint5, &grid, true);
-    pfree(tpoint4); pfree(tpoint5);
-  }
-  else
-    tpoint6 = tpoint4;
-
-  pfree(tpoint1); pfree(tpoint2); pfree(tpoint3);
-  return tpoint6;
+  double max = (double) extent + (double) buffer;
+  double min = -(double) buffer;
+  int srid = tpoint_srid_internal(tpoint);
+  STBOX clip_box;
+  stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
+    0, 0, 0, 0);
+  Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
+  pfree(tpoint4);
+  if (tpoint5 == NULL)
+    return NULL;
+  /* We need to grid again the result of the clipping */
+  Temporal *result = tpoint_grid(tpoint5, &grid, true);
+  pfree(tpoint5);
+  return result;
 }
 
 /*****************************************************************************/
