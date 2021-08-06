@@ -477,7 +477,7 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
     round     | max 
 --------------+-----
- 67717.426228 |  45
+ 67717.649686 |  45
 (1 row)
 
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
@@ -515,25 +515,25 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2000-01-01], [Point(100 100)@2000-04-10]}',
   stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
-   st_astext   | array_length 
----------------+--------------
- POINT(0 4096) |            1
+ st_astext | array_length 
+-----------+--------------
+           |             
 (1 row)
 
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-02-10, Point(100 100)@2000-04-10]',
   stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
-                       st_astext                       | array_length 
--------------------------------------------------------+--------------
- LINESTRING(0 4096,4351.99999999925 -255.999999999246) |            2
+          st_astext           | array_length 
+------------------------------+--------------
+ LINESTRING(0 4096,4352 -256) |            2
 (1 row)
 
 SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-02-10, Point(100 100)@2000-04-10]',
   stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
-                       st_astext                       | array_length 
--------------------------------------------------------+--------------
- LINESTRING(0 4096,4351.99999999925 -255.999999999246) |            2
+          st_astext           | array_length 
+------------------------------+--------------
+ LINESTRING(0 4096,4352 -256) |            2
 (1 row)
 
 /* Errors */
