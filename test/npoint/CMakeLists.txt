@@ -1,7 +1,7 @@
 add_test(
   NAME load_npoint_tables
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
-  COMMAND test.sh run_passfail load_npoint_tables "${PROJECT_SOURCE_DIR}/test/general/data/load.sql.xz"
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+  COMMAND scripts/test.sh run_passfail ${CMAKE_BINARY_DIR} load_npoint_tables "npoint/data/load.sql.xz"
 )
 
 set_tests_properties(load_npoint_tables PROPERTIES
@@ -24,11 +24,11 @@ foreach(file ${testfiles})
   if(DOTEST)
     add_test(
       NAME ${TESTNAME}
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
-      COMMAND test.sh run_compare ${TESTNAME} ${file}
+      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+      COMMAND scripts/test.sh run_compare ${CMAKE_BINARY_DIR} ${TESTNAME} ${file}
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED DB
+      FIXTURES_REQUIRED DBNPOINT
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()

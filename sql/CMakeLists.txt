@@ -1,7 +1,8 @@
 set(MOBILITYDB_MODULE_PATHNAME "$libdir/lib${MOBILITYDB_LIB_NAME}")
 configure_file(mobilitydb.control ${CMAKE_BINARY_DIR}/mobilitydb.control)
 
-
+# Keep @extschema@ as such
+set(extschema @extschema@)
 
 # one word definitions
 if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)

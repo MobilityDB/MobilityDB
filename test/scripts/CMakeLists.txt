@@ -3,7 +3,7 @@ set(CTEST_PARALLEL_LEVEL 1)
 #TODO find xycat (or suitable decompressor)
 set(UNCOMPRESS xzcat)
 
-configure_file(test.sh test.sh @ONLY)
+#configure_file(test.sh test.sh @ONLY)
 
 
 add_test(
@@ -13,20 +13,20 @@ add_test(
 
 add_test(
   NAME setup
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND test.sh setup
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+  COMMAND scripts/test.sh setup ${CMAKE_BINARY_DIR}
   )
 
 add_test(
   NAME create_extension
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND test.sh create_ext
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+  COMMAND scripts/test.sh create_ext ${CMAKE_BINARY_DIR}
   )
 
 add_test(
   NAME teardown
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND test.sh teardown
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/test
+  COMMAND scripts/test.sh teardown ${CMAKE_BINARY_DIR}
   )
 
 set_tests_properties(setup PROPERTIES
