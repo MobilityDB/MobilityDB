@@ -119,7 +119,7 @@ run_compare)
     echo "==========="
     echo
     diff -urdN "$tmpactual" "$tmpexpected" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".diff
-    exit $?
+    [ -s "$WORKDIR"/out/"$TESTNAME".diff ] && exit 1 || exit 0
   fi
   ;;
 
