@@ -31,13 +31,15 @@ find_library(POSTGIS_LIBRARY
 find_file(POSTGIS_CONTROL  postgis.control
   PATHS "${POSTGRESQL_SHARE_DIR}/extension")
 
-file(READ ${POSTGIS_CONTROL} control_contents)
-string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" POSTGIS_VERSION ${control_contents})
-set(POSTGIS_VERSION_STR "PostGIS ${POSTGIS_VERSION}")
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\1" POSTGIS_VERSION_MAYOR ${POSTGIS_VERSION})
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\2" POSTGIS_VERSION_MINOR ${POSTGIS_VERSION})
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\3" POSTGIS_VERSION_MICRO ${POSTGIS_VERSION})
-math(EXPR POSTGIS_VERSION_NUMBER "${POSTGIS_VERSION_MAYOR} * 10000 + ${POSTGIS_VERSION_MINOR} * 100 + ${POSTGIS_VERSION_MICRO}")
+if (POSTGIS_CONTROL)
+  file(READ ${POSTGIS_CONTROL} control_contents)
+  string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" POSTGIS_VERSION ${control_contents})
+  set(POSTGIS_VERSION_STR "PostGIS ${POSTGIS_VERSION}")
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\1" POSTGIS_VERSION_MAYOR ${POSTGIS_VERSION})
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\2" POSTGIS_VERSION_MINOR ${POSTGIS_VERSION})
+  string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\3" POSTGIS_VERSION_MICRO ${POSTGIS_VERSION})
+  math(EXPR POSTGIS_VERSION_NUMBER "${POSTGIS_VERSION_MAYOR} * 10000 + ${POSTGIS_VERSION_MINOR} * 100 + ${POSTGIS_VERSION_MICRO}")
+endif()
 
 
 include(FindPackageHandleStandardArgs)
