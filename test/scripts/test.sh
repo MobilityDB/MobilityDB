@@ -7,7 +7,7 @@ CMD=$1
 BUILDDIR="@CMAKE_BINARY_DIR@"
 WORKDIR=$BUILDDIR/tmptest
 # TODO this is currently fixed for linux flavors. Will not work on windows
-EXTFILE="$BUILDDIR/@MOBILITYDB_EXTENSION_FILE@"
+EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
 SOFILE="$BUILDDIR/lib@MOBILITYDB_LIB_NAME@.so"
@@ -76,8 +76,10 @@ create_ext)
   # After making a sudo make install the extension can be created with this command
   #echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 >> "$WORKDIR"/log/create_ext.log
 
+  echo "EXTFILE=${EXTFILE}" >> "$WORKDIR"/log/create_ext.log
   # this loads mobilitydb without a "make install"
-  sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
+  # sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
+  $PSQL -f $EXTFILE 2>"$WORKDIR"/log/create_ext.log  1>/dev/null
 
   # A printout to make sure the extension was created
   $PSQL -c "SELECT mobilitydb_full_version()" 2>&1 >> "$WORKDIR"/log/create_ext.log
