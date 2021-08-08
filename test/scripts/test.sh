@@ -7,10 +7,10 @@ CMD=$1
 BUILDDIR="@CMAKE_BINARY_DIR@"
 WORKDIR=$BUILDDIR/tmptest
 # TODO this is currently fixed for linux flavors. Will not work on windows
-EXTFILE="$BUILDDIR/lib@MOBILITYDB_EXTENSION_FILE@.so"
+EXTFILE="$BUILDDIR/@MOBILITYDB_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
-SOFILE="$BUILDDIR/@MOBILITYDB_LIB_NAME@)"
+SOFILE="$BUILDDIR/lib@MOBILITYDB_LIB_NAME@.so"
 PSQL="${BIN_DIR}/psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=0 postgres"
 FAILPSQL="${BIN_DIR}/psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=1 postgres"
 DBDIR="$WORKDIR/db"
@@ -28,6 +28,7 @@ setup)
   "${BIN_DIR}/initdb" -D "$DBDIR" 2>&1 | tee "$WORKDIR/log/initdb.log"
 
   echo "POSTGIS = $POSTGIS" >> "$WORKDIR/log/initdb.log"
+  # what happens when this is false?
   if [ -n "$POSTGIS" ]; then
     POSTGIS=$(basename "$POSTGIS" .so)
     echo "shared_preload_libraries = '$POSTGIS'" >> "${DBDIR}"/postgresql.conf
@@ -62,22 +63,24 @@ create_ext)
   sleep 2
 
 
-  if [ -n "$POSTGIS" ]; then
-    # Note this will never be true because Postgis must be found on the build
+  echo "POSTGIS=$POSTGIS" >> "$WORKDIR"/log/create_ext.log
+
+  #if [ -n "$POSTGIS" ]; then
+    # Note never be false because Postgis must be found on the build
     # Otherwise it will not build
-    echo "Creating PostGIS extension"
-    echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1 1>/dev/null | tee "$WORKDIR"/log/create_ext.log
-  fi
-  $PSQL -c "SELECT postgis_full_version()" | tee "$WORKDIR"/log/create_ext.log
+    echo "Creating PostGIS extension" >> "$WORKDIR/log/create_ext.log"
+    echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1 >> "$WORKDIR"/log/create_ext.log
+  #fi
+  $PSQL -c "SELECT postgis_full_version()" 2>&1 >> "$WORKDIR"/log/create_ext.log
 
-  # After makeing a sudo make install I (vicky) can create the extension with this command
-  echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 | tee "$WORKDIR"/log/create_ext.log
+  # After making a sudo make install the extension can be created with this command
+  #echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 >> "$WORKDIR"/log/create_ext.log
 
-  # Was not able to create the extension with this command
-  #sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
+  # this loads mobilitydb without a "make install"
+  sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
 
   # A printout to make sure the extension was created
-  $FAILPSQL -c "SELECT mobilitydb_full_version()" >> "$WORKDIR"/log/create_ext.log
+  $PSQL -c "SELECT mobilitydb_full_version()" 2>&1 >> "$WORKDIR"/log/create_ext.log
 
 
 
