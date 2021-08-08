@@ -1,7 +1,7 @@
 add_test(
   NAME load_npoint_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
-  COMMAND test.sh run_passfail load_npoint_tables "data/load.sql.xz"
+  COMMAND test.sh run_passfail load_npoint_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load.sql.xz"
 )
 
 set_tests_properties(load_npoint_tables PROPERTIES
