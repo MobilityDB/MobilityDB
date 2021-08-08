@@ -140,9 +140,9 @@ run_passfail)
   echo "TESTFILE=$TESTFILE" >> "$WORKDIR"/out/"$TESTNAME".out
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
-    @UNCOMPRESS@ "$TESTFILE" | $FAILPSQL 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
+    @UNCOMPRESS@ "$TESTFILE" | $PSQL 2>&1 >> "$WORKDIR"/out/"$TESTNAME".out
   else
-    $FAILPSQL < "$TESTFILE" 2>&1 | tee "$WORKDIR"/out/"$TESTNAME".out > /dev/null
+    $PSQL < "$TESTFILE" 2>&1 >> "$WORKDIR"/out/"$TESTNAME".out
   fi
   exit $?
   ;;
