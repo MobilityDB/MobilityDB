@@ -14,6 +14,8 @@ set(PROJECT_VERSION_DEV "Beta 3")
 set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION} ${PROJECT_VERSION_DEV}")
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql")
+set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
+
 
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
 
@@ -126,8 +128,8 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CLBAS_LIBRARY})
 #--------------------------------
 # Belongs to MobilityDB
 
-add_subdirectory(test)
 add_subdirectory(sql)
+add_subdirectory(test)
 
 add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)

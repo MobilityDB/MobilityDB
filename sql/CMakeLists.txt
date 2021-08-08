@@ -67,3 +67,10 @@ foreach (f ${PROJECT_SQL_FILES})
 endforeach()
 
 configure_file(${CMAKE_CURRENT_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}.in ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE} COPYONLY)
+
+file(READ "${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE}" sql_commands)
+string(REGEX REPLACE "MODULE_PATHNAME" "${CMAKE_BINARY_DIR}/lib${MOBILITYDB_LIB_NAME}.so" sql_commands "${sql_commands}")
+message(STATUS "sustitution: ${CMAKE_BINARY_DIR}/lib${MOBILITYDB_LIB_NAME}.so")
+string(REGEX REPLACE "@extschema@" "public" sql_commands "${sql_commands}")
+file(WRITE ${MOBILITYDB_TEST_EXTENSION_FILE}.in "${sql_commands}")
+configure_file(${MOBILITYDB_TEST_EXTENSION_FILE}.in ${MOBILITYDB_TEST_EXTENSION_FILE} COPYONLY)
