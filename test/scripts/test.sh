@@ -74,10 +74,10 @@ create_ext)
   $PSQL -c "SELECT postgis_full_version()" 2>&1 >> "$WORKDIR"/log/create_ext.log
 
   # After making a sudo make install the extension can be created with this command
-  echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 >> "$WORKDIR"/log/create_ext.log
+  #echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 >> "$WORKDIR"/log/create_ext.log
 
   # this loads mobilitydb without a "make install"
-  #sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
+  sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "$WORKDIR"/log/create_ext.log
 
   # A printout to make sure the extension was created
   $PSQL -c "SELECT mobilitydb_full_version()" 2>&1 >> "$WORKDIR"/log/create_ext.log
