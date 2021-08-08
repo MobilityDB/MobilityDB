@@ -1,4 +1,6 @@
 set(MOBILITYDB_MODULE_PATHNAME "$libdir/lib${MOBILITYDB_LIB_NAME}")
+set(extschema "@extschema@")
+
 configure_file(mobilitydb.control ${CMAKE_BINARY_DIR}/mobilitydb.control)
 
 
