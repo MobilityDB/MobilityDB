@@ -51,9 +51,10 @@ exit 0
 ;;
 
 create_ext)
-  $PGCTL status || $PGCTL start
-  # give some time in case there is a start
-  sleep 2
+  if ! $PGCTL status; then
+    $PGCTL start
+    sleep 2
+  fi
 
 
   echo "POSTGIS=${POSTGIS}" >> "${WORKDIR}"/log/create_ext.log
@@ -91,11 +92,10 @@ run_compare)
   TESTNAME=$2
   TESTFILE=$3
 
-  $PGCTL status || $PGCTL start
-
-  while ! $PSQL -l; do
-    sleep 1
-  done
+  if ! $PGCTL status; then
+    $PGCTL start
+    sleep 2
+  fi
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
     @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
@@ -125,11 +125,10 @@ run_passfail)
   TESTNAME=$2
   TESTFILE=$3
 
-  $PGCTL status || $PGCTL start
-
-  while ! $PSQL -l; do
-    sleep 1
-  done
+  if ! $PGCTL status; then
+    $PGCTL start
+    sleep 2
+  fi
 
   {
     echo "TESTNAME=${TESTNAME}"
