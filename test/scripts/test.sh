@@ -131,16 +131,18 @@ run_passfail)
     sleep 1
   done
 
-  echo "TESTNAME=${TESTNAME}" >> "${WORKDIR}"/out/"${TESTNAME}".out
-  echo "TESTFILE=${TESTFILE}" >> "${WORKDIR}"/out/"${TESTNAME}".out
+  {
+    echo "TESTNAME=${TESTNAME}"
+    echo "TESTFILE=${TESTFILE}"
 
-  if [ "${TESTFILE: -3}" == ".xz" ]; then
-    @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1 >> "${WORKDIR}"/out/"${TESTNAME}".out
-  else
-    $PSQL < "${TESTFILE}" 2>&1 >> "${WORKDIR}"/out/"${TESTNAME}".out
-  fi
+    if [ "${TESTFILE: -3}" == ".xz" ]; then
+      @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1
+    else
+      $PSQL < "${TESTFILE}" 2>&1
+    fi
+  } >> "${WORKDIR}/out/${TESTNAME}.out"
   exit $?
-  ;;
+;;
 
 esac
 
