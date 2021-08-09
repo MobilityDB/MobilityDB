@@ -2607,7 +2607,7 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 		<!-- <figure id="tiling" float="start"><title>Multidimensional tiling for temporal floats.</title> -->
 			<mediaobject>
-				<imageobject><imagedata scale='75' fileref='images/tiling.pdf'/></imageobject>
+				<imageobject><imagedata scale='75' fileref='images/tiling.png'/></imageobject>
 			</mediaobject>
 		<!-- </figure> -->
 
