@@ -6,11 +6,17 @@
 DIR=$(git rev-parse --show-toplevel)
 
 pushd "${DIR}" > /dev/null || exit
-read -ra files < <(git ls-files | grep '\.sh')
+code="0"
 
-result=$(shellcheck "${files[@]}")
-if [[ $result ]]; then
-  echo "$result"
-  echo " *** shellcheck found script errors"
-  exit 1
-fi
+for f in $(git ls-files | grep '\.sh')
+do
+  result=$(shellcheck "$f")
+
+  if [[ $result ]]; then
+    echo "$result"
+    echo " *** shellcheck found script errors while processing $f"
+    code=1
+  fi
+done
+popd || exit 1
+exit $code
