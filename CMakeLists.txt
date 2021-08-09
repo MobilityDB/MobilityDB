@@ -123,7 +123,7 @@ include_directories(${LWGEOM_INCLUDE_DIRS})
 
 find_package(GSL REQUIRED)
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CLBAS_LIBRARY})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 
 #--------------------------------
 # Belongs to MobilityDB
