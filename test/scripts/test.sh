@@ -10,15 +10,12 @@ WORKDIR=$BUILDDIR/tmptest
 EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
-SOFILE="$BUILDDIR/lib@MOBILITYDB_LIB_NAME@.so"
 PSQL="${BIN_DIR}/psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=0 postgres"
-FAILPSQL="${BIN_DIR}/psql -h $WORKDIR/lock -e --set ON_ERROR_STOP=1 postgres"
 DBDIR="$WORKDIR/db"
 
 PGCTL="${BIN_DIR}/pg_ctl -w -D $DBDIR -l $WORKDIR/log/postgres.log -o -k -o $WORKDIR/lock -o -h -o ''"
 # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
-PGSODIR="@POSTGRESQL_DYNLIB_DIR@"
 POSTGIS="@POSTGIS_LIBRARY@"
 
 case $CMD in
