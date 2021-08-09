@@ -25,34 +25,33 @@ setup)
   "${BIN_DIR}/initdb" -D "${DBDIR}" 2>&1 | tee "${WORKDIR}/log/initdb.log"
 
   echo "POSTGIS = ${POSTGIS}" >> "${WORKDIR}/log/initdb.log"
-  # what happens when this is false?
-  if [ -n "${POSTGIS}" ]; then
-    POSTGIS=$(basename "${POSTGIS}" .so)
-    echo "shared_preload_libraries = '${POSTGIS}'" >> "${DBDIR}"/postgresql.conf
-  fi
-  echo "max_locks_per_transaction = 128" >> "${DBDIR}"/postgresql.conf
-  echo "timezone = 'UTC'" >> "${DBDIR}"/postgresql.conf
-  echo "parallel_tuple_cost = 100" >> "${DBDIR}"/postgresql.conf
-  echo "parallel_setup_cost = 100" >> "${DBDIR}"/postgresql.conf
-  echo "force_parallel_mode = off" >> "${DBDIR}"/postgresql.conf
-  echo "min_parallel_table_scan_size = 0" >> "${DBDIR}"/postgresql.conf
-  echo "min_parallel_index_scan_size = 0" >> "${DBDIR}"/postgresql.conf
 
-  $PGCTL start 2>&1 | tee "${WORKDIR}"/log/pg_start.log
+  {
+    echo "shared_preload_libraries = '${POSTGIS}'"
+    echo "max_locks_per_transaction = 128"
+    echo "timezone = 'UTC'"
+    echo "parallel_tuple_cost = 100"
+    echo "parallel_setup_cost = 100"
+    echo "force_parallel_mode = off"
+    echo "min_parallel_table_scan_size = 0"
+    echo "min_parallel_index_scan_size = 0"
+  } >> "${DBDIR}/postgresql.conf"
+
+$PGCTL start 2>&1 | tee "${WORKDIR}"/log/pg_start.log
+if [ "$?" != "0" ]; then
+  sleep 2
+  echo "the status start"
+  $PGCTL status >> "${WORKDIR}"/log/pg_start.log
   if [ "$?" != "0" ]; then
-    sleep 2
-    echo "the status start"
-    $PGCTL status >> "${WORKDIR}"/log/pg_start.log
-    if [ "$?" != "0" ]; then
-      echo "Failed to start PostgreSQL" >&2
-      #$PGCTL stop
-      exit 1
-    fi
+    echo "Failed to start PostgreSQL" >&2
+    #$PGCTL stop
+    exit 1
   fi
+fi
 
-  echo "Setup OK" >> "${WORKDIR}/log/initdb.log"
-  exit 0
-  ;;
+echo "Setup OK" >> "${WORKDIR}/log/initdb.log"
+exit 0
+;;
 
 create_ext)
   $PGCTL status || $PGCTL start
@@ -63,10 +62,10 @@ create_ext)
   echo "POSTGIS=${POSTGIS}" >> "${WORKDIR}"/log/create_ext.log
 
   #if [ -n "${POSTGIS}" ]; then
-    # Note never be false because Postgis must be found on the build
-    # Otherwise it will not build
-    echo "Creating PostGIS extension" >> "${WORKDIR}/log/create_ext.log"
-    echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1 >> "${WORKDIR}"/log/create_ext.log
+  # Note never be false because Postgis must be found on the build
+  # Otherwise it will not build
+  echo "Creating PostGIS extension" >> "${WORKDIR}/log/create_ext.log"
+  echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1 >> "${WORKDIR}"/log/create_ext.log
   #fi
   $PSQL -c "SELECT postgis_full_version()" 2>&1 >> "${WORKDIR}"/log/create_ext.log
 
@@ -102,7 +101,7 @@ run_compare)
   done
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
-     @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
+    @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   else
     $PSQL < "${TESTFILE}" 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   fi
