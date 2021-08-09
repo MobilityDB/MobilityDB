@@ -37,17 +37,14 @@ setup)
     echo "min_parallel_index_scan_size = 0"
   } >> "${DBDIR}/postgresql.conf"
 
-$PGCTL start 2>&1 | tee "${WORKDIR}"/log/pg_start.log
-if [ "$?" != "0" ]; then
-  sleep 2
-  echo "the status start"
-  $PGCTL status >> "${WORKDIR}"/log/pg_start.log
-  if [ "$?" != "0" ]; then
-    echo "Failed to start PostgreSQL" >&2
-    #$PGCTL stop
-    exit 1
+  if $PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log; then
+    sleep 2
+    echo "the status start"
+    if ! $PGCTL status >> "$WORKDIR"/log/pg_start.log; then
+      echo "Failed to start PostgreSQL" >> "$WORKDIR/log/pg_start.log"
+      exit 1
+    fi
   fi
-fi
 
 echo "Setup OK" >> "${WORKDIR}/log/initdb.log"
 exit 0
