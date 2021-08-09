@@ -56,29 +56,21 @@ create_ext)
     sleep 2
   fi
 
+  {
+    echo "POSTGIS=${POSTGIS}"
+    echo "EXTFILE=${EXTFILE}"
+    echo "Creating PostGIS extension"
+    echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1
+    $PSQL -c "SELECT postgis_full_version()" 2>&1
+    # After making a sudo make install the extension can be created with this command
+    #echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1
+  } >> "${WORKDIR}/log/create_ext.log"
 
-  echo "POSTGIS=${POSTGIS}" >> "${WORKDIR}"/log/create_ext.log
-
-  #if [ -n "${POSTGIS}" ]; then
-  # Note never be false because Postgis must be found on the build
-  # Otherwise it will not build
-  echo "Creating PostGIS extension" >> "${WORKDIR}/log/create_ext.log"
-  echo "CREATE EXTENSION postgis WITH VERSION '@POSTGIS_VERSION@';" | $PSQL 2>&1 >> "${WORKDIR}"/log/create_ext.log
-  #fi
-  $PSQL -c "SELECT postgis_full_version()" 2>&1 >> "${WORKDIR}"/log/create_ext.log
-
-  # After making a sudo make install the extension can be created with this command
-  #echo "CREATE EXTENSION mobilitydb;" | $PSQL 2>&1 >> "${WORKDIR}"/log/create_ext.log
-
-  echo "EXTFILE=${EXTFILE}" >> "${WORKDIR}"/log/create_ext.log
   # this loads mobilitydb without a "make install"
-  # sed -e "s|MODULE_PATHNAME|$SOFILE|g" -e "s|@extschema@|public|g" < $EXTFILE | $FAILPSQL 2>&1 1>/dev/null | tee -a "${WORKDIR}"/log/create_ext.log
   $PSQL -f $EXTFILE 2>"${WORKDIR}"/log/create_ext.log  1>/dev/null
 
   # A printout to make sure the extension was created
-  $PSQL -c "SELECT mobilitydb_full_version()" 2>&1 >> "${WORKDIR}"/log/create_ext.log
-
-
+  $PSQL -c "SELECT mobilitydb_full_version()" >> "${WORKDIR}/log/create_ext.log" 2>&1
 
   exit 0
   ;;
