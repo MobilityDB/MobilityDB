@@ -1,6 +1,6 @@
-name: Test posgresSQL versions
+name: Test PostgreSQL versions
 
-# 4 * 1 * 2 = 8 jobs are triggered
+# 4 * 1 * 2 + 1 (coverage) = 9 jobs are triggered
 # Test for supported postgres version
 # - except: MobilityDB does not support 9.6
 # Allow manual trigger
@@ -23,6 +23,12 @@ jobs:
           psql: [10,11,12,13]
           postgis: [2.5]
           os: [ubuntu-latest, ubuntu-18.04]
+          coverage: [0]
+          include:
+            - psql: 13
+              postgis: 2.5
+              os: ubuntu-latest
+              coverage: 1
 
     steps:
       - uses: actions/checkout@v2
@@ -57,12 +63,17 @@ jobs:
           ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
           xzcat --version
 
+      - name: Install coverall dependencies
+        if: matrix.coverage == '1'
+        run: |
+          sudo apt-get -y install lcov
+
       - name: Configure for gcc
         run: |
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          cmake ..
+          cmake -DWITH_COVERAGE=${{ matrix.coverage }} ..
 
       - name: Build
         run: |
@@ -73,11 +84,25 @@ jobs:
       - name: test install
         run: |
           sudo service postgresql start
-          sudo -u postgres createdb -p ${PGPORT}  ___pgr___test___
-          sudo -u postgres psql -p ${PGPORT}  -d ___pgr___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
-
+          sudo -u postgres createdb -p ${PGPORT}  ___mobdb___test___
+          sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
 
       - name: Test
         run: |
           cd build
           make test
+
+      - name: Generate coverage
+        if: matrix.coverage == '1'
+        run: |
+          cd build
+          lcov --capture --directory . --output-file=lcov.info
+
+      - name: Coveralls
+        if: matrix.coverage == '1'
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "./build/lcov.info"
+
+
