@@ -13,6 +13,14 @@ BIN_DIR="@POSTGRESQL_BIN_DIR@"
 PSQL="${BIN_DIR}/psql -h ${WORKDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
 DBDIR="${WORKDIR}/db"
 
+pg_status() {
+  @POSTGRESQL_BIN_DIR@//pg_ctl -w -D "${DBDIR}" -l "${WORKDIR}/log/postgres.log" -o -k -o "${WORKDIR}/lock" -o -h -o '' status
+}
+
+pg_stop() {
+  @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" -o '' stop
+}
+
 PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock -o -h -o ''"
 # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
@@ -40,7 +48,7 @@ setup)
   if $PGCTL start 2>&1 | tee "$WORKDIR"/log/pg_start.log; then
     sleep 2
     echo "the status start"
-    if ! $PGCTL status >> "$WORKDIR"/log/pg_start.log; then
+    if ! pg_status >> "$WORKDIR"/log/pg_start.log; then
       echo "Failed to start PostgreSQL" >> "$WORKDIR/log/pg_start.log"
       exit 1
     fi
@@ -51,7 +59,7 @@ exit 0
 ;;
 
 create_ext)
-  if ! $PGCTL status; then
+  if ! pg_status; then
     $PGCTL start
     sleep 2
   fi
@@ -76,7 +84,7 @@ create_ext)
   ;;
 
 teardown)
-  $PGCTL stop || true
+  pg_stop || true
   exit 0
   ;;
 
@@ -84,7 +92,7 @@ run_compare)
   TESTNAME=$2
   TESTFILE=$3
 
-  if ! $PGCTL status; then
+  if ! pg_status; then
     $PGCTL start
     sleep 2
   fi
@@ -117,7 +125,7 @@ run_passfail)
   TESTNAME=$2
   TESTFILE=$3
 
-  if ! $PGCTL status; then
+  if ! pg_status; then
     $PGCTL start
     sleep 2
   fi
