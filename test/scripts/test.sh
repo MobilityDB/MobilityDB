@@ -97,13 +97,13 @@ run_compare)
 
   if [ -n "$TEST_GENERATE" ]; then
     echo "TEST_GENERATE is on; assuming correct output"
-    cat "${WORKDIR}"/out/"${TESTNAME}".out > $(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out
+    cat "${WORKDIR}"/out/"${TESTNAME}".out > "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out"
     exit 0
   else
     tmpactual=$(mktemp --suffix=actual)
     tmpexpected=$(mktemp --suffix=expected)
     sed -e's/^ERROR:.*/ERROR/' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
-    sed -e's/^ERROR:.*/ERROR/' $(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out >> "$tmpexpected"
+    sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
     echo
     echo "Differences"
     echo "==========="
