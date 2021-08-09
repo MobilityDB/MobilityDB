@@ -13,11 +13,11 @@ PSQL="${BIN_DIR}/psql -h ${WORKDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
 DBDIR="${WORKDIR}/db"
 
 pg_status() {
-  @POSTGRESQL_BIN_DIR@//pg_ctl -w -D "${DBDIR}" -l "${WORKDIR}/log/postgres.log" -o -k -o "${WORKDIR}/lock" -o -h -o '' status
+  @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" status
 }
 
 pg_stop() {
-  @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" -o '' stop
+  @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" stop
 }
 
 PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock -o -h -o ''"
