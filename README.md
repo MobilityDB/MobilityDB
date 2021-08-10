@@ -8,11 +8,13 @@ An open source geospatial trajectory data management & analysis platform
 
 MobilityDB is a database management system for moving object geospatial trajectories, such as GPS traces. It adds support for temporal and spatio-temporal objects to the [PostgreSQL](https://www.postgresql.org/) database and its spatial extension [PostGIS](http://postgis.net/).
 
-MobilityDB is developed by the Computer & Decision Engineering Department of the [Université Libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member and member of the OGC Moving Feature Standard Working Group ([MF-SWG](https://www.ogc.org/projects/groups/movfeatswg)).
+MobilityDB is developed by the Computer & Decision Engineering Department of the [Université libre de Bruxelles](https://www.ulb.be/) (ULB) under the direction of [Prof. Esteban Zimányi](http://cs.ulb.ac.be/members/esteban/). ULB is an OGC Associate Member and member of the OGC Moving Feature Standard Working Group ([MF-SWG](https://www.ogc.org/projects/groups/movfeatswg)).
 
 <img src="doc/images/OGC_Associate_Member_3DR.png" width="100" alt="OGC Associate Member Logo" />
 
 The MobilityDB project is managed by a [steering committee](https://github.com/MobilityDB/MobilityDB/wiki/MobilityDB-Project-Steering-Committe).
+
+More information about MobilityDB, including publications, presentations, etc., can be found in the MobilityDB [website](https://mobilitydb.com).
 
 Benefits
 --------
@@ -110,7 +112,7 @@ The first command is to download the latest most up-to-date image of MobilityDB.
 Issues
 ------
 
-Please report any [issues](https://github.com/MobilityDB/MobilityDB/issues) you may have
+Please report any [issues](https://github.com/MobilityDB/MobilityDB/issues) you may have.
 
 Documentation
 -------------
@@ -158,57 +160,6 @@ The resulting HTML documentation will be generated in the `docs` directory of Mo
 In addition, a pregenerated version of the documentation is available.
 
 *   [HTML](https://docs.mobilitydb.com/MobilityDB/develop/api/html)
-
-### Publications
-
-*   Giulia Rovinelli, Stan Matwin, Fabio Pranovi, Elisabetta Russo, Claudio Silvestri, Marta Simeoni, Alessandra Raffaetà, [Multiple aspect trajectories: a case study on fishing vessels in the Northern Adriatic sea](https://docs.mobilitydb.com/pub/BMDA-EDBT-ICDT-2021.pdf). In [Proc. of the Workshops of the EDBT/ICDT 2021 Joint Conference](https://db.cs.pitt.edu/edbtidct2021wsproceedings/), 2021.
-*   Maxime Schoemans, Mahmoud Sakr, Esteban Zimányi, [Implementing Rigid Temporal Geometries in Moving Object Databases](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021.pdf). In Proc. of the 37th IEEE International Conference in Data Engineering, 2021, [Slides](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021_slides.pdf). [Video](https://docs.mobilitydb.com/pub/TempGeometriesICDE2021.mp4).
-*   Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Spatiotemporal Trajectory Query Processing in SQL](https://docs.mobilitydb.com/pub/SigSpatial2020.pdf). In [Proc. of the 28th International Conference on Advances in Geographic Information Systems, SIGSPATIAL' 20, pages 87-98, 2020](https://dl.acm.org/doi/10.1145/3397536.3422262).
-*   Anita Graser, Esteban Zimányi, Krishna Chaitanya Bommakanti, [From Simple Features to Moving Features and Beyond?](https://arxiv.org/abs/2006.16900), arXiv 2006.16900, 2020.
-*   Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, [MobilityDB: A Mobility Database based on PostgreSQL and PostGIS](https://docs.mobilitydb.com/pub/TODS.pdf). [ACM Transactions on Database Systems, 45(4), 2020](https://dl.acm.org/doi/10.1145/3406534).
-*   Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Mobility Data Management in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDBDemo_MDM2020.pdf). In [Proc. of the 21st IEEE International Conference on Mobile Data Management, MDM 2020, pages 238-239, 2020](https://ieeexplore.ieee.org/document/9162249).
-*   Mohamed Bakli, Mahmoud Sakr, Esteban Zimányi, [Distributed Moving Object Data Management in MobilityDB](https://docs.mobilitydb.com/pub/DistMobilityDB_BigSpatial19.pdf). In [Proc. of the 8th ACM SIGSPATIAL International Workshop on Analytics for Big Geospatial Data, BigSpatial '19, 2019](https://dl.acm.org/doi/10.1145/3356999.3365467). [Slides](https://docs.mobilitydb.com/pub/DistributedMobilityDB_BigSpatial19_Slides.pdf).
-*   Esteban Zimányi, Mahmoud Sakr, Arthur Lesuisse, Mohamed Bakli, [MobilityDB: A Mainstream Moving Object Database System](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19.pdf). In [Proc. of the 16th International Symposium on Spatial and Temporal Databases, SSTD 2019, p. 206-209](https://dl.acm.org/citation.cfm?id=3340991). ACM. [Best Demo Paper Award](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_BDPA.pdf). [Poster](https://docs.mobilitydb.com/pub/MobilityDBDemo_SSTD19_Poster.pdf)
-*   Alejandro A. Vaisman, Esteban Zimányi: [Mobility Data Warehouses](https://docs.mobilitydb.com/pub/MobilityDW_IJGI19.pdf). [ISPRS International Journal of Geo-Information, 8(4): 170, 2019](https://www.mdpi.com/2220-9964/8/4/170).
-
-### Presentations
-
-*   [Towards a Well-Known Binary Format for Moving Features](https://docs.mobilitydb.com/pub/WKB-OGC-2021-June-slides.pdf), Talk given in the 119th OGC Member Meeting, in the Moving Features Standard Working Group meeting, June 2021.
-*   [MobilityDB: Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB_PGVision2021.pdf), [Postgres Vision 2021](https://www.postgresvision.com/agenda) June, 2021, Online. [Video](https://www.postgresvision.com/2021/session-videos#secTwo)
-*   [Managing Moving Objects Data with MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB_PGConf2021_Tutorial.pdf), [PGConf.Russia](https://pgconf.ru/en/2021/291542) March, 2021, Online. [Video](https://youtu.be/RQN0gqQvH4M)
-*   [2D and 3D Rigid Temporal Geometries in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-slides.pdf), Talk given in the 117th OGC Member Meeting, in the Moving Features Standard Working Group meeting, December 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-December-video.mp4)
-*   [Towards a Distributed Mobility Database System](https://docs.mobilitydb.com/pub/MobilityDB_LATAM2020.pdf) Talk given in Primera Reunión Latinoamericana de Usuarios de QGIS (LATAM 2020), November 2020. [Video](https://www.youtube.com/watch?v=gja9yTzK77g) (in Spanish)
-*   [MobilityDB: A Moving Object Database Extension of PostgreSQL-PostGIS](https://docs.mobilitydb.com/pub/MobilityDB@Venice.mp4), Seminar given in Ca' Foscari University of Venice, November 2020.
-*   [From Simple Features to Moving Features and Beyond?](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-September-slides.pdf), Talk given in the 116th OGC Member Meeting, in the Moving Features Standard Working Group meeting, September 15th 2020.
-*   [A Moving Feature Data Generator in MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-slides.pdf), Talk given in the 115th OGC Member Meeting, in the Moving Features Standard Working Group meeting, June 19th 2020. [Video](https://docs.mobilitydb.com/pub/MobilityDB-OGC-2020-June-video.mp4)
-*   [MobilityDB: Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.pdf), Keynote speach at the joint EDBT/ICDT 2020 workshop on Big Mobility Data Analytics, [BMDA 2020](http://www.datastories.org/bmda20/BMDA20Invites.html), March 30, 2020, Copenhagen, Denmark. [Video](https://docs.mobilitydb.com/pub/MobilityDB-BMDA2020.mp4)
-*   [Extending PostgreSQL With Spatiotemporal Data Management](https://docs.mobilitydb.com/pub/MobilityDB-Russia-2020.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/264545), February 4, 2020, Moscow, Russia
-*   [Road public transport in Moscow analysis: from PostGIS to MobilityDB](https://docs.mobilitydb.com/pub/MoscowPublicTransport_MobilityDB_en.pdf), [PGConf.Russia](https://pgconf.ru/en/2020/265266), February 4, 2020, Moscow, Russia,
-*   [Managing Mobility Data in PostgreSQL](https://docs.mobilitydb.com/pub/MobilityDB-PGDay-2020.pdf), [FOSSDEM PGDay](https://www.postgresql.eu/events/fosdem2020/schedule/session/2864-managing-mobility-data-in-postgresql/), January 31, 2020, Brussels, Belgium
-*   [Trajectory Data Analysis Using MobilityDB](https://docs.mobilitydb.com/pub/MobilityDB-FOSDEM-2020.pdf), [FOSSDEM GeoSpatial Devroom](https://fosdem.org/2020/schedule/event/mobilitydb/), February 2, 2020, Brussels, Belgium
-*   [MobilityDB: A PostgreSQL-PostGIS extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_FOSS4G_Brussels_2019.pdf), [FOSS4G Belgium](https://2019.foss4g.be/en/programme.php), 2019.
-*   [MobilityDB: A PostgreSQL extension for mobility data management](https://docs.mobilitydb.com/pub/MobilityDB_PgConf_Russia_2019.pdf), [PGConf.Russia](https://pgconf.ru/en/2019/242944), 2019.
-
-### Blogs
-
-*   [Analyzing GPS trajectories at scale with Postgres, MobilityDB, & Citus](https://techcommunity.microsoft.com/t5/azure-database-for-postgresql/analyzing-gps-trajectories-at-scale-with-postgres-mobilitydb-amp/ba-p/1859278)
-
-Users' Applications
--------------------
-
-*   Nina Belyavskaya works at Mosgortrans Mobility Department, whose mission to optimize road public transport routes and timetables in Moscow, Russia. She reported her experience of migrating from PostGIS to MobilityDB in [PGConf.Russia 2020](https://pgconf.ru/en/2020/265266)
-
-    <img src="doc/images/MoscowPublicTransport.png" height="200" alt="Moscow Public Transport Analysis" />
-
-*   Bommakanti Krishna Chaitanya works at [Adonmo](https://www.adonmo.com/), a company specialized in digital taxi-top advertising. He reported his experience on using MobilityDB together with SQLAlchemy [here](https://anitagraser.com/2020/03/02/movement-data-in-gis-29-power-your-web-apps-with-movement-data-using-mobilitydb-sqlalchemy/)
-
-    <img src="https://underdark.files.wordpress.com/2020/03/mobilitydb-sqlalchemy-demo-2.gif?w=545&zoom=2" height="200" alt="Adonmo Taxi Trip Analysis" />
-
-*   Florian Nadler works at [Cybertec](https://www.cybertec-postgresql.com/en/), a company specialized on Data Science using PostgreSQL. He reported his experience on using MobilityDB for intersecting tracks of persons in the context of the Covid pandemic [here](https://www.cybertec-postgresql.com/en/intersecting-tracks-of-individuals-mobilitydb/)
-
-    <img src="https://www.cybertec-postgresql.com/wp-content/uploads/2020/04/Mobility-db8.jpg" height="200" alt="Intersecting Tracks of Persons" />
-
-Let us know how you use MobilityDB in your applications to report it here.
 
 Licenses
 --------
