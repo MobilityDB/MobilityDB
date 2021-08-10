@@ -139,7 +139,10 @@ run_passfail)
       $PSQL < "${TESTFILE}" 2>&1
     fi
   } >> "${WORKDIR}/out/${TESTNAME}.out"
-  exit $?
+
+  # capture error when reading data
+  if grep -q ERROR "$WORKDIR/out/$TESTNAME.out"; then exit 1; else exit 0; fi
+
 ;;
 
 esac
