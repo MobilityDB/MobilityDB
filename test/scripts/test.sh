@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -e
-#set -o pipefail
+#set -e
+set -o pipefail
 
 CMD=$1
 BUILDDIR="@CMAKE_BINARY_DIR@"
