@@ -6,7 +6,6 @@ set -e
 CMD=$1
 BUILDDIR="@CMAKE_BINARY_DIR@"
 WORKDIR=${BUILDDIR}/tmptest
-# TODO this is currently fixed for linux flavors. Will not work on windows
 EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
