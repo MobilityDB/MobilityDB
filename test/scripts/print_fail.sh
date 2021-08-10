@@ -1,7 +1,7 @@
 #!/bin/bash
 
 while IFS= read -r -d '' file
-for file in $(find tmptest/log -type f); do
+do
 	echo "==========="
 	echo "file: $file"
 	echo "==========="
@@ -11,6 +11,7 @@ for file in $(find tmptest/log -type f); do
 done <  <(find tmptest/log -type f -print0)
 
 while IFS= read -r -d '' file
+do
 	echo "==========="
 	echo "file: $file"
 	echo "==========="
