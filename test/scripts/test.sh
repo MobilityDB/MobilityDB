@@ -79,7 +79,9 @@ create_ext)
   # A printout to make sure the extension was created
   $PSQL -c "SELECT mobilitydb_full_version()" >> "${WORKDIR}/log/create_ext.log" 2>&1
 
-  exit 0
+  # capture error when creating the extension
+  if grep -q ERROR "${WORKDIR}/log/create_ext.log"; then exit 1; else exit 0; fi
+
   ;;
 
 teardown)
