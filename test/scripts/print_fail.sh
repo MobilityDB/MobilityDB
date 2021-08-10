@@ -1,5 +1,6 @@
 #!/bin/bash
 
+while IFS= read -r -d '' file
 for file in $(find tmptest/log -type f); do
 	echo "==========="
 	echo "file: $file"
@@ -7,13 +8,13 @@ for file in $(find tmptest/log -type f); do
 	echo
 	cat "$file"
 	echo
-done
+done <  <(find tmptest/log -type f -print0)
 
-for file in $(find tmptest/out -name '*.diff' -type f -not -size 0); do
+while IFS= read -r -d '' file
 	echo "==========="
 	echo "file: $file"
 	echo "==========="
 	echo
 	cat "$file"
 	echo
-done
+done <  <(find find tmptest/out -name '*.diff' -type f -not -size 0 -print0)
