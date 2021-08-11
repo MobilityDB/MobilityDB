@@ -34,12 +34,12 @@ if [[ $missing1 ]]; then
   error=1
 fi
 
-if [[ $missing2 ]]; then
-  echo " ****************************************************"
-  echo " *** Found documentation files without valid license headers"
-  echo " ****************************************************"
-  echo "$missing2"
-  error=1
-fi
+#if [[ $missing2 ]]; then
+#  echo " ****************************************************"
+#  echo " *** Found documentation files without valid license headers"
+#  echo " ****************************************************"
+#  echo "$missing2"
+#  error=1
+#fi
 exit $error
 
