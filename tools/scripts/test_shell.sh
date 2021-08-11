@@ -10,10 +10,10 @@ code="0"
 
 for f in $(git ls-files | grep '\.sh')
 do
-  if [ $f = "test/scripts/test.sh" ] ; then
-    result=$(shellcheck --exclude=SC2089,SC2090"$f")
+  if [ "${f}" = "test/scripts/test.sh" ] ; then
+    result=$(shellcheck --exclude=SC2089,SC2090"${f}")
   else
-    result=$(shellcheck "$f")
+    result=$(shellcheck "${f}")
   fi
 
   if [[ $result ]]; then
