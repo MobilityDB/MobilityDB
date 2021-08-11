@@ -22,7 +22,7 @@ done < <(! { mylicensecheck "${SRC_EXCLUDE_LIST}" include ; mylicensecheck "${SR
   mylicensecheck "${SRC_EXCLUDE_LIST}" sql ; mylicensecheck "${SRC_EXCLUDE_LIST}" test ; } )
 
 missing_doc1=""
-while IFS= read -a ROW; do
+while IFS= read -r ROW; do
   if [[ "$ROW" == *"No copyright"* ]]; then
     missing_doc1+="$ROW"$'\n'
   fi
