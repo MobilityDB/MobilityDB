@@ -1,44 +1,59 @@
 #!/usr/bin/env bash
 
-# This test checks that all source files correctly have license headers
+# This test checks that all source and documentation files correctly have license headers
 
-EXCLUDE_LIST="control.in|\.out|\.xz|\.cmake|\.md|\.txt"
+SRC_EXCLUDE_LIST="control.in|\.control|\.out|\.xz|\.cmake|\.md|\.txt|\.sh"
 DOC_EXCLUDE_LIST="\.png|\.svg|\.po|\.pot|\.pdf|\.sh|\.sty|\.vsdx|\.tx"
 
 mylicensecheck() {
-    licensecheck -r --copyright -l 30 --tail 0 -i "$1" "$2"
+  licensecheck -r -l 30 --tail 0 -i "$1" "$2"
 }
 
 DIR=$(git rev-parse --show-toplevel)
 
 pushd "${DIR}" > /dev/null || exit
-missing=$(! { mylicensecheck ${EXCLUDE_LIST} src & mylicensecheck ${EXCLUDE_LIST}  point & mylicensecheck ${EXCLUDE_LIST} npoint & mylicensecheck ${EXCLUDE_LIST} include;}  | grep "No copyright\|UNKNOWN")
-missing1=$(mylicensecheck ${DOC_EXCLUDE_LIST} doc  | grep "No copyright")
-#missing2=$(grep --files-without-match 'Creative Commons' doc/*.xml)
+
+missing_src=""
+while IFS= read -r ROW; do
+  if [[ "$ROW" == *"No copyright"* || "$ROW" == *"UNKNOWN"* ]]; then
+    missing_src+="$ROW"$'\n'
+  fi
+done < <(! { mylicensecheck "${SRC_EXCLUDE_LIST}" include ; mylicensecheck "${SRC_EXCLUDE_LIST}" src ; \
+  mylicensecheck "${SRC_EXCLUDE_LIST}" sql ; mylicensecheck "${SRC_EXCLUDE_LIST}" test ; } )
+
+missing_doc1=""
+while IFS= read -a ROW; do
+  if [[ "$ROW" == *"No copyright"* ]]; then
+    missing_doc1+="$ROW"$'\n'
+  fi
+done < <(! { mylicensecheck "${DOC_EXCLUDE_LIST}" doc ; } )
+
+# TODO
+#missing_doc2=$(grep --files-without-match 'Creative Commons' doc/*.xml)
 popd > /dev/null || exit
 
 error=0
-if [[ $missing ]]; then
+if [[ $missing_src ]]; then
   echo " ****************************************************"
   echo " *** Found source files without valid license headers"
   echo " ****************************************************"
-  echo "$missing"
+  echo "$missing_src"
   error=1
 fi
 
-if [[ $missing1 ]]; then
+if [[ $missing_doc1 ]]; then
   echo " ****************************************************"
   echo " *** Found documentation files without copyright"
   echo " ****************************************************"
-  echo "$missing1"
+  echo "$missing_doc1"
   error=1
 fi
 
-if [[ $missing2 ]]; then
+if [[ $missing_doc2 ]]; then
   echo " ****************************************************"
   echo " *** Found documentation files without valid license headers"
   echo " ****************************************************"
-  echo "$missing2"
+  echo "$missing_doc2"
   error=1
 fi
 exit $error
