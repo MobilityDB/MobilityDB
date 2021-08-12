@@ -13,7 +13,7 @@ DIR=$(git rev-parse --show-toplevel)
 
 pushd "${DIR}" > /dev/null || exit
 missing=$(! { mylicensecheck ${EXCLUDE_LIST} include & mylicensecheck ${EXCLUDE_LIST} src & mylicensecheck ${EXCLUDE_LIST} sql & mylicensecheck ${EXCLUDE_LIST} test; } | grep "No copyright\|UNKNOWN")
-missing1=$(mylicensecheck ${DOC_EXCLUDE_LIST} doc  | grep "No copyright")
+missing1=$(mylicensecheck ${DOC_EXCLUDE_LIST} doc | grep "No copyright")
 missing2=$(find doc -type f -name "*.xml" -exec grep -H -i -c 'Creative Commons' {} \; | grep :0$ | cut -d':' -f1)
 popd > /dev/null || exit
 
