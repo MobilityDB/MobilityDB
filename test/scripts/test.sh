@@ -100,7 +100,7 @@ run_compare)
   fi
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
-    @XZCAT_EXECUTABLE@ "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
+    ${XZCAT} "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   else
     $PSQL < "${TESTFILE}" 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   fi
@@ -137,7 +137,7 @@ run_passfail)
     echo "TESTFILE=${TESTFILE}"
 
     if [ "${TESTFILE: -3}" == ".xz" ]; then
-      @XZCAT_EXECUTABLE@ "${TESTFILE}" | $PSQL 2>&1
+      ${XZCAT} "${TESTFILE}" | $PSQL 2>&1
     else
       $PSQL < "${TESTFILE}" 2>&1
     fi
