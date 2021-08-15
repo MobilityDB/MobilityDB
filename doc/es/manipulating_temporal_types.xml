@@ -1719,11 +1719,11 @@ ramp_color(
 				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=TRUE): geom_times</varname></para>
 				<para>Los parámetros son los siguientes:</para>
 				<itemizedlist>
-					<listitem><varname>tpoint</varname> es el punto temporal para transformar</listitem>
-					<listitem><varname>bounds</varname> es un <varname>stbox</varname> que define los límites geométricos del contenido del mosaico sin búfer</listitem>
-					<listitem><varname>extent</varname> es la extensión del mosaico en el espacio de coordenadas del mosaico</listitem>
-					<listitem><varname>buffer</varname> es la distancia del búfer en el espacio de coordenadas de mosaico</listitem>
-					<listitem><varname>clip</varname> es un booleano que determina si las geometrías resultantes y las marcas de tiempo deben recortarse o no</listitem>
+					<listitem><para><varname>tpoint</varname> es el punto temporal para transformar</para></listitem>
+					<listitem><para><varname>bounds</varname> es un <varname>stbox</varname> que define los límites geométricos del contenido del mosaico sin búfer</para></listitem>
+					<listitem><para><varname>extent</varname> es la extensión del mosaico en el espacio de coordenadas del mosaico</para></listitem>
+					<listitem><para><varname>buffer</varname> es la distancia del búfer en el espacio de coordenadas de mosaico</para></listitem>
+					<listitem><para><varname>clip</varname> es un booleano que determina si las geometrías resultantes y las marcas de tiempo deben recortarse o no</para></listitem>
 				</itemizedlist>
 				<programlisting>
 SELECT ST_AsText((mvt).geom), (mvt).times
@@ -2719,8 +2719,8 @@ SELECT periodBucket('2000-01-04', interval '1 week', '2000-01-07');
 			<title>Operaciones de malla</title>
 
 			<itemizedlist>
-				<listitem id="multimGrid">
-					<indexterm><primary><varname>multimGrid</varname></primary></indexterm>
+				<listitem id="multidimGrid">
+					<indexterm><primary><varname>multidimGrid</varname></primary></indexterm>
 					<para>Obtener un conjunto de parejas (índice, mosaico) que cubre el cuadro delimitador con mosaicos multidimensionales del mismo tamaño y duración. &Z_support; &SRF;</para>
 					<para>Si el origen de las dimensiones de valores y/o de tiempo no se especifican, su valor se establece por defecto en 0 o <varname>'Point (0 0 0)'</varname> para la dimensión de valores (según el tipo de cuadro delimitador) y en el lunes 3 de enero de 2000 para la dimensión de tiempo.</para>
 					<para><varname>multidimGrid(bounds tbox,size float,duration interval,vorigin float=0,</varname></para>

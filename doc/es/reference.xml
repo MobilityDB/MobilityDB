@@ -1519,7 +1519,7 @@
 				<title>Funciones de modificación</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="nsegment_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+						<para><link linkend="npoint_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

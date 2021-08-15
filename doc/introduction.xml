@@ -188,10 +188,18 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<emphasis role="bold">Optional Dependencies</emphasis>
 			</para>
 
-			<para>For user's documentation</para>
+			<para>For the user's documentation</para>
 			<itemizedlist>
-				<listitem><para>DocBook (<varname>xsltproc</varname>) is required for building the documentation. Docbook is available from <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink></para></listitem>
-				<listitem><para>DBLatex (<filename>dblatex</filename>) is required for building the documentation in PDF format. DBLatex is available from <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></para></listitem>
+				<listitem><para>The DocBook DTD and XSL files are required for building the documentation. For Ubuntu, they are provided by the packages <varname>docbook</varname> and <varname>docbook-xsl</varname>.</para></listitem>
+				<listitem><para>The XML validator <varname>xmllint</varname> is required for validating the XML files of the documentation. For Ubuntu, it is provided by the package <varname>libxml2</varname>.</para></listitem>
+				<listitem><para>The XSLT processor <varname>xsltproc</varname> is required for building the documentation in HTML format. For Ubuntu, it is provided by the package <varname>libxslt</varname>.</para></listitem>
+				<listitem><para>The program <varname>dblatex</varname> is required for building the documentation in PDF format. For Ubuntu, it is provided by the package <varname>dblatex</varname>.</para></listitem>
+				<listitem><para>The program <varname>dbtoepub</varname> is required for building the documentation in EPUB format.  For Ubuntu, it is provided by the package <varname>dbtoepub</varname>.</para></listitem>
+			</itemizedlist>
+
+			<para>For the developers's documentation</para>
+			<itemizedlist>
+				<listitem><para>The program <varname>doxygen</varname> is required for building the documentation. For Ubuntu, it is provided by the package <varname>doxygen</varname>.</para></listitem>
 			</itemizedlist>
 
 			<para>
@@ -272,6 +280,96 @@ ctest -R '21_tbox'
 			</para>
 			<programlisting xml:space="preserve">
 ctest -R '22_*'
+</programlisting>
+		</sect2>
+
+		<sect2 id="documentation">
+			<title>Documentation</title>
+			<para>
+				MobilityDB user's documentation can be generated in HTML, PDF, and EPUB format. Furthermore, the documentation is available in English and in other languages (currently, only in Spanish). The user's documentation can be generated in all formats and in all languages, or specific formats and/or languages can be specified. MobilityDB developer's documentation can only be generated in HTML format and in English.
+			</para>
+			<para>
+				The variables used for generating user's and the developer's documentation are as follows:
+			</para>
+			<table frame='bottom'><title>Variables for the user's and the developer's documentation</title>
+				<tgroup cols='3' align='left' colsep='0' rowsep='1'>
+				<colspec colname='c1' colwidth="1*"/>
+				<colspec colname='c2' colwidth="1*"/>
+				<colspec colname='c3' colwidth="5*"/>
+				<thead>
+					<row>
+						<entry>Variable</entry>
+						<entry>Default value</entry>
+						<entry>Comment</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>ALL_DOC</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The user's documentation is generated in HTML, PDF, and EPUB formats.</entry>
+					</row>
+					<row>
+						<entry><varname>HTML</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The user's documentation is generated in HTML format.</entry>
+					</row>
+					<row>
+						<entry><varname>PDF</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The user's documentation is generated in PDF format.</entry>
+					</row>
+					<row>
+						<entry><varname>EPUB</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The user's documentation is generated in EPUB format.</entry>
+					</row>
+					<row>
+						<entry><varname>ALL_LANG</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The user's documentation is generated in English and in all available translations.</entry>
+					</row>
+					<row>
+						<entry><varname>ES</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The user's documentation is generated in English and in Spanish.</entry>
+					</row>
+					<row>
+						<entry><varname>DOXY_DOC</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>The English developer's documentation is generated in HTML format.</entry>
+					</row>
+				</tbody>
+				</tgroup>
+			</table>
+			<para>
+				Generate the user's and the developer's documentation in all formats and in all languages.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D ALL_DOC=ON -D ALL_LANG=ON -D DOXY_DOC=ON ..
+make doc
+make doxy
+</programlisting>
+			<para>
+				Generate the user's documentation in HTML format and in all languages.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D HTML=ON -D ALL_LANG=ON ..
+make doc_html
+</programlisting>
+			<para>
+				Generate the English user's documentation in all formats.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D ALL_DOC=ON ..
+make doc
+</programlisting>
+			<para>
+				Generate the user's documentation in PDF format in English and in Spanish.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D PDF=ON -D ES=ON ..
+make doc_pdf
 </programlisting>
 		</sect2>
 	</sect1>

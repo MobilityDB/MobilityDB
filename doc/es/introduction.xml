@@ -190,8 +190,16 @@ CREATE EXTENSION mobilitydb CASCADE;
 
 			<para>Para la documentación del usuario</para>
 			<itemizedlist>
-				<listitem><para>DocBook (<varname>xsltproc</varname>) es necesario para crear la documentación. Docbook está disponible en <ulink url="http://www.docbook.org/">http://www.docbook.org/</ulink></para></listitem>
-				<listitem><para>DBLatex (<filename>dblatex</filename>) es necesario para crear la documentación en formato PDF. DBLatex está disponible en <ulink url="http://dblatex.sourceforge.net/">http://dblatex.sourceforge.net/</ulink></para></listitem>
+				<listitem><para>Los archivos DocBook DTD y XSL son necesarios para crear la documentación. Para Ubuntu, son proporcionados por los paquetes <varname>docbook</varname> y <varname>docbook-xsl</varname>.</para></listitem>
+				<listitem><para>El validador XML <varname>xmllint</varname> es necesario para validar los archivos XML de la documentación. Para Ubuntu, lo proporciona el paquete <varname>libxml2</varname>.</para></listitem>
+				<listitem><para>El procesador XSLT <varname>xsltproc</varname> es necesario para crear la documentación en formato HTML. Para Ubuntu, lo proporciona el paquete <varname>libxslt</varname>.</para></listitem>
+				<listitem><para>El programa <varname>dblatex</varname> es necesario para crear la documentación en formato PDF. Para Ubuntu, lo proporciona el paquete <varname>dblatex</varname>.</para></listitem>
+				<listitem><para>El programa <varname>dbtoepub</varname> es necesario para construir la documentación en formato EPUB. Para Ubuntu, lo proporciona el paquete <varname>dbtoepub</varname>.</para></listitem>
+			</itemizedlist>
+
+			<para>Para la documentación de los desarrolladores</para>
+			<itemizedlist>
+				<listitem><para>El programa <varname>doxygen</varname> es necesario para construir la documentación. Para Ubuntu, lo proporciona el paquete <varname>doxygen</varname>.</para></listitem>
 			</itemizedlist>
 
 			<para>
@@ -273,6 +281,96 @@ ctest -R '21_tbox'
 			<programlisting xml:space="preserve">
 ctest -R '22_*'
 			</programlisting>
+		</sect2>
+
+		<sect2 id="documentation">
+			<title>Documentación</title>
+			<para>
+				La documentación del usuario de MobilityDB se puede generar en formato HTML, PDF y EPUB. Además, la documentación está disponible en inglés y en otros idiomas (actualmente, solo en español). La documentación del usuario se puede generar en todos los formatos y en todos los idiomas, o se pueden especificar formatos y/o idiomas específicos. La documentación del desarrollador de MobilityDB solo se puede generar en formato HTML y en inglés.
+			</para>
+			<para>
+				Las variables utilizadas para generar la documentación del usuario y del desarrollador son las siguientes:
+			</para>
+			<table frame='bottom'><title>Variables para la documentación del usuario y del desarrollador</title>
+				<tgroup cols='3' align='left' colsep='0' rowsep='1'>
+				<colspec colname='c1' colwidth="1*"/>
+				<colspec colname='c2' colwidth="1*"/>
+				<colspec colname='c3' colwidth="5*"/>
+				<thead>
+					<row>
+						<entry>Variable</entry>
+						<entry>Valor por defecto</entry>
+						<entry>Comentario</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row>
+						<entry><varname>ALL_DOC</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del usuario se genera en formatos HTML, PDF y EPUB.</entry>
+					</row>
+					<row>
+						<entry><varname>HTML</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del usuario se genera en formato HTML.</entry>
+					</row>
+					<row>
+						<entry><varname>PDF</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del usuario se genera en formato PDF.</entry>
+					</row>
+					<row>
+						<entry><varname>EPUB</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del usuario se genera en formato EPUB.</entry>
+					</row>
+					<row>
+						<entry><varname>ALL_LANG</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del usuario se genera en inglés y en todas las traducciones disponibles.</entry>
+					</row>
+					<row>
+						<entry><varname>ES</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del usuario se genera en inglés y en español.</entry>
+					</row>
+					<row>
+						<entry><varname>DOXY_DOC</varname></entry>
+						<entry><varname>BOOL=OFF</varname></entry>
+						<entry>La documentación del desarrollador en inglés se genera en formato HTML</entry>
+					</row>
+				</tbody>
+				</tgroup>
+			</table>
+			<para>
+				Generar la documentación del usuario y del desarrollador en todos los formatos y en todos los idiomas.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D ALL_DOC=ON -D ALL_LANG=ON -D DOXY_DOC=ON ..
+make doc
+make doxy
+</programlisting>
+			<para>
+				Generar la documentación del usuario en formato HTML y en todos los idiomas.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D HTML=ON -D ALL_LANG=ON ..
+make doc_html
+</programlisting>
+			<para>
+				Generar la documentación del usuario en inglés en todos los formatos.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D ALL_DOC=ON ..
+make doc
+</programlisting>
+			<para>
+				Generar la documentación del usuario en formato PDF en inglés y en español.
+			</para>
+			<programlisting xml:space="preserve">
+cmake -D PDF=ON -D ES=ON ..
+make doc_pdf
+</programlisting>
 		</sect2>
 	</sect1>
 

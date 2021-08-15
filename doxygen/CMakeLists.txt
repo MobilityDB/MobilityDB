@@ -3,11 +3,11 @@
 # https://majewsky.wordpress.com/2010/08/14/tip-of-the-day-cmake-and-doxygen/
 #
 
-option(BUILD_DOXY
-  "Set ON|OFF (default=OFF) to build developers documentation" ON)
+option(DOXY_DOC
+  "Set ON|OFF (default=OFF) to build the developer's documentation" OFF)
 
-if (BUILD_DOXY)
-  message(STATUS "Build developers documentation.")
+if(DOXY_DOC)
+  message(STATUS "Build the developer's documentation.")
   find_package(Doxygen ${DOXYGEN_MINIMUM_VERSION})
 
   if(DOXYGEN_FOUND)
@@ -16,8 +16,8 @@ if (BUILD_DOXY)
     add_custom_target(doxy
       ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-      COMMENT "Generating API documentation with Doxygen" VERBATIM
-      )
+      COMMENT "Generating the developer's documentation with Doxygen" VERBATIM
+    )
   endif()
 
 endif()
