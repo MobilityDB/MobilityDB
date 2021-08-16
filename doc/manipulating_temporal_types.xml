@@ -1706,7 +1706,8 @@ ramp_color(
     0, 2, 0, 1)
 )
 </programlisting>
-				<figure id="figspeed" float="start"><title>Visualizing the speed of a moving object using a color ramp in QGIS.</title>
+				<figure id="figspeed" float="start">
+					<title>Visualizing the speed of a moving object using a color ramp in QGIS.</title>
 					<mediaobject>
 						<imageobject><imagedata scale='30' fileref='images/speed.png' /></imageobject>
 					</mediaobject>
@@ -2605,14 +2606,16 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 
 		<para>Multidimensional tiling can be used for various purposes. For example, it can be used for computing multidimensional histograms, where the temporal values are aggregated according to the underlying partition of the domain. On the other hand, multidimensional tiling can be used for distributing a dataset across a cluster of servers, where each server contains a partition of the dataset. The advantage of this partition mechanism is that it preserves proximitity in space and time, unlike the traditional hash-based partition mechanisms used in big data environments.</para>
 
-		<!-- <figure id="tiling" float="start"><title>Multidimensional tiling for temporal floats.</title> -->
+		<figure id="tiling" float="start">
+			<title>Multidimensional tiling for temporal floats.</title>
 			<mediaobject>
-				<imageobject><imagedata scale='75' fileref='images/tiling.pdf'/></imageobject>
+				<imageobject role="html"><imagedata format="SVG" fileref='images/tiling.svg'/></imageobject>
+				<imageobject role="dblatex"><imagedata format="PDF" scale='75' fileref='images/tiling.pdf'/></imageobject>
 			</mediaobject>
-		<!-- </figure> -->
+		</figure>
 
 		<para>
-			The figure above illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
+			<xref linkend="tiling" /> illustrates multidimensional tiling for temporal floats. The two-dimensional domain is split into tiles having the same size for the value dimension and the same duration for the time dimension. Suppose that this tiling scheme is used for distribute a dataset across a cluster of six servers, as suggested by the gray pattern in the figure. In this case, the values are fragmented so each server will receive the data of contiguous tiles. This implies in particular that four nodes will receive one fragment of the temporal float depicted in the figure. One advantage of this distribution of data based on multidimensional tiling is that it reduces the data that needs to be exchanged between nodes when processing queries, a process typically referred to as <emphasis>reshuffling</emphasis>.
 		</para>
 
 		<para>Many of the functions in this section are <emphasis>set-returning functions</emphasis> (also known as a <emphasis>table functions</emphasis>) since they typically return more than one value. In this case, the functions are marked with the &SRF; symbol.</para>

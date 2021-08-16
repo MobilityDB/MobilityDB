@@ -1,3 +1,4 @@
+# Copyright (c) 2021 Esteban Zimanyi
 # Copyright (c) 2014 Thomas Heller
 # Copyright (c) 2011 Bryce Lelbach
 #
@@ -20,8 +21,14 @@ find_path(DOCBOOK_XSL
       docbook-xsl
       share/sgml/docbook/xsl-stylesheets)
 
-if(DOCBOOK_DTD AND DOCBOOK_XSL)
-  set(DOCBOOK_FOUND TRUE)
-endif()
+message(STATUS "DOCBOOK_DTD: ${DOCBOOK_DTD}")
+message(STATUS "DOCBOOK_XSL: ${DOCBOOK_XSL}")
 
-mark_as_advanced(DOCBOOK_DTD DOCBOOK_XSL)
+include( FindPackageHandleStandardArgs )
+find_package_handle_standard_args(DOCBOOK
+  FOUND_VAR DOCBOOK_FOUND
+  REQUIRED_VARS DOCBOOK_DTD DOCBOOK_XSL )
+
+if (POSTGRESQL_FOUND)
+  mark_as_advanced(DOCBOOK_DTD DOCBOOK_XSL)
+endif()

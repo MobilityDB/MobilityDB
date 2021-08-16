@@ -90,7 +90,7 @@
 			<programlisting xml:space="preserve">
 tar xvfz MobilityDB-&last_release_version;.tar.gz
 cd MobilityDB-&last_release_version;
-			</programlisting>
+</programlisting>
 			<para>
 				Para compilar asumiendo que tiene todas las dependencias en su ruta de búsqueda
 			</para>
@@ -100,7 +100,7 @@ cd build
 cmake  ..
 make
 sudo make install
-			</programlisting>
+</programlisting>
 			<para>
 				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos individual en la que desee usarlo. En éste ejemplo se usa la versión 2.5.5 de PostGIS.
 			</para>
@@ -108,7 +108,7 @@ sudo make install
 createdb mobility
 psql mobility -c "CREATE EXTENSION PostGIS WITH VERSION'2.5.5'"
 psql mobility -c 'CREATE EXTENSION MobilityDB'
-			</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="get_sources">
@@ -126,9 +126,9 @@ psql mobility -c 'CREATE EXTENSION MobilityDB'
 			</para>
 			<programlisting xml:space="preserve">
 wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v1.0.tar.gz
-			</programlisting>
+</programlisting>
 			<para>
-				Ir a <xref linkend="short_version"/> a las instrucciones de extracción y compilación.
+				Ir a la <xref linkend="short_version"/> para las instrucciones de extracción y compilación.
 			</para>
 
 			<para>
@@ -142,9 +142,9 @@ wget -O mobilitydb-1.0.tar.gz https://github.com/MobilityDB/MobilityDB/archive/v
 git clone https://github.com/MobilityDB/MobilityDB.git
 cd MobilityDB
 git checkout v1.0
-			</programlisting>
+</programlisting>
 			<para>
-				Ir a <xref linkend="short_version"/> a las instrucciones de compilación (no hay tar ball).
+				Ir a la <xref linkend="short_version"/> para las instrucciones de compilación (no hay tar ball).
 			</para>
 		</sect2>
 		<sect2 id="enabling_database">
@@ -155,13 +155,13 @@ git checkout v1.0
 			<programlisting xml:space="preserve">
 CREATE EXTENSION postgis;
 CREATE EXTENSION mobilitydb;
-			</programlisting>
+</programlisting>
 			<para>
 				Alternativamente, esto se puede hacer con un solo comando usando <varname>CASCADE</varname>, que instala la extensión PostGIS requerida antes de instalar la extensión MobilityDB
 			</para>
 			<programlisting xml:space="preserve">
 CREATE EXTENSION mobilitydb CASCADE;
-				</programlisting>
+</programlisting>
 		</sect2>
 		<sect2 id="dependencies">
 			<title>Dependencias</title>
@@ -209,11 +209,11 @@ CREATE EXTENSION mobilitydb CASCADE;
 			<para>Dependencias de base de datos</para>
 			<programlisting xml:space="preserve">
 sudo apt-get install postgresql-13 postgresql-server-dev-13 postgresql-13-postgis
-			</programlisting>
+</programlisting>
 			<para>Dependencias de construcción</para>
 			<programlisting xml:space="preserve">
 sudo apt-get install cmake gcc libgsl-dev
-				</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="configuring">
@@ -224,12 +224,12 @@ sudo apt-get install cmake gcc libgsl-dev
 			<para>Para crear el directorio de compilación</para>
 			<programlisting xml:space="preserve">
 mkdir build
-			</programlisting>
+</programlisting>
 			<para>Para ver las variables que se pueden configurar</para>
 			<programlisting xml:space="preserve">
 cd build
 cmake -L ..
-			</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="build_install">
@@ -246,13 +246,13 @@ cd build
 cmake ..
 make
 sudo make install
-			</programlisting>
+</programlisting>
 			<para>
 				Cuando cambia la configuración
 			</para>
 			<programlisting xml:space="preserve">
 rm -rf build
-			</programlisting>
+</programlisting>
 			<para>
 				e inicie el proceso de construcción como se mencionó anteriormente.
 			</para>
@@ -268,19 +268,19 @@ rm -rf build
 			</para>
 			<programlisting xml:space="preserve">
 ctest
-				</programlisting>
+</programlisting>
 			<para>
 				Para ejecutar un archivo de prueba dado
 			</para>
 			<programlisting xml:space="preserve">
 ctest -R '21_tbox'
-			</programlisting>
+</programlisting>
 			<para>
 				Para ejecutar un conjunto de archivos de prueba determinados se pueden utilizar comodines
 			</para>
 			<programlisting xml:space="preserve">
 ctest -R '22_*'
-			</programlisting>
+</programlisting>
 		</sect2>
 
 		<sect2 id="documentation">
@@ -392,7 +392,7 @@ make doc_pdf
 SET client_min_messages TO debug;
 &lt;your code&gt;
 SET client_min_messages TO notice;
-					</programlisting>
+</programlisting>
 				</para></listitem>
 			</orderedlist>
 		</sect2>

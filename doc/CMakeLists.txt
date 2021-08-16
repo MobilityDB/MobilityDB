@@ -202,7 +202,11 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
       list(GET PROJECT_BUILD_LANGUAGES_STRING "${idx}" lang_str)
       add_custom_target(doc_html_${lang}
         ${LIBXSLT_XSLTPROC_EXECUTABLE} --stringparam html.stylesheet ${CMAKE_CURRENT_BINARY_DIR}/${locale}docbook.css
-           --xinclude -o ${CMAKE_CURRENT_BINARY_DIR}/${locale}index.html ${DOCBOOK_XSL}/html/chunk.xsl
+          # Make section numbers to include the chapter number. This assumes chapter numbering is turned on
+          --stringparam section.autolabel 1 --stringparam section.label.includes.component.label 1
+          # Make generated text for chapters, sections, ... is only the number, instead the default number and title
+          --stringparam xref.with.number.and.title 0
+          --xinclude -o ${CMAKE_CURRENT_BINARY_DIR}/${locale}index.html ${DOCBOOK_XSL}/html/chunk.xsl
           ${CMAKE_CURRENT_SOURCE_DIR}/${locale}mobilitydb-manual.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating the ${lang_str} user's documentation in HTML format" VERBATIM
