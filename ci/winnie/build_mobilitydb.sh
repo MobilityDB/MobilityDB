@@ -32,7 +32,7 @@ then
     echo "PG_VER ${PG_VER}"
     echo "PGHOST ${PGHOST}"
     echo "PGPORT ${PGPORT}"
-    echo "MOBILITYDB_VER ${PGROUTING_VER}"
+    echo "MOBILITYDB_VER ${MOBILITYDB_VER}"
     echo "POSTGIS_VER ${POSTGIS_VER}"
     echo "GCC_TYPE ${GCC_TYPE}"
     echo "GIT_COMMIT ${GIT_COMMIT}"
@@ -53,7 +53,7 @@ export PATHOLD=$PATH
 #export PATHOLD="/mingw/bin:/mingw/include:/c/Windows/system32:/c/Windows"
 export PGWINVER=${PG_VER}w${OS_BUILD}${GCC_TYPE}edb
 export PATH="${PATHOLD}:/usr/bin:${PGPATH}/bin:${PGPATH}/lib:${PGPATH}/include"
-export PATH="${PROJECTS}/rel-libiconv-1.13.1w${OS_BUILD}${GCC_TYPE}/include:${PATH}"
+export PATH="${PROJECTS}/rel-libiconv-1.15.1w${OS_BUILD}${GCC_TYPE}/include:${PATH}"
 
 if [ $JENKINS_DEBUG -eq 1 ]
 then
