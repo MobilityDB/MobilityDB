@@ -23,8 +23,11 @@ if (NOT POSTGRESQL_FOUND)
   find_package(POSTGRESQL REQUIRED)
 endif()
 
+message(STATUS Path_FORLIB ${POSTGRESQL_DYNLIB_DIR})
+
+
 # TODO Will worry about other versions of PostGIS when time arrives
-find_library(POSTGIS_LIBRARY
+find_file(POSTGIS_LIBRARY
   NAMES postgis-2.5.so postgis-2.5.dll
   PATHS "${POSTGRESQL_DYNLIB_DIR}")
 
