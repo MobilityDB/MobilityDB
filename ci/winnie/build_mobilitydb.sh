@@ -61,6 +61,21 @@ export GSL_PATH=/projects/gsl/rel-gsl-${GSL_VER}w${OS_BUILD}${GCC_TYPE}
 export JSON_VER=0.12
 export JSON_PATH=${PROJECTS}/json-c/rel-${JSON_VER}w${OS_BUILD}${GCC_TYPE}
 export LIBLWGEOM_PATH=${PROJECTS}/postgis/pg${PG_VER}-liblwgeom-2.5w${OS_BUILD}${GCC_TYPE}
+export PROTOBUF_VER=3.2.0
+export PROTOBUF_PATH=${PROJECTS}/protobuf/rel-${PROTOBUF_VER}w${OS_BUILD}${GCC_TYPE}
+export PROJ_VER=6.3.2
+export PROJ_PATH=${PROJECTS}/proj/rel-${PROJ_VER}w${OS_BUILD}${GCC_TYPE}
+export GEOS_VER=3.8
+export GEOS_PATH=${PROJECTS}/geos/rel-${GEOS_VER}w${OS_BUILD}${GCC_TYPE}
+
+#liblwgeom
+export PATH="${PGPATH}/bin:${PGPATH}/lib:${PGPATH}/include:${LIBLWGEOM_PATH}/bin:${LIBLWGEOM_PATH}/lib:${LIBLWGEOM_PATH}/include:${PROJ_PATH}/include:${PROJ_PATH}/lib:${PROJ_PATH}/bin:${PATH}"
+export PATH="${GEOS_PATH}/bin:{GEOS_PATH}/lib:${PATH}"
+
+
+export PATH="${GSL_PATH}/lib:${GSL_PATH}/include:${JSON_PATH}/include:${JSON_PATH}/lib:${PATH}"
+
+export PKG_CONFIG_PATH="${PROJ_PATH}/lib/pkgconfig"
 
 if [ $JENKINS_DEBUG -eq 1 ]
 then
@@ -139,10 +154,8 @@ ls "${PGPATHEDB}"/share/extension/mobilitydb*
 cmake --version
 
 cmake  -G "MSYS Makefiles" -DCMAKE_VERBOSE_MAKEFILE=ON \
-  -DLWGEOM_ROOT:PATH=${LIBLWGEOM_PATH} -DPROJ_INCLUDE_DIR:PATH=${PROJ_PATH}/include \
-  -DJSONC_INCLUDE_DIR:PATH=${JSON_PATH}/include \
   -DGSL_INCLUDE_DIR:PATH=${GSL_PATH}/include \
-  -DLIBPROTOBUF_INCLUDE_DIR:PATH=${PROTOBUF_PATH}/include \
+  -DLWGEOM_ROOT:PATH=${LIBLWGEOM_PATH} \
   -DCMAKE_BUILD_TYPE=Release \
   "../branches/${MOBILITYDB_VER}"
 
