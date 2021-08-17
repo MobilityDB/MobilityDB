@@ -26,7 +26,6 @@ while IFS= read -r -d '' file
 do
   echo "Processing $file file...";
   filename=$(basename "$file" .po)
-  xmlfilename="$filename.xml"
   po2xml "${filename}.xml" "$1/$filename.po" | \
     sed 's/images\//..\/images\//g' | \
     tidy -quiet --show-warnings no --preserve-entities yes -w -xml -indent > "$1_new/${filename}.xml";

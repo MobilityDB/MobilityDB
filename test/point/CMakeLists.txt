@@ -1,12 +1,12 @@
 add_test(
-  NAME load_geom_tables
+  NAME load_point_tables
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test/scripts
-  COMMAND test.sh run_passfail load_geom_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load.sql.xz"
+  COMMAND test.sh run_passfail load_point_tables "${CMAKE_CURRENT_SOURCE_DIR}/data/load_point.sql.xz"
   )
 
-set_tests_properties(load_geom_tables PROPERTIES
+set_tests_properties(load_point_tables PROPERTIES
   DEPENDS create_extension
-  FIXTURES_SETUP DBGEO
+  FIXTURES_SETUP DBPOINT
   FIXTURES_REQUIRED DB)
 
 
