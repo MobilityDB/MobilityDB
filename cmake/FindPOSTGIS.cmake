@@ -25,7 +25,7 @@ endif()
 
 # TODO Will worry about other versions of PostGIS when time arrives
 find_library(POSTGIS_LIBRARY
-  NAMES postgis-2.5.so
+  NAMES postgis-2.5.so postgis-2.5.dll
   PATHS "${POSTGRESQL_DYNLIB_DIR}")
 
 find_file(POSTGIS_CONTROL  postgis.control

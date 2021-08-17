@@ -55,6 +55,13 @@ export PGWINVER=${PG_VER}w${OS_BUILD}${GCC_TYPE}edb
 export PATH="${PATHOLD}:/usr/bin:${PGPATH}/bin:${PGPATH}/lib:${PGPATH}/include"
 export PATH="${PROJECTS}/rel-libiconv-1.15.1w${OS_BUILD}${GCC_TYPE}/include:${PATH}"
 
+#we may later pass in as variable in jenkins but hardcode for now
+export GSL_VER=2.6
+export GSL_PATH=/projects/gsl/rel-gsl-${GSL_VER}w${OS_BUILD}${GCC_TYPE}
+export JSON_VER=0.12
+export JSON_PATH=${PROJECTS}/json-c/rel-${JSON_VER}w${OS_BUILD}${GCC_TYPE}
+export LIBLWGEOM_PATH=${PROJECTS}/postgis/pg${PG_VER}-liblwgeom-2.5w${OS_BUILD}${GCC_TYPE}
+
 if [ $JENKINS_DEBUG -eq 1 ]
 then
     echo "PGUSER ${PGUSER}"
@@ -131,11 +138,13 @@ ls "${PGPATHEDB}"/lib/libmobilitydb*
 ls "${PGPATHEDB}"/share/extension/mobilitydb*
 cmake --version
 
-cmake -G "MSYS Makefiles" -DCMAKE_VERBOSE_MAKEFILE=ON \
- -DBoost_USE_STATIC_LIBS=ON \
- -DBoost_USE_MULTITHREADED=ON \
- -DCMAKE_BUILD_TYPE=Release \
- "../branches/${MOBILITYDB_VER}"
+cmake  -G "MSYS Makefiles" -DCMAKE_VERBOSE_MAKEFILE=ON \
+  -DLWGEOM_ROOT:PATH=${LIBLWGEOM_PATH} -DPROJ_INCLUDE_DIR:PATH=${PROJ_PATH}/include \
+  -DJSONC_INCLUDE_DIR:PATH=${JSON_PATH}/include \
+  -DGSL_INCLUDE_DIR:PATH=${GSL_PATH}/include \
+  -DLIBPROTOBUF_INCLUDE_DIR:PATH=${PROTOBUF_PATH}/include \
+  -DCMAKE_BUILD_TYPE=Release \
+  "../branches/${MOBILITYDB_VER}"
 
 #---------------
 echo
