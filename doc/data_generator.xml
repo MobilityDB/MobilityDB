@@ -15,7 +15,7 @@
 	</para>
 
 	<para>
-    MobilityDB provides a simple synthetic data generator that can be used for such purposes. In particular, such a data generator was used for generating the database used for the regression tests in MobilityDB. The data generator is programmed in PL/pgSQL so it can be easily customized. It is located in the directory <ulink url="https://github.com/MobilityDB/MobilityDB/datagen">datagen</ulink> in the github repository. In this appendix, we briefly introduce the basic functionality of the generator. We first list the functions generating random values for the various PostgreSQL, PostGIS, and MobilityDB data types, and then give examples how to use these functions for generating tables of such values. The parameters of the functions are not specified, please refer to the source files where detailed explanations about the various parameters can be found.
+		MobilityDB provides a simple synthetic data generator that can be used for such purposes. In particular, such a data generator was used for generating the database used for the regression tests in MobilityDB. The data generator is programmed in PL/pgSQL so it can be easily customized. It is located in the directory <varname>datagen</varname> in the repository. In this appendix, we briefly introduce the basic functionality of the generator. We first list the functions generating random values for the various PostgreSQL, PostGIS, and MobilityDB data types, and then give examples how to use these functions for generating tables of such values. The parameters of the functions are not specified, please refer to the source files where detailed explanations about the various parameters can be found.
 	</para>
 
 	<sect1>
@@ -294,14 +294,14 @@
 	<sect1>
 		<title>Generation of Tables with Random Values</title>
 
-    <para>
-      The files
-      <ulink url="https://github.com/MobilityDB/MobilityDB/datagen/general/create_test_tables_temporal.sql">create_test_tables_temporal.sql</ulink> and
-      <ulink url="https://github.com/MobilityDB/MobilityDB/datagen/point/create_test_tables_tpoint.sql">create_test_tables_tpoint.sql</ulink>
-      provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.
-    </para>
+		<para>
+			The files
+			<varname>datagen/general/create_test_tables_temporal.sql</varname> and
+			<varname>datagen/point/create_test_tables_tpoint.sql</varname>
+			provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.
+		</para>
 
-				<programlisting xml:space="preserve">
+		<programlisting xml:space="preserve">
 CREATE OR REPLACE FUNCTION create_test_tables_temporal(size int DEFAULT 100)
 RETURNS text AS $$
 DECLARE
@@ -316,10 +316,14 @@ RETURN 'The End';
 END;
 $$ LANGUAGE 'plpgsql';
 </programlisting>
-				<para>The function has a <varname>size</varname> parameter that defines the number of rows in the tables. If not provided, it creates by default tables of 100 rows. The function defines a variable <varname>perc</varname> that computes the 1% of the size of the tables. This parameter is used, for example, for generating tables having 1% of null values. We illustrate next some of the commands generating tables.</para>
+		<para>
+			The function has a <varname>size</varname> parameter that defines the number of rows in the tables. If not provided, it creates by default tables of 100 rows. The function defines a variable <varname>perc</varname> that computes the 1% of the size of the tables. This parameter is used, for example, for generating tables having 1% of null values. We illustrate next some of the commands generating tables.
+		</para>
 
-				<para>The creation of a table <varname>tbl_float</varname> containing random <varname>float</varname> values in the range [0,100] with 1% of null values is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_float</varname> containing random <varname>float</varname> values in the range [0,100] with 1% of null values is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_float AS
 /* Add perc NULL values */
 SELECT k, NULL AS f
@@ -328,8 +332,10 @@ SELECT k, random_float(0, 100)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_tbox</varname> containing random <varname>tbox</varname> values where the bounds for values are in the range [0,100] and the bounds for timestamps are in the range [2001-01-01, 2001-12-31] is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_tbox</varname> containing random <varname>tbox</varname> values where the bounds for values are in the range [0,100] and the bounds for timestamps are in the range [2001-01-01, 2001-12-31] is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tbox AS
 /* Add perc NULL values */
 SELECT k, NULL AS b
@@ -338,8 +344,10 @@ SELECT k, random_tbox(0, 100, '2001-01-01', '2001-12-31', 10, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_floatrange</varname> containing random <varname>floatrange</varname> values where the bounds for values are in the range [0,100] and the maximum difference between the lower and the upper bounds is 10 is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_floatrange</varname> containing random <varname>floatrange</varname> values where the bounds for values are in the range [0,100] and the maximum difference between the lower and the upper bounds is 10 is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_floatrange AS
 /* Add perc NULL values */
 SELECT k, NULL AS f
@@ -348,8 +356,10 @@ SELECT k, random_floatrange(0, 100, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_timestampset</varname> containing random <varname>timestampset</varname> values having between 5 and 10 timestamps where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum interval between consecutive timestamps is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_timestampset</varname> containing random <varname>timestampset</varname> values having between 5 and 10 timestamps where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum interval between consecutive timestamps is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_timestampset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
@@ -358,8 +368,10 @@ SELECT k, random_timestampset('2001-01-01', '2001-12-31', 10, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_period</varname> containing random <varname>period</varname> values where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum difference between the lower and the upper bounds is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_period</varname> containing random <varname>period</varname> values where the timestamps are in the range [2001-01-01, 2001-12-31] and the maximum difference between the lower and the upper bounds is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_period AS
 /* Add perc NULL values */
 SELECT k, NULL AS p
@@ -368,66 +380,86 @@ SELECT k, random_period('2001-01-01', '2001-12-31', 10)
 FROM generate_series(perc+1, size) AS k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_geom_point</varname> containing random <varname>geometry</varname> 2D point values, where the x and y coordinates are in the range [0, 100] and in SRID 3812 is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geom_point</varname> containing random <varname>geometry</varname> 2D point values, where the x and y coordinates are in the range [0, 100] and in SRID 3812 is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geom_point AS
 SELECT 1 AS k, geometry 'SRID=3812;point empty' AS g UNION
 SELECT k, random_geom_point(0, 100, 0, 100, 3812)
 FROM generate_series(2, size) k;
 </programlisting>
-				<para>Notice that the table contains an empty point value. If the SRID is not given it is set by default to 0.</para>
+		<para>
+			Notice that the table contains an empty point value. If the SRID is not given it is set by default to 0.
+		</para>
 
-				<para>The creation of a table <varname>tbl_geog_point3D</varname> containing random <varname>geography</varname> 3D point values, where the x, y, and z coordinates are, respectively, in the ranges [-10, 32], [35, 72], and [0, 1000] and in SRID 7844 is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geog_point3D</varname> containing random <varname>geography</varname> 3D point values, where the x, y, and z coordinates are, respectively, in the ranges [-10, 32], [35, 72], and [0, 1000] and in SRID 7844 is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geog_point3D AS
 SELECT 1 AS k, geography 'SRID=7844;pointZ empty' AS g UNION
 SELECT k, random_geog_point3D(-10, 32, 35, 72, 0, 1000, 7844)
 FROM generate_series(2, size) k;
 </programlisting>
-				<para>Notice that latitude and longitude values are chosen to approximately cover continental Europe. If the SRID is not given it is set by default to 4326.</para>
+		<para>
+			Notice that latitude and longitude values are chosen to approximately cover continental Europe. If the SRID is not given it is set by default to 4326.
+		</para>
 
-				<para>The creation of a table <varname>tbl_geom_linestring</varname> containing random <varname>geometry</varname> 2D linestring values having between 5 and 10 vertices, where the x and y coordinates are in the range [0, 100] and in SRID 3812 and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geom_linestring</varname> containing random <varname>geometry</varname> 2D linestring values having between 5 and 10 vertices, where the x and y coordinates are in the range [0, 100] and in SRID 3812 and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geom_linestring AS
 SELECT 1 AS k, geometry 'linestring empty' AS g UNION
 SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 5, 10, 3812)
 FROM generate_series(2, size) k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_geom_linestring</varname> containing random <varname>geometry</varname> 2D linestring values having between 5 and 10 vertices, where the x and y coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geom_linestring</varname> containing random <varname>geometry</varname> 2D linestring values having between 5 and 10 vertices, where the x and y coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geom_linestring AS
 SELECT 1 AS k, geometry 'linestring empty' AS g UNION
 SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 5, 10)
 FROM generate_series(2, size) k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_geom_polygon3D</varname> containing random <varname>geometry</varname> 3D polygon values without holes, having between 5 and 10 vertices, where the x, y, and z coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geom_polygon3D</varname> containing random <varname>geometry</varname> 3D polygon values without holes, having between 5 and 10 vertices, where the x, y, and z coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geom_polygon3D AS
 SELECT 1 AS k, geometry 'polygon Z empty' AS g UNION
 SELECT k, random_geom_polygon3D(0, 100, 0, 100, 0, 100, 10, 5, 10)
 FROM generate_series(2, size) k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_geom_multipoint</varname> containing random <varname>geometry</varname> 2D multipoint values having between 5 and 10 points, where the x and y coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geom_multipoint</varname> containing random <varname>geometry</varname> 2D multipoint values having between 5 and 10 points, where the x and y coordinates are in the range [0, 100] and the maximum difference between consecutive coordinate values is 10 units in the underlying SRID is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geom_multipoint AS
 SELECT 1 AS k, geometry 'multipoint empty' AS g UNION
 SELECT k, random_geom_multipoint(0, 100, 0, 100, 10, 5, 10)
 FROM generate_series(2, size) k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_geog_multilinestring</varname> containing random <varname>geography</varname> 2D multilinestring values having between 5 and 10 linestrings, each one having between 5 and 10 vertices, where the x and y coordinates are, respectively, in the ranges [-10, 32] and [35, 72], and the maximum difference between consecutive coordinate values is 10 is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geog_multilinestring</varname> containing random <varname>geography</varname> 2D multilinestring values having between 5 and 10 linestrings, each one having between 5 and 10 vertices, where the x and y coordinates are, respectively, in the ranges [-10, 32] and [35, 72], and the maximum difference between consecutive coordinate values is 10 is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geog_multilinestring AS
 SELECT 1 AS k, geography 'multilinestring empty' AS g UNION
 SELECT k, random_geog_multilinestring(-10, 32, 35, 72, 10, 5, 10, 5, 10)
 FROM generate_series(2, size) k;
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_geometry3D</varname> containing random <varname>geometry</varname> 3D values of various types is given next. This function requires that the tables for the various geometry types have been created previously.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_geometry3D</varname> containing random <varname>geometry</varname> 3D values of various types is given next. This function requires that the tables for the various geometry types have been created previously.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_geometry3D (
   k serial PRIMARY KEY,
   g geometry);
@@ -440,9 +472,10 @@ INSERT INTO tbl_geometry3D(g)
 (SELECT g FROM tbl_geom_multipolygon3D ORDER BY k LIMIT (size * 0.2));
 </programlisting>
 
-
-				<para>The creation of a table <varname>tbl_tbool_inst</varname> containing random <varname>tbool</varname> values of instant subtype where the timestamps are in the range [2001-01-01, 2001-12-31] is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_tbool_inst</varname> containing random <varname>tbool</varname> values of instant subtype where the timestamps are in the range [2001-01-01, 2001-12-31] is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tbool_inst AS
 /* Add perc NULL values */
 SELECT k, NULL AS inst
@@ -459,10 +492,14 @@ SET inst = (SELECT tboolinst(random_bool(), getTimestamp(inst))
   FROM tbl_tbool_inst t2 WHERE t2.k = t1.k+perc)
 WHERE k in (SELECT i FROM generate_series(1 + 4*perc, 5*perc) i);
 </programlisting>
-				<para>As can be seen above, the table has a percentage of null values, of duplicates, and of rows with the same timestamp.</para>
+		<para>
+			As can be seen above, the table has a percentage of null values, of duplicates, and of rows with the same timestamp.
+		</para>
 
-				<para>The creation of a table <varname>tbl_tint_instset</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_tint_instset</varname> containing random <varname>tint</varname> values of instant set subtype having between 5 and 10 timestamps where the integer values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tint_instset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ti
@@ -488,10 +525,14 @@ SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(
   FROM tbl_tint_instset t2 WHERE t2.k = t1.k+2)
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 </programlisting>
-				<para>As can be seen above, the table has a percentage of null values, of duplicates, of rows with the same timestamp, of rows that meet, and of rows that overlap.</para>
+		<para>
+			As can be seen above, the table has a percentage of null values, of duplicates, of rows with the same timestamp, of rows that meet, and of rows that overlap.
+		</para>
 
-				<para>The creation of a table <varname>tbl_tfloat_seq</varname> containing random <varname>tfloat</varname> values of sequence subtype having between 5 and 10 timestamps where the float values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_tfloat_seq</varname> containing random <varname>tfloat</varname> values of sequence subtype having between 5 and 10 timestamps where the float values are in the range [0, 100], the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between two consecutive values is 10, and the maximum interval between two consecutive instants is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tfloat_seq AS
 /* Add perc NULL values */
 SELECT k, NULL AS seq
@@ -517,8 +558,10 @@ SET seq = (SELECT shift(seq, date_trunc('minute',timespan(seq)/2))
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_ttext_seqset</varname> containing random <varname>ttext</varname> values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the text values have at most 10 characters, the timestamps are in the range [2001-01-01, 2001-12-31], and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_ttext_seqset</varname> containing random <varname>ttext</varname> values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the text values have at most 10 characters, the timestamps are in the range [2001-01-01, 2001-12-31], and the maximum interval between two consecutive instants is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_ttext_seqset AS
 /* Add perc NULL values */
 SELECT k, NULL AS ts
@@ -544,8 +587,10 @@ SET ts = (SELECT shift(ts, date_trunc('minute', timespan(ts)/2))
 WHERE t1.k in (SELECT i FROM generate_series(1 + 8*perc, 9*perc) i);
 </programlisting>
 
-				<para>The creation of a table <varname>tbl_tgeompoint_instset</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			The creation of a table <varname>tbl_tgeompoint_instset</varname> containing random <varname>tgeompoint</varname> 2D values of instant set subtype having between 5 and 10 instants, where the x and y coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 CREATE TABLE tbl_tgeompoint_instset AS
 SELECT k, random_tgeompoint_instset(0, 100, 0, 100, '2001-01-01', '2001-12-31',
   10, 10, 5, 10, 3812) AS ti
@@ -570,8 +615,10 @@ SET ti = (SELECT shift(ti, date_trunc('minute',(endTimestamp(ti)-startTimestamp(
 WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 </programlisting>
 
-				<para>Finally, the creation of a table <varname>tbl_tgeompoint3D_seqset</varname> containing random <varname>tgeompoint</varname> 3D values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the x, y, and z coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.</para>
-				<programlisting xml:space="preserve">
+		<para>
+			Finally, the creation of a table <varname>tbl_tgeompoint3D_seqset</varname> containing random <varname>tgeompoint</varname> 3D values of sequence set subtype having between 5 and 10 sequences, each one having between 5 and 10 timestamps, where the x, y, and z coordinates are in the range [0, 100] and in SRID 3812, the timestamps are in the range [2001-01-01, 2001-12-31], the maximum difference between successive coordinates is at most 10 units in the underlying SRID, and the maximum interval between two consecutive instants is 10 minutes is given next.
+		</para>
+		<programlisting xml:space="preserve">
 DROP TABLE IF EXISTS tbl_tgeompoint3D_seqset;
 CREATE TABLE tbl_tgeompoint3D_seqset AS
 SELECT k, random_tgeompoint3D_seqset(0, 100, 0, 100, 0, 100, '2001-01-01', '2001-12-31',
@@ -623,6 +670,10 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 			</listitem>
 		</itemizedlist>
 
-		<para>El archivo <varname>create_test_tables_tnpoint.sql</varname> da ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba.</para>
+		<para>
+			The file
+			<varname>/datagen/npoint/create_test_tables_tnpoint.sql</varname>
+			provide usage examples for the functions generating random values listed above.
+		</para>
 	</sect1>
 </appendix>
