@@ -3,7 +3,7 @@
 # This test checks that all source files correctly have license headers
 
 EXCLUDE_LIST="control.in|\.out|\.xz|\.cmake|\.md|\.txt|\.sh|\.control"
-DOC_EXCLUDE_LIST="\.png|\.svg|\.po|\.pot|\.pdf|\.sh|\.sty|\.vsdx|\.tx"
+DOC_EXCLUDE_LIST="\.png|\.svg|\.po|\.pot|\.pdf|\.sh|\.sty|\.vsdx|\.xsl|\.tx"
 
 mylicensecheck() {
   licensecheck -r -l 30 --tail 0 -i "$1" "$2"
