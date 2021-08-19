@@ -200,19 +200,19 @@ div.list-of-examples div.toc-title {
 }
 
 h1.title, h2.title {
-	margin: .8em 0 0 -4%;
+	margin: .8em 0 0 0;
 }
 
 h3.title, h4.title {
-	margin: .8em 0 0 -3%;
+	margin: .8em 0 0 0;
 }
 
 h5.title {
-	margin: .8em 0 0 -2%;
+	margin: .8em 0 0 0;
 }
 
 h6.title {
-	margin: .8em 0 0 -1%;
+	margin: .8em 0 0 0;
 }
 
 body hr {
@@ -296,6 +296,7 @@ pre.programlisting {
 	overflow: auto;
 	font-family: monospace;
 	padding: 1ex;
+	padding-top: 0;
 	background-color: #eee;
 	border: 1px solid #ccc;
 	border-radius: 4px;
@@ -426,4 +427,8 @@ code.prompt {
 
 tr.question td {
 	vertical-align: bottom ;
+}
+
+table {
+  border-collapse: collapse;
 }
