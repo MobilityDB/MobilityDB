@@ -207,6 +207,10 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
           --stringparam section.autolabel 1 --stringparam section.label.includes.component.label 1
           # Generated text for chapters, sections, figures... is only the number and not the tile
           --stringparam xref.with.number.and.title 0 
+          # Placement for the legend for figures is after
+          --stringparam formal.title.placement "figure after table after"
+          # Allow controlling individual cell borders
+          --stringparam table.borders.with.css 1
           --xinclude ${DOCBOOK_XSL}/html/chunk.xsl ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating the ${lang_str} user's documentation in HTML format" VERBATIM

@@ -58,8 +58,9 @@
 	<sect1 id="license">
 		<title>Licenses</title>
 		<para>The following licenses can be found in MobilityDB:</para>
-		<informaltable frame='all'><?dblatex table-width="autowidth.column: 1 2"?>
-			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
 				<thead>
 					<row>
 						<entry>Resource</entry>
@@ -291,11 +292,10 @@ ctest -R '22_*'
 			<para>
 				The variables used for generating user's and the developer's documentation are as follows:
 			</para>
-			<table frame='bottom'><title>Variables for the user's and the developer's documentation</title>
-				<tgroup cols='3' align='left' colsep='0' rowsep='1'>
-				<colspec colname='c1' colwidth="1*"/>
-				<colspec colname='c2' colwidth="1*"/>
-				<colspec colname='c3' colwidth="5*"/>
+			<table frame="all" colsep="1" rowsep="1">
+				<?dblatex table-width="autowidth.column: 1 2 3"?>
+				<title>Variables for the user's and the developer's documentation</title>
+				<tgroup cols="3" align="left" colsep="1" rowsep="1">
 				<thead>
 					<row>
 						<entry>Variable</entry>
