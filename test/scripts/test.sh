@@ -4,6 +4,7 @@
 set -o pipefail
 
 CMD=$1
+XZCAT=@XZCAT_EXECUTABLE@
 BUILDDIR="@CMAKE_BINARY_DIR@"
 WORKDIR=${BUILDDIR}/tmptest
 EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
@@ -99,7 +100,7 @@ run_compare)
   fi
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
-    @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
+    "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   else
     $PSQL < "${TESTFILE}" 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
   fi
@@ -136,7 +137,7 @@ run_passfail)
     echo "TESTFILE=${TESTFILE}"
 
     if [ "${TESTFILE: -3}" == ".xz" ]; then
-      @UNCOMPRESS@ "${TESTFILE}" | $PSQL 2>&1
+      "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1
     else
       $PSQL < "${TESTFILE}" 2>&1
     fi

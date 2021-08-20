@@ -1,10 +1,8 @@
 set(CTEST_PARALLEL_LEVEL 1)
 
-#TODO find xycat (or suitable decompressor)
-set(UNCOMPRESS xzcat)
+find_package(Xz REQUIRED)
 
 configure_file(test.sh test.sh @ONLY)
-
 
 add_test(
   NAME build
