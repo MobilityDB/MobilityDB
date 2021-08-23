@@ -108,6 +108,24 @@ SELECT transform_gk(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))');
 --------------------------------------------------------
 
 -- 2D
+SELECT ST_AsText(setPrecision(geometry 'Point(1.123456789 1.123456789)', 5));
+SELECT ST_AsText(setPrecision(geometry 'Linestring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789)', 5));
+SELECT ST_AsText(setPrecision(geometry 'Multipoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789))', 5));
+SELECT ST_AsText(setPrecision(geometry 'Multilinestring((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(4.123456789 4.123456789,5.123456789 5.123456789))', 5));
+
+SELECT ST_AsText(setPrecision(geometry 'Point Empty', 5));
+SELECT ST_AsText(setPrecision(geometry 'Linestring Empty', 5));
+SELECT ST_AsText(setPrecision(geometry 'Multipoint Empty', 5));
+SELECT ST_AsText(setPrecision(geometry 'MultiLinestring Empty', 5));
+-- 3D
+SELECT ST_AsText(setPrecision(geometry 'Point Z(1.123456789 1.123456789 1.123456789)', 5));
+SELECT ST_AsText(setPrecision(geometry 'Linestring Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 5));
+SELECT ST_AsText(setPrecision(geometry 'Multipoint Z(1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789)', 5));
+SELECT ST_AsText(setPrecision(geometry 'Multilinestring Z((1.123456789 1.123456789 1.123456789,2.123456789 2.123456789 2.123456789,3.123456789 3.123456789 3.123456789),(4.123456789 4.123456789 4.123456789,5.123456789 5.123456789 5.123456789))', 5));
+
+--------------------------------------------------------
+
+-- 2D
 SELECT asText(setPrecision(tgeompoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 SELECT asText(setPrecision(tgeompoint '{Point(1.12345 1.12345)@2000-01-01, Point(2 2)@2000-01-02, Point(1.12345 1.12345)@2000-01-03}', 2));
 SELECT asText(setPrecision(tgeompoint '[Point(1.12345 1.12345)@2000-01-01, Point(2 2)@2000-01-02, Point(1.12345 1.12345)@2000-01-03]', 2));

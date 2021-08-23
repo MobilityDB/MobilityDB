@@ -163,6 +163,17 @@ extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpointseq_trajectory_copy(const TSequence *seq);
 extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 
+/* Set precision of the coordinates */
+
+extern Datum geo_set_precision(PG_FUNCTION_ARGS);
+extern Datum tpoint_set_precision(PG_FUNCTION_ARGS);
+ 
+/* Functions for extracting coordinates */
+
+extern Datum tpoint_get_x(PG_FUNCTION_ARGS);
+extern Datum tpoint_get_y(PG_FUNCTION_ARGS);
+extern Datum tpoint_get_z(PG_FUNCTION_ARGS);
+
 /* Length, speed, time-weighted centroid, and temporal azimuth functions */
 
 extern Datum tpoint_length(PG_FUNCTION_ARGS);

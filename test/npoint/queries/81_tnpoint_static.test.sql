@@ -87,9 +87,9 @@ SELECT setPrecision(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
 -- Cast functions between network and space
 -------------------------------------------------------------------------------
 
-SELECT st_astext(npoint 'npoint(1,0.2)'::geometry);
+SELECT ST_AsText(setPrecision(npoint 'npoint(1,0.2)'::geometry, 6));
 
-SELECT st_astext(nsegment 'nsegment(1,0.5,0.7)'::geometry);
+SELECT ST_AsText(setPrecision(nsegment 'nsegment(1,0.5,0.7)'::geometry, 6));
 
 SELECT setPrecision((npoint 'npoint(1,0.2)'::geometry)::npoint, 6);
 

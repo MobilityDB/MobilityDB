@@ -45,7 +45,15 @@ CREATE FUNCTION setPrecision(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
+CREATE FUNCTION setPrecision(geometry, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'geo_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setPrecision(geography, integer)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'geo_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
 /*****************************************************************************/
 
 CREATE FUNCTION SRID(tgeompoint)

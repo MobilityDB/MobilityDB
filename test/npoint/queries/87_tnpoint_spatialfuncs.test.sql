@@ -33,12 +33,12 @@ SELECT srid(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npo
 SELECT srid(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
 SELECT srid(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
 
-SELECT ST_AsText(trajectory(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-SELECT ST_AsText(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-SELECT ST_AsText(trajectory(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-SELECT ST_AsText(trajectory(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-SELECT ST_AsText(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'));
-SELECT ST_AsText(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(trajectory(tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+SELECT ST_AsText(setPrecision(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'), 6));
+SELECT ST_AsText(setPrecision(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
 
 SELECT ST_AsText(trajectory(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02}'));
 SELECT ST_AsText(trajectory(tnpoint '{[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02], [Npoint(2, 0.1)@2000-01-03, Npoint(2, 0.5)@2000-01-04]}'));

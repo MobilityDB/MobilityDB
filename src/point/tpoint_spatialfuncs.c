@@ -2094,32 +2094,240 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
  * Set the precision of the point coordinates to the number
  * of decimal places
  */
+static void
+set_precision_point(LWPOINT *lwpoint, Datum prec, bool hasz)
+{
+  if (hasz)
+  {
+    POINT3DZ *pt = (POINT3DZ *) getPoint_internal(lwpoint->point, 0);
+    pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+    pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+    pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+  }
+  else
+  {
+    POINT2D *pt = (POINT2D *) getPoint_internal(lwpoint->point, 0);
+    pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+    pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_point(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == POINTTYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  set_precision_point(lwpoint, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
+  pfree(lwpoint);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the point coordinates to the number
+ * of decimal places
+ * @note The flags of the input geometry are passed unmodified
+ * to the output geometry
+ */
+static void
+set_precision_linestring(LWLINE *lwline, Datum prec, bool hasz)
+{
+  int npoints = lwline->points->npoints;
+  for (int i = 0; i < npoints; i++)
+  {
+    if (hasz)
+    {
+      POINT3DZ *pt = (POINT3DZ *) getPoint_internal(lwline->points, i);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+      pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+    }
+    else
+    {
+      POINT2D *pt = (POINT2D *) getPoint_internal(lwline->points, i);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+    }
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_linestring(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == LINETYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
+  set_precision_linestring(lwline, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwline);
+  lwfree(lwline);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the point coordinates to the number
+ * of decimal places
+ * @note The flags of the input geometry are passed unmodified
+ * to the output geometry
+ */
+static void
+set_precision_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz)
+{
+  int ngeoms = lwmpoint->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWPOINT *lwpoint = lwmpoint->geoms[i];
+    if (hasz)
+    {
+      POINT3DZ *pt = (POINT3DZ *) getPoint_internal(lwpoint->point, 0);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+      pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+    }
+    else
+    {
+      POINT2D *pt = (POINT2D *) getPoint_internal(lwpoint->point, 0);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+    }
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_multipoint(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWMPOINT *lwmpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
+  set_precision_multipoint(lwmpoint, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoint);
+  lwfree(lwmpoint);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the point coordinates to the number
+ * of decimal places
+ * @note The flags of the input geometry are passed unmodified
+ * to the output geometry
+ */
+static void
+set_precision_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz)
+{
+  int ngeoms = lwmline->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWLINE *lwline = lwmline->geoms[i];
+    int npoints = lwline->points->npoints;
+    for (int j = 0; j < npoints; j++)
+    {
+      if (hasz)
+      {
+        POINT3DZ *pt = (POINT3DZ *) getPoint_internal(lwline->points, j);
+        pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+        pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+        pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+      }
+      else
+      {
+        POINT2D *pt = (POINT2D *) getPoint_internal(lwline->points, j);
+        pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+        pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+      }
+    }
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_multilinestring(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == MULTILINETYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
+  set_precision_multilinestring(lwmline, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmline);
+  lwfree(lwmline);
+  return PointerGetDatum(result);
+}
+
+
+/**
+ * Set the precision of the point coordinates to the number
+ * of decimal places
+ * @note The flags of the input geometry are passed unmodified
+ * to the output geometry
+ */
+static Datum
+datum_set_precision_geometrycollection(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == COLLECTIONTYPE);
+  LWCOLLECTION *lwcol =  lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
+  int ngeoms = lwcol->ngeoms;
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWGEOM *lwgeom = lwcol->geoms[i];
+    if (lwgeom->type == POINTTYPE)
+      set_precision_point(lwgeom_as_lwpoint(lwgeom), prec, hasz);
+    else if (lwgeom->type == LINETYPE)
+      set_precision_linestring(lwgeom_as_lwline(lwgeom), prec, hasz);
+    else if (lwgeom->type == MULTIPOINTTYPE)
+      set_precision_multipoint(lwgeom_as_lwmpoint(lwgeom), prec, hasz);
+    else if (lwgeom->type == MULTILINETYPE)
+      set_precision_multilinestring(lwgeom_as_lwmline(lwgeom), prec, hasz);
+    else 
+      elog(ERROR, "Unsupported geometry type");
+  }
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcol);
+  lwfree(lwcol);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the point coordinates to the number
+ * of decimal places
+ * @pre The geometry is NOT empty
+ * @note Currently not all geometry types are allowed
+ */
 static Datum
 datum_set_precision(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-  int srid = gserialized_get_srid(gs);
-  LWPOINT *lwpoint;
-  if (FLAGS_GET_Z(gs->flags))
-  {
-    const POINT3DZ *point = gs_get_point3dz_p(gs);
-    double x = DatumGetFloat8(datum_round(Float8GetDatum(point->x), prec));
-    double y = DatumGetFloat8(datum_round(Float8GetDatum(point->y), prec));
-    double z = DatumGetFloat8(datum_round(Float8GetDatum(point->z), prec));
-    lwpoint = lwpoint_make3dz(srid, x, y, z);
-  }
-  else
-  {
-    const POINT2D *point = gs_get_point2d_p(gs);
-    double x = DatumGetFloat8(datum_round(Float8GetDatum(point->x), prec));
-    double y = DatumGetFloat8(datum_round(Float8GetDatum(point->y), prec));
-    lwpoint = lwpoint_make2d(srid, x, y);
-  }
-  bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
-  FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
-  pfree(lwpoint);
-  return PointerGetDatum(result);
+  uint32_t type = gserialized_get_type(gs);
+  if (type == POINTTYPE)
+    return datum_set_precision_point(value, prec);
+  if (type == LINETYPE)
+    return datum_set_precision_linestring(value, prec);
+  if (type == MULTIPOINTTYPE)
+    return datum_set_precision_multipoint(value, prec);
+  if (type == MULTILINETYPE)
+    return datum_set_precision_multilinestring(value, prec);
+  if (type == COLLECTIONTYPE)
+    return datum_set_precision_geometrycollection(value, prec);
+  elog(ERROR, "Unsupported geometry type");
+}
+
+PG_FUNCTION_INFO_V1(geo_set_precision);
+/**
+ * Sets the precision of the coordinates of the geometry
+ */
+PGDLLEXPORT Datum
+geo_set_precision(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Datum prec = PG_GETARG_DATUM(1);
+  PG_RETURN_POINTER(datum_set_precision(PointerGetDatum(gs), prec));
 }
 
 PG_FUNCTION_INFO_V1(tpoint_set_precision);
@@ -2131,13 +2339,13 @@ PGDLLEXPORT Datum
 tpoint_set_precision(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Datum size = PG_GETARG_DATUM(1);
+  Datum prec = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   lfinfo.func = (varfunc) &datum_set_precision;
   lfinfo.numparam = 2;
   lfinfo.restypid = temp->basetypid;
-  Temporal *result = tfunc_temporal(temp, size, lfinfo);
+  Temporal *result = tfunc_temporal(temp, prec, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
