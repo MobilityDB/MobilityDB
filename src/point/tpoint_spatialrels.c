@@ -97,7 +97,11 @@ geom_intersects2d(Datum geom1, Datum geom2)
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(intersects3d, geom1, geom2);
+#else
+  return call_function2(ST_3DIntersects, geom1, geom2);
+#endif
 }
 
 /**

@@ -26,19 +26,19 @@
 
 -------------------------------------------------------------------------------
 
-SELECT asText(temp) FROM tbl_tgeompoint LIMIT 10;
-SELECT asText(temp) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(temp) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(temp) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT k%90, asText(array_agg(g ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
-SELECT k%90, asText(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
+SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(array_agg(setPrecision(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asText(array_agg(setPrecision(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
 
-SELECT asEWKT(temp) FROM tbl_tgeompoint LIMIT 10;
-SELECT asEWKT(temp) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asEWKT(temp) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asEWKT(temp) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT k%90, asEWKT(array_agg(g ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
-SELECT k%90, asEWKT(array_agg(temp ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL GROUP BY k%90 ORDER BY k%90 LIMIT 10;
+SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asEWKT(array_agg(setPrecision(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(setPrecision(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions

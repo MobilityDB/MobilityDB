@@ -32,28 +32,28 @@ set force_parallel_mode=regress;
 
 --------------------------------------------------------
 
-SELECT st_astext(temp::geometry) FROM tbl_tgeompoint LIMIT 10;
-SELECT st_astext(temp::geometry) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT temp::geometry FROM tbl_tgeompoint LIMIT 10;
 SELECT temp::geometry FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT st_astext(temp::geography) FROM tbl_tgeogpoint LIMIT 10;
-SELECT st_astext(temp::geography) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT temp::geography FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
 
 --------------------------------------------------------
 
-SELECT st_astext(asGeometry(temp, true)) FROM tbl_tgeompoint LIMIT 10;
-SELECT st_astext(asGeometry(temp, true)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT asGeometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
 SELECT asGeometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT st_astext(asGeography(temp, true)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT st_astext(asGeography(temp, true)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT asGeography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
 SELECT asGeography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
@@ -74,11 +74,11 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(geoMeasure(t1.temp, t2.temp)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
-SELECT ST_AsText(geoMeasure(t1.temp, t2.temp)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(setPrecision(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(setPrecision(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
 
-SELECT ST_AsText(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
-SELECT ST_AsText(geoMeasure(temp, round(speed(temp),2))) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
 
 -------------------------------------------------------------------------------
 
@@ -91,25 +91,25 @@ SELECT round(MAX(ST_Length((mvt).geom))::numeric, 6), MAX(array_length((mvt).tim
 FROM (SELECT asMVTGeom(temp, stbox 'STBOX((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
 
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '{Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10}',
   stbox 'STBOX((0,0),(1000,1000))') AS mvt ) AS t;
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))', clip := false) AS mvt ) AS t;
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0 0)@2000-01-01, Point(100 100 100)@2000-04-10]',
   stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '{[Point(0 0)@2000-01-01], [Point(100 100)@2000-04-10]}',
   stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(0 0)@2000-02-10, Point(100 100)@2000-04-10]',
   stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
-SELECT ST_AsText((mvt).geom), array_length((mvt).times, 1)
+SELECT ST_AsText(setPrecision((mvt).geom, 6), array_length((mvt).times, 1))
 FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-02-10, Point(100 100)@2000-04-10]',
   stbox 'STBOX((0,0),(60,60))') AS mvt ) AS t;
 

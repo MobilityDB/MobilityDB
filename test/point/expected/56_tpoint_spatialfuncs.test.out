@@ -292,56 +292,56 @@ SELECT startValue(transform(setSRID(tgeompoint '{[Point(1 1 1)@2000-01-01, Point
  t
 (1 row)
 
-SELECT asEWKT(transform_gk(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'));
-                                  asewkt                                  
---------------------------------------------------------------------------
- SRID=4326;POINT(3005602.0012352 5835394.36208979)@2018-12-20 00:00:00+00
+SELECT asEWKT(setPrecision(transform_gk(tgeompoint 'Point(13.43593 52.41721)@2018-12-20'), 6));
+                                asewkt                                
+----------------------------------------------------------------------
+ SRID=4326;POINT(3005602.001235 5835394.36209)@2018-12-20 00:00:00+00
 (1 row)
 
-SELECT asEWKT(transform_gk(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'));
-                                                                   asewkt                                                                    
----------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;{POINT(3005602.0012352 5835394.36208979)@2018-12-20 10:00:00+00, POINT(3005609.91825264 5835397.42546224)@2018-12-20 10:01:00+00}
+SELECT asEWKT(setPrecision(transform_gk(tgeompoint '{Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00}'), 6));
+                                                               asewkt                                                                
+-------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{POINT(3005602.001235 5835394.36209)@2018-12-20 10:00:00+00, POINT(3005609.918253 5835397.425462)@2018-12-20 10:01:00+00}
 (1 row)
 
-SELECT asEWKT(transform_gk(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'));
-                                                                   asewkt                                                                    
----------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;[POINT(3005602.0012352 5835394.36208979)@2018-12-20 10:00:00+00, POINT(3005609.91825264 5835397.42546224)@2018-12-20 10:01:00+00]
+SELECT asEWKT(setPrecision(transform_gk(tgeompoint '[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00]'), 6));
+                                                               asewkt                                                                
+-------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;[POINT(3005602.001235 5835394.36209)@2018-12-20 10:00:00+00, POINT(3005609.918253 5835397.425462)@2018-12-20 10:01:00+00]
 (1 row)
 
-SELECT asEWKT(transform_gk(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'));
-                                                                                                                                      asewkt                                                                                                                                       
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- SRID=4326;{[POINT(3005602.0012352 5835394.36208979)@2018-12-20 10:00:00+00, POINT(3005609.91825264 5835397.42546224)@2018-12-20 10:01:00+00], [POINT(3005677.69278704 5835405.55911234)@2018-12-20 10:02:00+00, POINT(3005744.89279844 5835419.24529601)@2018-12-20 10:03:00+00]}
+SELECT asEWKT(setPrecision(transform_gk(tgeompoint '{[Point(13.43593 52.41721)@2018-12-20 10:00:00, Point(13.43605 52.41723)@2018-12-20 10:01:00],[Point(13.43705 52.41724)@2018-12-20 10:02:00,Point(13.43805 52.41730)@2018-12-20 10:03:00]}'), 6));
+                                                                                                                              asewkt                                                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{[POINT(3005602.001235 5835394.36209)@2018-12-20 10:00:00+00, POINT(3005609.918253 5835397.425462)@2018-12-20 10:01:00+00], [POINT(3005677.692787 5835405.559112)@2018-12-20 10:02:00+00, POINT(3005744.892798 5835419.245296)@2018-12-20 10:03:00+00]}
 (1 row)
 
-SELECT ST_AsText(transform_gk(geometry 'Point Empty'));
+SELECT ST_AsText(setPrecision(transform_gk(geometry 'Point Empty'), 6));
   st_astext  
 -------------
  POINT EMPTY
 (1 row)
 
-SELECT ST_AsText(transform_gk(geometry 'Point(13.43593 52.41721)'));
-                st_astext                
------------------------------------------
- POINT(3005602.0012352 5835394.36208979)
+SELECT ST_AsText(setPrecision(transform_gk(geometry 'Point(13.43593 52.41721)'), 6));
+              st_astext              
+-------------------------------------
+ POINT(3005602.001235 5835394.36209)
 (1 row)
 
-SELECT ST_AsText(geometry 'Linestring empty');
+SELECT ST_AsText(setPrecision(geometry 'Linestring empty', 6));
     st_astext     
 ------------------
  LINESTRING EMPTY
 (1 row)
 
-SELECT ST_AsText(transform_gk(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'));
-                                   st_astext                                    
---------------------------------------------------------------------------------
- LINESTRING(3005602.0012352 5835394.36208979,3005601.77152082 5835396.58272623)
+SELECT ST_AsText(setPrecision(transform_gk(geometry 'Linestring(13.43593 52.41721,13.43593 52.41723)'), 6));
+                               st_astext                                
+------------------------------------------------------------------------
+ LINESTRING(3005602.001235 5835394.36209,3005601.771521 5835396.582726)
 (1 row)
 
 /* Error */
-SELECT transform_gk(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))');
+SELECT transform_gk(setPrecision(geometry 'Polygon((0 0,0 10,10 10,10 0,0 0))', 6));
 ERROR:  Component geometry/geography must be of type Point(Z)M or LineString
 SELECT ST_AsText(setPrecision(geometry 'Point(1.123456789 1.123456789)', 6));
         st_astext         
@@ -392,51 +392,51 @@ SELECT ST_AsText(setPrecision(geometry 'MultiPolygon(((1.123456789 1.123456789,4
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'Point Empty', 6));
- st_astext 
------------
- 
+  st_astext  
+-------------
+ POINT EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'Linestring Empty', 6));
- st_astext 
------------
- 
+    st_astext     
+------------------
+ LINESTRING EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'Triangle Empty', 6));
- st_astext 
------------
- 
+   st_astext    
+----------------
+ TRIANGLE EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'Circularstring Empty', 6));
- st_astext 
------------
- 
+      st_astext       
+----------------------
+ CIRCULARSTRING EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'Polygon Empty', 6));
- st_astext 
------------
- 
+   st_astext   
+---------------
+ POLYGON EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'MultiPoint Empty', 6));
- st_astext 
------------
- 
+    st_astext     
+------------------
+ MULTIPOINT EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'MultiLinestring Empty', 6));
- st_astext 
------------
- 
+       st_astext       
+-----------------------
+ MULTILINESTRING EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'MultiPolygon Empty', 6));
- st_astext 
------------
- 
+     st_astext      
+--------------------
+ MULTIPOLYGON EMPTY
 (1 row)
 
 SELECT ST_AsText(setPrecision(geometry 'Point Z(1.123456789 1.123456789 1.123456789)', 6));
@@ -1488,73 +1488,73 @@ SELECT round(speed(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5 1.5)@2000-01-01, P
 ERROR:  The temporal value must have linear interpolation
 SELECT round(speed(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}'), 6);
 ERROR:  The temporal value must have linear interpolation
-SELECT st_astext(twcentroid(tgeompoint 'Point(1 1)@2000-01-01'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint 'Point(1 1)@2000-01-01'), 6));
  st_astext  
 ------------
  POINT(1 1)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-                st_astext                 
-------------------------------------------
- POINT(1.33333333333333 1.33333333333333)
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'), 6));
+        st_astext         
+--------------------------
+ POINT(1.333333 1.333333)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6));
    st_astext    
 ----------------
  POINT(1.5 1.5)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6));
  st_astext  
 ------------
  POINT(2 2)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'), 6));
    st_astext    
 ----------------
  POINT(1.5 1.5)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'), 6));
  st_astext  
 ------------
  POINT(2 2)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint 'Point(1 1 1)@2000-01-01'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint 'Point(1 1 1)@2000-01-01'), 6));
     st_astext    
 -----------------
  POINT Z (1 1 1)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'));
-                          st_astext                           
---------------------------------------------------------------
- POINT Z (1.33333333333333 1.33333333333333 1.33333333333333)
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}'), 6));
+              st_astext               
+--------------------------------------
+ POINT Z (1.333333 1.333333 1.333333)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6));
        st_astext       
 -----------------------
  POINT Z (1.5 1.5 1.5)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6));
     st_astext    
 -----------------
  POINT Z (2 2 2)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]'), 6));
        st_astext       
 -----------------------
  POINT Z (1.5 1.5 1.5)
 (1 row)
 
-SELECT st_astext(twcentroid(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(twcentroid(tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}'), 6));
     st_astext    
 -----------------
  POINT Z (2 2 2)

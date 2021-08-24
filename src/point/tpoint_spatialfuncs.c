@@ -288,7 +288,11 @@ geom_distance2d(Datum geom1, Datum geom2)
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(distance3d, geom1, geom2);
+#else
+  return call_function2(ST_3DDistance, geom1, geom2);
+#endif
 }
 
 /**
@@ -1376,8 +1380,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
     {
       geoms[k++] = (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE,
         points[0]->srid, NULL, (uint32_t) l, (LWGEOM **) points);
-      for (int i = 0; i < l; i++)
-        lwpoint_free(points[i]);
+      /* We cannot lwpoint_free(points[i]); */
     }
     // TODO add the bounding box instead of ask PostGIS to compute it again
     // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
@@ -2492,7 +2495,7 @@ geo_set_precision(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
+    PG_RETURN_POINTER(gserialized_copy(gs));
   Datum prec = PG_GETARG_DATUM(1);
   PG_RETURN_POINTER(datum_set_precision(PointerGetDatum(gs), prec));
 }

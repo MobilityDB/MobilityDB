@@ -147,10 +147,11 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint3D ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
 
-SELECT MAX(memSize(temp)) FROM tbl_tgeompoint;
-SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint;
-SELECT MAX(memSize(temp)) FROM tbl_tgeompoint3D;
-SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint3D;
+-- The size of geometries increased a few bytes in PostGIS 3
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 
 SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
 SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;

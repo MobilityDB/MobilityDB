@@ -108,8 +108,8 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
 SELECT count(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
-SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint LIMIT 10;
-SELECT st_astext(twcentroid(temp)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT round(azimuth(temp), 12) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
 SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;

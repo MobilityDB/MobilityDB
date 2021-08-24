@@ -26,14 +26,14 @@
 
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(st_lineinterpolatepoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0));
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, true));
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false));
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0), 6));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, true), 6));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false), 6));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
 -- EMPTY
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring empty', 0.1, true));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoints(geography 'Linestring empty', 0.1, true), 6));
 /* Errors */
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Point(4.35 50.85)', 0.5, true));
-SELECT ST_AsText(st_lineinterpolatepoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, true));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoints(geography 'Point(4.35 50.85)', 0.5, true), 6));
+SELECT ST_AsText(setPrecision(st_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 2, true), 6));
 
 -------------------------------------------------------------------------------
