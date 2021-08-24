@@ -356,6 +356,18 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 }
 
 /**
+ * Ensure that the two spatial "objects" have the same SRID
+ */
+void
+ensure_same_srid(int32_t srid1, int32_t srid2)
+{
+  if (srid1 != srid2)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Operation on mixed SRID")));
+  return;
+}
+
+/**
  * Ensure that the spatiotemporal boxes have the same SRID
  */
 void

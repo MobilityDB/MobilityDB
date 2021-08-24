@@ -288,7 +288,7 @@ SELECT setPrecision((tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-0
  {[NPoint(1,0.2)@2000-01-01 00:00:00+00, NPoint(1,0.4)@2000-01-02 00:00:00+00, NPoint(1,0.5)@2000-01-03 00:00:00+00], [NPoint(2,0.6)@2000-01-04 00:00:00+00, NPoint(2,0.6)@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT tgeompoint 'Point(-1 -1)@2000-01-01'::tnpoint;
+SELECT tgeompoint 'SRID=5676;Point(-1 -1)@2000-01-01'::tnpoint;
  tnpoint 
 ---------
  
@@ -312,6 +312,9 @@ SELECT tgeompoint 'SRID=5676;{[POINT(62.7866330839742 80.1435561997142)@2000-01-
  
 (1 row)
 
+/* Errors */
+SELECT tgeompoint 'Point(-1 -1)@2000-01-01'::tnpoint;
+ERROR:  Operation on mixed SRID
 SELECT tempSubtype(tnpoint 'Npoint(1, 0.5)@2000-01-01');
  tempsubtype 
 -------------

@@ -80,6 +80,25 @@ nsegmentarr_to_array(nsegment **nsegmentarr, int count)
     sizeof(nsegment), false, 'd');
 }
 
+int32_t 
+get_srid_ways()
+{
+  int32_t srid_ways;
+  bool isNull = true;
+  SPI_connect();
+  int ret = SPI_execute("SELECT ST_SRID(the_geom) FROM public.ways LIMIT 1;", true, 1);
+  uint64 proc = SPI_processed;
+  if (ret > 0 && proc > 0 && SPI_tuptable != NULL)
+  {
+    SPITupleTable *tuptable = SPI_tuptable;
+    Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
+    if (!isNull)
+      srid_ways = DatumGetInt32(value);
+  }
+  SPI_finish();
+  return srid_ways;
+}
+
 /*****************************************************************************/
 
 /* npoint array to geometry */
@@ -989,8 +1008,13 @@ PGDLLEXPORT Datum
 geom_as_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  /* Ensure validity of operation */
   ensure_non_empty(gs);
   ensure_point_type(gs);
+  int32_t srid_geom = gserialized_get_srid(gs);
+  int32_t srid_ways = get_srid_ways();
+  ensure_same_srid(srid_geom, srid_ways);
+
   npoint *result = geom_as_npoint_internal(PointerGetDatum(gs));
   if (result == NULL)
     PG_RETURN_NULL();

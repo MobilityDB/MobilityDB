@@ -62,6 +62,7 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 
 extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
+extern void ensure_same_srid(int32_t srid1, int32_t srid2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
 extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2);

@@ -26,16 +26,16 @@
 
 -------------------------------------------------------------------------------
 
-SELECT asText(tcentroid(temp)) FROM ( VALUES
+SELECT asText(setPrecision(tcentroid(temp), 6)) FROM ( VALUES
   (NULL::tnpoint),
   ('Npoint(1, 0.5)@2000-01-01'),
   ('{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}')) t(temp);
-SELECT asText(tcentroid(temp)) FROM ( VALUES
+SELECT asText(setPrecision(tcentroid(temp), 6)) FROM ( VALUES
   (tnpoint 'Npoint(1, 0.5)@2000-01-01'),
   ('{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'),
   (NULL)) t(temp);
 /* Errors */
-SELECT asText(tcentroid(temp)) FROM ( VALUES
+SELECT asText(setPrecision(tcentroid(temp), 6)) FROM ( VALUES
   (tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'),
   ('[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]')) t(temp);
 
