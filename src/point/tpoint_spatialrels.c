@@ -84,7 +84,11 @@ geom_disjoint(Datum geom1, Datum geom2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(intersects, geom1, geom2);
+#else
+  return call_function2(ST_Intersects, geom1, geom2);
+#endif
 }
 
 /**

@@ -252,7 +252,11 @@ extern Datum coveredby(PG_FUNCTION_ARGS);
 extern Datum crosses(PG_FUNCTION_ARGS);
 extern Datum disjoint(PG_FUNCTION_ARGS);
 extern Datum ST_Equals(PG_FUNCTION_ARGS);
+#if POSTGIS_VERSION_NUMBER < 30000
 extern Datum intersects(PG_FUNCTION_ARGS); /* For 2D */
+#else
+extern Datum ST_Intersects(PG_FUNCTION_ARGS); /* For 2D */
+#endif
 extern Datum intersects3d(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum issimple(PG_FUNCTION_ARGS);
 extern Datum overlaps(PG_FUNCTION_ARGS);
@@ -262,8 +266,13 @@ extern Datum within(PG_FUNCTION_ARGS);
 extern Datum relate_full(PG_FUNCTION_ARGS);
 extern Datum relate_pattern(PG_FUNCTION_ARGS);
 
+#if POSTGIS_VERSION_NUMBER < 30000
 extern Datum intersection(PG_FUNCTION_ARGS);
 extern Datum distance(PG_FUNCTION_ARGS); /* For 2D */
+#else
+extern Datum ST_Intersection(PG_FUNCTION_ARGS);
+extern Datum ST_Distance(PG_FUNCTION_ARGS); /* For 2D */
+#endif
 extern Datum distance3d(PG_FUNCTION_ARGS); /* For 3D */
 
 extern Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS);

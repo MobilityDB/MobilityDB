@@ -72,7 +72,7 @@ if(WIN32)
 endif()
 
 # Currently does not work with other versions of PostGIS
-find_package(POSTGIS 2.5 EXACT REQUIRED)
+find_package(POSTGIS REQUIRED)
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
@@ -117,9 +117,11 @@ find_package(PROJ REQUIRED)
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 include_directories(${PROJ_INCLUDE_DIRS})
 
-find_package(LWGEOM REQUIRED)
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
-include_directories(${LWGEOM_INCLUDE_DIRS})
+if (POSTGIS_VERSION_NUMBER LESS 030000)
+  find_package(LWGEOM REQUIRED)
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
+  include_directories(${LWGEOM_INCLUDE_DIRS})
+endif()
 
 find_package(GSL REQUIRED)
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})

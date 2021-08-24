@@ -319,7 +319,11 @@ NAD_geometry_tnpoint(PG_FUNCTION_ARGS)
   }
 
   Datum traj = tnpoint_geom(temp);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum result = call_function2(distance, traj, PointerGetDatum(gs));
+#else
+  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
+#endif
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -338,7 +342,11 @@ NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_as_geom_internal(np);
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum result = call_function2(distance, traj, PointerGetDatum(gs));
+#else
+  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
+#endif
   pfree(DatumGetPointer(traj));
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -363,7 +371,11 @@ NAD_tnpoint_geometry(PG_FUNCTION_ARGS)
   }
 
   Datum traj = tnpoint_geom(temp);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum result = call_function2(distance, traj, PointerGetDatum(gs));
+#else
+  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
+#endif
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -382,7 +394,11 @@ NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_as_geom_internal(np);
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum result = call_function2(distance, traj, PointerGetDatum(gs));
+#else
+  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
+#endif
   pfree(DatumGetPointer(traj));
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));

@@ -275,7 +275,11 @@ get_pt_distance_fn(int16 flags)
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(distance, geom1, geom2);
+#else
+  return call_function2(ST_Distance, geom1, geom2);
+#endif
 }
 
 /**
@@ -2091,8 +2095,7 @@ tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Set the precision of the point coordinates to the number
- * of decimal places
+ * Set the precision of the coordinates to the number of decimal places
  */
 static void
 set_precision_point(LWPOINT *lwpoint, Datum prec, bool hasz)
@@ -2127,10 +2130,7 @@ datum_set_precision_point(Datum value, Datum prec)
 }
 
 /**
- * Set the precision of the point coordinates to the number
- * of decimal places
- * @note The flags of the input geometry are passed unmodified
- * to the output geometry
+ * Set the precision of the coordinates to the number of decimal places
  */
 static void
 set_precision_linestring(LWLINE *lwline, Datum prec, bool hasz)
@@ -2169,10 +2169,129 @@ datum_set_precision_linestring(Datum value, Datum prec)
 }
 
 /**
- * Set the precision of the point coordinates to the number
- * of decimal places
- * @note The flags of the input geometry are passed unmodified
- * to the output geometry
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+set_precision_triangle(LWTRIANGLE *lwtriangle, Datum prec, bool hasz)
+{
+  int npoints = lwtriangle->points->npoints;
+  for (int i = 0; i < npoints; i++)
+  {
+    if (hasz)
+    {
+      POINT3DZ *pt = (POINT3DZ *) getPoint_internal(lwtriangle->points, i);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+      pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+    }
+    else
+    {
+      POINT2D *pt = (POINT2D *) getPoint_internal(lwtriangle->points, i);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+    }
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_triangle(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == TRIANGLETYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWTRIANGLE *lwtriangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
+  set_precision_triangle(lwtriangle, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwtriangle);
+  lwfree(lwtriangle);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+set_precision_circularstring(LWCIRCSTRING *lwcircstring, Datum prec, bool hasz)
+{
+  int npoints = lwcircstring->points->npoints;
+  for (int i = 0; i < npoints; i++)
+  {
+    if (hasz)
+    {
+      POINT3DZ *pt = (POINT3DZ *) getPoint_internal(lwcircstring->points, i);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+      pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+    }
+    else
+    {
+      POINT2D *pt = (POINT2D *) getPoint_internal(lwcircstring->points, i);
+      pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+      pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+    }
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_circularstring(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWCIRCSTRING *lwcircstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
+  set_precision_circularstring(lwcircstring, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwcircstring);
+  lwfree(lwcircstring);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+set_precision_polygon(LWPOLY *lwpoly, Datum prec, bool hasz)
+{
+  int nrings = lwpoly->nrings;
+  for (int i = 0; i < nrings; i++)
+  {
+    POINTARRAY *pa = lwpoly->rings[i];
+    int npoints = pa->npoints;
+    for (int j = 0; j < npoints; j++)
+    {
+      if (hasz)
+      {
+        POINT3DZ *pt = (POINT3DZ *) getPoint_internal(pa, j);
+        pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+        pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+        pt->z = DatumGetFloat8(datum_round(Float8GetDatum(pt->z), prec));
+      }
+      else
+      {
+        POINT2D *pt = (POINT2D *) getPoint_internal(pa, j);
+        pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
+        pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
+      }
+    }
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_polygon(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == POLYGONTYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWPOLY *lwpoly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
+  set_precision_polygon(lwpoly, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoly);
+  lwfree(lwpoly);
+  return PointerGetDatum(result);
+}
+
+/**
+ * Set the precision of the coordinates to the number of decimal places
  */
 static void
 set_precision_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz)
@@ -2212,10 +2331,7 @@ datum_set_precision_multipoint(Datum value, Datum prec)
 }
 
 /**
- * Set the precision of the point coordinates to the number
- * of decimal places
- * @note The flags of the input geometry are passed unmodified
- * to the output geometry
+ * Set the precision of the coordinates to the number of decimal places
  */
 static void
 set_precision_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz)
@@ -2258,12 +2374,36 @@ datum_set_precision_multilinestring(Datum value, Datum prec)
   return PointerGetDatum(result);
 }
 
+/**
+ * Set the precision of the coordinates to the number of decimal places
+ */
+static void
+set_precision_multipolygon(LWMPOLY *lwmpoly, Datum prec, bool hasz)
+{
+  int ngeoms = lwmpoly->ngeoms;
+  for (int i = 0; i < ngeoms; i++)
+  {
+    LWPOLY *lwpoly = lwmpoly->geoms[i];
+    set_precision_polygon(lwpoly, prec, hasz);
+  }
+  return;
+}
+
+static Datum
+datum_set_precision_multipolygon(Datum value, Datum prec)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
+  bool hasz = FLAGS_GET_Z(gs->flags);
+  LWMPOLY *lwmpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
+  set_precision_multipolygon(lwmpoly, prec, hasz);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoly);
+  lwfree(lwmpoly);
+  return PointerGetDatum(result);
+}
 
 /**
- * Set the precision of the point coordinates to the number
- * of decimal places
- * @note The flags of the input geometry are passed unmodified
- * to the output geometry
+ * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
 datum_set_precision_geometrycollection(Datum value, Datum prec)
@@ -2280,10 +2420,18 @@ datum_set_precision_geometrycollection(Datum value, Datum prec)
       set_precision_point(lwgeom_as_lwpoint(lwgeom), prec, hasz);
     else if (lwgeom->type == LINETYPE)
       set_precision_linestring(lwgeom_as_lwline(lwgeom), prec, hasz);
+    else if (lwgeom->type == TRIANGLETYPE)
+      set_precision_triangle(lwgeom_as_lwtriangle(lwgeom), prec, hasz);
+    else if (lwgeom->type == CIRCSTRINGTYPE)
+      set_precision_circularstring(lwgeom_as_lwcircstring(lwgeom), prec, hasz);
+    else if (lwgeom->type == POLYGONTYPE)
+      set_precision_polygon(lwgeom_as_lwpoly(lwgeom), prec, hasz);
     else if (lwgeom->type == MULTIPOINTTYPE)
       set_precision_multipoint(lwgeom_as_lwmpoint(lwgeom), prec, hasz);
     else if (lwgeom->type == MULTILINETYPE)
       set_precision_multilinestring(lwgeom_as_lwmline(lwgeom), prec, hasz);
+    else if (lwgeom->type == MULTIPOLYGONTYPE)
+      set_precision_multipolygon(lwgeom_as_lwmpoly(lwgeom), prec, hasz);
     else 
       elog(ERROR, "Unsupported geometry type");
   }
@@ -2293,8 +2441,7 @@ datum_set_precision_geometrycollection(Datum value, Datum prec)
 }
 
 /**
- * Set the precision of the point coordinates to the number
- * of decimal places
+ * Set the precision of the coordinates to the number of decimal places
  * @pre The geometry is NOT empty
  * @note Currently not all geometry types are allowed
  */
@@ -2307,10 +2454,18 @@ datum_set_precision(Datum value, Datum prec)
     return datum_set_precision_point(value, prec);
   if (type == LINETYPE)
     return datum_set_precision_linestring(value, prec);
+  if (type == TRIANGLETYPE)
+    return datum_set_precision_triangle(value, prec);
+  if (type == CIRCSTRINGTYPE)
+    return datum_set_precision_circularstring(value, prec);
+  if (type == POLYGONTYPE)
+    return datum_set_precision_polygon(value, prec);
   if (type == MULTIPOINTTYPE)
     return datum_set_precision_multipoint(value, prec);
   if (type == MULTILINETYPE)
     return datum_set_precision_multilinestring(value, prec);
+  if (type == MULTIPOLYGONTYPE)
+    return datum_set_precision_multipolygon(value, prec);
   if (type == COLLECTIONTYPE)
     return datum_set_precision_geometrycollection(value, prec);
   elog(ERROR, "Unsupported geometry type");
@@ -3704,7 +3859,12 @@ tpoint_make_simple(PG_FUNCTION_ARGS)
 static TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
 {
-  bool inter = DatumGetBool(call_function2(intersects, tinstant_value(inst), geom));
+  bool inter = DatumGetBool(
+#if POSTGIS_VERSION_NUMBER < 30000
+    call_function2(intersects, tinstant_value(inst), geom));
+#else
+    call_function2(ST_Intersects, tinstant_value(inst), geom));
+#endif
   if ((atfunc && !inter) || (!atfunc && inter))
     return NULL;
   return tinstant_copy(inst);
@@ -3721,7 +3881,12 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    bool inter = DatumGetBool(call_function2(intersects, tinstant_value(inst), geom));
+    bool inter = DatumGetBool(
+#if POSTGIS_VERSION_NUMBER < 30000
+      call_function2(intersects, tinstant_value(inst), geom));
+#else
+      call_function2(ST_Intersects, tinstant_value(inst), geom));
+#endif
     if ((atfunc && inter) || (!atfunc && !inter))
       instants[k++] = inst;
   }
@@ -3783,7 +3948,11 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
   for (int i = 0; i < countsimple; i++)
   {
     Datum traj = tpointseq_trajectory(simpleseqs[i]);
+#if POSTGIS_VERSION_NUMBER < 30000
     Datum inter = call_function2(intersection, traj, geom);
+#else
+    Datum inter = call_function2(ST_Intersection, traj, geom);
+#endif
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
@@ -4073,7 +4242,11 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, countsimple);
     Datum traj = tpointseq_trajectory(seq);
+#if POSTGIS_VERSION_NUMBER < 30000
     Datum inter = call_function2(intersection, traj, geom);
+#else
+    Datum inter = call_function2(ST_Intersection, traj, geom);
+#endif
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
@@ -4094,7 +4267,11 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     for (int i = 0; i < countsimple; i++)
     {
       Datum traj = tpointseq_trajectory(simpleseqs[i]);
+#if POSTGIS_VERSION_NUMBER < 30000
       Datum inter = call_function2(intersection, traj, geom);
+#else
+      Datum inter = call_function2(ST_Intersection, traj, geom);
+#endif
       GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
       if (! gserialized_is_empty(gsinter))
       {

@@ -241,7 +241,11 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   }
 
   Datum traj = tpointseq_trajectory(seq);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum inter = call_function2(intersection, traj, geom);
+#else
+  Datum inter = call_function2(ST_Intersection, traj, geom);
+#endif
   GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
   if (gserialized_is_empty(gsinter))
   {
