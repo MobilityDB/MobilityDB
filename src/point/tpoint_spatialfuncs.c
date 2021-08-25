@@ -2031,8 +2031,8 @@ tpointinstset_convert_tgeom_tgeog(const TInstantSet *ti, bool oper)
   pfree(points);
   /* Convert the multipoint geometry/geography */
   Datum mpoint_trans = (oper == GEOG_FROM_GEOM) ?
-      call_function1(geography_from_geometry, mpoint_orig) :
-      call_function1(geometry_from_geography, mpoint_orig);
+    call_function1(geography_from_geometry, mpoint_orig) :
+    call_function1(geometry_from_geography, mpoint_orig);
   /* Construct the resulting tpoint from the multipoint geometry/geography */
   gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));

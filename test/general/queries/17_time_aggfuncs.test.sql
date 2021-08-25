@@ -57,6 +57,7 @@ set max_parallel_workers_per_gather=2;
 
 SELECT numTimestamps(tunion(ts)) from tbl_timestampset_big;
 SELECT extent(temp::period) FROM tbl_tfloat_big;
+SELECT numPeriods(tunion(temp::period)) from tbl_tfloat_big;
 
 -- reset to default values
 reset parallel_setup_cost;

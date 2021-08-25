@@ -18,6 +18,12 @@ set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENS
 
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
 
+# Comment out code used for debugging purposes so it is not concerned by the coverage
+message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  add_definitions(-DDEBUG_BUILD)
+endif()
+  
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 
@@ -108,7 +114,6 @@ add_subdirectory("src")
 if (POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   include_directories("postgis/liblwgeom")
   add_subdirectory("postgis")
-  message(STATUS "INCLUDE_DIRECTORIES: ${INCLUDE_DIRECTORIES} <--------------------")
 endif()
 
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")

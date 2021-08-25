@@ -201,6 +201,7 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 /**
  *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes
  */
+#ifdef DEBUG_BUILD
 void
 skiplist_print(const SkipList *list)
 {
@@ -253,6 +254,7 @@ skiplist_print(const SkipList *list)
   sprintf(buf+len, "}\n");
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
 }
+#endif
 
 /**
  * Constructs a skiplist from the array of values values
