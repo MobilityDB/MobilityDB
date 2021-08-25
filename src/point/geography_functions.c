@@ -983,7 +983,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   if ( mindistout ) *mindistout = distance;
 
   /* See if we have a third dimension */
-  hasz = FLAGS_GET_Z(pa->flags);
+  hasz = (bool) FLAGS_GET_Z(pa->flags);
 
   /* Initialize first point of array */
   getPoint4d_p(pa, 0, &p1);

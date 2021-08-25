@@ -678,8 +678,13 @@ geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
   box->xmax = gbox.xmax;
   box->ymin = gbox.ymin;
   box->ymax = gbox.ymax;
-  bool hasz = FLAGS_GET_Z(gs->flags);
-  bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
+#else
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+#endif
   if (hasz || geodetic)
   {
     box->zmin = gbox.zmin;

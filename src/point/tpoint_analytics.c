@@ -83,7 +83,11 @@ point_to_trajpoint(Datum point, TimestampTz t)
   int32 srid = gserialized_get_srid(gs);
   double epoch = ((double) t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   LWPOINT *result;
+#if POSTGIS_VERSION_NUMBER < 30000
   if (FLAGS_GET_Z(gs->flags))
+#else
+  if (FLAGS_GET_Z(gs->gflags))
+#endif
   {
     const POINT3DZ *point = gs_get_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, epoch);
@@ -93,7 +97,11 @@ point_to_trajpoint(Datum point, TimestampTz t)
     const POINT2D *point = gs_get_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, epoch);
   }
+#if POSTGIS_VERSION_NUMBER < 30000
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
+#else
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
+#endif
   return result;
 }
 
@@ -446,7 +454,11 @@ geo_to_tpointinstset(GSERIALIZED *gs)
 {
   /* Geometry is a MULTIPOINT */
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+#if POSTGIS_VERSION_NUMBER < 30000
   bool hasz = (bool) FLAGS_GET_Z(gs->flags);
+#else
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+#endif
   /* Verify that is a valid set of trajectory points */
   LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
   double m1 = -1 * DBL_MAX, m2;
@@ -488,7 +500,11 @@ static TSequence *
 geo_to_tpointseq(GSERIALIZED *gs)
 {
   /* Geometry is a LINESTRING */
-  bool hasz =(bool)  FLAGS_GET_Z(gs->flags);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
+#else
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+#endif
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom);
   int npoints = lwline->points->npoints;
@@ -618,7 +634,11 @@ point_measure_to_geo_measure(Datum point, Datum measure)
   int32 srid = gserialized_get_srid(gs);
   double d = DatumGetFloat8(measure);
   LWPOINT *result;
+#if POSTGIS_VERSION_NUMBER < 30000
   if (FLAGS_GET_Z(gs->flags))
+#else
+  if (FLAGS_GET_Z(gs->gflags))
+#endif
   {
     const POINT3DZ *point = gs_get_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
@@ -628,7 +648,11 @@ point_measure_to_geo_measure(Datum point, Datum measure)
     const POINT2D *point = gs_get_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, d);
   }
+#if POSTGIS_VERSION_NUMBER < 30000
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
+#else
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
+#endif
   return result;
 }
 

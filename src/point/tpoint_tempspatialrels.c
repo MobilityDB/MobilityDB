@@ -456,7 +456,11 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter)
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
+#if POSTGIS_VERSION_NUMBER < 30000
     FLAGS_GET_Z(gs->flags) ? &geom_intersects3d : &geom_intersects2d;
+#else
+    FLAGS_GET_Z(gs->gflags) ? &geom_intersects3d : &geom_intersects2d;
+#endif
 
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1272,7 +1276,11 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
   ensure_same_srid_tpoint_gs(temp, gs);
   LiftedFunctionInfo lfinfo;
   /* 3D only if both arguments are 3D */
+#if POSTGIS_VERSION_NUMBER < 30000
   lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags) ?
+#else
+  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
+#endif
     (varfunc) &geom_dwithin3d : (varfunc) &geom_dwithin2d;
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;

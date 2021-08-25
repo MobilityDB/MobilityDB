@@ -252,7 +252,11 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       error_if_srid_mismatch(srid, gs_srid);
     POINT3DZ pt;
+#if POSTGIS_VERSION_NUMBER < 30000
     if (FLAGS_GET_Z(sorigin->flags))
+#else
+    if (FLAGS_GET_Z(sorigin->gflags))
+#endif
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -339,7 +343,11 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid_gs(point, sorigin);
   POINT3DZ pt, ptorig;
-  bool hasz = FLAGS_GET_Z(point->flags);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool hasz = (bool) FLAGS_GET_Z(point->flags);
+#else
+  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
+#endif
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
@@ -425,7 +433,11 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
+#if POSTGIS_VERSION_NUMBER < 30000
     ensure_same_geodetic(temp->flags, sorigin->flags);
+#else
+    ensure_same_geodetic(temp->flags, sorigin->gflags);
+#endif
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(&bounds, temp);
@@ -436,7 +448,11 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
+#if POSTGIS_VERSION_NUMBER < 30000
     if (FLAGS_GET_Z(sorigin->flags))
+#else
+    if (FLAGS_GET_Z(sorigin->gflags))
+#endif
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -545,7 +561,11 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     int64 tunits = get_interval_units(duration);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
+#if POSTGIS_VERSION_NUMBER < 30000
     ensure_same_geodetic(temp->flags, sorigin->flags);
+#else
+    ensure_same_geodetic(temp->flags, sorigin->gflags);
+#endif
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(&bounds, temp);
@@ -554,7 +574,11 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       error_if_srid_mismatch(srid, gs_srid);
     POINT3DZ pt;
+#if POSTGIS_VERSION_NUMBER < 30000
     if (FLAGS_GET_Z(sorigin->flags))
+#else
+    if (FLAGS_GET_Z(sorigin->gflags))
+#endif
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
