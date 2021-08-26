@@ -22,6 +22,12 @@ foreach(file ${testfiles})
       set(DOTEST FALSE)
     endif()
   endif()
+  if(${TESTNAME} MATCHES "_pgis([0-9]+)")
+    if(${POSTGIS_VERSION_MAYOR} LESS ${CMAKE_MATCH_1})
+      message("Disabling test ${TESTNAME}")
+      set(DOTEST FALSE)
+    endif()
+  endif()
   if(DOTEST)
     add_test(
       NAME ${TESTNAME}
