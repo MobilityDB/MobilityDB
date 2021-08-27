@@ -35,6 +35,10 @@
 #include <float.h>
 #include <utils/builtins.h>
 
+#if POSTGIS_VERSION_NUMBER >= 30000
+#include <liblwgeom_internal.h>
+#endif
+
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -46,8 +50,10 @@
 #define OUT_SHOW_DIGS_DOUBLE 20
 #define OUT_MAX_DOUBLE_PRECISION 15
 #define OUT_MAX_DIGS_DOUBLE (OUT_SHOW_DIGS_DOUBLE + 2) /* +2 mean add dot and sign */
+#if POSTGIS_VERSION_NUMBER < 30000
 #define OUT_DOUBLE_BUFFER_SIZE \
   OUT_MAX_DIGS_DOUBLE + OUT_MAX_DOUBLE_PRECISION + 1
+#endif
 
 /*****************************************************************************
  * Output in WKT and EWKT format
@@ -318,16 +324,27 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   {
     char z[OUT_DOUBLE_BUFFER_SIZE];
     const POINT3DZ *pt = datum_get_point3dz_p(tinstant_value(inst));
+#if POSTGIS_VERSION_NUMBER < 30000
     lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
     lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
     lwprint_double(pt->z, precision, z, OUT_DOUBLE_BUFFER_SIZE);
+#else
+    lwprint_double(pt->x, precision, x);
+    lwprint_double(pt->y, precision, y);
+    lwprint_double(pt->z, precision, z);
+#endif
     ptr += sprintf(ptr, "[%s,%s,%s]", x, y, z);
   }
   else
   {
     const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
+#if POSTGIS_VERSION_NUMBER < 30000
     lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
     lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
+#else
+    lwprint_double(pt->x, precision, x);
+    lwprint_double(pt->y, precision, y);
+#endif
     ptr += sprintf(ptr, "[%s,%s]", x, y);
   }
   return (ptr - output);
@@ -812,8 +829,13 @@ static inline bool
 wkb_swap_bytes(uint8_t variant)
 {
   /* If requested variant matches machine arch, we don't have to swap! */
+#if POSTGIS_VERSION_NUMBER < 30000
   if (((variant & WKB_NDR) && (getMachineEndian() == NDR)) ||
      ((! (variant & WKB_NDR)) && (getMachineEndian() == XDR)))
+#else
+  if (((variant & WKB_NDR) && !IS_BIG_ENDIAN) ||
+      ((!(variant & WKB_NDR)) && IS_BIG_ENDIAN))
+#endif
     return false;
   return true;
 }
@@ -1343,10 +1365,14 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   if (! (variant & WKB_NDR || variant & WKB_XDR) ||
     (variant & WKB_NDR && variant & WKB_XDR))
   {
-    if (getMachineEndian() == NDR)
-      variant = variant | (uint8_t) WKB_NDR;
-    else
+#if POSTGIS_VERSION_NUMBER < 30000
+    if (getMachineEndian() != NDR)
+#else
+    if (IS_BIG_ENDIAN)
+#endif
       variant = variant | (uint8_t) WKB_XDR;
+    else
+      variant = variant | (uint8_t) WKB_NDR;
   }
 
   /* Allocate the buffer */

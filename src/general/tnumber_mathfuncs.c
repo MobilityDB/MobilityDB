@@ -98,7 +98,7 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
   long double max = Max(d1, d2);
   long double fraction = min + (max - min)/2;
   long double duration = (long double) (end1->t - start1->t);
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     /* Minimum/maximum occurs out of the period */
     return false;
 
@@ -140,7 +140,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
     else
     {
       double d = datum_double(value, basetypid);
-      if (fabs(d) < EPSILON)
+      if (fabs(d) < MOBDB_EPSILON)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Division by zero")));
     }

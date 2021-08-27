@@ -139,7 +139,7 @@ tnpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (np->pos - min);
   double fraction = np1->pos < np2->pos ? partial / range : 1 - partial / range;
-  if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
+  if (fabs(fraction) < MOBDB_EPSILON || fabs(fraction - 1.0) < MOBDB_EPSILON)
     return false;
 
   if (t != NULL)
@@ -456,7 +456,7 @@ npoint_same_internal(const npoint *np1, const npoint *np2)
 {
   /* Same route identifier */
   if (np1->rid == np2->rid)
-    return fabs(np1->pos - np2->pos) < EPSILON;
+    return fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
   Datum point1 = npoint_as_geom_internal(np1);
   Datum point2 = npoint_as_geom_internal(np2);
   bool result = datum_eq(point1, point2, type_oid(T_GEOMETRY));

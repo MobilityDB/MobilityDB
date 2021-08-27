@@ -6,8 +6,6 @@
 # Usage:
 # find_package(POSTGIS)
 #
-# Only finds version 2.5 needed for MobilityDB
-#
 # The following variables are set if PostGIS is found:
 # POSTGIS_FOUND             - Set to true when PostGIS is found.
 # POSTGIS_LIBRARY           - if we ever need to link it
@@ -23,12 +21,17 @@ if (NOT POSTGRESQL_FOUND)
   find_package(POSTGRESQL REQUIRED)
 endif()
 
-# TODO Will worry about other versions of PostGIS when time arrives
-find_library(POSTGIS_LIBRARY
-  NAMES postgis-2.5.so
-  PATHS "${POSTGRESQL_DYNLIB_DIR}")
+# Find PostGIS library
+file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-*.so")
+if(POSTGIS_LIBRARY STREQUAL "")
+  message(FATAL_ERROR "No PostGIS library have been found")
+endif()
+list(LENGTH POSTGIS_LIBRARY NO_POSTGIS_LIBRARIES)
+if(NO_POSTGIS_LIBRARIES GREATER 1)
+  message(FATAL_ERROR "Several versions of the PostGIS library have been found")
+endif()
 
-find_file(POSTGIS_CONTROL  postgis.control
+find_file(POSTGIS_CONTROL postgis.control
   PATHS "${POSTGRESQL_SHARE_DIR}/extension")
 
 if (POSTGIS_CONTROL)
@@ -40,7 +43,6 @@ if (POSTGIS_CONTROL)
   string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\3" POSTGIS_VERSION_MICRO ${POSTGIS_VERSION})
   math(EXPR POSTGIS_VERSION_NUMBER "${POSTGIS_VERSION_MAYOR} * 10000 + ${POSTGIS_VERSION_MINOR} * 100 + ${POSTGIS_VERSION_MICRO}")
 endif()
-
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(POSTGIS

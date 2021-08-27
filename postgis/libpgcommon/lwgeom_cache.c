@@ -349,8 +349,7 @@ SRSDescCacheGet(FunctionCallInfo fcinfo)
 	return cache;
 }
 
-// const
-char *
+const char *
 GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
 {
 	SRSDescCache *cache = SRSDescCacheGet(fcinfo);
@@ -372,7 +371,8 @@ GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
  * Require valid spatial_ref_sys table entry
  *
  */
-static int32_t
+// static
+int32_t
 getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs)
 {
 	static const int16_t max_query_size = 512;

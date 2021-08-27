@@ -32,7 +32,12 @@
 #include "point/tpoint_spatialfuncs.h"
 
 #include <assert.h>
+
+#if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom.h>
+#include <liblwgeom_internal.h>
+#include <lwgeodetic.h>
+#endif
 
 #include "general/period.h"
 #include "general/periodset.h"
@@ -992,7 +997,7 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum end = tinstant_value(inst2);
   double dist;
   double fraction = geoseg_locate_point(start, end, value, &dist);
-  if (fabs(dist) >= EPSILON)
+  if (fabs(dist) >= MOBDB_EPSILON)
     return false;
 
   if (t != NULL)
@@ -1037,34 +1042,34 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
     if (xdenum != 0)
     {
       xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * EPSILON || 1.0 + EPSILON < xfraction)
+      if (xfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < xfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     if (ydenum != 0)
     {
       yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * EPSILON || 1.0 + EPSILON < yfraction)
+      if (yfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < yfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     if (zdenum != 0)
     {
       zfraction = (p3->z - p1->z) / zdenum;
-      if (zfraction < -1 * EPSILON || 1.0 + EPSILON < zfraction)
+      if (zfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < zfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     /* If intersection occurs at different timestamps on each dimension */
     if ((xdenum != 0 && ydenum != 0 && zdenum != 0 &&
-      fabsl(xfraction - yfraction) > EPSILON &&
-      fabsl(xfraction - zfraction) > EPSILON) ||
+      fabsl(xfraction - yfraction) > MOBDB_EPSILON &&
+      fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum == 0 && ydenum != 0 && zdenum != 0 &&
-      fabsl(yfraction - zfraction) > EPSILON) ||
+      fabsl(yfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum != 0 && ydenum == 0 && zdenum != 0 &&
-      fabsl(xfraction - zfraction) > EPSILON) ||
+      fabsl(xfraction - zfraction) > MOBDB_EPSILON) ||
       (xdenum != 0 && ydenum != 0 && zdenum == 0 &&
-      fabsl(xfraction - yfraction) > EPSILON))
+      fabsl(xfraction - yfraction) > MOBDB_EPSILON))
       return false;
     if (xdenum != 0)
       fraction = xfraction;
@@ -1088,19 +1093,19 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
     if (xdenum != 0)
     {
       xfraction = (p3->x - p1->x) / xdenum;
-      if (xfraction < -1 * EPSILON || 1.0 + EPSILON < xfraction)
+      if (xfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < xfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     if (ydenum != 0)
     {
       yfraction = (p3->y - p1->y) / ydenum;
-      if (yfraction < -1 * EPSILON || 1.0 + EPSILON < yfraction)
+      if (yfraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < yfraction)
         /* Intersection occurs out of the period */
         return false;
     }
     /* If intersection occurs at different timestamps on each dimension */
-    if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > EPSILON)
+    if (xdenum != 0 && ydenum != 0 && fabsl(xfraction - yfraction) > MOBDB_EPSILON)
       return false;
     fraction = xdenum != 0 ? xfraction : yfraction;
   }
@@ -1199,9 +1204,9 @@ geopoint_collinear(Datum value1, Datum value2, Datum value3,
     interpolate_point4d(&p1, &p3, &p, ratio);
 
   bool result = hasz ?
-    fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON &&
-      fabs(p2.z - p.z) <= EPSILON :
-    fabs(p2.x - p.x) <= EPSILON && fabs(p2.y - p.y) <= EPSILON;
+    fabs(p2.x - p.x) <= MOBDB_EPSILON && fabs(p2.y - p.y) <= MOBDB_EPSILON &&
+      fabs(p2.z - p.z) <= MOBDB_EPSILON :
+    fabs(p2.x - p.x) <= MOBDB_EPSILON && fabs(p2.y - p.y) <= MOBDB_EPSILON;
   return result;
 }
 
@@ -2170,8 +2175,8 @@ static void
 set_precision_point(POINTARRAY *points, uint32_t i, Datum prec, bool hasz,
   bool hasm)
 {
-  /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on 
-   * the values of the arguments hasz and hasm !!! */ 
+  /* N.B. lwpoint->point can be of 2, 3, or 4 dimensions depending on
+   * the values of the arguments hasz and hasm !!! */
   POINT4D *pt = (POINT4D *) getPoint_internal(points, i);
   pt->x = DatumGetFloat8(datum_round(Float8GetDatum(pt->x), prec));
   pt->y = DatumGetFloat8(datum_round(Float8GetDatum(pt->y), prec));
@@ -2477,7 +2482,7 @@ datum_set_precision_geometrycollection(Datum value, Datum prec)
       set_precision_multilinestring(lwgeom_as_lwmline(lwgeom), prec, hasz, hasm);
     else if (lwgeom->type == MULTIPOLYGONTYPE)
       set_precision_multipolygon(lwgeom_as_lwmpoly(lwgeom), prec, hasz, hasm);
-    else 
+    else
       elog(ERROR, "Unsupported geometry type");
   }
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwcol);
@@ -3276,15 +3281,15 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
 * Returned by the function seg2d_intersection
 */
 enum {
-  SEG_NO_INTERSECTION,  /* Segments do not intersect */
-  SEG_OVERLAP,          /* Segments overlap */
-  SEG_CROSS,            /* Segments cross */
-  SEG_TOUCH,            /* Segments touch in a vertex */
-} SEG_INTER_TYPE;
+  MOBDB_SEG_NO_INTERSECTION,  /* Segments do not intersect */
+  MOBDB_SEG_OVERLAP,          /* Segments overlap */
+  MOBDB_SEG_CROSS,            /* Segments cross */
+  MOBDB_SEG_TOUCH,            /* Segments touch in a vertex */
+} MOBDB_SEG_INTER_TYPE;
 
 /**
  * Finds the UNIQUE point of intersection p between two closed
- * collinear segments ab and cd. Returns p and a SEG_INTER_TYPE value.
+ * collinear segments ab and cd. Returns p and a MOBDB_SEG_INTER_TYPE value.
  * Notice that if the segments overlap no point is returned since they
  * can be an infinite number of them.
  * This function is called after verifying that the points
@@ -3301,30 +3306,30 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   double ymax = Min(Max(a.y, b.y), Max(c.y, d.y));
   /* If the intersection of the bounding boxes is not a point */
   if (xmin < xmax || ymin < ymax )
-    return SEG_OVERLAP;
+    return MOBDB_SEG_OVERLAP;
   /* We are sure that the segments touch each other */
   if ((b.x == c.x && b.y == c.y) ||
       (b.x == d.x && b.y == d.y))
   {
     p->x = b.x;
     p->y = b.y;
-    return SEG_TOUCH;
+    return MOBDB_SEG_TOUCH;
   }
   if ((a.x == c.x && a.y == c.y) ||
       (a.x == d.x && a.y == d.y))
   {
     p->x = a.x;
     p->y = a.y;
-    return SEG_TOUCH;
+    return MOBDB_SEG_TOUCH;
   }
   /* We should never arrive here since this function is called after verifying
    * that the bounding boxes of the segments intersect */
-  return SEG_NO_INTERSECTION;
+  return MOBDB_SEG_NO_INTERSECTION;
 }
 
 /**
  * Finds the UNIQUE point of intersection p between two closed segments
- * ab and cd. Returns p and a SEG_INTER_TYPE value. Notice that if the
+ * ab and cd. Returns p and a MOBDB_SEG_INTER_TYPE value. Notice that if the
  * segments overlap no point is returned since they can be an infinite
  * number of them
  */
@@ -3340,7 +3345,7 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
           d.x * (b.y - a.y) + c.x * (a.y - b.y);
 
   /* If denom is zero, then segments are parallel: handle separately */
-  if (fabs(denom) < EPSILON)
+  if (fabs(denom) < MOBDB_EPSILON)
     return parseg2d_intersection(a, b, c, d, p);
 
   num = a.x * (d.y - c.y) + c.x * (a.y - d.y) + d.x * (c.y - a.y);
@@ -3350,11 +3355,11 @@ seg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
   t = num / denom;
 
   if ((0.0 == s || s == 1.0) && (0.0 == t || t == 1.0))
-   result = SEG_TOUCH;
+   result = MOBDB_SEG_TOUCH;
   else if (0.0 <= s && s <= 1.0 && 0.0 <= t && t <= 1.0)
-   result = SEG_CROSS;
+   result = MOBDB_SEG_CROSS;
   else
-   result = SEG_NO_INTERSECTION;
+   result = MOBDB_SEG_NO_INTERSECTION;
 
   p->x = a.x + s * (b.x - a.x);
   p->y = a.y + s * (b.y - a.y);
@@ -3492,7 +3497,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
         if (intertype > 0 &&
           /* Exclude the case when two consecutive segments that
            * necessarily touch each other in their common point */
-          (intertype != SEG_TOUCH || j != i + 1 ||
+          (intertype != MOBDB_SEG_TOUCH || j != i + 1 ||
            p.x != points[j].x || p.y != points[j].y))
         {
           /* Set the new end */
@@ -4025,7 +4030,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
  *
  * This function must take into account the roundoff errors and thus it uses
  * the datum_point_eq_eps for comparing two values so the coordinates of the
- * values may differ by EPSILON. Furthermore, we must drop the Z values since
+ * values may differ by MOBDB_EPSILON. Furthermore, we must drop the Z values since
  * this function may be called for finding the intersection of a sequence and
  * a geometry and the Z values crrently given by PostGIS/GEOS are not necessarily
  * extact, they "are copied, averaged or interpolated" as stated in
@@ -4082,7 +4087,7 @@ tpointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   {
     double dist;
     double fraction = geoseg_locate_point(value1, value2, val, &dist);
-    if (fabs(dist) >= EPSILON)
+    if (fabs(dist) >= MOBDB_EPSILON)
       result = false;
     else
     {

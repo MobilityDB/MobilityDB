@@ -80,7 +80,7 @@ nsegmentarr_to_array(nsegment **nsegmentarr, int count)
     sizeof(nsegment), false, 'd');
 }
 
-int32_t 
+int32_t
 get_srid_ways()
 {
   int32_t srid_ways;
@@ -584,7 +584,7 @@ nsegment_set_precision(PG_FUNCTION_ARGS)
 bool
 npoint_eq_internal(const npoint *np1, const npoint *np2)
 {
-  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < EPSILON;
+  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
 }
 
 PG_FUNCTION_INFO_V1(npoint_eq);
@@ -698,8 +698,8 @@ npoint_gt(PG_FUNCTION_ARGS)
 bool
 nsegment_eq_internal(const nsegment *ns1, const nsegment *ns2)
 {
-  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < EPSILON &&
-    fabs(ns1->pos2 - ns2->pos2) < EPSILON;
+  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MOBDB_EPSILON &&
+    fabs(ns1->pos2 - ns2->pos2) < MOBDB_EPSILON;
 }
 
 PG_FUNCTION_INFO_V1(nsegment_eq);
@@ -1052,7 +1052,7 @@ nsegment_as_geom_internal(const nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
   Datum result;
-  if (fabs(ns->pos1 - ns->pos2) < EPSILON)
+  if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
     result = call_function2(LWGEOM_line_interpolate_point, line,
       Float8GetDatum(ns->pos1));
   else

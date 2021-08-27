@@ -870,7 +870,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     /* Compute the intersection of the two intervals */
     long double t7 = Max(0.0, t5);
     long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < EPSILON)
+    if (fabsl(t7 - t8) < MOBDB_EPSILON)
     {
       *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
       return 1;

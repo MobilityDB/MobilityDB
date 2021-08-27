@@ -833,18 +833,22 @@ tpoint_from_wkb_state(wkb_parse_state *s)
   if (wkb_little_endian != 1 && wkb_little_endian != 0)
     elog(ERROR, "Invalid endian flag value encountered.");
 
-  /* Check the endianness of our input  */
+  /* Check the endianness of our input */
   s->swap_bytes = false;
-  if (getMachineEndian() == NDR)  /* Machine arch is little */
-  {
-    if (! wkb_little_endian)  /* Data is big! */
-      s->swap_bytes = true;
-  }
-  else /* Machine arch is big */
-  {
-    if (wkb_little_endian) /* Data is little! */
-      s->swap_bytes = true;
-  }
+  /* Machine arch is big endian, request is for little */
+#if POSTGIS_VERSION_NUMBER < 30000
+  if (getMachineEndian() != NDR && wkb_little_endian)
+#else
+  if (IS_BIG_ENDIAN && wkb_little_endian)
+#endif
+    s->swap_bytes = true;
+  /* Machine arch is little endian, request is for big */
+#if POSTGIS_VERSION_NUMBER < 30000
+  else if (getMachineEndian() == NDR && ! wkb_little_endian)
+#else
+  else if ((!IS_BIG_ENDIAN) && (!wkb_little_endian))
+#endif
+    s->swap_bytes = true;
 
   /* Read the temporal and interpolation flags */
   uint8_t wkb_type = (uint8_t) byte_from_wkb_state(s);

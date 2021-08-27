@@ -36,9 +36,14 @@
 #include <math.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
+#endif
+
+#if POSTGIS_VERSION_NUMBER >= 30000
+#include <lwgeodetic_tree.h>
+#include <measures.h>
+#include <measures3d.h>
 #endif
 
 #include "general/period.h"
@@ -292,7 +297,7 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
 
     fraction = (f1 + f2 + f3 + f4) / denum;
   }
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
@@ -372,7 +377,7 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
     fraction = (double) (length / seglength);
   }
 
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   long double duration = (long double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
@@ -672,13 +677,13 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
       lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
   lwline_free(lwline);
 
-  if (fabsl(fraction) < EPSILON)
+  if (fabsl(fraction) < MOBDB_EPSILON)
   {
     *closest = value1;
     *t = inst1->t;
     return 0.0;
   }
-  if (fabsl(fraction - 1.0) < EPSILON)
+  if (fabsl(fraction - 1.0) < MOBDB_EPSILON)
   {
     *closest = value2;
     *t = inst2->t;

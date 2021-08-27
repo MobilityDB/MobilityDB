@@ -105,6 +105,9 @@
  *****************************************************************************/
 
 extern void temporalgeom_init();
+#if POSTGIS_VERSION_NUMBER >= 30000
+extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
+#endif
 
 /* Input/output functions */
 

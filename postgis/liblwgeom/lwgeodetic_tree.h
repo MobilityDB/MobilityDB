@@ -56,6 +56,9 @@ CIRC_NODE* lwgeom_calculate_circ_tree(const LWGEOM* lwgeom);
 int circ_tree_get_point(const CIRC_NODE* node, POINT2D* pt);
 int circ_tree_get_point_outside(const CIRC_NODE* node, POINT2D* pt);
 
+double
+circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist, GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
+
 #endif /* _LWGEODETIC_TREE_H */
 
 

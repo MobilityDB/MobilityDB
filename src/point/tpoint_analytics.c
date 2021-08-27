@@ -44,6 +44,11 @@
 #include <utils/float.h>
 #endif
 
+#if POSTGIS_VERSION_NUMBER >= 30000
+#include <liblwgeom_internal.h>
+#include <lwgeodetic_tree.h>
+#endif
+
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
@@ -1464,7 +1469,11 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       inst1 = inst2;
     }
     *dist = hasz ? dist3d_pt_seg(&p3k, &p3a, &p3b) :
+#if POSTGIS_VERSION_NUMBER < 30000
       distance2d_pt_seg(&p2k, &p2a, &p2b);
+#else
+      sqrt(distance2d_sqr_pt_seg(&p2k, &p2a, &p2b));
+#endif
   }
   else
     *dist = -1;

@@ -6,20 +6,20 @@
  * contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -82,6 +82,17 @@ pg_notice(const char *fmt, va_list ap)
 void temporalgeom_init()
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
+}
+
+/**
+ * Copy a GSERIALIZED. This function is not available anymore in PostGIS 3
+ */
+GSERIALIZED *
+gserialized_copy(const GSERIALIZED *g)
+{
+  GSERIALIZED *result = palloc(VARSIZE(g));
+  memcpy(result, g, VARSIZE(g));
+  return result;
 }
 
 /*****************************************************************************
@@ -194,7 +205,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
    *   column_type(TempSubType) => The geometry type and SRID are generic.
    *   column_type => The temporal type, geometry type, and SRID are generic.
    *
-   * For example, if the user did not set the temporal type, we can use any 
+   * For example, if the user did not set the temporal type, we can use any
    * temporal type in the same column. Similarly for all generic modifiers.
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
@@ -214,7 +225,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   if (n == 3)
   {
     /* Type_modifier is (TempSubType, Geometry, SRID) */
-    if (tempsubtype_from_string(s[0], &temp_subtype) == false) 
+    if (tempsubtype_from_string(s[0], &temp_subtype) == false)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid temporal type modifier: %s", s[0])));
     if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
@@ -336,7 +347,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
   int32 hasz = TYPMOD_GET_Z(typmod);
 
-  /* No temporal type or geometry type? Then no typmod at all. 
+  /* No temporal type or geometry type? Then no typmod at all.
     Return empty string. */
   if (typmod < 0 || (temp_subtype == ANYTEMPSUBTYPE && !geometry_type))
   {
