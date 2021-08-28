@@ -21,8 +21,8 @@ set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENS
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
-message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 if(CMAKE_BUILD_TYPE MATCHES Debug)
+  message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
   add_definitions(-DDEBUG_BUILD)
 endif()
 
@@ -52,6 +52,7 @@ endif()
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
 if (CMAKE_COMPILER_IS_GNUCC)
   if (WITH_COVERAGE)
+    message(STATUS "Generating code coverage")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
   endif()
