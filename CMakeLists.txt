@@ -101,10 +101,11 @@ include (TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
   message(STATUS "BIG_ENDIAN")
+  set(DEF_WORDS_BIGENDIAN "undef")
 else()
   message(STATUS "LITTLE_ENDIAN")
+  set(DEF_WORDS_BIGENDIAN "#undef")
 endif()
-# TODO set/unset WORDS_BIGENDIAN in the file postgis_config.h
 
 #--------------------------------
 # Other dependencies
@@ -130,6 +131,7 @@ find_package(GSL REQUIRED)
 
 # Embed liblwgeom library for PostGIS 3
 if (POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
+  configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
   include_directories("postgis/liblwgeom")
   include_directories("postgis/libpgcommon")
   include_directories("postgis")

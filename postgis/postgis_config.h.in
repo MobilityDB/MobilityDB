@@ -22,7 +22,7 @@
 #define HAVE_GETTEXT 1
 
 /* Define if the build is big endian */
-/* #undef WORDS_BIGENDIAN */
+/* @DEF_WORDS_BIGENDIAN@ WORDS_BIGENDIAN */
 
 /* Define if you have the iconv() function and it works. */
 #define HAVE_ICONV 1
@@ -103,13 +103,13 @@
 #define POSTGIS_LIB_VERSION "3.1.2"
 
 /* PostGIS major version */
-#define POSTGIS_MAJOR_VERSION "3"
+#define POSTGIS_MAJOR_VERSION "@POSTGIS_MAJOR_VERSION@"
 
 /* PostGIS minor version */
-#define POSTGIS_MINOR_VERSION "1"
+#define POSTGIS_MINOR_VERSION "@POSTGIS_MINOR_VERSION@"
 
 /* PostGIS micro version */
-#define POSTGIS_MICRO_VERSION "2"
+#define POSTGIS_MICRO_VERSION "@POSTGIS_MICRO_VERSION@"
 
 /* PostgreSQL server version */
 #define POSTGIS_PGSQL_VERSION 130
@@ -121,7 +121,7 @@
 #define POSTGIS_RASTER_WARN_ON_TRUNCATION 0
 
 /* PostGIS scripts version */
-#define POSTGIS_SCRIPTS_VERSION "3.1.2"
+#define POSTGIS_SCRIPTS_VERSION "@POSTGIS_VERSION@"
 
 
 /* PostGIS version */
