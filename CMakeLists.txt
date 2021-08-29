@@ -60,10 +60,6 @@ endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
-if (APPLE)
-  SET_TARGET_PROPERTIES(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
-endif()
-
 #-------------------------------------
 # Verify PostgreSQL Version
 #-------------------------------------
@@ -157,6 +153,10 @@ if (POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 endif()
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
+
+if (APPLE)
+  set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
+endif()
 
 #--------------------------------
 # Specify libraries to link
