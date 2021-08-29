@@ -461,15 +461,13 @@ CREATE FUNCTION tbox_cmp(tbox, tbox)
 CREATE OPERATOR = (
   LEFTARG = tbox, RIGHTARG = tbox,
   PROCEDURE = tbox_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tbox, RIGHTARG = tbox,
   PROCEDURE = tbox_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (

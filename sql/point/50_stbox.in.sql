@@ -586,15 +586,13 @@ CREATE FUNCTION stbox_cmp(stbox, stbox)
 CREATE OPERATOR = (
   LEFTARG = stbox, RIGHTARG = stbox,
   PROCEDURE = stbox_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = stbox, RIGHTARG = stbox,
   PROCEDURE = stbox_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (

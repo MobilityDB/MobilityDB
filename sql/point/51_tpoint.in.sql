@@ -35,7 +35,7 @@ CREATE TYPE tgeogpoint;
 /* temporal, base, contbase, box */
 SELECT register_temporal_type('tgeompoint', 'geometry', true, 'stbox');
 SELECT register_temporal_type('tgeogpoint', 'geography', true, 'stbox');
- 
+
 /******************************************************************************
  * Input/Output
  ******************************************************************************/
@@ -867,43 +867,37 @@ CREATE FUNCTION tgeompoint_cmp(tgeompoint, tgeompoint)
 CREATE OPERATOR < (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_lt,
-  COMMUTATOR = >,
-  NEGATOR = >=,
+  COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_le,
-  COMMUTATOR = >=,
-  NEGATOR = >,
+  COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_ge,
-  COMMUTATOR = <=,
-  NEGATOR = <,
+  COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_gt,
-  COMMUTATOR = <,
-  NEGATOR = <=,
+  COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 

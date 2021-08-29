@@ -8,7 +8,7 @@
 
 find_library(JSON-C_LIBRARIES
   NAMES json-c
-  HINTS /lib /lib64 /usr/lib /usr/lib64
+  HINTS /lib /lib64 /usr/lib /usr/lib64 /usr/local/Cellar/json-c
   )
 
 find_path(JSON-C_INCLUDE_DIRS
@@ -25,3 +25,6 @@ find_package_handle_standard_args(JSON-C
 if(JSON-C_FOUND)
   mark_as_advanced(JSON-C_INCLUDE_DIRS JSON-C_LIBRARIES)
 endif()
+
+message(STATUS "JSON-C_INCLUDE_DIRS: ${JSON-C_INCLUDE_DIRS}")
+message(STATUS "JSON-C_LIBRARIES: ${JSON-C_LIBRARIES}")

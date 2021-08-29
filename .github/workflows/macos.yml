@@ -21,7 +21,7 @@ jobs:
 
       - name: install deps
         run: |
-          brew install postgresql postgis proj liblwgeom
+          brew install postgresql postgis proj # liblwgeom
           # installed with postgis just making it splicit:
           brew install json-c
 
