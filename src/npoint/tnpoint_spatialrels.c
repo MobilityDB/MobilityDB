@@ -47,12 +47,20 @@
  * Generic binary functions for tnpoint <rel> geo
  *****************************************************************************/
 
+/**
+ * Generic spatial relationships for a temporal network point and a geometry
+ *
+ * @param[in] temp Temporal network point
+ * @param[in] geom Geometry
+ * @param[in] func PostGIS function to be called
+ * @param[in] invert True if the arguments should be inverted
+ */
 static Datum
 spatialrel_tnpoint_geom(const Temporal *temp, Datum geom,
-  Datum (*operator)(Datum, Datum), bool invert)
+  Datum (*func)(Datum, Datum), bool invert)
 {
   Datum geom1 = tnpoint_geom(temp);
-  Datum result = invert ? operator(geom, geom1) : operator(geom1, geom);
+  Datum result = invert ? func(geom, geom1) : func(geom1, geom);
   pfree(DatumGetPointer(geom1));
   return result;
 }
@@ -61,24 +69,41 @@ spatialrel_tnpoint_geom(const Temporal *temp, Datum geom,
  * Generic ternary functions for tnpoint <rel> geo/tnpoint
  *****************************************************************************/
 
+/**
+ * Generic spatial relationships for a temporal network point and a geometry
+ *
+ * @param[in] temp Temporal network point
+ * @param[in] geom Geometry
+ * @param[in] param Parameter
+ * @param[in] func PostGIS function to be called
+ * @param[in] invert True if the arguments should be inverted
+ */
 static Datum
 spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
-  Datum (*operator)(Datum, Datum, Datum), bool invert)
+  Datum (*func)(Datum, Datum, Datum), bool invert)
 {
   Datum geom1 = tnpoint_geom(temp);
-  Datum result = invert ? operator(geom, geom1, param) :
-    operator(geom1, geom, param);
+  Datum result = invert ? func(geom, geom1, param) :
+    func(geom1, geom, param);
   pfree(DatumGetPointer(geom1));
   return result;
 }
 
+/**
+ * Generic spatial relationships for two temporal network points
+ *
+ * @param[in] temp1, temp2 Temporal network points
+ * @param[in] param Parameter
+ * @param[in] func PostGIS function to be called
+ * @param[in] invert True if the arguments should be inverted
+ */
 static Datum
 spatialrel3_tnpoint_tnpoint(const Temporal *temp1,const  Temporal *temp2,
-  Datum param, Datum (*operator)(Datum, Datum, Datum))
+  Datum param, Datum (*func)(Datum, Datum, Datum))
 {
   Datum geom1 = tnpoint_geom(temp1);
   Datum geom2 = tnpoint_geom(temp2);
-  Datum result = operator(geom1, geom2, param);
+  Datum result = func(geom1, geom2, param);
   pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
   return result;
 }
@@ -88,7 +113,10 @@ spatialrel3_tnpoint_tnpoint(const Temporal *temp1,const  Temporal *temp2,
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_geo_tnpoint);
-
+/**
+ * Returns true if the geometry contains the trajectory of the temporal network
+ * point
+ */
 PGDLLEXPORT Datum
 contains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -104,7 +132,10 @@ contains_geo_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(disjoint_geo_tnpoint);
-
+/**
+ * Returns true if the geometry and the trajectory of the temporal network
+ * point are disjoint
+ */
 PGDLLEXPORT Datum
 disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -116,7 +147,10 @@ disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(disjoint_npoint_tnpoint);
-
+/**
+ * Returns true if the network point and the trajectory of the temporal
+ * network point are disjoint
+ */
 PGDLLEXPORT Datum
 disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -130,7 +164,10 @@ disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(disjoint_tnpoint_geo);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * geometry are disjoint
+ */
 PGDLLEXPORT Datum
 disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -142,7 +179,10 @@ disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(disjoint_tnpoint_npoint);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * network point are disjoint
+ */
 PGDLLEXPORT Datum
 disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -160,7 +200,10 @@ disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intersects_geo_tnpoint);
-
+/**
+ * Returns true if the geometry and the trajectory of the temporal network
+ * point intersect
+ */
 PGDLLEXPORT Datum
 intersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -172,7 +215,10 @@ intersects_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersects_npoint_tnpoint);
-
+/**
+ * Returns true if the network point and the trajectory of the temporal network
+ * point intersect
+ */
 PGDLLEXPORT Datum
 intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -186,7 +232,10 @@ intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersects_tnpoint_geo);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * geometry intersect
+ */
 PGDLLEXPORT Datum
 intersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -198,7 +247,10 @@ intersects_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(intersects_tnpoint_npoint);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the network
+ * point intersect
+ */
 PGDLLEXPORT Datum
 intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -216,7 +268,10 @@ intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(dwithin_geo_tnpoint);
-
+/**
+ * Returns true if the geometry and the trajectory of the temporal network
+ * point are within the given distance
+ */
 PGDLLEXPORT Datum
 dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -229,7 +284,10 @@ dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(dwithin_npoint_tnpoint);
-
+/**
+ * Returns true if the network point and the trajectory of the temporal network
+ * point are within the given distance
+ */
 PGDLLEXPORT Datum
 dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -244,7 +302,10 @@ dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(dwithin_tnpoint_geo);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * geometry are within the given distance
+ */
 PGDLLEXPORT Datum
 dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -257,7 +318,10 @@ dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(dwithin_tnpoint_npoint);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * network point are within the given distance
+ */
 PGDLLEXPORT Datum
 dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -272,7 +336,10 @@ dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(dwithin_tnpoint_tnpoint);
-
+/**
+ * Returns true if the trajectories of the temporal network points are within
+ * the given distance
+ */
 PGDLLEXPORT Datum
 dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -300,7 +367,10 @@ dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(touches_geo_tnpoint);
-
+/**
+ * Returns true if the geometry and the trajectory of the temporal network
+ * point touch
+ */
 PGDLLEXPORT Datum
 touches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -310,7 +380,10 @@ touches_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
 }
-
+/**
+ * Returns true if the network point and the trajectory of the temporal
+ * network point touch
+ */
 PG_FUNCTION_INFO_V1(touches_npoint_tnpoint);
 
 PGDLLEXPORT Datum
@@ -326,7 +399,10 @@ touches_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(touches_tnpoint_geo);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * geometry touch
+ */
 PGDLLEXPORT Datum
 touches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -338,7 +414,10 @@ touches_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(touches_tnpoint_npoint);
-
+/**
+ * Returns true if the trajectory of the temporal network point and the
+ * network point touch
+ */
 PGDLLEXPORT Datum
 touches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {

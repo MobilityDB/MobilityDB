@@ -67,6 +67,7 @@
 #include "point/tpoint_tempspatialrels.h"
 
 #include <assert.h>
+#include <utils/builtins.h>
 #include <utils/timestamp.h>
 
 #include "general/period.h"
@@ -514,7 +515,7 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* Restrict to the buffered geometry */
-  Datum geo_buffer = call_function2(buffer, geo, dist);
+  Datum geo_buffer = call_function3(buffer, geo, dist, CStringGetTextDatum(""));
   int count1;
   TSequence **atbuffer = tpointseq_at_geometry(seq, geo_buffer, &count1);
   Datum datum_true = BoolGetDatum(true);

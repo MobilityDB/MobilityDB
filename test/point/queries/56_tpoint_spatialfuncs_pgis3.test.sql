@@ -24,6 +24,10 @@
 --
 -------------------------------------------------------------------------------
 
+-- Test problem in Travis
+SELECT postgis_full_version();
+SELECT degrees(st_azimuth(geography 'Point(2.5 2.5)', 'Point(1.5 1.5)'));
+
 -- Return negative result in PostGIS 2.5.5
 -- 2D
 SELECT round(degrees(azimuth(tgeogpoint 'Point(1.5 1.5)@2000-01-01')), 6);

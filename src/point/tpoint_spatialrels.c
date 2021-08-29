@@ -330,7 +330,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
 }
 
 /**
- * Generic spatial relationships for a geometry and a temporal point
+ * Generic spatial relationships for a temporal point and a geometry
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func PostGIS function to be called
