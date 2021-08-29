@@ -2795,7 +2795,7 @@ temporal_ev_al_comp(FunctionCallInfo fcinfo,
   {
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     ensure_point_type(gs);
-    ensure_same_srid_tpoint_gs(temp, gs);
+    ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
     ensure_same_dimensionality_tpoint_gs(temp, gs);
     if (gserialized_is_empty(gs))
     {
@@ -2960,7 +2960,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     /* Test that the geometry is not empty */
     GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
     ensure_point_type(gs);
-    ensure_same_srid_tpoint_gs(temp, gs);
+    ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
     ensure_same_dimensionality_tpoint_gs(temp, gs);
     if (gserialized_is_empty(gs))
       return false;
@@ -3019,7 +3019,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
       /* Test that the geometry is not empty */
       GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(values[i]);
       ensure_point_type(gs);
-      ensure_same_srid_tpoint_gs(temp, gs);
+      ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
       ensure_same_dimensionality_tpoint_gs(temp, gs);
       if (! gserialized_is_empty(gs))
       {

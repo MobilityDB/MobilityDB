@@ -318,7 +318,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -344,7 +344,7 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -494,7 +494,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   Temporal *sync1, *sync2;
   /* Returns false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */

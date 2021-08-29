@@ -358,7 +358,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
   if (tgeo_base_type(temp1->basetypid))
   {
-    ensure_same_srid_tpoint(temp1, temp2);
+    ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
     ensure_same_dimensionality(temp1->flags, temp2->flags);
   }
   return;
@@ -403,30 +403,6 @@ ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * Ensure that the temporal points have the same SRID
- */
-void
-ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  if (tpoint_srid_internal(temp1) != tpoint_srid_internal(temp2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
-  return;
-}
-
-/**
- * Ensure that the temporal points have the same SRID
- */
-void
-ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
-  return;
-}
-
-/**
  * Ensure that the temporal point and the spatiotemporal boxes have the same SRID
  */
 void
@@ -434,18 +410,6 @@ ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
     tpoint_srid_internal(temp) != box->srid)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Operation on mixed SRID")));
-  return;
-}
-
-/**
- * Ensure that the temporal point and the geometry/geography have the same SRID
- */
-void
-ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
-{
-  if (tpoint_srid_internal(temp) != gserialized_get_srid(gs))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Operation on mixed SRID")));
   return;
@@ -4590,7 +4554,7 @@ tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
       PG_RETURN_POINTER(result);
     }
   }
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *result = tpoint_restrict_geometry_internal(temp,
     PointerGetDatum(gs), atfunc);
   PG_FREE_IF_COPY(temp, 0);

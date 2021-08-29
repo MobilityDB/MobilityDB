@@ -341,7 +341,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   int32 srid = gserialized_get_srid(point);
   int32 gs_srid = gserialized_get_srid(sorigin);
   if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid_gs(point, sorigin);
+    ensure_same_srid(tpoint_get_srid(point), gserialized_get_srid(sorigin));
   POINT3DZ pt, ptorig;
 #if POSTGIS_VERSION_NUMBER < 30000
   bool hasz = (bool) FLAGS_GET_Z(point->flags);

@@ -64,10 +64,7 @@ extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
 extern void ensure_same_srid(int32_t srid1, int32_t srid2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
-extern void ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
 extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
@@ -168,7 +165,7 @@ extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 
 extern Datum geo_set_precision(PG_FUNCTION_ARGS);
 extern Datum tpoint_set_precision(PG_FUNCTION_ARGS);
- 
+
 /* Functions for extracting coordinates */
 
 extern Datum tpoint_get_x(PG_FUNCTION_ARGS);

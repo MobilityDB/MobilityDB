@@ -444,7 +444,7 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
@@ -464,7 +464,7 @@ tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_point_type(gs);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
