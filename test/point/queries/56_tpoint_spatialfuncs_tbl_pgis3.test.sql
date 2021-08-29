@@ -27,7 +27,7 @@
 -------------------------------------------------------------------------------
 
 -- Return negative result in PostGIS 2.5.5
-SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL LIMIT 10;
-SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL LIMIT 10;
+SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint WHERE azimuth(temp) IS NOT NULL ORDER BY k LIMIT 10;
+SELECT round(azimuth(temp), 12) FROM tbl_tgeogpoint3D WHERE azimuth(temp) IS NOT NULL ORDER BY k LIMIT 10;
 
 -------------------------------------------------------------------------------

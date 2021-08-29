@@ -62,11 +62,11 @@
 Temporal *
 tinterrel_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter)
 {
-  ensure_same_srid_tnpoint_gs(temp, gs);
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(geomtemp, gs, tinter);
-  pfree(geomtemp); 
+  pfree(geomtemp);
   return result;
 }
 
@@ -77,12 +77,12 @@ tinterrel_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter)
 Temporal *
 tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter)
 {
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_as_geom_internal(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(geomtemp, gs, tinter);
-  pfree(geomtemp); 
+  pfree(geomtemp);
   pfree(gs);
   return result;
 }
@@ -94,11 +94,11 @@ tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter)
 static Temporal *
 ttouches_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
-  ensure_same_srid_tnpoint_gs(temp, gs);
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo_internal(geomtemp, gs);
-  pfree(geomtemp); 
+  pfree(geomtemp);
   return result;
 }
 
@@ -109,12 +109,12 @@ ttouches_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 static Temporal *
 ttouches_tnpoint_npoint_internal(Temporal *temp, npoint *np)
 {
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_as_geom_internal(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo_internal(geomtemp, gs);
-  pfree(geomtemp); 
+  pfree(geomtemp);
   pfree(gs);
   return result;
 }

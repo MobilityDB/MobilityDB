@@ -232,7 +232,7 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));
@@ -256,7 +256,7 @@ boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));

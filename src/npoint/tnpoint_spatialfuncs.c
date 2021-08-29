@@ -52,17 +52,6 @@
  *****************************************************************************/
 
 /**
- * Ensure that the temporal network points have the same SRID
- */
-void
-ensure_same_srid_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  if (tnpoint_srid_internal(temp1) != tnpoint_srid_internal(temp2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network points must be in the same SRID")));
-}
-
-/**
  * Ensure that the temporal network point and the STBOX have the same SRID
  */
 void
@@ -72,28 +61,6 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
     tnpoint_srid_internal(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal network point and the box must be in the same SRID")));
-}
-
-/**
- * Ensure that the temporal network point and the geometry have the same SRID
- */
-void
-ensure_same_srid_tnpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
-{
-  if (tnpoint_srid_internal(temp) != gserialized_get_srid(gs))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network point and the geometry must be in the same SRID")));
-}
-
-/**
- * Ensure that the temporal network point and the network point have the same SRID
- */
-void
-ensure_same_srid_tnpoint_npoint(const Temporal *temp, const npoint *np)
-{
-  if (tnpoint_srid_internal(temp) != npoint_srid_internal(np))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network point and the network point must be in the same SRID")));
 }
 
 /**
@@ -1001,7 +968,7 @@ tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid_tnpoint_gs(temp, gs);
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   if (gserialized_is_empty(gs))
   {
     Temporal *result = atfunc ? NULL : temporal_copy(temp);

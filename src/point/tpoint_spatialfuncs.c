@@ -3104,8 +3104,12 @@ geom_azimuth(Datum geom1, Datum geom2)
 static Datum
 geog_azimuth(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return CallerFInfoFunctionCall2(geography_azimuth, (fetch_fcinfo())->flinfo,
     InvalidOid, geom1, geom2);
+#else
+  return call_function2(geography_azimuth, geom1, geom2);
+#endif
 }
 
 /**
