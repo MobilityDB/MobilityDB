@@ -53,7 +53,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            liblwgeom-dev \
+            libgeos++-dev \
             libproj-dev \
             libjson-c-dev \
             libgsl-dev \
@@ -62,6 +62,11 @@ jobs:
             postgresql-server-dev-${{ matrix.psql }}
           ls /usr/lib/postgresql/${{ matrix.psql }}/lib/
           xzcat --version
+
+      - name: Install liblwgeom for PostGIS 2.5
+        if: matrix.postgis == '2.5'
+        run: |
+          sudo apt-get -y install liblwgeom-dev
 
       - name: Install coverall dependencies
         if: matrix.coverage == '1'
