@@ -8,7 +8,7 @@
 
 find_library(JSON-C_LIBRARIES
   NAMES json-c
-  HINTS /lib /lib64 /usr/lib /usr/lib64 /usr/local/Cellar/json-c
+  HINTS /lib /lib64 /usr/lib /usr/lib64
   )
 
 find_path(JSON-C_INCLUDE_DIRS
