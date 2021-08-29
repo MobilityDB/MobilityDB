@@ -87,42 +87,41 @@
 /* PostGIS build date */
 #define POSTGIS_BUILD_DATE "2021-06-26 08:21:14"
 
-/* SFCGAL library version at buil time */
+/* SFCGAL library version at build time */
 /* #undef POSTGIS_SFCGAL_VERSION */
 
 /* GDAL library version */
 #define POSTGIS_GDAL_VERSION 30
 
 /* GEOS library version */
-#define POSTGIS_GEOS_VERSION 38
+#define POSTGIS_GEOS_VERSION @GEOS_VERSION_NUMBER@
 
 /* PostGIS libxml2 version */
 #define POSTGIS_LIBXML2_VERSION "2.9.10"
 
 /* PostGIS library version */
-#define POSTGIS_LIB_VERSION "3.1.2"
+#define POSTGIS_LIB_VERSION "@POSTGIS_VERSION@"
 
 /* PostGIS major version */
-#define POSTGIS_MAJOR_VERSION "@POSTGIS_MAJOR_VERSION@"
+#define POSTGIS_MAJOR_VERSION "@POSTGIS_VERSION_MAJOR@"
 
 /* PostGIS minor version */
-#define POSTGIS_MINOR_VERSION "@POSTGIS_MINOR_VERSION@"
+#define POSTGIS_MINOR_VERSION "@POSTGIS_VERSION_MINOR@"
 
 /* PostGIS micro version */
-#define POSTGIS_MICRO_VERSION "@POSTGIS_MICRO_VERSION@"
+#define POSTGIS_MICRO_VERSION "@POSTGIS_VERSION_MICRO@"
 
 /* PostgreSQL server version */
-#define POSTGIS_PGSQL_VERSION 130
+#define POSTGIS_PGSQL_VERSION @POSTGIS_PGSQL_VERSION@
 
 /* PROJ library version */
-#define POSTGIS_PROJ_VERSION 63
+#define POSTGIS_PROJ_VERSION @PROJ_VERSION_NUMBER@
 
 /* Define to 1 if a warning is outputted every time a double is truncated */
 #define POSTGIS_RASTER_WARN_ON_TRUNCATION 0
 
 /* PostGIS scripts version */
 #define POSTGIS_SCRIPTS_VERSION "@POSTGIS_VERSION@"
-
 
 /* PostGIS version */
 #define POSTGIS_VERSION "3.1 USE_GEOS=1 USE_PROJ=1 USE_STATS=1"

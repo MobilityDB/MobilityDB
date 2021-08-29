@@ -75,6 +75,7 @@ find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
 if (NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
+math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
 
 add_definitions(-DPOSTGRESQL_VERSION_NUMBER=${POSTGRESQL_VERSION_NUMBER} -DPOSTGRESQL_VERSION_STRING="${POSTGRESQL_VERSION_STRING}")
 
@@ -114,16 +115,22 @@ endif()
 # Link liblwgeom library for PostGIS 2.5.5
 if (POSTGIS_VERSION_NUMBER LESS 30000)
   find_package(LWGEOM REQUIRED)
-  include_directories(${LWGEOM_INCLUDE_DIRS})
+  include_directories(SYSTEM ${LWGEOM_INCLUDE_DIRS})
 endif()
+
+find_package(GEOS REQUIRED)
+include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
+math(EXPR GEOS_VERSION_NUMBER "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
 
 find_package(JSON-C REQUIRED)
 include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
 find_package(PROJ REQUIRED)
-include_directories(${PROJ_INCLUDE_DIRS})
+include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
+math(EXPR PROJ_VERSION_NUMBER "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 
 find_package(GSL REQUIRED)
+include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 
 #--------------------------------
 # Belongs to MobilityDB
