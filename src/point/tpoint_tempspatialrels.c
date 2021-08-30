@@ -515,7 +515,12 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* Restrict to the buffered geometry */
-  Datum geo_buffer = call_function3(buffer, geo, dist, CStringGetTextDatum(""));
+  Datum geo_buffer =
+#if POSTGIS_VERSION_NUMBER < 30000
+    call_function2(buffer, geo, dist);
+#else
+    call_function3(buffer, geo, dist, CStringGetTextDatum(""));
+#endif
   int count1;
   TSequence **atbuffer = tpointseq_at_geometry(seq, geo_buffer, &count1);
   Datum datum_true = BoolGetDatum(true);
