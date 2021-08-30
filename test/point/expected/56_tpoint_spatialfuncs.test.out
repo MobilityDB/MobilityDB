@@ -1806,6 +1806,81 @@ SELECT round(degrees(azimuth(tgeompoint '(Point(0 0)@2000-01-01, Point(1 1)@2000
  Interp=Stepwise;{(45@2000-01-01 00:00:00+00, 45@2000-01-02 00:00:00+00], [225@2000-01-03 00:00:00+00, 225@2000-01-04 00:00:00+00)}
 (1 row)
 
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Point(1.5 1.5)@2000-01-01')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')), 6) IS NOT NULL;
+ ?column? 
+----------
+        1
+(1 row)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')), 6) IS NOT NULL;
+ ?column? 
+----------
+        1
+(1 row)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Point(1.5 1.5 1.5)@2000-01-01')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')), 6) IS NOT NULL;
+ ?column? 
+----------
+        1
+(1 row)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')), 6) IS NOT NULL;
+ ?column? 
+----------
+        1
+(1 row)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Stepwise;[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint 'Interp=Stepwise;{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}')), 6) IS NOT NULL;
+ ?column? 
+----------
+        1
+(1 row)
+
+SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1 1)@2000-01-01], [Point(2 2)@2000-01-02], [Point(1 1)@2000-01-03]}')), 6) IS NOT NULL;
+ ?column? 
+----------
+(0 rows)
+
 SELECT isSimple(tgeompoint '{Point(0 0)@2000-01-01}');
  issimple 
 ----------
