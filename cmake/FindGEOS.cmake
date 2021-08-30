@@ -1,5 +1,6 @@
 # Find GEOS
 # ~~~~~~~~~
+# Copyright (c) 2021, Esteban Zimanyi
 # Copyright (c) 2008, Mateusz Loskot <mateusz@loskot.net>
 # (based on FindGDAL.cmake by Magnus Homann)
 # Redistribution and use is allowed according to the terms of the BSD license.
@@ -33,9 +34,9 @@ IF (NOT DEFINED GEOS_INCLUDE_DIR OR NOT DEFINED GEOS_LIBRARY OR NOT DEFINED GEOS
     EXEC_PROGRAM(${GEOS_CONFIG}
       ARGS --version
       OUTPUT_VARIABLE GEOS_VERSION)
-    STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
-    STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
-
+    STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
+    STRING(REGEX REPLACE "([0-9]+)\\.([0-9]+)\\.([0-9]+)(dev)?" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
+    
     IF (GEOS_VERSION_MAJOR LESS 3 OR (GEOS_VERSION_MAJOR EQUAL 3 AND GEOS_VERSION_MINOR LESS 1) )
       MESSAGE (FATAL_ERROR "GEOS version is too old (${GEOS_VERSION}). Use 3.1.0 or higher.")
     ENDIF (GEOS_VERSION_MAJOR LESS 3 OR (GEOS_VERSION_MAJOR EQUAL 3 AND GEOS_VERSION_MINOR LESS 1) )
