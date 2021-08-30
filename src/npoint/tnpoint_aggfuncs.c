@@ -44,7 +44,10 @@
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnpoint_tcentroid_transfn);
-
+/**
+ * Transition function for temporal centroid aggregation of temporal network
+ * points
+ */
 PGDLLEXPORT Datum
 tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {

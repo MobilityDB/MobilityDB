@@ -247,7 +247,7 @@ tintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 PG_FUNCTION_INFO_V1(tintersects_tnpoint_geo);
 /**
  * Returns the temporal intersects relationship between the temporal network
- * point and the network point
+ * point and the geometry
  */
 PGDLLEXPORT Datum
 tintersects_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -261,7 +261,10 @@ tintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tintersects_tnpoint_npoint);
-
+/**
+ * Returns the temporal intersects relationship between the temporal network
+ * point and the network point
+ */
 PGDLLEXPORT Datum
 tintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -342,7 +345,10 @@ ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tdwithin_geo_tnpoint);
-
+/**
+ * Returns a temporal Boolean that states whether the geometry and the
+ * temporal network point are within the given distance
+ */
 PGDLLEXPORT Datum
 tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -360,7 +366,10 @@ tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdwithin_npoint_tnpoint);
-
+/**
+ * Returns a temporal Boolean that states whether the network point and the
+ * temporal network point are within the given distance
+ */
 PGDLLEXPORT Datum
 tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -377,7 +386,10 @@ tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdwithin_tnpoint_geo);
-
+/**
+ * Returns a temporal Boolean that states whether the temporal network point
+ * and the geometry are within the given distance
+ */
 PGDLLEXPORT Datum
 tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -395,7 +407,10 @@ tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdwithin_tnpoint_npoint);
-
+/**
+ * Returns a temporal Boolean that states whether the temporal network point
+ * and the network point are within the given distance
+ */
 PGDLLEXPORT Datum
 tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -413,7 +428,10 @@ tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tdwithin_tnpoint_tnpoint);
-
+/**
+ * Returns a temporal Boolean that states whether the temporal network points
+ * are within the given distance
+ */
 PGDLLEXPORT Datum
 tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {

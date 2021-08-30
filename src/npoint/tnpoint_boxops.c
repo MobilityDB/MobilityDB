@@ -53,6 +53,12 @@
  * Transform a temporal npoint to a STBOX
  *****************************************************************************/
 
+/**
+ * Set the spatiotemporal box from the network point value
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] np Network point
+ */
 bool
 npoint_to_stbox_internal(STBOX *box, const npoint *np)
 {
@@ -64,6 +70,12 @@ npoint_to_stbox_internal(STBOX *box, const npoint *np)
   return result;
 }
 
+/**
+ * Set the spatiotemporal box from the network point value
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] inst Temporal network point
+ */
 void
 tnpointinst_make_stbox(STBOX *box, const TInstant *inst)
 {
@@ -72,6 +84,13 @@ tnpointinst_make_stbox(STBOX *box, const TInstant *inst)
   MOBDB_FLAGS_SET_T(box->flags, true);
 }
 
+/**
+ * Set the spatiotemporal box from the array of temporal network point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] instants Temporal network point values
+ * @param[in] count Number of elements in the array
+ */
 void
 tnpointinstarr_step_to_stbox(STBOX *box, const TInstant **instants, int count)
 {
@@ -85,6 +104,13 @@ tnpointinstarr_step_to_stbox(STBOX *box, const TInstant **instants, int count)
   }
 }
 
+/**
+ * Set the spatiotemporal box from the array of temporal network point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] instants Temporal instant values
+ * @param[in] count Number of elements in the array
+ */
 void
 tnpointinstarr_linear_to_stbox(STBOX *box, const TInstant **instants, int count)
 {
@@ -115,6 +141,13 @@ tnpointinstarr_linear_to_stbox(STBOX *box, const TInstant **instants, int count)
     pfree(DatumGetPointer(geom));
 }
 
+/**
+ * Set the spatiotemporal box from the array of temporal network point values
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] sequences Temporal network point values
+ * @param[in] count Number of elements in the array
+ */
 void
 tnpointseqarr_to_stbox(STBOX *box, const TSequence **sequences, int count)
 {
@@ -126,10 +159,10 @@ tnpointseqarr_to_stbox(STBOX *box, const TSequence **sequences, int count)
   }
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(npoint_to_stbox);
-
+/**
+ * Returns the bounding box of the network point value
+ */
 PGDLLEXPORT Datum
 npoint_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -139,6 +172,11 @@ npoint_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+
+/**
+ * Returns the bounding box of the network segment value
+ */
 bool
 nsegment_to_stbox_internal(STBOX *box, const nsegment *ns)
 {
@@ -151,7 +189,9 @@ nsegment_to_stbox_internal(STBOX *box, const nsegment *ns)
 }
 
 PG_FUNCTION_INFO_V1(nsegment_to_stbox);
-
+/**
+ * Returns the bounding box of the network segment value
+ */
 PGDLLEXPORT Datum
 nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -161,6 +201,11 @@ nsegment_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+
+/**
+ * Transform a network point and a timestamp to a spatiotemporal box
+ */
 static bool
 npoint_timestamp_to_stbox_internal(STBOX *box, const npoint *np, TimestampTz t)
 {
@@ -171,7 +216,9 @@ npoint_timestamp_to_stbox_internal(STBOX *box, const npoint *np, TimestampTz t)
 }
 
 PG_FUNCTION_INFO_V1(npoint_timestamp_to_stbox);
-
+/**
+ * Transform a network point and a timestamp to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -182,6 +229,11 @@ npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+
+/**
+ * Transform a network point and a period to a spatiotemporal box
+ */
 static bool
 npoint_period_to_stbox_internal(STBOX *box, const npoint *np, const Period *p)
 {
@@ -193,7 +245,9 @@ npoint_period_to_stbox_internal(STBOX *box, const npoint *np, const Period *p)
 }
 
 PG_FUNCTION_INFO_V1(npoint_period_to_stbox);
-
+/**
+ * Transform a network point and a period to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -204,8 +258,12 @@ npoint_period_to_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_to_stbox);
+/*****************************************************************************/
 
+PG_FUNCTION_INFO_V1(tnpoint_to_stbox);
+/**
+ * Transform a temporal network point to a spatiotemporal box
+ */
 PGDLLEXPORT Datum
 tnpoint_to_stbox(PG_FUNCTION_ARGS)
 {
@@ -273,7 +331,10 @@ boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_geo_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry and
+ * the temporal network point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -281,7 +342,10 @@ overlaps_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_stbox_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of 
+ * the temporal network point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -289,7 +353,10 @@ overlaps_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_npoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the network point and the
+ * temporal network point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -299,7 +366,10 @@ overlaps_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network point and
+ * the geometry overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -307,7 +377,10 @@ overlaps_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point and 
+ * the spatiotemporal box overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -315,7 +388,10 @@ overlaps_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnpoint_npoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network point and 
+ * the network point overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -323,7 +399,10 @@ overlaps_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnpoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network points
+ * overlap
+ */
 PGDLLEXPORT Datum
 overlaps_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -335,7 +414,10 @@ overlaps_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_bbox_geo_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the geometry contains the one of
+ * the temporal network point
+ */
 PGDLLEXPORT Datum
 contains_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -343,7 +425,10 @@ contains_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_stbox_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box contains the one of the temporal
+ * network point
+ */
 PGDLLEXPORT Datum
 contains_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -351,7 +436,10 @@ contains_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_npoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the network point contains the one
+ * of the temporal network point
+ */
 PGDLLEXPORT Datum
 contains_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -361,7 +449,10 @@ contains_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point
+ * contain the one of the geometry
+ */
 PGDLLEXPORT Datum
 contains_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -369,7 +460,10 @@ contains_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point
+ * contain the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 contains_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -377,7 +471,10 @@ contains_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnpoint_npoint);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point
+ * contain the one of the network point
+ */
 PGDLLEXPORT Datum
 contains_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -385,7 +482,10 @@ contains_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contains_bbox_tnpoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the first temporal network point
+ * contain the one of the second temporal network point
+ */
 PGDLLEXPORT Datum
 contains_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -397,7 +497,10 @@ contains_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contained_bbox_geo_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the geometry is contained by the
+ * one of the temporal network point
+ */
 PGDLLEXPORT Datum
 contained_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -405,7 +508,10 @@ contained_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_stbox_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box is contained by the one of the
+ * temporal network point
+ */
 PGDLLEXPORT Datum
 contained_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -413,7 +519,10 @@ contained_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_npoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the network point is contained by
+ * the one of the temporal network point
+ */
 PGDLLEXPORT Datum
 contained_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -423,7 +532,10 @@ contained_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point is
+ * contained by the one of the geometry
+ */
 PGDLLEXPORT Datum
 contained_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -431,7 +543,10 @@ contained_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point is
+ * contained by the spatiotemporal box
+ */
 PGDLLEXPORT Datum
 contained_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -439,7 +554,10 @@ contained_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnpoint_npoint);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point is
+ * contained by the one of the network point
+ */
 PGDLLEXPORT Datum
 contained_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -447,7 +565,10 @@ contained_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(contained_bbox_tnpoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box of the first temporal network point
+ * is contained by the one of the second temporal network point
+ */
 PGDLLEXPORT Datum
 contained_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -459,7 +580,10 @@ contained_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_geo_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry and the temporal
+ * network point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -467,7 +591,10 @@ same_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_stbox_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the
+ * temporal network point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -475,7 +602,10 @@ same_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_npoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the network point and the
+ * temporal network point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -485,7 +615,10 @@ same_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(same_bbox_tnpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network point and
+ * the geometry are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -493,7 +626,10 @@ same_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point and
+ * the spatiotemporal box are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -501,7 +637,10 @@ same_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnpoint_npoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network point and
+ * the network point are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -509,7 +648,10 @@ same_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(same_bbox_tnpoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network points
+ * are equal in the common dimensions
+ */
 PGDLLEXPORT Datum
 same_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -521,7 +663,10 @@ same_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_geo_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the geometry and the temporal
+ * network point are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -529,7 +674,10 @@ adjacent_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_stbox_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal box and the spatiotemporal box of the
+ * temporal network point are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -537,7 +685,10 @@ adjacent_bbox_stbox_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_npoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the network point and the
+ * temporal network point are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -547,7 +698,10 @@ adjacent_bbox_npoint_tnpoint(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnpoint_geo);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network point and
+ * the geometry are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -555,7 +709,10 @@ adjacent_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnpoint_stbox);
-
+/**
+ * Returns true if the spatiotemporal box of the temporal network point
+ * and the spatiotemporal box are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
@@ -563,7 +720,10 @@ adjacent_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnpoint_npoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network point and
+ * the network point are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -571,7 +731,10 @@ adjacent_bbox_tnpoint_npoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(adjacent_bbox_tnpoint_tnpoint);
-
+/**
+ * Returns true if the spatiotemporal boxes of the temporal network points
+ * are adjacent
+ */
 PGDLLEXPORT Datum
 adjacent_bbox_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {

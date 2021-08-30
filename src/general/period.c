@@ -700,7 +700,7 @@ period_ne(PG_FUNCTION_ARGS)
 
 /**
  * Returns -1, 0, or 1 depending on whether the first period
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  * (internal function)
  *
  * @note Function used for B-tree comparison
@@ -724,7 +724,7 @@ period_cmp_internal(const Period *p1, const Period *p2)
 PG_FUNCTION_INFO_V1(period_cmp);
 /**
  * Returns -1, 0, or 1 depending on whether the first period
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  */
 PGDLLEXPORT Datum
 period_cmp(PG_FUNCTION_ARGS)
