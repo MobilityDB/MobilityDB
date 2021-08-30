@@ -101,8 +101,11 @@ jobs:
         if: matrix.coverage == '1'
         run: |
           cd build
-          lcov --capture --directory . --output-file=lcov_temp.info
-          lcov --extract lcov_temp.info */MobilityDB/src/* --output-file=lcov.info
+          # Previous coverage before embeding liblwgeom
+          lcov --capture --directory . --output-file=lcov.info
+          # Selecting the coverage information from only the /src directory
+          # lcov --capture --directory . --output-file=lcov_temp.info
+          # lcov --extract lcov_temp.info */MobilityDB/src/* --output-file=lcov.info
 
       - name: Coveralls
         if: matrix.coverage == '1'
