@@ -65,7 +65,7 @@ PGDLLEXPORT Datum
 double2_in(PG_FUNCTION_ARGS)
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-    errmsg("function double2_in not implemented")));
+    errmsg("Type double2 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
@@ -172,7 +172,7 @@ PGDLLEXPORT Datum
 double3_in(PG_FUNCTION_ARGS)
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-    errmsg("function double3_in not implemented")));
+    errmsg("Type double3 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
@@ -285,7 +285,7 @@ PGDLLEXPORT Datum
 double4_in(PG_FUNCTION_ARGS)
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-    errmsg("function double4_in not implemented")));
+    errmsg("Type double4 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 

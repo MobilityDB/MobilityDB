@@ -1,0 +1,25 @@
+/* Errors */
+SELECT double2 '(1,2)';
+ERROR:  Type double2 is an internal type
+LINE 2: SELECT double2 '(1,2)';
+                       ^
+SELECT double3 '(1,2,3)';
+ERROR:  Type double3 is an internal type
+LINE 1: SELECT double3 '(1,2,3)';
+                       ^
+SELECT double4 '(1,2,3,4)';
+ERROR:  Type double4 is an internal type
+LINE 1: SELECT double4 '(1,2,3,4)';
+                       ^
+SELECT tdouble2 '(1,2)@2000-01-01';
+ERROR:  Type tdouble2 is an internal type
+LINE 1: SELECT tdouble2 '(1,2)@2000-01-01';
+                        ^
+SELECT tdouble3 '(1,2,3)@2000-01-01';
+ERROR:  Type tdouble3 is an internal type
+LINE 1: SELECT tdouble3 '(1,2,3)@2000-01-01';
+                        ^
+SELECT tdouble4 '(1,2,3,4)@2000-01-01';
+ERROR:  Type tdouble4 is an internal type
+LINE 1: SELECT tdouble4 '(1,2,3,4)@2000-01-01';
+                        ^
