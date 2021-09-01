@@ -53,11 +53,13 @@
 /**
  * Returns the string representation of the range value, used for debugging
  */
+#ifdef DEBUG_BUILD
 const char *
 range_to_string(const RangeType *range)
 {
   return call_output(range->rangetypid, PointerGetDatum(range));
 }
+#endif
 
 /**
  * Returns the lower bound of the range value

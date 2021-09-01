@@ -36,7 +36,6 @@
 #include <postgres.h>
 #include <fmgr.h>
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <lwgeodetic_tree.h>

@@ -43,7 +43,6 @@
 #include <math.h>
 #endif
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 #include <liblwgeom.h>
 
 #include "general/temporaltypes.h"

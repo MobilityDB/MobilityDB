@@ -116,14 +116,16 @@ endif()
 
 find_package(GEOS REQUIRED)
 include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-math(EXPR GEOS_VERSION_NUMBER "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
+math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
+message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
 find_package(JSON-C REQUIRED)
 include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
-math(EXPR PROJ_VERSION_NUMBER "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
+math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
+message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
 
 find_package(GSL REQUIRED)
 include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
@@ -155,7 +157,8 @@ endif()
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
 
 if(APPLE)
-  set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
+  set_target_properties(${MOBILITYDB_LIB_NAME} PROPERTIES
+    LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
 endif()
 
 #--------------------------------

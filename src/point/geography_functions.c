@@ -45,7 +45,6 @@
 #include <utils/array.h>
 #include <utils/builtins.h>
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom_internal.h>

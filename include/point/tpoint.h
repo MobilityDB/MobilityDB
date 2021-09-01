@@ -32,8 +32,6 @@
 #ifndef __TPOINT_H__
 #define __TPOINT_H__
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <postgres.h>
 #include <catalog/pg_type.h>
 

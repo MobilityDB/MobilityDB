@@ -13,7 +13,7 @@ find_library(JSON-C_LIBRARIES
 
 find_path(JSON-C_INCLUDE_DIRS
   NAMES json.h
-  HINTS /usr/include/json-c
+  HINTS /usr/include PATH_SUFFIXES json-c json
   )
 
 include(FindPackageHandleStandardArgs)

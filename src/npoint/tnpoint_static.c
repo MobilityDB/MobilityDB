@@ -38,8 +38,6 @@
 
 #include "npoint/tnpoint_static.h"
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <executor/spi.h>
@@ -96,9 +94,14 @@ get_srid_ways()
   {
     SPITupleTable *tuptable = SPI_tuptable;
     Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
-    if (!isNull)
-      srid_ways = DatumGetInt32(value);
+    if (isNull)
+      elog(ERROR, "Cannot determine SRID of the ways table");
+
+    srid_ways = DatumGetInt32(value);
   }
+  else
+    elog(ERROR, "Cannot determine SRID of the ways table");
+
   SPI_finish();
   return srid_ways;
 }
