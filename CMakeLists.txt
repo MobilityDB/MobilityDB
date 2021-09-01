@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.7)
 
 # Disallow in-source builds
-if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
   message(FATAL_ERROR "In-source builds not allowed.
   Please make a new directory (called a build directory) and run CMake from there.
   You may need to remove 'CMakeCache.txt' and 'CMakeFiles/'.")
@@ -50,8 +50,8 @@ if(NOT HAS_FFSL)
 endif()
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
-if (CMAKE_COMPILER_IS_GNUCC)
-  if (WITH_COVERAGE)
+if(CMAKE_COMPILER_IS_GNUCC)
+  if(WITH_COVERAGE)
     message(STATUS "Generating code coverage")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
@@ -68,7 +68,7 @@ set(PG_MIN_MAJOR_VERSION "10")
 set(PG_MAX_MAJOR_VERSION "14")
 
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
-if (NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
+if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
   message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
 endif()
 math(EXPR POSTGIS_PGSQL_VERSION "${POSTGRESQL_VERSION_MAJOR} * 10 + ${POSTGRESQL_VERSION_MINOR}")
@@ -94,7 +94,7 @@ find_package(POSTGIS REQUIRED)
 add_definitions(-DPOSTGIS_VERSION_STR="${POSTGIS_VERSION_STR}")
 add_definitions(-DPOSTGIS_VERSION_NUMBER=${POSTGIS_VERSION_NUMBER})
 
-include (TestBigEndian)
+include(TestBigEndian)
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if(IS_BIG_ENDIAN)
   message(STATUS "BIG_ENDIAN")
@@ -109,7 +109,7 @@ endif()
 #--------------------------------
 
 # Link liblwgeom library for PostGIS 2.5.5
-if (POSTGIS_VERSION_NUMBER LESS 30000)
+if(POSTGIS_VERSION_NUMBER LESS 30000)
   find_package(LWGEOM REQUIRED)
   include_directories(SYSTEM ${LWGEOM_INCLUDE_DIRS})
 endif()
@@ -133,7 +133,7 @@ include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 # Must go before target_link_libraries
 
 # Embed liblwgeom library for PostGIS 3
-if (POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
+if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   configure_file(postgis/postgis_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/postgis/postgis_config.h)
   include_directories("postgis/liblwgeom")
   include_directories("postgis/libpgcommon")
@@ -147,14 +147,14 @@ add_subdirectory("src")
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:npoint>")
-if (POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
+if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:libpgcommon>")
   set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 endif()
 add_library(${MOBILITYDB_LIB_NAME} MODULE ${PROJECT_OBJECTS})
 
-if (APPLE)
+if(APPLE)
   set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,-undefined,dynamic_lookup -bundle_loader /usr/local/bin/postgres")
 endif()
 
@@ -164,7 +164,7 @@ endif()
 
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
-if (POSTGIS_VERSION_NUMBER LESS 30000)
+if(POSTGIS_VERSION_NUMBER LESS 30000)
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
 endif()
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})

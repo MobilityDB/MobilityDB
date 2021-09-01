@@ -13,28 +13,39 @@
 # POSTGIS_VERSION           - The full numbers
 # POSTGIS_VERSION_STR       - The th PostGIS prefix
 
-if (POSTGIS_FOUND)
+if(POSTGIS_FOUND)
   return()
 endif()
 
-if (NOT POSTGRESQL_FOUND)
+if(NOT POSTGRESQL_FOUND)
   find_package(POSTGRESQL REQUIRED)
 endif()
 
 # Find PostGIS library
-file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-*.so")
+
+# If specific version of PostGIS requested, choose that one, otherwise get all versions
+if(POSTGIS_REQUIRED_VERSION)
+  message(STATUS "Selecting requested PostGIS version: Selecting postgis-${POSTGIS_REQUIRED_VERSION}")
+  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-${POSTGIS_REQUIRED_VERSION}.*")
+else()
+  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-*.*")
+endif()
+
 if(POSTGIS_LIBRARY STREQUAL "")
   message(FATAL_ERROR "No PostGIS library have been found")
-endif()
-list(LENGTH POSTGIS_LIBRARY NO_POSTGIS_LIBRARIES)
-if(NO_POSTGIS_LIBRARIES GREATER 1)
-  message(FATAL_ERROR "Several versions of the PostGIS library have been found")
+else()
+  # If several versions of PostGIS found, choose the first one
+  list(LENGTH POSTGIS_LIBRARY NO_POSTGIS_LIBRARIES)
+  if(NO_POSTGIS_LIBRARIES GREATER 1)
+    list(GET POSTGIS_LIBRARY 0 POSTGIS_LIBRARY)
+    message(STATUS "Several PostGIS versions found: Selecting ${POSTGIS_LIBRARY}")
+  endif()
 endif()
 
 find_file(POSTGIS_CONTROL postgis.control
   PATHS "${POSTGRESQL_SHARE_DIR}/extension")
 
-if (POSTGIS_CONTROL)
+if(POSTGIS_CONTROL)
   file(READ ${POSTGIS_CONTROL} control_contents)
   string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" POSTGIS_VERSION ${control_contents})
   set(POSTGIS_VERSION_STR "PostGIS ${POSTGIS_VERSION}")
@@ -51,7 +62,7 @@ find_package_handle_standard_args(POSTGIS
   VERSION_VAR POSTGIS_VERSION
   FAIL_MESSAGE "Could NOT find PostGIS")
 
-if (POSTGIS_FOUND)
+if(POSTGIS_FOUND)
   mark_as_advanced(POSTGIS_LIBRARY POSTGIS_CONTROL POSTGIS_VERSION POSTGIS_VERSION_STR)
 endif()
 

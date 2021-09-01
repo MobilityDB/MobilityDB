@@ -44,6 +44,16 @@ Benefits
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
+Experimental projects
+-----------------------------
+
+These projects push the boundaries of MobilityDB and connect it with the PostgreSQL/PostGIS ecosystem.
+
+*   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
+*   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
+*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS) Integration of MobilityDB with QGIS
+
+
 Mailing Lists
 ------------
 
@@ -71,14 +81,14 @@ Requirements
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   PostgreSQL > 10
 *   CMake >= 3.1
-*   PostGIS == 2.5
+*   PostGIS > 2.5
 *   JSON-C
 *   GNU Scientific Library (GSL)
-*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C, Protobuf-C
+*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
 
 For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems:
 ```bash
-apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev libprotobuf-c-dev
+apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev
 ```
 
 Building & Installation
