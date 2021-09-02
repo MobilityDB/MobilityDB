@@ -13,8 +13,13 @@ dist: osx
 compiler:
   - gcc
 
-before_install:
-  - brew install postgresql postgis proj gsl
+addons:
+  homebrew:
+    packages:
+    - postgresql
+    - postgis
+    - proj
+    - gsl
 
 before_script:
   - mkdir build
@@ -29,4 +34,3 @@ after_failure: ../test/scripts/print_fail.sh
 
 after_success: |
    [ "$COVERAGE" == "1" ] && coveralls --include src --gcov-options '\-lp' -r .. -b .
-

@@ -33,4 +33,3 @@ after_failure: ../test/scripts/print_fail.sh
 
 after_success: |
    [ "$COVERAGE" == "1" ] && coveralls --include src --gcov-options '\-lp' -r .. -b .
-
