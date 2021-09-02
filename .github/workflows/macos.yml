@@ -38,7 +38,7 @@ jobs:
       - name: test install
         run: |
           pg_ctl -D /usr/local/var/postgres start
-          sudo groupadd postgres
+          # sudo groupadd postgres
           sudo useradd postgres -g postgres
           sudo -u postgres createdb  ___mob___test___
           sudo -u postgres psql   -d ___mob___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
