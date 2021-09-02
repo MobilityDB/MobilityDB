@@ -13,8 +13,13 @@ dist: osx
 compiler:
   - gcc
 
-before_install:
-  - brew install postgresql postgis proj gsl
+addons:
+  homebrew:
+    packages:
+    - postgresql
+    - postgis
+    - proj
+    - gsl
 
 before_script:
   - mkdir build
