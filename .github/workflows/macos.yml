@@ -41,7 +41,7 @@ jobs:
           # sudo groupadd postgres
           # sudo useradd postgres -g postgres
           sudo dscl . -create /Users/postgres
-          id postgres
+          # id postgres
           id -g postgres
           sudo -u postgres createdb  ___mobdb___test___
           sudo -u postgres psql   -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
