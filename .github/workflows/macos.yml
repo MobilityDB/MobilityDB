@@ -38,9 +38,8 @@ jobs:
       - name: test install
         run: |
           pg_ctl -D /usr/local/var/postgres start
-          /usr/local/opt/postgres/bin/createuser -s postgres
-          sudo -u postgres createdb  ___mobdb___test___
-          sudo -u postgres psql   -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+          createdb  ___mobdb___test___
+          psql   -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
 
       - name: Test
         run: |
