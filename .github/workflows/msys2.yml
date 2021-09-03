@@ -14,21 +14,20 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: git mingw-w64-x86_64-toolchain
-
-      - name: Install dependencies
-        run: |
-          pacman -S mingw-w64-x86_64-cmake
-          pacman -S mingw-w64-x86_64-postgresql
-          pacman -S mingw-w64-x86_64-postgis
-          pacman -S mingw-w64-x86_64-proj
-          pacman -S mingw-w64-x86_64-geos
-          pacman -S mingw-w64-x86_64-json-c
-          pacman -S mingw-w64-x86_64-gsl
-          pacman -S mingw-w64-i686-xz
-          xzcat --version
+          install: 
+            git
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-postgresql
+            mingw-w64-x86_64-postgis
+            mingw-w64-x86_64-proj
+            mingw-w64-x86_64-geos
+            mingw-w64-x86_64-json-c
+            mingw-w64-x86_64-gsl
+            mingw-w64-i686-xz
 
       - name: CI-Build
         run: |
           echo 'Running in MSYS2!'
+          xzcat --version
           ./ci-build.sh
