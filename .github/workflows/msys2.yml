@@ -14,8 +14,7 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: 
-            git
+          install: >-
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-postgresql
@@ -26,8 +25,16 @@ jobs:
             mingw-w64-x86_64-gsl
             mingw-w64-i686-xz
 
-      - name: CI-Build
+      - name: Move Checkout
         run: |
-          echo 'Running in MSYS2!'
-          xzcat --version
-          ./ci-build.sh
+          Copy-Item -Path ".\temp" -Destination "C:\_" -Recurse
+
+      - name: CI-Build
+        shell: msys2 {0}
+        run: |
+          cd /C/_
+          mkdir build
+          cd build
+          cmake -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/mingw64-x86_64.cmake -DCMAKE_BUILD_TYPE=Release -G 'MSYS Makefiles' ..
+          make -j4
+          make test
