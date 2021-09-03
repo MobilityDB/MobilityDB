@@ -25,10 +25,6 @@ jobs:
             mingw-w64-x86_64-gsl
             mingw-w64-i686-xz
 
-      - name: Move Checkout
-        run: |
-          Copy-Item -Path ".\temp" -Destination "C:\_" -Recurse
-
       - name: CI-Build
         shell: msys2 {0}
         run: |
