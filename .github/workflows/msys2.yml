@@ -18,14 +18,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -S mingw-w64-x86_64-cmake \
-            mingw-w64-x86_64-postgresql \
-            mingw-w64-x86_64-postgis \
-            mingw-w64-x86_64-proj \
-            mingw-w64-x86_64-geos \
-            mingw-w64-x86_64-json-c \
-            mingw-w64-x86_64-gsl \
-            mingw-w64-i686-xz
+          pacman -S mingw-w64-x86_64-cmake
+          pacman -S mingw-w64-x86_64-postgresql
+          pacman -S mingw-w64-x86_64-postgis
+          pacman -S mingw-w64-x86_64-proj
+          pacman -S mingw-w64-x86_64-geos
+          pacman -S mingw-w64-x86_64-json-c
+          pacman -S mingw-w64-x86_64-gsl
+          pacman -S mingw-w64-i686-xz
           xzcat --version
 
       - name: CI-Build
