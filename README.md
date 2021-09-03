@@ -51,7 +51,8 @@ These projects push the boundaries of MobilityDB and connect it with the Postgre
 
 *   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
 *   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
-*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS) Integration of MobilityDB with QGIS
+*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with QGIS
+*   [Move](https://github.com/mschoema/move): QGIS Plugin to visualize moving objects from MobilityDB
 
 
 Mailing Lists
