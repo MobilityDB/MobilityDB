@@ -1,0 +1,34 @@
+name: Build for windows using msys2
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-toolchain
+
+      - name: Install dependencies
+        run: |
+          pacman -S mingw-w64-x86_64-cmake \
+            mingw-w64-x86_64-postgresql \
+            mingw-w64-x86_64-postgis \
+            mingw-w64-x86_64-proj \
+            mingw-w64-x86_64-geos \
+            mingw-w64-x86_64-json-c \
+            mingw-w64-x86_64-gsl \
+            mingw-w64-i686-xz
+          xzcat --version
+
+      - name: CI-Build
+        run: |
+          echo 'Running in MSYS2!'
+          ./ci-build.sh
