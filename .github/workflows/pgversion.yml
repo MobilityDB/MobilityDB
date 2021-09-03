@@ -89,8 +89,8 @@ jobs:
       - name: test install
         run: |
           sudo service postgresql start
-          createdb -p ${PGPORT}  ___mobdb___test___
-          psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+          sudo -u postgres createdb -p ${PGPORT}  ___mobdb___test___
+          sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
 
       - name: Test
         run: |
