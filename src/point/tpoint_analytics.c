@@ -1399,7 +1399,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
   d = -1;
   if (i1 + 1 < i2)
   {
-    double speed_seg;
+    double speed_seg = 0; /* make compiler quiet */
     datum_func2 func;
     if (withspeed)
       func = hasz ? &pt_distance3d : &pt_distance2d;
@@ -2039,9 +2039,10 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
 
     /* Read and round point */
     datum_get_point4d(&p, value);
-    double x = p.x;
-    double y = p.y;
-    double z = hasz ? p.z : 0;
+    /* make compiler quiet by also initializing prev_p */
+    double x = prev_p.x = p.x;
+    double y = prev_p.y = p.y;
+    double z = prev_p.z = hasz ? p.z : 0;
     if (grid->xsize > 0)
       x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
     if (grid->ysize > 0)
@@ -2085,9 +2086,10 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
     /* Read and round point */
     datum_get_point4d(&p, value);
-    double x = p.x;
-    double y = p.y;
-    double z = hasz ? p.z : 0;
+    /* make compiler quiet by also initializing prev_p */
+    double x = prev_p.x = p.x;
+    double y = prev_p.y = p.y;
+    double z = prev_p.z = hasz ? p.z : 0;
     if (grid->xsize > 0)
       x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
     if (grid->ysize > 0)

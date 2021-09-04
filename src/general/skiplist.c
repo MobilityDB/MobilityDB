@@ -688,7 +688,8 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
   size_t size)
 {
   MemoryContext ctx;
-  assert(AggCheckCallContext(fcinfo, &ctx));
+  if (!AggCheckCallContext(fcinfo, &ctx))
+    elog(ERROR, "aggregate function called in non-aggregate context");
   MemoryContext oldctx = MemoryContextSwitchTo(ctx);
   state->extra = palloc(size);
   state->extrasize = size;

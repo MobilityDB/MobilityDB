@@ -614,7 +614,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
 static TInstant *
 NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
 {
-  const TInstant *inst;
+  const TInstant *inst = NULL; /* make compiler quiet */
   NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
   return tinstant_copy(inst);
 }
@@ -788,8 +788,9 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 static TInstant *
 NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
-  Datum closest, point;
-  TimestampTz t, t1;
+  Datum closest = PointerGetDatum(NULL); /* make compiler quiet */
+  Datum point;
+  TimestampTz t = 0, t1; /* make compiler quiet */
   bool tofree = false, tofree1;
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
@@ -1308,9 +1309,10 @@ shortestline_tpoint_tpoint_internal(const Temporal *temp1,
   const TInstant *inst = temporal_min_instant(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value1, value2;
-  bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);
-  bool found2 = temporal_value_at_timestamp_inc(temp2, inst->t, &value2);
-  assert(found1 && found2);
+  if (! temporal_value_at_timestamp_inc(temp1, inst->t, &value1) ||
+    ! temporal_value_at_timestamp_inc(temp2, inst->t, &value2))
+    /* We should never get here */
+    elog(ERROR, "Error when computing shortestline function");
   *line = geopoint_line(value1, value2);
   return true;
 }

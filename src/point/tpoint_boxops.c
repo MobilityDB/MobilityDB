@@ -70,7 +70,8 @@ tpointinst_make_stbox(STBOX *box, const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
-  assert(geo_to_stbox_internal(box, gs));
+  /* Non-empty geometries have a bounding box */
+  geo_to_stbox_internal(box, gs);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
 }
