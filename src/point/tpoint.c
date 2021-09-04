@@ -215,7 +215,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
   int16 temp_subtype = ANYTEMPSUBTYPE;
   uint8_t geometry_type = 0;
-  int hasZ = 0, hasM = 0, srid;
+  int hasZ = 0, hasM = 0, srid = SRID_UNKNOWN;
   char *s[3] = {0,0,0};
   for (int i = 0; i < n; i++)
   {

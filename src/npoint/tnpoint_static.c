@@ -336,7 +336,11 @@ PGDLLEXPORT Datum
 nsegment_out(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
+#ifdef WIN32
+  char *result = psprintf("NSegment(%lld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
+#else
   char *result = psprintf("NSegment(%ld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
+#endif
   PG_RETURN_CSTRING(result);
 }
 
@@ -385,7 +389,11 @@ npoint_set(npoint *np, int64 rid, double pos)
 {
   if (!route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("there is no route with gid value %lu in table ways", rid)));
+#ifdef WIN32
+      errmsg("there is no route with gid value %lld in table ways", rid)));
+#else
+      errmsg("there is no route with gid value %ld in table ways", rid)));
+#endif
   if (pos < 0 || pos > 1)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("the relative position must be a real number between 0 and 1")));
@@ -403,7 +411,11 @@ npoint_make(int64 rid, double pos)
 {
   if (!route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("there is no route with gid value %lu in table ways", rid)));
+#ifdef WIN32
+      errmsg("there is no route with gid value %lld in table ways", rid)));
+#else
+      errmsg("there is no route with gid value %ld in table ways", rid)));
+#endif
   if (pos < 0 || pos > 1)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("the relative position must be a real number between 0 and 1")));
@@ -432,7 +444,11 @@ nsegment_set(nsegment *ns, int64 rid, double pos1, double pos2)
 {
   if (!route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("there is no route with gid value %lu in table ways", rid)));
+#ifdef WIN32
+      errmsg("there is no route with gid value %lld in table ways", rid)));
+#else
+      errmsg("there is no route with gid value %ld in table ways", rid)));
+#endif
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The relative position of a network segment must be a real number between 0 and 1")));
@@ -451,7 +467,11 @@ nsegment_make(int64 rid, double pos1, double pos2)
 {
   if (!route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("there is no route with gid value %lu in table ways", rid)));
+#ifdef WIN32
+      errmsg("there is no route with gid value %lld in table ways", rid)));
+#else
+      errmsg("there is no route with gid value %ld in table ways", rid)));
+#endif
   if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The relative position of a network segment must be a real number between 0 and 1")));
@@ -823,7 +843,11 @@ bool
 route_exists(int64 rid)
 {
   char sql[64];
+#ifdef WIN32
+  sprintf(sql, "SELECT true FROM public.ways WHERE gid = %lld", rid);
+#else
   sprintf(sql, "SELECT true FROM public.ways WHERE gid = %ld", rid);
+#endif
   bool isNull = true;
   bool result = false;
   SPI_connect();
@@ -843,7 +867,11 @@ double
 route_length(int64 rid)
 {
   char sql[64];
+#ifdef WIN32
+  sprintf(sql, "SELECT length FROM public.ways WHERE gid = %lld", rid);
+#else
   sprintf(sql, "SELECT length FROM public.ways WHERE gid = %ld", rid);
+#endif
   bool isNull = true;
   double result = 0;
   SPI_connect();
@@ -859,7 +887,11 @@ route_length(int64 rid)
 
   if (isNull)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+#ifdef WIN32
+      errmsg("cannot get the length for route %lld", rid)));
+#else
       errmsg("cannot get the length for route %ld", rid)));
+#endif
 
   return result;
 }
@@ -870,7 +902,11 @@ Datum
 route_geom(int64 rid)
 {
   char sql[64];
+#ifdef WIN32
+  sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %lld", rid);
+#else
   sprintf(sql, "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
+#endif
   bool isNull = true;
   GSERIALIZED *result = NULL;
   SPI_connect();
@@ -892,7 +928,11 @@ route_geom(int64 rid)
 
   if (isNull)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+#ifdef WIN32
+      errmsg("cannot get the geometry for route %lld", rid)));
+#else
       errmsg("cannot get the geometry for route %ld", rid)));
+#endif
 
   ensure_non_empty(result);
 

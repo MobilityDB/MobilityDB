@@ -1,5 +1,6 @@
 # Minimum version supporting fixtures
 cmake_minimum_required(VERSION 3.7)
+cmake_policy(VERSION 3.7...3.21)
 
 # Disallow in-source builds
 if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
@@ -119,13 +120,13 @@ include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
 math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10 + ${GEOS_VERSION_MINOR}")
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
-find_package(JSON-C REQUIRED)
-include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
-
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
+
+find_package(JSON-C REQUIRED)
+include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 
 find_package(GSL REQUIRED)
 include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
@@ -165,11 +166,15 @@ endif()
 # Specify libraries to link
 #--------------------------------
 
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
+if("${CMAKE_SHARED_LIBRARY_SUFFIX}" STREQUAL ".dll")
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${POSTGIS_LIBRARY})
+endif()
 if(POSTGIS_VERSION_NUMBER LESS 30000)
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${LWGEOM_LIBRARIES})
 endif()
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${GEOS_LIBRARY})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
+target_link_libraries(${MOBILITYDB_LIB_NAME} ${JSON-C_LIBRARIES})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 

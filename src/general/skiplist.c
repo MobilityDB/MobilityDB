@@ -109,7 +109,11 @@ gsl_random48()
 static int
 random_level()
 {
+#ifdef WIN32
+  return ffsl(~(gsl_random48() & ((1ll << SKIPLIST_MAXLEVEL) - 1)));
+#else
   return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
+#endif
 }
 
 /**

@@ -1602,7 +1602,7 @@ tstepseq_to_linear1(TSequence **result, const TSequence *seq)
 
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
-  const TInstant *inst2;
+  const TInstant *inst2 = NULL; /* keep compiler quiet */
   Datum value2;
   bool lower_inc = seq->period.lower_inc;
   int k = 0;

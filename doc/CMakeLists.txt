@@ -64,8 +64,8 @@ option(ALL_LANG
 
 # Defining the available language options
 foreach(lang ${PROJECT_SUPPORTED_LANGUAGES})
-  list(FIND PROJECT_SUPPORTED_LANGUAGES lang idx)
-  list(GET PROJECT_SUPPORTED_LANGUAGES_STRING idx lang_str)
+  list(FIND PROJECT_SUPPORTED_LANGUAGES ${lang} idx)
+  list(GET PROJECT_SUPPORTED_LANGUAGES_STRING ${idx} lang_str)
   string(TOUPPER ${lang} val)
   option(${val}
     "Set ON|OFF (default=OFF) build the ${lang_str} user's documentation" OFF)
@@ -77,8 +77,8 @@ list(APPEND PROJECT_BUILD_LANGUAGES_STRING ${PROJECT_ENGLISH_STRING})
 foreach(lang ${PROJECT_SUPPORTED_LANGUAGES})
   string(TOUPPER ${lang} opt)
   if(${opt} OR ALL_LANG)
-    list(FIND PROJECT_SUPPORTED_LANGUAGES lang idx)
-    list(GET PROJECT_SUPPORTED_LANGUAGES_STRING idx lang_str)
+    list(FIND PROJECT_SUPPORTED_LANGUAGES ${lang} idx)
+    list(GET PROJECT_SUPPORTED_LANGUAGES_STRING ${idx} lang_str)
     list(APPEND PROJECT_BUILD_LANGUAGES ${lang})
     list(APPEND PROJECT_BUILD_LANGUAGES_STRING ${lang_str})
   endif()

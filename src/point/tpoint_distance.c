@@ -630,7 +630,7 @@ NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
 static TInstant *
 NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
-  const TInstant *inst;
+  const TInstant *inst = NULL; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
@@ -1310,7 +1310,7 @@ shortestline_tpoint_tpoint_internal(const Temporal *temp1,
   Datum value1, value2;
   bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);
   bool found2 = temporal_value_at_timestamp_inc(temp2, inst->t, &value2);
-  assert (found1 && found2);
+  assert(found1 && found2);
   *line = geopoint_line(value1, value2);
   return true;
 }

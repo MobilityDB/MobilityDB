@@ -5,10 +5,10 @@ name: Build for macOS
 
 on:
   workflow_dispatch:
-  push:
-    branch_ignore: gh-pages
-  pull_request:
-    branch_ignore: gh-pages
+  # push:
+    # branch_ignore: gh-pages
+  # pull_request:
+    # branch_ignore: gh-pages
 
 jobs:
   build:
@@ -38,17 +38,8 @@ jobs:
       - name: test install
         run: |
           pg_ctl -D /usr/local/var/postgres start
-          # sudo groupadd postgres
-          # sudo useradd postgres -g postgres
-          sudo dscl . -create /Users/postgres
-          # id postgres
-          # id -g postgres
-          sudo -u postgres createdb  ___mobdb___test___
-          sudo -u postgres psql   -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
-          # sudo createdb  ___mobdb___test___
-          # sudo psql   -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
-          # createdb ___mobdb___test___
-          # psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+          createdb ___mobdb___test___
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
 
       - name: Test
         run: |

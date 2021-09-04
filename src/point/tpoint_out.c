@@ -1384,7 +1384,11 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 
   if (buf == NULL)
   {
+#ifdef WIN32
+    elog(ERROR, "Unable to allocate %llu bytes for WKB output buffer.", buf_size);
+#else
     elog(ERROR, "Unable to allocate %lu bytes for WKB output buffer.", buf_size);
+#endif
     return NULL;
   }
 

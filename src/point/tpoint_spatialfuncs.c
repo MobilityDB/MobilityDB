@@ -4146,8 +4146,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
   int type = lwgeom_inter->type;
   int countinter;
-  LWPOINT *lwpoint_inter;
-  LWLINE *lwline_inter;
+  LWPOINT *lwpoint_inter = NULL; /* make compiler quiet */
+  LWLINE *lwline_inter = NULL; /* make compiler quiet */
   LWCOLLECTION *coll;
   if (type == POINTTYPE)
   {
@@ -4258,7 +4258,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
    * temporal points */
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple1(seq, &countsimple);
-  Period **allperiods;
+  Period **allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
 
   if (countsimple == 1)

@@ -1,0 +1,44 @@
+name: Build for windows using msys2
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-postgresql
+            mingw-w64-x86_64-postgis
+            mingw-w64-x86_64-gsl
+            mingw-w64-i686-xz
+
+      - name: CMake build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -G"MinGW Makefiles" ..
+          cmake --build .
+
+      - name: CMake self-tests
+        run: make test
+        working-directory: build
+
+      # - name: CI-Build
+        # shell: msys2 {0}
+        # run: |
+          # cd /C/_
+          # mkdir build
+          # cd build
+          # cmake -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/mingw64-x86_64.cmake -DCMAKE_BUILD_TYPE=Release -G 'MSYS Makefiles' ..
+          # make -j4
+          # make test
