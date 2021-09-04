@@ -19,9 +19,6 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-postgresql
             mingw-w64-x86_64-postgis
-            mingw-w64-x86_64-proj
-            mingw-w64-x86_64-geos
-            mingw-w64-x86_64-json-c
             mingw-w64-x86_64-gsl
             mingw-w64-i686-xz
 
@@ -29,8 +26,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchains/mingw64-x86_64.cmake -DCMAKE_BUILD_TYPE=Release -G"MinGW Makefiles" ..
-          make
+          cmake -DCMAKE_BUILD_TYPE=Release -G"MinGW Makefiles" ..
+          cmake --build .
 
       - name: CMake self-tests
         run: make test

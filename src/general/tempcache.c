@@ -170,7 +170,7 @@ populate_temptype_cache()
 
   PG_TRY();
   {
-    bzero(_temptype_cache, sizeof(_temptype_cache));
+    memset(_temptype_cache, 0, sizeof(_temptype_cache));
     /*
      * This fetches the pre-computed temporal type cache from the catalog
      * where it is stored in a table.
@@ -308,7 +308,7 @@ populate_operators()
   PG_TRY();
   {
     populate_types();
-    bzero(_op_oids, sizeof(_op_oids));
+    memset(_op_oids, 0, sizeof(_op_oids));
     /*
      * This fetches the pre-computed operator cache from the catalog where
      * it is stored in a table. See the fill_opcache function below.

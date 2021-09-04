@@ -927,7 +927,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   double za = 0.0, zb = 0.0;
   double distance,
     length,   /* Used for computing lengths */
-    seglength, /* length of the segment where the closest point is located */
+    seglength = 0, /* length of the segment where the closest point is located */
     partlength, /* length from the beginning of the point array to the closest point */
     totlength;  /* length of the point array */
 

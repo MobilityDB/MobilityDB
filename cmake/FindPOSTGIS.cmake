@@ -26,9 +26,9 @@ endif()
 # If specific version of PostGIS requested, choose that one, otherwise get all versions
 if(POSTGIS_REQUIRED_VERSION)
   message(STATUS "Selecting requested PostGIS version: Selecting postgis-${POSTGIS_REQUIRED_VERSION}")
-  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-${POSTGIS_REQUIRED_VERSION}.*")
+  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-${POSTGIS_REQUIRED_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 else()
-  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-*.*")
+  file(GLOB POSTGIS_LIBRARY "${POSTGRESQL_DYNLIB_DIR}/postgis-*${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif()
 
 if(POSTGIS_LIBRARY STREQUAL "")

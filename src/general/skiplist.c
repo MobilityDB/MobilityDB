@@ -109,7 +109,11 @@ gsl_random48()
 static int
 random_level()
 {
+#ifdef WIN32
+  return ffsl(~(gsl_random48() & ((1ll << SKIPLIST_MAXLEVEL) - 1)));
+#else
   return ffsl(~(gsl_random48() & ((1l << SKIPLIST_MAXLEVEL) - 1)));
+#endif
 }
 
 /**
@@ -684,7 +688,8 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
   size_t size)
 {
   MemoryContext ctx;
-  assert(AggCheckCallContext(fcinfo, &ctx));
+  if (!AggCheckCallContext(fcinfo, &ctx))
+    elog(ERROR, "aggregate function called in non-aggregate context");
   MemoryContext oldctx = MemoryContextSwitchTo(ctx);
   state->extra = palloc(size);
   state->extrasize = size;
