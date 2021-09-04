@@ -110,8 +110,8 @@ run_compare)
     cat "${WORKDIR}"/out/"${TESTNAME}".out > "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out"
     exit 0
   else
-    tmpactual=$(mktemp --suffix=actual)
-    tmpexpected=$(mktemp --suffix=expected)
+    tmpactual=$(mktemp)
+    tmpexpected=$(mktemp)
     sed -e's/^ERROR:.*/ERROR/' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
     sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
     echo
