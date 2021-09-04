@@ -477,7 +477,7 @@ FROM (SELECT asMVTGeom(temp, stbox 'STBOX((0,0),(50,50))') AS mvt
   FROM tbl_tgeompoint ) AS t;
     round     | max 
 --------------+-----
- 67717.649686 |  45
+ 53669.717998 |  39
 (1 row)
 
 SELECT ST_AsText((mvt).geom, array_length((mvt).times, 1))
