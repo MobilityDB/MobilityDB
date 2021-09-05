@@ -10,18 +10,18 @@ WORKDIR=${BUILDDIR}/tmptest
 EXTFILE="@MOBILITYDB_TEST_EXTENSION_FILE@"
 BIN_DIR="@POSTGRESQL_BIN_DIR@"
 
-PSQL="${BIN_DIR}/psql -h ${WORKDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
+PSQL="${BIN_DIR}/psql${WIN_EXE} -h ${WORKDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
 DBDIR="${WORKDIR}/db"
 
 pg_status() {
-  @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" status
+  @POSTGRESQL_BIN_DIR@//pg_ctl${WIN_EXE} -D "${DBDIR}" status
 }
 
 pg_stop() {
-  @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" stop
+  @POSTGRESQL_BIN_DIR@//pg_ctl${WIN_EXE} -D "${DBDIR}" stop
 }
 
-PGCTL="${BIN_DIR}/pg_ctl -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock -o -h -o ''"
+PGCTL="${BIN_DIR}/pg_ctl${WIN_EXE} -w -D ${DBDIR} -l ${WORKDIR}/log/postgres.log -o -k -o ${WORKDIR}/lock -o -h -o ''"
 # -o -c -o enable_seqscan=off -o -c -o enable_bitmapscan=off -o -c -o enable_indexscan=on -o -c -o enable_indexonlyscan=on"
 
 POSTGIS="@POSTGIS_LIBRARY@"
@@ -30,7 +30,7 @@ case ${CMD} in
 setup)
   rm -rf "${WORKDIR}"
   mkdir -p "${DBDIR}" "${WORKDIR}"/lock "${WORKDIR}"/out "${WORKDIR}"/log
-  "${BIN_DIR}/initdb" -D "${DBDIR}" 2>&1 | tee "${WORKDIR}/log/initdb.log"
+  "${BIN_DIR}"/initdb${WIN_EXE} -D "${DBDIR}" 2>&1 | tee "${WORKDIR}/log/initdb.log"
 
   echo "POSTGIS = ${POSTGIS}" >> "${WORKDIR}/log/initdb.log"
 

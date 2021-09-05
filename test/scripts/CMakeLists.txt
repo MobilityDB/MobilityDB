@@ -2,6 +2,10 @@ set(CTEST_PARALLEL_LEVEL 1)
 
 find_package(Xz REQUIRED)
 
+if(WIN32)
+  set(WIN_EXE ".exe")
+endif()
+
 configure_file(test.sh test.sh @ONLY)
 
 add_test(
