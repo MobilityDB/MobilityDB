@@ -1709,7 +1709,7 @@ tinstant_get_value(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   if (temp->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal instant")));
+      errmsg("The temporal value must be of subtype instant")));
 
   TInstant *inst = (TInstant *) temp;
   Datum result = tinstant_value_copy(inst);
@@ -1760,7 +1760,7 @@ tinstant_timestamp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   if (temp->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal instant")));
+      errmsg("The temporal value must be of subtype instant")));
 
   TimestampTz result = ((TInstant *) temp)->t;
   PG_FREE_IF_COPY(temp, 0);
