@@ -1275,7 +1275,7 @@ temporal_from_base(const Temporal *temp, Datum value, Oid basetypid,
 
 /**
  * Cast a temporal integer to an intrange.
- * Note that the temporal subtypes having with bounding box are
+ * Note that the temporal subtypes having bounding box are
  * INSTANTSET, SEQUENCE, and SEQUENCESET
  */
 RangeType *

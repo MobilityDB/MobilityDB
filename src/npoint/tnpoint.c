@@ -52,7 +52,9 @@
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnpoint_in);
-
+/**
+ * Input function for temporal network points
+ */
 PGDLLEXPORT Datum
 tnpoint_in(PG_FUNCTION_ARGS)
 {
@@ -67,8 +69,9 @@ tnpoint_in(PG_FUNCTION_ARGS)
  * Cast functions
  *****************************************************************************/
 
-/* Cast tnpoint as tgeompoint */
-
+/**
+ * Cast a temporal network point as a temporal geometric point
+ */
 TInstant *
 tnpointinst_as_tgeompointinst(const TInstant *inst)
 {
@@ -79,6 +82,9 @@ tnpointinst_as_tgeompointinst(const TInstant *inst)
   return result;
 }
 
+/**
+ * Cast a temporal network point as a temporal geometric point
+ */
 TInstantSet *
 tnpointinstset_as_tgeompointi(const TInstantSet *ti)
 {
@@ -92,6 +98,9 @@ tnpointinstset_as_tgeompointi(const TInstantSet *ti)
   return result;
 }
 
+/**
+ * Cast a temporal network point as a temporal geometric point
+ */
 TSequence *
 tnpointseq_as_tgeompointseq(const TSequence *seq)
 {
@@ -121,6 +130,9 @@ tnpointseq_as_tgeompointseq(const TSequence *seq)
   return result;
 }
 
+/**
+ * Cast a temporal network point as a temporal geometric point
+ */
 TSequenceSet *
 tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts)
 {
@@ -134,6 +146,10 @@ tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts)
   return result;
 }
 
+/**
+ * Cast a temporal network point as a temporal geometric point
+ * (dispatch function)
+ */
 Temporal *
 tnpoint_as_tgeompoint_internal(const Temporal *temp)
 {
@@ -151,7 +167,9 @@ tnpoint_as_tgeompoint_internal(const Temporal *temp)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_as_tgeompoint);
-
+/**
+ * Cast a temporal network point as a temporal geometric point
+ */
 PGDLLEXPORT Datum
 tnpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 {
@@ -163,8 +181,9 @@ tnpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Cast tgeompoint as tnpoint */
-
+/**
+ * Cast a temporal geometric point as a temporal network point
+ */
 TInstant *
 tgeompointinst_as_tnpointinst(const TInstant *inst)
 {
@@ -178,6 +197,9 @@ tgeompointinst_as_tnpointinst(const TInstant *inst)
   return result;
 }
 
+/**
+ * Cast a temporal geometric point as a temporal network point
+ */
 TInstantSet *
 tgeompointinstset_as_tnpointinstset(const TInstantSet *ti)
 {
@@ -197,6 +219,9 @@ tgeompointinstset_as_tnpointinstset(const TInstantSet *ti)
   return result;
 }
 
+/**
+ * Cast a temporal geometric point as a temporal network point
+ */
 TSequence *
 tgeompointseq_as_tnpointseq(const TSequence *seq)
 {
@@ -220,6 +245,9 @@ tgeompointseq_as_tnpointseq(const TSequence *seq)
   return result;
 }
 
+/**
+ * Cast a temporal geometric point as a temporal network point
+ */
 TSequenceSet *
 tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts)
 {
@@ -241,6 +269,10 @@ tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts)
   return result;
 }
 
+/**
+ * Cast a temporal geometric point as a temporal network point
+ * (dispatch function)
+ */
 Temporal *
 tgeompoint_as_tnpoint_internal(Temporal *temp)
 {
@@ -258,7 +290,9 @@ tgeompoint_as_tnpoint_internal(Temporal *temp)
 }
 
 PG_FUNCTION_INFO_V1(tgeompoint_as_tnpoint);
-
+/**
+ * Cast a temporal geometric point as a temporal network point
+ */
 PGDLLEXPORT Datum
 tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -301,10 +335,9 @@ tnpoint_set_precision(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-/*
- * Route functions for temporal instants and sequences
+/**
+ * Return the route of the temporal network point
  */
-
 int64
 tnpointinst_route(const TInstant *inst)
 {
@@ -312,6 +345,9 @@ tnpointinst_route(const TInstant *inst)
   return np->rid;
 }
 
+/**
+ * Return the route of the temporal network point
+ */
 int64
 tnpointiseq_route(const TSequence *seq)
 {
@@ -320,11 +356,9 @@ tnpointiseq_route(const TSequence *seq)
   return np->rid;
 }
 
-/*
- * Positions functions
- * Return the network segments covered by the moving object
+/**
+ * Return the network segments covered by the temporal network point
  */
-
 nsegment **
 tnpointinst_positions(const TInstant *inst)
 {
@@ -334,6 +368,9 @@ tnpointinst_positions(const TInstant *inst)
   return result;
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment **
 tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
@@ -350,6 +387,9 @@ tnpointinstset_positions(const TInstantSet *ti, int *count)
   return result;
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment **
 tnpointseq_step_positions(const TSequence *seq, int *count)
 {
@@ -366,6 +406,9 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
   return result;
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment *
 tnpointseq_linear_positions(const TSequence *seq)
 {
@@ -383,6 +426,9 @@ tnpointseq_linear_positions(const TSequence *seq)
   return nsegment_make(rid, minPos, maxPos);
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
@@ -397,6 +443,9 @@ tnpointseq_positions(const TSequence *seq, int *count)
     return tnpointseq_step_positions(seq, count);
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment **
 tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
 {
@@ -414,6 +463,9 @@ tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
   return result;
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment **
 tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
 {
@@ -430,6 +482,9 @@ tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
   return result;
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ */
 nsegment **
 tnpointseqset_positions(const TSequenceSet *ts, int *count)
 {
@@ -441,6 +496,10 @@ tnpointseqset_positions(const TSequenceSet *ts, int *count)
   return result;
 }
 
+/**
+ * Return the network segments covered by the temporal network point
+ * (dispatch function)
+ */
 nsegment **
 tnpoint_positions_internal(const Temporal *temp, int *count)
 {
@@ -461,7 +520,9 @@ tnpoint_positions_internal(const Temporal *temp, int *count)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_positions);
-
+/**
+ * Return the network segments covered by the temporal network point
+ */
 PGDLLEXPORT Datum
 tnpoint_positions(PG_FUNCTION_ARGS)
 {
@@ -478,10 +539,10 @@ tnpoint_positions(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/* Route of a temporal instant */
-
 PG_FUNCTION_INFO_V1(tnpoint_route);
-
+/**
+ * Return the route of a temporal network point
+ */
 PGDLLEXPORT Datum
 tnpoint_route(PG_FUNCTION_ARGS)
 {
@@ -498,11 +559,9 @@ tnpoint_route(PG_FUNCTION_ARGS)
   PG_RETURN_INT64(result);
 }
 
-/*
- * Routes functions
- * Return the routes covered by the moving object
+/**
+ * Return the array of routes of a temporal network point
  */
-
 ArrayType *
 tnpointinst_routes(const TInstant *inst)
 {
@@ -511,6 +570,9 @@ tnpointinst_routes(const TInstant *inst)
   return result;
 }
 
+/**
+ * Return the array of routes of a temporal network point
+ */
 ArrayType *
 tnpointinstset_routes(const TInstantSet *ti)
 {
@@ -526,6 +588,9 @@ tnpointinstset_routes(const TInstantSet *ti)
   return result;
 }
 
+/**
+ * Return the array of routes of a temporal network point
+ */
 ArrayType *
 tnpointseq_routes(const TSequence *seq)
 {
@@ -535,6 +600,9 @@ tnpointseq_routes(const TSequence *seq)
   return result;
 }
 
+/**
+ * Return the array of routes of a temporal network point
+ */
 ArrayType *
 tnpointseqset_routes(const TSequenceSet *ts)
 {
@@ -552,7 +620,9 @@ tnpointseqset_routes(const TSequenceSet *ts)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_routes);
-
+/**
+ * Return the array of routes of a temporal network point
+ */
 PGDLLEXPORT Datum
 tnpoint_routes(PG_FUNCTION_ARGS)
 {
