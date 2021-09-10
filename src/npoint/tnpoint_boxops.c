@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -290,7 +294,7 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));
@@ -314,7 +318,7 @@ boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));

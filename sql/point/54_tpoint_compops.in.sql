@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -33,62 +37,62 @@
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION tpoint_eq(geometry(Point), tgeompoint)
+CREATE FUNCTION tpoint_teq(geometry(Point), tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpoint_eq(tgeompoint, geometry(Point))
+CREATE FUNCTION tpoint_teq(tgeompoint, geometry(Point))
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpoint_eq(tgeompoint, tgeompoint)
+CREATE FUNCTION tpoint_teq(tgeompoint, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = tpoint_eq,
+  PROCEDURE = tpoint_teq,
   LEFTARG = geometry(Point), RIGHTARG = tgeompoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tpoint_eq,
+  PROCEDURE = tpoint_teq,
   LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tpoint_eq,
+  PROCEDURE = tpoint_teq,
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   COMMUTATOR = #=
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION tpoint_eq(geography(Point), tgeogpoint)
+CREATE FUNCTION tpoint_teq(geography(Point), tgeogpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpoint_eq(tgeogpoint, geography(Point))
+CREATE FUNCTION tpoint_teq(tgeogpoint, geography(Point))
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpoint_eq(tgeogpoint, tgeogpoint)
+CREATE FUNCTION tpoint_teq(tgeogpoint, tgeogpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = tpoint_eq,
+  PROCEDURE = tpoint_teq,
   LEFTARG = geography(Point), RIGHTARG = tgeogpoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tpoint_eq,
+  PROCEDURE = tpoint_teq,
   LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = tpoint_eq,
+  PROCEDURE = tpoint_teq,
   LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
   COMMUTATOR = #=
 );

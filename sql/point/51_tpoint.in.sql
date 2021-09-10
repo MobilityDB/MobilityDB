@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -35,7 +39,7 @@ CREATE TYPE tgeogpoint;
 /* temporal, base, contbase, box */
 SELECT register_temporal_type('tgeompoint', 'geometry', true, 'stbox');
 SELECT register_temporal_type('tgeogpoint', 'geography', true, 'stbox');
- 
+
 /******************************************************************************
  * Input/Output
  ******************************************************************************/
@@ -867,43 +871,37 @@ CREATE FUNCTION tgeompoint_cmp(tgeompoint, tgeompoint)
 CREATE OPERATOR < (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_lt,
-  COMMUTATOR = >,
-  NEGATOR = >=,
+  COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_le,
-  COMMUTATOR = >=,
-  NEGATOR = >,
+  COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_ge,
-  COMMUTATOR = <=,
-  NEGATOR = <,
+  COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = tgeompoint_gt,
-  COMMUTATOR = <,
-  NEGATOR = <=,
+  COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 

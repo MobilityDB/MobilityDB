@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -678,8 +682,13 @@ geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
   box->xmax = gbox.xmax;
   box->ymin = gbox.ymin;
   box->ymax = gbox.ymax;
-  bool hasz = FLAGS_GET_Z(gs->flags);
-  bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
+#else
+  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+#endif
   if (hasz || geodetic)
   {
     box->zmin = gbox.zmin;
@@ -1082,17 +1091,17 @@ PGDLLEXPORT Datum
 stbox_set_precision(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum size = PG_GETARG_DATUM(1);
+  Datum prec = PG_GETARG_DATUM(1);
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), size));
-  result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), size));
-  result->ymin = DatumGetFloat8(datum_round(Float8GetDatum(box->ymin), size));
-  result->ymax = DatumGetFloat8(datum_round(Float8GetDatum(box->ymax), size));
+  result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), prec));
+  result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), prec));
+  result->ymin = DatumGetFloat8(datum_round(Float8GetDatum(box->ymin), prec));
+  result->ymax = DatumGetFloat8(datum_round(Float8GetDatum(box->ymax), prec));
   if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
-    result->zmin = DatumGetFloat8(datum_round(Float8GetDatum(box->zmin), size));
-    result->zmax = DatumGetFloat8(datum_round(Float8GetDatum(box->zmax), size));
+    result->zmin = DatumGetFloat8(datum_round(Float8GetDatum(box->zmin), prec));
+    result->zmax = DatumGetFloat8(datum_round(Float8GetDatum(box->zmax), prec));
   }
   PG_RETURN_POINTER(result);
 }

@@ -5,6 +5,10 @@
 -- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2021, PostGIS contributors
+--
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
 -- agreement is hereby granted, provided that the above copyright notice and
@@ -122,10 +126,6 @@ SELECT tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-0
 SELECT tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #= tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
 SELECT tgeompoint 'Interp=Stepwise;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' #= tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
 SELECT tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' #= tgeompoint 'Interp=Stepwise;{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
-
-/* Roundoff errors  */
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #=  tgeompoint_seq(ST_MakePoint(1+1e-12, 1+1e-12), period '[2000-01-01, 2000-01-02]');
-SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' #=  tgeompoint_seq(ST_MakePoint(1+1e-13, 1+1e-13), period '[2000-01-01, 2000-01-02]');
 
 -------------------------------------------------------------------------------
 

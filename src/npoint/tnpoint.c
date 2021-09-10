@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -293,6 +297,9 @@ PGDLLEXPORT Datum
 tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  int32_t srid_tpoint = tpoint_srid_internal(temp);
+  int32_t srid_ways = get_srid_ways();
+  ensure_same_srid(srid_tpoint, srid_ways);
   Temporal *result = tgeompoint_as_tnpoint_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

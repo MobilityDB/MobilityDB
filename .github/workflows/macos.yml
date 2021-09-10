@@ -5,6 +5,10 @@ name: Build for macOS
 
 on:
   workflow_dispatch:
+  push:
+    branch_ignore: gh-pages
+  pull_request:
+    branch_ignore: gh-pages
 
 jobs:
   build:
@@ -17,9 +21,7 @@ jobs:
 
       - name: install deps
         run: |
-          brew install postgresql postgis proj liblwgeom
-          # installed with postgis just making it splicit:
-          brew install json-c
+          brew install postgresql postgis proj gsl
 
       - name: Configure
         run: |
@@ -36,8 +38,8 @@ jobs:
       - name: test install
         run: |
           pg_ctl -D /usr/local/var/postgres start
-          sudo -u postgres createdb  ___mob___test___
-          sudo -u postgres psql   -d ___mob___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+          createdb ___mobdb___test___
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
 
       - name: Test
         run: |

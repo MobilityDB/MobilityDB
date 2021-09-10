@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -33,8 +37,6 @@
  */
 
 #include "npoint/tnpoint_static.h"
-
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
 
 #include <assert.h>
 #include <libpq/pqformat.h>
@@ -101,9 +103,14 @@ get_srid_ways()
   {
     SPITupleTable *tuptable = SPI_tuptable;
     Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
-    if (!isNull)
-      srid_ways = DatumGetInt32(value);
+    if (isNull)
+      elog(ERROR, "Cannot determine SRID of the ways table");
+
+    srid_ways = DatumGetInt32(value);
   }
+  else
+    elog(ERROR, "Cannot determine SRID of the ways table");
+
   SPI_finish();
   return srid_ways;
 }
@@ -622,7 +629,7 @@ nsegment_set_precision(PG_FUNCTION_ARGS)
 bool
 npoint_eq_internal(const npoint *np1, const npoint *np2)
 {
-  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < EPSILON;
+  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
 }
 
 PG_FUNCTION_INFO_V1(npoint_eq);
@@ -768,8 +775,8 @@ npoint_gt(PG_FUNCTION_ARGS)
 bool
 nsegment_eq_internal(const nsegment *ns1, const nsegment *ns2)
 {
-  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < EPSILON &&
-    fabs(ns1->pos2 - ns2->pos2) < EPSILON;
+  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MOBDB_EPSILON &&
+    fabs(ns1->pos2 - ns2->pos2) < MOBDB_EPSILON;
 }
 
 PG_FUNCTION_INFO_V1(nsegment_eq);
@@ -1118,8 +1125,13 @@ PGDLLEXPORT Datum
 geom_as_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  /* Ensure validity of operation */
   ensure_non_empty(gs);
   ensure_point_type(gs);
+  int32_t srid_geom = gserialized_get_srid(gs);
+  int32_t srid_ways = get_srid_ways();
+  ensure_same_srid(srid_geom, srid_ways);
+
   npoint *result = geom_as_npoint_internal(PointerGetDatum(gs));
   if (result == NULL)
     PG_RETURN_NULL();
@@ -1161,7 +1173,7 @@ nsegment_as_geom_internal(const nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
   Datum result;
-  if (fabs(ns->pos1 - ns->pos2) < EPSILON)
+  if (fabs(ns->pos1 - ns->pos2) < MOBDB_EPSILON)
     result = call_function2(LWGEOM_line_interpolate_point, line,
       Float8GetDatum(ns->pos1));
   else

@@ -32,8 +32,6 @@
 #ifndef __STBOX_H__
 #define __STBOX_H__
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #if POSTGRESQL_VERSION_NUMBER < 110000

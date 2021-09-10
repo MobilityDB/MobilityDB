@@ -10243,6 +10243,12 @@ SELECT atTBox(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000
  Interp=Stepwise;{[1.5@2000-01-01 00:00:00+00, 1.5@2000-01-02 00:00:00+00)}
 (1 row)
 
+SELECT atTbox(tfloat '[1@2000-01-01, 2@2000-01-02)', tbox 'TBOX((2,2000-01-02),(2,2000-01-02))');
+ attbox 
+--------
+ 
+(1 row)
+
 SELECT minusTBox(tint '1@2000-01-01', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
  minustbox 
 -----------

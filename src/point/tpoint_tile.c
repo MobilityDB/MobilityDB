@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -243,16 +247,20 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     }
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-    /* Since we pass by default Point(0 0 0) as origin independently of the input 
+    /* Since we pass by default Point(0 0 0) as origin independently of the input
      * STBOX, we test the same spatial dimensionality only for STBOX Z */
     if (MOBDB_FLAGS_GET_Z(bounds->flags))
       ensure_same_spatial_dimensionality_stbox_gs(bounds, sorigin);
     int32 srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
-      error_if_srid_mismatch(srid, gs_srid);
+      ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
+#if POSTGIS_VERSION_NUMBER < 30000
     if (FLAGS_GET_Z(sorigin->flags))
+#else
+    if (FLAGS_GET_Z(sorigin->gflags))
+#endif
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -288,7 +296,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate box */
   tuple_arr[1] = PointerGetDatum(stbox_tile_get(state->x, state->y, state->z,
-    state->t, state->size, state->tunits, MOBDB_FLAGS_GET_Z(state->box.flags), 
+    state->t, state->size, state->tunits, MOBDB_FLAGS_GET_Z(state->box.flags),
     MOBDB_FLAGS_GET_T(state->box.flags), state->box.srid));
   /* Advance state */
   stbox_tile_state_next(state);
@@ -337,9 +345,13 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   int32 srid = gserialized_get_srid(point);
   int32 gs_srid = gserialized_get_srid(sorigin);
   if (gs_srid != SRID_UNKNOWN)
-    ensure_same_srid_gs(point, sorigin);
+    ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;
-  bool hasz = FLAGS_GET_Z(point->flags);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool hasz = (bool) FLAGS_GET_Z(point->flags);
+#else
+  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
+#endif
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
@@ -379,11 +391,11 @@ stbox_upper_bound(const STBOX *box)
   /* Compute the 2D upper bound of the box */
   LWGEOM *points[3];
   /* Top left */
-  points[0] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmin, box->ymax); 
+  points[0] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmin, box->ymax);
   /* Top right */
-  points[1] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymax); 
+  points[1] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymax);
   /* Bottom left */
-  points[2] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymin); 
+  points[2] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymin);
   FLAGS_SET_GEODETIC(points[0]->flags, false);
   FLAGS_SET_GEODETIC(points[1]->flags, false);
   FLAGS_SET_GEODETIC(points[2]->flags, false);
@@ -425,18 +437,26 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
+#if POSTGIS_VERSION_NUMBER < 30000
     ensure_same_geodetic(temp->flags, sorigin->flags);
+#else
+    ensure_same_geodetic(temp->flags, sorigin->gflags);
+#endif
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(&bounds, temp);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
-      error_if_srid_mismatch(srid, gs_srid);
+      ensure_same_srid(srid, gs_srid);
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
+#if POSTGIS_VERSION_NUMBER < 30000
     if (FLAGS_GET_Z(sorigin->flags))
+#else
+    if (FLAGS_GET_Z(sorigin->gflags))
+#endif
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -467,7 +487,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
-    /* Generate the tile 
+    /* Generate the tile
      * We must generate a 2D/3D geometry for keeping the bounds and after we
      * set the box to 2D so that we can project a 3D point to a 2D geometry */
     bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
@@ -545,16 +565,24 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     int64 tunits = get_interval_units(duration);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
+#if POSTGIS_VERSION_NUMBER < 30000
     ensure_same_geodetic(temp->flags, sorigin->flags);
+#else
+    ensure_same_geodetic(temp->flags, sorigin->gflags);
+#endif
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(&bounds, temp);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
-      error_if_srid_mismatch(srid, gs_srid);
+      ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
+#if POSTGIS_VERSION_NUMBER < 30000
     if (FLAGS_GET_Z(sorigin->flags))
+#else
+    if (FLAGS_GET_Z(sorigin->gflags))
+#endif
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -585,7 +613,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
-    /* Generate the tile 
+    /* Generate the tile
      * We must generate a 2D/3D geometry for keeping the bounds and after we
      * set the box to 2D so that we can project a 3D point to a 2D geometry */
     bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);

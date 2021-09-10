@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written 
  * agreement is hereby granted, provided that the above copyright notice and
@@ -35,31 +39,31 @@
 
 -- Temporal boolean
 
-CREATE FUNCTION temporal_eq(boolean, tbool)
+CREATE FUNCTION temporal_teq(boolean, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tbool, boolean)
+CREATE FUNCTION temporal_teq(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tbool, tbool)
+CREATE FUNCTION temporal_teq(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = boolean, RIGHTARG = tbool,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tbool, RIGHTARG = boolean,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tbool, RIGHTARG = tbool,
   COMMUTATOR = #=
 );
@@ -68,49 +72,49 @@ CREATE OPERATOR #= (
 
 -- Temporal integer
 
-CREATE FUNCTION temporal_eq(integer, tint)
+CREATE FUNCTION temporal_teq(integer, tint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tint, integer)
+CREATE FUNCTION temporal_teq(tint, integer)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tint, float)
+CREATE FUNCTION temporal_teq(tint, float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tint, tint)
+CREATE FUNCTION temporal_teq(tint, tint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tint, tfloat)
+CREATE FUNCTION temporal_teq(tint, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = integer, RIGHTARG = tint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tint, RIGHTARG = integer,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tint, RIGHTARG = float,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tint, RIGHTARG = tint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tint, RIGHTARG = tfloat,
   COMMUTATOR = #=
 );
@@ -119,49 +123,49 @@ CREATE OPERATOR #= (
 
 -- float #= <Type>
 
-CREATE FUNCTION temporal_eq(float, tint)
+CREATE FUNCTION temporal_teq(float, tint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(float, tfloat)
+CREATE FUNCTION temporal_teq(float, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tfloat, float)
+CREATE FUNCTION temporal_teq(tfloat, float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tfloat, tint)
+CREATE FUNCTION temporal_teq(tfloat, tint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tfloat, tfloat)
+CREATE FUNCTION temporal_teq(tfloat, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = float, RIGHTARG = tint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = float, RIGHTARG = tfloat,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tfloat, RIGHTARG = float,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tfloat, RIGHTARG = tint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tfloat, RIGHTARG = tfloat,
   COMMUTATOR = #=
 );
@@ -170,31 +174,31 @@ CREATE OPERATOR #= (
 
 -- Temporal text
 
-CREATE FUNCTION temporal_eq(text, ttext)
+CREATE FUNCTION temporal_teq(text, ttext)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(ttext, text)
+CREATE FUNCTION temporal_teq(ttext, text)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(ttext, ttext)
+CREATE FUNCTION temporal_teq(ttext, ttext)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = text, RIGHTARG = ttext,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = ttext, RIGHTARG = text,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = ttext, RIGHTARG = ttext,
   COMMUTATOR = #=
 );

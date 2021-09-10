@@ -5,6 +5,10 @@
 -- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2021, PostGIS contributors
+--
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
 -- agreement is hereby granted, provided that the above copyright notice and
@@ -103,20 +107,22 @@ SELECT appendInstant(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-0
 -- Cast functions
 -------------------------------------------------------------------------------
 
-SELECT astext(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint);
-SELECT astext(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint);
-SELECT astext(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint);
-SELECT astext(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint);
+SELECT astext(setPrecision(tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint, 6));
+SELECT astext(setPrecision(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint, 6));
+SELECT astext(setPrecision(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint, 6));
+SELECT astext(setPrecision(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint, 6));
 
 SELECT setPrecision((tnpoint 'Npoint(1, 0.5)@2000-01-01'::tgeompoint)::tnpoint, 6);
 SELECT setPrecision((tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'::tgeompoint)::tnpoint, 6);
 SELECT setPrecision((tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'::tgeompoint)::tnpoint, 6);
 SELECT setPrecision((tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05] }'::tgeompoint)::tnpoint, 6);
 -- NULL
-SELECT tgeompoint 'Point(-1 -1)@2000-01-01'::tnpoint;
+SELECT tgeompoint 'SRID=5676;Point(-1 -1)@2000-01-01'::tnpoint;
 SELECT tgeompoint 'SRID=5676;{POINT(48.7186629128278 77.7640705101509)@2000-01-01, POINT(48.71 77.76)@2000-01-02}'::tnpoint;
 SELECT tgeompoint 'SRID=5676;[POINT(48.7186629128278 77.7640705101509)@2000-01-01, POINT(48.71 77.76)@2000-01-02]'::tnpoint;
 SELECT tgeompoint 'SRID=5676;{[POINT(62.7866330839742 80.1435561997142)@2000-01-01, POINT(62.7866330839742 80.1435561997142)@2000-01-02],[POINT(48.7186629128278 77.7640705101509)@2000-01-03, POINT(48.71 77.76)@2000-01-04]}'::tnpoint;
+/* Errors */
+SELECT tgeompoint 'Point(-1 -1)@2000-01-01'::tnpoint;
 
 -------------------------------------------------------------------------------
 -- Accessor Functions

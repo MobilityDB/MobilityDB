@@ -5,6 +5,10 @@
 -- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2021, PostGIS contributors
+--
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written 
 -- agreement is hereby granted, provided that the above copyright notice and
@@ -28,14 +32,14 @@
 -- Multidimensional tiling
 -------------------------------------------------------------------------------
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(i, 2, 1) AS bl FROM tbl_intrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).range) FROM (SELECT bucketList(f, 2.5, 1.5) AS bl FROM tbl_floatrange) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days', '2001-06-01') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (bl).index, COUNT((bl).period) FROM (SELECT bucketList(p, '2 days', '2001-06-01') AS bl FROM tbl_period) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 -------------------------------------------------------------------------------
 
@@ -52,8 +56,8 @@ SELECT rangeBucket(f, 2.5, 1.5), COUNT(*) FROM tbl_float GROUP BY 1 ORDER BY 2 D
 
 -------------------------------------------------------------------------------
 
-SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT timeBucket(t, '1 week'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT timeBucket(t, '1 week', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 SELECT periodBucket(t, interval '2 days'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 SELECT periodBucket(t, interval '2 days', timestamptz '2001-06-01'), COUNT(*) FROM tbl_timestamptz GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
@@ -75,10 +79,10 @@ SELECT extent(multidimTile(t1.f, t2.t, 2.5, '1 week', 3.5, '2001-01-15')) FROM
 -- valueSplit
 -------------------------------------------------------------------------------
 
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2, 1) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2, 1) AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueSplit(temp, 2.5, 1.5) AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice
@@ -92,14 +96,14 @@ SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
 -- timeSplit
 -------------------------------------------------------------------------------
 
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tbool) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).time, COUNT((sp).temp) FROM (SELECT timeSplit(temp, '2 hours', '2001-06-01') AS sp FROM tbl_ttext) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 WITH temp1 AS (
   SELECT k, temp, (tb).temp AS slice
@@ -113,11 +117,11 @@ SELECT k FROM temp2 WHERE temp <> merge ORDER BY k;
 -- valueTimeSplit
 -------------------------------------------------------------------------------
 
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days', 1, '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2, '2 days', 1, '2001-06-01') AS sp FROM tbl_tint) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
-SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days', 1.5, '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
+SELECT (sp).number, COUNT((sp).tnumber) FROM (SELECT valueTimeSplit(temp, 2.5, '2 days', 1.5, '2001-06-01') AS sp FROM tbl_tfloat) t GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT 3;
 
 WITH temp1 AS (
   SELECT k, temp, (tb).tnumber AS slice

@@ -99,6 +99,12 @@ SELECT extent(temp::period) FROM tbl_tfloat_big;
  [2000-12-31 23:36:00+00, 2001-12-31 02:50:00+00)
 (1 row)
 
+SELECT numPeriods(tunion(temp::period)) from tbl_tfloat_big;
+ numperiods 
+------------
+       3995
+(1 row)
+
 reset parallel_setup_cost;
 RESET
 reset parallel_tuple_cost;

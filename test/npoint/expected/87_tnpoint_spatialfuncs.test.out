@@ -34,58 +34,58 @@ SELECT srid(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)
  5676
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                st_astext                 
-------------------------------------------
- POINT(48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(trajectory(tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+         st_astext          
+----------------------------
+ POINT(48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- MULTIPOINT(48.7186629128278 77.7640705101509,62.7866330839742 80.1435561997142)
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ MULTIPOINT(48.718663 77.764071,62.786633 80.143556)
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                                    st_astext                                                     
-------------------------------------------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.0807154867798 81.2081503681839,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                               st_astext                                
+------------------------------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.080715 81.20815,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                                                                   st_astext                                                                                   
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- GEOMETRYCOLLECTION(POINT(27.2529167893545 77.6566612929513),LINESTRING(69.790368869663 81.4520975905736,69.0807154867798 81.2081503681839,48.7186629128278 77.7640705101509))
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                                                       st_astext                                                       
+-----------------------------------------------------------------------------------------------------------------------
+ GEOMETRYCOLLECTION(POINT(27.252917 77.656661),LINESTRING(69.790369 81.452098,69.080715 81.20815,48.718663 77.764071))
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'));
-                                   st_astext                                    
---------------------------------------------------------------------------------
- MULTIPOINT(48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(trajectory(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ MULTIPOINT(48.718663 77.764071,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                                    st_astext                                                     
-------------------------------------------------------------------------------------------------------------------
- MULTIPOINT(27.2529167893545 77.6566612929513,48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(trajectory(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.2)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                                st_astext                                
+-------------------------------------------------------------------------
+ MULTIPOINT(27.252917 77.656661,48.718663 77.764071,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02}'));
-                st_astext                
------------------------------------------
- POINT(69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.2)@2000-01-02}'), 6));
+         st_astext          
+----------------------------
+ POINT(69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint '{[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02], [Npoint(2, 0.1)@2000-01-03, Npoint(2, 0.5)@2000-01-04]}'));
-                                                                                           st_astext                                                                                            
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- MULTILINESTRING((83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.5487374849617 71.8153562862426),(15.8969020444157 94.2216113741267,24.9817138403668 80.9696513091864))
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02], [Npoint(2, 0.1)@2000-01-03, Npoint(2, 0.5)@2000-01-04]}'), 6));
+                                                        st_astext                                                        
+-------------------------------------------------------------------------------------------------------------------------
+ MULTILINESTRING((83.283201 86.090332,69.080715 81.20815,13.548737 71.815356),(15.896902 94.221611,24.981714 80.969651))
 (1 row)
 
-SELECT ST_AsText(trajectory(tnpoint '{[npoint(2, 0.2)@2000-01-01, npoint(2, 0.3)@2000-01-02],[npoint(1, 0.0)@2000-01-03, npoint(1, 1.0)@2000-01-04]}'));
-                                                                                           st_astext                                                                                            
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- MULTILINESTRING((83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.5487374849617 71.8153562862426),(18.1681049934035 90.9086213578916,20.4393079423913 87.5956313416565))
+SELECT ST_AsText(setPrecision(trajectory(tnpoint '{[npoint(2, 0.2)@2000-01-01, npoint(2, 0.3)@2000-01-02],[npoint(1, 0.0)@2000-01-03, npoint(1, 1.0)@2000-01-04]}'), 6));
+                                                        st_astext                                                        
+-------------------------------------------------------------------------------------------------------------------------
+ MULTILINESTRING((83.283201 86.090332,69.080715 81.20815,13.548737 71.815356),(18.168105 90.908621,20.439308 87.595631))
 (1 row)
 
 SELECT setPrecision(atGeometry(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6);
@@ -316,40 +316,40 @@ SELECT round(speed(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(
  Interp=Stepwise;{[0@2000-01-01 00:00:00+00, 0@2000-01-03 00:00:00+00], [0@2000-01-04 00:00:00+00, 0@2000-01-05 00:00:00+00]}
 (1 row)
 
-SELECT ST_AsText(twCentroid(tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                st_astext                 
-------------------------------------------
- POINT(48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(twCentroid(tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+         st_astext          
+----------------------------
+ POINT(48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(twCentroid(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                st_astext                
------------------------------------------
- POINT(53.4079863032099 78.557232406672)
+SELECT ST_AsText(setPrecision(twCentroid(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+         st_astext          
+----------------------------
+ POINT(53.407986 78.557232)
 (1 row)
 
-SELECT ST_AsText(twCentroid(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                st_astext                 
-------------------------------------------
- POINT(57.5035819448232 79.2809487026474)
+SELECT ST_AsText(setPrecision(twCentroid(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+         st_astext          
+----------------------------
+ POINT(57.503582 79.280949)
 (1 row)
 
-SELECT ST_AsText(twCentroid(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                st_astext                
------------------------------------------
- POINT(47.4200268930003 78.739519566082)
+SELECT ST_AsText(setPrecision(twCentroid(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+         st_astext         
+---------------------------
+ POINT(47.420027 78.73952)
 (1 row)
 
-SELECT ST_AsText(twCentroid(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                st_astext                
------------------------------------------
- POINT(62.771508434032 80.2029554727531)
+SELECT ST_AsText(setPrecision(twCentroid(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+         st_astext          
+----------------------------
+ POINT(62.771508 80.202955)
 (1 row)
 
-SELECT ST_AsText(twCentroid(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}'));
-                st_astext                
------------------------------------------
- POINT(62.771508434032 80.2029554727531)
+SELECT ST_AsText(setPrecision(twCentroid(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}'), 6));
+         st_astext          
+----------------------------
+ POINT(62.771508 80.202955)
 (1 row)
 
 SELECT round(azimuth(tnpoint '[Npoint(1, 0.0)@2000-01-01, Npoint(1, 1.0)@2000-01-02]'), 6);
@@ -1120,363 +1120,363 @@ SELECT round(nearestApproachDistance(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoin
  0.000000
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
-                             st_astext                             
--------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,50 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+                  st_astext                   
+----------------------------------------------
+ LINESTRING(48.718663 77.764071,50 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(62.7866330839742 80.1435561997142,62.7866330839742 80.1435561997142)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(62.786633 80.143556,62.786633 80.143556)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(55.752648 78.953813,55.752648 78.953813)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(55.752648 78.953813,55.752648 78.953813)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty'));
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', geometry 'SRID=5676;Polygon empty'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty'));
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', geometry 'SRID=5676;Polygon empty'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty'));
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty'));
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty'));
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', geometry 'SRID=5676;Polygon empty'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty'));
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', geometry 'SRID=5676;Polygon empty'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                             st_astext                             
--------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,50 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+                  st_astext                   
+----------------------------------------------
+ LINESTRING(48.718663 77.764071,50 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(62.7866330839742 80.1435561997142,62.7866330839742 80.1435561997142)
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(62.786633 80.143556,62.786633 80.143556)
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(55.752648 78.953813,55.752648 78.953813)
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(55.752647998401 78.9538133549325,55.752647998401 78.9538133549325)
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon((50 50,50 100,100 100,100 50,50 50))', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(55.752648 78.953813,55.752648 78.953813)
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2000-01-01'));
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
+SELECT ST_AsText(setPrecision(shortestLine(geometry 'SRID=5676;Polygon empty', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
  st_astext 
 -----------
  
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', npoint 'Npoint(2, 0.5)'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01', npoint 'Npoint(2, 0.5)'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npoint 'Npoint(2, 0.5)'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', npoint 'Npoint(2, 0.5)'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(27.252917 77.656661,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', npoint 'Npoint(2, 0.5)'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', npoint 'Npoint(2, 0.5)'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(27.252917 77.656661,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(27.252917 77.656661,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(27.2529167893545 77.6566612929513,24.9817138403668 80.9696513091864)
+SELECT ST_AsText(setPrecision(shortestLine(npoint 'Npoint(2, 0.5)', tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(27.252917 77.656661,24.981714 80.969651)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,62.7866330839742 80.1435561997142)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,62.786633 80.143556)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                    
---------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                    
---------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint 'Npoint(1, 0.5)@2000-01-01',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(62.7866330839742 80.1435561997142,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(62.786633 80.143556,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(62.7866330839742 80.1435561997142,62.7866330839742 80.1435561997142)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(62.786633 80.143556,62.786633 80.143556)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Npoint(1, 0.5)@2000-01-01'));
-                                   st_astext                                    
---------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Npoint(1, 0.5)@2000-01-01'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'));
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,48.7186629128278 77.7640705101509)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,48.718663 77.764071)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
-SELECT ST_AsText(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'));
-                                   st_astext                                   
--------------------------------------------------------------------------------
- LINESTRING(69.790368869663 81.4520975905736,69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(shortestLine(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}',  tnpoint 'Interp=Stepwise;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}'), 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(69.790369 81.452098,69.790369 81.452098)
 (1 row)
 
