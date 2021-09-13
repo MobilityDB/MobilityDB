@@ -23,6 +23,7 @@ SET(LOCAL_FILES
   ${FILE_72}
   74_tpoint_datagen
   76_tpoint_analytics
+  78_tpoint_discfrechet
   )
 
 foreach (f ${LOCAL_FILES})
