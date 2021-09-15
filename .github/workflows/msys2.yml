@@ -1,5 +1,6 @@
 name: Build for windows using msys2
-on: [push, pull_request]
+on:
+  # [push, pull_request]
 
 jobs:
   build:
