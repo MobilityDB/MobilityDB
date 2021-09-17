@@ -49,6 +49,297 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
+ * Custom structures for storing a sparse matrix for distances
+ *****************************************************************************/
+
+/**
+ * Structure to represent elements of the dynamic array representing the
+ * sparse matrix for distances
+ */
+typedef struct {
+  int i;
+  int j;
+  double distance;
+} distance_t;
+
+/**
+ * Structure to represent a sparse matrix for distances
+ */
+typedef struct
+{
+  int nelems;   /**< Number of elements we are currently storing */
+  int maxelems; /**< Number of elements we have space for in distlist */
+  distance_t *distlist; /**< Dynamic array of coordinates and distances */
+} DISTARRAY;
+
+/**
+ * Construct an empty distance array.
+ */
+DISTARRAY *
+distarray_construct(int maxelems)
+{
+  /* Create the structure */
+  DISTARRAY *da = malloc(sizeof(DISTARRAY));
+  da->nelems = 0;
+  da->maxelems = maxelems;
+  /* Allocate the dynamic array for the matrix cells */
+  if (maxelems > 0)
+    da->distlist = malloc(sizeof(distance_t) * maxelems);
+  else
+    da->distlist = NULL;
+  return da;
+}
+
+/**
+ * Append a distance into a distance array.
+ */
+int
+distarray_append(DISTARRAY *da, const distance_t *dist)
+{
+  if (!da || !dist)
+    return false;
+  /* If we have no storage, let's allocate some */
+  if (da->maxelems == 0 || ! da->distlist)
+  {
+    da->maxelems = 32;
+    da->nelems = 0;
+    da->distlist = malloc(sizeof(distance_t) * da->maxelems);
+  }
+  /* Error out if we have a bad situation */
+  if (da->nelems > da->maxelems)
+  {
+    printf("nelems (%d) is greater than maxelems (%d)", da->nelems, da->maxelems);
+    return false;
+  }
+  /* Check if we have enough storage, add more if necessary */
+  if (da->nelems == da->maxelems)
+  {
+    da->maxelems *= 2;
+    da->distlist = realloc(da->distlist, sizeof(distance_t) * da->maxelems);
+  }
+  /* Copy the given element */
+  distance_t *elem = da->distlist + da->nelems;
+  elem->i = dist->i; elem->j = dist->j; elem->distance = dist->distance;
+  /* Increment the number of elements */
+  ++da->nelems;
+  return true;
+}
+
+/*
+ * Add an element into a distance array.
+ *
+ * @param[in] da Distance array
+ * @param[in] dist Matrix cell
+ * @param[in] where Location where the value is added
+*/
+int
+distarray_add(DISTARRAY *da, const distance_t *dist, int where)
+{
+  distance_t *elem;
+  if (!da || !dist)
+    return false;
+  /* Error on invalid offset value */
+  if (where > da->nelems)
+  {
+    printf("distarray_add: offset out of range (%d)", where);
+    return false;
+  }
+  /* If we have no storage, let's allocate some */
+  if (da->maxelems == 0 || ! da->distlist)
+  {
+    da->maxelems = 32;
+    da->nelems = 0;
+    da->distlist = malloc(sizeof(distance_t) * da->maxelems);
+  }
+  /* Error out if we have a bad situation */
+  if (da->nelems > da->maxelems)
+  {
+    printf("nelems (%d) is greater than maxelems (%d)", da->nelems, da->maxelems);
+    return false;
+  }
+  /* Check if we have enough storage, add more if necessary */
+  if (da->nelems == da->maxelems)
+  {
+    da->maxelems *= 2;
+    da->distlist = realloc(da->distlist, sizeof(distance_t) * da->maxelems);
+  }
+  /* Make space to insert the new point */
+  elem = da->distlist + where;
+  if (where < da->nelems)
+  {
+    size_t copy_size = sizeof(distance_t) * (da->nelems - where);
+    memmove(elem + 1, elem, copy_size);
+  }
+  /* We have one more element */
+  ++da->nelems;
+  /* Copy the new point into the gap */
+  memcpy(elem, dist, sizeof(distance_t));
+  return true;
+}
+
+/**
+ * Free a distance array.
+ */
+void
+distarray_free(DISTARRAY *da)
+{
+  if (da)
+  {
+    if (da->distlist)
+      free(da->distlist);
+    free(da);
+  }
+}
+
+/**
+ * Comparison of 2D array indices
+ */
+int
+indices_cmp(int i1, int j1, int i2, int j2)
+{
+  int cmp = (i1 - i2);
+  return cmp ? cmp : (int) (j1 - j2);
+}
+
+/**
+ * Returns the location of the index in the distance array using binary
+ * search.
+ *
+ * If the index is in the distance array, its location is returned in the
+ * output parameter. Otherwise, returns a number encoding whether the index is
+ * before, between two indices, or after the indices in the distance array.
+ * For example, given a distance array composed of 3 indices and a given
+ * index (i,j), the value returned in the output parameter is as follows:
+ * @code
+ *            0        1        2
+ *            |        |        |
+ * 1) (i,j) ^                          => result = 0
+ * 2)   (i,j) ^                        => result = 0, found = true
+ * 3)        (i,j) ^                   => result = 1
+ * 4)               (i,j) ^            => result = 2
+ * 5)                       (i,j) ^    => result = 3
+ * @endcode
+ *
+ * @param[in] da Distance array
+ * @param[in] i,j Index to search
+ * @param[out] loc Location
+ * @result Returns true if the index is contained in the index array
+ */
+bool
+distarray_find_element(const DISTARRAY *da, int i, int j, int *loc)
+{
+  int first = 0;
+  int last = da->nelems - 1;
+  int cmp;
+  int middle = 0; /* make compiler quiet */
+  const distance_t *dist = NULL; /* make compiler quiet */
+  while (first <= last)
+  {
+    middle = (first + last)/2;
+    dist = da->distlist + middle;
+    cmp = indices_cmp(dist->i, dist->j, i, j);
+    if (cmp == 0)
+    {
+      *loc = middle;
+      return true;
+    }
+    if (cmp > 0)
+      last = middle - 1;
+    else
+      first = middle + 1;
+  }
+  if (cmp < 0)
+    middle++;
+  *loc = middle;
+  return false;
+}
+
+/**
+ * Add an element to the distance array if the matrix cell does not exist. 
+ * If the matrix cell already exists, it updates its distance value.
+ */
+void
+distarray_add_distance(DISTARRAY *da, int i, int j, double distance)
+{
+  int loc;
+  bool found = distarray_find_element(da, i, j, &loc);
+  if (! found)
+  {
+    distance_t dist;
+    dist.i = i; dist.j = j; dist.distance = distance;
+    distarray_add(da, &dist, loc);
+  }
+  else
+  {
+    distance_t *elem = da->distlist + loc;
+    elem->distance = distance;
+  }
+  return;
+}
+
+/**
+ * Gets the distance associated to the coordinates in the distance array.
+ *
+ * @param[in] da Distance array
+ * @param[in] i,j Array coordinates
+ * @note Returns infinity if the matrix cell does not exist
+ */
+double
+distarray_get_distance(const DISTARRAY *da, int i, int j)
+{
+  int loc;
+  bool found = distarray_find_element(da, i, j, &loc);
+  double result;
+  if (found)
+  {
+    distance_t *elem = da->distlist + loc;
+    result = elem->distance;
+  }
+  else 
+    result = INFINITY;
+  return result;
+}
+
+/**
+ * Prints the distance array
+ *
+ * @param[in] da Distance array
+ */
+void
+distarray_print(const DISTARRAY *da)
+{
+  const distance_t *dist;
+  for (int i = 0; i < da->nelems; i++)
+  {
+    dist = da->distlist + i;
+    printf("(%d,%d): %lf\n", dist->i, dist->j, dist->distance);
+  }
+  printf("Number of elements: %d\n", da->nelems);
+  return;
+}
+
+/**
+ * Comparison of 2D array indices
+ */
+int
+distances_cmp_index(distance_t *d1, distance_t *d2)
+{
+  int cmp = (d1->i - d2->i);
+  return cmp ? cmp : (int) (d1->j - d2->j);
+}
+
+/**
+ * Sort function for distance array
+ */
+void
+sort_distances_index(const DISTARRAY *da)
+{
+  qsort(da->distlist, (size_t) da->nelems, sizeof(distance_t),
+    (qsort_comparator) &distances_cmp_index);
+  return;
+}
+
+/*****************************************************************************
  * Hash structures for storing a sparse matrix
  *****************************************************************************/
 
@@ -61,35 +352,35 @@ typedef struct {
   indices_t key;      /* key */
   double distance;
   UT_hash_handle hh;  /* makes this structure hashable */
-} distance_t;
+} hdistance_t;
 
-distance_t *distances = NULL;
+hdistance_t *distances = NULL;
 
 void add_distance(int i, int j, double distance)
 {
-  distance_t *s;
+  hdistance_t *s;
   indices_t key;
   key.i = i; key.j = j;
   HASH_FIND(hh, distances, &key, sizeof(indices_t), s); /* (i,j) already in the hash? */
   if (s == NULL)
   {
-    s = (distance_t *) malloc(sizeof *s);
+    s = (hdistance_t *) malloc(sizeof *s);
     s->key.i = i; s->key.j = j;
     HASH_ADD(hh, distances, key, sizeof(indices_t), s);   /* key: name of key field */
   }
   s->distance = distance;
 }
 
-distance_t *find_distance(int i, int j)
+hdistance_t *find_distance(int i, int j)
 {
-  distance_t *s;
+  hdistance_t *s;
   indices_t key;
   key.i = i; key.j = j;
   HASH_FIND(hh, distances, &key, sizeof(indices_t), s); /* s: output pointer */
   return s;
 }
 
-void delete_distance(distance_t *distance)
+void delete_distance(hdistance_t *distance)
 {
   HASH_DEL(distances, distance);  /* distance: pointer to deletee */
   free(distance);
@@ -97,7 +388,7 @@ void delete_distance(distance_t *distance)
 
 void delete_all_distances()
 {
-  distance_t *current_distance, *tmp;
+  hdistance_t *current_distance, *tmp;
   HASH_ITER(hh, distances, current_distance, tmp)
   {
     HASH_DEL(distances, current_distance);  /* delete it (distances advances to next) */
@@ -107,19 +398,19 @@ void delete_all_distances()
 
 void print_distances()
 {
-  distance_t *s;
-  for (s = distances; s != NULL; s = (distance_t *)(s->hh.next))
+  hdistance_t *s;
+  for (s = distances; s != NULL; s = (hdistance_t *)(s->hh.next))
   {
     printf("key: (%d,%d), distance: %lf\n", s->key.i, s->key.j, s->distance);
   }
 }
 
-int distance_sort(distance_t *a, distance_t *b)
+int distance_sort(hdistance_t *a, hdistance_t *b)
 {
   return (a->distance > b->distance) - (a->distance < b->distance);
 }
 
-int key_sort(distance_t *a, distance_t *b)
+int key_sort(hdistance_t *a, hdistance_t *b)
 {
   int cmp = (a->key.i - b->key.i);
   return cmp ? cmp : (a->key.j - b->key.j);
@@ -173,7 +464,7 @@ bresenham(int x0, int y0, int x1, int y1, int *count)
     {
       err += dx;
       y0 += sy; 
-    } /* e_xy+e_y < 0 */
+    } /* e_xy + e_y < 0 */
   }
   *count = j;
   return result;
@@ -195,7 +486,20 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2,
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  return DatumGetFloat8(func(value1, value2));
+  double result;
+  if (MOBDB_FLAGS_GET_Z(inst1->flags)) /* 3D */
+  {
+    const POINT3DZ *p1 = datum_get_point3dz_p(value1);
+    const POINT3DZ *p2 = datum_get_point3dz_p(value2);
+    result = distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2);
+  }
+  else
+  {
+    const POINT2D *p1 = datum_get_point2d_p(value1);
+    const POINT2D *p2 = datum_get_point2d_p(value2);
+    result = distance2d_pt_pt(p1, p2);
+  }
+  return result;
 }
 
 /*****************************************************************************
@@ -562,9 +866,9 @@ tpointseq_dfd_fast(const TSequence *seq1, const TSequence *seq2)
  *****************************************************************************/
 
 double
-get_distance(int i, int j)
+get_hdistance(int i, int j)
 {
-  distance_t *s;
+  hdistance_t *s;
   indices_t key;
   key.i = i; key.j = j;
   HASH_FIND(hh, distances, &key, sizeof(indices_t), s); /* s: output pointer */
@@ -572,28 +876,28 @@ get_distance(int i, int j)
 }
 
 double
-get_corner_min_sparse(int i, int j)
+get_corner_min_hsparse(int i, int j)
 {
   double result;
   if (i > 0 && j > 0)
-    result = Min(get_distance(i - 1, j - 1),
-      Min(get_distance(i, j - 1), get_distance(i - 1, j)));
+    result = Min(get_hdistance(i - 1, j - 1),
+      Min(get_hdistance(i, j - 1), get_hdistance(i - 1, j)));
   else if (i == 0 && j == 0)
-    result = get_distance(i, j);
+    result = get_hdistance(i, j);
   else if (i == 0)
-    result = get_distance(i, j - 1);
+    result = get_hdistance(i, j - 1);
   else  /* j == 0 */
-    result = get_distance(i - 1, j);
+    result = get_hdistance(i - 1, j);
   return result;
 }
 
 void
-tpointseq_dfd_sparse1(const TSequence *seq1, const TSequence *seq2,
+tpointseq_dfd_hsparse1(const TSequence *seq1, const TSequence *seq2,
   int *diag, int n_diag, datum_func2 func)
 {
   double d, diag_max = -INFINITY;
   int i, j, k, i0, j0, i_min = 0, j_min = 0;
-  distance_t *s;
+  hdistance_t *s;
   indices_t key;
   int count1 = seq1->count;
   int count2 = seq2->count;
@@ -660,14 +964,14 @@ tpointseq_dfd_sparse1(const TSequence *seq1, const TSequence *seq2,
 }
 
 double
-tpointseq_dfd_sparse2(const TSequence *seq1, const TSequence *seq2, int *diag,
+tpointseq_dfd_hsparse2(const TSequence *seq1, const TSequence *seq2, int *diag,
   int n_diag)
 {
   int i0, j0;
   int count1 = seq1->count;
   int count2 = seq2->count;
   double c;
-  distance_t *s;
+  hdistance_t *s;
   indices_t key;
   for (int k = 0; k < n_diag; k++)
   {
@@ -679,7 +983,7 @@ tpointseq_dfd_sparse2(const TSequence *seq1, const TSequence *seq2, int *diag,
       HASH_FIND(hh, distances, &key, sizeof(indices_t), s); /* s: output pointer */
       if (s != NULL)
       {
-        c = get_corner_min_sparse(i, j0);
+        c = get_corner_min_hsparse(i, j0);
         if (c > s->distance)
           s->distance = c;
       }
@@ -693,7 +997,7 @@ tpointseq_dfd_sparse2(const TSequence *seq1, const TSequence *seq2, int *diag,
       HASH_FIND(hh, distances, &key, sizeof(indices_t), s); /* s: output pointer */
       if (s != NULL)
       {
-        c = get_corner_min_sparse(i0, j);
+        c = get_corner_min_hsparse(i0, j);
         if (c > s->distance)
           s->distance = c;
       }
@@ -712,7 +1016,7 @@ tpointseq_dfd_sparse2(const TSequence *seq1, const TSequence *seq2, int *diag,
  * @param[in] seq1, seq2 Temporal points
  */
 double
-tpointseq_dfd_sparse(const TSequence *seq1, const TSequence *seq2)
+tpointseq_dfd_hsparse(const TSequence *seq1, const TSequence *seq2)
 {
   int count1 = seq1->count;
   int count2 = seq2->count;
@@ -722,11 +1026,199 @@ tpointseq_dfd_sparse(const TSequence *seq1, const TSequence *seq2)
   int n_diag;
   int *diag = bresenham(0, 0, count1 - 1, count2 - 1, &n_diag);
   /* Compute the distances in the diagonal */
-  tpointseq_dfd_sparse1(seq1, seq2, diag, n_diag, func);
+  tpointseq_dfd_hsparse1(seq1, seq2, diag, n_diag, func);
   /* Call the sparse computation of the discrete Frechet distance */
-  double result = tpointseq_dfd_sparse2(seq1, seq2, diag, n_diag);
+  double result = tpointseq_dfd_hsparse2(seq1, seq2, diag, n_diag);
   /* Free memory */
   delete_all_distances();
+
+  return result;
+}
+
+/*****************************************************************************
+ * Sparse matrix implementation of the fast discrete Frechet distance
+ *****************************************************************************/
+
+double
+get_corner_min_sparse(const DISTARRAY *da, int i, int j)
+{
+  double result;
+  if (i > 0 && j > 0)
+    result = Min(distarray_get_distance(da, i - 1, j - 1),
+      Min(distarray_get_distance(da, i, j - 1), 
+        distarray_get_distance(da, i - 1, j)));
+  else if (i == 0 && j == 0)
+    result = distarray_get_distance(da, i, j);
+  else if (i == 0)
+    result = distarray_get_distance(da, i, j - 1);
+  else  /* j == 0 */
+    result = distarray_get_distance(da, i - 1, j);
+  return result;
+}
+
+void
+tpointseq_dfd_sparse1(DISTARRAY *da, const TSequence *seq1,
+  const TSequence *seq2, int *diag, int n_diag, datum_func2 func)
+{
+  double d, diag_max = -INFINITY;
+  int i, j, k, i0, j0, loc, i_min = 0, j_min = 0;
+  int count1 = seq1->count;
+  int count2 = seq2->count;
+  bool found;
+  const TInstant *inst1, *inst2, *inst;
+  distance_t elem;
+  /* Fill in the diagonal with the seed distance values */
+  for (k = 0; k < n_diag; k++)
+  {
+    i0 = diag[2 * k];
+    j0 = diag[2 * k + 1];
+    inst1 = tsequence_inst_n(seq1, i0);
+    inst2 = tsequence_inst_n(seq2, j0);
+    d = tpointinst_distance(inst1, inst2, func);
+    if (d > diag_max)
+      diag_max = d;
+    elem.i = i0; elem.j = j0; elem.distance = d;
+    distarray_append(da, &elem);
+  }
+
+
+  for (k = 0; k < n_diag - 1; k++)
+  {
+    i0 = diag[2 * k];
+    j0 = diag[2 * k + 1];
+    inst1 = tsequence_inst_n(seq1, i0);
+    inst2 = tsequence_inst_n(seq2, j0);
+    for (i = i0 + 1; i < count1; i++)
+    {
+      // elog(WARNING, "\nInside second loop\n");
+      // distarray_print(da);
+
+      found = distarray_find_element(da, i, j0, &loc);
+      if (! found)
+      {
+        inst = tsequence_inst_n(seq1, i);
+        d = tpointinst_distance(inst, inst2, func);
+        if (d < diag_max || i < i_min)
+        {
+          elem.i = i; elem.j = j0; elem.distance = d;
+          distarray_add(da, &elem, loc);
+        }
+        else
+          break;
+      }
+      else
+        break;
+    }
+    i_min = i;
+
+    // elog(WARNING, "Second loop\n");
+    // distarray_print(da);
+
+    for (j = j0 + 1; j < count2; j++)
+    {
+      found = distarray_find_element(da, i0, j, &loc);
+      if (! found)
+      {
+        inst = tsequence_inst_n(seq2, j);
+        d = tpointinst_distance(inst1, inst, func);
+        if (d < diag_max || j < j_min)
+        {
+          elem.i = i; elem.j = j0; elem.distance = d;
+          distarray_add(da, &elem, loc);
+        }
+        else
+          break;
+      }
+      else
+        break;
+    }
+    j_min = j;
+  }
+
+  // elog(WARNING, "Third loop\n");
+  // distarray_print(da);
+
+  /* Sort the distances by the indices */
+  sort_distances_index(da);
+
+  // elog(WARNING, "After sort\n");
+  // distarray_print(da);
+
+  return;
+}
+
+double
+tpointseq_dfd_sparse2(DISTARRAY *da, const TSequence *seq1,
+  const TSequence *seq2, int *diag, int n_diag)
+{
+  int i0, j0, loc;
+  int count1 = seq1->count;
+  int count2 = seq2->count;
+  double c;
+  bool found;
+  distance_t *dist;
+  for (int k = 0; k < n_diag; k++)
+  {
+    i0 = diag[2 * k];
+    j0 = diag[2 * k + 1];
+    for (int i = i0; i < count1; i++)
+    {
+      found = distarray_find_element(da, i, j0, &loc);
+      if (found)
+      {
+        c = get_corner_min_sparse(da, i, j0);
+        dist = da->distlist + loc;
+        if (c > dist->distance)
+          dist->distance = c;
+      }
+      else
+        break;
+    }
+    /* Add 1 to j0 to avoid recalculating the diagonal */
+    for (int j = j0 + 1; j < count2; j++)
+    {
+      found = distarray_find_element(da, i0, j, &loc);
+      if (found)
+      {
+        c = get_corner_min_sparse(da, i0, j);
+        dist = da->distlist + loc;
+        if (c > dist->distance)
+          dist->distance = c;
+      }
+      else
+        break;
+    }
+  }
+  dist = da->distlist + da->nelems - 1;
+  return dist->distance;
+}
+
+/**
+ * Computes the discrete Frechet distance for two temporal sequence points.
+ *
+ * @param[in] seq1, seq2 Temporal points
+ */
+double
+tpointseq_dfd_sparse(const TSequence *seq1, const TSequence *seq2)
+{
+  int count1 = seq1->count;
+  int count2 = seq2->count;
+  datum_func2 func = get_distance_fn(seq1->flags);
+  /* Create the distance array
+   * We arbitrarily decided that 5 additional distances will be computed 
+   * for each column in the array */
+  int max = Max(count1, count2);
+  DISTARRAY *da = distarray_construct(max * 5);
+  /* Compute the diagonal */
+  int n_diag;
+  int *diag = bresenham(0, 0, count1 - 1, count2 - 1, &n_diag);
+  /* Compute the distances in the diagonal */
+  tpointseq_dfd_sparse1(da, seq1, seq2, diag, n_diag, func);
+  /* Call the sparse computation of the discrete Frechet distance */
+  double result = 0.0;
+    // tpointseq_dfd_sparse2(da, seq1, seq2, diag, n_diag);
+  /* Free memory */
+  distarray_free(da);
 
   return result;
 }
@@ -837,6 +1329,43 @@ tpoint_dfd_fast(PG_FUNCTION_ARGS)
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result = tpoint_dfd_fast_internal(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
+
+double
+tpoint_dfd_hsparse_internal(Temporal *temp1, Temporal *temp2)
+{
+  double result;
+  ensure_valid_tempsubtype(temp1->subtype);
+  if (temp1->subtype == INSTANT)
+    result = 0.0;
+  else if (temp1->subtype == INSTANTSET)
+    result = 0.0;
+  if (! MOBDB_FLAGS_GET_LINEAR(temp1->flags))
+    result = 0.0;
+  else if (temp1->subtype == SEQUENCE)
+    result = tpointseq_dfd_hsparse((TSequence *) temp1, (TSequence *) temp2);
+  else /* temp1->subtype == SEQUENCESET */
+    result = 0.0;
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_dfd_hsparse);
+/**
+ * Computes the discrete Frechet distance between two temporal points.
+ */
+Datum
+tpoint_dfd_hsparse(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = tpoint_dfd_hsparse_internal(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);
