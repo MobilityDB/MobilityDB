@@ -53,6 +53,11 @@ RETURNS float
 AS 'MODULE_PATHNAME', 'tpoint_dfd_sparse'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION frechetDistanceHSparse(tgeompoint, tgeompoint)
+RETURNS float
+AS 'MODULE_PATHNAME', 'tpoint_dfd_hsparse'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 

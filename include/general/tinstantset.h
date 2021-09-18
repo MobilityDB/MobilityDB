@@ -104,7 +104,7 @@ extern Datum tinstantset_max_value(const TInstantSet *ti);
 extern void tinstantset_period(Period *p, const TInstantSet *ti);
 extern Datum tinstantset_timespan(const TInstantSet *ti);
 extern ArrayType *tinstantset_sequences_array(const TInstantSet *ti);
-extern const TInstant **tinstantset_instants(const TInstantSet *ti);
+extern const TInstant **tinstantset_instants(const TInstantSet *ti, int *count);
 extern ArrayType *tinstantset_instants_array(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);

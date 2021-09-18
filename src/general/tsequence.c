@@ -1958,11 +1958,12 @@ tsequence_segments_array(const TSequence *seq)
  * Returns the distinct instants of the temporal value as a C array
  */
 const TInstant **
-tsequence_instants(const TSequence *seq)
+tsequence_instants(const TSequence *seq, int *count)
 {
   const TInstant **result = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     result[i] = tsequence_inst_n(seq, i);
+  *count = seq->count;
   return result;
 }
 
@@ -1972,7 +1973,8 @@ tsequence_instants(const TSequence *seq)
 ArrayType *
 tsequence_instants_array(const TSequence *seq)
 {
-  const TInstant **instants = tsequence_instants(seq);
+  int count;
+  const TInstant **instants = tsequence_instants(seq, &count);
   ArrayType *result = temporalarr_to_array((const Temporal **) instants, seq->count);
   pfree(instants);
   return result;
