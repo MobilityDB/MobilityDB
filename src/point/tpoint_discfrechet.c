@@ -521,36 +521,36 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] seq1, seq2 Temporal sequences
  * @param[in] i,j Indexes of the instants
  * @param[in] hasz True if the temporal points have Z coordinates
- * @param[in] ca Array keeping the distances
+ * @param[in] dist Array keeping the distances
  */
 static double
 tpointseq_dfd_rec1(const TSequence *seq1, const TSequence *seq2, int i, int j,
-  double *ca)
+  double *dist)
 {
   const TInstant *inst1 = tsequence_inst_n(seq1, i);
   const TInstant *inst2 = tsequence_inst_n(seq2, j);
   double d;
-  /* Pointer to ca[i, j], just to simplify notation */
-  double *ca_ij = ca + i * seq2->count + j;
-  if (*ca_ij > -1.0)
-    return *ca_ij;
+  /* Pointer to dist[i, j], just to simplify notation */
+  double *d_ij = dist + i * seq2->count + j;
+  if (*d_ij > -1.0)
+    return *d_ij;
   d = tpointinst_distance(inst1, inst2);
   if (i == 0 && j == 0)
-    *ca_ij = d;
+    *d_ij = d;
   else if (i > 0 && j == 0)
-    *ca_ij = Max(tpointseq_dfd_rec1(seq1, seq2, i-1, 0, ca), d);
+    *d_ij = Max(tpointseq_dfd_rec1(seq1, seq2, i-1, 0, dist), d);
   else if (i == 0 && j > 0)
-    *ca_ij = Max(tpointseq_dfd_rec1(seq1, seq2, 0, j-1, ca), d);
+    *d_ij = Max(tpointseq_dfd_rec1(seq1, seq2, 0, j-1, dist), d);
   else if (i > 0 && j > 0)
-    *ca_ij =
+    *d_ij =
       Max(
-        Min(tpointseq_dfd_rec1(seq1, seq2, i-1, j, ca),
-          Min(tpointseq_dfd_rec1(seq1, seq2, i-1, j-1, ca),
-            tpointseq_dfd_rec1(seq1, seq2, i, j-1, ca))),
+        Min(tpointseq_dfd_rec1(seq1, seq2, i-1, j, dist),
+          Min(tpointseq_dfd_rec1(seq1, seq2, i-1, j-1, dist),
+            tpointseq_dfd_rec1(seq1, seq2, i, j-1, dist))),
         d);
   else
-    *ca_ij = get_float8_infinity();
-  return *ca_ij;
+    *d_ij = get_float8_infinity();
+  return *d_ij;
 }
 
 /**
@@ -564,16 +564,16 @@ tpointseq_dfd_rec(const TSequence *seq1, const TSequence *seq2)
   int count1 = seq1->count;
   int count2 = seq2->count;
 
-  /* Allocate memory for ca */
-  double *ca = (double *) palloc(sizeof(double) * count1 * count2);
+  /* Allocate memory for distrance matrix */
+  double *dist = (double *) palloc(sizeof(double) * count1 * count2);
   /* Initialise it with -1.0 */
   for (int k = 0; k < count1 * count2; k++)
-    *(ca + k) = -1.0;
+    *(dist + k) = -1.0;
 
   /* Call the recursive computation of the discrete Frechet distance */
-  double result = tpointseq_dfd_rec1(seq1, seq2, count1 - 1, count2 - 1, ca);
+  double result = tpointseq_dfd_rec1(seq1, seq2, count1 - 1, count2 - 1, dist);
   /* Free memory */
-  pfree(ca);
+  pfree(dist);
 
   return result;
 }
@@ -589,40 +589,39 @@ tpointseq_dfd_rec(const TSequence *seq1, const TSequence *seq2)
  * @param[in] seq1, seq2 Temporal sequences
  * @param[in] i,j Indexes of the instants
  * @param[in] hasz True if the temporal points have Z coordinates
- * @param[in] ca Array keeping the distances
+ * @param[in] dist Array keeping the distances
  */
 static double
 tpointseq_dfd_linear1(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, double *ca)
+  const TInstant **instants2, int count2, double *dist)
 {
   const TInstant *inst1, *inst2;
-  double dist;
+  double d;
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
     {
       inst1 = instants1[i];
       inst2 = instants2[j];
-      dist = tpointinst_distance(inst1, inst2);
+      d = tpointinst_distance(inst1, inst2);
       if (i > 0 && j > 0)
       {
-        ca[j * count1 + i] = Max(
-          Min(ca[j * count1 + i - 1],
-            Min(ca[(j - 1) * count1 + i - 1], ca[(j - 1) * count1 + i])),
-          dist);
+        dist[i * count2 + j] = Max(
+          Min(dist[(i - 1) * count2 + j - 1],
+            Min(dist[(i - 1) * count2 + j], dist[i * count2 + j - 1])),
+          d);
       }
       else if (i > 0 && j == 0)
-        ca[j * count1 + i] = Max(ca[i - 1], dist);
+        dist[i * count2] = Max(dist[(i - 1) * count2], d);
       else if (i == 0 && j > 0)
-        ca[j * count1 + i] = Max(ca[(j - 1) * count1], dist);
+        dist[j] = Max(dist[j - 1], d);
       else if (i == 0 && j == 0)
-        ca[0] = dist;
+        dist[0] = d;
       else
-        ca[j * count1 + i] = get_float8_infinity();
+        dist[i * count2 + j] = get_float8_infinity();
     }
   }
-  return ca[(count2 - 1) * count1 + count1 - 1];
-  // return ca[(count1 - 1) * (count2 - 1) - 1];
+  return dist[count1 * count2 - 1];
 }
 
 /**
@@ -634,16 +633,16 @@ double
 tpointinstarr_dfd_linear(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2)
 {
-  /* Allocate memory for ca */
-  double *ca = (double *) palloc(sizeof(double) * count1 * count2);
+  /* Allocate memory for dist */
+  double *dist = (double *) palloc(sizeof(double) * count1 * count2);
   /* Initialise it with -1.0 */
   for (int k = 0; k < count1 * count2; k++)
-    *(ca + k) = -1.0;
+    *(dist + k) = -1.0;
 
   /* Call the linear computation of the discrete Frechet distance */
-  double result = tpointseq_dfd_linear1(instants1, count1, instants2, count2, ca);
+  double result = tpointseq_dfd_linear1(instants1, count1, instants2, count2, dist);
   /* Free memory */
-  pfree(ca);
+  pfree(dist);
 
   return result;
 }
@@ -654,23 +653,30 @@ tpointinstarr_dfd_linear(const TInstant **instants1, int count1,
 
 #ifdef DEBUG_BUILD
 void
-matrix_print(double *ca, int count1, int count2)
+matrix_print(double *dist, int count1, int count2)
 {
   int len = 0;
-  char buf[16384];
+  char buf[65536];
   int i, j;
-  for (j = count2 - 1; j >= 0; j--)
+  len += sprintf(buf+len, "\n    ");
+  for (j = 0; j < count2; j++)
+    len += sprintf(buf+len, "    %2d    ", j);
+  len += sprintf(buf+len, "\n");
+  for (j = 0; j < count2; j++)
+    len += sprintf(buf+len, "------------");
+  len += sprintf(buf+len, "\n");
+  for (i = 0; i < count1; i++)
   {
-   len += sprintf(buf+len, "%2d | ", j);
-   for (i = 0; i < count1; i++)
-      len += sprintf(buf+len, "% lf ", ca[j * count1 + i]);
+    len += sprintf(buf+len, "%2d | ", i);
+    for (j = 0; j < count2; j++)
+      len += sprintf(buf+len, " %lf ", dist[i * count2 + j]);
     len += sprintf(buf+len, "\n");
   }
-  for (i = 0; i < count1; i++)
+  for (j = 0; j < count2; j++)
     len += sprintf(buf+len, "------------");
-  printf("\n    ");
-  for (i = 0; i < count1; i++)
-    len += sprintf(buf+len, "    %2d    ", i);
+  len += sprintf(buf+len, "\n    ");
+  for (j = 0; j < count2; j++)
+    len += sprintf(buf+len, "    %2d    ", j);
   len += sprintf(buf+len, "\n");
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("MATRIX:\n%s", buf)));
   return;
@@ -682,7 +688,8 @@ tpointinstarr_dfd_fast1(double *dist, const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, int *diag, int n_diag)
 {
   double d, diag_max = -INFINITY;
-  int i, j, k, i0, j0, i_min = 0, j_min = 0;
+  int i, j, k, i0, j0;
+  // int i_min = 0, j_min = 0;
   const TInstant *inst1, *inst2, *inst;
 
   /* Fill in the diagonal with the seed distance values */
@@ -694,10 +701,10 @@ tpointinstarr_dfd_fast1(double *dist, const TInstant **instants1, int count1,
     inst2 = instants2[j0];
     d = tpointinst_distance(inst1, inst2);
     diag_max = Max(diag_max, d);
-    dist[j0 * count1 + i0] = d;
+    dist[i0 * count2 + j0] = d;
   }
   /* For each element of the diagonal, compute the distances to the right
-   * and above the element until we found a value that is larger than the
+   * and below the element for the values that are not larger than the
    * maximum of the diagonal */
   for (k = 0; k < n_diag; k++)
   {
@@ -705,53 +712,53 @@ tpointinstarr_dfd_fast1(double *dist, const TInstant **instants1, int count1,
     j0 = diag[2 * k + 1];
     inst1 = instants1[i0];
     inst2 = instants2[j0];
-    for (i = i0 + 1; i < count1; i++)
-    {
-      if (dist[j0 * count1 + i] == INFINITY)
-      {
-        inst = instants1[i];
-        d = tpointinst_distance(inst, inst2);
-        if (d < diag_max || i < i_min)
-          dist[j0 * count1 + i] = d;
-        else
-          break;
-      }
-      else
-        break;
-      i_min = i;
-    }
+    /* Going right the diagonal cell */
     for (j = j0 + 1; j < count2; j++)
     {
-      if (dist[j * count1 + i0] == INFINITY)
-      {
+      // if (dist[i0 * count2 + j] == INFINITY)
+      // {
         inst = instants2[j];
         d = tpointinst_distance(inst1, inst);
-        if (d < diag_max || j < j_min)
-          dist[j * count1 + i0] = d;
-        else
-          break;
-      }
-      else
-        break;
-      j_min = j;
+        if (d <= diag_max)
+          dist[i0 * count2 + j] = d;
+        // else
+          // break;
+      // }
+      // else
+        // break;
+    }
+    /* Going down the diagonal cell */
+    for (i = i0 + 1; i < count1; i++)
+    {
+      // if (dist[i * count2 + j0] == INFINITY)
+      // {
+        inst = instants1[i];
+        d = tpointinst_distance(inst, inst2);
+        if (d <= diag_max)
+          dist[i * count2 + j0] = d;
+        // else
+          // break;
+      // }
+      // else
+        // break;
     }
   }
   return;
 }
 
 double
-get_corner_min_array(double *f_mat, int i, int j, int count1)
+get_corner_min_array(double *dist, int i, int j, int count2)
 {
   double result;
   if (i > 0 && j > 0)
-    result = Min(f_mat[(j - 1) * count1 + i - 1],
-      Min(f_mat[(j - 1) * count1 + i], f_mat[j * count1 + i - 1]));
+    result = Min(dist[(i - 1) * count2 + j - 1],
+      Min(dist[(i - 1) * count2 + j], dist[i * count2 + j - 1]));
   else if (i == 0 && j == 0)
-    result = f_mat[j * count1 + i];
+    result = dist[0];
   else if (i == 0)
-    result = f_mat[(j - 1) * count1 + i];
+    result = dist[j - 1];
   else  /* j == 0 */
-    result = f_mat[j * count1 + i - 1];
+    result = dist[(i - 1) * count2];
   return result;
 }
 
@@ -760,29 +767,15 @@ tpointinstarr_dfd_fast2(double *dist, int count1, int count2,
   int *diag, int n_diag)
 {
   double c;
-  for (int k = 0; k < n_diag; k++)
+  for (int i = 0; i < count1; i++)
   {
-    int i0 = diag[2 * k];
-    int j0 = diag[2 * k + 1];
-    for (int i = i0; i < count1; i++)
+    for (int j = 0; j < count2; j++)
     {
-      if (dist[j0 * count1 + i] == INFINITY)
-        break;
-      c = get_corner_min_array(dist, i, j0, count1);
-      if (c > dist[j0 * count1 + i])
-        dist[j0 * count1 + i] = c;
-    }
-    /* Add 1 to j0 to avoid recalculating the diagonal */
-    for (int j = j0 + 1; j < count2; j++)
-    {
-      if (dist[j * count1 + i0] == INFINITY)
-        break;
-      c = get_corner_min_array(dist, i0, j, count1);
-      if (c > dist[j * count1 + i0])
-        dist[j * count1 + i0] = c;
+      c = get_corner_min_array(dist, i, j, count2);
+      dist[i * count2 + j] = Max(dist[i * count2 + j], c);
     }
   }
-  return dist[(count2 - 1) * count1 + (count1 - 1)];
+  return dist[count1 * count2 - 1];
 }
 
 /**
@@ -794,20 +787,22 @@ double
 tpointinstarr_dfd_fast(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2)
 {
-  /* Allocate memory for ca */
-  double *ca = (double *) palloc(sizeof(double) * count1 * count2);
+  /* Allocate memory for the distance matrix */
+  double *dist = (double *) palloc(sizeof(double) * count1 * count2);
   /* Initialise it with infinity */
   for (int k = 0; k < count1 * count2; k++)
-    *(ca + k) = INFINITY;
+    *(dist + k) = INFINITY;
   /* Compute the diagonal */
   int n_diag;
   int *diag = bresenham(0, 0, count1 - 1, count2 - 1, &n_diag);
-  /* Compute the distances in the diagonal */
-  tpointinstarr_dfd_fast1(ca, instants1, count1, instants2, count2, diag, n_diag);
+  /* Compute the distances around the diagonal */
+  tpointinstarr_dfd_fast1(dist, instants1, count1, instants2, count2, diag, n_diag);
+  // matrix_print(dist, count1, count2);
   /* Call the fast computation of the discrete Frechet distance */
-  double result = tpointinstarr_dfd_fast2(ca, count1 - 1, count2 - 2, diag, n_diag);
+  double result = tpointinstarr_dfd_fast2(dist, count1, count2, diag, n_diag);
+  // matrix_print(dist, count1, count2);
   /* Free memory */
-  pfree(ca);
+  pfree(dist);
   return result;
 }
 
@@ -880,15 +875,15 @@ tpointinstarr_dfd_hsparse1(const TInstant **instants1, int count1,
       {
         inst = instants1[i];
         d = tpointinst_distance(inst, inst2);
-        if (d < diag_max || i <= i_min)
+        if (d <= diag_max || i <= i_min)
           add_distance(i, j0, d);
         else
           break;
       }
       else
         break;
+      i_min = i;
     }
-    i_min = i;
     for (j = j0 + 1; j < count2; j++)
     {
       key.i = i0; key.j = j;
@@ -897,15 +892,15 @@ tpointinstarr_dfd_hsparse1(const TInstant **instants1, int count1,
       {
         inst = instants2[j];
         d = tpointinst_distance(inst1, inst);
-        if (d < diag_max || j <= j_min)
+        if (d <= diag_max || j <= j_min)
           add_distance(i0, j, d);
         else
           break;
       }
       else
         break;
+      j_min = j;
     }
-    j_min = j;
   }
   /* Sort the distances by the indices */
   sort_by_key();
@@ -1037,7 +1032,7 @@ tpointinstarr_dfd_sparse1(DISTARRAY *da, const TInstant **instants1,
       {
         inst = instants1[i];
         d = tpointinst_distance(inst, inst2);
-        if (d < diag_max || i < i_min)
+        if (d <= diag_max || i <= i_min)
         {
           elem.i = i; elem.j = j0; elem.distance = d;
           // distarray_add(da, &elem, loc);
@@ -1048,8 +1043,8 @@ tpointinstarr_dfd_sparse1(DISTARRAY *da, const TInstant **instants1,
       }
       else
         break;
+      i_min = i;
     }
-    i_min = i;
 
     for (j = j0 + 1; j < count2; j++)
     {
@@ -1059,7 +1054,7 @@ tpointinstarr_dfd_sparse1(DISTARRAY *da, const TInstant **instants1,
       {
         inst = instants2[j];
         d = tpointinst_distance(inst1, inst);
-        if (d < diag_max || j < j_min)
+        if (d <= diag_max || j <= j_min)
         {
           elem.i = i0; elem.j = j; elem.distance = d;
           // distarray_add(da, &elem, loc);
@@ -1070,8 +1065,8 @@ tpointinstarr_dfd_sparse1(DISTARRAY *da, const TInstant **instants1,
       }
       else
         break;
+      j_min = j;
     }
-    j_min = j;
   }
   return;
 }
