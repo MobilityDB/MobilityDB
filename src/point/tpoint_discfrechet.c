@@ -579,20 +579,19 @@ tpointseq_dfd_rec(const TSequence *seq1, const TSequence *seq2)
 }
 
 /*****************************************************************************
- * Linear implementation of the discrete Frechet distance
+ * Iterative implementation of the discrete Frechet distance
  *****************************************************************************/
 
 /**
- * Linear function computing the discrete Frechet distance between
+ * Iterative function computing the discrete Frechet distance between
  * two temporal points.
  *
- * @param[in] seq1, seq2 Temporal sequences
- * @param[in] i,j Indexes of the instants
- * @param[in] hasz True if the temporal points have Z coordinates
+ * @param[in] instants1, instants2 Instants of the temporal points
+ * @param[in] count1,count2 Number of instants of the temporal points
  * @param[in] dist Array keeping the distances
  */
 static double
-tpointseq_dfd_linear1(const TInstant **instants1, int count1,
+tpointseq_dfd_iterative1(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, double *dist)
 {
   const TInstant *inst1, *inst2;
@@ -615,10 +614,8 @@ tpointseq_dfd_linear1(const TInstant **instants1, int count1,
         dist[i * count2] = Max(dist[(i - 1) * count2], d);
       else if (i == 0 && j > 0)
         dist[j] = Max(dist[j - 1], d);
-      else if (i == 0 && j == 0)
+      else /* i == 0 && j == 0 */
         dist[0] = d;
-      else
-        dist[i * count2 + j] = get_float8_infinity();
     }
   }
   return dist[count1 * count2 - 1];
@@ -630,7 +627,7 @@ tpointseq_dfd_linear1(const TInstant **instants1, int count1,
  * @param[in] seq1, seq2 Temporal points
  */
 double
-tpointinstarr_dfd_linear(const TInstant **instants1, int count1,
+tpointinstarr_dfd_iterative(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2)
 {
   /* Allocate memory for dist */
@@ -639,8 +636,75 @@ tpointinstarr_dfd_linear(const TInstant **instants1, int count1,
   for (int k = 0; k < count1 * count2; k++)
     *(dist + k) = -1.0;
 
-  /* Call the linear computation of the discrete Frechet distance */
-  double result = tpointseq_dfd_linear1(instants1, count1, instants2, count2, dist);
+  /* Call the iterative computation of the discrete Frechet distance */
+  double result = tpointseq_dfd_iterative1(instants1, count1, instants2, count2, dist);
+  /* Free memory */
+  pfree(dist);
+
+  return result;
+}
+
+/*****************************************************************************
+ * Linear space implementation of the discrete Frechet distance
+ *****************************************************************************/
+
+/**
+ * Linear space function computing the discrete Frechet distance between
+ * two temporal points. Only two rows of the full matrix are used.
+ *
+ * @param[in] seq1, seq2 Temporal sequences
+ * @param[in] i,j Indexes of the instants
+ * @param[in] hasz True if the temporal points have Z coordinates
+ * @param[in] dist Array keeping the distances
+ */
+static double
+tpointseq_dfd_linear_space1(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, double *dist)
+{
+  const TInstant *inst1, *inst2;
+  double d;
+  for (int i = 0; i < count1; i++)
+  {
+    for (int j = 0; j < count2; j++)
+    {
+      inst1 = instants1[i];
+      inst2 = instants2[j];
+      d = tpointinst_distance(inst1, inst2);
+      if (i > 0 && j > 0)
+      {
+        dist[i%2 * count2 + j] = Max(
+          Min(dist[(i - 1)%2 * count2 + j - 1],
+            Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1])),
+          d);
+      }
+      else if (i > 0 && j == 0)
+        dist[i%2 * count2] = Max(dist[(i - 1)%2 * count2], d);
+      else if (i == 0 && j > 0)
+        dist[j] = Max(dist[j - 1], d);
+      else /* i == 0 && j == 0 */
+        dist[0] = d;
+    }
+  }
+  return dist[(count1 - 1)%2 * count2 + count2 - 1];
+}
+
+/**
+ * Computes the discrete Frechet distance for two temporal sequence points.
+ *
+ * @param[in] seq1, seq2 Temporal points
+ */
+double
+tpointinstarr_dfd_linear_space(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2)
+{
+  /* Allocate memory for dist */
+  double *dist = (double *) palloc(sizeof(double) * 2 * count2);
+  /* Initialise it with -1.0 */
+  for (int k = 0; k < 2 * count2; k++)
+    *(dist + k) = -1.0;
+
+  /* Call the linear_space computation of the discrete Frechet distance */
+  double result = tpointseq_dfd_linear_space1(instants1, count1, instants2, count2, dist);
   /* Free memory */
   pfree(dist);
 
@@ -1183,30 +1247,64 @@ tpoint_dfd_rec(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 double
-tpoint_dfd_linear_internal(Temporal *temp1, Temporal *temp2)
+tpoint_dfd_iterative_internal(Temporal *temp1, Temporal *temp2)
 {
   double result;
   int count1, count2;
   const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
   const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
-  result = tpointinstarr_dfd_linear(instants1, count1, instants2, count2);
+  result = tpointinstarr_dfd_iterative(instants1, count1, instants2, count2);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_dfd_linear);
+PG_FUNCTION_INFO_V1(tpoint_dfd_iterative);
 /**
  * Computes the discrete Frechet distance between two temporal points.
  */
 Datum
-tpoint_dfd_linear(PG_FUNCTION_ARGS)
+tpoint_dfd_iterative(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  double result = tpoint_dfd_linear_internal(temp1, temp2);
+  double result = tpoint_dfd_iterative_internal(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
+
+double
+tpoint_dfd_linear_space_internal(Temporal *temp1, Temporal *temp2)
+{
+  double result;
+  int count1, count2;
+  const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
+  result = count1 > count2 ?
+    tpointinstarr_dfd_linear_space(instants1, count1, instants2, count2) :
+    tpointinstarr_dfd_linear_space(instants2, count2, instants1, count1);
+  /* Free memory */
+  pfree(instants1); pfree(instants2);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_dfd_linear_space);
+/**
+ * Computes the discrete Frechet distance between two temporal points.
+ */
+Datum
+tpoint_dfd_linear_space(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = tpoint_dfd_linear_space_internal(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);

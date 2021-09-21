@@ -38,9 +38,14 @@ RETURNS float
 AS 'MODULE_PATHNAME', 'tpoint_dfd_rec'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION frechetDistanceIter(tgeompoint, tgeompoint)
+RETURNS float
+AS 'MODULE_PATHNAME', 'tpoint_dfd_iterative'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION frechetDistanceLinear(tgeompoint, tgeompoint)
 RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_linear'
+AS 'MODULE_PATHNAME', 'tpoint_dfd_linear_space'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION frechetDistanceFast(tgeompoint, tgeompoint)
