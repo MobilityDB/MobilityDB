@@ -65,4 +65,9 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
+CREATE FUNCTION dynamicTimeWarp(tgeompoint, tgeompoint)
+RETURNS float
+AS 'MODULE_PATHNAME', 'tpoint_dtw'
+LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************/

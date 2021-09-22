@@ -495,6 +495,7 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   double result;
+  // TODO Geodetic 
   if (MOBDB_FLAGS_GET_Z(inst1->flags)) /* 3D */
   {
     const POINT3DZ *p1 = datum_get_point3dz_p(value1);
@@ -518,39 +519,33 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
  * Recursive function computing the discrete Frechet distance between
  * two temporal points.
  *
- * @param[in] seq1, seq2 Temporal sequences
+ * @param[in] instants1, instants2 Temporal points
  * @param[in] i,j Indexes of the instants
- * @param[in] hasz True if the temporal points have Z coordinates
  * @param[in] dist Array keeping the distances
  */
 static double
-tpointseq_dfd_rec1(const TSequence *seq1, const TSequence *seq2, int i, int j,
-  double *dist)
+tpointinstarr_dfd_rec1(const TInstant **instants1, const TInstant **instants2,
+  int i, int j, int count2, double *dist)
 {
-  const TInstant *inst1 = tsequence_inst_n(seq1, i);
-  const TInstant *inst2 = tsequence_inst_n(seq2, j);
-  double d;
-  /* Pointer to dist[i, j], just to simplify notation */
-  double *d_ij = dist + i * seq2->count + j;
-  if (*d_ij > -1.0)
-    return *d_ij;
-  d = tpointinst_distance(inst1, inst2);
-  if (i == 0 && j == 0)
-    *d_ij = d;
+  const TInstant *inst1 = instants1[i];
+  const TInstant *inst2 = instants2[j];
+  double d = tpointinst_distance(inst1, inst2);
+  if (i > 0 && j > 0)
+  {
+    dist[i * count2 + j] = Max(d, 
+      Min(tpointinstarr_dfd_rec1(instants1, instants2, i - 1, j - 1, count2, dist),
+        Min(tpointinstarr_dfd_rec1(instants1, instants2, i - 1, j, count2, dist), 
+          tpointinstarr_dfd_rec1(instants1, instants2, i, j - 1, count2, dist))));
+  }
   else if (i > 0 && j == 0)
-    *d_ij = Max(tpointseq_dfd_rec1(seq1, seq2, i-1, 0, dist), d);
+    dist[i * count2] = Max(d, 
+      tpointinstarr_dfd_rec1(instants1, instants2, i - 1, 0, count2, dist));
   else if (i == 0 && j > 0)
-    *d_ij = Max(tpointseq_dfd_rec1(seq1, seq2, 0, j-1, dist), d);
-  else if (i > 0 && j > 0)
-    *d_ij =
-      Max(
-        Min(tpointseq_dfd_rec1(seq1, seq2, i-1, j, dist),
-          Min(tpointseq_dfd_rec1(seq1, seq2, i-1, j-1, dist),
-            tpointseq_dfd_rec1(seq1, seq2, i, j-1, dist))),
-        d);
-  else
-    *d_ij = get_float8_infinity();
-  return *d_ij;
+    dist[j] = Max(d, 
+      tpointinstarr_dfd_rec1(instants1, instants2, 0, j - 1, count2, dist));
+  else /* i == 0 && j == 0 */
+    dist[0] = d;
+  return dist[i * count2 + j];
 }
 
 /**
@@ -559,19 +554,18 @@ tpointseq_dfd_rec1(const TSequence *seq1, const TSequence *seq2, int i, int j,
  * @param[in] seq1, seq2 Temporal points
  */
 double
-tpointseq_dfd_rec(const TSequence *seq1, const TSequence *seq2)
+tpointinstarr_dfd_rec(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2)
 {
-  int count1 = seq1->count;
-  int count2 = seq2->count;
-
-  /* Allocate memory for distrance matrix */
+  /* Allocate memory for dist */
   double *dist = (double *) palloc(sizeof(double) * count1 * count2);
   /* Initialise it with -1.0 */
   for (int k = 0; k < count1 * count2; k++)
     *(dist + k) = -1.0;
 
   /* Call the recursive computation of the discrete Frechet distance */
-  double result = tpointseq_dfd_rec1(seq1, seq2, count1 - 1, count2 - 1, dist);
+  double result = tpointinstarr_dfd_rec1(instants1, instants2, count1 - 1,
+    count2 - 1, count2, dist);
   /* Free memory */
   pfree(dist);
 
@@ -591,7 +585,7 @@ tpointseq_dfd_rec(const TSequence *seq1, const TSequence *seq2)
  * @param[in] dist Array keeping the distances
  */
 static double
-tpointseq_dfd_iterative1(const TInstant **instants1, int count1,
+tpointinstarr_dfd_iterative1(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, double *dist)
 {
   const TInstant *inst1, *inst2;
@@ -637,7 +631,8 @@ tpointinstarr_dfd_iterative(const TInstant **instants1, int count1,
     *(dist + k) = -1.0;
 
   /* Call the iterative computation of the discrete Frechet distance */
-  double result = tpointseq_dfd_iterative1(instants1, count1, instants2, count2, dist);
+  double result = tpointinstarr_dfd_iterative1(instants1, count1, instants2,
+    count2, dist);
   /* Free memory */
   pfree(dist);
 
@@ -654,7 +649,6 @@ tpointinstarr_dfd_iterative(const TInstant **instants1, int count1,
  *
  * @param[in] seq1, seq2 Temporal sequences
  * @param[in] i,j Indexes of the instants
- * @param[in] hasz True if the temporal points have Z coordinates
  * @param[in] dist Array keeping the distances
  */
 static double
@@ -1209,21 +1203,20 @@ tpointinstarr_dfd_sparse(const TInstant **instants1, int count1,
 
 /*****************************************************************************/
 
+/**
+ * Computes the discrete Frechet distance between two temporal points.
+ * (internal functions)
+ */
 double
 tpoint_dfd_rec_internal(Temporal *temp1, Temporal *temp2)
 {
   double result;
-  ensure_valid_tempsubtype(temp1->subtype);
-  if (temp1->subtype == INSTANT)
-    result = 0.0;
-  else if (temp1->subtype == INSTANTSET)
-    result = 0.0;
-  if (! MOBDB_FLAGS_GET_LINEAR(temp1->flags))
-    result = 0.0;
-  else if (temp1->subtype == SEQUENCE)
-    result = tpointseq_dfd_rec((TSequence *) temp1, (TSequence *) temp2);
-  else /* temp1->subtype == SEQUENCESET */
-    result = 0.0;
+  int count1, count2;
+  const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
+  result = tpointinstarr_dfd_rec(instants1, count1, instants2, count2);
+  /* Free memory */
+  pfree(instants1); pfree(instants2);
   return result;
 }
 
@@ -1246,6 +1239,10 @@ tpoint_dfd_rec(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Computes the discrete Frechet distance between two temporal points.
+ * (internal function)
+ */
 double
 tpoint_dfd_iterative_internal(Temporal *temp1, Temporal *temp2)
 {
@@ -1401,6 +1398,107 @@ tpoint_dfd_sparse(PG_FUNCTION_ARGS)
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   double result = tpoint_dfd_sparse_internal(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
+ * Linear space implementation of the Dynamic Time Warp (DTW) distance
+ *****************************************************************************/
+
+/**
+ * Linear space function computing the Dynamic Time Warp (DTW) distance
+ * between two temporal points. Only two rows of the full matrix are used.
+ *
+ * @param[in] seq1, seq2 Temporal sequences
+ * @param[in] i,j Indexes of the instants
+ * @param[in] dist Array keeping the distances
+ */
+static double
+tpointinstarr_dtw1(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, double *dist)
+{
+  const TInstant *inst1, *inst2;
+  double d;
+  for (int i = 0; i < count1; i++)
+  {
+    for (int j = 0; j < count2; j++)
+    {
+      inst1 = instants1[i];
+      inst2 = instants2[j];
+      d = tpointinst_distance(inst1, inst2);
+      if (i > 0 && j > 0)
+      {
+        dist[i%2 * count2 + j] = d +
+          Min(dist[(i - 1)%2 * count2 + j - 1],
+            Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1]));
+      }
+      else if (i > 0 && j == 0)
+        dist[i%2 * count2] = d + dist[(i - 1)%2 * count2];
+      else if (i == 0 && j > 0)
+        dist[j] = d + dist[j - 1];
+      else /* i == 0 && j == 0 */
+        dist[0] = d;
+    }
+  }
+  return dist[(count1 - 1)%2 * count2 + count2 - 1];
+}
+
+/**
+ * Computes the the Dynamic Time Warp (DTW) distance for two temporal sequence points.
+ *
+ * @param[in] seq1, seq2 Temporal points
+ */
+double
+tpointinstarr_dtw(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2)
+{
+  /* Allocate memory for dist */
+  double *dist = (double *) palloc(sizeof(double) * 2 * count2);
+  /* Initialise it with -1.0 */
+  for (int k = 0; k < 2 * count2; k++)
+    *(dist + k) = -1.0;
+
+  /* Call the linear_space computation of the the Dynamic Time Warp (DTW) distance */
+  double result = tpointinstarr_dtw1(instants1, count1, instants2, count2, dist);
+  /* Free memory */
+  pfree(dist);
+
+  return result;
+}
+
+/**
+ * Computes the Dynamic Time Warp (DTW) distance between two temporal points.
+ * (internal function)
+ */
+double
+tpoint_dtw_internal(Temporal *temp1, Temporal *temp2)
+{
+  double result;
+  int count1, count2;
+  const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
+  const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
+  result = count1 > count2 ?
+    tpointinstarr_dtw(instants1, count1, instants2, count2) :
+    tpointinstarr_dtw(instants2, count2, instants1, count1);
+  /* Free memory */
+  pfree(instants1); pfree(instants2);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_dtw);
+/**
+ * Computes the Dynamic Time Warp (DTW) distance between two temporal points.
+ */
+Datum
+tpoint_dtw(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = tpoint_dtw_internal(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);
