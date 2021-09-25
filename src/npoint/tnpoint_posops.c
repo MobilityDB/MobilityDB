@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -42,8 +46,6 @@
 
 #include "npoint/tnpoint_posops.h"
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <liblwgeom.h>
 #include "point/postgis.h"
 #include "point/tpoint_boxops.h"
@@ -70,7 +72,7 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tnpoint_gs(temp, gs);
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
@@ -100,7 +102,7 @@ posop_tnpoint_geom(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid_tnpoint_gs(temp, gs);
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
@@ -232,7 +234,7 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));
@@ -256,7 +258,7 @@ posop_tnpoint_npoint(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  ensure_same_srid_tnpoint_npoint(temp, np);
+  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));
@@ -280,7 +282,7 @@ posop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tnpoint(temp1, temp2);
+  ensure_same_srid(tnpoint_srid_internal(temp1), tnpoint_srid_internal(temp2));
   STBOX box1, box2;
   memset(&box1, 0, sizeof(STBOX));
   memset(&box2, 0, sizeof(STBOX));

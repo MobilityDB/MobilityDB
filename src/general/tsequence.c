@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -94,7 +98,7 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (dvalue - min);
   double fraction = dvalue1 < dvalue2 ? partial / range : 1 - partial / range;
-  if (fraction < -1 * EPSILON || 1.0 + EPSILON < fraction)
+  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction)
     return false;
 
   if (t != NULL)
@@ -195,7 +199,7 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
     return false;
 
   long double fraction = ((long double) (x3 - x1)) / denum;
-  if (fraction < -1 * EPSILON || 1.0 + EPSILON < fraction )
+  if (fraction < -1 * MOBDB_EPSILON || 1.0 + MOBDB_EPSILON < fraction )
     /* Intersection occurs out of the period */
     return false;
 
@@ -302,7 +306,7 @@ static bool
 float_collinear(double x1, double x2, double x3, double ratio)
 {
   double x = x1 + (x3 - x1) * ratio;
-  return (fabs(x2 - x) <= EPSILON);
+  return (fabs(x2 - x) <= MOBDB_EPSILON);
 }
 
 /**
@@ -320,7 +324,7 @@ double2_collinear(const double2 *x1, const double2 *x2, const double2 *x3,
   double2 x;
   x.a = x1->a + (x3->a - x1->a) * ratio;
   x.b = x1->b + (x3->b - x1->b) * ratio;
-  bool result = (fabs(x2->a - x.a) <= EPSILON && fabs(x2->b - x.b) <= EPSILON);
+  bool result = (fabs(x2->a - x.a) <= MOBDB_EPSILON && fabs(x2->b - x.b) <= MOBDB_EPSILON);
   return result;
 }
 
@@ -340,8 +344,8 @@ double3_collinear(const double3 *x1, const double3 *x2, const double3 *x3,
   x.a = x1->a + (x3->a - x1->a) * ratio;
   x.b = x1->b + (x3->b - x1->b) * ratio,
   x.c = x1->c + (x3->c - x1->c) * ratio;
-  bool result = (fabs(x2->a - x.a) <= EPSILON &&
-    fabs(x2->b - x.b) <= EPSILON && fabs(x2->c - x.c) <= EPSILON);
+  bool result = (fabs(x2->a - x.a) <= MOBDB_EPSILON &&
+    fabs(x2->b - x.b) <= MOBDB_EPSILON && fabs(x2->c - x.c) <= MOBDB_EPSILON);
   return result;
 }
 
@@ -362,8 +366,8 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
   x.b = x1->b + (x3->b - x1->b) * ratio;
   x.c = x1->c + (x3->c - x1->c) * ratio;
   x.d = x1->d + (x3->d - x1->d) * ratio;
-  bool result = (fabs(x2->a - x.a) <= EPSILON && fabs(x2->b - x.b) <= EPSILON &&
-    fabs(x2->c - x.c) <= EPSILON && fabs(x2->d - x.d) <= EPSILON);
+  bool result = (fabs(x2->a - x.a) <= MOBDB_EPSILON && fabs(x2->b - x.b) <= MOBDB_EPSILON &&
+    fabs(x2->c - x.c) <= MOBDB_EPSILON && fabs(x2->d - x.d) <= MOBDB_EPSILON);
   return result;
 }
 
@@ -404,8 +408,13 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
+#if POSTGIS_VERSION_NUMBER < 30000
     bool hasz = (bool) FLAGS_GET_Z(gs->flags);
     bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
+#else
+    bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
+    bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
+#endif
     return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
   }
   if (basetypid == type_oid(T_DOUBLE3))

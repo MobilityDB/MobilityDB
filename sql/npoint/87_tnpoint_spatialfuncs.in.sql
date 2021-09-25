@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -126,11 +130,11 @@ CREATE FUNCTION azimuth(tnpoint)
 
 CREATE FUNCTION NearestApproachInstant(geometry, tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'NAI_geometry_tnpoint'
+  AS 'MODULE_PATHNAME', 'NAI_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION NearestApproachInstant(tnpoint, geometry)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'NAI_tnpoint_geometry'
+  AS 'MODULE_PATHNAME', 'NAI_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION NearestApproachInstant(npoint, tnpoint)
@@ -153,11 +157,11 @@ CREATE FUNCTION NearestApproachInstant(tnpoint, tnpoint)
 
 CREATE FUNCTION nearestApproachDistance(geometry, tnpoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_geometry_tnpoint'
+  AS 'MODULE_PATHNAME', 'NAD_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tnpoint, geometry)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'NAD_tnpoint_geometry'
+  AS 'MODULE_PATHNAME', 'NAD_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION NearestApproachDistance(npoint, tnpoint)
   RETURNS float
@@ -204,11 +208,11 @@ CREATE OPERATOR |=| (
 
 CREATE FUNCTION shortestLine(geometry, tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_geometry_tnpoint'
+  AS 'MODULE_PATHNAME', 'shortestline_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tnpoint, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_tnpoint_geometry'
+  AS 'MODULE_PATHNAME', 'shortestline_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(npoint, tnpoint)
   RETURNS geometry

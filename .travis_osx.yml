@@ -1,0 +1,36 @@
+env:
+# - PGMAJOR=10 PGISMAJOR=2.5 COVERAGE=0
+# - PGMAJOR=11 PGISMAJOR=2.5 COVERAGE=0
+# - PGMAJOR=12 PGISMAJOR=2.5 COVERAGE=0
+- PGMAJOR=13 PGISMAJOR=2.5 COVERAGE=0
+# - PGMAJOR=13 PGISMAJOR=3 COVERAGE=0
+# - PGMAJOR=13 PGISMAJOR=2.5 COVERAGE=1
+
+language: c
+
+dist: osx
+
+compiler:
+  - gcc
+
+addons:
+  homebrew:
+    packages:
+    - postgresql
+    - postgis
+    - proj
+    - gsl
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DWITH_COVERAGE=$COVERAGE ..
+
+script:
+  - export PATH="/usr/lib/postgresql/$PGMAJOR/bin:$PATH"
+  - make && make test
+
+after_failure: ../test/scripts/print_fail.sh
+
+after_success: |
+   [ "$COVERAGE" == "1" ] && coveralls --include src --gcov-options '\-lp' -r .. -b .

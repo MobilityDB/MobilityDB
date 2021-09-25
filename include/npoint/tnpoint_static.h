@@ -45,6 +45,7 @@ extern ArrayType *int64arr_to_array(const int64 *int64arr, int count);
 extern ArrayType *npointarr_to_array(npoint **npointarr, int count);
 extern void npointarr_sort(npoint **points, int count);
 extern ArrayType *nsegmentarr_to_array(nsegment **nsegmentarr, int count);
+extern int32_t get_srid_ways();
 extern nsegment **nsegmentarr_normalize(nsegment **segments, int *count);
 extern int npoint_remove_duplicates(npoint **values, int count);
 

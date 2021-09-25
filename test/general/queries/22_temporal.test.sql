@@ -5,6 +5,10 @@
 -- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2021, PostGIS contributors
+--
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written
 -- agreement is hereby granted, provided that the above copyright notice and
@@ -2201,6 +2205,8 @@ SELECT atTBox(tfloat 'Interp=Stepwise;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-
 SELECT atTBox(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]}', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
 SELECT atTBox(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
 SELECT atTBox(tfloat 'Interp=Stepwise;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
+-- NULL
+SELECT atTbox(tfloat '[1@2000-01-01, 2@2000-01-02)', tbox 'TBOX((2,2000-01-02),(2,2000-01-02))');
 
 SELECT minusTBox(tint '1@2000-01-01', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');
 SELECT minusTBox(tint '{1@2000-01-01}', tbox 'TBOX((1,2000-01-01),(2,2000-01-02))');

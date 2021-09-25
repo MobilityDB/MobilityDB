@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -62,7 +66,10 @@
  */
 
 PG_FUNCTION_INFO_V1(tnpoint_overlaps_sel);
-
+/**
+ * Estimate the selectivity value of the overlap operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_overlaps_sel(PG_FUNCTION_ARGS)
 {
@@ -70,7 +77,10 @@ tnpoint_overlaps_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_overlaps_joinsel);
-
+/**
+ * Estimate the join selectivity value of the overlap operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_overlaps_joinsel(PG_FUNCTION_ARGS)
 {
@@ -78,7 +88,10 @@ tnpoint_overlaps_joinsel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_contains_sel);
-
+/**
+ * Estimate the selectivity value of the contains operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_contains_sel(PG_FUNCTION_ARGS)
 {
@@ -86,7 +99,10 @@ tnpoint_contains_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_contains_joinsel);
-
+/**
+ * Estimate the join selectivity value of the contains operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_contains_joinsel(PG_FUNCTION_ARGS)
 {
@@ -94,7 +110,10 @@ tnpoint_contains_joinsel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_same_sel);
-
+/**
+ * Estimate the selectivity value of the same operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_same_sel(PG_FUNCTION_ARGS)
 {
@@ -102,7 +121,10 @@ tnpoint_same_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_same_joinsel);
-
+/**
+ * Estimate the join selectivity value of the same operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_same_joinsel(PG_FUNCTION_ARGS)
 {
@@ -110,7 +132,10 @@ tnpoint_same_joinsel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_adjacent_sel);
-
+/**
+ * Estimate the selectivity value of the adjacent operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_adjacent_sel(PG_FUNCTION_ARGS)
 {
@@ -118,7 +143,10 @@ tnpoint_adjacent_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_adjacent_joinsel);
-
+/**
+ * Estimate the join selectivity value of the adjacent operator for temporal
+ * network points
+ */
 PGDLLEXPORT Datum
 tnpoint_adjacent_joinsel(PG_FUNCTION_ARGS)
 {
@@ -136,7 +164,10 @@ tnpoint_adjacent_joinsel(PG_FUNCTION_ARGS)
  */
 
 PG_FUNCTION_INFO_V1(tnpoint_position_sel);
-
+/**
+ * Estimate the selectivity value of the relative position operators for
+ * temporal network points
+ */
 PGDLLEXPORT Datum
 tnpoint_position_sel(PG_FUNCTION_ARGS)
 {
@@ -144,7 +175,10 @@ tnpoint_position_sel(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(tnpoint_position_joinsel);
-
+/**
+ * Estimate the join selectivity value of the relative position operators for
+ * temporal network points
+ */
 PGDLLEXPORT Datum
 tnpoint_position_joinsel(PG_FUNCTION_ARGS)
 {

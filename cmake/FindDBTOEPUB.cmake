@@ -5,9 +5,8 @@
 #
 # Variables generated:
 #
-# DBTOEPUB_FOUND     true when DBTOEPUB_COMMAND and DBTOEPUB_VERSION have valid entries
+# DBTOEPUB_FOUND     true when DBTOEPUB_COMMAND has a valid entry
 # DBTOEPUB_COMMAND   The command to run dbtoepub
-# DBTOEPUB_VERSION   The DBTOEPUB version that has been found -> NOT AVAILABLE
 # N.B. Currently dbtoepub DOES NOT provide version number
 #
 
@@ -18,4 +17,7 @@ include( FindPackageHandleStandardArgs )
 find_package_handle_standard_args(DBTOEPUB
   FOUND_VAR DBTOEPUB_FOUND
   REQUIRED_VARS DBTOEPUB_COMMAND )
-  # VERSION_VAR DBTOEPUB_VERSION )
+
+if (DBTOEPUB_FOUND)
+  mark_as_advanced(DBTOEPUB_COMMAND)
+endif()

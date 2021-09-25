@@ -32,8 +32,6 @@
 #ifndef __TPOINT_H__
 #define __TPOINT_H__
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <postgres.h>
 #include <catalog/pg_type.h>
 
@@ -105,6 +103,9 @@
  *****************************************************************************/
 
 extern void temporalgeom_init();
+#if POSTGIS_VERSION_NUMBER >= 30000
+extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
+#endif
 
 /* Input/output functions */
 

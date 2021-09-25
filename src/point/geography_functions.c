@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -33,22 +37,29 @@
  * These functions are not needed in MobilityDB.
  */
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+#include "point/geography_funcs.h"
 
 #include <postgres.h>
 #include <float.h>
+#include <fmgr.h>
 #include <utils/array.h>
 #include <utils/builtins.h>
+
 #include <liblwgeom.h>
+#if POSTGIS_VERSION_NUMBER >= 30000
+#include <liblwgeom_internal.h>
+#include <lwgeom_pg.h>
+#include <lwgeodetic_tree.h>
+#endif
 
 #include "point/postgis.h"
 #include "point/tpoint_spatialfuncs.h"
 
-extern void lwerror(const char *fmt, ...);
-
-/***********************************************************************
- * Definitions and functions copied from PostGIS since they are not exported
- ***********************************************************************/
+/*****************************************************************************
+ * Definitions needed for PostGIS 2.5.5 since they are not exported in
+ * library liblwgeom
+ *****************************************************************************/
+#if POSTGIS_VERSION_NUMBER < 30000
 
 #define CIRC_NODE_SIZE 8
 #define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
@@ -295,6 +306,10 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
     return d_min;
   }
 }
+#endif
+/*****************************************************************************
+ * End of definitions needed for PostGIS 2.5.5
+ *****************************************************************************/
 
 /***********************************************************************
  * Closest point and closest line functions for geographies.
@@ -354,7 +369,7 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
   g1 = PG_GETARG_GSERIALIZED_P(0);
   g2 = PG_GETARG_GSERIALIZED_P(1);
 
-  error_if_srid_mismatch(gserialized_get_srid(g1), gserialized_get_srid(g2));
+  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
 
   /* Return NULL on empty arguments. */
   if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
@@ -444,7 +459,7 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
   g1 = PG_GETARG_GSERIALIZED_P(0);
   g2 = PG_GETARG_GSERIALIZED_P(1);
 
-  error_if_srid_mismatch(gserialized_get_srid(g1), gserialized_get_srid(g2));
+  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
 
   /* Read calculation type */
   if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
@@ -680,7 +695,7 @@ END:
 PG_FUNCTION_INFO_V1(geography_line_substring);
 Datum geography_line_substring(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double from_fraction = PG_GETARG_FLOAT8(1);
   double to_fraction = PG_GETARG_FLOAT8(2);
   LWLINE *lwline;
@@ -691,13 +706,13 @@ Datum geography_line_substring(PG_FUNCTION_ARGS)
   if ( from_fraction < 0 || from_fraction > 1 )
   {
     elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
-    PG_FREE_IF_COPY(gser, 0);
+    PG_FREE_IF_COPY(gs, 0);
     PG_RETURN_NULL();
   }
   if ( to_fraction < 0 || to_fraction > 1 )
   {
     elog(ERROR,"line_interpolate_point: 3rd arg isn't within [0,1]");
-    PG_FREE_IF_COPY(gser, 0);
+    PG_FREE_IF_COPY(gs, 0);
     PG_RETURN_NULL();
   }
   if ( from_fraction > to_fraction )
@@ -705,19 +720,19 @@ Datum geography_line_substring(PG_FUNCTION_ARGS)
     elog(ERROR, "2nd arg must be smaller then 3rd arg");
     PG_RETURN_NULL();
   }
-  if ( gserialized_get_type(gser) != LINETYPE )
+  if ( gserialized_get_type(gs) != LINETYPE )
   {
     elog(ERROR,"line_substring: 1st arg isn't a line");
-    PG_FREE_IF_COPY(gser, 0);
+    PG_FREE_IF_COPY(gs, 0);
     PG_RETURN_NULL();
   }
 
-  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   opa = geography_substring(lwline->points, from_fraction, to_fraction,
     FP_TOLERANCE);
 
   lwgeom_free(lwline_as_lwgeom(lwline));
-  PG_FREE_IF_COPY(gser, 0);
+  PG_FREE_IF_COPY(gs, 0);
 
   if (opa->npoints <= 1)
   {
@@ -820,6 +835,7 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line,
   return opa;
 }
 
+#if POSTGIS_VERSION_NUMBER < 30000
 void spheroid_init(SPHEROID *s, double a, double b)
 {
   s->a = a;
@@ -828,11 +844,12 @@ void spheroid_init(SPHEROID *s, double a, double b)
   s->e_sq = (a*a - b*b)/(a*a);
   s->radius = (2.0 * a + b ) / 3.0;
 }
+#endif
 
 PG_FUNCTION_INFO_V1(geography_line_interpolate_point);
 Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gser = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   double distance_fraction = PG_GETARG_FLOAT8(1);
   /* Read calculation type */
   bool use_spheroid = true;
@@ -840,7 +857,7 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
     use_spheroid = PG_GETARG_BOOL(2);
   /* Read repeat mode */
   bool repeat = PG_NARGS() > 3 && PG_GETARG_BOOL(3);
-  int srid = gserialized_get_srid(gser);
+  int srid = gserialized_get_srid(gs);
   LWLINE* lwline;
   LWGEOM* lwresult;
   POINTARRAY* opa;
@@ -850,14 +867,14 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
   if ( distance_fraction < 0 || distance_fraction > 1 )
   {
     elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
-    PG_FREE_IF_COPY(gser, 0);
+    PG_FREE_IF_COPY(gs, 0);
     PG_RETURN_NULL();
   }
 
-  if ( gserialized_get_type(gser) != LINETYPE )
+  if ( gserialized_get_type(gs) != LINETYPE )
   {
     elog(ERROR,"line_interpolate_point: 1st arg isn't a line");
-    PG_FREE_IF_COPY(gser, 0);
+    PG_FREE_IF_COPY(gs, 0);
     PG_RETURN_NULL();
   }
 
@@ -871,11 +888,11 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser));
+  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   opa = geography_interpolate_points(lwline, distance_fraction, &s, repeat);
 
   lwgeom_free(lwline_as_lwgeom(lwline));
-  PG_FREE_IF_COPY(gser, 0);
+  PG_FREE_IF_COPY(gs, 0);
 
   if (opa->npoints <= 1)
   {
@@ -983,7 +1000,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   if ( mindistout ) *mindistout = distance;
 
   /* See if we have a third dimension */
-  hasz = FLAGS_GET_Z(pa->flags);
+  hasz = (bool) FLAGS_GET_Z(pa->flags);
 
   /* Initialize first point of array */
   getPoint4d_p(pa, 0, &p1);
@@ -1081,8 +1098,8 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_line_locate_point);
 Datum geography_line_locate_point(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gser1 = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *gser2 = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
   bool use_spheroid = true;
   /* Read our calculation type */
   if ( PG_NARGS() > 2 && ! PG_ARGISNULL(2) )
@@ -1098,19 +1115,19 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS)
   /* Initialize spheroid */
   /* We currently cannot use the following statement since PROJ4 API is not
    * available directly to MobilityDB. */
-  // spheroid_init_from_srid(fcinfo, gserialized_get_srid(gser1), &s);
+  // spheroid_init_from_srid(fcinfo, gserialized_get_srid(gs1), &s);
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
   /* Set to sphere if requested */
   if ( ! use_spheroid )
     s.a = s.b = s.radius;
 
-  if ( gserialized_get_type(gser1) != LINETYPE )
+  if ( gserialized_get_type(gs1) != LINETYPE )
   {
     elog(ERROR,"line_locate_point: 1st arg isn't a line");
     PG_RETURN_NULL();
   }
-  if ( gserialized_get_type(gser2) != POINTTYPE )
+  if ( gserialized_get_type(gs2) != POINTTYPE )
   {
     elog(ERROR,"line_locate_point: 2st arg isn't a point");
     PG_RETURN_NULL();
@@ -1126,10 +1143,10 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS)
     // spheroid_init_from_srid(fcinfo, srid, &s);
     spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
 
-  error_if_srid_mismatch(gserialized_get_srid(gser1), gserialized_get_srid(gser2));
+  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
 
-  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gser1));
-  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gser2));
+  lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs1));
+  lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs2));
 
   pa = lwline->points;
   lwpoint_getPoint4d_p(lwpoint, &p);

@@ -1,4 +1,7 @@
-[![Build Status](https://travis-ci.com/MobilityDB/MobilityDB.svg)](https://travis-ci.com/MobilityDB/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg?branch=develop)](https://coveralls.io/github/MobilityDB/MobilityDB?branch=develop) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)  [![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Main Build](https://github.com/estebanzimanyi/MobilityDB/actions/workflows/main.yml/badge.svg?branch=update-doc)](https://github.com/estebanzimanyi/MobilityDB/actions/workflows/main.yml)
+[![Coverage Status](https://coveralls.io/repos/github/estebanzimanyi/MobilityDB/badge.svg?branch=develop)](https://coveralls.io/github/estebanzimanyi/MobilityDB?branch=develop)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/846833df905c479182784d4cb4d45998)](https://www.codacy.com/gh/estebanzimanyi/MobilityDB/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=estebanzimanyi/MobilityDB&amp;utm_campaign=Badge_Grade)
+[![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 MobilityDB
 ==========
@@ -44,6 +47,16 @@ Benefits
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
+Experimental projects
+-----------------------------
+
+These projects push the boundaries of MobilityDB and connect it with the PostgreSQL/PostGIS ecosystem.
+
+*   [MobilityDB-Azure](https://github.com/JimTsesm/MobilityDB-Azure): MobilityDB on Azure
+*   [MobilityDB-AWS](https://github.com/MobilityDB/MobilityDB-AWS): MobilityDB on Amazon Web Services
+*   [MobilityDB-QGIS](https://github.com/MobilityDB/MobilityDB-QGIS): Integration of MobilityDB with QGIS
+*   [Move](https://github.com/mschoema/move): QGIS Plugin to visualize moving objects from MobilityDB
+
 Mailing Lists
 ------------
 
@@ -68,23 +81,23 @@ The extension is under development. We are planning to release the first version
 Requirements
 ------------
 
-*   Linux (other UNIX-like systems may work, but remain untested)
+*   Linux or MacOS (other UNIX-like systems may work, but remain untested)
 *   PostgreSQL > 10
-*   CMake >= 3.1
-*   PostGIS == 2.5
+*   CMake >= 3.7
+*   PostGIS >= 2.5.5
 *   JSON-C
 *   GNU Scientific Library (GSL)
-*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C, Protobuf-C
+*   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
 
 For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems:
 ```bash
-apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev libprotobuf-c-dev
+apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev
 ```
 
 Building & Installation
 -----------------------
 
-Here is the gist:
+For Linux, here is the gist:
 ```bash
 git clone https://github.com/MobilityDB/MobilityDB
 mkdir MobilityDB/build

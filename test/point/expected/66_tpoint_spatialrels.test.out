@@ -128,10 +128,6 @@ SELECT disjoint(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point
  f
 (1 row)
 
-SELECT disjoint(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "disjoint" statement 1
 SELECT disjoint(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  disjoint 
 ----------
@@ -174,10 +170,6 @@ SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, P
  f
 (1 row)
 
-SELECT disjoint(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "disjoint" statement 1
 SELECT disjoint(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  disjoint 
 ----------
@@ -220,10 +212,6 @@ SELECT disjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
  f
 (1 row)
 
-SELECT disjoint(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "disjoint" statement 1
 SELECT disjoint(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  disjoint 
 ----------
@@ -266,10 +254,6 @@ SELECT disjoint(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, P
  f
 (1 row)
 
-SELECT disjoint(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "disjoint" statement 1
 SELECT disjoint(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  disjoint 
 ----------
@@ -752,10 +736,6 @@ SELECT touches(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(
  f
 (1 row)
 
-SELECT touches(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "touches" statement 1
 SELECT touches(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
  touches 
 ---------
@@ -798,10 +778,6 @@ SELECT touches(geometry 'Point(1 1 1)', tgeompoint '[Point(1 1 1)@2000-01-01, Po
  f
 (1 row)
 
-SELECT touches(geometry 'Point(1 1 1)', tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 2: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "touches" statement 1
 SELECT touches(geometry 'Point Z empty', tgeompoint 'Point(1 1 1)@2000-01-01');
  touches 
 ---------
@@ -844,10 +820,6 @@ SELECT touches(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(
  f
 (1 row)
 
-SELECT touches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}',  geometry 'Point(1 1)');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1)@2000-01-01',  geometry 'Point empty');
  touches 
 ---------
@@ -890,10 +862,6 @@ SELECT touches(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Po
  f
 (1 row)
 
-SELECT touches(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',  geometry 'Point(1 1 1)');
-ERROR:  Relate Operation called with a LWGEOMCOLLECTION type.  This is unsupported.
-HINT:  Change argument 1: 'GEOMETRYCOLLECTION(LINESTRING(1 1,2 2,1 1),POINT(3 3))'
-CONTEXT:  SQL function "touches" statement 1
 SELECT touches(tgeompoint 'Point(1 1 1)@2000-01-01',  geometry 'Point Z empty');
  touches 
 ---------

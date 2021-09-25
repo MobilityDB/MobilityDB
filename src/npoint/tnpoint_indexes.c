@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -40,7 +44,9 @@
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnpoint_gist_compress);
-
+/**
+ * GiST compress function for temporal network points
+ */
 PGDLLEXPORT Datum
 tnpoint_gist_compress(PG_FUNCTION_ARGS)
 {
@@ -59,13 +65,13 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST decompress method for temporal values
+ * GiST decompress function
  *****************************************************************************/
 
 #if POSTGRESQL_VERSION_NUMBER < 110000
 PG_FUNCTION_INFO_V1(tnpoint_gist_decompress);
 /**
- * GiST decompress method for temporal values (result in a period)
+ * GiST decompress function for temporal network points (result in a period)
  */
 PGDLLEXPORT Datum
 tnpoint_gist_decompress(PG_FUNCTION_ARGS)
@@ -80,7 +86,9 @@ tnpoint_gist_decompress(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnpoint_spgist_compress);
-
+/**
+ * SP-GiST compress function for temporal network points
+ */
 PGDLLEXPORT Datum
 tnpoint_spgist_compress(PG_FUNCTION_ARGS)
 {

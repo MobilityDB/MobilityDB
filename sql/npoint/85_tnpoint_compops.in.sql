@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -33,31 +37,31 @@
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_eq(npoint, tnpoint)
+CREATE FUNCTION temporal_teq(npoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tnpoint, npoint)
+CREATE FUNCTION temporal_teq(tnpoint, npoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tnpoint, tnpoint)
+CREATE FUNCTION temporal_teq(tnpoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = #=
 );

@@ -33,12 +33,21 @@
 #ifndef __POSTGIS_H__
 #define __POSTGIS_H__
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
+#include <postgres.h>
+#include <fmgr.h>
 
 #include <liblwgeom.h>
+#if POSTGIS_VERSION_NUMBER >= 30000
+#include <lwgeodetic_tree.h>
+#endif
 
-/*****************************************************************************/
-// Definitions needed for developing geography_line_interpolate_point
+/*****************************************************************************
+ * Definitions needed for PostGIS 2.5.5 since they are not exported in
+ * library liblwgeom
+ *****************************************************************************/
+#if POSTGIS_VERSION_NUMBER < 30000
+
+/* Definitions needed for developing geography_line_interpolate_point */
 
 /**
 * Conversion functions
@@ -55,7 +64,6 @@ typedef struct
   double lat;
 } GEOGRAPHIC_POINT;
 
-
 /**
 * Two-point great circle segment from a to b.
 */
@@ -64,7 +72,6 @@ typedef struct
   GEOGRAPHIC_POINT start;
   GEOGRAPHIC_POINT end;
 } GEOGRAPHIC_EDGE;
-
 
 extern int spheroid_init_from_srid(FunctionCallInfo fcinfo, int srid, SPHEROID *s);
 extern double ptarray_length_spheroid(const POINTARRAY *pa, const SPHEROID *s);
@@ -83,15 +90,7 @@ extern int edge_intersection(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e
 extern double edge_distance_to_edge(const GEOGRAPHIC_EDGE *e1, const GEOGRAPHIC_EDGE *e2,
   GEOGRAPHIC_POINT *closest1, GEOGRAPHIC_POINT *closest2);
 
-/*****************************************************************************/
-
 /* Definitions copied from gserialized_gist.h */
-
-/*
- * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
- * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
- * for more details.
- */
 
 #define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
   do { \
@@ -224,7 +223,7 @@ extern int p4d_same(const POINT4D *p1, const POINT4D *p2);
 extern int p3d_same(const POINT3D *p1, const POINT3D *p2);
 extern int p2d_same(const POINT2D *p1, const POINT2D *p2);
 
-/* PostGIS functions called by MobilityDB */
+/* Other functions needed: TODO determine where they came from */
 
 extern void srid_is_latlong(FunctionCallInfo fcinfo, int srid);
 extern int clamp_srid(int srid);
@@ -236,6 +235,18 @@ extern int lwprint_double(double d, int maxdd, char *buf, size_t bufsize);
 extern char getMachineEndian(void);
 extern char lwpoint_same(const LWPOINT *p1, const LWPOINT *p2);
 extern LWPOINT *lwpoint_clone(const LWPOINT *lwgeom);
+
+#endif
+/*****************************************************************************
+ * End of definitions needed for PostGIS 2.5.5
+ *****************************************************************************/
+
+#if POSTGIS_VERSION_NUMBER >= 30000
+int32_t getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs);
+char *getSRSbySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs);
+#endif
+
+/* PostGIS functions called by MobilityDB */
 
 extern Datum transform(PG_FUNCTION_ARGS);
 extern Datum buffer(PG_FUNCTION_ARGS);
@@ -251,20 +262,28 @@ extern Datum covers(PG_FUNCTION_ARGS);
 extern Datum coveredby(PG_FUNCTION_ARGS);
 extern Datum crosses(PG_FUNCTION_ARGS);
 extern Datum disjoint(PG_FUNCTION_ARGS);
-extern Datum ST_Equals(PG_FUNCTION_ARGS);
-extern Datum intersects(PG_FUNCTION_ARGS); /* For 2D */
-extern Datum intersects3d(PG_FUNCTION_ARGS); /* For 3D */
 extern Datum issimple(PG_FUNCTION_ARGS);
 extern Datum overlaps(PG_FUNCTION_ARGS);
 extern Datum pgis_union_geometry_array(PG_FUNCTION_ARGS);
-extern Datum touches(PG_FUNCTION_ARGS);
-extern Datum within(PG_FUNCTION_ARGS);
 extern Datum relate_full(PG_FUNCTION_ARGS);
 extern Datum relate_pattern(PG_FUNCTION_ARGS);
+extern Datum touches(PG_FUNCTION_ARGS);
+extern Datum within(PG_FUNCTION_ARGS);
 
-extern Datum intersection(PG_FUNCTION_ARGS);
+extern Datum ST_Equals(PG_FUNCTION_ARGS);
+#if POSTGIS_VERSION_NUMBER < 30000
 extern Datum distance(PG_FUNCTION_ARGS); /* For 2D */
 extern Datum distance3d(PG_FUNCTION_ARGS); /* For 3D */
+extern Datum intersection(PG_FUNCTION_ARGS);
+extern Datum intersects(PG_FUNCTION_ARGS); /* For 2D */
+extern Datum intersects3d(PG_FUNCTION_ARGS); /* For 3D */
+#else
+extern Datum ST_Distance(PG_FUNCTION_ARGS); /* For 2D */
+extern Datum ST_3DDistance(PG_FUNCTION_ARGS); /* For 3D */
+extern Datum ST_Intersection(PG_FUNCTION_ARGS);
+extern Datum ST_Intersects(PG_FUNCTION_ARGS); /* For 2D */
+extern Datum ST_3DIntersects(PG_FUNCTION_ARGS); /* For 2D */
+#endif
 
 extern Datum BOX2D_to_LWGEOM(PG_FUNCTION_ARGS);
 extern Datum BOX3D_to_LWGEOM(PG_FUNCTION_ARGS);

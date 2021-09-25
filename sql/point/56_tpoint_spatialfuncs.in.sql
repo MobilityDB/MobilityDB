@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -45,7 +49,15 @@ CREATE FUNCTION setPrecision(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
+CREATE FUNCTION setPrecision(geometry, integer)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'geo_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setPrecision(geography, integer)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'geo_set_precision'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
 /*****************************************************************************/
 
 CREATE FUNCTION SRID(tgeompoint)

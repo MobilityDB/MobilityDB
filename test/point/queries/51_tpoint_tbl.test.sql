@@ -5,6 +5,10 @@
 -- Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
 -- contributors
 --
+-- MobilityDB includes portions of PostGIS version 3 source code released
+-- under the GNU General Public License (GPLv2 or later).
+-- Copyright (c) 2001-2021, PostGIS contributors
+--
 -- Permission to use, copy, modify, and distribute this software and its
 -- documentation for any purpose, without fee, and without a written 
 -- agreement is hereby granted, provided that the above copyright notice and
@@ -147,10 +151,11 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeompoint3D ORDER BY 1;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tgeogpoint3D ORDER BY 1;
 
-SELECT MAX(memSize(temp)) FROM tbl_tgeompoint;
-SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint;
-SELECT MAX(memSize(temp)) FROM tbl_tgeompoint3D;
-SELECT MAX(memSize(temp)) FROM tbl_tgeogpoint3D;
+-- The size of geometries increased a few bytes in PostGIS 3
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE memSize(temp) > 0;
+SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
 
 SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
 SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;

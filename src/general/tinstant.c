@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written 
  * agreement is hereby granted, provided that the above copyright notice and
@@ -154,8 +158,13 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   if (tgeo_base_type(basetypid))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
+#if POSTGIS_VERSION_NUMBER < 30000
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
+#else
+    MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(gs->gflags));
+    MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
+#endif
     POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;

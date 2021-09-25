@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -52,17 +56,6 @@
  *****************************************************************************/
 
 /**
- * Ensure that the temporal network points have the same SRID
- */
-void
-ensure_same_srid_tnpoint(const Temporal *temp1, const Temporal *temp2)
-{
-  if (tnpoint_srid_internal(temp1) != tnpoint_srid_internal(temp2))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network points must be in the same SRID")));
-}
-
-/**
  * Ensure that the temporal network point and the STBOX have the same SRID
  */
 void
@@ -72,28 +65,6 @@ ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
     tnpoint_srid_internal(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal network point and the box must be in the same SRID")));
-}
-
-/**
- * Ensure that the temporal network point and the geometry have the same SRID
- */
-void
-ensure_same_srid_tnpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
-{
-  if (tnpoint_srid_internal(temp) != gserialized_get_srid(gs))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network point and the geometry must be in the same SRID")));
-}
-
-/**
- * Ensure that the temporal network point and the network point have the same SRID
- */
-void
-ensure_same_srid_tnpoint_npoint(const Temporal *temp, const npoint *np)
-{
-  if (tnpoint_srid_internal(temp) != npoint_srid_internal(np))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal network point and the network point must be in the same SRID")));
 }
 
 /**
@@ -139,7 +110,7 @@ tnpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   double range = (max - min);
   double partial = (np->pos - min);
   double fraction = np1->pos < np2->pos ? partial / range : 1 - partial / range;
-  if (fabs(fraction) < EPSILON || fabs(fraction - 1.0) < EPSILON)
+  if (fabs(fraction) < MOBDB_EPSILON || fabs(fraction - 1.0) < MOBDB_EPSILON)
     return false;
 
   if (t != NULL)
@@ -456,7 +427,7 @@ npoint_same_internal(const npoint *np1, const npoint *np2)
 {
   /* Same route identifier */
   if (np1->rid == np2->rid)
-    return fabs(np1->pos - np2->pos) < EPSILON;
+    return fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
   Datum point1 = npoint_as_geom_internal(np1);
   Datum point2 = npoint_as_geom_internal(np2);
   bool result = datum_eq(point1, point2, type_oid(T_GEOMETRY));
@@ -1001,7 +972,7 @@ tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid_tnpoint_gs(temp, gs);
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   if (gserialized_is_empty(gs))
   {
     Temporal *result = atfunc ? NULL : temporal_copy(temp);

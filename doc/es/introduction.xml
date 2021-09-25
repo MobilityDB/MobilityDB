@@ -43,14 +43,22 @@
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="corporate_sponsors">
-		<title>Patrocinadores corporativos</title>
+	<sect1 id="sponsors">
+		<title>Patrocinadores</title>
 		<para>
-			Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria directa al proyecto MobilityDB.
+			Estas son organizaciones de investigación (en orden alfabético) que han contribuido con fondos de investigación al proyecto MobilityDB.
+			<itemizedlist>
+				<listitem><para><ulink url="https://ec.europa.eu/research/mariecurieactions/">European Commission</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.frs-fnrs.be/en">Fonds de la Recherche Scientifique (FNRS), Belgium</ulink></para></listitem>
+				<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></para></listitem>
+			</itemizedlist>
+		</para>
+		<para>
+			Estas son organizaciones corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria directa al proyecto MobilityDB.
 			<itemizedlist>
 				<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
-				<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Bélgica</ulink></para></listitem>
-				<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Bélgica</ulink></para></listitem>
+				<listitem><para><ulink url="https://georepublic.info/en/">Georepublic, Germany</ulink></para></listitem>
+				<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></para></listitem>
 			</itemizedlist>
 		</para>
 	</sect1>
@@ -58,8 +66,9 @@
 	<sect1 id="license">
 		<title>Licencias</title>
 		<para>Las siguientes licencias se pueden encontrar en MobilityDB:</para>
-		<informaltable frame='all'><?dblatex table-width="autowidth.column: 1 2"?>
-			<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+		<informaltable frame="all" colsep="1" rowsep="1">
+			<?dblatex table-width="autowidth.column: 1 2"?>
+			<tgroup cols="2" align="left" colsep="1" rowsep="1">
 				<thead>
 					<row>
 						<entry>Recurso</entry>
@@ -177,7 +186,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Tenga en cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la versión 11 de PostgreSQL.</para></listitem>
-				<listitem><para>PostGIS versión 2.5. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role="bold">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</para></listitem>
+				<listitem><para>PostGIS versión 2.5.5 o superior. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 			</itemizedlist>
 			<para>
@@ -291,11 +300,10 @@ ctest -R '22_*'
 			<para>
 				Las variables utilizadas para generar la documentación del usuario y del desarrollador son las siguientes:
 			</para>
-			<table frame='bottom'><title>Variables para la documentación del usuario y del desarrollador</title>
-				<tgroup cols='3' align='left' colsep='0' rowsep='1'>
-				<colspec colname='c1' colwidth="1*"/>
-				<colspec colname='c2' colwidth="1*"/>
-				<colspec colname='c3' colwidth="5*"/>
+			<table frame="all" colsep="1" rowsep="1">
+				<?dblatex table-width="autowidth.column: 1 2 3"?>
+				<title>Variables para la documentación del usuario y del desarrollador</title>
+				<tgroup cols="3" align="left" colsep="1" rowsep="1">
 				<thead>
 					<row>
 						<entry>Variable</entry>

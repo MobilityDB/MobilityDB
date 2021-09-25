@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -38,6 +42,9 @@
 
 /*****************************************************************************/
 
+/**
+ * Parse a network point value from the buffer
+ */
 npoint *
 npoint_parse(char **str)
 {
@@ -71,6 +78,9 @@ npoint_parse(char **str)
   return npoint_make(rid, pos);
 }
 
+/**
+ * Parse a network segment value from the buffer
+ */
 nsegment *
 nsegment_parse(char **str)
 {

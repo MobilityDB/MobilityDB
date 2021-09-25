@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -700,7 +704,7 @@ period_ne(PG_FUNCTION_ARGS)
 
 /**
  * Returns -1, 0, or 1 depending on whether the first period
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  * (internal function)
  *
  * @note Function used for B-tree comparison
@@ -724,7 +728,7 @@ period_cmp_internal(const Period *p1, const Period *p2)
 PG_FUNCTION_INFO_V1(period_cmp);
 /**
  * Returns -1, 0, or 1 depending on whether the first period
- * is less than, equal, or greater than the second temporal value
+ * is less than, equal, or greater than the second one
  */
 PGDLLEXPORT Datum
 period_cmp(PG_FUNCTION_ARGS)

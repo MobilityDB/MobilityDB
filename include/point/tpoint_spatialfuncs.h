@@ -32,8 +32,6 @@
 #ifndef __TPOINT_SPATIALFUNCS_H__
 #define __TPOINT_SPATIALFUNCS_H__
 
-#define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H 1
-
 #include <postgres.h>
 #include <liblwgeom.h>
 
@@ -62,11 +60,9 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 
 extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
+extern void ensure_same_srid(int32_t srid1, int32_t srid2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_same_srid_tpoint(const Temporal *temp1, const Temporal *temp2);
-extern void ensure_same_srid_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
-extern void ensure_same_srid_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs);
 extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
@@ -162,6 +158,17 @@ extern LWLINE *geopoint_lwline(Datum value1, Datum value2);
 extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpointseq_trajectory_copy(const TSequence *seq);
 extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
+
+/* Set precision of the coordinates */
+
+extern Datum geo_set_precision(PG_FUNCTION_ARGS);
+extern Datum tpoint_set_precision(PG_FUNCTION_ARGS);
+
+/* Functions for extracting coordinates */
+
+extern Datum tpoint_get_x(PG_FUNCTION_ARGS);
+extern Datum tpoint_get_y(PG_FUNCTION_ARGS);
+extern Datum tpoint_get_z(PG_FUNCTION_ARGS);
 
 /* Length, speed, time-weighted centroid, and temporal azimuth functions */
 

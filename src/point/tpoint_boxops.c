@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -59,7 +63,7 @@
  *****************************************************************************/
 
 /**
- * Set the spatiotemporal box from the temporal instant point value
+ * Set the spatiotemporal box from the temporal point value
  */
 void
 tpointinst_make_stbox(STBOX *box, const TInstant *inst)
@@ -72,7 +76,7 @@ tpointinst_make_stbox(STBOX *box, const TInstant *inst)
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal instant point values
+ * Set the spatiotemporal box from the array of temporal point values
  *
  * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
@@ -93,7 +97,7 @@ tpointinstarr_to_stbox(STBOX *box, const TInstant **instants, int count)
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal sequence point values
+ * Set the spatiotemporal box from the array of temporal point values
  *
  * @param[out] box Spatiotemporal box
  * @param[in] sequences Temporal instant values
@@ -429,7 +433,8 @@ contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_stbox);
 /**
- * Returns true if the spatiotemporal box of the temporal point contains the spatiotemporal box
+ * Returns true if the spatiotemporal box of the temporal point contains the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)

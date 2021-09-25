@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -84,7 +88,11 @@ geom_disjoint(Datum geom1, Datum geom2)
 Datum
 geom_intersects2d(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(intersects, geom1, geom2);
+#else
+  return call_function2(ST_Intersects, geom1, geom2);
+#endif
 }
 
 /**
@@ -93,7 +101,11 @@ geom_intersects2d(Datum geom1, Datum geom2)
 Datum
 geom_intersects3d(Datum geom1, Datum geom2)
 {
+#if POSTGIS_VERSION_NUMBER < 30000
   return call_function2(intersects3d, geom1, geom2);
+#else
+  return call_function2(ST_3DIntersects, geom1, geom2);
+#endif
 }
 
 /**
@@ -310,7 +322,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -322,7 +334,7 @@ spatialrel_geo_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
 }
 
 /**
- * Generic spatial relationships for a geometry and a temporal point
+ * Generic spatial relationships for a temporal point and a geometry
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func PostGIS function to be called
@@ -336,7 +348,7 @@ spatialrel_tpoint_geo(FunctionCallInfo fcinfo, Datum (*func)(Datum, ...),
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Datum param = (numparam == 2) ? (Datum) NULL : PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -486,7 +498,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   Temporal *sync1, *sync2;
   /* Returns false if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */

@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -36,9 +40,14 @@
 #include <math.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
+#endif
+
+#if POSTGIS_VERSION_NUMBER >= 30000
+#include <lwgeodetic_tree.h>
+#include <measures.h>
+#include <measures3d.h>
 #endif
 
 #include "general/period.h"
@@ -292,7 +301,7 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
 
     fraction = (f1 + f2 + f3 + f4) / denum;
   }
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
@@ -372,7 +381,7 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
     fraction = (double) (length / seglength);
   }
 
-  if (fraction <= EPSILON || fraction >= (1.0 - EPSILON))
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   long double duration = (long double) (end1->t - start1->t);
   *t = start1->t + (TimestampTz) (duration * fraction);
@@ -450,7 +459,7 @@ distance_geo_tpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_point_type(gs);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -473,7 +482,7 @@ distance_tpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   ensure_point_type(gs);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -517,7 +526,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -672,13 +681,13 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
       lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
   lwline_free(lwline);
 
-  if (fabsl(fraction) < EPSILON)
+  if (fabsl(fraction) < MOBDB_EPSILON)
   {
     *closest = value1;
     *t = inst1->t;
     return 0.0;
   }
-  if (fabsl(fraction - 1.0) < EPSILON)
+  if (fabsl(fraction - 1.0) < MOBDB_EPSILON)
   {
     *closest = value2;
     *t = inst2->t;
@@ -816,7 +825,7 @@ TInstant *
 NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   GSERIALIZED *gs)
 {
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -883,7 +892,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   TInstant *result = NULL;
   /* Store fcinfo into a global variable */
@@ -924,7 +933,7 @@ Datum
 NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   GSERIALIZED *gs)
 {
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -1202,7 +1211,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -1232,7 +1241,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
 Datum
 shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
   if (geodetic)
     ensure_has_not_Z_gs(gs);
@@ -1316,7 +1325,7 @@ shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);

@@ -158,16 +158,16 @@ SELECT setPrecision(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
  NSegment(1,0.123457,0.223457)
 (1 row)
 
-SELECT st_astext(npoint 'npoint(1,0.2)'::geometry);
-                st_astext                
------------------------------------------
- POINT(69.790368869663 81.4520975905736)
+SELECT ST_AsText(setPrecision(npoint 'npoint(1,0.2)'::geometry, 6));
+         st_astext          
+----------------------------
+ POINT(69.790369 81.452098)
 (1 row)
 
-SELECT st_astext(nsegment 'nsegment(1,0.5,0.7)'::geometry);
-                                    st_astext                                    
----------------------------------------------------------------------------------
- LINESTRING(48.7186629128278 77.7640705101509,34.6506927416814 75.3845848205875)
+SELECT ST_AsText(setPrecision(nsegment 'nsegment(1,0.5,0.7)'::geometry, 6));
+                      st_astext                      
+-----------------------------------------------------
+ LINESTRING(48.718663 77.764071,34.650693 75.384585)
 (1 row)
 
 SELECT setPrecision((npoint 'npoint(1,0.2)'::geometry)::npoint, 6);

@@ -185,7 +185,7 @@ div.procedure p b {
 	color: #990000;
 }
 
-h1.title, h2.title, h3.title, h4.title, h5.title, h6.title,
+h1.title, h2.title, h3.title, h4.title, h5.title, h6.title, p.title,
 h3.author, .corpauthor,
 div.abstract div.abstract-title,
 div.toc div.toc-title,
@@ -200,19 +200,19 @@ div.list-of-examples div.toc-title {
 }
 
 h1.title, h2.title {
-	margin: .8em 0 0 -4%;
+	margin: .8em 0 0 0;
 }
 
 h3.title, h4.title {
-	margin: .8em 0 0 -3%;
+	margin: .8em 0 0 0;
 }
 
 h5.title {
-	margin: .8em 0 0 -2%;
+	margin: .8em 0 0 0;
 }
 
 h6.title {
-	margin: .8em 0 0 -1%;
+	margin: .8em 0 0 0;
 }
 
 body hr {
@@ -296,6 +296,7 @@ pre.programlisting {
 	overflow: auto;
 	font-family: monospace;
 	padding: 1ex;
+	padding-top: 0;
 	background-color: #eee;
 	border: 1px solid #ccc;
 	border-radius: 4px;
@@ -305,10 +306,10 @@ pre.programlisting {
 	a[href]:hover { background: #ffa }
 }
 
-.informaltable, .table th {
-	padding-left: 0.2em;
-	text-align: left;
-}
+/* .informaltable, .table th { */
+	/* padding-left: 0.2em; */
+	/* text-align: left; */
+/* } */
 
 .note, .tip, .important, .warning, .caution, .example, div.procedure {
 	border-radius: 4px;
@@ -378,10 +379,10 @@ pre.programlisting {
 	margin: .4ex 0 .4ex 0;
 }
 
-.informaltable table.calstable tr td {
-	padding-left: 1em;
-	padding-right: 1em;
-}
+/* .informaltable table.calstable tr td { */
+	/* padding-left: 1em; */
+	/* padding-right: 1em; */
+/* } */
 
 .authorgroup {
 	font-style: italic;
@@ -426,4 +427,8 @@ code.prompt {
 
 tr.question td {
 	vertical-align: bottom ;
+}
+
+table {
+  border-collapse: collapse;
 }

@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -1992,43 +1996,37 @@ CREATE FUNCTION tbool_cmp(tbool, tbool)
 CREATE OPERATOR < (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = tbool_lt,
-  COMMUTATOR = >,
-  NEGATOR = >=,
+  COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = tbool_le,
-  COMMUTATOR = >=,
-  NEGATOR = >,
+  COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = tbool_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = tbool_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = tbool_ge,
-  COMMUTATOR = <=,
-  NEGATOR = <,
+  COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = tbool_gt,
-  COMMUTATOR = <,
-  NEGATOR = <=,
+  COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 
@@ -2075,43 +2073,37 @@ CREATE FUNCTION tint_cmp(tint, tint)
 CREATE OPERATOR < (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_lt,
-  COMMUTATOR = >,
-  NEGATOR = >=,
+  COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_le,
-  COMMUTATOR = >=,
-  NEGATOR = >,
+  COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_ge,
-  COMMUTATOR = <=,
-  NEGATOR = <,
+  COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_gt,
-  COMMUTATOR = <,
-  NEGATOR = <=,
+  COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 
@@ -2158,43 +2150,37 @@ CREATE FUNCTION tfloat_cmp(tfloat, tfloat)
 CREATE OPERATOR < (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_lt,
-  COMMUTATOR = >,
-  NEGATOR = >=,
+  COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_le,
-  COMMUTATOR = >=,
-  NEGATOR = >,
+  COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_ge,
-  COMMUTATOR = <=,
-  NEGATOR = <,
+  COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_gt,
-  COMMUTATOR = <,
-  NEGATOR = <=,
+  COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
 );
 
@@ -2241,43 +2227,37 @@ CREATE FUNCTION ttext_cmp(ttext, ttext)
 CREATE OPERATOR < (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = ttext_lt,
-  COMMUTATOR = >,
-  NEGATOR = >=,
+  COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = ttext_le,
-  COMMUTATOR = >=,
-  NEGATOR = >,
+  COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = temporal_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR = (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = ttext_eq,
-  COMMUTATOR = =,
-  NEGATOR = <>,
+  COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = ttext_ne,
-  COMMUTATOR = <>,
-  NEGATOR = =,
+  COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = ttext_ge,
-  COMMUTATOR = <=,
-  NEGATOR = <,
+  COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = ttext_gt,
-  COMMUTATOR = <,
-  NEGATOR = <=,
+  COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = temporal_sel, JOIN = scalargtjoinsel
 );
 

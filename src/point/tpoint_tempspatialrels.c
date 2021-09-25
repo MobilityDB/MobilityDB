@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -67,6 +71,7 @@
 #include "point/tpoint_tempspatialrels.h"
 
 #include <assert.h>
+#include <utils/builtins.h>
 #include <utils/timestamp.h>
 
 #include "general/period.h"
@@ -241,7 +246,11 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   }
 
   Datum traj = tpointseq_trajectory(seq);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum inter = call_function2(intersection, traj, geom);
+#else
+  Datum inter = call_function2(ST_Intersection, traj, geom);
+#endif
   GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
   if (gserialized_is_empty(gsinter))
   {
@@ -452,7 +461,11 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter)
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
+#if POSTGIS_VERSION_NUMBER < 30000
     FLAGS_GET_Z(gs->flags) ? &geom_intersects3d : &geom_intersects2d;
+#else
+    FLAGS_GET_Z(gs->gflags) ? &geom_intersects3d : &geom_intersects2d;
+#endif
 
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
@@ -506,7 +519,12 @@ tdwithin_tpointseq_geo1(const TSequence *seq, Datum geo, Datum dist, int *count)
   }
 
   /* Restrict to the buffered geometry */
-  Datum geo_buffer = call_function2(buffer, geo, dist);
+  Datum geo_buffer =
+#if POSTGIS_VERSION_NUMBER < 30000
+    call_function2(buffer, geo, dist);
+#else
+    call_function3(buffer, geo, dist, CStringGetTextDatum(""));
+#endif
   int count1;
   TSequence **atbuffer = tpointseq_at_geometry(seq, geo_buffer, &count1);
   Datum datum_true = BoolGetDatum(true);
@@ -862,7 +880,7 @@ tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
     /* Compute the intersection of the two intervals */
     long double t7 = Max(0.0, t5);
     long double t8 = Min(1.0, t6);
-    if (fabsl(t7 - t8) < EPSILON)
+    if (fabsl(t7 - t8) < MOBDB_EPSILON)
     {
       *t1 = *t2 = lower + (TimestampTz) (t7 * duration);
       return 1;
@@ -1071,7 +1089,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
 Temporal *
 tcontains_geo_tpoint_internal(GSERIALIZED *gs, Temporal *temp)
 {
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
   Datum bound = call_function1(boundary, PointerGetDatum(gs));
   GSERIALIZED *gsbound = (GSERIALIZED *) PG_DETOAST_DATUM(bound);
@@ -1123,7 +1141,7 @@ tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(temp, gs, TDISJOINT);
   PG_FREE_IF_COPY(gs, 0);
@@ -1141,7 +1159,7 @@ tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(temp, gs, TDISJOINT);
   PG_FREE_IF_COPY(temp, 0);
@@ -1164,7 +1182,7 @@ tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
   PG_FREE_IF_COPY(gs, 0);
@@ -1182,7 +1200,7 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo(temp, gs, TINTERSECTS);
   PG_FREE_IF_COPY(temp, 0);
@@ -1227,7 +1245,7 @@ ttouches_geo_tpoint(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *result = ttouches_tpoint_geo_internal(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1246,7 +1264,7 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *result = ttouches_tpoint_geo_internal(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -1265,10 +1283,14 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
 Temporal *
 tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   LiftedFunctionInfo lfinfo;
   /* 3D only if both arguments are 3D */
+#if POSTGIS_VERSION_NUMBER < 30000
   lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags) ?
+#else
+  lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
+#endif
     (varfunc) &geom_dwithin3d : (varfunc) &geom_dwithin2d;
   lfinfo.numparam = 3;
   lfinfo.restypid = BOOLOID;
@@ -1303,7 +1325,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *result = tdwithin_tpoint_geo_internal(temp, gs, dist);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1323,7 +1345,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum dist = PG_GETARG_DATUM(2);
-  ensure_same_srid_tpoint_gs(temp, gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   Temporal *result = tdwithin_tpoint_geo_internal(temp, gs, dist);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -1382,7 +1404,7 @@ tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Datum dist = PG_GETARG_DATUM(2);
-  ensure_same_srid_tpoint(temp1, temp2);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = tdwithin_tpoint_tpoint_internal(temp1, temp2, dist);

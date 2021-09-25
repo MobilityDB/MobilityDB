@@ -5,6 +5,10 @@
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
@@ -201,6 +205,7 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
 /**
  *  Outputs the skiplist in graphviz dot format for visualisation and debugging purposes
  */
+#ifdef DEBUG_BUILD
 void
 skiplist_print(const SkipList *list)
 {
@@ -253,6 +258,7 @@ skiplist_print(const SkipList *list)
   sprintf(buf+len, "}\n");
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("SKIPLIST: %s", buf)));
 }
+#endif
 
 /**
  * Constructs a skiplist from the array of values values

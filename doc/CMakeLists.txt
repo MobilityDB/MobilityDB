@@ -17,13 +17,10 @@ option(ALL_DOC
   "
   OFF
 )
-
 option(HTML
   "Set ON|OFF (default=OFF) to build the user's documentation in HTML format" OFF)
-
 option(PDF
   "Set ON|OFF (default=OFF) to build the user's documentation in PDF format" OFF)
-
 option(EPUB
   "Set ON|OFF (default=OFF) to build the user's documentation in EPUB format" OFF)
 
@@ -95,7 +92,7 @@ message(STATUS "PROJECT_BUILD_LANGUAGES_STRING = ${PROJECT_BUILD_LANGUAGES_STRIN
 
 if(HTML OR PDF OR EPUB OR ALL_DOC)
   message(STATUS "Build the user's documentation.")
-  # Required package for generating the user's documentation
+  # Required package for generating the user's documentation in any format
   find_package(DocBook REQUIRED)
   # Required package for validating the XML files of the user's documentation with xmllint
   find_package(LibXml2 REQUIRED)
@@ -112,6 +109,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
     set(msg_level "FATAL_ERROR")
   endif()
 
+  # Required packages for generating the user's documentation in HTML format
   if(HTML)
     find_package(LibXslt)
     if(NOT LIBXSLT_FOUND)
@@ -119,6 +117,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
     endif()
   endif()
 
+  # Required packages for generating the user's documentation in PDF format
   if(PDF)
     find_package(DBLATEX)
     if(NOT DBLATEX_FOUND)
@@ -126,27 +125,25 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
     endif()
   endif()
 
+  # Required packages for generating the user's documentation in EPUB format
   if(EPUB)
+    find_package(LibXslt)
     find_package(DBTOEPUB)
-    if(NOT DBTOEPUB_FOUND)
+    if(NOT LIBXSLT_FOUND OR NOT DBTOEPUB_FOUND)
       message(${msg_level} "No package found for generating the user's documentation in EPUB format")
     endif()
   endif()
 
+  # When building all formats verify that at least one format will be produced
   if(ALL_DOC)
     if(NOT LIBXSLT_FOUND AND NOT DBLATEX_FOUND AND NOT DBTOEPUB_FOUND)
       message(FATAL_ERROR "No package found for generating the user's documentation")
     endif()
-    # Add an empty target that depends on the targets of all formats
+    # Add an empty main doc target that will be dependent on the main format targets
     add_custom_target(doc
-      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
       COMMENT "Generating the user's documentation" VERBATIM
     )
   endif()
-
-  # Optional packages for generating the .po and .pot files for the translations
-  # find_package(Gettext)
-  # find_package(POXML)
 
   # Function that validates the XML files of the user's documentation
   function(validate_xml_file file lang)
@@ -162,7 +159,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
     return()
   endfunction(validate_xml_file)
 
-  # Validates the XML files of the user's documentation for all build languages
+  # Validate the XML files of the user's documentation for all build languages
   foreach (lang ${PROJECT_BUILD_LANGUAGES})
     list(FIND PROJECT_BUILD_LANGUAGES "${lang}" idx)
     list(GET PROJECT_BUILD_LANGUAGES_STRING "${idx}" lang_str)
@@ -175,118 +172,156 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
 
   # Generating the user's documentation in HTML format
   if(LIBXSLT_FOUND)
-    # Add an empty target that depends on the targets of all build languages
+    # Add an empty main html target
     add_custom_target(doc_html
-      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${locale}"
       COMMENT "Generating the user's documentation in HTML format" VERBATIM
     )
-    # Add dependency on the doc target of all formats
+    # Make the main doc target dependent on the main html target
     if(ALL_DOC)
       add_dependencies(doc doc_html)
     endif()
-    # Copy the images before building the doc_html target
+    # Add target copying the image directory and make the main html target dependent on it
     add_custom_target(doc_html_img
       COMMAND ${CMAKE_COMMAND} -E copy_directory
          ${CMAKE_CURRENT_SOURCE_DIR}/images ${CMAKE_CURRENT_BINARY_DIR}/images
       COMMENT "Copying the image files of the user's documentation" VERBATIM
     )
-    # Add target of all build languages
     add_dependencies(doc_html doc_html_img)
+    # Loop for all build languages
     foreach (lang ${PROJECT_BUILD_LANGUAGES})
+      # Set subdirectory variable for all languages excepted English
       if("${lang}" STREQUAL "en")
         set(locale "")
       else()
-        set(locale "${lang}/")
+        set(locale "/${lang}")
       endif()
+      # Get the message string for every language
       list(FIND PROJECT_BUILD_LANGUAGES "${lang}" idx)
       list(GET PROJECT_BUILD_LANGUAGES_STRING "${idx}" lang_str)
+      # Add html target for every language and make the main html target dependent on it
       add_custom_target(doc_html_${lang}
-        ${LIBXSLT_XSLTPROC_EXECUTABLE} --stringparam html.stylesheet ${CMAKE_CURRENT_BINARY_DIR}/${locale}docbook.css
+        ${LIBXSLT_XSLTPROC_EXECUTABLE} --output ${CMAKE_CURRENT_BINARY_DIR}${locale}/index.html
+          # Include the customized docbook.css
+          --stringparam html.stylesheet docbook.css
           # Make section numbers to include the chapter number. This assumes chapter numbering is turned on
           --stringparam section.autolabel 1 --stringparam section.label.includes.component.label 1
-          # Make generated text for chapters, sections, ... is only the number, instead the default number and title
-          --stringparam xref.with.number.and.title 0
-          --xinclude -o ${CMAKE_CURRENT_BINARY_DIR}/${locale}index.html ${DOCBOOK_XSL}/html/chunk.xsl
-          ${CMAKE_CURRENT_SOURCE_DIR}/${locale}mobilitydb-manual.xml
+          # Generated text for chapters, sections, figures... is only the number and not the tile
+          --stringparam xref.with.number.and.title 0 
+          # Placement for the legend for figures is after
+          --stringparam formal.title.placement "figure after table after"
+          # Allow controlling individual cell borders
+          --stringparam table.borders.with.css 1
+          --xinclude ${DOCBOOK_XSL}/html/chunk.xsl ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating the ${lang_str} user's documentation in HTML format" VERBATIM
       )
       add_dependencies(doc_html doc_html_${lang})
+      # Add target creating the subdirectory for every language distinct than English
+      # and make the html target for the language dependent on it
+      if(NOT "${lang}" STREQUAL "en")
+        add_custom_target(doc_html_${lang}_dir
+          ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}${locale}
+          COMMENT "Creating directory ${CMAKE_CURRENT_BINARY_DIR}${locale}" VERBATIM
+        )
+        add_dependencies(doc_html_${lang} doc_html_${lang}_dir)
+      endif()
+      # Add target copying the docbook.css and make the html target for each language dependent on it
+      add_custom_target(doc_html_${lang}_css
+        COMMAND ${CMAKE_COMMAND} -E copy
+           ${CMAKE_CURRENT_SOURCE_DIR}/docbook.css ${CMAKE_CURRENT_BINARY_DIR}${locale}
+        COMMENT "Copying the docbook.css file in the directory ${CMAKE_CURRENT_BINARY_DIR}${locale}" VERBATIM
+      )
+      if(NOT "${lang}" STREQUAL "en")
+        add_dependencies(doc_html_${lang}_css doc_html_${lang}_dir)
+      endif()
+      add_dependencies(doc_html_${lang} doc_html_${lang}_css)
     endforeach()
  endif()
 
   # Generating the user's documentation in PDF format
   if(DBLATEX_FOUND)
-    # Add an empty target that depends on the targets of all build languages
+    # Add an empty main pdf target
     add_custom_target(doc_pdf
-      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${locale}"
       COMMENT "Generating the user's documentation in PDF format" VERBATIM
     )
-    # Add dependency on the doc target of all formats
+    # Make the main doc target dependent on the main pdf target
     if(ALL_DOC)
       add_dependencies(doc doc_pdf)
     endif()
-    # Add target of all build languages
+    # Loop for all build languages
     foreach (lang ${PROJECT_BUILD_LANGUAGES})
+      # Set subdirectory variable for all languages excepted English
       if("${lang}" STREQUAL "en")
         set(locale "")
       else()
-        set(locale "${lang}/")
+        set(locale "/${lang}")
       endif()
+      # Get the message string for every language
       list(FIND PROJECT_BUILD_LANGUAGES "${lang}" idx)
       list(GET PROJECT_BUILD_LANGUAGES_STRING "${idx}" lang_str)
+      # Add pdf target for every language and make the main pdf target dependent on it
       add_custom_target(doc_pdf_${lang}
-        ${DBLATEX_COMMAND} -s ${CMAKE_CURRENT_SOURCE_DIR}/${locale}texstyle.sty
-          ${CMAKE_CURRENT_SOURCE_DIR}/${locale}mobilitydb-manual.xml
-          -o ${CMAKE_CURRENT_BINARY_DIR}/${locale}mobilitydb-manual.pdf
+        ${DBLATEX_COMMAND} -s ${CMAKE_CURRENT_SOURCE_DIR}${locale}/texstyle.sty
+          ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
+          -o ${CMAKE_CURRENT_BINARY_DIR}${locale}/mobilitydb-manual.pdf
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating the ${lang_str} user's documentation in PDF format" VERBATIM
       )
+      add_dependencies(doc_pdf doc_pdf_${lang})
+      # Add target creating the subdirectory for every language distinct than English
+      # and make the pdf target for the language dependent on it
       if(NOT "${lang}" STREQUAL "en")
         add_custom_target(doc_pdf_${lang}_dir
-          ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${locale}
-          COMMENT "Creating directory ${CMAKE_CURRENT_BINARY_DIR}/${locale}" VERBATIM
+          ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}${locale}
+          COMMENT "Creating directory ${CMAKE_CURRENT_BINARY_DIR}${locale}" VERBATIM
         )
         add_dependencies(doc_pdf_${lang} doc_pdf_${lang}_dir)
       endif()
-      add_dependencies(doc_pdf doc_pdf_${lang})
     endforeach()
   endif()
 
   # Generating the user's documentation in EPUB format
   if(DBTOEPUB_FOUND)
-    # Add an empty target that depends on the targets of all build languages
+    # Set the ${DOCBOOK_XSL} variable in the epub.xsl file
+    configure_file(epub.xsl ${CMAKE_CURRENT_BINARY_DIR}/epub.xsl)
+    # Add an empty main epub target
     add_custom_target(doc_epub
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}${locale}"
         COMMENT "Generating the user's documentation in EPUB format" VERBATIM
     )
-    # Add dependency on the doc target of all formats
+    # Make the main doc target dependent on the main epub target
     if(ALL_DOC)
       add_dependencies(doc doc_epub)
     endif()
-    # Add target of all build languages
+    # Loop for all build languages
     foreach (lang ${PROJECT_BUILD_LANGUAGES})
+      # Set subdirectory variable for all languages excepted English
       if("${lang}" STREQUAL "en")
         set(locale "")
       else()
-        set(locale "${lang}/")
+        set(locale "/${lang}")
       endif()
+      # Get the message string for every language
       list(FIND PROJECT_BUILD_LANGUAGES "${lang}" idx)
       list(GET PROJECT_BUILD_LANGUAGES_STRING "${idx}" lang_str)
+      # Add epub target for every language and make the main epub target dependent on it
       add_custom_target(doc_epub_${lang}
-        ${DBTOEPUB_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/${locale}mobilitydb-manual.xml
-          -o ${CMAKE_CURRENT_BINARY_DIR}/${locale}mobilitydb-manual.epub
+        ${DBTOEPUB_COMMAND} -c ${CMAKE_CURRENT_SOURCE_DIR}/docbook.css 
+          -s ${CMAKE_CURRENT_BINARY_DIR}/epub.xsl
+          -o ${CMAKE_CURRENT_BINARY_DIR}${locale}/mobilitydb-manual.epub
+          ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating the ${lang_str} user's documentation in EPUB format" VERBATIM
       )
+      add_dependencies(doc_epub doc_epub_${lang})
+      # Add target creating the subdirectory for every language distinct than English
+      # and make the epub target for the language dependent on it
       if(NOT "${lang}" STREQUAL "en")
         add_custom_target(doc_epub_${lang}_dir
-          ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${locale}
-          COMMENT "Creating directory ${CMAKE_CURRENT_BINARY_DIR}/${locale}" VERBATIM
+          ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}${locale}
+          COMMENT "Creating directory ${CMAKE_CURRENT_BINARY_DIR}${locale}" VERBATIM
         )
         add_dependencies(doc_epub_${lang} doc_epub_${lang}_dir)
       endif()
-      add_dependencies(doc_epub doc_epub_${lang})
     endforeach()
   endif()
 
