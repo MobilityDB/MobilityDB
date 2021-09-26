@@ -226,8 +226,8 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   {
     /* Get input parameters */
     STBOX *bounds = PG_GETARG_STBOX_P(0);
-    ensure_not_geodetic_stbox(bounds);
     ensure_has_X_stbox(bounds);
+    ensure_not_geodetic(bounds->flags);
     double size = PG_GETARG_FLOAT8(1);
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     GSERIALIZED *sorigin;

@@ -956,6 +956,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="bearing"><varname>bearing</varname></link>: Obtener el rumbo temporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
 				</listitem>
 

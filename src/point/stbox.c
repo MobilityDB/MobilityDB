@@ -245,18 +245,6 @@ ensure_has_T_stbox(const STBOX *box)
   return;
 }
 
-/**
- * Ensure that the temporal value has XY dimension
- */
-void
-ensure_not_geodetic_stbox(const STBOX *box)
-{
-  if (MOBDB_FLAGS_GET_GEODETIC(box->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box cannot be geodetic")));
-  return;
-}
-
 /*****************************************************************************
  * Input/Ouput functions
  *****************************************************************************/

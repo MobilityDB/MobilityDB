@@ -956,6 +956,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="bearing"><varname>bearing</varname></link>: Get the temporal bearing</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Get the instant of the first temporal point at which the two arguments are at the nearest distance</para>
 				</listitem>
 
