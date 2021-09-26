@@ -37,6 +37,13 @@
 
 #include <assert.h>
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
+#define M_PI 3.14159265358979323846
+#define RADIANS_PER_DEGREE 0.0174532925199432957692
+#else
+#include <utils/float.h>
+#endif
+
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -3366,9 +3373,15 @@ geog_bearing(Datum point1, Datum point2)
   if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
       (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;  
+#if POSTGRESQL_VERSION_NUMBER < 120000
+  double lat1 = p1->y * RADIANS_PER_DEGREE;
+  double lat2 = p2->y * RADIANS_PER_DEGREE;
+  double diffLong = (p2->x - p1->x) * RADIANS_PER_DEGREE;
+#else
   double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
   double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
   double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);
+#endif
   double lat = DatumGetFloat8(call_function1(dsin, Float8GetDatum(diffLong))) *
     DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2)));
   double lgt = 
