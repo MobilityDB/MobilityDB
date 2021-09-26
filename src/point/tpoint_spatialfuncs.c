@@ -3570,7 +3570,11 @@ bearing_geo_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
+#if POSTGIS_VERSION_NUMBER < 30000
   Datum result = FLAGS_GET_GEODETIC(gs1->flags) ?
+#else
+  Datum result = FLAGS_GET_GEODETIC(gs1->gflags) ?
+#endif
     geog_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2)) :
     geom_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2));
   PG_FREE_IF_COPY(gs1, 0);
