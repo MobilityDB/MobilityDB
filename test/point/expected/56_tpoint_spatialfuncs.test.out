@@ -1881,37 +1881,7 @@ SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1 1)@2000-01-01], [Poin
 ----------
 (0 rows)
 
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 1)'));
- degrees 
----------
-      45
-(1 row)
-
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 1)'));
- degrees 
----------
-     135
-(1 row)
-
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 -1)'));
- degrees 
----------
-     225
-(1 row)
-
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 -1)'));
- degrees 
----------
-     315
-(1 row)
-
 SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 0)'));
- degrees 
----------
-       0
-(1 row)
-
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 1)'));
  degrees 
 ---------
        0
@@ -1923,58 +1893,100 @@ SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 0)'));
       90
 (1 row)
 
-SELECT degrees(bearing(geometry 'Point(1 0)', geometry 'Point(0 0)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 1)'));
  degrees 
 ---------
-     270
+      45
 (1 row)
 
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)'));
-      degrees       
---------------------
- 44.995636455344844
-(1 row)
-
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 1)'));
-      degrees      
--------------------
- 315.0043635446551
-(1 row)
-
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)'));
-      degrees       
---------------------
- 224.99563645534485
-(1 row)
-
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)'));
-      degrees      
--------------------
- 135.0043635446551
-(1 row)
-
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 1)'));
  degrees 
 ---------
        0
 (1 row)
 
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(0 1)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 1)'));
  degrees 
 ---------
-       0
+     315
 (1 row)
 
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)'));
- degrees 
----------
-      90
-(1 row)
-
-SELECT degrees(bearing(geography 'Point(1 0)', geography 'Point(0 0)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 0)'));
  degrees 
 ---------
      270
+(1 row)
+
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 -1)'));
+ degrees 
+---------
+     225
+(1 row)
+
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 -1)'));
+ degrees 
+---------
+     180
+(1 row)
+
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 -1)'));
+ degrees 
+---------
+     135
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)'))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)'))::numeric, 6);
+   round   
+-----------
+ 90.000000
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)'))::numeric, 6);
+   round   
+-----------
+ 44.995636
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 1)'))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 1)'))::numeric, 6);
+   round    
+------------
+ 315.004364
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 0)'))::numeric, 6);
+   round    
+------------
+ 270.000000
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)'))::numeric, 6);
+   round    
+------------
+ 224.995636
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 -1)'))::numeric, 6);
+   round    
+------------
+ 180.000000
+(1 row)
+
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)'))::numeric, 6);
+   round    
+------------
+ 135.004364
 (1 row)
 
 SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint 'Point(2 2)@2000-01-01')), 6);

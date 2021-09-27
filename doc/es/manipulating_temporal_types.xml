@@ -1530,8 +1530,8 @@ SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-0
 				<para>Obtener el rumbo temporal &Z_support; &geography_support;</para>
 				<para><varname>bearing({tpoint, point}, {tpoint, point}): tfloat</varname></para>
 				<programlisting xml:space="preserve">
-SELECT degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
-  geometry 'Point(1 1)'));
+SELECT degrees(bearing(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03]',
+  geometry 'Point(2 3)'));
 -- [45@2012-01-01 00:00:00+01, 0@2012-01-02 00:00:00+01, 315@2012-01-03 00:00:00+01]
 SELECT degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
   tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]'));

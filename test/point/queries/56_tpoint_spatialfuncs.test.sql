@@ -447,23 +447,25 @@ SELECT 1 WHERE round(degrees(azimuth(tgeogpoint '{[Point(1 1)@2000-01-01], [Poin
 
 --------------------------------------------------------
 
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 1)'));
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 1)'));
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 -1)'));
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 -1)'));
 SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 0)'));
-SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 1)'));
 SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 0)'));
-SELECT degrees(bearing(geometry 'Point(1 0)', geometry 'Point(0 0)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 1)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 1)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 1)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 0)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 -1)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 -1)'));
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 -1)'));
 
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)'));
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 1)'));
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)'));
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)'));
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)'));
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(0 1)'));
-SELECT degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)'));
-SELECT degrees(bearing(geography 'Point(1 0)', geography 'Point(0 0)'));
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 0)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(-1 -1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 -1)'))::numeric, 6);
+SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 -1)'))::numeric, 6);
 
 SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint 'Point(2 2)@2000-01-01')), 6);
 SELECT round(degrees(bearing(geometry 'Point(1 1)', tgeompoint '{Point(2 2)@2000-01-01, Point(1 1)@2000-01-02, Point(2 2)@2000-01-03}')), 6);

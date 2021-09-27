@@ -3323,8 +3323,8 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 {
   if (p1->x <= p2->x && p1->y <= p2->y)
     return 0.0;
-  if ((p1->x > p2->x && p1->y <= p2->y) ||
-      (p1->x > p2->x && p1->y > p2->y))
+  if ((p1->x < p2->x && p1->y > p2->y) ||
+      (p1->x >= p2->x && p1->y > p2->y))
     return M_PI;
   else /* p1->x > p2->x && p1->y <= p2->y */
     return M_PI * 2.0;
@@ -3437,11 +3437,11 @@ tpointseq_geo_min_bearing_at_timestamp(const TInstant *start,
   bool de = (ep->x - p->x) > 0;
   if (ds != de)
   {
-    /* The trajectory is a line */
-    long double duration = (long double) (end->t - start->t);
-    long double fraction = geoseg_locate_point(value1, value2, point, NULL);
+    /* The trajectory is a line, find the fraction of the line for p->x */
+    long double fraction = (p->x - sp->x) / (ep->x - sp->x);
     if (fraction != 0.0 && fraction != 1.0)
     {
+      long double duration = (long double) (end->t - start->t);
       *t = start->t + (TimestampTz) (duration * fraction);
       return true;
     }
