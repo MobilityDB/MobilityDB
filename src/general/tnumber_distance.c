@@ -161,6 +161,7 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   Oid basetypid, Oid restypid)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
   {
@@ -237,6 +238,7 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
   Oid restypid)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_distance;
   lfinfo.numparam = 4;
   lfinfo.restypid = restypid;

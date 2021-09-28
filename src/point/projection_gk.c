@@ -286,6 +286,7 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   ensure_valid_tempsubtype(temp->subtype);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
   lfinfo.numparam = 1;
   lfinfo.restypid = temp->basetypid;

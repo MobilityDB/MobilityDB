@@ -152,6 +152,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
@@ -236,6 +237,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
@@ -406,6 +408,7 @@ tnumber_round(PG_FUNCTION_ARGS)
   Datum digits = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_round;
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
@@ -424,6 +427,7 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;

@@ -69,6 +69,7 @@ Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;
@@ -83,6 +84,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 2;
   lfinfo.restypid = BOOLOID;

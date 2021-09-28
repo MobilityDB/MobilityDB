@@ -2581,6 +2581,7 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
   Datum prec = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_set_precision;
   lfinfo.numparam = 2;
   lfinfo.restypid = temp->basetypid;
@@ -2615,6 +2616,7 @@ tpoint_get_x(PG_FUNCTION_ARGS)
   ensure_tgeo_base_type(temp->basetypid);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_get_x;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
@@ -2645,6 +2647,7 @@ tpoint_get_y(PG_FUNCTION_ARGS)
   ensure_tgeo_base_type(temp->basetypid);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_get_y;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
@@ -2676,6 +2679,7 @@ tpoint_get_z(PG_FUNCTION_ARGS)
   ensure_has_Z_tpoint(temp);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_get_z;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
@@ -3463,7 +3467,7 @@ tpointseq_geo_min_bearing_at_timestamp(const TInstant *start,
  * @pre The segments are not both constants.
  */
 bool
-tpointseq_min_bearing_at_timestamp(const TInstant *start1,
+tpoint_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
   const TInstant *end2, bool linear2, TimestampTz *t)
 {
@@ -3472,11 +3476,11 @@ tpointseq_min_bearing_at_timestamp(const TInstant *start1,
   const POINT2D *sp2 = datum_get_point2d_p(tinstant_value(start2));
   const POINT2D *ep2 = datum_get_point2d_p(tinstant_value(end2));
   /* It there is a North passage we call the function
-    tgeompointseq_min_dist_at_timestamp */
+    tgeompoint_min_dist_at_timestamp */
   bool ds = (sp1->x - sp2->x) > 0;
   bool de = (ep1->x - ep2->x) > 0;
   if (ds != de)
-    return tpointseq_min_dist_at_timestamp(start1, end1, linear1,
+    return tpoint_min_dist_at_timestamp(start1, end1, linear1,
       start2, end2, linear2, t);
   else
     return false;
@@ -3593,6 +3597,7 @@ bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
 {
   datum_func2 func = get_bearing_fn(temp->flags);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
   {
@@ -3675,6 +3680,7 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
   datum_func2 func = get_bearing_fn(temp1->flags);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
@@ -3682,7 +3688,7 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpointseq_min_bearing_at_timestamp : NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_bearing_at_timestamp : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
     lfinfo);
   return result;

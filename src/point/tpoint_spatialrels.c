@@ -206,7 +206,7 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
 
   /* Determine whether there is a local minimum between lower and upper */
   TimestampTz crosstime;
-  bool cross = tpointseq_min_dist_at_timestamp(start1, end1, linear1,
+  bool cross = tpoint_min_dist_at_timestamp(start1, end1, linear1,
     start2, end2, linear2, &crosstime);
   /* If there is no local minimum compute the function at the start instant */
   if (! cross)

@@ -127,6 +127,7 @@
  *   Temporal *temp = PG_GETARG_TEMPORAL(0);
  *   // We only need to fill these parameters for tfunc_temporal
  *   LiftedFunctionInfo lfinfo;
+ *   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
  *   lfinfo.func = (varfunc) &geom_to_geog;
  *   lfinfo.numparam = 1;
  *   lfinfo.restypid = type_oid(T_GEOGRAPHY);
@@ -337,7 +338,8 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value, Oid basetypid,
 
 /**
  * Applies the function with the optional argument to the temporal value and
- * the base value when the function does not have instantaneous discontinuities
+ * the base value when no turning points should be added and when the function
+ * does not have instantaneous discontinuities
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -366,6 +368,71 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
 
 /**
  * Applies the function with the optional argument to the temporal value and
+ * the base value when turning points should be added
+ *
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
+ * @param[in] seq Temporal value
+ * @param[in] value Base value
+ * @param[in] basetypid Type of the base value
+ * @param[in] param Optional argument for ternary functions
+ * @param[in] lfinfo Information about the lifted function
+ */
+static int
+tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq, Datum value, 
+  Oid basetypid, Datum param, LiftedFunctionInfo lfinfo)
+{
+  int k = 0;
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  // Datum value1 = tinstant_value(inst1);
+  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
+  for (int i = 1; i < seq->count; i++)
+  {
+    /* Each iteration of the loop adds between one and two instants */
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    // Datum value2 = tinstant_value(inst2);
+    instants[k++] = tfunc_tinstant_base(inst1, value, basetypid, param, lfinfo);
+    /* OLD definition: tinstant_make(func(point, value1), inst1->t, FLOAT8OID); */
+    /* OLD test: If not constant segment and linear interpolation */
+    /* if (! datum_eq(value1, value2) && linear) 
+    {
+      long double duration = (long double) (inst2->t - inst1->t);
+      double dist;
+      long double fraction = geoseg_locate_point(value1, value2, point, &dist);
+      if (fraction != 0.0 && fraction != 1.0)
+      {
+        TimestampTz time = inst1->t + (TimestampTz) (duration * fraction);
+        instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
+      }
+    }
+    */
+    /* If not the first instant compute the function on the potential
+       intermediate point before adding the new instants */
+    TimestampTz intertime;
+    if (lfinfo.tpfunc_base != NULL && 
+      lfinfo.tpfunc_base(inst1, inst2, linear, value, &intertime))
+    {
+      Datum inter = tsequence_value_at_timestamp1(inst1, inst2,
+        linear, intertime);
+      Datum intervalue = tfunc_base_base(inter, value, seq->basetypid,
+        basetypid, param, lfinfo);
+      instants[k++] = tinstant_make(intervalue, intertime, lfinfo.restypid);
+      DATUM_FREE(inter, seq->basetypid);
+      DATUM_FREE(intervalue, lfinfo.restypid);
+    }
+    inst1 = inst2; // value1 = value2;
+  }
+  instants[k++] = tfunc_tinstant_base(inst1, value, basetypid, param, lfinfo);
+  /* OLD definition: tinstant_make(func(point, value1), inst1->t, FLOAT8OID); */
+
+  result[0] = tsequence_make_free(instants, k, seq->period.lower_inc,
+    seq->period.upper_inc, linear, NORMALIZE);
+  return 1;
+}
+
+/**
+ * Applies the function with the optional argument to the temporal value and
  * the base value when the function has instantaneuous discontinuties
  *
  * @param[out] result Array on which the pointers of the newly constructed
@@ -382,7 +449,7 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
  * the function func.
  */
 static int
-tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
+tfunc_tsequence_base_discont(TSequence **result, const TSequence *seq,
   Datum value, Oid basetypid, Datum param, LiftedFunctionInfo lfinfo)
 {
   const TInstant *start = tsequence_inst_n(seq, 0);
@@ -430,8 +497,8 @@ tfunc_tsequence_base_discont1(TSequence **result, const TSequence *seq,
       result[k++] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, STEP, NORMALIZE_NO);
     }
-      /* If either the start or the end value is equal to the value compute
-       * the function at the start, at the middle, and at the end instants */
+    /* If either the start or the end value is equal to the value compute
+     * the function at the start, at the middle, and at the end instants */
     else if (datum_eq2(startvalue, value, seq->basetypid, basetypid) ||
          datum_eq2(endvalue, value, seq->basetypid, basetypid))
     {
@@ -537,14 +604,17 @@ tfunc_tsequence_base(const TSequence *seq, Datum value, Oid basetypid,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   if (lfinfo.discont)
   {
-    int k = tfunc_tsequence_base_discont1(sequences, seq, value, basetypid,
+    int k = tfunc_tsequence_base_discont(sequences, seq, value, basetypid,
       param, lfinfo);
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
   else
   {
     /* We are sure that the result is a single sequence */
-    tfunc_tsequence_base1(sequences, seq, value, basetypid, param, lfinfo);
+    if (lfinfo.tpfunc_base != NULL)
+      tfunc_tsequence_base_turnpt(sequences, seq, value, basetypid, param, lfinfo);
+    else
+      tfunc_tsequence_base1(sequences, seq, value, basetypid, param, lfinfo);
     return (Temporal *) sequences[0];
   }
 }
@@ -574,11 +644,15 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value, Oid basetypid,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += lfinfo.discont ?
-      tfunc_tsequence_base_discont1(&sequences[k], seq, value, basetypid,
-        param, lfinfo) :
-      tfunc_tsequence_base1(&sequences[k], seq, value, basetypid, param,
-        lfinfo);
+    if (lfinfo.discont)
+      k += tfunc_tsequence_base_discont(&sequences[k], seq, value, basetypid,
+        param, lfinfo);
+    else if (lfinfo.tpfunc_base != NULL)
+      k += tfunc_tsequence_base_turnpt(&sequences[k], seq, value, basetypid,
+        param, lfinfo);
+    else
+      k += tfunc_tsequence_base1(&sequences[k], seq, value, basetypid,
+        param, lfinfo);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

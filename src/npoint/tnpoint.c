@@ -323,6 +323,7 @@ tnpoint_set_precision(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &npoint_set_precision_internal;
   lfinfo.numparam = 2;
   lfinfo.restypid = temp->basetypid;

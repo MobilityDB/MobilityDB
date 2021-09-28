@@ -49,6 +49,7 @@
  * are used by functions `tfunc_temporal_base` and `sync_tfunc_temporal_temporal`
  * that apply the lifted function to two base values.
  */
+ 
 typedef struct
 {
   Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
@@ -56,9 +57,12 @@ typedef struct
   Oid restypid;              /**< Base type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
-  bool discont;              /**< True if the function has instantaneaous discontinuities */
+  bool discont;              /**< True if the function has instantaneous discontinuities */
+  bool (*tpfunc_base)(const TInstant *, const TInstant *, bool, Datum, TimestampTz *);
+                             /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, bool, const TInstant *,
-     const TInstant *, bool, TimestampTz *);    /**< Turning point function */
+     const TInstant *, bool, TimestampTz *);    
+                             /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/

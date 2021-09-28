@@ -83,6 +83,7 @@ textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
   lfinfo.restypid = TEXTOID;
@@ -97,6 +98,7 @@ textfunc_ttext_text(Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;
@@ -113,6 +115,7 @@ static Temporal *
 textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 2;
   lfinfo.restypid = TEXTOID;

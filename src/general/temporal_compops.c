@@ -51,6 +51,7 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid basetypid,
   Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = BOOLOID;
@@ -100,6 +101,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     ensure_same_dimensionality(temp1->flags, temp2->flags);
   }
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 4;
   lfinfo.restypid = BOOLOID;
