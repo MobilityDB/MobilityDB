@@ -171,20 +171,22 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
     lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
     lfinfo.invert = INVERT_NO;
     lfinfo.discont = CONTINUOUS;
+    // TO DO Try to use the lifting infrastructure
+    // lfinfo.tpfunc_base = &tlinearseq_intersection_value;
     lfinfo.tpfunc = NULL;
   }
   Temporal *result;
   if (temp->subtype == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, value,
+    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value,
       basetypid, (Datum) NULL, lfinfo);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, value,
+    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp, value,
       basetypid, (Datum) NULL, lfinfo);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)distance_tnumberseq_base((TSequence *)temp, value,
+    result = (Temporal *) distance_tnumberseq_base((TSequence *) temp, value,
       basetypid, restypid);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)distance_tnumberseqset_base((TSequenceSet *)temp, value,
+    result = (Temporal *) distance_tnumberseqset_base((TSequenceSet *) temp, value,
       basetypid, restypid);
   return result;
 }

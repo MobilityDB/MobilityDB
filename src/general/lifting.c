@@ -131,6 +131,8 @@
  *   lfinfo.func = (varfunc) &geom_to_geog;
  *   lfinfo.numparam = 1;
  *   lfinfo.restypid = type_oid(T_GEOGRAPHY);
+ *   lfinfo.tpfunc_base = NULL;
+ *   lfinfo.tpfunc = NULL;
  *   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
  *   PG_FREE_IF_COPY(temp, 0);
  *   PG_RETURN_POINTER(result);
@@ -379,39 +381,26 @@ tfunc_tsequence_base1(TSequence **result, const TSequence *seq, Datum value,
  * @param[in] lfinfo Information about the lifted function
  */
 static int
-tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq, Datum value, 
+tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq, Datum value,
   Oid basetypid, Datum param, LiftedFunctionInfo lfinfo)
 {
   int k = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  // Datum value1 = tinstant_value(inst1);
+  Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   for (int i = 1; i < seq->count; i++)
   {
     /* Each iteration of the loop adds between one and two instants */
     const TInstant *inst2 = tsequence_inst_n(seq, i);
-    // Datum value2 = tinstant_value(inst2);
+    Datum value2 = tinstant_value(inst2);
     instants[k++] = tfunc_tinstant_base(inst1, value, basetypid, param, lfinfo);
-    /* OLD definition: tinstant_make(func(point, value1), inst1->t, FLOAT8OID); */
-    /* OLD test: If not constant segment and linear interpolation */
-    /* if (! datum_eq(value1, value2) && linear) 
-    {
-      long double duration = (long double) (inst2->t - inst1->t);
-      double dist;
-      long double fraction = geoseg_locate_point(value1, value2, point, &dist);
-      if (fraction != 0.0 && fraction != 1.0)
-      {
-        TimestampTz time = inst1->t + (TimestampTz) (duration * fraction);
-        instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
-      }
-    }
-    */
-    /* If not the first instant compute the function on the potential
-       intermediate point before adding the new instants */
+    /* If not constant segment and linear compute the function on the potential
+       intermediate point before adding the new instant */
     TimestampTz intertime;
-    if (lfinfo.tpfunc_base != NULL && 
-      lfinfo.tpfunc_base(inst1, inst2, linear, value, &intertime))
+    if (lfinfo.tpfunc_base != NULL && linear &&
+      !datum_eq(value1, value2, seq->basetypid) &&
+      lfinfo.tpfunc_base(inst1, inst2, value, &intertime))
     {
       Datum inter = tsequence_value_at_timestamp1(inst1, inst2,
         linear, intertime);
@@ -421,10 +410,9 @@ tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq, Datum valu
       DATUM_FREE(inter, seq->basetypid);
       DATUM_FREE(intervalue, lfinfo.restypid);
     }
-    inst1 = inst2; // value1 = value2;
+    inst1 = inst2; value1 = value2;
   }
   instants[k++] = tfunc_tinstant_base(inst1, value, basetypid, param, lfinfo);
-  /* OLD definition: tinstant_make(func(point, value1), inst1->t, FLOAT8OID); */
 
   result[0] = tsequence_make_free(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);

@@ -327,6 +327,8 @@ tnpoint_set_precision(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &npoint_set_precision_internal;
   lfinfo.numparam = 2;
   lfinfo.restypid = temp->basetypid;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, size, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -377,7 +379,7 @@ tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
   /* The following function removes duplicate values */
-  int count1 = tinstantset_values(values, ti);   
+  int count1 = tinstantset_values(values, ti);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {

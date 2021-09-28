@@ -160,6 +160,8 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   return tfunc_temporal_base(temp, value, basetypid, (Datum) NULL, lfinfo);
 }
 
@@ -244,6 +246,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
@@ -412,6 +415,8 @@ tnumber_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_round;
   lfinfo.numparam = 2;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, digits, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -431,6 +436,8 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

@@ -167,7 +167,7 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  bool linear, Datum point, TimestampTz *t)
+  Datum point, TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
   Datum value1 = tinstant_value(start);
@@ -387,7 +387,7 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = lfinfo.reslinear ? 
+  lfinfo.tpfunc_base = lfinfo.reslinear ?
     &tpoint_geo_min_dist_at_timestamp : NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_base(temp, geo, temp->basetypid,
@@ -457,6 +457,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_dist_at_timestamp : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
     lfinfo);

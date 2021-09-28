@@ -2585,6 +2585,8 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_set_precision;
   lfinfo.numparam = 2;
   lfinfo.restypid = temp->basetypid;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, prec, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2620,6 +2622,8 @@ tpoint_get_x(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &point_get_x;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2651,6 +2655,8 @@ tpoint_get_y(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &point_get_y;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2683,6 +2689,8 @@ tpoint_get_z(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &point_get_z;
   lfinfo.numparam = 1;
   lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -3319,11 +3327,11 @@ extern Datum datan(PG_FUNCTION_ARGS);
 extern Datum datan2(PG_FUNCTION_ARGS);
 
 /**
- * Normalize the bearing from -180° to + 180° (in radians) to 
+ * Normalize the bearing from -180° to + 180° (in radians) to
  * 0° to 360° (in radians)
  */
 static double
-alpha(const POINT2D *p1, const POINT2D *p2) 
+alpha(const POINT2D *p1, const POINT2D *p2)
 {
   if (p1->x <= p2->x && p1->y <= p2->y)
     return 0.0;
@@ -3376,7 +3384,7 @@ geog_bearing(Datum point1, Datum point2)
   const POINT2D *p2 = datum_get_point2d_p(point2);
   if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
       (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
-    return 0.0;  
+    return 0.0;
 #if POSTGRESQL_VERSION_NUMBER < 120000
   double lat1 = p1->y * RADIANS_PER_DEGREE;
   double lat2 = p2->y * RADIANS_PER_DEGREE;
@@ -3388,16 +3396,16 @@ geog_bearing(Datum point1, Datum point2)
 #endif
   double lat = DatumGetFloat8(call_function1(dsin, Float8GetDatum(diffLong))) *
     DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2)));
-  double lgt = 
-    ( DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat1))) * 
-      DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat2))) ) - 
-    ( DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat1))) * 
-      DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2))) * 
+  double lgt =
+    ( DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat1))) *
+      DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat2))) ) -
+    ( DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat1))) *
+      DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2))) *
       DatumGetFloat8(call_function1(dcos, Float8GetDatum(diffLong))) );
   /* Notice that the arguments are inverted, e.g., wrt the atan2 in Python */
-  double initial_bearing = DatumGetFloat8(call_function2(datan2, 
+  double initial_bearing = DatumGetFloat8(call_function2(datan2,
     Float8GetDatum(lat), Float8GetDatum(lgt)));
-  /* Normalize the bearing from -180° to + 180° (in radians) to 
+  /* Normalize the bearing from -180° to + 180° (in radians) to
    * 0° to 360° (in radians) */
   double bearing = fmod(initial_bearing + M_PI * 2.0, M_PI * 2.0);
   return Float8GetDatum(bearing);
@@ -3427,8 +3435,9 @@ get_bearing_fn(int16 flags)
  * @param[out] t Timestamp
  * @pre The segment is not constant and has linear interpolation.
  */
+// TODO GEOGRAPHIC
 bool
-tpointseq_geo_min_bearing_at_timestamp(const TInstant *start,
+tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
   const TInstant *end, Datum point, TimestampTz *t)
 {
   Datum value1 = tinstant_value(start);
@@ -3486,73 +3495,6 @@ tpoint_min_bearing_at_timestamp(const TInstant *start1,
     return false;
 }
 
-/**
- * Returns the temporal bearing between the temporal sequence point and
- * the geometry/geography point
- *
- * @param[in] seq Temporal point
- * @param[in] point Point
- */
-static TSequence *
-bearing_tpointseq_geo(const TSequence *seq, Datum point, datum_func2 func,
-  bool invert)
-{
-  int k = 0;
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  Datum bear;
-  for (int i = 1; i < seq->count; i++)
-  {
-    /* Each iteration of the loop adds between one and two points */
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    bear = invert ? func(point, value1) : func(value1, point);
-    instants[k++] = tinstant_make(bear, inst1->t, FLOAT8OID);
-    /* If not constant segment and linear interpolation */
-    if (! datum_point_eq(value1, value2) && linear)
-    {
-      TimestampTz t;
-      bool found = tpointseq_geo_min_bearing_at_timestamp(inst1, inst2,
-        point, &t);
-      if (found)
-      {
-        /* We are sure it is linear interpolation */
-        Datum value = tsequence_value_at_timestamp1(inst1, inst2, LINEAR, t);
-        bear = invert ? func(point, value) : func(value, point);
-        instants[k++] = tinstant_make(Float8GetDatum(bear), t, FLOAT8OID);
-      }
-    }
-    inst1 = inst2; value1 = value2;
-  }
-  bear = invert ? func(point, value1) : func(value1, point);
-  instants[k++] = tinstant_make(bear, inst1->t, FLOAT8OID);
-
-  return tsequence_make_free(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, linear, NORMALIZE);
-}
-
-/**
- * Returns the temporal bearing between the temporal sequence set point and
- * the geometry/geography point
- *
- * @param[in] ts Temporal point
- * @param[in] point Point
- */
-static TSequenceSet *
-bearing_tpointseqset_geo(const TSequenceSet *ts, Datum point, datum_func2 func,
-  bool invert)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = bearing_tpointseq_geo(seq, point, func, invert);
-  }
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
-}
-
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(bearing_geo_geo);
@@ -3595,33 +3537,18 @@ bearing_geo_geo(PG_FUNCTION_ARGS)
 Temporal *
 bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
 {
-  datum_func2 func = get_bearing_fn(temp->flags);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-  {
-    lfinfo.func = (varfunc) func;
-    lfinfo.numparam = 2;
-    lfinfo.restypid = FLOAT8OID;
-    lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-    lfinfo.invert = invert;
-    lfinfo.discont = CONTINUOUS;
-    lfinfo.tpfunc = NULL;
-  }
-  Temporal *result;
-  if (temp->subtype == INSTANT)
-    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, geo,
-      temp->basetypid, (Datum) NULL, lfinfo);
-  else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp, geo,
-      temp->basetypid, (Datum) NULL, lfinfo);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) bearing_tpointseq_geo((TSequence *) temp, geo,
-      func, invert);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) bearing_tpointseqset_geo((TSequenceSet *) temp, geo,
-      func, invert);
+  lfinfo.func = (varfunc) get_bearing_fn(temp->flags);
+  lfinfo.numparam = 2;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.invert = invert;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = (Temporal *) tfunc_temporal_base(temp, geo, temp->basetypid,
+    (Datum) NULL, lfinfo);
   return result;
 }
 
@@ -3688,6 +3615,7 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_bearing_at_timestamp : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
     lfinfo);
@@ -3705,7 +3633,7 @@ bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
-  
+
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = bearing_tpoint_tpoint_internal(temp1, temp2);
