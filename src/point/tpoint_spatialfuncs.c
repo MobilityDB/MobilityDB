@@ -3434,11 +3434,12 @@ get_bearing_fn(int16 flags)
  * @param[in] linear1 State whether the interpolation is linear
  * @param[out] t Timestamp
  * @pre The segment is not constant and has linear interpolation.
+ * @note The parameter basetypid is not needed for temporal points
  */
 // TODO GEOGRAPHIC
 bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
-  const TInstant *end, Datum point, TimestampTz *t)
+  const TInstant *end, Datum point, Oid basetypid, TimestampTz *t)
 {
   Datum value1 = tinstant_value(start);
   Datum value2 = tinstant_value(end);

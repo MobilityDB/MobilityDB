@@ -400,7 +400,7 @@ tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq, Datum valu
     TimestampTz intertime;
     if (lfinfo.tpfunc_base != NULL && linear &&
       !datum_eq(value1, value2, seq->basetypid) &&
-      lfinfo.tpfunc_base(inst1, inst2, value, &intertime))
+      lfinfo.tpfunc_base(inst1, inst2, value, basetypid, &intertime))
     {
       Datum inter = tsequence_value_at_timestamp1(inst1, inst2,
         linear, intertime);

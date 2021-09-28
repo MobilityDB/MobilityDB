@@ -75,6 +75,8 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1, const TSequen
 
 extern bool tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, Oid basetypid, Datum *inter, TimestampTz *t);
+extern bool tlinearseq_intersection_value1(const TInstant *inst1, const TInstant *inst2,
+  Datum value, Oid basetypid, TimestampTz *t);
 extern bool tsequence_intersection(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   Datum *inter1, Datum *inter2, TimestampTz *t);

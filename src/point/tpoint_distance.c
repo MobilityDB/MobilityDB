@@ -161,13 +161,14 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] linear States whether the interpolation is linear
  * @param[in] point Base point
+ * @param[in] basetypid Oid of the base point
  * @param[out] t Timestamp
  * @pre The segment is not constant.
- * @note
+ * @note The parameter basetypid is not needed for temporal points
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, TimestampTz *t)
+  Datum point, Oid basetypid, TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
   Datum value1 = tinstant_value(start);
