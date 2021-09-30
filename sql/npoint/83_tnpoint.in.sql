@@ -508,6 +508,21 @@ CREATE FUNCTION intersectsPeriodSet(tnpoint, periodset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Multidimensional tiling
+ ******************************************************************************/
+
+CREATE TYPE time_tnpoint AS (
+  time timestamptz,
+  temp tnpoint
+);
+
+CREATE OR REPLACE FUNCTION timeSplit(tnpoint, bucket_width interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof time_tnpoint
+  AS 'MODULE_PATHNAME', 'temporal_time_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+/******************************************************************************
  * Comparison functions and B-tree indexing
  ******************************************************************************/
 

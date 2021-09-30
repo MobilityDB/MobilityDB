@@ -1049,36 +1049,19 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   return;
 }
 
-PG_FUNCTION_INFO_V1(temporal_merge);
-/**
- * Merge the two temporal values
- *
- * @result Merged value. Returns NULL if both arguments are NULL.
- * If one argument is null the other argument is output.
- */
-PGDLLEXPORT Datum
-temporal_merge(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 
+Temporal *
+temporal_merge_internal(const Temporal *temp1, const Temporal *temp2)
+{
   Temporal *result;
   /* Can't do anything with null inputs */
   if (!temp1 && !temp2)
-    PG_RETURN_NULL();
+    return NULL;
   /* One argument is null, return a copy of the other temporal */
   if (!temp1)
-  {
-    result = temporal_copy(temp2);
-    PG_FREE_IF_COPY(temp2, 1);
-    PG_RETURN_POINTER(result);
-  }
+    return temporal_copy(temp2);
   if (!temp2)
-  {
-    result = temporal_copy(temp1);
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_RETURN_POINTER(result);
-  }
+    return temporal_copy(temp1);
 
   /* Both arguments are temporal */
   ensure_same_base_type(temp1, temp2);
@@ -1105,8 +1088,26 @@ temporal_merge(PG_FUNCTION_ARGS)
     pfree(new1);
   if (temp2 != new2)
     pfree(new2);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_merge);
+/**
+ * Merge the two temporal values
+ *
+ * @result Merged value. Returns NULL if both arguments are NULL.
+ * If one argument is null the other argument is output.
+ */
+PGDLLEXPORT Datum
+temporal_merge(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+  Temporal *result = temporal_merge_internal(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 

@@ -499,6 +499,8 @@ extern Datum temporal_append_tinstant(PG_FUNCTION_ARGS);
 extern Datum temporal_merge(PG_FUNCTION_ARGS);
 extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
 
+extern Temporal *temporal_merge_internal(const Temporal *temp1,
+  const Temporal *temp2);
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
   Oid basetypid, bool linear);
 

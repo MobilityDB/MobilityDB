@@ -3430,13 +3430,12 @@ get_bearing_fn(int16 flags)
  * and a point are at the minimum bearing.
  *
  * @param[in] start1,end1 Instants defining the segment
- * @param[in] point Geometric point
+ * @param[in] point Geometric/geographic point
  * @param[in] linear1 State whether the interpolation is linear
  * @param[out] t Timestamp
  * @pre The segment is not constant and has linear interpolation.
  * @note The parameter basetypid is not needed for temporal points
  */
-// TODO GEOGRAPHIC
 bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
   const TInstant *end, Datum point, Oid basetypid, TimestampTz *t)
@@ -3446,21 +3445,20 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
   const POINT2D *sp = datum_get_point2d_p(value1);
   const POINT2D *ep = datum_get_point2d_p(value2);
   const POINT2D *p = datum_get_point2d_p(point);
-  /* It there is a North passage we call the function geoseg_locate_point */
   bool ds = (sp->x - p->x) > 0;
   bool de = (ep->x - p->x) > 0;
+  /* If there is a North passage */
   if (ds != de)
   {
-    /* The trajectory is a line, find the fraction of the line for p->x */
-    long double fraction = (p->x - sp->x) / (ep->x - sp->x);
-    if (fraction != 0.0 && fraction != 1.0)
-    {
-      long double duration = (long double) (end->t - start->t);
-      *t = start->t + (TimestampTz) (duration * fraction);
-      return true;
-    }
-    else
+    long double fraction = MOBDB_FLAGS_GET_GEODETIC(start->flags) ?
+      // TODO Another custom function should be called
+      geoseg_locate_point(value1, value2, point, NULL) :
+      (p->x - sp->x) / (ep->x - sp->x);
+    if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
       return false;
+    long double duration = (end->t - start->t);
+    *t = start->t + (TimestampTz) (duration * fraction);
+      return true;
   }
   else
     return false;
