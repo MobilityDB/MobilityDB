@@ -1104,9 +1104,11 @@ temporal_merge(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
   Temporal *result = temporal_merge_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
+  if (temp1)
+    PG_FREE_IF_COPY(temp1, 0);
+  if (temp2)
+    PG_FREE_IF_COPY(temp2, 1);
+  if (!result)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
