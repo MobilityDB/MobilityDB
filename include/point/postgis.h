@@ -81,6 +81,8 @@ extern double sphere_distance(const GEOGRAPHIC_POINT *s, const GEOGRAPHIC_POINT 
 extern void geog2cart(const GEOGRAPHIC_POINT *g, POINT3D *p);
 extern void cart2geog(const POINT3D *p, GEOGRAPHIC_POINT *g);
 extern void normalize(POINT3D *p);
+extern int edge_contains_coplanar_point(const GEOGRAPHIC_EDGE *e,
+  const GEOGRAPHIC_POINT *p);
 extern double edge_distance_to_point(const GEOGRAPHIC_EDGE *e,
   const GEOGRAPHIC_POINT *gp, GEOGRAPHIC_POINT *closest);
 extern uint32_t edge_intersects(const POINT3D *A1, const POINT3D *A2,

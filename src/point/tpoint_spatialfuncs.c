@@ -3442,26 +3442,58 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
 {
   Datum value1 = tinstant_value(start);
   Datum value2 = tinstant_value(end);
-  const POINT2D *sp = datum_get_point2d_p(value1);
-  const POINT2D *ep = datum_get_point2d_p(value2);
-  const POINT2D *p = datum_get_point2d_p(point);
-  bool ds = (sp->x - p->x) > 0;
-  bool de = (ep->x - p->x) > 0;
-  /* If there is a North passage */
-  if (ds != de)
+  long double seglength, length, fraction;
+  Datum proj; // TO REMOVE
+  POINT4D q;
+  if (MOBDB_FLAGS_GET_GEODETIC(start->flags))
   {
-    long double fraction = MOBDB_FLAGS_GET_GEODETIC(start->flags) ?
-      // TODO Another custom function should be called
-      geoseg_locate_point(value1, value2, point, NULL) :
-      (p->x - sp->x) / (ep->x - sp->x);
-    if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+    POINT4D A, B, p;
+    GEOGRAPHIC_EDGE e, e1;
+    GEOGRAPHIC_POINT gp, inter;
+    datum_get_point4d(&A, value1);
+    datum_get_point4d(&B, value2);
+    datum_get_point4d(&p, point);
+    geographic_point_init(p.x, p.y, &gp);
+    geographic_point_init(A.x, A.y, &(e.start));
+    geographic_point_init(B.x, B.y, &(e.end));
+    if (! edge_contains_coplanar_point(&e, &gp))
       return false;
+    /* Compute from the minimum latitude a point in the same meridian as p */
+    double minlat = Min(A.y, B.y);
+    geographic_point_init(p.x, p.y, &(e1.start));
+    geographic_point_init(p.x, minlat, &(e1.end));
+    edge_intersection(&e, &e1, &inter);
+    /* Compute distance from beginning of the segment to projected point */
+    seglength = sphere_distance(&(e.start), &(e.end));
+    length = sphere_distance(&(e.start), &inter);
+    // TO REMOVE
+    fraction = length / seglength;
     long double duration = (end->t - start->t);
     *t = start->t + (TimestampTz) (duration * fraction);
-      return true;
+    proj = tsequence_value_at_timestamp1(start, end,
+      MOBDB_FLAGS_GET_LINEAR(start->flags), *t);
+    q.x = rad2deg(inter.lon);
+    q.y = rad2deg(inter.lat);
   }
   else
+  {
+    const POINT2D *p1 = datum_get_point2d_p(value1);
+    const POINT2D *p2 = datum_get_point2d_p(value2);
+    const POINT2D *p = datum_get_point2d_p(point);
+    bool ds = (p1->x - p->x) > 0;
+    bool de = (p2->x - p->x) > 0;
+    /* If there is not a North passage */
+    if (ds == de)
+      return false;
+    length = (long double)(p->x - p1->x);
+    seglength = (long double)(p2->x - p1->x);
+  }
+  fraction = length / seglength;
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
+  long double duration = (end->t - start->t);
+  *t = start->t + (TimestampTz) (duration * fraction);
+  return true;
 }
 
 /**
