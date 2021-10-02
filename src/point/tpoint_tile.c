@@ -107,7 +107,7 @@ static STboxGridState *
 stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
   POINT3DZ sorigin, TimestampTz torigin)
 {
-  assert(size > 0);
+  assert(size > 0 || tunits > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
   STboxGridState *state = palloc0(sizeof(STboxGridState));
   /* fill in state */
@@ -115,14 +115,20 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
   state->i = 1;
   state->size = size;
   state->tunits = tunits;
-  state->box.xmin = float_bucket_internal(box->xmin, size, sorigin.x);
-  state->box.xmax = float_bucket_internal(box->xmax, size, sorigin.x);
-  state->box.ymin = float_bucket_internal(box->ymin, size, sorigin.y);
-  state->box.ymax = float_bucket_internal(box->ymax, size, sorigin.y);
-  state->box.zmin = float_bucket_internal(box->zmin, size, sorigin.z);
-  state->box.zmax = float_bucket_internal(box->zmax, size, sorigin.z);
-  state->box.tmin = timestamptz_bucket_internal(box->tmin, size, torigin);
-  state->box.tmax = timestamptz_bucket_internal(box->tmax, size, torigin);
+  if (size)
+  {
+    state->box.xmin = float_bucket_internal(box->xmin, size, sorigin.x);
+    state->box.xmax = float_bucket_internal(box->xmax, size, sorigin.x);
+    state->box.ymin = float_bucket_internal(box->ymin, size, sorigin.y);
+    state->box.ymax = float_bucket_internal(box->ymax, size, sorigin.y);
+    state->box.zmin = float_bucket_internal(box->zmin, size, sorigin.z);
+    state->box.zmax = float_bucket_internal(box->zmax, size, sorigin.z);
+  }
+  if (tunits)
+  {
+    state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
+    state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+  }
   state->box.srid = box->srid;
   state->box.flags = box->flags;
   MOBDB_FLAGS_SET_T(state->box.flags, MOBDB_FLAGS_GET_T(box->flags) && tunits > 0);

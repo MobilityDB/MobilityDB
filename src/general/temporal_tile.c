@@ -1018,8 +1018,7 @@ static TboxGridState *
 tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   TimestampTz torigin)
 {
-  assert(xsize > 0);
-  assert(tunits > 0);
+  assert(xsize > 0 || tunits > 0);
   TboxGridState *state = palloc0(sizeof(TboxGridState));
 
   /* Fill in state */
@@ -1027,10 +1026,16 @@ tbox_tile_state_make(TBOX *box, double xsize, int64 tunits, double xorigin,
   state->i = 1;
   state->xsize = xsize;
   state->tunits = tunits;
-  state->box.xmin = float_bucket_internal(box->xmin, xsize, xorigin);
-  state->box.xmax = float_bucket_internal(box->xmax, xsize, xorigin);
-  state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
-  state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+  if (xsize)
+  {
+    state->box.xmin = float_bucket_internal(box->xmin, xsize, xorigin);
+    state->box.xmax = float_bucket_internal(box->xmax, xsize, xorigin);
+  }
+  if (tunits)
+  {
+    state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
+    state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+  }
   state->value = state->box.xmin;
   state->t = state->box.tmin;
   return state;
