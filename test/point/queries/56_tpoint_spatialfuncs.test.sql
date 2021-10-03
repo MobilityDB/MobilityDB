@@ -528,6 +528,11 @@ SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@
 SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]', geometry 'Point Z empty')), 6);
 SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}', geometry 'Point Z empty')), 6);
 
+-- Test for adding a turning point if the point to the North of the line
+SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', geometry 'Point(2 3)')), 6);
+SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', geometry 'Point(2 2)')), 6);
+SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', geometry 'Point(2 1)')), 6);
+
 SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5)@2000-01-01', geography 'Point(1 1)')), 6);
 SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', geography 'Point(1 1)')), 6);
 SELECT round(degrees(bearing(tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', geography 'Point(1 1)')), 6);

@@ -173,8 +173,7 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
   long double duration = (long double) (end->t - start->t);
   Datum value1 = tinstant_value(start);
   Datum value2 = tinstant_value(end);
-  double dist;
-  long double fraction = geoseg_locate_point(value1, value2, point, &dist);
+  long double fraction = geoseg_locate_point(value1, value2, point, NULL);
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   *t = start->t + (TimestampTz) (duration * fraction);
@@ -302,7 +301,8 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   if (edge_intersects(&A1, &A2, &B1, &B2))
   {
     /* We know that the distance is 0 */
-    *mindist = 0.0;
+    if (mindist)
+      *mindist = 0.0;
     /* In this case we must take the temporality into account */
     long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6, denum;
     dx1 = A2.x - A1.x;
@@ -333,8 +333,9 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     if (geographic_point_equals(&e1.start, &close1) ||
       geographic_point_equals(&e1.end, &close1))
       return false;
-    /* Compute distance fbetween closest points */
-    *mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
+    /* Compute distance between closest points */
+    if (mindist)
+      *mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
     /* Compute distance from beginning of the segment to one closest point */
     long double seglength = sphere_distance(&(e1.start), &(e1.end));
     long double length = sphere_distance(&(e1.start), &close1);
@@ -363,10 +364,9 @@ tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   TimestampTz *t)
 {
-  /* The distance output parameter is not used for adding the turning points */
-  double d;
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
-    return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, &d, t);
+    /* The distance output parameter is not used here */
+    return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, NULL, t);
   else
     return tgeompoint_min_dist_at_timestamp(start1, end1, start2, end2, t);
 }
