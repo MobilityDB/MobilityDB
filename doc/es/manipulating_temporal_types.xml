@@ -2869,6 +2869,34 @@ FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-
    2012-01-05 | [POINT Z (5 5 5)@2012-01-05, POINT Z (7 7 7)@2012-01-07)
    ...
 </programlisting>
+					<para>Observe que se puede fragmentar un valor temporal en intervalos de tiempo cíclicos (en lugar de lineales). Los siguientes dos ejemplos muestran cómo fragmentar un valor temporal por hora y por día de la semana.</para>
+					<programlisting>
+SELECT (ts).time::time as hour, merge((ts).temp) as temp
+FROM (SELECT timeSplit(tfloat '[1@2012-01-01, 10@2012-01-03]', '1 hour') AS ts) t
+GROUP BY hour ORDER BY hour;
+
+-- 00:00:00 | {[1@2012-01-01 00:00:00+01, 1.1875@2012-01-01 01:00:00+01),
+               [5.5@2012-01-02 00:00:00+01, 5.6875@2012-01-02 01:00:00+01)}
+   01:00:00 | {[1.1875@2012-01-01 01:00:00+01, 1.375@2012-01-01 02:00:00+01),
+               [5.6875@2012-01-02 01:00:00+01, 5.875@2012-01-02 02:00:00+01)}
+   02:00:00 | {[1.375@2012-01-01 02:00:00+01, 1.5625@2012-01-01 03:00:00+01),
+               [5.875@2012-01-02 02:00:00+01, 6.0625@2012-01-02 03:00:00+01)}
+   03:00:00 | {[1.5625@2012-01-01 03:00:00+01, 1.75@2012-01-01 04:00:00+01),
+               [6.0625@2012-01-02 03:00:00+01, 6.25@2012-01-02 04:00:00+01)}
+   ...
+SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
+  asText(setPrecision(merge((ts).temp), 2)) as temp
+FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-14)',
+  '1 hour') AS ts) t
+GROUP BY dow, dow_no ORDER BY dow_no;
+-- 0 | Sun | {[POINT(1 1)@2012-01-01, POINT(1.69 1.69)@2012-01-02),
+              [POINT(5.85 5.85)@2012-01-08, POINT(6.54 6.54)@2012-01-09)}
+   1 | Mon | {[POINT(1.69 1.69)@2012-01-02, POINT(2.38 2.38)@2012-01-03),
+              [POINT(6.54 6.54)@2012-01-09, POINT(7.23 7.23)@2012-01-10)}
+   2 | Tue | {[POINT(2.38 2.38)@2012-01-03, POINT(3.08 3.08)@2012-01-04),
+              [POINT(7.23 7.23)@2012-01-10, POINT(7.92 7.92)@2012-01-11)}
+   ...
+</programlisting>
 				</listitem>
 
 				<listitem id="valueTimeSplit">
