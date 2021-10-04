@@ -14,6 +14,7 @@ compiler:
   - gcc
 
 before_install:
+  - sudo apt update && sudo apt install libgnutls-openssl27 libgnutls30
   - echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
   - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
   - sudo apt-get update

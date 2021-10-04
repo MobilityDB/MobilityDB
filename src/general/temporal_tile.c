@@ -166,6 +166,13 @@ number_bucket(PG_FUNCTION_ARGS)
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.
  *
+ * The function uses TMODULO which is defined in PostgreSQL as follows 
+ * #define TMODULO(t,q,u) \
+ * do { \
+ *   (q) = ((t) / (u)); \
+ *   if ((q) != 0) (t) -= ((q) * (u)); \
+ * } while(0)
+ *
  * @param[in] timestamp Input timestamp
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] torigin Origin of the buckets
