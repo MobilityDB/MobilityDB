@@ -63,36 +63,43 @@
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
- * @param[in] origin Origin of the buckets
+ * @param[in] offset Origin of the buckets
  */
 static int
-int_bucket_internal(int value, int size, int origin)
+int_bucket_internal(int value, int size, int offset)
 {
   assert(size > 0);
-  if (value == PG_INT32_MIN || value == PG_INT32_MAX)
-    return value;
-  /* origin = origin % size, but use FMODULO */
-  origin = origin % size;
-  if ((origin > 0 && value < PG_INT32_MIN + origin) ||
-    (origin < 0 && value > PG_INT32_MAX + origin))
-    ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-      errmsg("value out of range")));
-
-  value -= origin;
-  int result = value / size;
-  if (result < 0)
+  if (offset != 0)
+  {
+    /* 
+     * We need to ensure that the value is in range _after_ the offset is
+     * applied: when the offset is positive we need to make sure the resultant
+     * value is at least the minimum integer value (PG_INT32_MIN) and when
+     * negative that it is less than the maximum integer value (PG_INT32_MAX)
+     */
+    offset = offset % size;
+    if ((offset > 0 && value < PG_INT32_MIN + offset) ||
+      (offset < 0 && value > PG_INT32_MAX + offset))
+      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+        errmsg("number out of range")));
+    value -= offset;
+  }
+  int result = (value / size) * size;
+  if (value < 0 && value % size)
   {
     /*
-     * need to subtract another size if remainder < 0 this only happens
+     * We need to subtract another size if remainder < 0 this only happens
      * if value is negative to begin with and there is a remainder
      * after division. Need to subtract another size since division
      * truncates toward 0 in C99.
      */
-    result = (result * size) - size;
+    if (result < PG_INT32_MIN + size)
+      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+        errmsg("number out of range")));
+    else
+      result -= size;
   }
-  else
-    result *= size;
-  result += origin;
+  result += offset;
   return result;
 }
 
@@ -101,25 +108,32 @@ int_bucket_internal(int value, int size, int origin)
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
- * @param[in] origin Origin of the buckets
+ * @param[in] offset Origin of the buckets
  */
 double
-float_bucket_internal(double value, double size, double origin)
+float_bucket_internal(double value, double size, double offset)
 {
   assert(size > 0.0);
-  if (value == -1 * DBL_MAX || value == DBL_MAX)
-    return value;
-  double result;
-  origin = fmod(origin, size);
-  if ((origin > 0 && value < -1 * DBL_MAX + origin) ||
-    (origin < 0 && value > DBL_MAX + origin))
-    ereport(ERROR,
-        (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-         errmsg("value out of range")));
-
-  result = floor((value - origin) / size) * size;
-  result += origin;
-  assert(result <= value);
+  if (offset != 0)
+  {
+    /* 
+     * We need to ensure that the value is in range _after_ the offset is
+     * applied: when the offset is positive we need to make sure the resultant
+     * value is at least the minimum integer value (PG_INT32_MIN) and when
+     * negative that it is less than the maximum integer value (PG_INT32_MAX)
+     */
+    offset = fmod(offset, size);
+    if ((offset > 0 && value < -1 * DBL_MAX + offset) ||
+      (offset < 0 && value > DBL_MAX + offset))
+      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+        errmsg("number out of range")));
+    value -= offset;
+  }
+  float result = floor(value / size) * size;
+  /* Notice that by using the floor function above we remove the need to
+   * add the additional if needed for the integer case to take into account
+   * that integer division truncates toward 0 in C99 */
+  result += offset;
   return result;
 }
 
@@ -128,19 +142,19 @@ float_bucket_internal(double value, double size, double origin)
  *
  * @param[in] value Input value
  * @param[in] size Size of the buckets
- * @param[in] origin Origin of the buckets
+ * @param[in] offset Origin of the buckets
  * @param[in] type Oid of the data type of the arguments
  */
 static Datum
-number_bucket_internal(Datum value, Datum size, Datum origin, Oid type)
+number_bucket_internal(Datum value, Datum size, Datum offset, Oid type)
 {
   ensure_tnumber_base_type(type);
   if (type == INT4OID)
     return Int32GetDatum(int_bucket_internal(DatumGetInt32(value),
-      DatumGetInt32(size), DatumGetInt32(origin)));
+      DatumGetInt32(size), DatumGetInt32(offset)));
   else /* type == FLOAT8OID */
     return Float8GetDatum(float_bucket_internal(DatumGetFloat8(value),
-      DatumGetFloat8(size), DatumGetFloat8(origin)));
+      DatumGetFloat8(size), DatumGetFloat8(offset)));
 }
 
 PG_FUNCTION_INFO_V1(number_bucket);
@@ -166,48 +180,75 @@ number_bucket(PG_FUNCTION_ARGS)
 /**
  * Return the initial timestamp of the bucket in which a timestamp falls.
  *
- * The function uses TMODULO which is defined in PostgreSQL as follows 
- * #define TMODULO(t,q,u) \
- * do { \
- *   (q) = ((t) / (u)); \
- *   if ((q) != 0) (t) -= ((q) * (u)); \
- * } while(0)
- *
  * @param[in] timestamp Input timestamp
- * @param[in] tunits Size of the time buckets in PostgreSQL time units
+ * @param[in] size Size of the time buckets in PostgreSQL time units
  * @param[in] torigin Origin of the buckets
  */
 TimestampTz
-timestamptz_bucket_internal(TimestampTz timestamp, int64 tunits,
-  TimestampTz torigin)
+timestamptz_bucket_internal(TimestampTz timestamp, int64 size,
+  TimestampTz offset)
 {
-  assert(tunits > 0);
-  TimestampTz result;
-  /* torigin = torigin % tunits, but use TMODULO */
-  TMODULO(torigin, result, tunits);
-
-  if ((torigin > 0 && timestamp < DT_NOBEGIN + torigin) ||
-    (torigin < 0 && timestamp > DT_NOEND + torigin))
-    ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-      errmsg("timestamp out of range")));
-  timestamp -= torigin;
-
-  /* result = (timestamp / tunits) * tunits */
-  TMODULO(timestamp, result, tunits);
-  if (timestamp < 0)
+  // NEW VERSION
+  assert(size > 0);
+  if (offset != 0)
+  {
+    /* 
+     * We need to ensure that the timestamp is in range _after_ the offset is
+     * applied: when the offset is positive we need to make sure the resultant
+     * time is at least the minimum time value value (DT_NOBEGIN) and when
+     * negative that it is less than the maximum time value (DT_NOEND)
+     */
+    offset = offset % size;
+    if ((offset > 0 && timestamp < DT_NOBEGIN + offset) ||
+      (offset < 0 && timestamp > DT_NOEND + offset))
+      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+        errmsg("timestamp out of range")));
+    timestamp -= offset;
+  }
+  TimestampTz result = (timestamp / size) * size;
+  if (timestamp < 0 && timestamp % size)
   {
     /*
-     * need to subtract another tunits if remainder < 0 this only happens
+     * We need to subtract another size if remainder < 0 this only happens
      * if timestamp is negative to begin with and there is a remainder
-     * after division. Need to subtract another tunits since division
+     * after division. Need to subtract another size since division
      * truncates toward 0 in C99.
      */
-    result = (result * tunits) - tunits;
+    if (result < DT_NOBEGIN + size)
+      ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+        errmsg("timestamp out of range")));
+    else
+      result -= size;
   }
-  else
-    result *= tunits;
-  result += torigin;
+  result += offset;
   return result;
+  // assert(size > 0);
+  // TimestampTz result;
+  // /* offset = offset % size, but use TMODULO */
+  // TMODULO(offset, result, size);
+
+  // if ((offset > 0 && timestamp < DT_NOBEGIN + offset) ||
+    // (offset < 0 && timestamp > DT_NOEND + offset))
+    // ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+      // errmsg("timestamp out of range")));
+  // timestamp -= offset;
+
+  // /* result = (timestamp / size) * size */
+  // TMODULO(timestamp, result, size);
+  // if (timestamp < 0)
+  // {
+    // /*
+     // * need to subtract another size if remainder < 0 this only happens
+     // * if timestamp is negative to begin with and there is a remainder
+     // * after division. Need to subtract another size since division
+     // * truncates toward 0 in C99.
+     // */
+    // result = (result * size) - size;
+  // }
+  // else
+    // result *= size;
+  // result += offset;
+  // return result;
 }
 
 /**

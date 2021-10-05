@@ -3455,9 +3455,8 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
     if (! edge_contains_coplanar_point(&e, &gp))
       return false;
     /* Compute from the minimum latitude a point in the same meridian as p */
-    double minlat = Min(p1->y, p2->y);
-    geographic_point_init(p->x, p->y, &(e1.start));
-    geographic_point_init(p->x, minlat, &(e1.end));
+    geographic_point_init(p->x, 89.999999, &(e1.start));
+    geographic_point_init(p->x, -89.999999, &(e1.end));
     edge_intersection(&e, &e1, &inter);
     /* Compute distance from beginning of the segment to projected point */
     seglength = sphere_distance(&(e.start), &(e.end));
@@ -3467,7 +3466,9 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
     // long double seglength1, length1, fraction1;
     // spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
     // TimestampTz t1;
-    // POINT2D q;
+    // POINT2D u;
+    // u.x = rad2deg(inter.lon);
+    // u.y = rad2deg(inter.lat);
     // Datum proj, proj1;
     // fraction = length / seglength;
     // seglength1 = spheroid_distance(&(e.start), &(e.end), &s);
@@ -3480,8 +3481,9 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
       // MOBDB_FLAGS_GET_LINEAR(start->flags), *t);
     // proj1 = tsequence_value_at_timestamp1(start, end,
       // MOBDB_FLAGS_GET_LINEAR(start->flags), t1);
-    // q.x = rad2deg(longitude_radians_normalize(inter.lon));
-    // q.y = rad2deg(latitude_radians_normalize(inter.lat));
+    // u.x = rad2deg(longitude_radians_normalize(inter.lon));
+    // u.y = rad2deg(latitude_radians_normalize(inter.lat));
+
   }
   else
   {
@@ -3500,7 +3502,8 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
   *t = start->t + (TimestampTz) (duration * fraction);
   Datum proj = tsequence_value_at_timestamp1(start, end, LINEAR, *t);
   q = datum_get_point2d_p(proj);
-  return fabs(q->y - p->y) <= MOBDB_EPSILON ? true : false;
+  /* We add a turning point only if p is to the North of q */
+  return FP_GTEQ(p->y, q->y) ? true : false;
 }
 
 /**
