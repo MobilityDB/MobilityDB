@@ -222,33 +222,6 @@ timestamptz_bucket_internal(TimestampTz timestamp, int64 size,
   }
   result += offset;
   return result;
-  // assert(size > 0);
-  // TimestampTz result;
-  // /* offset = offset % size, but use TMODULO */
-  // TMODULO(offset, result, size);
-
-  // if ((offset > 0 && timestamp < DT_NOBEGIN + offset) ||
-    // (offset < 0 && timestamp > DT_NOEND + offset))
-    // ereport(ERROR, (errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-      // errmsg("timestamp out of range")));
-  // timestamp -= offset;
-
-  // /* result = (timestamp / size) * size */
-  // TMODULO(timestamp, result, size);
-  // if (timestamp < 0)
-  // {
-    // /*
-     // * need to subtract another size if remainder < 0 this only happens
-     // * if timestamp is negative to begin with and there is a remainder
-     // * after division. Need to subtract another size since division
-     // * truncates toward 0 in C99.
-     // */
-    // result = (result * size) - size;
-  // }
-  // else
-    // result *= size;
-  // result += offset;
-  // return result;
 }
 
 /**
