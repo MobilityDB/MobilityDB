@@ -85,11 +85,11 @@ textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 1;
+  lfinfo.numparam = 0;
   lfinfo.restypid = TEXTOID;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  return tfunc_temporal(temp, &lfinfo);
 }
 
 /**
@@ -102,14 +102,14 @@ textfunc_ttext_text(Temporal *temp, Datum value, datum_func2 func,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 0;
   lfinfo.restypid = TEXTOID;
   lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return tfunc_temporal_base(temp, value, TEXTOID, (Datum) NULL, lfinfo);
+  return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
 /**
@@ -121,14 +121,14 @@ textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 0;
   lfinfo.restypid = TEXTOID;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL, lfinfo);
+  return sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************

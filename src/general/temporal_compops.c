@@ -53,14 +53,17 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid basetypid,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = basetypid;
   lfinfo.restypid = BOOLOID;
   lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return tfunc_temporal_base(temp, value, basetypid, (Datum) NULL, lfinfo);
+  return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
 PGDLLEXPORT Datum
@@ -105,7 +108,10 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
   lfinfo.restypid = BOOLOID;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
@@ -113,8 +119,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

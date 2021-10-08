@@ -57,17 +57,17 @@
 /**
  * Generate a tile from the current state of the multidimensional grid
  *
+ * @param[out] result Box representing the tile
  * @param[in] x,y,z,t Lower coordinates of the tile to output
  * @param[in] size Spatial size of the tiles
  * @param[in] tunits Temporal size of the tiles in PostgreSQL time units
  * @param[in] hasz Whether the tile has Z dimension
  * @param[in] hast Whether the tile has T dimension
  * @param[in] srid SRID of the spatial coordinates
- *
  */
-STBOX *
-stbox_tile_get(double x, double y, double z, TimestampTz t, double size,
-  int64 tunits, bool hasz, bool hast, int32 srid)
+void
+stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
+  double size, int64 tunits, bool hasz, bool hast, int32 srid)
 {
   double xmin = x;
   double xmax = xmin + size;
@@ -85,8 +85,28 @@ stbox_tile_get(double x, double y, double z, TimestampTz t, double size,
     tmin = t;
     tmax = tmin + tunits;
   }
-  return stbox_make(true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
+  return stbox_set(result, true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
     zmin, zmax, tmin, tmax);
+}
+
+/**
+ * Generate a tile from the current state of the multidimensional grid
+ *
+ * @param[in] x,y,z,t Lower coordinates of the tile to output
+ * @param[in] size Spatial size of the tiles
+ * @param[in] tunits Temporal size of the tiles in PostgreSQL time units
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
+ * @param[in] srid SRID of the spatial coordinates
+ */
+STBOX *
+stbox_tile_get(double x, double y, double z, TimestampTz t, double size,
+  int64 tunits, bool hasz, bool hast, int32 srid)
+{
+  /* Note: zero-fill is required here, just as in heap tuples */
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  stbox_tile_set(result, x, y, z, t, size, tunits, hasz, hast, srid);
+  return result;
 }
 
 /**
@@ -391,28 +411,6 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
  * Split functions
  *****************************************************************************/
 
-static Datum
-stbox_upper_bound(const STBOX *box)
-{
-  /* Compute the 2D upper bound of the box */
-  LWGEOM *points[3];
-  /* Top left */
-  points[0] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmin, box->ymax);
-  /* Top right */
-  points[1] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymax);
-  /* Bottom left */
-  points[2] = (LWGEOM *) lwpoint_make2d(box->srid, box->xmax, box->ymin);
-  FLAGS_SET_GEODETIC(points[0]->flags, false);
-  FLAGS_SET_GEODETIC(points[1]->flags, false);
-  FLAGS_SET_GEODETIC(points[2]->flags, false);
-  LWGEOM *lwgeom = (LWGEOM *) lwline_from_lwgeom_array(box->srid, 3, points);
-  FLAGS_SET_Z(lwgeom->flags, false);
-  FLAGS_SET_GEODETIC(lwgeom->flags, false);
-  Datum result = PointerGetDatum(geo_serialize(lwgeom));
-  lwgeom_free(lwgeom);
-  return result;
-}
-
 PG_FUNCTION_INFO_V1(tpoint_space_split);
 /**
  * Split a temporal number with respect to space tiles.
@@ -497,41 +495,24 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
      * We must generate a 2D/3D geometry for keeping the bounds and after we
      * set the box to 2D so that we can project a 3D point to a 2D geometry */
     bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
-    STBOX *box = stbox_tile_get(state->x, state->y, state->z, state->t,
+    STBOX box;
+    memset(&box, 0, sizeof(STBOX));
+    stbox_tile_set(&box, state->x, state->y, state->z, state->t,
       state->size, state->tunits, hasz, false, state->box.srid);
     /* Advance state */
     stbox_tile_state_next(state);
-    /* Restrict the temporal point to the box projected to 2D */
-    MOBDB_FLAGS_SET_Z(box->flags, false);
-    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, box);
+    /* Restrict the temporal point to the box */
+    // MOBDB_FLAGS_SET_Z(box.flags, false); // projected to 2D
+    Temporal *atstbox = tpoint_at_stbox_internal_new(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
-    if (hasz)
-    {
-      /* Filter the boxes that do not intersect in 3D with the restriction */
-      STBOX box1;
-      memset(&box1, 0, sizeof(STBOX));
-      temporal_bbox(&box1, atstbox);
-      if (box->zmin > box1.zmin || box1.zmin >= box->zmax)
-      {
-        pfree(atstbox);
-        continue;
-      }
-    }
-    Datum upper_bound = stbox_upper_bound(box);
-    Temporal *minus_upper = tpoint_restrict_geometry_internal(atstbox,
-      upper_bound, REST_MINUS);
-    pfree(DatumGetPointer(upper_bound));
-    if (minus_upper != NULL)
-    {
-      /* Form tuple and return */
-      tuple_arr[0] = point_make(box->xmin, box->ymin, box->zmin,
-        MOBDB_FLAGS_GET_Z(state->temp->flags), false, box->srid);
-      tuple_arr[1] = PointerGetDatum(minus_upper);
-      tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-      result = HeapTupleGetDatum(tuple);
-      SRF_RETURN_NEXT(funcctx, result);
-    }
+    /* Form tuple and return */
+    tuple_arr[0] = point_make(box.xmin, box.ymin, box.zmin,
+      MOBDB_FLAGS_GET_Z(state->temp->flags), false, box.srid);
+    tuple_arr[1] = PointerGetDatum(atstbox);
+    tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+    result = HeapTupleGetDatum(tuple);
+    SRF_RETURN_NEXT(funcctx, result);
   }
 }
 
@@ -623,39 +604,25 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
      * We must generate a 2D/3D geometry for keeping the bounds and after we
      * set the box to 2D so that we can project a 3D point to a 2D geometry */
     bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
-    STBOX *box = stbox_tile_get(state->x, state->y, state->z, state->t,
+    STBOX box;
+    memset(&box, 0, sizeof(STBOX));
+    stbox_tile_set(&box, state->x, state->y, state->z, state->t,
       state->size, state->tunits, hasz, true, state->box.srid);
     /* Advance state */
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box projected to 2D */
-    MOBDB_FLAGS_SET_Z(box->flags, false);
-    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, box);
+    MOBDB_FLAGS_SET_Z(box.flags, false);
+    Temporal *atstbox = tpoint_at_stbox_internal_new(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
-    if (hasz)
-    {
-      /* Filter the boxes that do not intersect in 3D with the restriction */
-      STBOX box1;
-      memset(&box1, 0, sizeof(STBOX));
-      temporal_bbox(&box1, atstbox);
-      if (box1.zmin >= box->zmax || box->zmin >= box1.zmax)
-        continue;
-    }
-    Datum upper_bound = stbox_upper_bound(box);
-    Temporal *minus_upper = tpoint_restrict_geometry_internal(atstbox,
-      upper_bound, REST_MINUS);
-    pfree(DatumGetPointer(upper_bound));
-    if (minus_upper != NULL)
-    {
-      /* Form tuple and return */
-      tuple_arr[0] = point_make(box->xmin, box->ymin, box->zmin,
-        hasz, false, box->srid);
-      tuple_arr[1] = TimestampTzGetDatum(box->tmin);
-      tuple_arr[2] = PointerGetDatum(minus_upper);
-      tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-      result = HeapTupleGetDatum(tuple);
-      SRF_RETURN_NEXT(funcctx, result);
-    }
+    /* Form tuple and return */
+    tuple_arr[0] = point_make(box.xmin, box.ymin, box.zmin, hasz, false,
+      box.srid);
+    tuple_arr[1] = TimestampTzGetDatum(box.tmin);
+    tuple_arr[2] = PointerGetDatum(atstbox);
+    tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
+    result = HeapTupleGetDatum(tuple);
+    SRF_RETURN_NEXT(funcctx, result);
   }
 }
 

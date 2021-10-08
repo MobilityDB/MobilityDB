@@ -177,6 +177,8 @@ extern Datum tpoint_get_x(PG_FUNCTION_ARGS);
 extern Datum tpoint_get_y(PG_FUNCTION_ARGS);
 extern Datum tpoint_get_z(PG_FUNCTION_ARGS);
 
+extern Temporal *tpoint_get_coord_internal(const Temporal *temp, char c);
+
 /* Length, speed, time-weighted centroid, temporal azimuth, and
  * temporal bearing functions */
 
@@ -210,6 +212,8 @@ extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
 extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
   Datum geom, bool atfunc);
 extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
+extern Temporal *tpoint_at_stbox_internal_new(const Temporal *temp,
+  const STBOX *box, bool exc_upper);
 
 extern TInstantSet **tpointinstset_make_simple1(const TInstantSet *ti, int *count);
 extern TSequence **tpointseq_make_simple1(const TSequence *seq, int *count);

@@ -301,7 +301,7 @@ spatialrel_tpoint_geo1(Temporal *temp, Datum geo, Datum param,
   assert(numparam == 2 || numparam == 3);
   if (numparam == 2)
     result = invert ? func(geo, traj) : func(traj, geo);
-  else /* lfinfo.numparam == 3 */
+  else /* numparam == 3 */
     result = invert ? func(geo, traj, param) : func(traj, geo, param);
   tpoint_trajectory_free(temp, traj);
   return result;

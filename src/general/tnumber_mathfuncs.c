@@ -154,7 +154,10 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = basetypid;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   /* This parameter is not used for tnumber <op> base */
   lfinfo.reslinear = false;
@@ -162,7 +165,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return tfunc_temporal_base(temp, value, basetypid, (Datum) NULL, lfinfo);
+  return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
 /**
@@ -241,7 +244,10 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
@@ -249,8 +255,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -413,11 +418,15 @@ tnumber_round(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_round;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = digits;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = INT4OID;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, digits, lfinfo);
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -434,11 +443,13 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_degrees;
-  lfinfo.numparam = 1;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

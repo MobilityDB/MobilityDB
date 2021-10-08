@@ -3238,6 +3238,8 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration1 = (long double) (t - inst1->t);
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
+  // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MOBILITYDB !!!
+  // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
   ensure_base_type_continuous((Temporal *) inst1);
   if (basetypid == FLOAT8OID)
   {

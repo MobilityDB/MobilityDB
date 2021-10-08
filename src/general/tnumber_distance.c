@@ -92,15 +92,17 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_distance;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = basetypid;
   lfinfo.restypid = restypid;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tlinearseq_intersection_value1;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal_base(temp, value, basetypid,
-    (Datum) NULL, lfinfo);
+  Temporal *result = tfunc_temporal_base(temp, value, &lfinfo);
   return result;
 }
 
@@ -155,15 +157,17 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_distance;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
   lfinfo.restypid = restypid;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = lfinfo.reslinear ? &tsequence_intersection1 : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 

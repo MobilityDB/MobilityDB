@@ -50,10 +50,15 @@
  * that apply the lifted function to two base values.
  */
 
+#define MAX_PARAMS 3
+
 typedef struct
 {
   Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
   int numparam;              /**< Number of parameters of the function */
+  Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
+  bool argoids;              /**< True if the lifted function requires the Oid of the arguments */
+  Oid argtypid[2];           /**< Type of the arguments */
   Oid restypid;              /**< Base type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
@@ -67,34 +72,34 @@ typedef struct
 
 /*****************************************************************************/
 
-extern TInstant *tfunc_tinstant(const TInstant *inst, Datum param,
-  LiftedFunctionInfo lfinfo);
-extern TInstantSet *tfunc_tinstantset(const TInstantSet *ti, Datum param,
-  LiftedFunctionInfo lfinfo);
-extern TSequence *tfunc_tsequence(const TSequence *seq, Datum param,
-  LiftedFunctionInfo lfinfo);
-extern TSequenceSet *tfunc_tsequenceset(const TSequenceSet *ts, Datum param,
-  LiftedFunctionInfo lfinfo);
-extern Temporal *tfunc_temporal(const Temporal *temp, Datum param,
-  LiftedFunctionInfo lfinfo);
+extern TInstant *tfunc_tinstant(const TInstant *inst,
+  LiftedFunctionInfo *lfinfo);
+extern TInstantSet *tfunc_tinstantset(const TInstantSet *ti,
+  LiftedFunctionInfo *lfinfo);
+extern TSequence *tfunc_tsequence(const TSequence *seq,
+  LiftedFunctionInfo *lfinfo);
+extern TSequenceSet *tfunc_tsequenceset(const TSequenceSet *ts,
+  LiftedFunctionInfo *lfinfo);
+extern Temporal *tfunc_temporal(const Temporal *temp,
+  LiftedFunctionInfo *lfinfo);
 
 extern TInstant *tfunc_tinstant_base(const TInstant *inst, Datum value,
-  Oid basetypid, Datum param, LiftedFunctionInfo lfinfo);
+  LiftedFunctionInfo *lfinfo);
 extern TInstantSet *tfunc_tinstantset_base(const TInstantSet *ti, Datum value,
-  Oid basetypid, Datum param, LiftedFunctionInfo lfinfo);
+  LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_tsequence_base(const TSequence *seq, Datum value,
-  Oid basetypid, Datum param, LiftedFunctionInfo lfinfo);
+  LiftedFunctionInfo *lfinfo);
 extern TSequenceSet *tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value,
-  Oid basetypid, Datum param, LiftedFunctionInfo lfinfo);
+  LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_temporal_base(const Temporal *temp, Datum value,
-  Oid basetypid, Datum param, LiftedFunctionInfo lfinfo);
+  LiftedFunctionInfo *lfinfo);
 
 extern TInstant *sync_tfunc_tinstant_tinstant(const TInstant *inst1,
-  const TInstant *inst2, Datum param, LiftedFunctionInfo lfinfo);
+  const TInstant *inst2, LiftedFunctionInfo *lfinfo);
 extern TInstantSet *sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1,
-  const TInstantSet *ti2, Datum param, LiftedFunctionInfo lfinfo);
+  const TInstantSet *ti2, LiftedFunctionInfo *lfinfo);
 extern Temporal *sync_tfunc_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, Datum param, LiftedFunctionInfo lfinfo);
+  const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/
 

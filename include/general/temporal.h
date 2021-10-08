@@ -77,6 +77,10 @@
 #define REST_AT         true
 #define REST_MINUS      false
 
+/** Symbolic constants for the restriction functions with boxes */
+#define UPPER_INC       true
+#define UPPER_EXC       false
+
 /** Symbolic constants for the ever/always functions */
 #define EVER            true
 #define ALWAYS          false

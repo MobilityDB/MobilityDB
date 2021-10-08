@@ -325,11 +325,12 @@ tnpoint_set_precision(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &npoint_set_precision_internal;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = size;
   lfinfo.restypid = temp->basetypid;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, size, lfinfo);
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

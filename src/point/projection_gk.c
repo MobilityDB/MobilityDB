@@ -288,11 +288,11 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
-  lfinfo.numparam = 1;
+  lfinfo.numparam = 0;
   lfinfo.restypid = temp->basetypid;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

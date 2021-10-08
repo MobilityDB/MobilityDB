@@ -53,6 +53,7 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
+#include "general/rangetypes_ext.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
@@ -577,7 +578,7 @@ ensure_has_Z_tpoint(const Temporal *temp)
 {
   if (! MOBDB_FLAGS_GET_Z(temp->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point do not have Z dimension")));
+      errmsg("The temporal point does not have Z dimension")));
   return;
 }
 
@@ -2583,11 +2584,12 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_set_precision;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = prec;
   lfinfo.restypid = temp->basetypid;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, prec, lfinfo);
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2607,28 +2609,6 @@ point_get_x(Datum point)
   return Float8GetDatum(p.x);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_get_x);
-/**
- * Get the X coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_x(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->basetypid);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &point_get_x;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = FLOAT8OID;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * Get the Y coordinates of the temporal point
  */
@@ -2638,28 +2618,6 @@ point_get_y(Datum point)
   POINT4D p;
   datum_get_point4d(&p, point);
   return Float8GetDatum(p.y);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_get_y);
-/**
- * Get the Y coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_y(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->basetypid);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &point_get_y;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = FLOAT8OID;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -2673,6 +2631,65 @@ point_get_z(Datum point)
   return Float8GetDatum(p.z);
 }
 
+/**
+ * Get the X coordinates of the temporal point (internal function)
+ */
+Temporal *
+tpoint_get_coord_internal(const Temporal *temp, char c)
+{
+  ensure_tgeo_base_type(temp->basetypid);
+  if (c == 'z')
+    ensure_has_Z_tpoint(temp);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  assert(c == 'x' || c == 'y' || c == 'z');
+  switch(c)
+  {
+    case 'x':
+      lfinfo.func = (varfunc) &point_get_x;
+      break;
+    case 'y':
+      lfinfo.func = (varfunc) &point_get_y;
+      break;
+    default: /* c == 'z' */
+      lfinfo.func = (varfunc) &point_get_z;
+      break;
+  }
+  lfinfo.numparam = 0;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_x);
+/**
+ * Get the X coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_get_coord_internal(temp, 'x');
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_y);
+/**
+ * Get the Y coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_get_coord_internal(temp, 'y');
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(tpoint_get_z);
 /**
  * Get the Z coordinates of the temporal point
@@ -2681,17 +2698,7 @@ PGDLLEXPORT Datum
 tpoint_get_z(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->basetypid);
-  ensure_has_Z_tpoint(temp);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &point_get_z;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = FLOAT8OID;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  Temporal *result = tpoint_get_coord_internal(temp, 'z');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -3581,15 +3588,16 @@ bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) get_bearing_fn(temp->flags);
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
   lfinfo.tpfunc = NULL;
-  Temporal *result = (Temporal *) tfunc_temporal_base(temp, geo, temp->basetypid,
-    (Datum) NULL, lfinfo);
+  Temporal *result = (Temporal *) tfunc_temporal_base(temp, geo, &lfinfo);
   return result;
 }
 
@@ -3650,7 +3658,10 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
@@ -3658,8 +3669,7 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_bearing_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 
@@ -5084,6 +5094,167 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
     pfree(DatumGetPointer(geom1));
     if (hast)
       pfree(temp1);
+  }
+  else
+    result = temp1;
+  return result;
+}
+
+/**
+ * Assemble a 2D point for its coordinates
+ */
+Datum
+point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
+{
+  double x1 = DatumGetFloat8(x);
+  double y1 = DatumGetFloat8(y);
+  int srid1 = DatumGetInt32(srid);
+  LWPOINT *lwpoint = lwpoint_make2d(srid1, x1, y1);
+  FLAGS_SET_GEODETIC(lwpoint->flags, DatumGetBool(geodetic));
+  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
+  lwpoint_free(lwpoint);
+  return result;
+}
+
+/**
+ * Assemble a 2D temporal point for two temporal floats
+ */
+Temporal *
+tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
+  bool geodetic)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &point2D_assemble;
+  lfinfo.numparam = 2;
+  lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.param[1] = Int32GetDatum(geodetic);
+  lfinfo.restypid = type_oid(T_GEOMETRY);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp_x->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp_y->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return sync_tfunc_temporal_temporal(temp_x, temp_y, &lfinfo);
+}
+
+/**
+ * Add a z value to a 2D point
+ */
+Datum
+point2D_add_z(Datum point, Datum z, Datum srid)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
+#else
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
+#endif
+  const POINT2D *pt = datum_get_point2d_p(point);
+  double z1 = DatumGetFloat8(z);
+  int srid1 = DatumGetInt32(srid);
+  LWPOINT *lwpoint = lwpoint_make3dz(srid1, pt->x, pt->y, z1);
+  FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
+  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
+  lwpoint_free(lwpoint);
+  return result;
+}
+
+/**
+ * Assemble a 2D temporal point for two temporal floats
+ */
+Temporal *
+tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &point2D_add_z;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.restypid = type_oid(T_GEOMETRY);
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp_z->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return sync_tfunc_temporal_temporal(temp, temp_z, &lfinfo);
+}
+
+Temporal *
+tpoint_at_stbox_internal_new(const Temporal *temp, const STBOX *box,
+  bool upper_inc)
+{
+  /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  assert(hasx || hast);
+
+  /* Bounding box test */
+  STBOX box1;
+  memset(&box1, 0, sizeof(STBOX));
+  temporal_bbox(&box1, temp);
+  if (!overlaps_stbox_stbox_internal(box, &box1))
+    return NULL;
+
+  Temporal *temp1;
+  if (hast)
+  {
+    Period p;
+    period_set(&p, box->tmin, box->tmax, true, upper_inc);
+    temp1 = temporal_at_period_internal(temp, &p);
+    /* Despite the bounding box test above, temp1 may be NULL due to
+     * exclusive bounds */
+    if (temp1 == NULL)
+      return NULL;
+  }
+  else
+    temp1 = (Temporal *) temp;
+
+  Temporal *result = NULL;
+  if (hasx)
+  {
+    /* Split the temporal point into temporal floats for each coordinate */
+    Temporal *temp_x = tpoint_get_coord_internal(temp, 'x');
+    Temporal *temp_y = tpoint_get_coord_internal(temp, 'y');
+    Temporal *temp_z;
+    if (hasz)
+      temp_z = tpoint_get_coord_internal(temp, 'z');
+    RangeType *range_x = range_make(Float8GetDatum(box->xmin),
+      Float8GetDatum(box->xmax), true, upper_inc, FLOAT8OID);
+    RangeType *range_y = range_make(Float8GetDatum(box->ymin),
+      Float8GetDatum(box->ymax), true, upper_inc, FLOAT8OID);
+    RangeType *range_z;
+    if (hasz)
+      range_z = range_make(Float8GetDatum(box->zmin),
+        Float8GetDatum(box->zmax), true, upper_inc, FLOAT8OID);
+    Temporal *at_temp_x = tnumber_restrict_range_internal(temp_x, range_x, REST_AT);
+    Temporal *at_temp_y = tnumber_restrict_range_internal(temp_y, range_y, REST_AT);
+    Temporal *at_temp_z = NULL;
+    if (hasz)
+      at_temp_z = tnumber_restrict_range_internal(temp_z, range_z, REST_AT);
+    Temporal *result2D;
+    if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
+    {
+      /* Combine the temporal floats for each coordinate into a temporal point */
+      int srid = tpoint_srid_internal(temp);
+      bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
+      result2D = tpoint_assemble_coords_xy(at_temp_x, at_temp_y, srid,
+        geodetic);
+      result = (result2D != NULL && hasz) ?
+        tpoint_add_z(result2D, at_temp_z, srid) : result2D;
+    }
+    pfree(temp_x); pfree(range_x); pfree(temp_y); pfree(range_y);
+    if (at_temp_x != NULL) pfree(at_temp_x);
+    if (at_temp_y != NULL) pfree(at_temp_y);
+    if (hasz)
+    {
+      pfree(temp_z); pfree(range_z);
+      if (at_temp_z != NULL) pfree(at_temp_z);
+      if (result2D != NULL) pfree(result2D);
+    }
   }
   else
     result = temp1;

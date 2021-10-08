@@ -383,7 +383,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) get_pt_distance_fn(temp->flags);
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 0;
+  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
@@ -391,8 +392,7 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   lfinfo.tpfunc_base = lfinfo.reslinear ?
     &tpoint_geo_min_dist_at_timestamp : NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal_base(temp, geo, temp->basetypid,
-    (Datum) NULL, lfinfo);
+  Temporal *result = tfunc_temporal_base(temp, geo, &lfinfo);
   return result;
 }
 
@@ -452,7 +452,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) get_pt_distance_fn(temp1->flags);
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 0;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
@@ -460,8 +460,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_dist_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 
