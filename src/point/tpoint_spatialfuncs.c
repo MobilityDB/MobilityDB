@@ -5047,61 +5047,7 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Restrict the temporal point to the spatiotemporal box
- *
- * @pre The arguments are of the same dimensionality and
- * have the same SRID
- */
-Temporal *
-tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
-{
-  /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
-  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  assert(hasx || hast);
-
-  /* Bounding box test */
-  STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
-  temporal_bbox(&box1, temp);
-  if (!overlaps_stbox_stbox_internal(box, &box1))
-    return NULL;
-
-  Temporal *temp1;
-  if (hast)
-  {
-    Period p;
-    period_set(&p, box->tmin, box->tmax, true, true);
-    temp1 = temporal_at_period_internal(temp, &p);
-    /* Despite the bounding box test above, temp1 may be NULL due to
-     * exclusive bounds */
-    if (temp1 == NULL)
-      return NULL;
-  }
-  else
-    temp1 = (Temporal *) temp;
-
-  Temporal *result;
-  if (hasx)
-  {
-    Datum gbox = PointerGetDatum(stbox_to_gbox(box));
-    /* We cannot call BOX3D_to_LWGEOM since the result is a PolyhedralSurface */
-    Datum geom = call_function1(BOX2D_to_LWGEOM, gbox);
-    Datum geom1 = call_function2(LWGEOM_set_srid, geom,
-      Int32GetDatum(box->srid));
-    result = tpoint_restrict_geometry_internal(temp1, geom1, REST_AT);
-    pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
-    pfree(DatumGetPointer(geom1));
-    if (hast)
-      pfree(temp1);
-  }
-  else
-    result = temp1;
-  return result;
-}
-
-/**
- * Assemble a 2D point for its coordinates
+ * Assemble a 2D point for its x and y coordinates, srid, and geodetic flag
  */
 Datum
 point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
@@ -5117,7 +5063,8 @@ point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
 }
 
 /**
- * Assemble a 2D temporal point for two temporal floats
+ * Assemble a 2D temporal point for two temporal floats, srid, and geodetic
+ * flag
  */
 Temporal *
 tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
@@ -5182,8 +5129,14 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
   return sync_tfunc_temporal_temporal(temp, temp_z, &lfinfo);
 }
 
+/**
+ * Restrict the temporal point to the spatiotemporal box
+ *
+ * @pre The arguments are of the same dimensionality and
+ * have the same SRID
+ */
 Temporal *
-tpoint_at_stbox_internal_new(const Temporal *temp, const STBOX *box,
+tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
   bool upper_inc)
 {
   /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
@@ -5217,11 +5170,11 @@ tpoint_at_stbox_internal_new(const Temporal *temp, const STBOX *box,
   if (hasx)
   {
     /* Split the temporal point into temporal floats for each coordinate */
-    Temporal *temp_x = tpoint_get_coord_internal(temp, 'x');
-    Temporal *temp_y = tpoint_get_coord_internal(temp, 'y');
-    Temporal *temp_z;
+    Temporal *temp_x = tpoint_get_coord_internal(temp1, 'x');
+    Temporal *temp_y = tpoint_get_coord_internal(temp1, 'y');
+    Temporal *temp_z = NULL;
     if (hasz)
-      temp_z = tpoint_get_coord_internal(temp, 'z');
+      temp_z = tpoint_get_coord_internal(temp1, 'z');
     RangeType *range_x = range_make(Float8GetDatum(box->xmin),
       Float8GetDatum(box->xmax), true, upper_inc, FLOAT8OID);
     RangeType *range_y = range_make(Float8GetDatum(box->ymin),
@@ -5235,12 +5188,12 @@ tpoint_at_stbox_internal_new(const Temporal *temp, const STBOX *box,
     Temporal *at_temp_z = NULL;
     if (hasz)
       at_temp_z = tnumber_restrict_range_internal(temp_z, range_z, REST_AT);
-    Temporal *result2D;
+    Temporal *result2D = NULL;
     if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
     {
       /* Combine the temporal floats for each coordinate into a temporal point */
-      int srid = tpoint_srid_internal(temp);
-      bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
+      int srid = tpoint_srid_internal(temp1);
+      bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp1->flags);
       result2D = tpoint_assemble_coords_xy(at_temp_x, at_temp_y, srid,
         geodetic);
       result = (result2D != NULL && hasz) ?
@@ -5258,6 +5211,8 @@ tpoint_at_stbox_internal_new(const Temporal *temp, const STBOX *box,
   }
   else
     result = temp1;
+  if (hast)
+    pfree(temp1);
   return result;
 }
 
@@ -5281,7 +5236,7 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
     return temporal_copy(temp);
 
   Temporal *result = NULL;
-  Temporal *temp1 = tpoint_at_stbox_internal(temp, box);
+  Temporal *temp1 = tpoint_at_stbox_internal(temp, box, UPPER_INC);
   if (temp1 != NULL)
   {
     PeriodSet *ps1 = temporal_get_time_internal(temp);
@@ -5314,7 +5269,7 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
     ensure_same_srid_tpoint_stbox(temp, box);
     ensure_same_spatial_dimensionality(temp->flags, box->flags);
   }
-  Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box) :
+  Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box, UPPER_INC) :
     tpoint_minus_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

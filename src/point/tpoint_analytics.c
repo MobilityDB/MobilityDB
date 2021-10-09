@@ -2230,7 +2230,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   STBOX clip_box;
   stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
     0, 0, 0, 0);
-  Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box);
+  Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box, UPPER_INC);
   pfree(tpoint4);
   if (tpoint5 == NULL)
     return NULL;

@@ -100,8 +100,8 @@ run_compare)
   while ! pg_status; do
     $PGCTL start
     sleep 1
-    retries=$(( $retries + 1 ))
-    if [ $x -eq $MAX_RETRIES ]; then
+    retries=$(( retries + 1 ))
+    if (( retries == MAX_RETRIES )); then
       echo "Failed to start PostgreSQL" >> "${WORKDIR}/out/${TESTNAME}.out"
       exit 1
     fi
@@ -139,8 +139,8 @@ run_passfail)
   while ! pg_status; do
     $PGCTL start
     sleep 1
-    retries=$(( $retries + 1 ))
-    if [ $x -eq $MAX_RETRIES ]; then
+    retries=$(( retries + 1 ))
+    if (( retries == MAX_RETRIES )); then
       echo "Failed to start PostgreSQL" >> "${WORKDIR}/out/${TESTNAME}.out"
       exit 1
     fi

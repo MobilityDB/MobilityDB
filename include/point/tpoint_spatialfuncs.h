@@ -211,11 +211,11 @@ extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
   int *count);
 extern Temporal *tpoint_restrict_geometry_internal(const Temporal *temp,
   Datum geom, bool atfunc);
-extern Temporal *tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box);
-extern Temporal *tpoint_at_stbox_internal_new(const Temporal *temp,
+extern Temporal *tpoint_at_stbox_internal(const Temporal *temp,
   const STBOX *box, bool exc_upper);
 
-extern TInstantSet **tpointinstset_make_simple1(const TInstantSet *ti, int *count);
+extern TInstantSet **tpointinstset_make_simple1(const TInstantSet *ti,
+  int *count);
 extern TSequence **tpointseq_make_simple1(const TSequence *seq, int *count);
 extern Period **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);

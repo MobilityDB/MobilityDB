@@ -491,24 +491,21 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
-    /* Generate the tile
-     * We must generate a 2D/3D geometry for keeping the bounds and after we
-     * set the box to 2D so that we can project a 3D point to a 2D geometry */
+    /* Generate the tile */
     bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
     STBOX box;
     memset(&box, 0, sizeof(STBOX));
-    stbox_tile_set(&box, state->x, state->y, state->z, state->t,
-      state->size, state->tunits, hasz, false, state->box.srid);
+    stbox_tile_set(&box, state->x, state->y, state->z, state->t, state->size,
+      state->tunits, hasz, false, state->box.srid);
     /* Advance state */
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
-    // MOBDB_FLAGS_SET_Z(box.flags, false); // projected to 2D
-    Temporal *atstbox = tpoint_at_stbox_internal_new(state->temp, &box, UPPER_EXC);
+    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */
-    tuple_arr[0] = point_make(box.xmin, box.ymin, box.zmin,
-      MOBDB_FLAGS_GET_Z(state->temp->flags), false, box.srid);
+    tuple_arr[0] = point_make(box.xmin, box.ymin, box.zmin, hasz, false,
+      box.srid);
     tuple_arr[1] = PointerGetDatum(atstbox);
     tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
     result = HeapTupleGetDatum(tuple);
@@ -600,19 +597,16 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (state->done)
       SRF_RETURN_DONE(funcctx);
 
-    /* Generate the tile
-     * We must generate a 2D/3D geometry for keeping the bounds and after we
-     * set the box to 2D so that we can project a 3D point to a 2D geometry */
+    /* Generate the tile */
     bool hasz = MOBDB_FLAGS_GET_Z(state->temp->flags);
     STBOX box;
     memset(&box, 0, sizeof(STBOX));
-    stbox_tile_set(&box, state->x, state->y, state->z, state->t,
-      state->size, state->tunits, hasz, true, state->box.srid);
+    stbox_tile_set(&box, state->x, state->y, state->z, state->t, state->size,
+      state->tunits, hasz, true, state->box.srid);
     /* Advance state */
     stbox_tile_state_next(state);
-    /* Restrict the temporal point to the box projected to 2D */
-    MOBDB_FLAGS_SET_Z(box.flags, false);
-    Temporal *atstbox = tpoint_at_stbox_internal_new(state->temp, &box, UPPER_EXC);
+    /* Restrict the temporal point to the box */
+    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */
