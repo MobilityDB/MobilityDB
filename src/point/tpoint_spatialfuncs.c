@@ -3439,20 +3439,25 @@ get_bearing_fn(int16 flags)
  * @param[in] start1,end1 Instants defining the segment
  * @param[in] point Geometric/geographic point
  * @param[in] linear1 State whether the interpolation is linear
+ * @param[out] value Projected point
  * @param[out] t Timestamp
  * @pre The segment is not constant and has linear interpolation.
  * @note The parameter basetypid is not needed for temporal points
  */
 bool
-tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
-  const TInstant *end, Datum point, Oid basetypid, TimestampTz *t)
+tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
+  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
 {
-  const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start));
-  const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end));
+  Datum dstart = tinstant_value(start);
+  Datum dend = tinstant_value(end);
+  const POINT2D *p1 = datum_get_point2d_p(dstart);
+  const POINT2D *p2 = datum_get_point2d_p(dend);
   const POINT2D *p = datum_get_point2d_p(point);
   const POINT2D *q;
   long double seglength, length, fraction;
-  if (MOBDB_FLAGS_GET_GEODETIC(start->flags))
+  Datum proj;
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(start->flags);
+  if (geodetic)
   {
     GEOGRAPHIC_EDGE e, e1;
     GEOGRAPHIC_POINT gp, inter;
@@ -3461,36 +3466,13 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
     geographic_point_init(p2->x, p2->y, &(e.end));
     if (! edge_contains_coplanar_point(&e, &gp))
       return false;
-    /* Compute from the minimum latitude a point in the same meridian as p */
+    /* Create an edge in the same meridian as p */
     geographic_point_init(p->x, 89.999999, &(e1.start));
     geographic_point_init(p->x, -89.999999, &(e1.end));
     edge_intersection(&e, &e1, &inter);
-    /* Compute distance from beginning of the segment to projected point */
-    seglength = sphere_distance(&(e.start), &(e.end));
-    length = sphere_distance(&(e.start), &inter);
-    // TO REMOVE
-    // SPHEROID s;
-    // long double seglength1, length1, fraction1;
-    // spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
-    // TimestampTz t1;
-    // POINT2D u;
-    // u.x = rad2deg(inter.lon);
-    // u.y = rad2deg(inter.lat);
-    // Datum proj, proj1;
-    // fraction = length / seglength;
-    // seglength1 = spheroid_distance(&(e.start), &(e.end), &s);
-    // length1 = spheroid_distance(&(e.start), &inter, &s);
-    // fraction1 = length1 / seglength1;
-    // long double duration = (end->t - start->t);
-    // *t = start->t + (TimestampTz) (duration * fraction);
-    // t1 = start->t + (TimestampTz) (duration * fraction1);
-    // proj = tsequence_value_at_timestamp1(start, end,
-      // MOBDB_FLAGS_GET_LINEAR(start->flags), *t);
-    // proj1 = tsequence_value_at_timestamp1(start, end,
-      // MOBDB_FLAGS_GET_LINEAR(start->flags), t1);
-    // u.x = rad2deg(longitude_radians_normalize(inter.lon));
-    // u.y = rad2deg(latitude_radians_normalize(inter.lat));
-
+    proj = point_make(rad2deg(inter.lon), rad2deg(inter.lat), 0, 
+      false, true, tpointinst_srid(start));
+    fraction = geoseg_locate_point(dstart, dend, proj, NULL);
   }
   else
   {
@@ -3501,13 +3483,16 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
       return false;
     length = (long double)(p->x - p1->x);
     seglength = (long double)(p2->x - p1->x);
+    fraction = length / seglength;
   }
-  fraction = length / seglength;
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   long double duration = (end->t - start->t);
   *t = start->t + (TimestampTz) (duration * fraction);
-  Datum proj = tsequence_value_at_timestamp1(start, end, LINEAR, *t);
+  *value = (Datum) 0;
+  /* Compute the projected value only for geometries */
+  if (! geodetic)
+    proj = tsequence_value_at_timestamp1(start, end, LINEAR, *t);
   q = datum_get_point2d_p(proj);
   /* We add a turning point only if p is to the North of q */
   return FP_GTEQ(p->y, q->y) ? true : false;
@@ -3526,7 +3511,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start,
 bool
 tpoint_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
-  const TInstant *end2, bool linear2, TimestampTz *t)
+  const TInstant *end2, bool linear2, Datum *value, TimestampTz *t)
 {
   const POINT2D *sp1 = datum_get_point2d_p(tinstant_value(start1));
   const POINT2D *ep1 = datum_get_point2d_p(tinstant_value(end1));
@@ -3538,7 +3523,7 @@ tpoint_min_bearing_at_timestamp(const TInstant *start1,
   bool de = (ep1->x - ep2->x) > 0;
   if (ds != de)
     return tpoint_min_dist_at_timestamp(start1, end1, linear1,
-      start2, end2, linear2, t);
+      start2, end2, linear2, value, t);
   else
     return false;
 }
@@ -5211,7 +5196,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
   }
   else
     result = temp1;
-  if (hast)
+  if (hasx && hast)
     pfree(temp1);
   return result;
 }

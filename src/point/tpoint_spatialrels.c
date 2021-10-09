@@ -205,23 +205,15 @@ dwithin_tpointseq_tpointseq1(const TInstant *start1, const TInstant *end1,
     return DatumGetBool(func(startvalue1, startvalue2, dist));
 
   /* Determine whether there is a local minimum between lower and upper */
-  TimestampTz crosstime;
+  Datum tpvalue;
+  TimestampTz tptime;
   bool cross = tpoint_min_dist_at_timestamp(start1, end1, linear1,
-    start2, end2, linear2, &crosstime);
-  /* If there is no local minimum compute the function at the start instant */
+    start2, end2, linear2, &tpvalue, &tptime);
   if (! cross)
+    /* If there is no local minimum compute the function at the start instant */
     return DatumGetBool(func(startvalue1, startvalue2, dist));
-
-  /* Find the values at the local minimum */
-  Datum crossvalue1 = tsequence_value_at_timestamp1(start1, end1, linear1, crosstime);
-  Datum crossvalue2 = tsequence_value_at_timestamp1(start2, end2, linear2, crosstime);
-  /* Compute the function at the local minimum */
-  bool result = DatumGetBool(func(crossvalue1, crossvalue2, dist));
-
-  pfree(DatumGetPointer(crossvalue1));
-  pfree(DatumGetPointer(crossvalue2));
-
-  return result;
+  else
+    return DatumGetFloat8(tpvalue) <= DatumGetFloat8(dist);
 }
 
 /**

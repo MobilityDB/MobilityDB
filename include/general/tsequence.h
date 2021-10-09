@@ -80,9 +80,9 @@ extern bool tlinearseq_intersection_value1(const TInstant *inst1, const TInstant
 extern bool tsequence_intersection(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   Datum *inter1, Datum *inter2, TimestampTz *t);
-extern bool tsequence_intersection1(const TInstant *start1, const TInstant *end1,
+extern bool tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  TimestampTz *t);
+  Datum *value, TimestampTz *t);
 
 /* Input/output functions */
 

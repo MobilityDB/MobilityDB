@@ -405,16 +405,14 @@ tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq,
     instants[k++] = tfunc_tinstant_base(inst1, value, lfinfo);
     /* If not constant segment and linear compute the function on the potential
        intermediate point before adding the new instant */
+    Datum intervalue;
     TimestampTz intertime;
     if (lfinfo->tpfunc_base != NULL && linear &&
       !datum_eq(value1, value2, seq->basetypid) &&
-      lfinfo->tpfunc_base(inst1, inst2, value, lfinfo->argtypid[1], &intertime))
+      lfinfo->tpfunc_base(inst1, inst2, value, lfinfo->argtypid[1],
+        &intervalue, &intertime))
     {
-      Datum inter = tsequence_value_at_timestamp1(inst1, inst2,
-        linear, intertime);
-      Datum intervalue = tfunc_base_base(inter, value, lfinfo);
       instants[k++] = tinstant_make(intervalue, intertime, lfinfo->restypid);
-      DATUM_FREE(inter, seq->basetypid);
       DATUM_FREE(intervalue, lfinfo->restypid);
     }
     inst1 = inst2; value1 = value2;
@@ -1032,18 +1030,12 @@ sync_tfunc_tsequence_tsequence_lineareq(TSequence **result, const TSequence *seq
     /* If not the first instant compute the function on the potential
        turning point before adding the new instants */
     TInstant *prev1, *prev2;
-    Datum value1, value2;
+    Datum value1, value2, value;
     TimestampTz tptime;
     if (lfinfo->tpfunc != NULL && k > 0 &&
-      lfinfo->tpfunc(prev1, inst1, linear1, prev2, inst2, linear1, &tptime))
+      lfinfo->tpfunc(prev1, inst1, linear1, prev2, inst2, linear2, &value, &tptime))
     {
-      value1 = tsequence_value_at_timestamp1(prev1, inst1, linear1, tptime);
-      value2 = tsequence_value_at_timestamp1(prev2, inst2, linear2, tptime);
-      value = tfunc_base_base(value1, value2, lfinfo);
       instants[k++] = tinstant_make(value, tptime, lfinfo->restypid);
-      DATUM_FREE(value1, seq1->basetypid);
-      DATUM_FREE(value2, seq2->basetypid);
-      DATUM_FREE(value, lfinfo->restypid);
     }
     /* Compute the function on the synchronized instants */
     value1 = tinstant_value(inst1);

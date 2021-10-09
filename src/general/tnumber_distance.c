@@ -100,7 +100,7 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = &tlinearseq_intersection_value1;
+  lfinfo.tpfunc_base = &tlinearseq_intersection_value;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_base(temp, value, &lfinfo);
   return result;
@@ -166,7 +166,7 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tsequence_intersection1 : NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tnumber_min_dist_at_timestamp : NULL;
   Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }

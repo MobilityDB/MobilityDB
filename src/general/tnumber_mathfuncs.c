@@ -79,7 +79,7 @@ datum_degrees(Datum value)
  @note This function is called only when both sequences are linear.
  */
 static bool
-tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1,
+tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   TimestampTz *t)
 {
@@ -108,6 +108,41 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
 
   *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
+}
+
+static bool
+tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  char op, Datum *value, TimestampTz *t)
+{
+  if (! tnumber_arithop_tp_at_timestamp1(start1, end1, linear1,
+    start2, end2, linear2, t))
+    return false;
+  Datum value1 = tsequence_value_at_timestamp1(start1, end1, linear1, *t);
+  Datum value2 = tsequence_value_at_timestamp1(start2, end2, linear2, *t);
+  assert (op == '*' || op == '/');
+  *value = (op == '*') ?
+    datum_mult(value1, value2, start1->basetypid, start2->basetypid) :
+    datum_mult(value1, value2, start1->basetypid, start2->basetypid);
+  return true;
+}
+
+static bool
+tnumber_mult_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  Datum *value, TimestampTz *t)
+{
+  return tnumber_arithop_tp_at_timestamp(start1, end1, linear1, start2, end2,
+    linear2, '*', value, t);
+}
+
+static bool
+tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  Datum *value, TimestampTz *t)
+{
+  return tnumber_arithop_tp_at_timestamp(start1, end1, linear1, start2, end2,
+    linear2, '/', value, t);
 }
 
 /*****************************************************************************
@@ -220,7 +255,7 @@ static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
   bool (*tpfunc)(const TInstant *, const TInstant *, bool,
-    const TInstant *, const TInstant *, bool, TimestampTz *))
+    const TInstant *, const TInstant *, bool, Datum *, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -363,7 +398,7 @@ PGDLLEXPORT Datum
 mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT,
-    &tnumberseq_mult_maxmin_at_timestamp);
+    &tnumber_mult_tp_at_timestamp);
 }
 
 /*****************************************************************************
@@ -398,7 +433,7 @@ PGDLLEXPORT Datum
 div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_div, DIV,
-    &tnumberseq_mult_maxmin_at_timestamp);
+    &tnumber_div_tp_at_timestamp);
 }
 
 /*****************************************************************************

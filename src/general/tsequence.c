@@ -151,21 +151,6 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   return result;
 }
 
-/**
- * Returns true if the segment of the temporal value intersects
- * the base value at the timestamp
- *
- * @note This function is just a wrapper of the previous one used for
- * computing the turning points in the lifting infrastructure
- */
-
-bool
-tlinearseq_intersection_value1(const TInstant *inst1, const TInstant *inst2,
-  Datum value, Oid basetypid, TimestampTz *t)
-{
-  return tlinearseq_intersection_value(inst1, inst2, value, basetypid, NULL, t);
-}
-
 /*****************************************************************************
  * Compute the intersection, if any, of two segments of temporal sequences.
  * These functions suppose that the instants are synchronized, i.e.,
@@ -296,12 +281,15 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
  * @param[out] t Timestamp
  */
 bool
-tsequence_intersection1(const TInstant *start1, const TInstant *end1,
+tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  TimestampTz *t)
+  Datum *value, TimestampTz *t)
 {
-  return tsequence_intersection(start1, end1, linear1, start2, end2,
-    linear2, NULL, NULL, t);
+  if (! tsequence_intersection(start1, end1, linear1, start2, end2,
+    linear2, NULL, NULL, t))
+    return false;
+  *value = (Datum) 0;
+  return true;
 }
 
 /*****************************************************************************

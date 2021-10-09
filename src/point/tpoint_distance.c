@@ -162,20 +162,23 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * @param[in] linear States whether the interpolation is linear
  * @param[in] point Base point
  * @param[in] basetypid Oid of the base point
- * @param[out] t Timestamp
+ * @param[out] projvalue Projected value at turning point
+ * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
  * @note The parameter basetypid is not needed for temporal points
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid, TimestampTz *t)
+  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
   Datum value1 = tinstant_value(start);
   Datum value2 = tinstant_value(end);
-  long double fraction = geoseg_locate_point(value1, value2, point, NULL);
+  double dist;
+  long double fraction = geoseg_locate_point(value1, value2, point, &dist);
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
+  *value = Float8GetDatum(dist);
   *t = start->t + (TimestampTz) (duration * fraction);
   return true;
 }
@@ -198,13 +201,14 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
  */
 static bool
 tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   long double denum, fraction;
   long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
   long double duration = (long double) (end1->t - start1->t);
 
-  if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+  bool hasz = MOBDB_FLAGS_GET_Z(start1->flags);
+  if (hasz) /* 3D */
   {
     long double dz1, dz2, f5, f6;
     const POINT3DZ *p1 = datum_get_point3dz_p(tinstant_value(start1));
@@ -264,6 +268,11 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
+  /* We know that this function is called only for linear segments */
+  Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
+  Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
+  *value = hasz ? 
+    geom_distance3d(value1, value2) : geom_distance2d(value1, value2);
   return true;
 }
 
@@ -280,7 +289,7 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 static bool
 tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, double *mindist, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
   const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
@@ -362,13 +371,13 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  TimestampTz *t)
+  Datum *value, TimestampTz *t)
 {
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
     /* The distance output parameter is not used here */
-    return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, NULL, t);
+    return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
   else
-    return tgeompoint_min_dist_at_timestamp(start1, end1, start2, end2, t);
+    return tgeompoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
 }
 
 /*****************************************************************************/

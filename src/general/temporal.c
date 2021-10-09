@@ -3870,7 +3870,9 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 
   /* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
   Temporal *temp1;
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  if (hast)
   {
     Period p;
     period_set(&p, box->tmin, box->tmax, true, true);
@@ -3881,10 +3883,10 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
       return NULL;
   }
   else
-    temp1 = temporal_copy(temp);
+    temp1 = (Temporal *) temp;
 
   Temporal *result;
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (hasx)
   {
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_base_type(temp->basetypid);
@@ -3898,11 +3900,12 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
       range = range_make(Float8GetDatum(box->xmin),
         Float8GetDatum(box->xmax), true, true, FLOAT8OID);
     result = tnumber_restrict_range_internal(temp1, range, true);
-    pfree(DatumGetPointer(range));
-    pfree(temp1);
+    pfree(range);
   }
   else
     result = temp1;
+  if (hasx && hast)
+    pfree(temp1);
   return result;
 }
 
