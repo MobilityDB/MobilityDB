@@ -5060,8 +5060,8 @@ tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
   lfinfo.func = (varfunc) &point2D_assemble;
   lfinfo.numparam = 2;
   lfinfo.param[0] = Int32GetDatum(srid);
-  lfinfo.param[1] = Int32GetDatum(geodetic);
-  lfinfo.restypid = type_oid(T_GEOMETRY);
+  lfinfo.param[1] = BoolGetDatum(geodetic);
+  lfinfo.restypid = type_oid(T_GEOMETRY); // TODO Geography ???
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp_x->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp_y->flags);
   lfinfo.invert = INVERT_NO;
@@ -5104,7 +5104,7 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
   lfinfo.func = (varfunc) &point2D_add_z;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(srid);
-  lfinfo.restypid = type_oid(T_GEOMETRY);
+  lfinfo.restypid = type_oid(T_GEOMETRY); // TODO Geography ???
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp_z->flags);
   lfinfo.invert = INVERT_NO;
@@ -5164,7 +5164,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
       Float8GetDatum(box->xmax), true, upper_inc, FLOAT8OID);
     RangeType *range_y = range_make(Float8GetDatum(box->ymin),
       Float8GetDatum(box->ymax), true, upper_inc, FLOAT8OID);
-    RangeType *range_z;
+    RangeType *range_z = NULL;
     if (hasz)
       range_z = range_make(Float8GetDatum(box->zmin),
         Float8GetDatum(box->zmax), true, upper_inc, FLOAT8OID);

@@ -80,11 +80,7 @@ CREATE AGGREGATE tcentroid(tnpoint) (
 
 /*****************************************************************************/
 
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, tnpoint)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
+CREATE FUNCTION temporal_merge_transfn(internal, tnpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

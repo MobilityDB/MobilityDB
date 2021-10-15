@@ -87,12 +87,12 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE OR REPLACE FUNCTION simplify(tfloat, float8)
+CREATE FUNCTION simplify(tfloat, float8)
 RETURNS tfloat
 AS 'MODULE_PATHNAME', 'tfloat_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION simplify(tgeompoint, float8, float8 DEFAULT -1.0)
+CREATE FUNCTION simplify(tgeompoint, float8, float8 DEFAULT -1.0)
 RETURNS tgeompoint
 AS 'MODULE_PATHNAME', 'tpoint_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -102,7 +102,7 @@ CREATE TYPE geom_times AS (
   times integer[]
 );
 
-CREATE OR REPLACE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
+CREATE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
   extent int4 DEFAULT 4096, buffer int4 DEFAULT 256, clip bool DEFAULT TRUE)
 -- RETURNS tgeompoint
 RETURNS geom_times

@@ -33,15 +33,15 @@
  * Temporal aggregate functions
  */
 
-CREATE OR REPLACE FUNCTION temporal_extent_transfn(period, tbool)
+CREATE FUNCTION temporal_extent_transfn(period, tbool)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_extent_transfn(period, ttext)
+CREATE FUNCTION temporal_extent_transfn(period, ttext)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_extent_combinefn(period, period)
+CREATE FUNCTION temporal_extent_combinefn(period, period)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -59,15 +59,15 @@ CREATE AGGREGATE extent(ttext) (
   PARALLEL = safe
 );
 
-CREATE OR REPLACE FUNCTION tnumber_extent_transfn(tbox, tint)
+CREATE FUNCTION tnumber_extent_transfn(tbox, tint)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tnumber_extent_transfn(tbox, tfloat)
+CREATE FUNCTION tnumber_extent_transfn(tbox, tfloat)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tnumber_extent_combinefn(tbox, tbox)
+CREATE FUNCTION tnumber_extent_combinefn(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -369,36 +369,24 @@ CREATE AGGREGATE tcount(ttext) (
 
 /*****************************************************************************/
 
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, tbool)
+CREATE FUNCTION temporal_merge_transfn(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, tint)
+CREATE FUNCTION temporal_merge_transfn(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, tfloat)
+CREATE FUNCTION temporal_merge_transfn(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, ttext)
+CREATE FUNCTION temporal_merge_transfn(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
+CREATE FUNCTION temporal_merge_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

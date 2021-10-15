@@ -48,8 +48,7 @@
 -- 825/2510
 -- STATISTICS COLLECTION FUNCTIONS
 --SELECT * FROM execution_stats WHERE PlanRows::text = '-nan'
-DROP FUNCTION IF EXISTS bbox_statistics_validate;
-CREATE OR REPLACE FUNCTION bbox_statistics_validate()
+CREATE FUNCTION bbox_statistics_validate()
 RETURNS XML AS $$
 DECLARE
   Query CHAR(5);

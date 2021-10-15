@@ -40,7 +40,7 @@
  * 1. The number of arguments of the function
  *  - unary functions, such as `degrees` for temporal floats or `setPrecision`
  *    for temporal points.
- *  - binary functions, such as arithmetic operators and comparisons (e.g., 
+ *  - binary functions and operators, such as arithmetic operators and comparisons (e.g., 
  *    `+` or `<`) or spatial relationships functions (e.g.,`tintersects`).
  * 2. The type of the arguments for binary functions
  *   - a temporal type and a base type. In this case the non-lifted function
@@ -49,7 +49,7 @@
  *     and the function is applied to each pair of synchronized instants.
  * 4. Whether the type of the arguments may vary. For example, temporal 
  *    numbers can be of different base type (that is, integer and float).
- *    Therefore, the Oids of arguments must be taken into account when
+ *    Therefore, the Oids of the arguments must be taken into account when
  *    computing binary operators (e.g., `+` or `<`) for temporal numbers.
  * 5. The number of optional parameters of the function
  *  - no arguments, such as most spatial relationships functions (e.g.,
@@ -57,7 +57,8 @@
  *  - one argument, such as spatial relationships functions that need
  *    an additional parameter (e.g., `tdwithin`).
  *  - two arguments, e.g., when assembling a temporal point from two temporal 
- *    floats, and the SRID and geodetic are needed when creating the point.
+ *    floats, the SRID and a boolean flag stating whether the resulting
+ *    temporal point is geometric or geographic are needed.
  * 6. Whether the function has instantaneous discontinuities at the crossings.
  *    Examples of such functions are temporal comparisons for temporal floats
  *    or temporal spatial relationships since the value of the result may

@@ -33,15 +33,15 @@
  * Aggregate functions for temporal points.
  */
 
-CREATE OR REPLACE FUNCTION tpoint_extent_transfn(stbox, tgeompoint)
+CREATE FUNCTION tpoint_extent_transfn(stbox, tgeompoint)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
+CREATE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tpoint_extent_combinefn(stbox, stbox)
+CREATE FUNCTION tpoint_extent_combinefn(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -142,20 +142,11 @@ CREATE AGGREGATE tcentroid(tgeompoint) (
 
 /*****************************************************************************/
 
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, tgeompoint)
+CREATE FUNCTION temporal_merge_transfn(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_transfn(internal, tgeogpoint)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION temporal_merge_combinefn(internal, internal)
+CREATE FUNCTION temporal_merge_transfn(internal, tgeogpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

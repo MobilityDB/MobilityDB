@@ -47,19 +47,19 @@ CREATE FUNCTION tagg_deserialize(bytea, internal)
 
 /*****************************************************************************/
 
-CREATE OR REPLACE FUNCTION timestampset_extent_transfn(period, timestampset)
+CREATE FUNCTION timestampset_extent_transfn(period, timestampset)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION period_extent_transfn(period, period)
+CREATE FUNCTION period_extent_transfn(period, period)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION periodset_extent_transfn(period, periodset)
+CREATE FUNCTION periodset_extent_transfn(period, periodset)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION time_extent_combinefn(period, period)
+CREATE FUNCTION time_extent_combinefn(period, period)
   RETURNS period
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

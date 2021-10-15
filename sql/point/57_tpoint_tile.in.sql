@@ -42,24 +42,24 @@ CREATE TYPE index_stbox AS (
   box stbox
 );
 
-CREATE OR REPLACE FUNCTION multidimGrid(bounds stbox, size float,
+CREATE FUNCTION multidimGrid(bounds stbox, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION multidimGrid(bounds stbox, size float, 
+CREATE FUNCTION multidimGrid(bounds stbox, size float, 
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTile(point geometry, size float, 
+CREATE FUNCTION multidimTile(point geometry, size float, 
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION multidimTile(point geometry, "time" timestamptz, 
+CREATE FUNCTION multidimTile(point geometry, "time" timestamptz, 
     size float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)', 
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
@@ -73,8 +73,8 @@ CREATE TYPE point_tpoint AS (
   tpoint tgeompoint
 );
 
-CREATE OR REPLACE FUNCTION spaceSplit(tgeompoint, float,
-    sorigin geometry DEFAULT 'Point(0 0 0)')
+CREATE FUNCTION spaceSplit(tgeompoint, float,
+    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT false)
   RETURNS SETOF point_tpoint
   AS 'MODULE_PATHNAME', 'tpoint_space_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
@@ -85,9 +85,9 @@ CREATE TYPE point_time_tpoint AS (
   tpoint tgeompoint
 );
 
-CREATE OR REPLACE FUNCTION spaceTimeSplit(tgeompoint, float, interval,
+CREATE FUNCTION spaceTimeSplit(tgeompoint, float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
-    torigin timestamptz DEFAULT '2000-01-03')
+    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT false)
   RETURNS SETOF point_time_tpoint
   AS 'MODULE_PATHNAME', 'tpoint_space_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;

@@ -66,7 +66,7 @@ set_aggregation_context(FunctionCallInfo fcinfo)
   MemoryContext ctx;
   if (!AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Operation not supported")));
+      errmsg("Operation not supported")));
   return  MemoryContextSwitchTo(ctx);
 }
 
@@ -84,22 +84,22 @@ unset_aggregation_context(MemoryContext ctx)
 static int
 ffsl(long int i)
 {
-    int result = 1;
-    while(! (i & 1))
-    {
-        result ++;
-        i >>= 1;
-    }
-    return result;
+  int result = 1;
+  while(! (i & 1))
+  {
+    result ++;
+    i >>= 1;
+  }
+  return result;
 }
 #endif
 
 static long int
 gsl_random48()
 {
-    if(! _aggregation_rng)
-      _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-    return gsl_rng_get(_aggregation_rng);
+  if(! _aggregation_rng)
+    _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
+  return gsl_rng_get(_aggregation_rng);
 }
 
 /**

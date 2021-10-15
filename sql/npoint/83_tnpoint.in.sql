@@ -516,7 +516,7 @@ CREATE TYPE time_tnpoint AS (
   temp tnpoint
 );
 
-CREATE OR REPLACE FUNCTION timeSplit(tnpoint, bucket_width interval,
+CREATE FUNCTION timeSplit(tnpoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tnpoint
   AS 'MODULE_PATHNAME', 'temporal_time_split'

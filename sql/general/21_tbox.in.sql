@@ -413,11 +413,11 @@ CREATE OPERATOR * (
  * Extent aggregation
  *****************************************************************************/
 
-CREATE OR REPLACE FUNCTION tbox_extent_transfn(tbox, tbox)
+CREATE FUNCTION tbox_extent_transfn(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tbox_extent_combinefn(tbox, tbox)
+CREATE FUNCTION tbox_extent_combinefn(tbox, tbox)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

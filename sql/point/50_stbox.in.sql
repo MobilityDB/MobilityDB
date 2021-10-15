@@ -538,11 +538,11 @@ CREATE OPERATOR * (
  * Extent aggreation
  *****************************************************************************/
 
-CREATE OR REPLACE FUNCTION stbox_extent_transfn(stbox, stbox)
+CREATE FUNCTION stbox_extent_transfn(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION stbox_extent_combinefn(stbox, stbox)
+CREATE FUNCTION stbox_extent_combinefn(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
