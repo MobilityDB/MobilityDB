@@ -1,4 +1,7 @@
-[![Build Status](https://travis-ci.com/MobilityDB/MobilityDB.svg)](https://travis-ci.com/MobilityDB/MobilityDB) [![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg?branch=develop)](https://coveralls.io/github/MobilityDB/MobilityDB?branch=develop) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)  [![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Build Status](https://github.com/MobilityDB/MobilityDB/actions/workflows/pgversion.yml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg?branch=develop)](https://coveralls.io/github/MobilityDB/MobilityDB?branch=develop)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)
+[![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 MobilityDB
 ==========
@@ -79,9 +82,9 @@ Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
-*   PostgreSQL > 10
-*   CMake >= 3.1
-*   PostGIS > 2.5
+*   PostgreSQL >= 10
+*   CMake >= 3.7
+*   PostGIS >= 2.5
 *   JSON-C
 *   GNU Scientific Library (GSL)
 *   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
@@ -103,6 +106,12 @@ cmake ..
 make
 sudo make install
 psql -c 'CREATE EXTENSION MobilityDB CASCADE'
+```
+
+You should also set the following in `postgresql.conf` depending on the version of PostGIS you have installed (below PostGIS 3):
+```bash
+shared_preload_libraries = 'postgis-3'
+max_locks_per_transaction = 128
 ```
 
 Docker Container

@@ -86,8 +86,8 @@
 #define ALWAYS          false
 
 /** Symbolic constants for the restriction and the aggregation functions */
-#define MIN             true
-#define MAX             false
+#define GET_MIN          true
+#define GET_MAX          false
 
 /** Symbolic constants for the synchronization and the aggregation functions */
 #define CROSSINGS       true

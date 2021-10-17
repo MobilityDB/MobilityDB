@@ -1,4 +1,4 @@
-name: Test PostgreSQL versions
+name: Main Build
 
 # 4 * 1 * 2 + 1 (coverage) = 9 jobs are triggered
 # Test for supported postgres version

@@ -1530,12 +1530,12 @@ SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-0
 				<para>Get the temporal bearing &Z_support; &geography_support;</para>
 				<para><varname>bearing({tpoint, point}, {tpoint, point}): tfloat</varname></para>
 				<programlisting xml:space="preserve">
-SELECT degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
-  geometry 'Point(1 1)'));
--- [45@2012-01-01 00:00:00+01, 0@2012-01-02 00:00:00+01, 315@2012-01-03 00:00:00+01]
-SELECT degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
-  tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]'));
--- [63.434948822922@2012-01-01, 0@2012-01-02, 116.56505117707799@2012-01-03]
+SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03]',
+  geometry 'Point(2 3)')), 3);
+-- [26.565@2012-01-01, 0@2012-01-02, 270@2012-01-03]
+SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
+  tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]')), 3);
+-- [63.435@2012-01-01, 57.296@2012-01-02, 296.565@2012-01-03]
 </programlisting>
 			</listitem>
 
@@ -2922,9 +2922,9 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2012-01-01, 10@2012-01-10)', 5.0, '5 days
 				<listitem id="spaceSplit">
 					<indexterm><primary><varname>spaceSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatial grid. &Z_support; &SRF;</para>
-					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)'):</varname></para>
-					<para><varname>  setof point_tpoint</varname></para>
-					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>.</para>
+					<para><varname>spaceSplit(value tgeompoint,size float,origin geometry='Point(0 0 0)',</varname></para>
+					<para><varname>  bitmatrix=TRUE): setof point_tpoint</varname></para>
+					<para>If the origin of the space dimension is not specified, it is set by default to <varname>'Point(0 0 0)'</varname>. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',
@@ -2946,8 +2946,9 @@ FROM (SELECT spaceSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 					<indexterm><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Fragment the temporal point with respect to the tiles in a spatiotemporal grid. &Z_support; &SRF;</para>
 					<para><varname>spaceTimeSplit(value tgeompoint,size float,duration interval,sorigin </varname></para>
-					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03'): setof point_time_tpoint</varname></para>
-					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively.</para>
+					<para><varname>  geometry='Point(0 0 0)',torigin timestamptz='2000-01-03', bitmatrix=TRUE):</varname></para>
+					<para><varname>  setof point_time_tpoint</varname></para>
+					<para>If the origin of the space and time dimensions are not specified, they are set by default to <varname>'Point(0 0 0)'</varname> and Monday, January 3, 2000, respectively. If the argument <varname>bitmatrix</varname> is not specified, then the computation will use a bit matrix to speed up the process.</para>
 					<programlisting xml:space="preserve">
 SELECT ST_AsText((sp).point) AS point, (sp).time, astext((sp).tpoint) AS tpoint
 FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1)@2020-03-01, Point(10 10)@2020-03-10]',

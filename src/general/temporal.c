@@ -3527,7 +3527,7 @@ PG_FUNCTION_INFO_V1(temporal_at_min);
 PGDLLEXPORT Datum
 temporal_at_min(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MIN, REST_AT);
+  return temporal_restrict_minmax(fcinfo, GET_MIN, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_min);
@@ -3537,7 +3537,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_min);
 PGDLLEXPORT Datum
 temporal_minus_min(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MIN, REST_MINUS);
+  return temporal_restrict_minmax(fcinfo, GET_MIN, REST_MINUS);
 }
 
 PG_FUNCTION_INFO_V1(temporal_at_max);
@@ -3547,7 +3547,7 @@ PG_FUNCTION_INFO_V1(temporal_at_max);
 PGDLLEXPORT Datum
 temporal_at_max(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MAX, REST_AT);
+  return temporal_restrict_minmax(fcinfo, GET_MAX, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_max);
@@ -3557,7 +3557,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_max);
 PGDLLEXPORT Datum
 temporal_minus_max(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MAX, REST_MINUS);
+  return temporal_restrict_minmax(fcinfo, GET_MAX, REST_MINUS);
 }
 
 /*****************************************************************************/

@@ -280,6 +280,7 @@ coord_print(int *coords, int numdims)
 /**
  * Set in the bit matrix the bits of the tiles connecting with a line the
  * two input tiles
+ *
  * @param[out] bm Bit matrix
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] numdims Number of dimensions of the grid
@@ -287,11 +288,14 @@ coord_print(int *coords, int numdims)
 void
 bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 {
-  // coord_print(coords1, numdims);
-  bitmatrix_set(bm, coords1, true);
-  int i, j, delta[MAXDIMS], next[MAXDIMS];
+  int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
+    neighbors[MAXDIMS];
   memset(delta, 0, sizeof(delta));
   memset(next, 0, sizeof(next));
+  memset(p, 0, sizeof(p));
+  memset(coords, 0, sizeof(coords));
+  memset(neighbors, 0, sizeof(neighbors));
+  /* Compute the delta and next values for every dimension */
   for (i = 0; i < numdims; i++)
   {
     delta[i] = abs(coords2[i] - coords1[i]);
@@ -300,41 +304,75 @@ bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
     else
       next[i] = -1;
   }
+  /* Compute the driving axis
+   * At the end, the driving axis is the one in variable axis */
   int axis;
   for (i = 0; i < numdims; i++)
   {
     /* We bet on the current i axis */
-    bool max = true;
+    bool found = true;
     axis = i;
     for (j = 0; j < numdims; j++)
     {
       if (i == j) continue;
       if (delta[i] < delta[j])
       {
-        max = false;
+        found = false;
         break;
       }
     }
-    if (max)
+    if (found)
       break;
   }
-  /* Driving axis is the one in variable axis */
-  int p[MAXDIMS];
-  memset(p, 0, sizeof(p));
   for (i = 0; i < numdims; i++)
   {
     if (i == axis) continue;
     p[i] = 2 * delta[i] - delta[axis];
   }
-  while (coords1[axis] != coords2[axis])
+  /* Make a copy of the start coordinates */
+  memcpy(coords, coords1, sizeof(neighbors));  
+  /* Loop from start to end tile
+   * The end of the loop is after printing the last element */
+  while (true)
   {
-    coords1[axis] += next[axis];
+    /* Set the current Bresenham diagonal tile */
+    // coord_print(coords, numdims);
+    bitmatrix_set(bm, coords, true);
+    /* Exit the loop when finished */
+    if (coords[axis] == coords2[axis])
+      break;
+    /* Find neighbors of the Bresenham diagonal tile */
+    memcpy(neighbors, coords, sizeof(neighbors));
+    // printf("Neighbors\n");
+    for (i = 1; i < numdims; i++)
+    {
+      if (next[i] == 0) continue;
+      /* Bottom of the Bresenham diagonal cell for 2D */
+      neighbors[i] -= 1;
+      int min = Min(coords1[i], coords2[i]);
+      int max = Max(coords1[i], coords2[i]);
+      if (neighbors[i] >= min)
+      {
+        // coord_print(neighbors, numdims);
+        bitmatrix_set(bm, coords, true);
+      }
+      /* Top of the Bresenham diagonal cell for 2D */
+      neighbors[i] += 2;
+      if (neighbors[i] <= max)
+      {
+        // coord_print(neighbors, numdims);
+        bitmatrix_set(bm, coords, true);
+      }
+    }
+    // printf("-------\n");
+    /* Advance state */
+    coords[axis] += next[axis];
     for (i = 0; i < numdims; i++)
     {
       if (i == axis) continue;
       if (p[i] >= 0)
       {
-        coords1[i] += next[i];
+        coords[i] += next[i];
         p[i] -= 2 * delta[axis];
       }
     }
@@ -343,8 +381,6 @@ bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
       if (i == axis) continue;
       p[i] += 2 * delta[i];
     }
-    // coord_print(coords1, numdims);
-    bitmatrix_set(bm, coords1, true);
   }
   return;
 }
@@ -615,7 +651,8 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext = 
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
       torigin);
@@ -755,35 +792,28 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
  * Get the coordinates of the tile corresponding the temporal instant point
  *
  * @param[out] coords Tile coordinates
+ * @param[out] lower Minimum values  of the tile (optional parameter)
  * @param[in] inst Temporal point
  * @param[in] state Grid definition
  */
-int
-tpointinst_get_coords(int *coords, const TInstant *inst,
+void
+tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   const STboxGridState *state)
 {
-  bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
   datum_get_point4d(&p, tinstant_value(inst));
   double x = float_bucket_internal(p.x, state->size, state->box.xmin);
   double y = float_bucket_internal(p.y, state->size, state->box.ymin);
-  double z;
+  double z = 0;
   TimestampTz t;
-  int numdims = 2;
   if (hasz)
-  {
     z = float_bucket_internal(p.z, state->size, state->box.zmin);
-    numdims++;
-  }
-  if (state->tunits)
-  {
+  if (hast)
     t = timestamptz_bucket_internal(inst->t, state->tunits, state->box.ymin);
-    numdims++;
-  }
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(coords, x, y, z, t, state);
-  return numdims;
+  return;
 }
 
 /**
@@ -794,13 +824,13 @@ tpointinst_get_coords(int *coords, const TInstant *inst,
  * @param[in] state Grid definition
  */
 void
-tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst,
-  const STboxGridState *state)
+tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
+  bool hast, const STboxGridState *state)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
   memset(coords, 0, sizeof(coords));
-  tpointinst_get_coords(coords, inst, state);
+  tpointinst_get_coords(coords, inst, hasz, hast, state);
   /* Set the corresponding bit in the matix */
   bitmatrix_set(bm, coords, true);
   return;
@@ -814,8 +844,8 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst,
  * @param[in] state Grid definition
  */
 void
-tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti,
-  const STboxGridState *state)
+tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
+  bool hast, const STboxGridState *state)
 {
   /* Transform the point into tile coordinates */
   int coords[MAXDIMS];
@@ -823,7 +853,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti,
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    tpointinst_get_coords(coords, inst, state);
+    tpointinst_get_coords(coords, inst, hasz, hast, state);
     bitmatrix_set(bm, coords, true);
   }
   return;
@@ -837,18 +867,19 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti,
  * @param[in] state Grid definition
  */
 void
-tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq,
-  const STboxGridState *state)
+tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
+  bool hast, const STboxGridState *state)
 {
+  int numdims = 2 + (hasz ? 1 : 0) + (hast ? 1 : 0);
   int coords1[MAXDIMS], coords2[MAXDIMS];
   memset(coords1, 0, sizeof(coords1));
   memset(coords2, 0, sizeof(coords2));
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  tpointinst_get_coords(coords1, inst1, state);
+  tpointinst_get_coords(coords1, inst1, hasz, hast, state);
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
-    int numdims = tpointinst_get_coords(coords2, inst2, state);
+    tpointinst_get_coords(coords2, inst2, hasz, hast, state);
     bresenham(bm, coords1, coords2, numdims);
   }
   return;
@@ -862,13 +893,13 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq,
  * @param[in] state Grid definition
  */
 void
-tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts,
-  const STboxGridState *state)
+tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
+  bool hast, const STboxGridState *state)
 {
-  for (int i = 1; i < ts->count; i++)
+  for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    tpointseq_set_tiles(bm, seq, state);
+    tpointseq_set_tiles(bm, seq, hasz, hast, state);
   }
   return;
 }
@@ -885,15 +916,17 @@ void
 tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
   const STboxGridState *state)
 {
+  bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
+  bool hast = (state->tunits > 0);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    tpointinst_set_tiles(bm, (TInstant *) temp, state);
+    tpointinst_set_tiles(bm, (TInstant *) temp, hasz, hast, state);
   else if (temp->subtype == INSTANTSET)
-    tpointinstset_set_tiles(bm, (TInstantSet *) temp, state);
+    tpointinstset_set_tiles(bm, (TInstantSet *) temp, hasz, hast, state);
   else if (temp->subtype == SEQUENCE)
-    tpointseq_set_tiles(bm, (TSequence *) temp, state);
+    tpointseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
   else /* temp->subtype == SEQUENCESET */
-    tpointseqset_set_tiles(bm, (TSequenceSet *) temp, state);
+    tpointseqset_set_tiles(bm, (TSequenceSet *) temp, hasz, hast, state);
   return;
 }
 
@@ -920,7 +953,8 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext = 
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -1001,7 +1035,8 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     if (state->done)
     {
       /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+      MemoryContext oldcontext = 
+        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
       if (state->bm) pfree(state->bm);
       pfree(state);
       MemoryContextSwitchTo(oldcontext);
@@ -1054,7 +1089,8 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext = 
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL(0);
@@ -1137,7 +1173,8 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (state->done)
     {
       /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+      MemoryContext oldcontext = 
+        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
       if (state->bm) pfree(state->bm);
       pfree(state);
       MemoryContextSwitchTo(oldcontext);
