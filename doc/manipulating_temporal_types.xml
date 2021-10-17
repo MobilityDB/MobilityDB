@@ -1535,7 +1535,10 @@ SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012
 -- [26.565@2012-01-01, 0@2012-01-02, 270@2012-01-03]
 SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
   tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]')), 3);
--- [63.435@2012-01-01, 57.296@2012-01-02, 296.565@2012-01-03]
+--  [63.435@2012-01-01, 0@2012-01-02, 296.565@2012-01-03]
+SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]',
+  tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]')), 3);
+-- [243.435@2012-01-01, 116.565@2012-01-03]
 </programlisting>
 			</listitem>
 

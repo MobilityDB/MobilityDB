@@ -89,10 +89,10 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   double x3 = datum_double(tinstant_value(start2), start2->basetypid);
   double x4 = datum_double(tinstant_value(end2), start2->basetypid);
   /* Compute the instants t1 and t2 at which the linear functions of the two
-     segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-     minimum/maximum exactly at the middle between t1 and t2.
-     To reduce problems related to floating point arithmetic, t1 and t2
-     are shifted, respectively, to 0 and 1 before the computation */
+   * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
+   * minimum/maximum exactly at the middle between t1 and t2.
+   * To reduce problems related to floating point arithmetic, t1 and t2
+   * are shifted, respectively, to 0 and 1 before the computation */
   if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
     return false;
 
