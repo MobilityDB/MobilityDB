@@ -123,7 +123,7 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
     datum_mult(value1, value2, start1->basetypid, start2->basetypid) :
-    datum_mult(value1, value2, start1->basetypid, start2->basetypid);
+    datum_div(value1, value2, start1->basetypid, start2->basetypid);
   return true;
 }
 
