@@ -1,0 +1,47 @@
+name: Build for macOS
+
+# manually triggered workflow
+# - macOS test takes too much time
+
+on:
+  workflow_dispatch:
+  push:
+    branch_ignore: gh-pages
+  pull_request:
+    branch_ignore: gh-pages
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: install deps
+        run: |
+          brew install postgresql postgis proj gsl
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+
+      - name: Build
+        run: |
+          cd build
+          make -j
+          sudo make install
+
+      - name: test install
+        run: |
+          pg_ctl -D /usr/local/var/postgres start
+          createdb ___mobdb___test___
+          psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT mobilitydb_version()"
+
+      - name: Test
+        run: |
+          cd build
+          make test

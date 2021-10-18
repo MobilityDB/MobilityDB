@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 
@@ -9,30 +18,41 @@
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
 <!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
 <!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
+<!ENTITY spatial_functions SYSTEM "spatial_functions.xml">
+<!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
+<!ENTITY data_generator SYSTEM "data_generator.xml">
 
 <!ENTITY geography_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/world.pdf' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/world.svg' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/world.png' width='16pt' /></imageobject>
- </inlinemediaobject>
+	<imageobject><imagedata fileref='images/world.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/world.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/world.png' width='10pt'/></imageobject>
+</inlinemediaobject>
 ">
 
 <!ENTITY Z_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/cube.pdf' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/cube.svg' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/cube.png' width='16pt' /></imageobject>
- </inlinemediaobject>
+	<imageobject><imagedata fileref='images/cube.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/cube.png' width='10pt'/></imageobject>
+</inlinemediaobject>
+">
+
+<!ENTITY SRF
+"<inlinemediaobject>
+	<imageobject><imagedata fileref='images/srf.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/srf.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/srf.png' width='10pt'/></imageobject>
+</inlinemediaobject>
 ">
 
 <!ENTITY python_support
 "<inlinemediaobject>
-	<imageobject><imagedata fileref='images/python.pdf' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/python.svg' width='16pt' /></imageobject>
-	<imageobject><imagedata fileref='images/python.png' width='16pt' /></imageobject>
- </inlinemediaobject>
+	<imageobject><imagedata fileref='images/python.pdf' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/python.svg' width='10pt'/></imageobject>
+	<imageobject><imagedata fileref='images/python.png' width='10pt'/></imageobject>
+</inlinemediaobject>
 ">
 
 ]>
@@ -47,7 +67,7 @@
 			</affiliation>
 		</author>
 
-		<pubdate>07.01.2020</pubdate>
+		<pubdate><?dbtimestamp format="Y-m-d"?>.</pubdate>
 		<abstract>
 			<para>
 				MobilityDB is an extension to the <ulink url="https://www.postgresql.org/">PostgreSQL</ulink> database system and its spatial extension <ulink url="http://postgis.net/">PostGIS</ulink>. It allows temporal and spatio-temporal objects to be stored in the database, that is, objects whose attribute values and/or location evolves in time. MobilityDB includes functions for analysis and processing of temporal and spatio-temporal objects and provides support for GiST and SP-GiST indexes. MobilityDB is open source and its code is available on <ulink url="https://github.com/MobilityDB/MobilityDB">Github</ulink>. An adapter for the Python programming language is also available on <ulink url="https://github.com/MobilityDB/python-mobilityDB">Github</ulink>.
@@ -92,7 +112,9 @@
 	&temporal_types;
 	&manipulating_box_types;
 	&manipulating_temporal_types;
-	<index />
+	&temporal_network_points;
 	&reference;
+	&data_generator;
+	<index />
 
 </book>

@@ -1,0 +1,3035 @@
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.kde.org\n"
+"POT-Creation-Date: 2021-07-30 09:19+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <kde-i18n-doc@kde.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Tag: title
+#: temporal_network_points.xml:12 temporal_network_points.xml:223
+#, no-c-format
+msgid "Temporal Network Points"
+msgstr "Puntos de red temporales"
+
+#. Tag: para
+#: temporal_network_points.xml:14
+#, no-c-format
+msgid ""
+"The temporal points that we have considered so far represent the movement of "
+"objects that can move freely on space since it is assumed that they can "
+"change their position from one location to the next one without any motion "
+"restriction. This is the case for animals and for flying objects such as "
+"planes or drones. However, in many cases, objects do not move freely in "
+"space but rather within spatially embedded networks such as routes or "
+"railways. In this case, it is necessary to take the embedded networks into "
+"account while describing the movements of these moving objects. Temporal "
+"network points account for these requirements."
+msgstr ""
+"Los puntos temporales que hemos considerado hasta ahora representan el "
+"movimiento de objetos que pueden moverse libremente en el espacio ya que se "
+"supone que pueden cambiar su posición de un lugar a otro sin ninguna "
+"restricción de movimiento. Este es el caso de los animales y de los objetos "
+"voladores como aviones o drones. Sin embargo, en muchos casos, los objetos "
+"no se mueven libremente en el espacio sino dentro de redes integradas "
+"espacialmente, como rutas o ferrocarriles. En este caso, es necesario tener "
+"en cuenta de las redes integradas al describir los movimientos de estos "
+"objetos en movimiento. Los puntos de red temporales tienen en cuenta estos "
+"requisitos."
+
+#. Tag: para
+#: temporal_network_points.xml:16
+#, no-c-format
+msgid ""
+"Compared with the free-space temporal points, network-based points have the "
+"following advantages:"
+msgstr ""
+"En comparación con los puntos temporales de espacio libre, los puntos "
+"basados en red tienen las siguientes ventajas:"
+
+#. Tag: para
+#: temporal_network_points.xml:19
+#, no-c-format
+msgid ""
+"Network points provide road constraints that reflect the real movements of "
+"moving objects."
+msgstr ""
+"Los puntos de red temporales proporcionan restricciones que reflejan los "
+"movimientos reales de los objetos en movimiento."
+
+#. Tag: para
+#: temporal_network_points.xml:22
+#, no-c-format
+msgid ""
+"The geometric information is not stored with the moving point, but once and "
+"for all in the fixed networks. In this way, the location representations and "
+"interpolations are more precise."
+msgstr ""
+"La información geométrica no se almacena con el punto móvil, sino de una vez "
+"por todas en las redes fijas. De esta forma, las representaciones e "
+"interpolaciones de la ubicación son más precisas."
+
+#. Tag: para
+#: temporal_network_points.xml:25
+#, no-c-format
+msgid ""
+"Network points are more efficient in terms of data storage, location update, "
+"formulation of query, as well as indexing. These are discussed later in this "
+"document."
+msgstr ""
+"Los puntos de red temporales son más eficientes en términos de "
+"almacenamiento de datos, actualización de ubicación, formulación de "
+"consultas e indexación. Estos aspectos se tratan más adelante en este "
+"documento."
+
+#. Tag: para
+#: temporal_network_points.xml:29
+#, no-c-format
+msgid ""
+"Temporal network points are based on <ulink url=\"https://pgrouting.org/"
+"\">pgRouting</ulink>, a PostgreSQL extension for developing network routing "
+"applications and doing graph analysis. Therefore, temporal network points "
+"asume that the underlying network is defined in a table named <varname>ways</"
+"varname>, which has at least three columns: <varname>gid</varname> "
+"containing the unique route identifier, <varname>length</varname> containing "
+"the route length, and <varname>the_geom</varname> containing the route "
+"geometry."
+msgstr ""
+"Los puntos de red temporales se basan en <ulink url=\"https://pgrouting.org/"
+"\">pgRouting</ulink>, una extensión de PostgreSQL para desarrollar "
+"aplicaciones de enrutamiento de red y realizar análisis de gráficos. Por lo "
+"tanto, los puntos de red temporal asumen que la red subyacente está definida "
+"en una tabla llamada <varname>ways</varname>, que tiene al menos tres "
+"columnas: <varname>gid</varname> que contiene el identificador de ruta "
+"único, <varname>length</varname> que contiene la longitud de la ruta y "
+"<varname>the_geom</varname> que contiene la geometría de la ruta."
+
+#. Tag: para
+#: temporal_network_points.xml:31
+#, no-c-format
+msgid ""
+"There are two static network types, <varname>npoint</varname> (short for "
+"network point) and <varname>nsegment</varname> (short for network segment), "
+"which represent, respectively, a point and a segment of a route. An "
+"<varname>npoint</varname> value is composed of a route identifier and a "
+"float number in the range [0,1] determining a relative position of the "
+"route, where 0 corresponds to the begining of the route and 1 to the end of "
+"the route. An <varname>nsegment</varname> value is composed of a route "
+"identifier and two float numbers in the range [0,1] determining the start "
+"and end relative positions. A <varname>nsegment</varname> value whose start "
+"and end positions are equal corresponds to an <varname>npoint</varname> "
+"value."
+msgstr ""
+"Hay dos tipos de red estáticos, <varname>npoint</varname> (abreviatura de "
+"<emphasis>network point</emphasis>) y <varname>nsegment</varname> "
+"(abreviatura de <emphasis>network segment</emphasis>), que representan, "
+"respectivamente, un punto y un segmento de una ruta. Un valor "
+"<varname>npoint</varname> se compone de un identificador de ruta y un número "
+"flotante en el rango [0,1] que determina una posición relativa de la ruta, "
+"donde 0 corresponde al comienzo de la ruta y 1 al final de la ruta. Un valor "
+"de <varname>nsegment </varname> se compone de un identificador de ruta y dos "
+"números flotantes en el rango [0,1] que determinan las posiciones relativas "
+"de inicio y finalización. Un valor de <varname>nsegment</varname> cuyas "
+"posiciones inicial y final son iguales corresponde a un valor de "
+"<varname>npoint</varname>."
+
+#. Tag: para
+#: temporal_network_points.xml:33
+#, no-c-format
+msgid ""
+"The <varname>npoint</varname> type serves as base type for defining the "
+"temporal network point type <varname>tnpoint</varname>. The "
+"<varname>tnpoint</varname> type has similar functionality as the temporal "
+"point type <varname>tgeompoint</varname> with the exception that it only "
+"considers two dimensions. Thus, all functions and operators described before "
+"for the <varname>tgeompoint</varname> type are also applicable for the "
+"<varname>tnpoint</varname> type. In addition, there are specific functions "
+"defined for the <varname>tnpoint</varname> type."
+msgstr ""
+"El tipo <varname>npoint</varname> sirve como tipo base para definir el tipo "
+"punto de red temporal <varname>tnpoint</varname>. El tipo <varname>tnpoint</"
+"varname> tiene una funcionalidad similar al tipo de punto temporal "
+"<varname>tgeompoint</varname> con la excepción de que solo considera dos "
+"dimensiones. Por lo tanto, todas las funciones y operadores descritos "
+"anteriormente para el tipo <varname>tgeompoint</varname> también son "
+"aplicables para el tipo <varname>tnpoint</varname>. Además, hay funciones "
+"específicas definidas para el tipo <varname>tnpoint</varname>."
+
+#. Tag: title
+#: temporal_network_points.xml:36
+#, no-c-format
+msgid "Static Network Types"
+msgstr "Tipos de red estáticos"
+
+#. Tag: para
+#: temporal_network_points.xml:38
+#, no-c-format
+msgid ""
+"An <varname>npoint</varname> value is a couple of the form <varname>(rid,"
+"position)</varname> where <varname>rid</varname> is a <varname>bigint</"
+"varname> value representing a route identifier and <varname>position</"
+"varname> is a <varname>float</varname> value in the range [0,1] indicating "
+"its relative position. The values 0 and 1 of <varname>position</varname> "
+"denote, respectively, the starting and the ending position of the route. The "
+"road distance between an <varname>npoint</varname> value and the starting "
+"position of route with identifier <varname>rid</varname> is computed by "
+"multiplying <varname>position</varname> by length, where <varname>length</"
+"varname> is the route length. Examples of input of network point values are "
+"as follows:"
+msgstr ""
+"Un valor <varname>npoint</varname> es un par de la forma <varname>(rid, "
+"position)</varname> donde <varname>rid</varname> es un valor "
+"<varname>bigint</varname> que representa un identificador de ruta y "
+"<varname>position</varname> es un valor <varname>float</varname> en el rango "
+"[0,1] que indica su posición relativa. Los valores 0 y 1 de "
+"<varname>position</varname> denotan, respectivamente, la posición inicial y "
+"final de la ruta. La distancia de la ruta entre un valor de <varname>npoint</"
+"varname> y la posición inicial de la ruta con el identificador <varname>rid</"
+"varname> se calcula multiplicando <varname>position</varname> por "
+"<varname>length</varname>, donde este último es la longitud de la ruta. "
+"Ejemplos de entrada de valores de puntos de red son los siguientes:"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:39
+#, no-c-format
+msgid ""
+"SELECT npoint 'Npoint(76, 0.3)';\n"
+"SELECT npoint 'Npoint(64, 1.0)';"
+msgstr ""
+"SELECT npoint 'Npoint(76, 0.3)';\n"
+"SELECT npoint 'Npoint(64, 1.0)';"
+
+#. Tag: para
+#: temporal_network_points.xml:41
+#, no-c-format
+msgid ""
+"The constructor function for network points has one argument for the route "
+"identifier and one argument for the relative position. An example of a "
+"network point value defined with the constructor function is as follows:"
+msgstr ""
+"La función de constructor para puntos de red tiene un argumento para el "
+"identificador de ruta y un argumento para la posición relativa. Un ejemplo "
+"de un valor de punto de red definido con la función constructora es el "
+"siguiente:"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:42 temporal_network_points.xml:72
+#, no-c-format
+msgid "SELECT npoint(76, 0.3);"
+msgstr "SELECT npoint(76, 0.3);"
+
+#. Tag: para
+#: temporal_network_points.xml:44
+#, no-c-format
+msgid ""
+"An <varname>nsegment</varname> value is a triple of the form <varname>(rid,"
+"startPosition,endPosition)</varname> where <varname>rid</varname> is a "
+"<varname>bigint</varname> value representing a route identifier and "
+"<varname>startPosition</varname> and <varname>endPosition</varname> are "
+"<varname>float</varname> values in the range [0,1] such that "
+"<varname>startPosition &le; endPosition</varname>. Semantically, a network "
+"segment represents a set of network points <varname>(rid,position)</varname> "
+"with <varname>startPosition &le; position &le; endPosition</varname>. If "
+"<varname>startPosition=0</varname> and <varname>endPosition=1</varname>, the "
+"network segment is equivalent to the entire route. If "
+"<varname>startPosition=endPosition</varname>, the network segment represents "
+"into a single network point. Examples of input of network point values are "
+"as follows:"
+msgstr ""
+"Un valor <varname>nsegment</varname> es un triple de la forma <varname>(rid, "
+"startPosition, endPosition)</varname> donde <varname>rid</varname> es un "
+"valor <varname>bigint</varname> que representa un identificador de ruta y "
+"<varname>startPosition</varname> y <varname>endPosition</varname> son "
+"valores de <varname>float</varname> en el rango [0,1] tal que "
+"<varname>startPosition &le; endPosition</varname>. Semánticamente, un "
+"segmento de red representa un conjunto de puntos de red <varname>(rid, "
+"position)</varname> con <varname>startPosition &le; position &le; "
+"endPosition</varname>. Si <varname>startPosition = 0</varname> y "
+"<varname>endPosition = 1</varname>, el segmento de red es equivalente a la "
+"ruta completa. Si <varname>startPosition = endPosition</varname>, el "
+"segmento de red representa un único punto de red. Ejemplos de entrada de "
+"valores de puntos de red son los siguientes:"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:45
+#, no-c-format
+msgid ""
+"SELECT nsegment 'Nsegment(76, 0.3, 0.5)';\n"
+"SELECT nsegment 'Nsegment(64, 0.5, 0.5)';\n"
+"SELECT nsegment 'Nsegment(64, 0.0, 1.0)';\n"
+"SELECT nsegment 'Nsegment(64, 1.0, 0.0)';\n"
+"-- converted to nsegment 'Nsegment(64, 0.0, 1.0)';"
+msgstr ""
+"SELECT nsegment 'Nsegment(76, 0.3, 0.5)';\n"
+"SELECT nsegment 'Nsegment(64, 0.5, 0.5)';\n"
+"SELECT nsegment 'Nsegment(64, 0.0, 1.0)';\n"
+"SELECT nsegment 'Nsegment(64, 1.0, 0.0)';\n"
+"-- convertido a nsegment 'Nsegment(64, 0.0, 1.0)';"
+
+#. Tag: para
+#: temporal_network_points.xml:46
+#, no-c-format
+msgid ""
+"As can be seen in the last example, the <varname>startPosition</varname> and "
+"<varname>endPosition</varname> values will be inverted to ensure that the "
+"condition <varname>startPosition &le; endPosition</varname> is always "
+"satisfied. The constructor function for network segments has one argument "
+"for the route identifier and two optional arguments for the start and end "
+"positions. Examples of network segment values defined with the constructor "
+"function are as follows:"
+msgstr ""
+"Como se puede ver en el último ejemplo, los valores <varname>startPosition</"
+"varname> y <varname>endPosition</varname> se invertirán para asegurar que la "
+"condición <varname>startPosition &le; endPosition</varname> siempre se "
+"satisface. La función de constructor para segmentos de red tiene un "
+"argumento para el identificador de ruta y dos argumentos opcionales para las "
+"posiciones inicial y final. Los ejemplos de valores de segmento de red "
+"definidos con la función constructora son los siguientes:"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:47
+#, no-c-format
+msgid ""
+"SELECT nsegment(76, 0.3, 0.3);\n"
+"SELECT nsegment(76); -- start and end position assumed to be 0 and 1 "
+"respectively\n"
+"SELECT nsegment(76, 0.5); -- end position assumed to be 1"
+msgstr ""
+"SELECT nsegment(76, 0.3, 0.3);\n"
+"SELECT nsegment(76); -- se asume que las posiciones inicial y final son 0 y 1 "
+"respectivamente\n"
+"SELECT nsegment(76, 0.5); -- se asume que la posición final es 1"
+
+#. Tag: para
+#: temporal_network_points.xml:48
+#, no-c-format
+msgid ""
+"Values of the <varname>npoint</varname> type can be converted to the "
+"<varname>nsegment</varname> type using an explicit <varname>CAST</varname> "
+"or using the <varname>::</varname> notation as shown next."
+msgstr ""
+"Los valores del tipo <varname>npoint</varname> se pueden convertir al tipo "
+"<varname>nsegment</varname> usando un <varname>CAST</varname> explícito o "
+"usando la notación <varname>::</varname> como se muestra a continuación."
+
+#. Tag: programlisting
+#: temporal_network_points.xml:49
+#, no-c-format
+msgid "SELECT npoint(76, 0.33)::nsegment;"
+msgstr "SELECT npoint(76, 0.33)::nsegment;"
+
+#. Tag: para
+#: temporal_network_points.xml:51
+#, no-c-format
+msgid ""
+"Values of static network types must satisfy several constraints so that they "
+"are well defined. These constraints are given next."
+msgstr ""
+"Los valores de los tipos de red estáticos deben satisfacer varias "
+"restricciones para que estén bien definidos. Estas restricciones se dan a "
+"continuación."
+
+#. Tag: para
+#: temporal_network_points.xml:54
+#, no-c-format
+msgid ""
+"The route identifier <varname>rid</varname> must be found in column "
+"<varname>gid</varname> of table <varname>ways</varname>."
+msgstr ""
+"El identificador de ruta <varname>rid</varname> debe encontrarse en la "
+"columna <varname>gid</varname> de la tabla <varname>ways</varname>."
+
+#. Tag: para
+#: temporal_network_points.xml:57
+#, no-c-format
+msgid ""
+"The <varname>position</varname>, <varname>startPosition</varname>, and "
+"<varname>endPosition</varname> values must be in the range [0,1]. An error "
+"is raised whenever one of these constraints are not satisfied."
+msgstr ""
+"Los valores de <varname>position</varname>, <varname>startPosition</varname> "
+"y <varname>endPosition</varname> deben estar en el rango [0,1]. Se genera un "
+"error cuando no se cumple una de estas restricciones."
+
+#. Tag: para
+#: temporal_network_points.xml:60
+#, no-c-format
+msgid "Examples of incorrect static network type values are as follows."
+msgstr ""
+"Ejemplos de valores de tipo de red estática incorrectos son los siguientes."
+
+#. Tag: programlisting
+#: temporal_network_points.xml:61
+#, no-c-format
+msgid ""
+"-- incorrect rid value\n"
+"SELECT npoint 'Npoint(87.5, 1.0)';\n"
+"-- incorrect position value\n"
+"SELECT npoint 'Npoint(87, 2.0)';\n"
+"-- rid value not found in the ways table\n"
+"SELECT npoint 'Npoint(99999999, 1.0)';"
+msgstr ""
+"-- incorrect rid value\n"
+"SELECT npoint 'Npoint(87.5, 1.0)';\n"
+"-- incorrect position value\n"
+"SELECT npoint 'Npoint(87, 2.0)';\n"
+"-- rid value not found in the ways table\n"
+"SELECT npoint 'Npoint(99999999, 1.0)';"
+
+#. Tag: para
+#: temporal_network_points.xml:62
+#, no-c-format
+msgid "We give next the functions and operators for the static network types."
+msgstr ""
+"Damos a continuación las funciones y operadores para los tipos de redes "
+"estáticas."
+
+#. Tag: title
+#: temporal_network_points.xml:65
+#, no-c-format
+msgid "Constructor Functions"
+msgstr "Funciones de constructor"
+
+#. Tag: varname
+#: temporal_network_points.xml:69
+#, no-c-format
+msgid "npoint"
+msgstr "npoint"
+
+#. Tag: para
+#: temporal_network_points.xml:70
+#, no-c-format
+msgid "Constructor for network points"
+msgstr "Constructor de puntos de red"
+
+#. Tag: varname
+#: temporal_network_points.xml:71
+#, no-c-format
+msgid "npoint(bigint,double precision): npoint"
+msgstr "npoint(bigint,double precision): npoint"
+
+#. Tag: varname
+#: temporal_network_points.xml:76
+#, no-c-format
+msgid "nsegment"
+msgstr "nsegment"
+
+#. Tag: para
+#: temporal_network_points.xml:77
+#, no-c-format
+msgid "Constructor for network segments"
+msgstr "Constructor de segmentos de red"
+
+#. Tag: varname
+#: temporal_network_points.xml:78
+#, no-c-format
+msgid "nsegment(bigint,double precision,double precision): nsegment"
+msgstr "nsegment(bigint,double precision,double precision): nsegment"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:79
+#, no-c-format
+msgid "SELECT nsegment(76, 0.3, 0.5);"
+msgstr "SELECT nsegment(76, 0.3, 0.5);"
+
+#. Tag: title
+#: temporal_network_points.xml:85
+#, no-c-format
+msgid "Modification Functions"
+msgstr "Funciones de transformación"
+
+#. Tag: varname
+#: temporal_network_points.xml:88
+#, no-c-format
+msgid "npoint_setPrecision"
+msgstr "npoint_setPrecision"
+
+#. Tag: para
+#: temporal_network_points.xml:89
+#, no-c-format
+msgid ""
+"Set the precision of the position(s) of the network point or the network "
+"segment to the number of decimal places"
+msgstr ""
+"Establecer la precisión de la(s) posición(es) del punto de red or el "
+"segmento de red en el número de posiciones decimales"
+
+#. Tag: varname
+#: temporal_network_points.xml:90
+#, no-c-format
+msgid "setPrecision({npoint,nsegment},integer): {npoint,nsegment}"
+msgstr "setPrecision({npoint,nsegment},int): {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:91
+#, no-c-format
+msgid ""
+"SELECT setPrecision(npoint(76, 0.123456789), 6);\n"
+"--  NPoint(76,0.123457)\n"
+"SELECT setPrecision(nsegment(76, 0.123456789, 0.223456789), 6);\n"
+"--  NSegment(76,0.123457,0.223457)"
+msgstr ""
+"SELECT setPrecision(npoint(76, 0.123456789), 6);\n"
+"--  NPoint(76,0.123457)\n"
+"SELECT setPrecision(nsegment(76, 0.123456789, 0.223456789), 6);\n"
+"--  NSegment(76,0.123457,0.223457)"
+
+#. Tag: title
+#: temporal_network_points.xml:97
+#, no-c-format
+msgid "Accessor Functions"
+msgstr "Funciones de accesor"
+
+#. Tag: varname
+#: temporal_network_points.xml:101
+#, no-c-format
+msgid "route"
+msgstr "route"
+
+#. Tag: para
+#: temporal_network_points.xml:102
+#, no-c-format
+msgid "Get the route identifier"
+msgstr "Obtener el identificador de ruta"
+
+#. Tag: varname
+#: temporal_network_points.xml:103
+#, no-c-format
+msgid "route({npoint,nsegment}): bigint"
+msgstr "route({npoint,nsegment}): bigint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:104
+#, no-c-format
+msgid ""
+"SELECT route(npoint 'Npoint(63, 0.3)');\n"
+"-- 63\n"
+"SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');\n"
+"-- 76"
+msgstr ""
+"SELECT route(npoint 'Npoint(63, 0.3)');\n"
+"-- 63\n"
+"SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');\n"
+"-- 76"
+
+#. Tag: varname
+#: temporal_network_points.xml:108
+#, no-c-format
+msgid "getPosition"
+msgstr "getPosition"
+
+#. Tag: para
+#: temporal_network_points.xml:109
+#, no-c-format
+msgid "Get the position"
+msgstr "Obtener la posición"
+
+#. Tag: varname
+#: temporal_network_points.xml:110
+#, no-c-format
+msgid "getPosition(npoint): float"
+msgstr "getPosition(npoint): float"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:111
+#, no-c-format
+msgid ""
+"SELECT getPosition(npoint 'Npoint(63, 0.3)');\n"
+"-- 0.3"
+msgstr ""
+"SELECT getPosition(npoint 'Npoint(63, 0.3)');\n"
+"-- 0.3"
+
+#. Tag: varname
+#: temporal_network_points.xml:115
+#, no-c-format
+msgid "startPosition"
+msgstr "startPosition"
+
+#. Tag: para
+#: temporal_network_points.xml:116
+#, no-c-format
+msgid "Get the start position"
+msgstr "Obtener la posición inicial"
+
+#. Tag: varname
+#: temporal_network_points.xml:117
+#, no-c-format
+msgid "startPosition(npoint): float"
+msgstr "startPosition(npoint): float"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:118
+#, no-c-format
+msgid ""
+"SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');\n"
+"-- 0.3"
+msgstr ""
+"SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');\n"
+"-- 0.3"
+
+#. Tag: varname
+#: temporal_network_points.xml:122
+#, no-c-format
+msgid "endPosition"
+msgstr "endPosition"
+
+#. Tag: para
+#: temporal_network_points.xml:123
+#, no-c-format
+msgid "Get the end position"
+msgstr "Obtener la posición final"
+
+#. Tag: varname
+#: temporal_network_points.xml:124
+#, no-c-format
+msgid "endPosition(npoint): float"
+msgstr "endPosition(npoint): float"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:125
+#, no-c-format
+msgid ""
+"SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');\n"
+"-- 0.5"
+msgstr ""
+"SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');\n"
+"-- 0.5"
+
+#. Tag: title
+#: temporal_network_points.xml:131
+#, no-c-format
+msgid "Spatial Functions"
+msgstr "Funciones espaciales"
+
+#. Tag: varname
+#: temporal_network_points.xml:135
+#, no-c-format
+msgid "SRID"
+msgstr "SRID"
+
+#. Tag: para
+#: temporal_network_points.xml:136
+#, no-c-format
+msgid "Get the spatial reference identifier"
+msgstr "Obtener el identificador de referencia espacial"
+
+#. Tag: varname
+#: temporal_network_points.xml:137
+#, no-c-format
+msgid "srid({npoint,nsegment}): int"
+msgstr "SRID({npoint,nsegment}): int"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:138
+#, no-c-format
+msgid ""
+"SELECT SRID(nspoint 'Npoint(76, 0.3)');\n"
+"-- 5676\n"
+"SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');\n"
+"-- 5676"
+msgstr ""
+"SELECT SRID(nspoint 'Npoint(76, 0.3)');\n"
+"-- 5676\n"
+"SELECT SRID(nsegment 'Nsegment(76, 0.3, 0.5)');\n"
+"-- 5676"
+
+#. Tag: para
+#: temporal_network_points.xml:142
+#, no-c-format
+msgid ""
+"Values of the <varname>npoint</varname> and <varname>nsegment</varname> "
+"types can be converted to the <varname>geometry</varname> type using an "
+"explicit <varname>CAST</varname> or using the <varname>::</varname> notation "
+"as shown next."
+msgstr ""
+"Los valores de los tipos <varname>npoint</varname> y <varname>nsegment</"
+"varname> se pueden convertir al tipo <varname>geometry</varname> usando un "
+"<varname>CAST</varname> explícito o usando la notación <varname>::</varname> "
+"como se muestra a continuación."
+
+#. Tag: varname
+#: temporal_network_points.xml:145 temporal_network_points.xml:155
+#: temporal_network_points.xml:165 temporal_network_points.xml:291
+#: temporal_network_points.xml:298 temporal_network_points.xml:443
+#: temporal_network_points.xml:455 temporal_network_points.xml:472
+#, no-c-format
+msgid "<varname>::</varname>"
+msgstr "<varname>::</varname>"
+
+#. Tag: para
+#: temporal_network_points.xml:146
+#, no-c-format
+msgid "Cast a network point to a geometry"
+msgstr "Convertir un punto de red en una geometría"
+
+#. Tag: varname
+#: temporal_network_points.xml:147
+#, no-c-format
+msgid "{npoint,nsegment}::geometry"
+msgstr "{npoint,nsegment}::geometry"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:148
+#, no-c-format
+msgid ""
+"SELECT ST_AsText(npoint(76, 0.33)::geometry);\n"
+"-- POINT(21.6338731332283 50.0545869554067)\n"
+"SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry);\n"
+"-- LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 "
+"53.9185062927473)\n"
+"SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);\n"
+"-- POINT(21.6338731332283 50.0545869554067)"
+msgstr ""
+"SELECT ST_AsText(npoint(76, 0.33)::geometry);\n"
+"-- POINT(21.6338731332283 50.0545869554067)\n"
+"SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry);\n"
+"-- LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 "
+"53.9185062927473)\n"
+"SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);\n"
+"-- POINT(21.6338731332283 50.0545869554067)"
+
+#. Tag: para
+#: temporal_network_points.xml:152
+#, no-c-format
+msgid ""
+"Similarly, <varname>geometry</varname> values of subtype <varname>point</"
+"varname> or <varname>linestring</varname> (restricted to two points) can be "
+"converted, respectively, to <varname>npoint</varname> and <varname>nsegment</"
+"varname> values using an explicit <varname>CAST</varname> or using the "
+"<varname>::</varname> notation. For this, the route that intersects the "
+"given points must be found, where a tolerance of 0.00001 units (depending on "
+"the coordinate system) is assumed so a point and a route that are close are "
+"considered to intersect. If no such route is found, a null value is returned."
+msgstr ""
+"De manera similar, los valores de tipo <varname>geometry</varname> de "
+"subtipo <varname>point</varname> o <varname>linestring</varname> "
+"(restringidos a dos puntos) se pueden convertir, respectivamente, en valores "
+"<varname>npoint</varname> y <varname>nsegment</varname> usando un "
+"<varname>CAST</varname> explícito o usando la notación <varname>::</"
+"varname>. Para ello se debe encontrar la ruta que interseca los puntos "
+"dados, donde se asume una tolerancia de 0.00001 unidades (dependiendo del "
+"sistema de coordenadas) por lo que se considera que un punto y una ruta que "
+"están cerca se cruzan. Si no se encuentra dicha ruta, se devuelve un valor "
+"nulo."
+
+#. Tag: para
+#: temporal_network_points.xml:156
+#, no-c-format
+msgid "Cast a geometry to a network point"
+msgstr "Convertir una geometría en un punto de red"
+
+#. Tag: varname
+#: temporal_network_points.xml:157
+#, no-c-format
+msgid "geometry::{npoint,nsegment}"
+msgstr "geometry::{npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:158
+#, no-c-format
+msgid ""
+"SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;\n"
+"-- NPoint(3,0.781413)\n"
+"SELECT geometry 'LINESTRING(406.729536784738 702.58583437902,\n"
+"  383.570801314823 845.137059419277)'::nsegment;\n"
+"-- NSegment(3,0.6,0.9)\n"
+"SELECT geometry 'Point(279.3 811.5)'::npoint;\n"
+"-- NULL\n"
+"SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;\n"
+"-- NULL"
+msgstr ""
+"SELECT geometry 'Point(279.269156511873 811.497076880187)'::npoint;\n"
+"-- NPoint(3,0.781413)\n"
+"SELECT geometry 'LINESTRING(406.729536784738 702.58583437902,\n"
+"  383.570801314823 845.137059419277)'::nsegment;\n"
+"-- NSegment(3,0.6,0.9)\n"
+"SELECT geometry 'Point(279.3 811.5)'::npoint;\n"
+"-- NULL\n"
+"SELECT geometry 'LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;\n"
+"-- NULL"
+
+#. Tag: para
+#: temporal_network_points.xml:162
+#, no-c-format
+msgid ""
+"Two <varname>npoint</varname> values may be have different route identifiers "
+"but may represent the same spatial point at the intersection of the two "
+"routes. Function <varname>equals</varname> is used for testing spatial "
+"equality of network points."
+msgstr ""
+"Dos valores <varname>npoint</varname> pueden tener diferentes "
+"identificadores de ruta pero pueden representar el mismo punto espacial en "
+"la intersección de las dos rutas. La función <varname>equals</varname> se "
+"utiliza para verificar la igualdad espacial de los puntos de la red."
+
+#. Tag: para
+#: temporal_network_points.xml:166
+#, no-c-format
+msgid "Spatial equality for network points"
+msgstr "Igualdad espacial para puntos de red"
+
+#. Tag: varname
+#: temporal_network_points.xml:167
+#, no-c-format
+msgid "equals(npoint, npoint)::Boolean"
+msgstr "equals(npoint, npoint)::Boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:168
+#, no-c-format
+msgid ""
+"WITH inter(geom) AS (\n"
+"  SELECT st_intersection(t1.the_geom, t2.the_geom)\n"
+"  FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2),\n"
+"fractions(f1, f2) AS (\n"
+"  SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2."
+"the_geom, i.geom)\n"
+"  FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)\n"
+"SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;\n"
+"-- true"
+msgstr ""
+"WITH inter(geom) AS (\n"
+"  SELECT st_intersection(t1.the_geom, t2.the_geom)\n"
+"  FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2),\n"
+"fractions(f1, f2) AS (\n"
+"  SELECT ST_LineLocatePoint(t1.the_geom, i.geom), ST_LineLocatePoint(t2."
+"the_geom, i.geom)\n"
+"  FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2)\n"
+"SELECT equals(npoint(1, f1), npoint(2, f2)) FROM fractions;\n"
+"-- true"
+
+#. Tag: title
+#: temporal_network_points.xml:174
+#, no-c-format
+msgid "Comparison Operators"
+msgstr "Operadores de comparación"
+
+#. Tag: para
+#: temporal_network_points.xml:176
+#, no-c-format
+msgid ""
+"The comparison operators (=, &lt;, and so on) for static network types "
+"require that the left and right arguments be of the same type. Excepted the "
+"equality and inequality, the other comparison operators are not useful in "
+"the real world but allow B-tree indexes to be constructed on static network "
+"types."
+msgstr ""
+"Los operadores de comparación (=, &lt; y así sucesivamente) para tipos de "
+"red estáticos requieren que los argumentos izquierdo y derecho sean del "
+"mismo tipo. Excepto la igualdad y la desigualdad, los otros operadores de "
+"comparación no son útiles en el mundo real pero permiten que los índices de "
+"árbol B se construyan en tipos de red estáticos."
+
+#. Tag: varname
+#: temporal_network_points.xml:180 temporal_network_points.xml:252
+#: temporal_network_points.xml:259 temporal_network_points.xml:267
+#: temporal_network_points.xml:276
+#, no-c-format
+msgid "<varname>=</varname>"
+msgstr "<varname>=</varname>"
+
+#. Tag: para
+#: temporal_network_points.xml:181
+#, no-c-format
+msgid "Are the values equal?"
+msgstr "¿Son iguales los valores?"
+
+#. Tag: varname
+#: temporal_network_points.xml:182
+#, no-c-format
+msgid "{npoint,nsegment} = {npoint,nsegment}"
+msgstr "{npoint,nsegment} = {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:183
+#, no-c-format
+msgid ""
+"SELECT npoint 'Npoint(3, 0.5)' = npoint 'Npoint(3, 0.5)';\n"
+"-- true\n"
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' = nsegment 'Nsegment(3, 0.5, 0.6)';\n"
+"-- false"
+msgstr ""
+"SELECT npoint 'Npoint(3, 0.5)' = npoint 'Npoint(3, 0.5)';\n"
+"-- true\n"
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' = nsegment 'Nsegment(3, 0.5, 0.6)';\n"
+"-- false"
+
+#. Tag: varname
+#: temporal_network_points.xml:187
+#, no-c-format
+msgid "&lt;&gt;"
+msgstr "&lt;&gt;"
+
+#. Tag: para
+#: temporal_network_points.xml:188
+#, no-c-format
+msgid "Are the values different?"
+msgstr "¿Son diferentes los valores?"
+
+#. Tag: varname
+#: temporal_network_points.xml:189
+#, no-c-format
+msgid "{npoint,nsegment} &lt;&gt; {npoint,nsegment}"
+msgstr "{npoint,nsegment} &lt;&gt; {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:190
+#, no-c-format
+msgid ""
+"SELECT npoint 'Npoint(3, 0.5)' &lt;&gt; npoint 'Npoint(3, 0.6);\n"
+"-- true\n"
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt;&gt; nsegment 'Nsegment(3, 0.5, "
+"0.5)';\n"
+"-- false"
+msgstr ""
+"SELECT npoint 'Npoint(3, 0.5)' &lt;&gt; npoint 'Npoint(3, 0.6);\n"
+"-- true\n"
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt;&gt; nsegment 'Nsegment(3, 0.5, "
+"0.5)';\n"
+"-- false"
+
+#. Tag: varname
+#: temporal_network_points.xml:194
+#, no-c-format
+msgid "&lt;"
+msgstr "&lt;"
+
+#. Tag: para
+#: temporal_network_points.xml:195
+#, no-c-format
+msgid "Is the first value less than the second one?"
+msgstr "¿El primer valor es menor que el segundo?"
+
+#. Tag: varname
+#: temporal_network_points.xml:196
+#, no-c-format
+msgid "{npoint,nsegment} &lt; {npoint,nsegment}"
+msgstr "{npoint,nsegment} &lt; {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:197
+#, no-c-format
+msgid ""
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt; nsegment 'Nsegment(3, 0.5, "
+"0.6)';\n"
+"-- true"
+msgstr ""
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &lt; nsegment 'Nsegment(3, 0.5, "
+"0.6)';\n"
+"-- true"
+
+#. Tag: varname
+#: temporal_network_points.xml:201
+#, no-c-format
+msgid "&gt;"
+msgstr "&gt;"
+
+#. Tag: para
+#: temporal_network_points.xml:202
+#, no-c-format
+msgid "Is the first value greater than the second one?"
+msgstr "¿El primer valor es mayor que el segundo?"
+
+#. Tag: varname
+#: temporal_network_points.xml:203
+#, no-c-format
+msgid "{npoint,nsegment} &gt; {npoint,nsegment}"
+msgstr "{npoint,nsegment} &gt; {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:204
+#, no-c-format
+msgid ""
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &gt; nsegment 'Nsegment(2, 0.5, "
+"0.5)';\n"
+"-- true"
+msgstr ""
+"SELECT nsegment 'Nsegment(3, 0.5, 0.5)' &gt; nsegment 'Nsegment(2, 0.5, "
+"0.5)';\n"
+"-- true"
+
+#. Tag: varname
+#: temporal_network_points.xml:208
+#, no-c-format
+msgid "&lt;="
+msgstr "&lt;="
+
+#. Tag: para
+#: temporal_network_points.xml:209
+#, no-c-format
+msgid "Is the first value less than or equal to the second one?"
+msgstr "¿El primer valor es menor o igual que el segundo?"
+
+#. Tag: varname
+#: temporal_network_points.xml:210
+#, no-c-format
+msgid "{npoint,nsegment} &lt;= {npoint,nsegment}"
+msgstr "{npoint,nsegment} &lt;= {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:211
+#, no-c-format
+msgid ""
+"SELECT npoint 'Npoint(1, 0.5)' &lt;= npoint 'Npoint(2, 0.5)';\n"
+"-- true"
+msgstr ""
+"SELECT npoint 'Npoint(1, 0.5)' &lt;= npoint 'Npoint(2, 0.5)';\n"
+"-- true"
+
+#. Tag: varname
+#: temporal_network_points.xml:215
+#, no-c-format
+msgid "&gt;="
+msgstr "&gt;="
+
+#. Tag: para
+#: temporal_network_points.xml:216
+#, no-c-format
+msgid "Is the first value greater than or equal to the second one?"
+msgstr "¿El primer valor es mayor o igual que el segundo?"
+
+#. Tag: varname
+#: temporal_network_points.xml:217
+#, no-c-format
+msgid "{npoint,nsegment} &gt;= {npoint,nsegment}"
+msgstr "{npoint,nsegment} &gt;= {npoint,nsegment}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:218
+#, no-c-format
+msgid ""
+"SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';\n"
+"-- true"
+msgstr ""
+"SELECT npoint 'Npoint(1, 0.6)' &gt;= npoint 'Npoint(1, 0.5)';\n"
+"-- true"
+
+#. Tag: para
+#: temporal_network_points.xml:227
+#, no-c-format
+msgid ""
+"The temporal network point type <varname>tnpoint</varname> allows to "
+"represent the movement of objects over a network. It corresponds to the "
+"temporal point type <varname>tgeompoint</varname> restricted to two-"
+"dimensional coordinates. As all the other temporal types it comes in four "
+"subtypes, namely, instant, instant set, sequence, and sequence set. Examples "
+"of <varname>tnpoint</varname> values in these subtypes are given next."
+msgstr ""
+"El tipo de punto de red temporal <varname>tnpoint</varname> permite "
+"representar el movimiento de objetos en una red. Corresponde al tipo de "
+"punto temporal <varname>tgeompoint</varname> restringido a coordenadas "
+"bidimensionales. Como todos los demás tipos temporales, se presenta en "
+"cuatro subtipos, a saber, instante, conjunto de instantes, secuencia y "
+"conjunto de secuencias. A continuación se dan ejemplos de valores de "
+"<varname>tnpoint</varname> en estos subtipos."
+
+#. Tag: programlisting
+#: temporal_network_points.xml:228
+#, no-c-format
+msgid ""
+"SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01';\n"
+"SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03}';\n"
+"SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03]';\n"
+"SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, "
+"0.6)@2000-01-05]}';"
+msgstr ""
+"SELECT tnpoint 'Npoint(1, 0.5)@2000-01-01';\n"
+"SELECT tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03}';\n"
+"SELECT tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03]';\n"
+"SELECT tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, "
+"0.6)@2000-01-05]}';"
+
+#. Tag: para
+#: temporal_network_points.xml:229
+#, no-c-format
+msgid ""
+"The temporal network point type accepts type modifiers (or <varname>typmod</"
+"varname> in PostgreSQL terminology). The possible values for the type "
+"modifier are <varname>Instant</varname>, <varname>InstantSet</varname>, "
+"<varname>Sequence</varname>, and <varname>SequenceSet</varname>. If no type "
+"modifier is specified for a column, values of any subtype are allowed."
+msgstr ""
+"El tipo de punto de red temporal acepta modificadores de tipo (o "
+"<varname>typmod</varname> en la terminología de PostgreSQL). Los valores "
+"posibles para el modificador de tipo son <varname>Instant</varname>, "
+"<varname>InstantSet</varname>, <varname>Sequence</varname> y "
+"<varname>SequenceSet</varname>. Si no se especifica ningún modificador de "
+"tipo para una columna, se permiten valores de cualquier subtipo."
+
+#. Tag: programlisting
+#: temporal_network_points.xml:230
+#, no-c-format
+msgid ""
+"SELECT tnpoint(Sequence) '[Npoint(1, 0.2)@2000-01-01, Npoint(1, "
+"0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03]';\n"
+"SELECT tnpoint(Sequence) 'Npoint(1, 0.2)@2000-01-01';\n"
+"-- ERROR: Temporal type (Instant) does not match column type (Sequence)"
+msgstr ""
+"SELECT tnpoint(Sequence) '[Npoint(1, 0.2)@2000-01-01, Npoint(1, "
+"0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03]';\n"
+"SELECT tnpoint(Sequence) 'Npoint(1, 0.2)@2000-01-01';\n"
+"-- ERROR: Temporal type (Instant) does not match column type (Sequence)"
+
+#. Tag: para
+#: temporal_network_points.xml:232
+#, no-c-format
+msgid ""
+"Temporal network point values of sequence subtype must be defined on a "
+"single route. Therefore, a value of sequence set subtype is needed for "
+"representing the movement of an object that traverses several routes, even "
+"if there is no temporal gap. For example, in the following value"
+msgstr ""
+"Los valores de puntos de red temporales del subtipo de secuencia deben "
+"definirse en una única ruta. Por lo tanto, se necesita un valor de subtipo "
+"de conjunto de secuencias para representar el movimiento de un objeto que "
+"atraviesa varias rutas, incluso si no hay un espacio temporal. Por ejemplo, "
+"en el siguiente valor"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:233
+#, no-c-format
+msgid ""
+"SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.5)@2001-01-03),\n"
+"  [NPoint(2, 0.4)@2001-01-03, NPoint(2, 0.6)@2001-01-04)}';"
+msgstr ""
+"SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.5)@2001-01-03),\n"
+"  [NPoint(2, 0.4)@2001-01-03, NPoint(2, 0.6)@2001-01-04)}';"
+
+#. Tag: para
+#: temporal_network_points.xml:234
+#, no-c-format
+msgid "the network point changes its route at 2001-01-03."
+msgstr "el punto de red cambia su ruta en 2001-01-03."
+
+#. Tag: para
+#: temporal_network_points.xml:236
+#, no-c-format
+msgid ""
+"Temporal network point values of sequence or sequence set subtype are "
+"converted into a normal form so that equivalent values have identical "
+"representations. For this, consecutive instant values are merged when "
+"possible. Three consecutive instant values can be merged into two if the "
+"linear functions defining the evolution of values are the same. Examples of "
+"transformation into a normal form are as follows."
+msgstr ""
+"Los valores de puntos de red temporal del subtipo de secuencia o conjunto de "
+"secuencias se convierten en una forma normal para que los valores "
+"equivalentes tengan representaciones idénticas. Para ello, los valores "
+"instantáneos consecutivos se fusionan cuando es posible. Tres valores "
+"instantáneos consecutivos se pueden fusionar en dos si las funciones "
+"lineales que definen la evolución de los valores son las mismas. Los "
+"ejemplos de transformación a una forma normal son los siguientes."
+
+#. Tag: programlisting
+#: temporal_network_points.xml:237
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-02,\n"
+"  NPoint(1, 0.6)@2001-01-03)';\n"
+"-- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.6)@2001-01-03)\n"
+"SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,\n"
+"  NPoint(1, 0.5)@2001-01-03), [NPoint(1, 0.5)@2001-01-03, NPoint(1, "
+"0.7)@2001-01-04)}';\n"
+"-- {[NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02, "
+"NPoint(1,0.7)@2001-01-04)}"
+msgstr ""
+"SELECT tnpoint '[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.4)@2001-01-02,\n"
+"  NPoint(1, 0.6)@2001-01-03)';\n"
+"-- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.6)@2001-01-03)\n"
+"SELECT tnpoint '{[NPoint(1, 0.2)@2001-01-01, NPoint(1, 0.3)@2001-01-02,\n"
+"  NPoint(1, 0.5)@2001-01-03), [NPoint(1, 0.5)@2001-01-03, NPoint(1, "
+"0.7)@2001-01-04)}';\n"
+"-- {[NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02, "
+"NPoint(1,0.7)@2001-01-04)}"
+
+#. Tag: title
+#: temporal_network_points.xml:241
+#, no-c-format
+msgid "Validity of Temporal Network Points"
+msgstr "Validez de los puntos de red temporal"
+
+#. Tag: para
+#: temporal_network_points.xml:243
+#, no-c-format
+msgid ""
+"Temporal network point values must satisfy the constraints specified in "
+"<xref linkend=\"validity_temporal_types\"/> so that they are well defined. "
+"An error is raised whenever one of these constraints are not satisfied. "
+"Examples of incorrect values are as follows."
+msgstr ""
+"Los valores de los puntos de red temporal deben satisfacer las "
+"restricciones especificadas en <xref linkend=\"validity_temporal_types\"/> "
+"para que estén bien definidos. Se genera un error cuando no se cumple una de "
+"estas restricciones. Ejemplos de valores incorrectos son los siguientes."
+
+#. Tag: programlisting
+#: temporal_network_points.xml:244
+#, no-c-format
+msgid ""
+"-- null values are not allowed\n"
+"SELECT tnpoint 'NULL@2001-01-01 08:05:00';\n"
+"SELECT tnpoint 'Point(0 0)@NULL';\n"
+"-- base type is not a network point\n"
+"SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';\n"
+"-- multiple routes in a sequence\n"
+"SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, "
+"0.2)@2001-01-01 09:05:00)';"
+msgstr ""
+"-- no se permiten valores nulos\n"
+"SELECT tnpoint 'NULL@2001-01-01 08:05:00';\n"
+"SELECT tnpoint 'Point(0 0)@NULL';\n"
+"-- el tipo base no es un punto de red\n"
+"SELECT tnpoint 'Point(0 0)@2001-01-01 08:05:00';\n"
+"-- múltiples rutas en una secuencia\n"
+"SELECT tnpoint '[Npoint(1, 0.2)@2001-01-01 09:00:00, Npoint(2, "
+"0.2)@2001-01-01 09:05:00)';"
+
+#. Tag: title
+#: temporal_network_points.xml:248
+#, no-c-format
+msgid "Constructors for Temporal Network Points"
+msgstr "Constructores para puntos de red temporales"
+
+#. Tag: para
+#: temporal_network_points.xml:253
+#, no-c-format
+msgid "Constructor for temporal network points of instant subtype"
+msgstr "Constructor para puntos de red temporal de subtipo instante"
+
+#. Tag: varname
+#: temporal_network_points.xml:254
+#, no-c-format
+msgid "tnpoint_inst(val npoint,t timestamptz):tnpoint_inst"
+msgstr "tnpoint_inst(val npoint,t timestamptz):tnpoint_inst"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:255
+#, no-c-format
+msgid ""
+"SELECT tnpoint_inst('Npoint(1, 0.5)', '2000-01-01');\n"
+"-- NPoint(1,0.5)@2000-01-01"
+msgstr ""
+"SELECT tnpoint_inst('Npoint(1, 0.5)', '2000-01-01');\n"
+"-- NPoint(1,0.5)@2000-01-01"
+
+#. Tag: para
+#: temporal_network_points.xml:260
+#, no-c-format
+msgid "Constructors for temporal network points of instant set subtype"
+msgstr ""
+"Constructor para puntos de red temporal de subtipo conjunto de instantes"
+
+#. Tag: varname
+#: temporal_network_points.xml:261
+#, no-c-format
+msgid "tnpoint_instset(tnpoint[]):tnpoint_instset"
+msgstr "tnpoint_instset(tnpoint[]):tnpoint_instset"
+
+#. Tag: varname
+#: temporal_network_points.xml:262
+#, no-c-format
+msgid "tnpoint_instset(npoint,timestampset):tnpoint_instset"
+msgstr "tnpoint_instset(npoint,timestampset):tnpoint_instset"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:263
+#, no-c-format
+msgid ""
+"SELECT tnpoint_instset(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',\n"
+"  'Npoint(1, 0.5)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);\n"
+"-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.5)@2000-01-02, "
+"NPoint(1,0.5)@2000-01-03}\n"
+"SELECT tnpoint_instset('Npoint(1, 0.3)', '{2000-01-01, 2000-01-03, "
+"2000-01-05}');\n"
+"-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, "
+"NPoint(1,0.3)@2000-01-05}"
+msgstr ""
+"SELECT tnpoint_instset(ARRAY[tnpoint 'Npoint(1, 0.3)@2000-01-01',\n"
+"  'Npoint(1, 0.5)@2000-01-02', 'Npoint(1, 0.5)@2000-01-03']);\n"
+"-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.5)@2000-01-02, "
+"NPoint(1,0.5)@2000-01-03}\n"
+"SELECT tnpoint_instset('Npoint(1, 0.3)', '{2000-01-01, 2000-01-03, "
+"2000-01-05}');\n"
+"-- {NPoint(1,0.3)@2000-01-01, NPoint(1,0.3)@2000-01-03, "
+"NPoint(1,0.3)@2000-01-05}"
+
+#. Tag: para
+#: temporal_network_points.xml:268
+#, no-c-format
+msgid "Constructor for temporal network points of sequence subtype"
+msgstr "Constructor para puntos de red temporal de subtipo secuencia"
+
+#. Tag: varname
+#: temporal_network_points.xml:269
+#, no-c-format
+msgid "tnpoint_seq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,"
+msgstr "tnpoint_seq(tnpoint[],lower_inc boolean=true,upper_inc boolean=true,"
+
+#. Tag: varname
+#: temporal_network_points.xml:270
+#, no-c-format
+msgid "linear boolean=true):tnpoint_seq"
+msgstr "linear boolean=true):tnpoint_seq"
+
+#. Tag: varname
+#: temporal_network_points.xml:271
+#, no-c-format
+msgid "tnpoint_seq(npoint,period,linear boolean=true):tnpoint_seq"
+msgstr "tnpoint_seq(npoint,period,linear boolean=true):tnpoint_seq"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:272
+#, no-c-format
+msgid ""
+"SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, "
+"0.4)@2000-01-02',\n"
+"  'Npoint(1, 0.5)@2000-01-03']);\n"
+"-- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, "
+"NPoint(1,0.5)@2000-01-03]\n"
+"SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', "
+"false);\n"
+"-- Interp=Stepwise;[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]"
+msgstr ""
+"SELECT tnpoint_seq(ARRAY[tnpoint 'Npoint(1, 0.2)@2000-01-01', 'Npoint(1, "
+"0.4)@2000-01-02',\n"
+"  'Npoint(1, 0.5)@2000-01-03']);\n"
+"-- [NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, "
+"NPoint(1,0.5)@2000-01-03]\n"
+"SELECT tnpoint_seq(npoint 'Npoint(1, 0.2)', '[2000-01-01, 2000-01-03]', "
+"false);\n"
+"-- Interp=Stepwise;[NPoint(1,0.2)@2000-01-01, NPoint(1,0.2)@2000-01-03]"
+
+#. Tag: para
+#: temporal_network_points.xml:277
+#, no-c-format
+msgid "Constructor for temporal network points of sequence set subtype"
+msgstr ""
+"Constructor para puntos de red temporal de subtipo conjunto de secuencias"
+
+#. Tag: varname
+#: temporal_network_points.xml:278
+#, no-c-format
+msgid "tnpoint_seqset(tnpoint[]):tnpoint_seqset"
+msgstr "tnpoint_seqset(tnpoint[]):tnpoint_seqset"
+
+#. Tag: varname
+#: temporal_network_points.xml:279
+#, no-c-format
+msgid "tnpoint_seqset(npoint,periodset,boolean=true):tnpoint_seqset"
+msgstr "tnpoint_seqset(npoint,periodset,boolean=true):tnpoint_seqset"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:280
+#, no-c-format
+msgid ""
+"SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, "
+"0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, "
+"0.6)@2000-01-05]']);\n"
+"-- {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, "
+"NPoint(1,0.5)@2000-01-03],\n"
+"  [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]}"
+msgstr ""
+"SELECT tnpoint_seqset(ARRAY[tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, "
+"0.4)@2000-01-02,\n"
+"  Npoint(1, 0.5)@2000-01-03]', '[Npoint(2, 0.6)@2000-01-04, Npoint(2, "
+"0.6)@2000-01-05]']);\n"
+"-- {[NPoint(1,0.2)@2000-01-01, NPoint(1,0.4)@2000-01-02, "
+"NPoint(1,0.5)@2000-01-03],\n"
+"  [NPoint(2,0.6)@2000-01-04, NPoint(2,0.6)@2000-01-05]}"
+
+#. Tag: title
+#: temporal_network_points.xml:286
+#, no-c-format
+msgid "Casting for Temporal Network Points"
+msgstr "Conversión de puntos de red temporales"
+
+#. Tag: para
+#: temporal_network_points.xml:288
+#, no-c-format
+msgid ""
+"A temporal network point value can be converted to and from a temporal "
+"geometry point. This can be done using an explicit <varname>CAST</varname> "
+"or using the <varname>::</varname> notation. A null value is returned if any "
+"of the composing geometry point values cannot be converted into a "
+"<varname>npoint</varname> value."
+msgstr ""
+"Un valor de punto de red temporal se puede convertir en y desde un punto de "
+"geometría temporal. Esto se puede hacer usando un <varname>CAST</varname> "
+"explícito o usando la notación <varname>::</varname>. Se devuelve un valor "
+"nulo si alguno de los valores de puntos de geometría que componen no se "
+"puede convertir en un valor <varname>npoint</varname>."
+
+#. Tag: para
+#: temporal_network_points.xml:292
+#, no-c-format
+msgid "Cast a temporal network point to a temporal geometry point"
+msgstr "Convertir un punto de red temporal en un punto de geometría temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:293
+#, no-c-format
+msgid "tnpoint::tgeompoint"
+msgstr "tnpoint::tgeompoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:294
+#, no-c-format
+msgid ""
+"SELECT astext((tnpoint '[NPoint(1, 0.2)@2001-01-01,\n"
+"  NPoint(1, 0.3)@2001-01-02)')::tgeompoint);\n"
+"-- [POINT(23.057077727326 28.7666335767956)@2001-01-01,\n"
+"  POINT(48.7117553116406 20.9256801894708)@2001-01-02)"
+msgstr ""
+"SELECT astext((tnpoint '[NPoint(1, 0.2)@2001-01-01,\n"
+"  NPoint(1, 0.3)@2001-01-02)')::tgeompoint);\n"
+"-- [POINT(23.057077727326 28.7666335767956)@2001-01-01,\n"
+"  POINT(48.7117553116406 20.9256801894708)@2001-01-02)"
+
+#. Tag: para
+#: temporal_network_points.xml:299
+#, no-c-format
+msgid "Cast a temporal geometry point to a temporal network point"
+msgstr "Convertir un punto de geometría temporal en un punto de red temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:300
+#, no-c-format
+msgid "tgeompoint::tnpoint"
+msgstr "tgeompoint::tnpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:301
+#, no-c-format
+msgid ""
+"SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,\n"
+"  POINT(48.7117553116406 20.9256801894708)@2001-01-02)'::tnpoint\n"
+"-- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02)\n"
+"SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,\n"
+"  POINT(48.7117553116406 20.9)@2001-01-02)'::tnpoint\n"
+"-- NULL"
+msgstr ""
+"SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,\n"
+"  POINT(48.7117553116406 20.9256801894708)@2001-01-02)'::tnpoint\n"
+"-- [NPoint(1,0.2)@2001-01-01, NPoint(1,0.3)@2001-01-02)\n"
+"SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,\n"
+"  POINT(48.7117553116406 20.9)@2001-01-02)'::tnpoint\n"
+"-- NULL"
+
+#. Tag: para
+#: temporal_network_points.xml:304
+#, no-c-format
+msgid "We give next the functions and operators for network point types."
+msgstr ""
+"Damos a continuación las funciones y operadores para los tipos de puntos de "
+"red."
+
+#. Tag: title
+#: temporal_network_points.xml:308
+#, no-c-format
+msgid "Functions and Operators for Temporal Network Points"
+msgstr "Funciones y operadores para los tipos de puntos de red"
+
+#. Tag: para
+#: temporal_network_points.xml:310
+#, no-c-format
+msgid ""
+"All functions for temporal types described in <xref linkend="
+"\"manipulating_temporal_types\"/> can be applied for temporal network point "
+"types. Therefore, in the signatures of the functions, the notation "
+"<varname>base</varname> also represents an <varname>npoint</varname> and the "
+"notations <varname>ttype</varname>, <varname>tpoint</varname>, and "
+"<varname>tgeompoint</varname> also represent a <varname>tnpoint</varname>. "
+"Furthermore, the functions that have an argument of type <varname>geometry</"
+"varname> accept in addition an argument of type <varname>npoint</varname>. "
+"To avoid redundancy, we only present next some examples of these functions "
+"and operators for temporal network points."
+msgstr ""
+"Todas las funciones para tipos temporales descritas en <xref linkend="
+"\"manipulating_temporal_types\"/> se pueden aplicar para tipos de puntos de "
+"red temporales. Por lo tanto, en las firmas de las funciones, la notación "
+"<varname>base</varname> también representa un <varname>npoint</varname> y "
+"las notaciones <varname>ttype</varname>, <varname>tpoint</varname> y "
+"<varname>tgeompoint</varname> también representan un <varname>tnpoint </"
+"varname>. Además, las funciones que tienen un argumento de tipo "
+"<varname>geometry</varname> aceptan además un argumento de tipo "
+"<varname>npoint</varname>. Para evitar la redundancia, a continuación solo "
+"presentamos algunos ejemplos de estas funciones y operadores para puntos de "
+"red temporales."
+
+#. Tag: varname
+#: temporal_network_points.xml:314
+#, no-c-format
+msgid "tnpoint_inst"
+msgstr "tnpoint_inst"
+
+#. Tag: varname
+#: temporal_network_points.xml:315
+#, no-c-format
+msgid "tnpoint_instset"
+msgstr "tnpoint_instset"
+
+#. Tag: varname
+#: temporal_network_points.xml:316
+#, no-c-format
+msgid "tnpoint_seq"
+msgstr "tnpoint_seq"
+
+#. Tag: varname
+#: temporal_network_points.xml:317
+#, no-c-format
+msgid "tnpoint_seqset"
+msgstr "tnpoint_seqset"
+
+#. Tag: para
+#: temporal_network_points.xml:318
+#, no-c-format
+msgid "Transform a temporal network point to another subtype"
+msgstr "Transformar un punto de red temporal en otro subtipo"
+
+#. Tag: varname
+#: temporal_network_points.xml:319
+#, no-c-format
+msgid "tnpoint_inst(tnpoint): tnpoint_inst"
+msgstr "tnpoint_inst(tnpoint): tnpoint_inst"
+
+#. Tag: varname
+#: temporal_network_points.xml:320
+#, no-c-format
+msgid "tnpoint_instset(tnpoint): tnpoint_instset"
+msgstr "tnpoint_instset(tnpoint): tnpoint_instset"
+
+#. Tag: varname
+#: temporal_network_points.xml:321
+#, no-c-format
+msgid "tnpoint_seq(tnpoint): tnpoint_seq"
+msgstr "tnpoint_seq(tnpoint): tnpoint_seq"
+
+#. Tag: varname
+#: temporal_network_points.xml:322
+#, no-c-format
+msgid "tnpoint_seqset(tnpoint): tnpoint_seqset"
+msgstr "tnpoint_seqset(tnpoint): tnpoint_seqset"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:323
+#, no-c-format
+msgid ""
+"SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');\n"
+"-- {[NPoint(1,0.5)@2001-01-01]}"
+msgstr ""
+"SELECT tnpoint_seqset(tnpoint 'NPoint(1, 0.5)@2001-01-01');\n"
+"-- {[NPoint(1,0.5)@2001-01-01]}"
+
+#. Tag: varname
+#: temporal_network_points.xml:327
+#, no-c-format
+msgid "setPrecision"
+msgstr "setPrecision"
+
+#. Tag: para
+#: temporal_network_points.xml:328
+#, no-c-format
+msgid ""
+"Set the precision of the fraction of the temporal network point to the "
+"number of decimal places"
+msgstr ""
+"Establecer la precisión de la fracción del punto de red temporal en el "
+"número de lugares decimales"
+
+#. Tag: varname
+#: temporal_network_points.xml:329
+#, no-c-format
+msgid "setPrecision(tnpoint,integer): tnpoint"
+msgstr "setPrecision(tnpoint,integer): tnpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:330
+#, no-c-format
+msgid ""
+"SELECT setPrecision(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-02)}', 6);\n"
+"-- {[NPoint(1,0.123457)@2012-01-01 00:00:00+01, NPoint(1,0.5)@2012-01-02 "
+"00:00:00+01)}"
+msgstr ""
+"SELECT setPrecision(tnpoint '{[NPoint(1, 0.123456789)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-02)}', 6);\n"
+"-- {[NPoint(1,0.123457)@2012-01-01 00:00:00+01, NPoint(1,0.5)@2012-01-02 "
+"00:00:00+01)}"
+
+#. Tag: varname
+#: temporal_network_points.xml:334
+#, no-c-format
+msgid "getValues"
+msgstr "getValues"
+
+#. Tag: para
+#: temporal_network_points.xml:335
+#, no-c-format
+msgid "Get the values"
+msgstr "Obtener los valores"
+
+#. Tag: varname
+#: temporal_network_points.xml:336
+#, no-c-format
+msgid "getValues(tnpoint): npoint[]"
+msgstr "getValues(tnpoint): npoint[]"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:337
+#, no-c-format
+msgid ""
+"SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-02)}');\n"
+"-- {\"NPoint(1,0.3)\",\"NPoint(1,0.5)\"}\n"
+"SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.3)@2012-01-02)}');\n"
+"-- {\"NPoint(1,0.3)\"}"
+msgstr ""
+"SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-02)}');\n"
+"-- {\"NPoint(1,0.3)\",\"NPoint(1,0.5)\"}\n"
+"SELECT getValues(tnpoint '{[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.3)@2012-01-02)}');\n"
+"-- {\"NPoint(1,0.3)\"}"
+
+#. Tag: varname
+#: temporal_network_points.xml:341
+#, no-c-format
+msgid "valueAtTimestamp"
+msgstr "valueAtTimestamp"
+
+#. Tag: para
+#: temporal_network_points.xml:342
+#, no-c-format
+msgid "Get the value at a timestamp"
+msgstr "Obtener el valor en una marca de tiempo"
+
+#. Tag: varname
+#: temporal_network_points.xml:343
+#, no-c-format
+msgid "valueAtTimestamp(tnpoint,timestamptz): npoint"
+msgstr "valueAtTimestamp(tnpoint,timestamptz): npoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:344
+#, no-c-format
+msgid ""
+"SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-03)',\n"
+"  '2012-01-02');\n"
+"-- NPoint(1,0.4)"
+msgstr ""
+"SELECT valueAtTimestamp(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-03)',\n"
+"  '2012-01-02');\n"
+"-- NPoint(1,0.4)"
+
+#. Tag: varname
+#: temporal_network_points.xml:348
+#, no-c-format
+msgid "length"
+msgstr "length"
+
+#. Tag: para
+#: temporal_network_points.xml:349
+#, no-c-format
+msgid "Get the length traversed by the temporal network point"
+msgstr "Obtener la longitud atravesada por el punto de red temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:350
+#, no-c-format
+msgid "length(tnpoint): float"
+msgstr "length(tnpoint): float"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:351
+#, no-c-format
+msgid ""
+"SELECT length(tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, "
+"0.5)@2000-01-02]');\n"
+"-- 54.3757408468784"
+msgstr ""
+"SELECT length(tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, "
+"0.5)@2000-01-02]');\n"
+"-- 54.3757408468784"
+
+#. Tag: varname
+#: temporal_network_points.xml:355
+#, no-c-format
+msgid "cumulativeLength"
+msgstr "cumulativeLength"
+
+#. Tag: para
+#: temporal_network_points.xml:356
+#, no-c-format
+msgid "Get the cumulative length traversed by the temporal network point"
+msgstr "Obtener la longitud acumulada atravesada por el punto de red temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:357
+#, no-c-format
+msgid "cumulativeLength(tnpoint): tfloat"
+msgstr "cumulativeLength(tnpoint): tfloat"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:358
+#, no-c-format
+msgid ""
+"SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, "
+"0.5)@2000-01-02,\n"
+"  NPoint(1, 0.5)@2000-01-03], [NPoint(1, 0.6)@2000-01-04, NPoint(1, "
+"0.7)@2000-01-05]}');\n"
+"-- {[0@2000-01-01, 54.3757408468784@2000-01-02, "
+"54.3757408468784@2000-01-03],\n"
+"  [54.3757408468784@2000-01-04, 81.5636112703177@2000-01-05]}"
+msgstr ""
+"SELECT cumulativeLength(tnpoint '{[NPoint(1, 0.3)@2000-01-01, NPoint(1, "
+"0.5)@2000-01-02,\n"
+"  NPoint(1, 0.5)@2000-01-03], [NPoint(1, 0.6)@2000-01-04, NPoint(1, "
+"0.7)@2000-01-05]}');\n"
+"-- {[0@2000-01-01, 54.3757408468784@2000-01-02, "
+"54.3757408468784@2000-01-03],\n"
+"  [54.3757408468784@2000-01-04, 81.5636112703177@2000-01-05]}"
+
+#. Tag: varname
+#: temporal_network_points.xml:362
+#, no-c-format
+msgid "speed"
+msgstr "speed"
+
+#. Tag: para
+#: temporal_network_points.xml:363
+#, no-c-format
+msgid "Get the speed of the temporal network point in units per second"
+msgstr "Obtener la velocidad del punto de red temporal en unidades por segundo"
+
+#. Tag: varname
+#: temporal_network_points.xml:364
+#, no-c-format
+msgid "speed({tnpoint_seq, tpoint_seqset}): tfloat_seqset"
+msgstr "speed({tnpoint_seq, tpoint_seqset}): tfloat_seqset"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:365
+#, no-c-format
+msgid ""
+"SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, "
+"0.4)@2000-01-02,\n"
+"  NPoint(1, 0.6)@2000-01-03]') * 3600 * 24;\n"
+"-- Interp=Stepwise;[21.4016800272077@2000-01-01, "
+"14.2677866848051@2000-01-02,\n"
+"  14.2677866848051@2000-01-03]"
+msgstr ""
+"SELECT speed(tnpoint '[NPoint(1, 0.1)@2000-01-01, NPoint(1, "
+"0.4)@2000-01-02,\n"
+"  NPoint(1, 0.6)@2000-01-03]') * 3600 * 24;\n"
+"-- Interp=Stepwise;[21.4016800272077@2000-01-01, "
+"14.2677866848051@2000-01-02,\n"
+"  14.2677866848051@2000-01-03]"
+
+#. Tag: varname
+#: temporal_network_points.xml:369
+#, no-c-format
+msgid "stbox"
+msgstr "stbox"
+
+#. Tag: para
+#: temporal_network_points.xml:370
+#, no-c-format
+msgid ""
+"Construct the bounding box from a npoint and, optionally, a timestamp or a "
+"period"
+msgstr ""
+"Construir el cuadro delimitador a partir de un punto de red y, "
+"opcionalmente, una marca de tiempo o un período"
+
+#. Tag: varname
+#: temporal_network_points.xml:371
+#, no-c-format
+msgid "stbox(npoint): stbox"
+msgstr "stbox(npoint): stbox"
+
+#. Tag: varname
+#: temporal_network_points.xml:372
+#, no-c-format
+msgid "stbox(npoint,{timestamptz,period}): stbox"
+msgstr "stbox(npoint,{timestamptz,period}): stbox"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:373
+#, no-c-format
+msgid ""
+"SELECT stbox(npoint 'NPoint(1,0.3)');\n"
+"-- STBOX((48.711754,20.92568),(48.711758,20.925682))\n"
+"SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2000-01-01');\n"
+"-- STBOX T((62.786633,80.143555,2000-01-01),"
+"(62.786636,80.143562,2000-01-01))\n"
+"SELECT stbox(npoint 'NPoint(1,0.3)', period '[2000-01-01,2000-01-02]');\n"
+"-- STBOX T((62.786633,80.143555,2000-01-01),(62.786636,80.143562,2000-01-02))"
+msgstr ""
+"SELECT stbox(npoint 'NPoint(1,0.3)');\n"
+"-- STBOX((48.711754,20.92568),(48.711758,20.925682))\n"
+"SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2000-01-01');\n"
+"-- STBOX T((62.786633,80.143555,2000-01-01),"
+"(62.786636,80.143562,2000-01-01))\n"
+"SELECT stbox(npoint 'NPoint(1,0.3)', period '[2000-01-01,2000-01-02]');\n"
+"-- STBOX T((62.786633,80.143555,2000-01-01),(62.786636,80.143562,2000-01-02))"
+
+#. Tag: varname
+#: temporal_network_points.xml:377
+#, no-c-format
+msgid "twCentroid"
+msgstr "twCentroid"
+
+#. Tag: para
+#: temporal_network_points.xml:378
+#, no-c-format
+msgid "Get the time-weighted centroid"
+msgstr "Obtener el centroide ponderado en el tiempo"
+
+#. Tag: varname
+#: temporal_network_points.xml:379
+#, no-c-format
+msgid "twCentroid(tnpoint): geometry(Point)"
+msgstr "twCentroid(tnpoint): geometry(Point)"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:380
+#, no-c-format
+msgid ""
+"SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2012-01-01,\n"
+"  NPoint(1, 0.5)@2012-01-02, NPoint(1, 0.5)@2012-01-03, NPoint(1, "
+"0.7)@2012-01-04)}'));\n"
+"-- POINT(79.9787466444847 46.2385558051041)"
+msgstr ""
+"SELECT st_astext(twCentroid(tnpoint '{[NPoint(1, 0.3)@2012-01-01,\n"
+"  NPoint(1, 0.5)@2012-01-02, NPoint(1, 0.5)@2012-01-03, NPoint(1, "
+"0.7)@2012-01-04)}'));\n"
+"-- POINT(79.9787466444847 46.2385558051041)"
+
+#. Tag: varname
+#: temporal_network_points.xml:384
+#, no-c-format
+msgid "azimuth"
+msgstr "azimuth"
+
+#. Tag: para
+#: temporal_network_points.xml:385
+#, no-c-format
+msgid "Get the temporal azimuth"
+msgstr "Obtener el acimut temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:386
+#, no-c-format
+msgid "azimuth(tnpoint): tfloat"
+msgstr "azimuth(tnpoint): tfloat"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:387
+#, no-c-format
+msgid ""
+"SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-02]');\n"
+"-- {[0.974681063778863@2012-01-01 00:00:00+01,\n"
+"  0.974681063778863@2012-01-01 23:54:36.721091+01),\n"
+"  [3.68970843029227@2012-01-01 23:54:36.721091+01,\n"
+"  3.68970843029227@2012-01-02 00:00:00+01)}"
+msgstr ""
+"SELECT azimuth(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-02]');\n"
+"-- {[0.974681063778863@2012-01-01 00:00:00+01,\n"
+"  0.974681063778863@2012-01-01 23:54:36.721091+01),\n"
+"  [3.68970843029227@2012-01-01 23:54:36.721091+01,\n"
+"  3.68970843029227@2012-01-02 00:00:00+01)}"
+
+#. Tag: para
+#: temporal_network_points.xml:388
+#, no-c-format
+msgid ""
+"Since the underlying geometry associated to a route may have several "
+"vertices, the azimuth value may change between instants of the input "
+"temporal network point, as shown in the example above."
+msgstr ""
+"Dado que la geometría subyacente asociada a una ruta puede tener varios "
+"vértices, el valor de acimut puede cambiar entre instantes del punto de red "
+"temporal de entrada, como se muestra en el ejemplo anterior."
+
+#. Tag: varname
+#: temporal_network_points.xml:392
+#, no-c-format
+msgid "nearestApproachInstant"
+msgstr "nearestApproachInstant"
+
+#. Tag: para
+#: temporal_network_points.xml:393
+#, no-c-format
+msgid ""
+"Get the instant of the first temporal network point at which the two "
+"arguments are at the nearest distance"
+msgstr ""
+"Obtener el instante del primer punto de red temporal en el que los dos "
+"argumentos están a la distancia más cercana"
+
+#. Tag: varname
+#: temporal_network_points.xml:394
+#, no-c-format
+msgid "nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}): tpoint"
+msgstr "nearestApproachInstant({geo,npoint,tpoint},{geo,npoint,tpoint}): tpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:395
+#, no-c-format
+msgid ""
+"SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');\n"
+"-- NPoint(2,0.349928)@2012-01-01 02:59:44.402905+01\n"
+"SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');\n"
+"-- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01"
+msgstr ""
+"SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');\n"
+"-- NPoint(2,0.349928)@2012-01-01 02:59:44.402905+01\n"
+"SELECT nearestApproachInstant(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');\n"
+"-- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01"
+
+#. Tag: varname
+#: temporal_network_points.xml:399
+#, no-c-format
+msgid "nearestApproachDistance"
+msgstr "nearestApproachDistance"
+
+#. Tag: para
+#: temporal_network_points.xml:400 temporal_network_points.xml:506
+#, no-c-format
+msgid "Get the smallest distance ever between the two arguments"
+msgstr "Obtener la distancia más pequeña entre los dos argumentos"
+
+#. Tag: varname
+#: temporal_network_points.xml:401
+#, no-c-format
+msgid "nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}): float"
+msgstr "nearestApproachDistance({geo,npoint,tpoint},{geo,npoint,tpoint}): float"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:402
+#, no-c-format
+msgid ""
+"SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');\n"
+"-- 1.41793220500979\n"
+"SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');\n"
+"-- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01"
+msgstr ""
+"SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)');\n"
+"-- 1.41793220500979\n"
+"SELECT nearestApproachDistance(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)');\n"
+"-- NPoint(2,0.592181)@2012-01-01 17:31:51.080405+01"
+
+#. Tag: para
+#: temporal_network_points.xml:403
+#, no-c-format
+msgid ""
+"Function <varname>nearestApproachDistance</varname> has an associated "
+"operator <varname>|=|</varname> that can be used for doing nearest neightbor "
+"searches using a GiST index (see <xref linkend=\"indexing_temporal_types\"/"
+">)."
+msgstr ""
+"La función <varname>nearestApproachDistance</varname> tiene un operador "
+"asociado <varname>|=|</varname> que se puede utilizar para realizar "
+"búsquedas más cercanas utilizando un índice GiST (ver <xref linkend="
+"\"indexing_temporal_types\"/>)."
+
+#. Tag: varname
+#: temporal_network_points.xml:407
+#, no-c-format
+msgid "shortestLine"
+msgstr "shortestLine"
+
+#. Tag: para
+#: temporal_network_points.xml:408
+#, no-c-format
+msgid ""
+"Get the line connecting the nearest approach point between the two arguments"
+msgstr ""
+"Obtener la línea que conecta el punto de aproximación más cercano entre los "
+"dos argumentos"
+
+#. Tag: varname
+#: temporal_network_points.xml:409
+#, no-c-format
+msgid "shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}): geometry"
+msgstr "shortestLine({geo,npoint,tpoint},{geo,npoint,tpoint}): geometry"
+
+#. Tag: para
+#: temporal_network_points.xml:410
+#, no-c-format
+msgid ""
+"The function will only return the first line that it finds if there are more "
+"than one"
+msgstr ""
+"The function will only return the first line that it finds if there are more "
+"than one"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:411
+#, no-c-format
+msgid ""
+"SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)'));\n"
+"-- LINESTRING(50.7960725266492 48.8266286733015,50 50)\n"
+"SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)'));\n"
+"-- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 "
+"46.4385792121146)"
+msgstr ""
+"SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', geometry 'Linestring(50 50,55 55)'));\n"
+"-- LINESTRING(50.7960725266492 48.8266286733015,50 50)\n"
+"SELECT st_astext(shortestLine(tnpoint '[NPoint(2, 0.3)@2012-01-01,\n"
+"  NPoint(2, 0.7)@2012-01-02]', npoint 'NPoint(1, 0.5)'));\n"
+"-- LINESTRING(77.0902838115125 66.6659083092593,90.8134936900394 "
+"46.4385792121146)"
+
+#. Tag: varname
+#: temporal_network_points.xml:415
+#, no-c-format
+msgid "atValue"
+msgstr "atValue"
+
+#. Tag: para
+#: temporal_network_points.xml:416
+#, no-c-format
+msgid "Restrict to a value"
+msgstr "Restringir a un valor"
+
+#. Tag: varname
+#: temporal_network_points.xml:417
+#, no-c-format
+msgid "atValue(tnpoint,base): tnpoint"
+msgstr "atValue(tnpoint,base): tnpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:418
+#, no-c-format
+msgid ""
+"SELECT atValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'NPoint(2, 0.5)');\n"
+"-- {[NPoint(2,0.5)@2012-01-02]}"
+msgstr ""
+"SELECT atValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'NPoint(2, 0.5)');\n"
+"-- {[NPoint(2,0.5)@2012-01-02]}"
+
+#. Tag: varname
+#: temporal_network_points.xml:422
+#, no-c-format
+msgid "atGeometry"
+msgstr "atGeometry"
+
+#. Tag: para
+#: temporal_network_points.xml:423
+#, no-c-format
+msgid "Restrict to a geometry"
+msgstr "Restringir a una geometría"
+
+#. Tag: varname
+#: temporal_network_points.xml:424
+#, no-c-format
+msgid "atGeometry(tnpoint,geometry): tnpoint"
+msgstr "atGeometry(tnpoint,geometry): tnpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:425
+#, no-c-format
+msgid ""
+"SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'Polygon((40 40,40 50,50 50,50 40,40 40))');"
+msgstr ""
+"SELECT atGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'Polygon((40 40,40 50,50 50,50 40,40 40))');"
+
+#. Tag: varname
+#: temporal_network_points.xml:429
+#, no-c-format
+msgid "minusValue"
+msgstr "minusValue"
+
+#. Tag: para
+#: temporal_network_points.xml:430
+#, no-c-format
+msgid "Difference with a value"
+msgstr "Diferencia con un valor"
+
+#. Tag: varname
+#: temporal_network_points.xml:431
+#, no-c-format
+msgid "minusValue(tnpoint,base): tnpoint"
+msgstr "minusValue(tnpoint,base): tnpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:432
+#, no-c-format
+msgid ""
+"SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'NPoint(2, 0.5)');\n"
+"-- {[NPoint(2,0.3)@2012-01-01, NPoint(2,0.5)@2012-01-02),\n"
+"  (NPoint(2,0.5)@2012-01-02, NPoint(2,0.7)@2012-01-03]}"
+msgstr ""
+"SELECT minusValue(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'NPoint(2, 0.5)');\n"
+"-- {[NPoint(2,0.3)@2012-01-01, NPoint(2,0.5)@2012-01-02),\n"
+"  (NPoint(2,0.5)@2012-01-02, NPoint(2,0.7)@2012-01-03]}"
+
+#. Tag: varname
+#: temporal_network_points.xml:436
+#, no-c-format
+msgid "minusGeometry"
+msgstr "minusGeometry"
+
+#. Tag: para
+#: temporal_network_points.xml:437
+#, no-c-format
+msgid "Difference with a geometry"
+msgstr "Diferencia con una geometría"
+
+#. Tag: varname
+#: temporal_network_points.xml:438
+#, no-c-format
+msgid "minusGeometry(tnpoint,geometry): tnpoint"
+msgstr "minusGeometry(tnpoint,geometry): tnpoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:439
+#, no-c-format
+msgid ""
+"SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'Polygon((40 40,40 50,50 50,50 40,40 40))');\n"
+"-- {(NPoint(2,0.342593)@2012-01-01 05:06:40.364673+01,\n"
+"  NPoint(2,0.7)@2012-01-03 00:00:00+01]}"
+msgstr ""
+"SELECT minusGeometry(tnpoint '[NPoint(2, 0.3)@2012-01-01, NPoint(2, "
+"0.7)@2012-01-03]',\n"
+"  'Polygon((40 40,40 50,50 50,50 40,40 40))');\n"
+"-- {(NPoint(2,0.342593)@2012-01-01 05:06:40.364673+01,\n"
+"  NPoint(2,0.7)@2012-01-03 00:00:00+01]}"
+
+#. Tag: para
+#: temporal_network_points.xml:444
+#, no-c-format
+msgid "Traditional comparison operators"
+msgstr "Operadores de comparación tradicionales"
+
+#. Tag: varname
+#: temporal_network_points.xml:445
+#, no-c-format
+msgid "tnpoint = tnpoint: boolean"
+msgstr "tnpoint = tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:446
+#, no-c-format
+msgid "tnpoint &lt;&gt; tnpoint: boolean"
+msgstr "tnpoint &lt;&gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:447
+#, no-c-format
+msgid "tnpoint &lt; tnpoint: boolean"
+msgstr "tnpoint &lt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:448
+#, no-c-format
+msgid "tnpoint &gt; tnpoint: boolean"
+msgstr "tnpoint &gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:449
+#, no-c-format
+msgid "tnpoint &lt;= tnpoint: boolean"
+msgstr "tnpoint &lt;= tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:450
+#, no-c-format
+msgid "tnpoint &gt;= tnpoint: boolean"
+msgstr "tnpoint &gt;= tnpoint: boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:451
+#, no-c-format
+msgid ""
+"SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-02),\n"
+"  [NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-03]}' =\n"
+"  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';\n"
+"-- true\n"
+"SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]}' "
+"&lt;&gt;\n"
+"  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';\n"
+"-- false\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' "
+"&lt;\n"
+"  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.6)@2001-01-03]';\n"
+"-- true"
+msgstr ""
+"SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-02),\n"
+"  [NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-03]}' =\n"
+"  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';\n"
+"-- true\n"
+"SELECT tnpoint '{[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]}' "
+"&lt;&gt;\n"
+"  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]';\n"
+"-- false\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' "
+"&lt;\n"
+"  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.6)@2001-01-03]';\n"
+"-- true"
+
+#. Tag: para
+#: temporal_network_points.xml:456
+#, no-c-format
+msgid "Temporal comparison operators"
+msgstr "Operadores de comparación temporales"
+
+#. Tag: varname
+#: temporal_network_points.xml:457
+#, no-c-format
+msgid "tnpoint #= tnpoint: tbool"
+msgstr "tnpoint #= tnpoint: tbool"
+
+#. Tag: varname
+#: temporal_network_points.xml:458
+#, no-c-format
+msgid "tnpoint #&lt;&gt; tnpoint: tbool"
+msgstr "tnpoint #&lt;&gt; tnpoint: tbool"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:459
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' #=\n"
+"  npoint 'NPoint(1, 0.3)';\n"
+"-- {[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03)}\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.8)@2012-01-03)' #&lt;"
+"&gt;\n"
+"  tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.7)@2012-01-03)';\n"
+"-- {[t@2012-01-01, f@2012-01-02], (t@2012-01-02, t@2012-01-03)}"
+msgstr ""
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' #=\n"
+"  npoint 'NPoint(1, 0.3)';\n"
+"-- {[f@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03)}\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.8)@2012-01-03)' #&lt;"
+"&gt;\n"
+"  tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.7)@2012-01-03)';\n"
+"-- {[t@2012-01-01, f@2012-01-02], (t@2012-01-02, t@2012-01-03)}"
+
+#. Tag: varname
+#: temporal_network_points.xml:463
+#, no-c-format
+msgid "<varname>?=</varname>"
+msgstr "<varname>?=</varname>"
+
+#. Tag: varname
+#: temporal_network_points.xml:464
+#, no-c-format
+msgid "&amp;="
+msgstr "&amp;="
+
+#. Tag: para
+#: temporal_network_points.xml:465
+#, no-c-format
+msgid "Ever and always equal operators"
+msgstr "Operadores de igualdad siempre y alguna vez"
+
+#. Tag: varname
+#: temporal_network_points.xml:466
+#, no-c-format
+msgid "tnpoint ?= tnpoint: boolean"
+msgstr "tnpoint ?= tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:467
+#, no-c-format
+msgid "tnpoint &amp;= tnpoint: boolean"
+msgstr "tnpoint &amp;= tnpoint: boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:468
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.4)@2012-01-04)' ?= "
+"Npoint(1, 0.3);\n"
+"-- true\n"
+"SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.2)@2012-01-04)' &amp;"
+"= Npoint(1, 0.2);\n"
+"-- true"
+msgstr ""
+"SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.4)@2012-01-04)' ?= "
+"Npoint(1, 0.3);\n"
+"-- true\n"
+"SELECT tnpoint '[Npoint(1, 0.2)@2012-01-01, Npoint(1, 0.2)@2012-01-04)' &amp;"
+"= Npoint(1, 0.2);\n"
+"-- true"
+
+#. Tag: para
+#: temporal_network_points.xml:473
+#, no-c-format
+msgid "Relative position operators"
+msgstr "Operadores de posición relativa"
+
+#. Tag: varname
+#: temporal_network_points.xml:474
+#, no-c-format
+msgid "tnpoint &lt;&lt; tnpoint: boolean"
+msgstr "tnpoint &lt;&lt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:475
+#, no-c-format
+msgid "tnpoint &amp;&lt; tnpoint: boolean"
+msgstr "tnpoint &amp;&lt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:476
+#, no-c-format
+msgid "tnpoint &gt;&gt; tnpoint: boolean"
+msgstr "tnpoint &gt;&gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:477
+#, no-c-format
+msgid "tnpoint &amp;&gt; tnpoint: boolean"
+msgstr "tnpoint &amp;&gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:478
+#, no-c-format
+msgid "tnpoint &lt;&lt;| tnpoint: boolean"
+msgstr "tnpoint &lt;&lt;| tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:479
+#, no-c-format
+msgid "tnpoint &amp;&lt;| tnpoint: boolean"
+msgstr "tnpoint &amp;&lt;| tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:480
+#, no-c-format
+msgid "tnpoint |&gt;&gt; tnpoint: boolean"
+msgstr "tnpoint |&gt;&gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:481 temporal_network_points.xml:485
+#, no-c-format
+msgid "tnpoint |&amp;&gt; tnpoint: boolean"
+msgstr "tnpoint |&amp;&gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:482
+#, no-c-format
+msgid "tnpoint &lt;&lt;# tnpoint: boolean"
+msgstr "tnpoint &lt;&lt;# tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:483
+#, no-c-format
+msgid "tnpoint &amp;&lt;# tnpoint: boolean"
+msgstr "tnpoint &amp;&lt;# tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:484
+#, no-c-format
+msgid "tnpoint #&gt;&gt; tnpoint: boolean"
+msgstr "tnpoint #&gt;&gt; tnpoint: boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:486
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &lt;"
+"&lt;\n"
+"  npoint 'NPoint(1, 0.2)'\n"
+"-- false\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &lt;"
+"&lt;|\n"
+"  stbox(npoint 'NPoint(1, 0.5)')\n"
+"-- false\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &amp;"
+"&gt;\n"
+"  npoint 'NPoint(1, 0.3)'::geometry\n"
+"-- true\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &gt;"
+"&gt;#\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-03, NPoint(1, 0.5)@2000-01-05]'\n"
+"-- true"
+msgstr ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &lt;"
+"&lt;\n"
+"  npoint 'NPoint(1, 0.2)'\n"
+"-- false\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &lt;"
+"&lt;|\n"
+"  stbox(npoint 'NPoint(1, 0.5)')\n"
+"-- false\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &amp;"
+"&gt;\n"
+"  npoint 'NPoint(1, 0.3)'::geometry\n"
+"-- true\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &gt;"
+"&gt;#\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-03, NPoint(1, 0.5)@2000-01-05]'\n"
+"-- true"
+
+#. Tag: varname
+#: temporal_network_points.xml:490
+#, no-c-format
+msgid "&amp;&amp;"
+msgstr "&amp;&amp;"
+
+#. Tag: varname
+#: temporal_network_points.xml:491
+#, no-c-format
+msgid "&lt;@"
+msgstr "&lt;@"
+
+#. Tag: varname
+#: temporal_network_points.xml:492
+#, no-c-format
+msgid "@&gt;"
+msgstr "@&gt;"
+
+#. Tag: varname
+#: temporal_network_points.xml:493
+#, no-c-format
+msgid "<varname>~=</varname>"
+msgstr "<varname>~=</varname>"
+
+#. Tag: varname
+#: temporal_network_points.xml:494
+#, no-c-format
+msgid "<varname>-|-</varname>"
+msgstr "<varname>-|-</varname>"
+
+#. Tag: para
+#: temporal_network_points.xml:495
+#, no-c-format
+msgid "Topological operators"
+msgstr "Operadores topológicos"
+
+#. Tag: varname
+#: temporal_network_points.xml:496
+#, no-c-format
+msgid "tnpoint &amp;&amp; tnpoint: boolean"
+msgstr "tnpoint &amp;&amp; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:497
+#, no-c-format
+msgid "tnpoint &lt;@ tnpoint: boolean"
+msgstr "tnpoint &lt;@ tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:498
+#, no-c-format
+msgid "tnpoint @&gt; tnpoint: boolean"
+msgstr "tnpoint @&gt; tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:499
+#, no-c-format
+msgid "tnpoint ~= tnpoint: boolean"
+msgstr "tnpoint ~= tnpoint: boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:500
+#, no-c-format
+msgid "tnpoint -|- tnpoint: boolean"
+msgstr "tnpoint -|- tnpoint: boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:501
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &amp;"
+"&amp;\n"
+"  npoint 'NPoint(1, 0.5)'\n"
+"-- true\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' "
+"@&gt;\n"
+"  stbox(npoint 'NPoint(1, 0.5)')\n"
+"-- true\n"
+"SELECT npoint 'NPoint(1, 0.5)'::geometry &lt;@\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]'\n"
+"-- true\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' ~=\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.35)@2000-01-02,\n"
+"  NPoint(1, 0.5)@2000-01-03]'\n"
+"-- true"
+msgstr ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' &amp;"
+"&amp;\n"
+"  npoint 'NPoint(1, 0.5)'\n"
+"-- true\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]' "
+"@&gt;\n"
+"  stbox(npoint 'NPoint(1, 0.5)')\n"
+"-- true\n"
+"SELECT npoint 'NPoint(1, 0.5)'::geometry &lt;@\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-02]'\n"
+"-- true\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' ~=\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.35)@2000-01-02,\n"
+"  NPoint(1, 0.5)@2000-01-03]'\n"
+"-- true"
+
+#. Tag: varname
+#: temporal_network_points.xml:505
+#, no-c-format
+msgid "<varname>|=|</varname>"
+msgstr "<varname>|=|</varname>"
+
+#. Tag: varname
+#: temporal_network_points.xml:507
+#, no-c-format
+msgid "tgeompoint |=| tnpoint: float"
+msgstr "tgeompoint |=| tnpoint: float"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:508
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' |=|\n"
+"  npoint 'NPoint(1, 0.2)';\n"
+"-- 2.34988300875063\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' |=|\n"
+"  geometry 'Linestring(2 2,2 1,3 1)';\n"
+"-- 82.2059262761477"
+msgstr ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' |=|\n"
+"  npoint 'NPoint(1, 0.2)';\n"
+"-- 2.34988300875063\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' |=|\n"
+"  geometry 'Linestring(2 2,2 1,3 1)';\n"
+"-- 82.2059262761477"
+
+#. Tag: varname
+#: temporal_network_points.xml:512
+#, no-c-format
+msgid "&lt;-&gt;"
+msgstr "&lt;-&gt;"
+
+#. Tag: para
+#: temporal_network_points.xml:513
+#, no-c-format
+msgid "Get the temporal distance"
+msgstr "Obtener la distancia temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:514
+#, no-c-format
+msgid "tgeompoint &lt;-&gt; tnpoint: tfloat"
+msgstr "tgeompoint &lt;-&gt; tnpoint: tfloat"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:515
+#, no-c-format
+msgid ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-"
+"&gt;\n"
+"  npoint 'NPoint(1, 0.2)';\n"
+"-- [2.34988300875063@2000-01-02 00:00:00+01, 2.34988300875063@2000-01-03 "
+"00:00:00+01]\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-"
+"&gt;\n"
+"  geometry 'Point(50 50)';\n"
+"-- [25.0496666945044@2000-01-01 00:00:00+01, 26.4085688426232@2000-01-03 "
+"00:00:00+01]\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-"
+"&gt;\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-02, NPoint(1, 0.5)@2000-01-04]'\n"
+"-- [2.34988300875063@2000-01-02 00:00:00+01, 2.34988300875063@2000-01-03 "
+"00:00:00+01]"
+msgstr ""
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-"
+"&gt;\n"
+"  npoint 'NPoint(1, 0.2)';\n"
+"-- [2.34988300875063@2000-01-02 00:00:00+01, 2.34988300875063@2000-01-03 "
+"00:00:00+01]\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-"
+"&gt;\n"
+"  geometry 'Point(50 50)';\n"
+"-- [25.0496666945044@2000-01-01 00:00:00+01, 26.4085688426232@2000-01-03 "
+"00:00:00+01]\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2000-01-01, NPoint(1, 0.5)@2000-01-03]' &lt;-"
+"&gt;\n"
+"  tnpoint '[NPoint(1, 0.3)@2000-01-02, NPoint(1, 0.5)@2000-01-04]'\n"
+"-- [2.34988300875063@2000-01-02 00:00:00+01, 2.34988300875063@2000-01-03 "
+"00:00:00+01]"
+
+#. Tag: varname
+#: temporal_network_points.xml:519
+#, no-c-format
+msgid "contains"
+msgstr "contains"
+
+#. Tag: varname
+#: temporal_network_points.xml:520
+#, no-c-format
+msgid "disjoint"
+msgstr "disjoint"
+
+#. Tag: varname
+#: temporal_network_points.xml:521
+#, no-c-format
+msgid "intersects"
+msgstr "intersects"
+
+#. Tag: varname
+#: temporal_network_points.xml:522
+#, no-c-format
+msgid "touches"
+msgstr "touches"
+
+#. Tag: varname
+#: temporal_network_points.xml:523
+#, no-c-format
+msgid "dwithin"
+msgstr "dwithin"
+
+#. Tag: para
+#: temporal_network_points.xml:524
+#, no-c-format
+msgid "Possible spatial relationships"
+msgstr "Relaciones posibles espaciales"
+
+#. Tag: varname
+#: temporal_network_points.xml:525
+#, no-c-format
+msgid "contains(geometry,tnpoint): boolean"
+msgstr "contains(geometry,tnpoint): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:526
+#, no-c-format
+msgid "disjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+msgstr "disjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:527
+#, no-c-format
+msgid ""
+"intersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+msgstr ""
+"intersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:528
+#, no-c-format
+msgid "touches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+msgstr "touches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:529
+#, no-c-format
+msgid ""
+"dwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean"
+msgstr ""
+"dwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:530
+#, no-c-format
+msgid ""
+"SELECT contains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',\n"
+"  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');\n"
+"-- false\n"
+"SELECT disjoint(npoint 'NPoint(2, 0.0)',\n"
+"  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');\n"
+"-- true\n"
+"SELECT intersects(tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, "
+"0.3)@2012-01-03)',\n"
+"  tnpoint '[NPoint(2, 0.0)@2012-01-01, NPoint(2, 1)@2012-01-03)');\n"
+"-- false"
+msgstr ""
+"SELECT contains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',\n"
+"  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');\n"
+"-- false\n"
+"SELECT disjoint(npoint 'NPoint(2, 0.0)',\n"
+"  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');\n"
+"-- true\n"
+"SELECT intersects(tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, "
+"0.3)@2012-01-03)',\n"
+"  tnpoint '[NPoint(2, 0.0)@2012-01-01, NPoint(2, 1)@2012-01-03)');\n"
+"-- false"
+
+#. Tag: varname
+#: temporal_network_points.xml:534
+#, no-c-format
+msgid "tcontains"
+msgstr "tcontains"
+
+#. Tag: varname
+#: temporal_network_points.xml:535
+#, no-c-format
+msgid "tdisjoint"
+msgstr "tdisjoint"
+
+#. Tag: varname
+#: temporal_network_points.xml:536
+#, no-c-format
+msgid "tintersects"
+msgstr "tintersects"
+
+#. Tag: varname
+#: temporal_network_points.xml:537
+#, no-c-format
+msgid "ttouches"
+msgstr "ttouches"
+
+#. Tag: varname
+#: temporal_network_points.xml:538
+#, no-c-format
+msgid "tdwithin"
+msgstr "tdwithin"
+
+#. Tag: para
+#: temporal_network_points.xml:539
+#, no-c-format
+msgid "Temporal spatial relationships"
+msgstr "Relaciones espaciales temporales"
+
+#. Tag: varname
+#: temporal_network_points.xml:540
+#, no-c-format
+msgid "tcontains(geometry,tnpoint): boolean"
+msgstr "tcontains(geometry,tnpoint): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:541
+#, no-c-format
+msgid "tdisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+msgstr "tdisjoint({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:542
+#, no-c-format
+msgid ""
+"tintersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+msgstr ""
+"tintersects({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:543
+#, no-c-format
+msgid "ttouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+msgstr "ttouches({geometry,npoint,tnpoint},{geometry,npoint,tnpoint}): boolean"
+
+#. Tag: varname
+#: temporal_network_points.xml:544
+#, no-c-format
+msgid ""
+"tdwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean"
+msgstr ""
+"tdwithin({geometry,npoint,tnpoint},{geometry,npoint,tnpoint},float): boolean"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:545
+#, no-c-format
+msgid ""
+"SELECT tdisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',\n"
+"  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');\n"
+"-- {[t@2012-01-01 00:00:00+01, t@2012-01-03 00:00:00+01)}\n"
+"SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-03)',\n"
+"  tnpoint '[NPoint(1, 0.5)@2012-01-01, NPoint(1, 0.3)@2012-01-03)', 1);\n"
+"-- {[t@2012-01-01 00:00:00+01, t@2012-01-01 22:35:55.379053+01],\n"
+"  (f@2012-01-01 22:35:55.379053+01, t@2012-01-02 01:24:04.620946+01,\n"
+"  t@2012-01-03 00:00:00+01)}"
+msgstr ""
+"SELECT tdisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',\n"
+"  tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)');\n"
+"-- {[t@2012-01-01 00:00:00+01, t@2012-01-03 00:00:00+01)}\n"
+"SELECT tdwithin(tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, "
+"0.5)@2012-01-03)',\n"
+"  tnpoint '[NPoint(1, 0.5)@2012-01-01, NPoint(1, 0.3)@2012-01-03)', 1);\n"
+"-- {[t@2012-01-01 00:00:00+01, t@2012-01-01 22:35:55.379053+01],\n"
+"  (f@2012-01-01 22:35:55.379053+01, t@2012-01-02 01:24:04.620946+01,\n"
+"  t@2012-01-03 00:00:00+01)}"
+
+#. Tag: title
+#: temporal_network_points.xml:551
+#, no-c-format
+msgid "Aggregate Functions"
+msgstr "Funciones agregadas"
+
+#. Tag: para
+#: temporal_network_points.xml:553
+#, no-c-format
+msgid ""
+"The three aggregate functions for temporal network points are illustrated "
+"next."
+msgstr ""
+"Las tres funciones agregadas para puntos de red temporales se ilustran a "
+"continuación."
+
+#. Tag: varname
+#: temporal_network_points.xml:557
+#, no-c-format
+msgid "tcount"
+msgstr "tcount"
+
+#. Tag: para
+#: temporal_network_points.xml:558
+#, no-c-format
+msgid "Temporal count"
+msgstr "Conteo temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:559
+#, no-c-format
+msgid "tcount(tnpoint): {tint_instset,tint_seqset}"
+msgstr "tcount(tnpoint): {tint_instset,tint_seqset}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:560
+#, no-c-format
+msgid ""
+"WITH Temp(temp) AS (\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )\n"
+"SELECT tcount(Temp)\n"
+"FROM Temp\n"
+"-- {[1@2012-01-01, 2@2012-01-02, 1@2012-01-04, 1@2012-01-05)}"
+msgstr ""
+"WITH Temp(temp) AS (\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )\n"
+"SELECT tcount(Temp)\n"
+"FROM Temp\n"
+"-- {[1@2012-01-01, 2@2012-01-02, 1@2012-01-04, 1@2012-01-05)}"
+
+#. Tag: varname
+#: temporal_network_points.xml:564
+#, no-c-format
+msgid "wcount"
+msgstr "wcount"
+
+#. Tag: para
+#: temporal_network_points.xml:565
+#, no-c-format
+msgid "Window count"
+msgstr "Conteo de ventana"
+
+#. Tag: varname
+#: temporal_network_points.xml:566
+#, no-c-format
+msgid "wcount(tnpoint): {tint_instset,tint_seqset}"
+msgstr "wcount(tnpoint): {tint_instset,tint_seqset}"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:567
+#, no-c-format
+msgid ""
+"WITH Temp(temp) AS (\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )\n"
+"SELECT wcount(Temp, '1 day')\n"
+"FROM Temp\n"
+"-- {[1@2012-01-01, 2@2012-01-02, 3@2012-01-03, 2@2012-01-04, 1@2012-01-05,\n"
+"  1@2012-01-06)}"
+msgstr ""
+"WITH Temp(temp) AS (\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-02, NPoint(1, 0.4)@2012-01-04)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2012-01-03, NPoint(1, 0.5)@2012-01-05)' )\n"
+"SELECT wcount(Temp, '1 day')\n"
+"FROM Temp\n"
+"-- {[1@2012-01-01, 2@2012-01-02, 3@2012-01-03, 2@2012-01-04, 1@2012-01-05,\n"
+"  1@2012-01-06)}"
+
+#. Tag: varname
+#: temporal_network_points.xml:571
+#, no-c-format
+msgid "tcentroid"
+msgstr "tcentroid"
+
+#. Tag: para
+#: temporal_network_points.xml:572
+#, no-c-format
+msgid "Temporal centroid"
+msgstr "Centroide temporal"
+
+#. Tag: varname
+#: temporal_network_points.xml:573
+#, no-c-format
+msgid "tcentroid(tnpoint): tgeompoint"
+msgstr "tcentroid(tnpoint): tgeompoint"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:574
+#, no-c-format
+msgid ""
+"WITH Temp(temp) AS (\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)' )\n"
+"SELECT astext(tcentroid(Temp))\n"
+"FROM Temp\n"
+"-- {[POINT(72.451531682218 76.5231414472853)@2012-01-01,\n"
+"  POINT(55.7001249027598 72.9552602410653)@2012-01-03)}"
+msgstr ""
+"WITH Temp(temp) AS (\n"
+"SELECT tnpoint '[NPoint(1, 0.1)@2012-01-01, NPoint(1, 0.3)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.2)@2012-01-01, NPoint(1, 0.4)@2012-01-03)' "
+"UNION\n"
+"SELECT tnpoint '[NPoint(1, 0.3)@2012-01-01, NPoint(1, 0.5)@2012-01-03)' )\n"
+"SELECT astext(tcentroid(Temp))\n"
+"FROM Temp\n"
+"-- {[POINT(72.451531682218 76.5231414472853)@2012-01-01,\n"
+"  POINT(55.7001249027598 72.9552602410653)@2012-01-03)}"
+
+#. Tag: title
+#: temporal_network_points.xml:580
+#, no-c-format
+msgid "Indexing of Temporal Network Points"
+msgstr "Indexación de puntos de red temporales"
+
+#. Tag: para
+#: temporal_network_points.xml:582
+#, no-c-format
+msgid ""
+"GiST and SP-GiST indexes can be created for table columns of temporal "
+"networks points. An example of index creation is follows:"
+msgstr ""
+"Se pueden crear índices GiST y SP-GiST para columnas de tabla de puntos de "
+"redes temporales. A continuación, se muestra un ejemplo de creación de "
+"índice:"
+
+#. Tag: programlisting
+#: temporal_network_points.xml:583
+#, no-c-format
+msgid "CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);"
+msgstr "CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);"
+
+#. Tag: para
+#: temporal_network_points.xml:584
+#, no-c-format
+msgid ""
+"The GiST and SP-GiST indexes store the bounding box for the temporal network "
+"points, which is an stbox and thus stores the absolute coordinates of the "
+"underlying space."
+msgstr ""
+"Los índices GiST y SP-GiST almacenan el cuadro delimitador para los puntos "
+"de la red temporal, que es un <varname>stbox</varname> y, por lo tanto, "
+"almacena las coordenadas absolutas del espacio subyacente."
+
+#. Tag: para
+#: temporal_network_points.xml:586
+#, no-c-format
+msgid ""
+"A GiST or SP-GiST index can accelerate queries involving the following "
+"operators:"
+msgstr ""
+"Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los "
+"siguientes operadores:"
+
+#. Tag: para
+#: temporal_network_points.xml:589
+#, no-c-format
+msgid ""
+"<varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;"
+"</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, "
+"<varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;"
+"&gt;</varname>, which only consider the spatial dimension in temporal "
+"network points,"
+msgstr ""
+"<varname>&lt;&lt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;"
+"</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, "
+"<varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>|&gt;"
+"&gt;</varname>, que solo consideran la dimensión espacial en puntos de la "
+"red temporal,"
+
+#. Tag: para
+#: temporal_network_points.xml:592
+#, no-c-format
+msgid ""
+"<varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;"
+"&gt;</varname>, <varname>#&gt;&gt;</varname>, which only consider the time "
+"dimension in temporal network points,"
+msgstr ""
+"<varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;"
+"&gt;</varname>, <varname>#&gt;&gt;</varname>, que solo consideran la "
+"dimensión temporal en puntos de la red temporal,"
+
+#. Tag: para
+#: temporal_network_points.xml:595
+#, no-c-format
+msgid ""
+"<varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</"
+"varname>, <varname>~=</varname>, and <varname>-|-</varname>, which consider "
+"as many dimensions as they are shared by the indexed column and the query "
+"argument."
+msgstr ""
+"<varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</"
+"varname>, <varname>~=</varname>, and <varname>-|-</varname>, que consideran "
+"tantas dimensiones como compartan la columna indexada y el argumento de "
+"consulta."
+
+#. Tag: para
+#: temporal_network_points.xml:598
+#, no-c-format
+msgid ""
+"These operators work on bounding boxes, not the entire values. In addition, "
+"a GiST index can accelerate nearest neighbor queries involving the <varname>|"
+"=|</varname> operator."
+msgstr ""
+"Estos operadores trabajan con cuadros delimitadores, no con los valores "
+"completos. Además, un índice GiST puede acelerar las consultas del vecino "
+"más cercano que involucran al operador <varname>|=|</varname>."

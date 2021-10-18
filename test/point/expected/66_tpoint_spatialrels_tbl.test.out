@@ -1,0 +1,180 @@
+set parallel_tuple_cost=0;
+SET
+set parallel_setup_cost=0;
+SET
+set force_parallel_mode=regress;
+SET
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND contains(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND contains(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(g, temp);
+ count 
+-------
+  1186
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(temp, g);
+ count 
+-------
+  1186
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(g, temp);
+ count 
+-------
+   797
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND disjoint(temp, g);
+ count 
+-------
+   797
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND intersects(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND intersects(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point3D, tbl_tgeompoint3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(g, temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint3D, tbl_geom_point3D
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND touches(temp, g);
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND dwithin(g, temp, 10);
+ count 
+-------
+  1013
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
+  WHERE NOT ST_IsCollection(trajectory(temp)) AND dwithin(temp, g, 10);
+ count 
+-------
+  1013
+(1 row)
+
+SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
+  WHERE NOT ST_IsCollection(trajectory(t1.temp)) AND NOT ST_IsCollection(trajectory(t2.temp)) AND dwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+    75
+(1 row)
+
+SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND dwithin(g, temp, 10);
+ count 
+-------
+     2
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point
+  WHERE NOT ST_IsCollection(trajectory(temp)::geometry) AND dwithin(temp, g, 10);
+ count 
+-------
+     2
+(1 row)
+
+SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
+  WHERE NOT ST_IsCollection(trajectory(t1.temp)::geometry) AND NOT ST_IsCollection(trajectory(t2.temp)::geometry) AND dwithin(t1.temp, t2.temp, 10);
+ count 
+-------
+    73
+(1 row)
+
+set parallel_tuple_cost=100;
+SET
+set parallel_setup_cost=100;
+SET
+set force_parallel_mode=off;
+SET

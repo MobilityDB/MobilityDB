@@ -1,0 +1,35 @@
+env:
+# - PGMAJOR=10 PGISMAJOR=2.5 COVERAGE=0
+# - PGMAJOR=11 PGISMAJOR=2.5 COVERAGE=0
+# - PGMAJOR=12 PGISMAJOR=2.5 COVERAGE=0
+- PGMAJOR=13 PGISMAJOR=2.5 COVERAGE=0
+- PGMAJOR=13 PGISMAJOR=3 COVERAGE=0
+# - PGMAJOR=13 PGISMAJOR=2.5 COVERAGE=1
+
+language: c
+
+dist: xenial
+
+compiler:
+  - gcc
+
+before_install:
+  - echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
+  - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+  - sudo apt-get update
+  - sudo apt-get install -y postgresql-$PGMAJOR postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-$PGMAJOR libproj-dev postgresql-$PGMAJOR-postgis-$PGISMAJOR postgresql-$PGMAJOR-postgis-$PGISMAJOR-scripts libjson-c-dev libgsl-dev libprotobuf-c-dev
+  - pip install --user cpp-coveralls
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DWITH_COVERAGE=$COVERAGE ..
+
+script:
+  - export PATH="/usr/lib/postgresql/$PGMAJOR/bin:$PATH"
+  - make && make test
+
+after_failure: ../test/scripts/print_fail.sh
+
+after_success: |
+   [ "$COVERAGE" == "1" ] && coveralls --include src --gcov-options '\-lp' -r .. -b .
