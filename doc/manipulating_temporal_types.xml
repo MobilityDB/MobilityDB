@@ -498,114 +498,6 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="transformation_functions">
-		<title>Transformation Functions</title>
-		<para>A temporal value can be transformed to another subtype. An error is raised if the subtypes are incompatible.</para>
-		<itemizedlist>
-			<listitem id="ttype_transform">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
-				<para>Transform a temporal value to another subtype</para>
-				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
-				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
-				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
-				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
-				<programlisting xml:space="preserve">
-SELECT tbool_inst(tbool '{[true@2001-01-01]}');
--- "t@2001-01-01 00:00:00+00"
-SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
--- ERROR: Cannot transform input to a temporal instant
-SELECT tbool_instset(tbool 'true@2001-01-01');
--- "{t@2001-01-01}"
-SELECT tint_seq(tint '1@2001-01-01');
--- "[1@2001-01-01]"
-SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
--- "{[2.5@2001-01-01]}"
-SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
--- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="toLinear">
-				<indexterm><primary><varname>toLinear</varname></primary></indexterm>
-				<para>Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
-				<para><varname>toLinear(ttype): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02,
-  1@2000-01-03, 2@2000-01-04]');
--- "{[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
-  [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}"
-SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
--- "{[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
-  [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="appendInstant">
-				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
-				<para>Append a temporal instant to a temporal value</para>
-				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
--- "{1@2000-01-01, 1@2000-01-02}"
-SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
--- "[1@2000-01-01, 1@2000-01-02]"
-SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  tgeompoint 'Point(1 1 1)@2000-01-06'));
--- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
-  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="merge">
-				<indexterm><primary><varname>merge</varname></primary></indexterm>
-				<para>Merge the temporal values</para>
-				<para><varname>merge(ttype,ttype): ttype</varname></para>
-				<para><varname>merge(ttype[]): ttype</varname></para>
-				<para>The values may share a single timestamp, in that case the temporal values are joined in the result if their value at the common timestamp is the same, otherwise an error is raised.</para>
-				<programlisting xml:space="preserve">
-SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
--- "{1@2000-01-01, 1@2000-01-02}"
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
--- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
--- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}"
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
--- ERROR:  Both arguments have different value at their overlapping timestamp
-SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
--- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
-  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
-
-SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
--- "{1@2000-01-01, 1@2000-01-02}"
-SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
--- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}"
-SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
--- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}"
-SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
--- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
-SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
--- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}"
-SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
-  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
-  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
--- "{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
-  Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
-  [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}"
-SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
-  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
--- "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]"
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
 	<sect1>
 		<title>Accessor Functions</title>
 		<itemizedlist>
@@ -1105,653 +997,109 @@ SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
-		<title>Spatial Functions</title>
-		<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
-
+	<sect1 id="modification_functions">
+		<title>Modification Functions</title>
+		<para>A temporal value can be transformed to another subtype. An error is raised if the subtypes are incompatible.</para>
 		<itemizedlist>
-			<listitem id="asText">
-				<indexterm><primary><varname>asText</varname></primary></indexterm>
-				<para>Get the Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
-				<para><varname>asText({tpoint,tpoint[],geo[]}): {text,text[]}</varname></para>
+			<listitem id="ttype_transform">
+				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<para>Transform a temporal value to another subtype</para>
+				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
+				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
+				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
+				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
 				<programlisting xml:space="preserve">
-SELECT asText(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
--- "[POINT Z (0 0 0)@2012-01-01 00:00:00+00, POINT Z (1 1 1)@2012-01-02 00:00:00+00)"
-SELECT asText(ARRAY[geometry 'Point(0 0)', 'Point(1 1)']);
--- "{"POINT(0 0)","POINT(1 1)"}"
+SELECT tbool_inst(tbool '{[true@2001-01-01]}');
+-- "t@2001-01-01 00:00:00+00"
+SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
+-- ERROR: Cannot transform input to a temporal instant
+SELECT tbool_instset(tbool 'true@2001-01-01');
+-- "{t@2001-01-01}"
+SELECT tint_seq(tint '1@2001-01-01');
+-- "[1@2001-01-01]"
+SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
+-- "{[2.5@2001-01-01]}"
+SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
+-- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
 </programlisting>
 			</listitem>
 
-			<listitem id="asEWKT">
-				<indexterm><primary><varname>asEWKT</varname></primary></indexterm>
-				<para>Get the Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
-				<para><varname>asEWKT({tpoint,tpoint[],geo[]}): {text,text[]}</varname></para>
+			<listitem id="toLinear">
+				<indexterm><primary><varname>toLinear</varname></primary></indexterm>
+				<para>Transform a temporal value with continuous base type from stepwise to linear interpolation</para>
+				<para><varname>toLinear(ttype): ttype</varname></para>
 				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompoint 'SRID=4326;[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02)');
--- "SRID=4326;[POINT Z (0 0 0)@2012-01-01 00:00:00+00,
-  POINT Z (1 1 1)@2012-01-02 00:00:00+00)"
-SELECT asEWKT(ARRAY[geometry 'SRID=5676;Point(0 0)', 'SRID=5676;Point(1 1)']);
--- "{"SRID=5676;POINT(0 0)","SRID=5676;POINT(1 1)"}"
+SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02,
+  1@2000-01-03, 2@2000-01-04]');
+-- "{[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
+  [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}"
+SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
+  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
+-- "{[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
+  [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]}"
 </programlisting>
 			</listitem>
 
-			<listitem id="asMFJSON">
-				<indexterm><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>Get the Moving Features JSON representation &Z_support; &geography_support;</para>
-				<para><varname>asMFJSON(tpoint,maxdecdigits integer=15,options integer=0): bytea</varname></para>
-				<para>The last <varname>options</varname> argument could be used to add BBOX and/or CRS in MFJSON output:</para>
-				<itemizedlist>
-					<listitem><para>0: means no option (default value)</para></listitem>
-					<listitem><para>1: MFJSON BBOX</para></listitem>
-					<listitem><para>2: MFJSON Short CRS (e.g EPSG:4326)</para></listitem>
-					<listitem><para>4: MFJSON Long CRS (e.g urn:ogc:def:crs:EPSG::4326)</para></listitem>
-				</itemizedlist>
+			<listitem id="appendInstant">
+				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
+				<para>Append a temporal instant to a temporal value</para>
+				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
 				<programlisting xml:space="preserve">
-SELECT asMFJSON(tgeompoint 'Point(1 2)@2019-01-01 18:00:00.15+02');
--- "{"type":"MovingPoint","coordinates":[1,2],"datetimes":"2019-01-01T17:00:00.15+01",
-  "interpolations":["Discrete"]}"
-SELECT asMFJSON(tgeompoint 'SRID=4326;
-  Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 2, 3);
--- "{"type":"MovingPoint","crs":{"type":"name","properties":{"name":"EPSG:4326"}},
-  "stBoundedBy":{"bbox":[50.81,4.38,50.81,4.38],
-  "period":{"begin":"2019-01-01 17:00:00.15+01","end":"2019-01-01 17:00:00.15+01"}},
-  "coordinates":[50.81,4.38],"datetimes":"2019-01-01T17:00:00.15+01",
-  "interpolations":["Discrete"]}"
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
+-- "[1@2000-01-01, 1@2000-01-02]"
+SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint 'Point(1 1 1)@2000-01-06'));
+-- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
 </programlisting>
 			</listitem>
 
-			<listitem id="asBinary">
-				<indexterm><primary><varname>asBinary</varname></primary></indexterm>
-				<para>Get the Well-Known Binary (WKB) representation &Z_support; &geography_support;</para>
-				<para><varname>asBinary(tpoint): bytea</varname></para>
-				<para><varname>asBinary(tpoint,endian text): bytea</varname></para>
-				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
+			<listitem id="merge">
+				<indexterm><primary><varname>merge</varname></primary></indexterm>
+				<para>Merge the temporal values</para>
+				<para><varname>merge(ttype,ttype): ttype</varname></para>
+				<para><varname>merge(ttype[]): ttype</varname></para>
+				<para>The values may share a single timestamp, in that case the temporal values are joined in the result if their value at the common timestamp is the same, otherwise an error is raised.</para>
 				<programlisting xml:space="preserve">
-SELECT asBinary(tgeompoint 'Point(1 2 3)@2012-01-01');
--- "\x0191000000000000f03f0000000000000040000000000000084000fce0136a580100"
-</programlisting>
-			</listitem>
+SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
+-- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
+-- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}"
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
+-- ERROR:  Both arguments have different value at their overlapping timestamp
+SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
+-- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
 
-			<listitem id="asEWKB">
-				<indexterm><primary><varname>asEWKB</varname></primary></indexterm>
-				<para>Get the Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
-				<para><varname>asEWKB(tpoint): bytea</varname></para>
-				<para><varname>asEWKB(tpoint,endian text): bytea</varname></para>
-				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</para>
-				<programlisting xml:space="preserve">
-SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2012-01-01');
--- "\x01f1a41e0000000000000000f03f0000000000000040000000000000084000fce0136a580100"
-</programlisting>
-			</listitem>
-
-			<listitem id="asHexEWKB">
-				<indexterm><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Get the Hexadecimal Extended Well-Known Binary (EWKB) representation as text &Z_support; &geography_support;</para>
-				<para><varname>asHexEWKB(tpoint): text</varname></para>
-				<para><varname>asHexEWKB(tpoint,endian text): text</varname></para>
-				<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then NDR is used.</para>
-				<programlisting xml:space="preserve">
-SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2012-01-01');
--- "01D1E40E0000000000000000F03F0000000000000040000000000000084000FCE0136A580100"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeompointFromText">
-				<indexterm><primary><varname>tgeompointFromText</varname></primary></indexterm>
-				<para>Input a temporal geometry point from a representación de texto conocido (Well-Known Text o WKT) &Z_support;</para>
-				<para><varname>tgeompointFromText(text): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromText(text '[POINT(1 2)@2000-01-01, POINT(3 4)@2000-01-02]'));
--- "[POINT(1 2)@2000-01-01, POINT(3 4)@2000-01-02]"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpointFromText">
-				<indexterm><primary><varname>tgeogpointFromText</varname></primary></indexterm>
-				<para>Input a temporal geography point from a Well-Known Text (WKT) representation &Z_support; &geography_support;</para>
-				<para><varname>tgeogpointFromText(text): tgeogpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeogpointFromText(text '[POINT(1 2)@2000-01-01, POINT(3 4)@2000-01-02]'));
--- "SRID=4326;[POINT(1 2)@2000-01-01, POINT(3 4)@2000-01-02]"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeompointFromEWKT">
-				<indexterm><primary><varname>tgeompointFromEWKT</varname></primary></indexterm>
-				<para>Input a temporal geometry point from an Extended Well-Known Text (EWKT) representation &Z_support;</para>
-				<para><varname>tgeompointFromEWKT(text): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromEWKT(text 'SRID=3812;[POINT(1 2)@2000-01-01,
-  POINT(3 4)@2000-01-02]'));
--- "SRID=3812;[POINT(1 2)@2000-01-01 00:00:00+01, POINT(3 4)@2000-01-02 00:00:00+01]"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpointFromEWKT">
-				<indexterm><primary><varname>tgeogpointFromEWKT</varname></primary></indexterm>
-				<para>Input a temporal geography point from an Extended Well-Known Text (EWKT) representation &Z_support; &geography_support;</para>
-				<para><varname>tgeogpointFromEWKT(text): tgeogpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeogpointFromEWKT(text 'SRID=7844;[POINT(1 2)@2000-01-01,
-  POINT(3 4)@2000-01-02]'));
--- "SRID=7844;[POINT(1 2)@2000-01-01, POINT(3 4)@2000-01-02]"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeompointFromMFJSON">
-				<indexterm><primary><varname>tgeompointFromMFJSON</varname></primary></indexterm>
-				<para>Input a temporal geometry point from a Moving Features JSON representation &Z_support;</para>
-				<para><varname>tgeompointFromMFJSON(text): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
-  "properties":{"name":"EPSG:4326"}},"coordinates":[50.81,4.38],
-  "datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
--- "SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpointFromMFJSON">
-				<indexterm><primary><varname>tgeogpointFromMFJSON</varname></primary></indexterm>
-				<para>Input a temporal geography point from a Moving Features JSON representation &Z_support; &geography_support;</para>
-				<para><varname>tgeogpointFromMFJSON(text): tgeogpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeogpointFromMFJSON(text '{"type":"MovingPoint","crs":{"type":"name",
-  "properties":{"name":"EPSG:4326"}},"coordinates":[50.81,4.38],
-  "datetimes":"2019-01-01T17:00:00.15+01","interpolations":["Discrete"]}'));
--- "SRID=4326;POINT(50.81 4.38)@2019-01-01 17:00:00.15+01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeompointFromBinary">
-				<indexterm><primary><varname>tgeompointFromBinary</varname></primary></indexterm>
-				<para>Input a temporal geometry point from a Well-Known Binary (WKB) representation &Z_support;</para>
-				<para><varname>tgeompointFromBinary(bytea): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromBinary(
-  '\x0181000000000000f03f0000000000000040005c6c29ffffffff'));
--- "POINT(1 2)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpointFromBinary">
-				<indexterm><primary><varname>tgeogpointFromBinary</varname></primary></indexterm>
-				<para>Input a temporal geography point from a Well-Known Binary (WKB) representation &Z_support; &geography_support;</para>
-				<para><varname>tgeogpointFromBinary(bytea): tgeogpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromBinary(
-  '\x01b1000000000000f03f000000000000f03f000000000000f03f005c6c29ffffffff'));
--- "SRID=4326;POINT Z (1 1 1)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeompointFromEWKB">
-				<indexterm><primary><varname>tgeompointFromEWKB</varname></primary></indexterm>
-				<para>Input a temporal geometry point from an Extended Well-Known Binary (EWKB) representation &Z_support;</para>
-				<para><varname>tgeompointFromEWKB(bytea): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromEWKB(
-  '\x01c1e40e0000000000000000f03f0000000000000040005c6c29ffffffff'));
--- "SRID=3812;POINT(1 2)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpointFromEWKB">
-				<indexterm><primary><varname>tgeogpointFromEWKB</varname></primary></indexterm>
-				<para>Input a temporal geography point from an Extended Well-Known Binary (EWKB) representation &Z_support; &geography_support;</para>
-				<para><varname>tgeogpointFromEWKB(bytea): tgeogpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeogpointFromEWKB(
-  '\x01f1a41e0000000000000000f03f000000000000f03f000000000000f03f005c6c29ffffffff'));
--- "SRID=7844;POINT Z (1 1 1)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeompointFromHexEWKB">
-				<indexterm><primary><varname>tgeompointFromHexEWKB</varname></primary></indexterm>
-				<para>Input a temporal geometry point from an Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support;</para>
-				<para><varname>tgeompointFromHexEWKB(text): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeompointFromHexEWKB(
-  '01C1E40E0000000000000000F03F0000000000000040005C6C29FFFFFFFF'));
--- "SRID=3812;POINT(1 2)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tgeogpointFromHexEWKB">
-				<indexterm><primary><varname>tgeogpointFromHexEWKB</varname></primary></indexterm>
-				<para>Input a temporal geography point from an Hexadecimal Extended Well-Known Binary (HexEWKB) representation &Z_support; &geography_support;</para>
-				<para><varname>tgeogpointFromHexEWKB(text): tgeogpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(tgeogpointFromHexEWKB(
-  '01F1A41E0000000000000000F03F000000000000F03F000000000000F03F005C6C29FFFFFFFF'));
--- "SRID=7844;POINT Z (1 1 1)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="tpoint_SRID">
-				<indexterm><primary><varname>SRID</varname></primary></indexterm>
-				<para>Get the spatial reference identifier &Z_support; &geography_support;</para>
-				<para><varname>SRID(tpoint): integer</varname></para>
-				<programlisting xml:space="preserve">
-SELECT SRID(tgeompoint 'Point(0 0)@2012-01-01');
--- 0
-</programlisting>
-			</listitem>
-
-			<listitem id="tpoint_setSRID">
-				<indexterm><primary><varname>setSRID</varname></primary></indexterm>
-				<para>Set the spatial reference identifier &Z_support; &geography_support;</para>
-				<para><varname>setSRID(tpoint): tpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)', 4326));
--- "SRID=4326;[POINT(0 0)@2012-01-01 00:00:00+00, POINT(1 1)@2012-01-02 00:00:00+00)"
-</programlisting>
-				</listitem>
-
-			<listitem id="tpoint_transform">
-				<indexterm><primary><varname>transform</varname></primary></indexterm>
-				<para>Transform to a different spatial reference &Z_support; &geography_support;</para>
-				<para><varname>transform(tpoint,integer): tpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2012-01-01', 3812));
--- "SRID=3812;POINT(648679.018035303 671067.055638114)@2012-01-01 00:00:00+00"
-</programlisting>
-			</listitem>
-
-			<listitem id="tpoint_setPrecision">
-				<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
-				<para>Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
-				<para><varname>setPrecision(tpoint,integer): tpoint</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asText(setPrecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01,
-  Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
--- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02,
-  POINT Z (1.12 1.12 1.12)@2000-01-03}"
-SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
--- "POINT(1.12 1.12)@2000-01-01"
-</programlisting>
-			</listitem>
-
-			<listitem id="getX">
-				<indexterm><primary><varname>getX</varname></primary></indexterm>
-				<para>Get the X coordinate values as a temporal float &Z_support; &geography_support;</para>
-				<para><varname>getX(tpoint): tfloat</varname></para>
-				<programlisting xml:space="preserve">
-SELECT getX(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
-  Point(5 6)@2000-01-03}');
--- "{1@2000-01-01, 3@2000-01-02, 5@2000-01-03}"
-SELECT getX(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
-  Point(7 8 9)@2000-01-03]');
--- "Interp=Stepwise;[1@2000-01-01, 4@2000-01-02, 7@2000-01-03]"
-</programlisting>
-			</listitem>
-
-			<listitem id="getY">
-				<indexterm><primary><varname>getY</varname></primary></indexterm>
-				<para>Get the Y coordinate values as a temporal float &Z_support; &geography_support;</para>
-				<para><varname>getY(tpoint): tfloat</varname></para>
-				<programlisting xml:space="preserve">
-SELECT getY(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
-  Point(5 6)@2000-01-03}');
--- "{2@2000-01-01, 4@2000-01-02, 6@2000-01-03}"
-SELECT getY(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
-  Point(7 8 9)@2000-01-03]');
--- "Interp=Stepwise;[2@2000-01-01, 5@2000-01-02, 8@2000-01-03]"
-</programlisting>
-			</listitem>
-
-			<listitem id="getZ">
-				<indexterm><primary><varname>getZ</varname></primary></indexterm>
-				<para>Get the Z coordinate values as a temporal float &Z_support; &geography_support;</para>
-				<para><varname>getZ(tpoint): tfloat</varname></para>
-				<programlisting xml:space="preserve">
-SELECT getZ(tgeompoint '{Point(1 2)@2000-01-01, Point(3 4)@2000-01-02,
-  Point(5 6)@2000-01-03}');
--- The temporal point do not have Z dimension
-SELECT getZ(tgeogpoint 'Interp=Stepwise;[Point(1 2 3)@2000-01-01, Point(4 5 6)@2000-01-02,
-  Point(7 8 9)@2000-01-03]');
--- "Interp=Stepwise;[3@2000-01-01, 6@2000-01-02, 9@2000-01-03]"
-</programlisting>
-			</listitem>
-
-			<listitem id="isSimple">
-				<indexterm><primary><varname>isSimple</varname></primary></indexterm>
-				<para>Returns true if the temporal point does not spatially self-intersect &Z_support;</para>
-				<para><varname>isSimple(tpoint): boolean</varname></para>
-				<para>Notice that a temporal sequence set point is simple if every composing sequence is simple.</para>
-				<programlisting xml:space="preserve">
-SELECT isSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(0 0)@2000-01-03]');
--- false
-SELECT isSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
-  Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]');
--- true
-SELECT isSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-  [Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}');
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="makeSimple">
-				<indexterm><primary><varname>makeSimple</varname></primary></indexterm>
-				<para>Returns an array of fragments of the temporal point which are simple &Z_support;</para>
-				<para><varname>makeSimple(tpoint): tgeompoint[]</varname></para>
-				<programlisting xml:space="preserve">
-SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(0 0)@2000-01-03]'));
--- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02)",
-   "[POINT(1 1)@2000-01-02, POINT(0 0)@2000-01-03]"}
-SELECT asText(makeSimple(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
-  Point(2 0 2)@2000-01-03, Point(0 0 0)@2000-01-04]'));
--- {"[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02, POINT Z (2 0 2)@2000-01-03,
-   POINT Z (0 0 0)@2000-01-04]"}
-SELECT asText(makeSimple(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(0 1)@2000-01-03, Point(1 0)@2000-01-04]'));
--- {"[POINT(0 0)@2000-01-01, POINT(1 1)@2000-01-02, POINT(0 1)@2000-01-03)",
-   "[POINT(0 1)@2000-01-03, POINT(1 0)@2000-01-04]"}
-SELECT asText(makeSimple(tgeompoint '{[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02],
-  [Point(1 1 1)@2000-01-03, Point(0 0 0)@2000-01-04]}'));
--- {"{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02],
-   [POINT Z (1 1 1)@2000-01-03, POINT Z (0 0 0)@2000-01-04]}"}
-</programlisting>
-			</listitem>
-
-			<listitem id="length">
-				<indexterm><primary><varname>length</varname></primary></indexterm>
-				<para>Get the length traversed by the temporal point &Z_support; &geography_support;</para>
-				<para><varname>length(tpoint): float</varname></para>
-				<programlisting xml:space="preserve">
-SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02]');
--- 1.73205080756888
-SELECT length(tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 1)@2000-01-02,
-  Point(0 0 0)@2000-01-03]');
--- 3.46410161513775
-SELECT length(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
-  Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
--- 0
-</programlisting>
-			</listitem>
-
-			<listitem id="cumulativeLength">
-				<indexterm><primary><varname>cumulativeLength</varname></primary></indexterm>
-				<para>Get the cumulative length traversed by the temporal point &Z_support; &geography_support;</para>
-				<para><varname>cumulativeLength(tpoint): tfloat_seq</varname></para>
-				<programlisting xml:space="preserve">
-SELECT round(cumulativeLength(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}'), 6);
--- {[0@2000-01-01, 1.414214@2000-01-02, 2.414214@2000-01-03],
-  [2.414214@2000-01-04, 3.414214@2000-01-05]}
-SELECT cumulativeLength(tgeompoint 'Interp=Stepwise;[Point(0 0 0)@2000-01-01,
-  Point(1 1 1)@2000-01-02, Point(0 0 0)@2000-01-03]');
--- Interp=Stepwise;[0@2000-01-01, 0@2000-01-03]
-</programlisting>
-			</listitem>
-
-			<listitem id="speed">
-				<indexterm><primary><varname>speed</varname></primary></indexterm>
-				<para>Get the speed of the temporal point in units per second &Z_support; &geography_support;</para>
-				<para><varname>speed(tpoint): tfloat_seqset</varname></para>
-				<para>The temporal point must have linear interpolation</para>
-				<programlisting xml:space="preserve">
-SELECT speed(tgeompoint '{[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(1 0)@2000-01-03], [Point(1 0)@2000-01-04, Point(0 0)@2000-01-05]}') * 3600 * 24;
--- "Interp=Stepwise;{[1.4142135623731@2000-01-01, 1@2000-01-02, 1@2000-01-03],
-  [1@2000-01-04, 1@2000-01-05]}"
-SELECT speed(tgeompoint 'Interp=Stepwise;[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(1 0)@2000-01-03]');
--- ERROR:  The temporal value must have linear interpolation
-</programlisting>
-			</listitem>
-
-			<listitem id="twCentroid">
-				<indexterm><primary><varname>twCentroid</varname></primary></indexterm>
-				<para>Get the time-weighted centroid &Z_support;</para>
-				<para><varname>twCentroid(tgeompoint): point</varname></para>
-				<programlisting xml:space="preserve">
-SELECT ST_AsText(twCentroid(tgeompoint '{[Point(0 0 0)@2012-01-01,
-  Point(0 1 1)@2012-01-02, Point(0 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)}'));
--- "POINT Z (0 0.666666666666667 0.666666666666667)"
-</programlisting>
-			</listitem>
-
-			<listitem id="azimuth">
-				<indexterm><primary><varname>azimuth</varname></primary></indexterm>
-				<para>Get the temporal azimuth &Z_support; &geography_support;</para>
-				<para><varname>azimuth(tpoint): tfloat</varname></para>
-				<programlisting xml:space="preserve">
-SELECT degrees(azimuth(tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-02,
-  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-04)'));
--- "Interp=Stepwise;{[45@2012-01-01, 45@2012-01-02], [225@2012-01-03, 225@2012-01-04)}"
-</programlisting>
-			</listitem>
-
-			<listitem id="bearing">
-				<indexterm><primary><varname>bearing</varname></primary></indexterm>
-				<para>Get the temporal bearing &Z_support; &geography_support;</para>
-				<para><varname>bearing({tpoint, point}, {tpoint, point}): tfloat</varname></para>
-				<programlisting xml:space="preserve">
-SELECT round(degrees(bearing(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03]',
-  geometry 'Point(2 3)')), 3);
--- [26.565@2012-01-01, 0@2012-01-02, 270@2012-01-03]
-SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]',
-  tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]')), 3);
---  [63.435@2012-01-01, 0@2012-01-02, 296.565@2012-01-03]
-SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012-01-03]',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]')), 3);
--- [243.435@2012-01-01, 116.565@2012-01-03]
-</programlisting>
-			</listitem>
-
-			<listitem id="nearestApproachInstant">
-				<indexterm><primary><varname>nearestApproachInstant</varname></primary></indexterm>
-				<para>Get the instant of the first temporal point at which the two arguments are at the nearest distance &Z_support; &geography_support;</para>
-				<para><varname>nearestApproachInstant({geo,tpoint},{geo,tpoint}): tpoint</varname></para>
-				<para>The function will only return the first instant that it finds if there are more than one. The resulting instant may be at an exclusive bound.</para>
-				<programlisting xml:space="preserve">
-SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
-  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
--- "POINT(2 1)@2000-01-02"
-SELECT asText(NearestApproachInstant(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
--- "POINT(1 1)@2000-01-01"
-SELECT asText(NearestApproachInstant(tgeompoint '(Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-03]', tgeompoint '(Point(1 1)@2000-01-01, Point(4 1)@2000-01-03]'));
--- "POINT(1 1)@2000-01-01"
-SELECT asText(nearestApproachInstant(tgeompoint '[Point(0 0 0)@2012-01-01,
-  Point(1 1 1)@2012-01-03, Point(0 0 0)@2012-01-05)', tgeompoint
-  '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04, Point(2 2 2)@2012-01-06)'));
--- "POINT Z (0.75 0.75 0.75)@2012-01-03 12:00:00+00"
-</programlisting>
-				<para>Function <varname>nearestApproachInstant</varname> generalizes the PostGIS function <varname>ST_ClosestPointOfApproach</varname>. First, the latter function requires both arguments to be trajectories. Second, function <varname>nearestApproachInstant</varname> returns both the point and the timestamp of the nearest point of approach while the PostGIS function only provides the timestamp as shown next.</para>
-				<programlisting xml:space="preserve">
-SELECT to_timestamp(ST_ClosestPointOfApproach(
-  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-    Point(0 0 0)@2012-01-05)'::geometry,
-  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-    Point(2 2 2)@2012-01-06)'::geometry));
--- "2012-01-03 12:00:00+00"
-</programlisting>
-			</listitem>
-
-			<listitem id="nearestApproachDistance">
-				<indexterm><primary><varname>nearestApproachDistance</varname></primary></indexterm>
-				<para>Get the smallest distance ever &Z_support; &geography_support;</para>
-				<para><varname>nearestApproachDistance({geo,tpoint},{geo,tpoint}): float</varname></para>
-				<programlisting xml:space="preserve">
-SELECT NearestApproachDistance(tgeompoint '(Point(1 1)@2000-01-01,
-  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
--- 1
-SELECT NearestApproachDistance(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)');
--- 1.4142135623731
-SELECT nearestApproachDistance(
-  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-    Point(0 0 0)@2012-01-05)',
-  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-    Point(2 2 2)@2012-01-06)');
--- 0.5
-</programlisting>
-				<para>Function <varname>nearestApproachDistance</varname> has an associated operator <varname>|=|</varname> that can be used for doing nearest neighbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />). This function corresponds to the function <varname>ST_DistanceCPA</varname> provided by PostGIS, altough the latter requires both arguments to be a trajectory.</para>
-				<programlisting xml:space="preserve">
-SELECT ST_DistanceCPA(
-  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-    Point(0 0 0)@2012-01-05)'::geometry,
-  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-    Point(2 2 2)@2012-01-06)'::geometry);
--- 0.5
-</programlisting>
-			</listitem>
-
-			<listitem id="shortestLine">
-				<indexterm><primary><varname>shortestLine</varname></primary></indexterm>
-				<para>Get the line connecting the nearest approach point &Z_support; &geography_support;</para>
-				<para><varname>shortestLine({geo,tpoint},{geo,tpoint}): geo</varname></para>
-				<para>The function will only return the first line that it finds if there are more than one.</para>
-				<programlisting xml:space="preserve">
-SELECT ST_AsText(shortestLine(tgeompoint '(Point(1 1)@2000-01-01,
-  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
--- "LINESTRING(2 1,2 2)"
-SELECT ST_AsText(shortestLine(tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01,
-  Point(3 1)@2000-01-03]', geometry 'Linestring(1 3,2 2,3 3)'));
--- "LINESTRING(1 1,2 2)"
-SELECT ST_AsText(shortestLine(
-  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-    Point(0 0 0)@2012-01-05)',
-  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-    Point(2 2 2)@2012-01-06)'));
--- "LINESTRING Z (0.75 0.75 0.75,1.25 0.75 0.75)"
-</programlisting>
-				<para>Function <varname>shortestLine</varname> can be used to obtain the result provided by the PostGIS function <varname>ST_CPAWithin</varname> when both arguments are trajectories as shown next.</para>
-				<programlisting xml:space="preserve">
-SELECT ST_Length(shortestLine(
-  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-    Point(0 0 0)@2012-01-05)',
-  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-    Point(2 2 2)@2012-01-06)')) &lt;= 0.5;
--- true
-SELECT ST_CPAWithin(
-  tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
-    Point(0 0 0)@2012-01-05)'::geometry,
-  tgeompoint '[Point(2 0 0)@2012-01-02, Point(1 1 1)@2012-01-04,
-    Point(2 2 2)@2012-01-06)'::geometry, 0.5);
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="simplify">
-				<indexterm><primary><varname>simplify</varname></primary></indexterm>
-				<para>Simplify a temporal point using a generalization of the Douglas-Peucker algorithm &Z_support;</para>
-				<para><varname>simplify(tpoint,distance float): tpoint</varname></para>
-				<para><varname>simplify(tpoint,distance float,speed float): tpoint</varname></para>
-				<para>The first version remove points that are less than the distance passed as second argument, which is specified in the units of the coordinate system. The second version remove points that are less than the distance passed as second argument provided that the speed difference between the point and the corresponding point in the simplified version is less than the speed passed as third argument, which is specified in units per second. Notice that simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given temporal point is returned.</para>
-
-				<programlisting xml:space="preserve">
--- Only distance specified
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 1.5)));
--- "LINESTRING(0 4,1 1,4 3,5 0,6 4)"
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 2)));
--- "LINESTRING(0 4,5 0,6 4)"
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4)));
--- "LINESTRING(0 4,6 4)"
-
--- Only speed difference specified
-SELECT round(speed(tgeompoint '[Point(0 4)@2000-01-01, Point(1 1)@2000-01-02,
-  Point(2 3)@2000-01-03, Point(3 1)@2000-01-04, Point(4 3)@2000-01-05,
-  Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]') * 1e5, 2);
--- "Interp=Stepwise;[3.66@2000-01-01, 2.59@2000-01-02, 3.66@2000-01-05,
-  4.77@2000-01-06, 4.77@2000-01-07]"
-
--- Both distance and delta speed specified
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 1 / 1e5)));
--- "LINESTRING(0 4,1 1,2 3,3 1,4 3,5 0,6 4)"
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 2 / 1e5)));
--- "LINESTRING(0 4,1 1,5 0,6 4)"
-SELECT ST_AsText(trajectory(simplify(tgeompoint '[Point(0 4)@2000-01-01,
-  Point(1 1)@2000-01-02, Point(2 3)@2000-01-03, Point(3 1)@2000-01-04,
-  Point(4 3)@2000-01-05, Point(5 0)@2000-01-06, Point(6 4)@2000-01-07]', 4, 3 / 1e5)));
--- "LINESTRING(0 4,6 4)"
-</programlisting>
-				<para>A typical use for the <varname>simplify</varname> function is to reduce the size of a dataset, in particular for visualization purposes.</para>
-			</listitem>
-
-			<listitem id="geoMeasure">
-				<indexterm><primary><varname>geoMeasure</varname></primary></indexterm>
-				<para>Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
-				<para><varname>geoMeasure(tpoint,tfloat,segmentize=false): geo</varname></para>
-				<para>The last <varname>segmentize</varname> argument states whether the resulting value is a either <varname>Linestring M</varname> or a <varname>MultiLinestring M</varname> where each component is a segment of two points.</para>
-
-				<programlisting xml:space="preserve">
-SELECT st_astext(geoMeasure(tgeompoint '{Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02}', '{5@2000-01-01, 5@2000-01-02}'));
--- "MULTIPOINT ZM (1 1 1 5,2 2 2 5)"
-SELECT st_astext(geoMeasure(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
-  [Point(1 1)@2000-01-03, Point(1 1)@2000-01-04]}',
-  '{[5@2000-01-01, 5@2000-01-02],[7@2000-01-03, 7@2000-01-04]}'));
--- "GEOMETRYCOLLECTION M (LINESTRING M (1 1 5,2 2 5),POINT M (1 1 7))"
-SELECT st_astext(geoMeasure(tgeompoint '[Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]',
-  '[5@2000-01-01, 7@2000-01-02, 5@2000-01-03]', true));
--- "MULTILINESTRING M ((1 1 5,2 2 5),(2 2 7,1 1 7))"
-</programlisting>
-				<para>A typical visualization for mobility data is to show on a map the trajectory of the moving object using different colors according to the speed. <xref linkend="figspeed" /> shows the result of the query below using a color ramp in QGIS.</para>
-				<programlisting xml:space="preserve">
-WITH Temp(t) AS (
-  SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-05,
-    Point(2 0)@2012-01-08, Point(3 1)@2012-01-10, Point(4 0)@2012-01-11]'
-)
-SELECT ST_AsText(geoMeasure(t, round(speed(t) * 3600 * 24, 2), true))
-FROM Temp;
--- "MULTILINESTRING M ((0 0 0.35,1 1 0.35),(1 1 0.47,2 0 0.47),(2 0 0.71,3 1 0.71),
-  (3 1 1.41,4 0 1.41))"
-</programlisting>
-				<para>The following expression is used in QGIS to achieve this. The <varname>scale_linear</varname> function transforms the M value of each composing segment to the range [0, 1]. This value is then passed to the <varname>ramp_color</varname> function.</para>
-				<programlisting xml:space="preserve">
-ramp_color(
-  'RdYlBu',
-  scale_linear(
-    m(start_point(geometry_n($geometry,@geometry_part_num))),
-    0, 2, 0, 1)
-)
-</programlisting>
-				<figure id="figspeed" float="start">
-					<title>Visualizing the speed of a moving object using a color ramp in QGIS.</title>
-					<mediaobject>
-						<imageobject><imagedata scale='30' fileref='images/speed.png' /></imageobject>
-					</mediaobject>
-				</figure>
-			</listitem>
-
-			<listitem id="asMVTGeom">
-				<indexterm><primary><varname>asMVTGeom</varname></primary></indexterm>
-				<para>Transform a temporal geometric point into the coordinate space of a Mapbox Vector Tile. The result is a couple composed of a <varname>geometry</varname> value and an array of associated timestamp values encoded as Unix epoch &Z_support;</para>
-				<para><varname>asMVTGeom(tpoint,bounds,extent=4096,buffer=256,clip=TRUE): geom_times</varname></para>
-				<para>The parameters are as follows:</para>
-				<itemizedlist>
-					<listitem><para><varname>tpoint</varname> is the temporal point to transform</para></listitem>
-					<listitem><para><varname>bounds</varname> is an <varname>stbox</varname> defining the geometric bounds of the tile contents without buffer</para></listitem>
-					<listitem><para><varname>extent</varname> is the tile extent in tile coordinate space</para></listitem>
-					<listitem><para><varname>buffer</varname> is the buffer distance in tile coordinate space</para></listitem>
-					<listitem><para><varname>clip</varname> is a Boolean that determines if the resulting geometries and timestamps should be clipped or not</para></listitem>
-				</itemizedlist>
-				<programlisting xml:space="preserve">
-SELECT ST_AsText((mvt).geom), (mvt).times
-FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-01-02]',
-  stbox 'STBOX((40,40),(60,60))') AS mvt ) AS t;
--- LINESTRING(-256 4352,4352 -256) | {946714680,946734120}
-SELECT ST_AsText((mvt).geom), (mvt).times
-FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-01-02]',
-  stbox 'STBOX((40,40),(60,60))', clip:=false) AS mvt ) AS t;
--- LINESTRING(-8192 12288,12288 -8192) | {946681200,946767600}
+SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
+-- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}"
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
+-- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}"
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
+-- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
+-- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}"
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
+  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
+  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
+-- "{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
+  Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
+  [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}"
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
+  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
+-- "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]"
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1759,27 +1107,30 @@ FROM (SELECT asMVTGeom(tgeompoint '[Point(0 0)@2000-01-01, Point(100 100)@2000-0
 
 	<sect1>
 		<title>Restriction Functions</title>
-		<para>These functions restrict the temporal value with respect to a value or a time extent.</para>
 
-		<itemizedlist>
-			<listitem id="atValue">
-				<indexterm><primary><varname>atValue</varname></primary></indexterm>
-				<para>Restrict to a value</para>
-				<para><varname>atValue(ttype,base): ttype</varname></para>
-				<programlisting xml:space="preserve">
+		<sect2>
+			<title>Selection Functions</title>
+			<para>These functions restrict the temporal value with respect to a value or a time extent.</para>
+
+			<itemizedlist>
+				<listitem id="atValue">
+					<indexterm><primary><varname>atValue</varname></primary></indexterm>
+					<para>Restrict to a value</para>
+					<para><varname>atValue(ttype,base): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atValue(tint '[1@2012-01-01, 1@2012-01-15)', 1);
 -- "[1@2012-01-01, 1@2012-01-15)"
 SELECT asText(atValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
   'Point(1 1 1)'));
 -- "{[POINT Z (1 1 1)@2012-01-02]}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atValues">
-				<indexterm><primary><varname>atValues</varname></primary></indexterm>
-				<para>Restrict to an array of values</para>
-				<para><varname>atValues(ttype,base[]): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atValues">
+					<indexterm><primary><varname>atValues</varname></primary></indexterm>
+					<para>Restrict to an array of values</para>
+					<para><varname>atValues(ttype,base[]): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atValues(tfloat '[1@2012-01-01, 4@2012-01-4)', ARRAY[1, 3, 5]);
 -- "{[1@2012-01-01], [3@2012-01-03]}"
 SELECT asText(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)',
@@ -1788,33 +1139,33 @@ SELECT asText(atValues(tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03
 </programlisting>
 			</listitem>
 
-			<listitem id="atRange">
-				<indexterm><primary><varname>atRange</varname></primary></indexterm>
-				<para>Restrict to a range</para>
-				<para><varname>atRange(tnumber,numrange): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atRange">
+					<indexterm><primary><varname>atRange</varname></primary></indexterm>
+					<para>Restrict to a range</para>
+					<para><varname>atRange(tnumber,numrange): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[1,3]');
 -- "[1@2012-01-01, 3@2012-01-03]"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atRanges">
-				<indexterm><primary><varname>atRanges</varname></primary></indexterm>
-				<para>Restrict to an array of ranges</para>
-				<para><varname>atRanges(tnumber,numrange[]): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atRanges">
+					<indexterm><primary><varname>atRanges</varname></primary></indexterm>
+					<para>Restrict to an array of ranges</para>
+					<para><varname>atRanges(tnumber,numrange[]): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
   ARRAY[floatrange '[1,2]', '[3,4]']);
 -- "{[1@2012-01-01, 2@2012-01-02],[3@2012-01-03, 4@2012-01-04]}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atMin">
-				<indexterm><primary><varname>atMin</varname></primary></indexterm>
-				<para>Restrict to the minimum value</para>
-				<para><varname>atMin(torder): torder</varname></para>
-				<para>The function returns null if the minimum value only happens at exclusive bounds.</para>
-				<programlisting xml:space="preserve">
+				<listitem id="atMin">
+					<indexterm><primary><varname>atMin</varname></primary></indexterm>
+					<para>Restrict to the minimum value</para>
+					<para><varname>atMin(torder): torder</varname></para>
+					<para>The function returns null if the minimum value only happens at exclusive bounds.</para>
+					<programlisting xml:space="preserve">
 SELECT atMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{1@2012-01-01, 1@2012-01-05}"
 SELECT atMin(tint '(1@2012-01-01, 3@2012-01-03]');
@@ -1824,14 +1175,14 @@ SELECT atMin(tfloat '(1@2012-01-01, 3@2012-01-03]');
 SELECT atMin(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-05]}');
 -- "{(AA@2012-01-01, AA@2012-01-03), [AA@2012-01-05]}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atMax">
-				<indexterm><primary><varname>atMax</varname></primary></indexterm>
-				<para>Restrict to the maximum value</para>
-				<para><varname>atMax(torder): torder</varname></para>
-				<para>The function returns null if the maximum value only happens at exclusive bounds.</para>
-				<programlisting xml:space="preserve">
+				<listitem id="atMax">
+					<indexterm><primary><varname>atMax</varname></primary></indexterm>
+					<para>Restrict to the maximum value</para>
+					<para><varname>atMax(torder): torder</varname></para>
+					<para>The function returns null if the maximum value only happens at exclusive bounds.</para>
+					<programlisting xml:space="preserve">
 SELECT atMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{3@2012-01-05}"
 SELECT atMax(tfloat '(1@2012-01-01, 3@2012-01-03)');
@@ -1841,14 +1192,14 @@ SELECT atMax(tfloat '{(2@2012-01-01, 1@2012-01-03), [2@2012-01-03, 2@2012-01-05)
 SELECT atMax(ttext '{(AA@2012-01-01, AA@2012-01-03), (BB@2012-01-03, AA@2012-01-05]}');
 -- "{("BB"@2012-01-03, "BB"@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atGeometry">
-				<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
-				<para>Restrict to a geometry</para>
-				<para><varname>atGeometry(tgeompoint,geometry): tgeompoint</varname></para>
-				<para>Notice that it is allowed to mix 2D/3D geometries but the computation is only performed on 2D.</para>
-				<programlisting xml:space="preserve">
+				<listitem id="atGeometry">
+					<indexterm><primary><varname>atGeometry</varname></primary></indexterm>
+					<para>Restrict to a geometry</para>
+					<para><varname>atGeometry(tgeompoint,geometry): tgeompoint</varname></para>
+					<para>Notice that it is allowed to mix 2D/3D geometries but the computation is only performed on 2D.</para>
+					<programlisting xml:space="preserve">
 SELECT asText(atGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{"[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]"}"
@@ -1856,84 +1207,84 @@ SELECT astext(atGeometry(tgeompoint '[Point(0 0 0)@2000-01-01, Point(4 4 4)@2000
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{[POINT Z (1 1 1)@2000-01-02, POINT Z (2 2 2)@2000-01-03]}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atTimestamp">
-				<indexterm><primary><varname>atTimestamp</varname></primary></indexterm>
-				<para>Restrict to a timestamp</para>
-				<para><varname>atTimestamp(ttype,timestamptz): ttype_inst</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atTimestamp">
+					<indexterm><primary><varname>atTimestamp</varname></primary></indexterm>
+					<para>Restrict to a timestamp</para>
+					<para><varname>atTimestamp(ttype,timestamptz): ttype_inst</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atTimestamp(tfloat '[1@2012-01-01, 5@2012-01-05)', '2012-01-02');
 -- "2@2012-01-02"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atTimestampSet">
-				<indexterm><primary><varname>atTimestampSet</varname></primary></indexterm>
-				<para>Restrict to a timestamp set</para>
-				<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_instset}</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atTimestampSet">
+					<indexterm><primary><varname>atTimestampSet</varname></primary></indexterm>
+					<para>Restrict to a timestamp set</para>
+					<para><varname>atTimestampSet(ttype,timestampset): {ttype_inst,ttype_instset}</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
   timestampset '{2012-01-01, 2012-01-03}');
 -- "{1@2012-01-01, 1@2012-01-03}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atPeriod">
-				<indexterm><primary><varname>atPeriod</varname></primary></indexterm>
-				<para>Restrict to a period</para>
-				<para><varname>atPeriod(ttype,period): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atPeriod">
+					<indexterm><primary><varname>atPeriod</varname></primary></indexterm>
+					<para>Restrict to a period</para>
+					<para><varname>atPeriod(ttype,period): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-06)}',
   '[2012-01-02,2012-01-05)');
 -- "{[2@2012-01-02, 3@2012-01-03), [3@2012-01-04, 2@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atPeriodSet">
-				<indexterm><primary><varname>atPeriodSet</varname></primary></indexterm>
-				<para>Restrict to a period set</para>
-				<para><varname>atPeriodSet(ttype,periodset): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atPeriodSet">
+					<indexterm><primary><varname>atPeriodSet</varname></primary></indexterm>
+					<para>Restrict to a period set</para>
+					<para><varname>atPeriodSet(ttype,periodset): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
   periodset '{[2012-01-01, 2012-01-03), [2012-01-04, 2012-01-05)}');
 -- "{[1@2012-01-01, 1@2012-01-03),[1@2012-01-04, 1@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="atTbox">
-				<indexterm><primary><varname>atTbox</varname></primary></indexterm>
-				<para>Restrict to a <varname>tbox</varname></para>
-				<para><varname>atTbox(tnumber,tbox): tnumber</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atTbox">
+					<indexterm><primary><varname>atTbox</varname></primary></indexterm>
+					<para>Restrict to a <varname>tbox</varname></para>
+					<para><varname>atTbox(tnumber,tbox): tnumber</varname></para>
+					<programlisting xml:space="preserve">
 SELECT atTbox(tfloat '[0@2012-01-01, 3@2012-01-04)',
   tbox 'TBOX((0, 2012-01-02), (2, 2012-01-04))');
 -- "{[1@2012-01-02, 2@2012-01-03]}"
 </programlisting>
 			</listitem>
 
-			<listitem id="atStbox">
-				<indexterm><primary><varname>atStbox</varname></primary></indexterm>
-				<para>Restrict to an <varname>stbox</varname></para>
-				<para><varname>atStbox(tgeompoint,stbox): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="atStbox">
+					<indexterm><primary><varname>atStbox</varname></primary></indexterm>
+					<para>Restrict to an <varname>stbox</varname></para>
+					<para><varname>atStbox(tgeompoint,stbox): tgeompoint</varname></para>
+					<programlisting xml:space="preserve">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
   stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 -- "{[POINT(1 1)@2012-01-02, POINT(2 2)@2012-01-03]}"
 </programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
-	<sect1>
-		<title>Difference Functions</title>
-		<para>These functions restrict the temporal value with respect to the complement of a value or a time extent.</para>
-		<itemizedlist>
-			<listitem id="minusValue">
-				<indexterm><primary><varname>minusValue</varname></primary></indexterm>
-				<para>Difference with a value</para>
-				<para><varname>minusValue(ttype,base): ttype</varname></para>
-				<programlisting xml:space="preserve">
+		<sect2>
+			<title>Difference Functions</title>
+			<para>These functions restrict the temporal value with respect to the complement of a value or a time extent.</para>
+			<itemizedlist>
+				<listitem id="minusValue">
+					<indexterm><primary><varname>minusValue</varname></primary></indexterm>
+					<para>Difference with a value</para>
+					<para><varname>minusValue(ttype,base): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusValue(tint '[1@2012-01-01, 2@2012-01-02, 2@2012-01-03)', 1);
 -- "{[2@2012-01-02, 2@2012-01-03)}"
 SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012-01-03)',
@@ -1941,13 +1292,13 @@ SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2012-01-01, Point(2 2 2)@2012
 -- "{[POINT Z (0 0 0)@2012-01-01, POINT Z (1 1 1)@2012-01-02),
   (POINT Z (1 1 1)@2012-01-02, POINT Z (2 2 2)@2012-01-03)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusValues">
-				<indexterm><primary><varname>minusValues</varname></primary></indexterm>
-				<para>Difference with an array of values</para>
-				<para><varname>minusValues(ttype,base[]): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusValues">
+					<indexterm><primary><varname>minusValues</varname></primary></indexterm>
+					<para>Difference with an array of values</para>
+					<para><varname>minusValues(ttype,base[]): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusValues(tfloat '[1@2012-01-01, 4@2012-01-4)', ARRAY[2, 3]);
 -- "{[1@2012-01-01, 2@2012-01-02), (2@2012-01-02, 3@2012-01-03),
   (3@2012-01-03, 4@2012-01-04)}"
@@ -1957,34 +1308,34 @@ SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2012-01-01, Point(3 3 3)@201
   (POINT Z (1 1 1)@2012-01-02, POINT Z (2 2 2)@2012-01-03),
   (POINT Z (2 2 2)@2012-01-03, POINT Z (3 3 3)@2012-01-04)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusRange">
-				<indexterm><primary><varname>minusRange</varname></primary></indexterm>
-				<para>Difference with a range</para>
-				<para><varname>minusRange(tnumber,numrange): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusRange">
+					<indexterm><primary><varname>minusRange</varname></primary></indexterm>
+					<para>Difference with a range</para>
+					<para><varname>minusRange(tnumber,numrange): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusRange(tfloat '[1@2012-01-01, 4@2012-01-4)', floatrange '[2,3]');
 -- "{[1@2012-01-01, 2@2012-01-02), (3@2012-01-03, 4@2012-01-04)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusRanges">
-				<indexterm><primary><varname>minusRanges</varname></primary></indexterm>
-				<para>Difference with an array of ranges</para>
-				<para><varname>minusRanges(tnumber,numrange[]): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusRanges">
+					<indexterm><primary><varname>minusRanges</varname></primary></indexterm>
+					<para>Difference with an array of ranges</para>
+					<para><varname>minusRanges(tnumber,numrange[]): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusRanges(tfloat '[1@2012-01-01, 5@2012-01-05)',
   ARRAY[floatrange '[1,2]', '[3,4]']);
 -- "{(2@2012-01-02, 3@2012-01-03), (4@2012-01-04, 5@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusMin">
-				<indexterm><primary><varname>minusMin</varname></primary></indexterm>
-				<para>Difference with the minimum value</para>
-				<para><varname>minusMin(torder): torder</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusMin">
+					<indexterm><primary><varname>minusMin</varname></primary></indexterm>
+					<para>Difference with the minimum value</para>
+					<para><varname>minusMin(torder): torder</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusMin(tint '{1@2012-01-01, 2@2012-01-03, 1@2012-01-05}');
 -- "{2@2012-01-03}"
 SELECT minusMin(tfloat '[1@2012-01-01, 3@2012-01-03]');
@@ -1994,13 +1345,13 @@ SELECT minusMin(tfloat '(1@2012-01-01, 3@2012-01-03)');
 SELECT minusMin(tint '{[1@2012-01-01, 1@2012-01-03), (1@2012-01-03, 1@2012-01-05)}');
 -- NULL
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusMax">
-				<indexterm><primary><varname>minusMax</varname></primary></indexterm>
-				<para>Difference with the maximum value</para>
-				<para><varname>minusMax(torder): torder</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusMax">
+					<indexterm><primary><varname>minusMax</varname></primary></indexterm>
+					<para>Difference with the maximum value</para>
+					<para><varname>minusMax(torder): torder</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusMax(tint '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
 -- "{1@2012-01-01, 2@2012-01-03}"
 SELECT minusMax(tfloat '[1@2012-01-01, 3@2012-01-03]');
@@ -2012,14 +1363,14 @@ SELECT minusMax(tfloat '{[2@2012-01-01, 1@2012-01-03), [2@2012-01-03, 2@2012-01-
 SELECT minusMax(tfloat '{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)}');
 -- "{[1@2012-01-01, 3@2012-01-03), (3@2012-01-03, 1@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusGeometry">
-				<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>Difference with a geometry</para>
-				<para><varname>minusGeometry(tgeompoint,geometry): tgeompoint</varname></para>
-				<para>Notice that it is allowed to mix 2D/3D geometries but the computation is only performed on 2D.</para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusGeometry">
+					<indexterm><primary><varname>minusGeometry</varname></primary></indexterm>
+					<para>Difference with a geometry</para>
+					<para><varname>minusGeometry(tgeompoint,geometry): tgeompoint</varname></para>
+					<para>Notice that it is allowed to mix 2D/3D geometries but the computation is only performed on 2D.</para>
+					<programlisting xml:space="preserve">
 SELECT asText(minusGeometry(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
   geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'));
 -- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02), (POINT(2 2)@2012-01-03,
@@ -2029,85 +1380,89 @@ SELECT astext(minusGeometry(tgeompoint '[Point(0 0 0)@2000-01-01,
 -- "{[POINT Z (0 0 0)@2000-01-01, POINT Z (1 1 1)@2000-01-02),
   (POINT Z (2 2 2)@2000-01-03, POINT Z (4 4 4)@2000-01-05]}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusTimestamp">
-				<indexterm><primary><varname>minusTimestamp</varname></primary></indexterm>
-				<para>Difference with a timestamp</para>
-				<para><varname>minusTimestamp(ttype,timestamptz): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusTimestamp">
+					<indexterm><primary><varname>minusTimestamp</varname></primary></indexterm>
+					<para>Difference with a timestamp</para>
+					<para><varname>minusTimestamp(ttype,timestamptz): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusTimestamp(tfloat '[1@2012-01-01, 5@2012-01-05)', '2012-01-02');
 -- "{[1@2012-01-01, 2@2012-01-02), (2@2012-01-02, 5@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusTimestampSet">
-				<indexterm><primary><varname>minusTimestampSet</varname></primary></indexterm>
-				<para>Difference with a timestamp set</para>
-				<para><varname>minusTimestampSet(ttype,timestampset): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusTimestampSet">
+					<indexterm><primary><varname>minusTimestampSet</varname></primary></indexterm>
+					<para>Difference with a timestamp set</para>
+					<para><varname>minusTimestampSet(ttype,timestampset): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
   timestampset '{2012-01-02, 2012-01-03}');
 -- "{[1@2012-01-01, 1@2012-01-02), (1@2012-01-02, 1@2012-01-03),
 (1@2012-01-03, 1@2012-01-15)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusPeriod">
-				<indexterm><primary><varname>minusPeriod</varname></primary></indexterm>
-				<para>Difference with a period</para>
-				<para><varname>minusPeriod(ttype,period): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusPeriod">
+					<indexterm><primary><varname>minusPeriod</varname></primary></indexterm>
+					<para>Difference with a period</para>
+					<para><varname>minusPeriod(ttype,period): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusPeriod(tfloat '{[1@2012-01-01, 3@2012-01-03), [3@2012-01-04, 1@2012-01-06)}',
   '[2012-01-02,2012-01-05)');
 -- "{[1@2012-01-01, 2@2012-01-02), [2@2012-01-05, 1@2012-01-06)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusPeriodSet">
-				<indexterm><primary><varname>minusPeriodSet</varname></primary></indexterm>
-				<para>Difference with a period set</para>
-				<para><varname>minusPeriodSet(ttype,periodset): ttype</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusPeriodSet">
+					<indexterm><primary><varname>minusPeriodSet</varname></primary></indexterm>
+					<para>Difference with a period set</para>
+					<para><varname>minusPeriodSet(ttype,periodset): ttype</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusPeriodSet(tint '[1@2012-01-01, 1@2012-01-15)',
   periodset '{[2012-01-02, 2012-01-03), [2012-01-04, 2012-01-05)}');
 -- "{[1@2012-01-01, 1@2012-01-02), [1@2012-01-03, 1@2012-01-04),
   [1@2012-01-05, 1@2012-01-15)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusTbox">
-				<indexterm><primary><varname>minusTbox</varname></primary></indexterm>
-				<para>Difference with a <varname>tbox</varname></para>
-				<para><varname>minusTbox(tnumber,tbox): tnumber</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusTbox">
+					<indexterm><primary><varname>minusTbox</varname></primary></indexterm>
+					<para>Difference with a <varname>tbox</varname></para>
+					<para><varname>minusTbox(tnumber,tbox): tnumber</varname></para>
+					<programlisting xml:space="preserve">
 SELECT minusTbox(tfloat '[0@2012-01-01, 3@2012-01-04)',
   tbox 'TBOX((0, 2012-01-02), (2, 2012-01-04))');
 -- "{[0@2012-01-01, 1@2012-01-02), (2@2012-01-03, 3@2012-01-04)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="minusStbox">
-				<indexterm><primary><varname>minusStbox</varname></primary></indexterm>
-				<para>Difference with an <varname>stbox</varname></para>
-				<para><varname>minusStbox(tgeompoint,stbox): tgeompoint</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="minusStbox">
+					<indexterm><primary><varname>minusStbox</varname></primary></indexterm>
+					<para>Difference with an <varname>stbox</varname></para>
+					<para><varname>minusStbox(tgeompoint,stbox): tgeompoint</varname></para>
+					<programlisting xml:space="preserve">
 SELECT asText(minusStbox(tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)',
   stbox 'STBOX T((0, 0, 2012-01-02), (2, 2, 2012-01-04))'));
 -- "{[POINT(0 0)@2012-01-01, POINT(1 1)@2012-01-02),
   (POINT(2 2)@2012-01-03, POINT(3 3)@2012-01-04)}"
 </programlisting>
-			</listitem>
-		</itemizedlist>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1 id="operators_temporal_types">
 		<title>Comparison Operators</title>
 
-		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding periods (see <xref linkend="time_comp_operators" />), then the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the subtype. For instant values, they compare first the timestamps and if those are equal, compare the values. For instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
+		<sect2>
+			<title>Traditional Comparison Operators</title>
 
-		<para>The equality and inequality operators consider the equivalent representation for different subtypes as shown next.
-			<programlisting xml:space="preserve">
+			<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) require that the left and right operands be of the same base type. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on temporal types. These operators compare the bounding periods (see <xref linkend="time_comp_operators" />), then the bounding boxes (see <xref linkend="comparison_box_types" />) and if those are equal, then the comparison depends on the subtype. For instant values, they compare first the timestamps and if those are equal, compare the values. For instant set and sequence values, they compare the first N instants, where N is the minimum of the number of composing instants of both values. Finally, for sequence set values, they compare the first N sequence values, where N is the minimum of the number of composing sequences of both values.</para>
+
+			<para>The equality and inequality operators consider the equivalent representation for different subtypes as shown next.
+				<programlisting xml:space="preserve">
 SELECT tint '1@2001-01-01' = tint '{1@2001-01-01}';
 -- true
 SELECT tfloat '1.5@2001-01-01' = tfloat '[1.5@2001-01-01]';
@@ -2121,81 +1476,81 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
   tgeogpoint '{[Point(1 1 1)@2001-01-01], [Point(2 2 2)@2001-01-02]}';
 -- true
 </programlisting>
-		</para>
+			</para>
 
-		<itemizedlist>
-			<listitem id="ttype_eq">
-				<indexterm><primary><varname>=</varname></primary></indexterm>
-				<para>Are the temporal values equal?</para>
-				<para><varname>ttype = ttype: boolean</varname></para>
-				<programlisting xml:space="preserve">
+			<itemizedlist>
+				<listitem id="ttype_eq">
+					<indexterm><primary><varname>=</varname></primary></indexterm>
+					<para>Are the temporal values equal?</para>
+					<para><varname>ttype = ttype: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' = tint '[2@2012-01-03, 2@2012-01-05)';
 -- false
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_ne">
-				<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<para>Are the temporal values different?</para>
-				<para><varname>ttype &lt;&gt; ttype: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_ne">
+					<indexterm><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<para>Are the temporal values different?</para>
+					<para><varname>ttype &lt;&gt; ttype: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;&gt; tint '[2@2012-01-03, 2@2012-01-05)'
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_lt">
-				<indexterm><primary><varname>&lt;</varname></primary></indexterm>
-				<para>Is the first temporal value less than the second one?</para>
-				<para><varname>ttype &lt; ttype: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_lt">
+					<indexterm><primary><varname>&lt;</varname></primary></indexterm>
+					<para>Is the first temporal value less than the second one?</para>
+					<para><varname>ttype &lt; ttype: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt; tint '[2@2012-01-03, 2@2012-01-05)'
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_gt">
-				<indexterm><primary><varname>&gt;</varname></primary></indexterm>
-				<para>Is the first temporal value greater than the second one?</para>
-				<para><varname>ttype &gt; ttype: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_gt">
+					<indexterm><primary><varname>&gt;</varname></primary></indexterm>
+					<para>Is the first temporal value greater than the second one?</para>
+					<para><varname>ttype &gt; ttype: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt; tint '[2@2012-01-03, 2@2012-01-05)'
 -- false
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_le">
-				<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
-				<para>Is the first temporal value less than or equal to the second one?</para>
-				<para><varname>ttype &lt;= ttype: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_le">
+					<indexterm><primary><varname>&lt;=</varname></primary></indexterm>
+					<para>Is the first temporal value less than or equal to the second one?</para>
+					<para><varname>ttype &lt;= ttype: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &lt;= tint '[2@2012-01-03, 2@2012-01-05)'
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_ge">
-				<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
+				<listitem id="ttype_ge">
+					<indexterm><primary><varname>&gt;=</varname></primary></indexterm>
 				<para>Is the first temporal value greater than or equal to the second one?</para>
-				<para><varname>ttype &gt;= ttype: boolean</varname></para>
-				<programlisting xml:space="preserve">
+					<para><varname>ttype &gt;= ttype: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-05)'
 -- false
 </programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
-	<sect1>
-		<title>Ever and Always Comparison Operators</title>
-		<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
-		<itemizedlist>
-			<listitem id="ttype_eveq">
-				<indexterm><primary><varname>?=</varname></primary></indexterm>
-				<para>Is the temporal value ever equal to the value?</para>
-				<para><varname>ttype ?= base: boolean</varname></para>
-				<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				<programlisting xml:space="preserve">
+		<sect2>
+			<title>Ever and Always Comparison Operators</title>
+			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
+			<itemizedlist>
+				<listitem id="ttype_eveq">
+					<indexterm><primary><varname>?=</varname></primary></indexterm>
+					<para>Is the temporal value ever equal to the value?</para>
+					<para><varname>ttype ?= base: boolean</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 2;
 -- true
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?= 3;
@@ -2204,13 +1559,13 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' ?=
   geometry 'Point(1 1)';
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_evne">
-				<indexterm><primary><varname>?&lt;&gt;</varname></primary></indexterm>
-				<para>Is the temporal value ever different from the value?</para>
-				<para><varname>ttype ?&lt;&gt; base: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_evne">
+					<indexterm><primary><varname>?&lt;&gt;</varname></primary></indexterm>
+					<para>Is the temporal value ever different from the value?</para>
+					<para><varname>ttype ?&lt;&gt; base: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' ?&lt;&gt; 2;
 -- false
 SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' ?&lt;&gt; 2;
@@ -2219,57 +1574,57 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' ?&lt;&gt;
   geometry 'Point(1 1)';
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_evlt">
-				<indexterm><primary><varname>?&lt;</varname></primary></indexterm>
-				<para>Is the temporal value ever less than the value?</para>
-				<para><varname>tnumber ?&lt; number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_evlt">
+					<indexterm><primary><varname>?&lt;</varname></primary></indexterm>
+					<para>Is the temporal value ever less than the value?</para>
+					<para><varname>tnumber ?&lt; number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' ?&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
 SELECT tint '[2@2012-01-01, 2@2012-01-05)' ?&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
 -- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_evgt">
-				<indexterm><primary><varname>?&gt;</varname></primary></indexterm>
-				<para>Is the temporal value ever greater than the value?</para>
-				<para><varname>tnumber ?&gt; number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_evgt">
+					<indexterm><primary><varname>?&gt;</varname></primary></indexterm>
+					<para>Is the temporal value ever greater than the value?</para>
+					<para><varname>tnumber ?&gt; number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-03, 1@2012-01-05)' ?&gt; 1;
 -- "[f@2012-01-03, f@2012-01-05)"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_evle">
-				<indexterm><primary><varname>?&lt;=</varname></primary></indexterm>
-				<para>Is the temporal value ever less than or equal to the value?</para>
-				<para><varname>tnumber ?&lt;= number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_evle">
+					<indexterm><primary><varname>?&lt;=</varname></primary></indexterm>
+					<para>Is the temporal value ever less than or equal to the value?</para>
+					<para><varname>tnumber ?&lt;= number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' ?&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_evge">
-				<indexterm><primary><varname>?&gt;=</varname></primary></indexterm>
-				<para>Is the temporal value ever greater than or equal to the value?</para>
-				<para><varname>tnumber ?&gt;= number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_evge">
+					<indexterm><primary><varname>?&gt;=</varname></primary></indexterm>
+					<para>Is the temporal value ever greater than or equal to the value?</para>
+					<para><varname>tnumber ?&gt;= number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT 'AAA'::text ?&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
   [BBB@2012-01-04, BBB@2012-01-05)}';
 -- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_aleq">
-				<indexterm><primary><varname>%=</varname></primary></indexterm>
-				<para>Is the temporal value always equal to the value?</para>
-				<para><varname>ttype %= base: boolean</varname></para>
-				<para>The function does not take into account whether the bounds are inclusive or not.</para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_aleq">
+					<indexterm><primary><varname>%=</varname></primary></indexterm>
+					<para>Is the temporal value always equal to the value?</para>
+					<para><varname>ttype %= base: boolean</varname></para>
+					<para>The function does not take into account whether the bounds are inclusive or not.</para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 2;
 -- true
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %= 3;
@@ -2278,13 +1633,13 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-04)' %=
   geometry 'Point(1 1)';
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_alne">
-				<indexterm><primary><varname>%&lt;&gt;</varname></primary></indexterm>
-				<para>Is the temporal value always different to the value?</para>
-				<para><varname>ttype %&lt;&gt; base: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_alne">
+					<indexterm><primary><varname>%&lt;&gt;</varname></primary></indexterm>
+					<para>Is the temporal value always different to the value?</para>
+					<para><varname>ttype %&lt;&gt; base: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 3@2012-01-04)' %&lt;&gt; 2;
 -- false
 SELECT tfloat '[2@2012-01-01, 2@2012-01-04)' %&lt;&gt; 2;
@@ -2293,63 +1648,63 @@ SELECT tgeompoint '[Point(1 1)@2012-01-01, Point(1 1)@2012-01-04)' %&lt;&gt;
   geometry 'Point(1 1)';
 -- true
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_allt">
-				<indexterm><primary><varname>%&lt;</varname></primary></indexterm>
-				<para>Is the temporal value always less than the value?</para>
-				<para><varname>tnumber %&lt; number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_allt">
+					<indexterm><primary><varname>%&lt;</varname></primary></indexterm>
+					<para>Is the temporal value always less than the value?</para>
+					<para><varname>tnumber %&lt; number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' %&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
 SELECT tint '[2@2012-01-01, 2@2012-01-05)' %&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
 -- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_algt">
-				<indexterm><primary><varname>%&gt;</varname></primary></indexterm>
-				<para>Is the temporal value always greater than the value?</para>
-				<para><varname>tnumber %&gt; number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_algt">
+					<indexterm><primary><varname>%&gt;</varname></primary></indexterm>
+					<para>Is the temporal value always greater than the value?</para>
+					<para><varname>tnumber %&gt; number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-03, 1@2012-01-05)' %&gt; 1;
 -- "[f@2012-01-03, f@2012-01-05)"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_alle">
-				<indexterm><primary><varname>%&lt;=</varname></primary></indexterm>
-				<para>Is the temporal value always less than or equal to the value?</para>
-				<para><varname>tnumber %&lt;= number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_alle">
+					<indexterm><primary><varname>%&lt;=</varname></primary></indexterm>
+					<para>Is the temporal value always less than or equal to the value?</para>
+					<para><varname>tnumber %&lt;= number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' %&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_alge">
-				<indexterm><primary><varname>%&gt;=</varname></primary></indexterm>
-				<para>Is the temporal value always greater than or equal to the value?</para>
-				<para><varname>tnumber %&gt;= number: boolean</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_alge">
+					<indexterm><primary><varname>%&gt;=</varname></primary></indexterm>
+					<para>Is the temporal value always greater than or equal to the value?</para>
+					<para><varname>tnumber %&gt;= number: boolean</varname></para>
+					<programlisting xml:space="preserve">
 SELECT 'AAA'::text %&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
   [BBB@2012-01-04, BBB@2012-01-05)}';
 -- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
 </programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
-	<sect1>
-		<title>Temporal Comparison Operators</title>
-		<para>Another possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <varname>#</varname>. Some examples are <varname>#=</varname>  or <varname>#&lt;=</varname>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>.</para>
+		<sect2>
+			<title>Temporal Comparison Operators</title>
+			<para>Another possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is true or false at each instant. In this case, the result is a temporal Boolean. The temporal comparison operators are denoted by prefixing the traditional comparison operators with <varname>#</varname>. Some examples are <varname>#=</varname>  or <varname>#&lt;=</varname>. Temporal equality and non-equality are available for all temporal types, while temporal inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>.</para>
 
-		<itemizedlist>
-			<listitem id="ttype_teq">
-				<indexterm><primary><varname>#=</varname></primary></indexterm>
-				<para>Temporal equal</para>
-				<para><varname>{base,ttype} #= {base,ttype}: tbool</varname></para>
-				<programlisting xml:space="preserve">
+			<itemizedlist>
+				<listitem id="ttype_teq">
+					<indexterm><primary><varname>#=</varname></primary></indexterm>
+					<para>Temporal equal</para>
+					<para><varname>{base,ttype} #= {base,ttype}: tbool</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 2@2012-01-04)' #= 3;
 -- "{[f@2012-01-01, f@2012-01-04)}"
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #= tint '[1@2012-01-01, 1@2012-01-04)';
@@ -2363,63 +1718,64 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(2 2)@2012-01-03)' #=
   tgeompoint '[Point(0 2)@2012-01-01, Point(2 0)@2012-01-03)';
 -- "{[f@2012-01-01], (t@2012-01-01, t@2012-01-03)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_tne">
-				<indexterm><primary><varname>#&lt;&gt;</varname></primary></indexterm>
-				<para>Temporal different</para>
-				<para><varname>{base,ttype} #&lt;&gt; {base,ttype}: tbool</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_tne">
+					<indexterm><primary><varname>#&lt;&gt;</varname></primary></indexterm>
+					<para>Temporal different</para>
+					<para><varname>{base,ttype} #&lt;&gt; {base,ttype}: tbool</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt;&gt; 2;
 -- "{[t@2012-01-01, f@2012-01-02], (t@2012-01-02, 2012-01-04)}"
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt;&gt; tint '[2@2012-01-02, 2@2012-01-05)';
 -- "{[f@2012-01-02], (t@2012-01-02, t@2012-01-04)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_tlt">
-				<indexterm><primary><varname>#&lt;</varname></primary></indexterm>
-				<para>Temporal less than</para>
-				<para><varname>{base,torder} #&lt; {base,torder}: tbool</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_tlt">
+					<indexterm><primary><varname>#&lt;</varname></primary></indexterm>
+					<para>Temporal less than</para>
+					<para><varname>{base,torder} #&lt; {base,torder}: tbool</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tfloat '[1@2012-01-01, 4@2012-01-04)' #&lt; 2;
 -- "{[t@2012-01-01, f@2012-01-02, f@2012-01-04)}"
 SELECT tint '[2@2012-01-01, 2@2012-01-05)' #&lt; tfloat '[1@2012-01-03, 3@2012-01-05)';
 -- "{[f@2012-01-03, f@2012-01-04], (t@2012-01-04, t@2012-01-05)}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_tgt">
-				<indexterm><primary><varname>#&gt;</varname></primary></indexterm>
-				<para>Temporal greater than</para>
-				<para><varname>{base,torder} #&gt; {base,torder}: tbool</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_tgt">
+					<indexterm><primary><varname>#&gt;</varname></primary></indexterm>
+					<para>Temporal greater than</para>
+					<para><varname>{base,torder} #&gt; {base,torder}: tbool</varname></para>
+					<programlisting xml:space="preserve">
 SELECT 1 #&gt; tint '[1@2012-01-03, 1@2012-01-05)';
 -- "[f@2012-01-03, f@2012-01-05)"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_tle">
-				<indexterm><primary><varname>#&lt;=</varname></primary></indexterm>
-				<para>Temporal less than or equal to</para>
-				<para><varname>{base,torder} #&lt;= {base,torder}: tbool</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_tle">
+					<indexterm><primary><varname>#&lt;=</varname></primary></indexterm>
+					<para>Temporal less than or equal to</para>
+					<para><varname>{base,torder} #&lt;= {base,torder}: tbool</varname></para>
+					<programlisting xml:space="preserve">
 SELECT tint '[1@2012-01-01, 1@2012-01-05)' #&lt;= tfloat '{2@2012-01-03, 3@2012-01-04}';
 -- "{t@2012-01-03, t@2012-01-04}"
 </programlisting>
-			</listitem>
+				</listitem>
 
-			<listitem id="ttype_tge">
-				<indexterm><primary><varname>#&gt;=</varname></primary></indexterm>
-				<para>Temporal greater than or equal to</para>
-				<para><varname>{base,torder} #&gt;= {base,torder}: tbool</varname></para>
-				<programlisting xml:space="preserve">
+				<listitem id="ttype_tge">
+					<indexterm><primary><varname>#&gt;=</varname></primary></indexterm>
+					<para>Temporal greater than or equal to</para>
+					<para><varname>{base,torder} #&gt;= {base,torder}: tbool</varname></para>
+					<programlisting xml:space="preserve">
 SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
   [BBB@2012-01-04, BBB@2012-01-05)}';
 -- "{[f@2012-01-01, f@2012-01-03), [t@2012-01-04, t@2012-01-05)}"
 </programlisting>
-			</listitem>
-		</itemizedlist>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 	</sect1>
 
 	<sect1>
@@ -2602,6 +1958,8 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 			</listitem>
 		</itemizedlist>
 	</sect1>
+
+	&spatial_functions;
 
 	<sect1>
 		<title>Bounding Box Operators</title>
@@ -2974,256 +2332,6 @@ FROM (SELECT spaceTimeSplit(tgeompoint '[Point(1 1 1)@2020-03-01,
 	</sect1>
 
 	<sect1>
-		<title>Distance Operators</title>
-
-		<para>There are two distance operators. The first one, denoted <varname>|=|</varname>, computes the distance between either a temporal point and a geometry or between two temporal points at their nearest point of approach, which is a float. This is the same as the function <varname>nearestApproachDistance</varname> discussed before but as an operator it can be used for doing nearest neightbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />).</para>
-
-		<para>On the other hand, the temporal distance operator, denoted <varname>&lt;-&gt;</varname>, computes the distance at each instant of the intersection of the temporal extents of their arguments and results in a temporal float. Computing temporal distance is useful in many mobility applications. For example, a moving cluster (also known as convoy or flock) is defined as a set of objects that move close to each other for a long time interval. This requires to compute temporal distance between two moving objects.</para>
-
-		<para>The temporal distance operator accepts a geometry/geography restricted to a point or a temporal point as arguments. Notice that the temporal types only consider linear interpolation between values, while the distance is a root of a quadratic function. Therefore, the temporal distance operator gives a linear approximation of the actual distance value for temporal sequence points. In this case, the arguments are synchronized in the time dimension, and for each of the composing line segments of the arguments, the spatial distance between the start point, the end point, and the nearest point of approach is computed, as shown in the examples below.</para>
-
-		<itemizedlist>
-			<listitem id="smallest_distance">
-				<indexterm><primary><varname>|=|</varname></primary></indexterm>
-				<para>Get the smallest distance ever &Z_support; &geography_support;</para>
-				<para><varname>{geometry,tgeompoint} |=| {geometry,tgeompoint}: float</varname></para>
-				<programlisting xml:space="preserve">
-SELECT tgeompoint '[Point(0 0)@2012-01-02, Point(1 1)@2012-01-04, Point(0 0)@2012-01-06)'
-  |=| geometry 'Linestring(2 2,2 1,3 1)';
--- "1"
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03, Point(0 0)@2012-01-05)'
-  |=| tgeompoint '[Point(2 0)@2012-01-02, Point(1 1)@2012-01-04, Point(2 2)@2012-01-06)';
--- "0.5"
-</programlisting>
-			</listitem>
-
-			<listitem id="distance">
-				<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
-				<para>Get the temporal distance &Z_support; &geography_support;</para>
-				<para><varname>{point,tpoint} &lt;-&gt; {point,tpoint}: tfloat</varname></para>
-				<programlisting xml:space="preserve">
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)' &lt;-&gt;
-  geometry 'Point(0 1)';
--- "[1@2012-01-01, 0.707106781186548@2012-01-02, 1@2012-01-03)"
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)' &lt;-&gt;
-  tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)';
--- "[1@2012-01-01, 0@2012-01-02, 1@2012-01-03)"
-SELECT tgeompoint '[Point(0 1)@2012-01-01, Point(0 0)@2012-01-03)' &lt;-&gt;
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 0)@2012-01-03)';
--- "[1@2012-01-01, 0.707106781186548@2012-01-02, 1@2012-01-03)"
-SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
-  tgeompoint '[Point(0 1)@2012-01-01, Point(1 2)@2012-01-02)';
--- "[1@2012-01-01,1@2012-01-02)"
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
-	<sect1 id="topological_relationships_temporal_points">
-		<title>Spatial Relationships</title>
-
-		<para>The topological relationships such as <varname>ST_Intersects</varname> and the distance relationships such as <varname>ST_DWithin</varname> can be generalized for temporal points. The arguments of these generalized functions are either a temporal point and a base type (that is, a <varname>geometry</varname> or a <varname>geography</varname>) or two temporal points. Furthermore, both arguments must be of the same base type, that is, these functions do not allow to mix a temporal geometry point (or a geometry) and a temporal geography point (or a geography).</para>
-
-		<para>There are two versions of the spatial relationships:</para>
-		<itemizedlist>
-			<listitem>
-				<para>The <emphasis>possible relationships</emphasis> apply the traditional topological or distance relationship to the union of all values taken by the temporal point (which is a <varname>geometry</varname> or <varname>geography</varname>) and returns a <varname>boolean</varname>. Examples are the <varname>intersects</varname> and <varname>dwithin</varname> functions.</para>
-			</listitem>
-
-			<listitem>
-				<para>The <emphasis>temporal relationships</emphasis> are defined with the temporal semantics, that is, the traditional topological or distance relationship is computed at each instant and results in a <varname>tbool</varname>. Examples are the <varname>tintersects</varname> and <varname>tdwithin</varname> functions.</para>
-			</listitem>
-		</itemizedlist>
-
-		<para>
-			The semantics of the possible relationships varies depending on the relationship and the type of the arguments. For example, the following query
-		</para>
-		<programlisting xml:space="preserve">
-SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
-</programlisting>
-		<para>
-			tests whether the temporal point ever intersected the geometry, since the query is conceptually equivalent to the following one
-		</para>
-		<programlisting xml:space="preserve">
-SELECT ST_Intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  geometry 'Linestring(0 1,1 1)');
-</programlisting>
-		<para>
-			where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point. On the other hand, the query
-		</para>
-		<programlisting xml:space="preserve">
-SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
-</programlisting>
-		<para>
-			tests whether the geometry always contains the temporal point. Finally, the following query
-		</para>
-		<programlisting xml:space="preserve">
-SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
-</programlisting>
-		<para>
-			tests whether the temporal points may intersect in space independently of time, since the query above is conceptually equivalent to the following one
-		</para>
-		<programlisting xml:space="preserve">
-SELECT ST_Intersects('Linestring(0 1,1 0)', 'Linestring(0 0,1 1)');
-</programlisting>
-
-		<para>
-			The possible relationships are typically used in combination with a spatiotemporal index when computing the temporal relationships. For example, the following query
-		</para>
-		<programlisting xml:space="preserve">
-SELECT T.TripId, R.RegionId, tintersects(T.Trip, R.Geom)
-FROM Trips T, Regions R
-WHERE intersects(T.Trip, R.Geom)
-</programlisting>
-		<para>
-			which verifies whether a trip <varname>T</varname> (which is a temporal point) intersects a region <varname>R</varname> (which is a geometry), will benefit from a spatiotemporal index on the column <varname>T.Trip</varname> since the <varname>intersects</varname> function will automatically perform the bounding box comparison <varname>T.Trip &amp;&amp; R.Geom</varname>. This is further explained later in this document.
-		</para>
-
-		<para>Not all spatial relationships available in PostGIS have a meaningful generalization for temporal points. A generalized version of the following relationships are defined for temporal geometric points: <varname>intersects</varname>, <varname>disjoint</varname>, <varname>dwithin</varname>, <varname>contains</varname>, and <varname>touches</varname>, while for temporal geographic points only the three first ones are defined. Furthermore, not all combinations of parameters are meaningful for a given generalized function. For example, while <varname>tcontains(geometry, tpoint)</varname> is meaningful, <varname>tcontains(tpoint, geometry)</varname> is meaningful only when the geometry is a single point, and <varname>tcontains(tpoint, tpoint)</varname> is equivalent to <varname>tintersects(tpoint, geometry)</varname>. For this reason, only the first combination of parameters is defined for <varname>contains</varname> and <varname>tcontains</varname>.</para>
-
-		<para>Finally, it is worth noting that the temporal relationships allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
-
-		<sect2>
-			<title>Possible Relationships</title>
-			<itemizedlist>
-				<listitem id="contains">
-					<indexterm><primary><varname>contains</varname></primary></indexterm>
-					<para>May contain</para>
-					<para><varname>contains({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting xml:space="preserve">
-SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- true
-</programlisting>
-				</listitem>
-
-				<listitem id="disjoint">
-					<indexterm><primary><varname>disjoint</varname></primary></indexterm>
-					<para>May be disjoint</para>
-					<para><varname>disjoint({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-						<programlisting xml:space="preserve">
-SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
--- false
-</programlisting>
-				</listitem>
-
-				<listitem id="dwithin">
-					<indexterm><primary><varname>dwithin</varname></primary></indexterm>
-					<para>May be at distance within &Z_support;</para>
-					<para><varname>dwithin({geo,tpoint},{geo,tpoint},float): boolean</varname></para>
-					<programlisting xml:space="preserve">
-SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint 'Point(0 2 1)@2000-01-01,Point(2 2 1)@2000-01-02', 1)
--- true
-SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint 'Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02', 1)
--- false
-</programlisting>
-				</listitem>
-
-				<listitem id="intersects">
-					<indexterm><primary><varname>intersects</varname></primary></indexterm>
-					<para>May intersect &Z_support;</para>
-					<para><varname>intersects({geo,tpoint},{geo,tpoint}): boolean</varname></para>
-					<programlisting xml:space="preserve">
-SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
--- false
-SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 1)@2012-01-03)');
--- true
-</programlisting>
-				</listitem>
-
-				<listitem id="touches">
-					<indexterm><primary><varname>touches</varname></primary></indexterm>
-					<para>May touch</para>
-					<para><varname>touches({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
-					<programlisting xml:space="preserve">
-SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(0 1)@2012-01-03)');
--- true
-</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Temporal Relationships</title>
-			<itemizedlist>
-				<listitem id="tcontains">
-					<indexterm><primary><varname>tcontains</varname></primary></indexterm>
-					<para>Temporal contains</para>
-					<para><varname>tcontains({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
-					<programlisting xml:space="preserve">
-SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01, f@2012-01-02], (t@2012-01-02, f@2012-01-03, f@2012-01-04)}"
-</programlisting>
-				</listitem>
-
-				<listitem id="tdisjoint">
-					<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
-					<para>Temporal disjoint &Z_support; &geography_support;</para>
-					<para><varname>tdisjoint({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
-					<programlisting xml:space="preserve">
-SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[t@2012-01-01, f@2012-01-02, f@2012-01-03], (t@2012-01-03, t@2012-01-04]}"
-SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
--- "{[t@2012-01-01, f@2012-01-03], (t@2012-01-03, t@2012-01-05)}"
-</programlisting>
-				</listitem>
-
-				<listitem id="tdwithin">
-					<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
-					<para>Temporal distance within &Z_support; &geography_support;</para>
-					<para><varname>tdwithin({geo,tpoint},{geo,tpoint},float): tbool</varname></para>
-					<programlisting xml:space="preserve">
-SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 1);
--- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04)}"
-SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
-  tgeompoint 'Interp=Stepwise;[Point(1 2)@2000-01-01, Point(1 3)@2000-01-05]', 1);
--- "{[f@2000-01-01, t@2000-01-02, t@2000-01-04], (f@2000-01-04, t@2000-01-05]}"
-</programlisting>
-				</listitem>
-
-				<listitem id="tintersects">
-					<indexterm><primary><varname>tintersects</varname></primary></indexterm>
-					<para>Temporal intersects &Z_support; &geography_support;</para>
-					<para><varname>tintersects({geo,tpoint},{geo,tpoint}): tbool</varname></para>
-					<programlisting xml:space="preserve">
-SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
--- "{[f@2012-01-01, t@2012-01-02], (f@2012-01-02, t@2012-01-03],
-  (f@2012-01-03, f@2012-01-04]}"
-SELECT tintersects(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-05)');
--- "{[f@2012-01-01, t@2012-01-03], (f@2012-01-03, f@2012-01-05)}"
-</programlisting>
-				</listitem>
-
-				<listitem id="ttouches">
-					<indexterm><primary><varname>ttouches</varname></primary></indexterm>
-					<para>Temporal touches</para>
-					<para><varname>ttouches({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
-					<programlisting xml:space="preserve">
-SELECT ttouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)');
--- "{[f@2012-01-01, t@2012-01-02, t@2012-01-03], (f@2012-01-03, f@2012-01-04]}"
-</programlisting>
-				</listitem>
-			</itemizedlist>
-			</sect2>
-	</sect1>
-
-	<sect1>
 		<title>Aggregate Functions</title>
 
 		<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating temporal types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
@@ -3505,7 +2613,7 @@ WHERE T.Trip &amp;&amp; period(2001-01-01, 2001-01-02)
 </programlisting>
 		</para>
 
-		<para>In the case of temporal points, all spatial relationships with the possible semantics (see <xref linkend="topological_relationships_temporal_points" />) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
+		<para>In the case of temporal points, all spatial relationships with the possible semantics (see <xref linkend="spatial_relationships_temporal_points" />) automatically include a bounding box comparison that will make use of any indexes that are available on the temporal points. For this reason, the first version of the relationships is typically used for filtering the tuples with the help of an index when computing the temporal relationships as shown in the following query.
 			<programlisting xml:space="preserve">
 SELECT tintersects(T.Trip, R.Geom)
 FROM Trips T, Regions R

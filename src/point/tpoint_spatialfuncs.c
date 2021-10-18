@@ -3507,6 +3507,8 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
  * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] t Timestamp
  * @pre The segments are not both constants and at least one is linear.
+ * @note This function is currently not available for two temporal geographic
+ * points
  */
 bool
 tpoint_min_bearing_at_timestamp(const TInstant *start1,
@@ -3514,6 +3516,7 @@ tpoint_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end2, bool linear2, Datum *value, TimestampTz *t)
 {
   assert(linear1 && linear2);
+  assert(!MOBDB_FLAGS_GET_GEODETIC(start1->flags));
   const POINT2D *sp1 = datum_get_point2d_p(tinstant_value(start1));
   const POINT2D *ep1 = datum_get_point2d_p(tinstant_value(end1));
   const POINT2D *sp2 = datum_get_point2d_p(tinstant_value(start2));
@@ -3525,49 +3528,41 @@ tpoint_min_bearing_at_timestamp(const TInstant *start1,
   if (ds == de)
     return false;
 
-  // TODO
-  // if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
-  // {
-    // elog(ERROR, "Function currently not implemented for geodetic points");
-  // }
-  // else
-  // {
-    /*
-     * Compute the instants t1 and t2 at which the linear functions of the two
-     * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-     * minimum/maximum exactly at the middle between t1 and t2.
-     * To reduce problems related to floating point arithmetic, t1 and t2
-     * are shifted, respectively, to 0 and 1 before the computation
-     * N.B. The code that follows is adapted from the function
-     * tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
-     */
-    if ((ep1->x - sp1->x) == 0.0 || (ep2->x - sp2->x) == 0.0)
-      return false;
+  /*
+   * Compute the instants t1 and t2 at which the linear functions of the two
+   * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
+   * minimum/maximum exactly at the middle between t1 and t2.
+   * To reduce problems related to floating point arithmetic, t1 and t2
+   * are shifted, respectively, to 0 and 1 before the computation
+   * N.B. The code that follows is adapted from the function
+   * tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
+   */
+  if ((ep1->x - sp1->x) == 0.0 || (ep2->x - sp2->x) == 0.0)
+    return false;
 
-    long double d1 = (-1 * sp1->x) / (ep1->x - sp1->x);
-    long double d2 = (-1 * sp2->x) / (ep2->x - sp2->x);
-    long double min = Min(d1, d2);
-    long double max = Max(d1, d2);
-    long double fraction = min + (max - min)/2;
-    long double duration = (long double) (end1->t - start1->t);
-    if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
-      /* Minimum/maximum occurs out of the period */
-      return false;
+  long double d1 = (-1 * sp1->x) / (ep1->x - sp1->x);
+  long double d2 = (-1 * sp2->x) / (ep2->x - sp2->x);
+  long double min = Min(d1, d2);
+  long double max = Max(d1, d2);
+  long double fraction = min + (max - min)/2;
+  long double duration = (long double) (end1->t - start1->t);
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+    /* Minimum/maximum occurs out of the period */
+    return false;
 
-    *t = start1->t + (TimestampTz) (duration * fraction);
-    /* We need to verify that at timestamp t the first segment is to the
-     * North of the second */
-    Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
-    Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
-    sp1 = datum_get_point2d_p(value1);
-    sp2 = datum_get_point2d_p(value2);
-    if (sp1->y > sp2->y) // TODO Use MOBDB_EPSILON
-      return false;
-   /* We know that the bearing is 0 */
-    if (value)
-      *value = Float8GetDatum(0.0);
-    return true;
-  // }
+  *t = start1->t + (TimestampTz) (duration * fraction);
+  /* We need to verify that at timestamp t the first segment is to the
+   * North of the second */
+  Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
+  Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
+  sp1 = datum_get_point2d_p(value1);
+  sp2 = datum_get_point2d_p(value2);
+  if (sp1->y > sp2->y) // TODO Use MOBDB_EPSILON
+    return false;
+ /* We know that the bearing is 0 */
+  if (value)
+    *value = Float8GetDatum(0.0);
+  return true;
 }
 
 /*****************************************************************************/

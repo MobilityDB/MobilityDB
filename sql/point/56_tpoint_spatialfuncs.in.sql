@@ -57,7 +57,7 @@ CREATE FUNCTION setPrecision(geography, integer)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geo_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
+
 /*****************************************************************************/
 
 CREATE FUNCTION SRID(tgeompoint)
@@ -229,10 +229,10 @@ CREATE FUNCTION bearing(tgeogpoint, geography)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'bearing_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION bearing(tgeogpoint, tgeogpoint)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'bearing_tpoint_tpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION bearing(tgeogpoint, tgeogpoint)
+  -- RETURNS tfloat
+  -- AS 'MODULE_PATHNAME', 'bearing_tpoint_tpoint'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

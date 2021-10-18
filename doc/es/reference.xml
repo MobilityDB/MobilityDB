@@ -824,395 +824,241 @@
 		</sect2>
 
 		<sect2>
-			<title>Funciones espaciales</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="asText"><varname>asText</varname></link>: Obtener la representación de texto conocido (Well-Known Text o WKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Obtener la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación JSON de características móviles (Moving Features)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Obtener la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Obtener la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Entrar un punto temporal geométrico en representación de texto conocido (Well-Known Text o WKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Entrar un punto temporal geográfico en representación de texto conocido (Well-Known Text o WKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Entrar un punto temporal geométrico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Entrar un punto temporal geográfico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Entrar un punto temporal geográfico en una representación JSON de características móviles (Moving Features)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Entrar un punto temporal geométrico en representación binaria conocida (Well-Known Binary o WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Entrar un punto temporal geográfico en representación binaria conocida (Well-Known Binary o WKB)</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Entrar un punto temporal geométrico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Entrar un punto temporal geográfico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Entrar un punto temporal geométrico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Entrar un punto temporal geográfico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Establecer el identificador de referencia espacial </para>
-					</listitem>
-
-				<listitem>
-					<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="getX"><varname>getX</varname></link>: Obtener los valores de las coordenadas X como un número flotante temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="getY"><varname>getY</varname></link>: Obtener los valores de las coordenadas Y como un número flotante temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="getZ"><varname>getZ</varname></link>: Obtener los valores de las coordenadas Z como un número flotante temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="length"><varname>length</varname></link>: Obtener la longitud atravesada por el punto temporal </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Obtener la longitud acumulada atravesada por el punto temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="speed"><varname>speed</varname></link>: Obtener la velocidad del punto temporal en unidades por segundo </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Obtener el centroide ponderado en el tiempo</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="bearing"><varname>bearing</varname></link>: Obtener el rumbo temporal</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="nearestApproachDistance"><varname>nearestApproachDistance</varname></link>: Obtener la distancia más pequeña que haya existido </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Obtener la línea que conecta el punto de aproximación más cercano</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="simplify"><varname>simplify</varname></link>: Simplificar un punto temporal usando una generalización del algoritmo de Douglas-Peucker</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal </para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
 			<title>Funciones de restricción</title>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="atValue"><varname>atValue</varname></link>: Restringir a un valor</para>
-				</listitem>
+			<sect3>
+				<title>Funciones de selección</title>
 
-				<listitem>
-					<para><link linkend="atValues"><varname>atValues</varname></link>: Restringir a una matriz de valores</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="atValue"><varname>atValue</varname></link>: Restringir a un valor</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atRange"><varname>atRange</varname></link>: Restringir a un rango de valores</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atValues"><varname>atValues</varname></link>: Restringir a una matriz de valores</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atRanges"><varname>atRanges</varname></link>: Restringir a una matriz de rangos de valores</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atRange"><varname>atRange</varname></link>: Restringir a un rango de valores</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atMin"><varname>atMin</varname></link>: Restringir al valor mínimo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atRanges"><varname>atRanges</varname></link>: Restringir a una matriz de rangos de valores</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atMax"><varname>atMax</varname></link>: Restringir al valor máximo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atMin"><varname>atMin</varname></link>: Restringir al valor mínimo</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atGeometry"><varname>atGeometry</varname></link>: Restringir a una geometría</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atMax"><varname>atMax</varname></link>: Restringir al valor máximo</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atTimestamp"><varname>atTimestamp</varname></link>: Restringir a una marca de tiempo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atGeometry"><varname>atGeometry</varname></link>: Restringir a una geometría</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atTimestampSet"><varname>atTimestampSet</varname></link>: Restringir a un conjunto de marcas de tiempo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atTimestamp"><varname>atTimestamp</varname></link>: Restringir a una marca de tiempo</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atPeriod"><varname>atPeriod</varname></link>: Restringir a un período</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atTimestampSet"><varname>atTimestampSet</varname></link>: Restringir a un conjunto de marcas de tiempo</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atPeriodSet"><varname>atPeriodSet</varname></link>: Restringir a un conjunto de períodos</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atPeriod"><varname>atPeriod</varname></link>: Restringir a un período</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atTbox"><varname>atTbox</varname></link>: Restringir a un <varname>tbox</varname></para>
-				</listitem>
+					<listitem>
+						<para><link linkend="atPeriodSet"><varname>atPeriodSet</varname></link>: Restringir a un conjunto de períodos</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="atStbox"><varname>atStbox</varname></link>: Restringir a un <varname>stbox</varname></para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
+					<listitem>
+						<para><link linkend="atTbox"><varname>atTbox</varname></link>: Restringir a un <varname>tbox</varname></para>
+					</listitem>
 
-		<sect2>
-			<title>Funciones de diferencia</title>
+					<listitem>
+						<para><link linkend="atStbox"><varname>atStbox</varname></link>: Restringir a un <varname>stbox</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-			<itemizedlist>
-				<listitem>
-				<para><link linkend="minusValue"><varname>minusValue</varname></link>: Diferencia con un valor</para>
-				</listitem>
+			<sect3>
+				<title>Funciones de diferencia</title>
 
-				<listitem>
-					<para><link linkend="minusValues"><varname>minusValues</varname></link>: Diferencia con una matriz de valores</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+					<para><link linkend="minusValue"><varname>minusValue</varname></link>: Diferencia con un valor</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusRange"><varname>minusRange</varname></link>: Diferencia con un rango de valores</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusValues"><varname>minusValues</varname></link>: Diferencia con una matriz de valores</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusRanges"><varname>minusRanges</varname></link>: Diferencia con una matriz de rangos de valores</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusRange"><varname>minusRange</varname></link>: Diferencia con un rango de valores</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusMin"><varname>minusMin</varname></link>: Diferencia con el valor mínimo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusRanges"><varname>minusRanges</varname></link>: Diferencia con una matriz de rangos de valores</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusMax"><varname>minusMax</varname></link>: Diferencia con el valor máximo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusMin"><varname>minusMin</varname></link>: Diferencia con el valor mínimo</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusGeometry"><varname>minusGeometry</varname></link>: Diferencia con una geometría</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusMax"><varname>minusMax</varname></link>: Diferencia con el valor máximo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="minusGeometry"><varname>minusGeometry</varname></link>: Diferencia con una geometría</para>
+					</listitem>
 
 				<listitem>
 					<para><link linkend="minusTimestamp"><varname>minusTimestamp</varname></link>: Diferencia con una marca de tiempo</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="minusTimestampSet"><varname>minusTimestampSet</varname></link>: Diferencia con un conjunto de marcas de tiempo</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusTimestampSet"><varname>minusTimestampSet</varname></link>: Diferencia con un conjunto de marcas de tiempo</para>
+					</listitem>
 
 				<listitem>
 					<para><link linkend="minusPeriod"><varname>minusPeriod</varname></link>: Diferencia con un período</para>
 				</listitem>
 
-				<listitem>
-					<para><link linkend="minusPeriodSet"><varname>minusPeriodSet</varname></link>: Diferencia con un conjunto de períodos</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusPeriodSet"><varname>minusPeriodSet</varname></link>: Diferencia con un conjunto de períodos</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusTbox"><varname>minusTbox</varname></link>: Diferencia con un <varname>tbox</varname></para>
-				</listitem>
+					<listitem>
+						<para><link linkend="minusTbox"><varname>minusTbox</varname></link>: Diferencia con un <varname>tbox</varname></para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="minusStbox"><varname>minusStbox</varname></link>: Diferencia con un <varname>stbox</varname></para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="minusStbox"><varname>minusStbox</varname></link>: Diferencia con un <varname>stbox</varname></para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 
 		<sect2>
 			<title>Operadores de comparación</title>
 
-			<itemizedlist>
-				<listitem>
-				<para><link linkend="ttype_eq"><varname>=</varname></link>: ¿Son iguales los valores temporales?</para>
-				</listitem>
+			<sect3>
+				<title>Operadores de comparación tradicionales</title>
 
-				<listitem>
-					<para><link linkend="ttype_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores temporales?</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+					<para><link linkend="ttype_eq"><varname>=</varname></link>: ¿Son iguales los valores temporales?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_lt"><varname>&lt;</varname></link>: ¿Es el primer valor temporal menor que el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_ne"><varname>&lt;&gt;</varname></link>: ¿Son diferentes los valores temporales?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_gt"><varname>&gt;</varname></link>: ¿Es el primer valor temporal mayor que el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_lt"><varname>&lt;</varname></link>: ¿Es el primer valor temporal menor que el segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_le"><varname>&lt;=</varname></link>: ¿Es el primer valor temporal menor o igual que el segundo?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_gt"><varname>&gt;</varname></link>: ¿Es el primer valor temporal mayor que el segundo?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor temporal mayor o igual que el segundo?</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
+					<listitem>
+						<para><link linkend="ttype_le"><varname>&lt;=</varname></link>: ¿Es el primer valor temporal menor o igual que el segundo?</para>
+					</listitem>
 
-		<sect2>
-			<title>Operadores de comparación siempre y alguna vez</title>
+					<listitem>
+						<para><link linkend="ttype_ge"><varname>&gt;=</varname></link>: ¿Es el primer valor temporal mayor o igual que el segundo?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="ttype_eveq"><varname>?=</varname></link>: ¿Es el valor temporal alguna vez igual al valor?</para>
-				</listitem>
+			<sect3>
+				<title>Operadores de comparación alguna vez y siempre</title>
 
-				<listitem>
-					<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez diferente del valor?</para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="ttype_eveq"><varname>?=</varname></link>: ¿Es el valor temporal alguna vez igual al valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_evlt"><varname>?&lt;</varname></link>: ¿Es el valor temporal alguna vez menor que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_evne"><varname>?&lt;&gt;</varname></link>: ¿Es el valor temporal alguna vez diferente del valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_evgt"><varname>?&gt;</varname></link>: ¿Es el valor temporal alguna vez mayor que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_evlt"><varname>?&lt;</varname></link>: ¿Es el valor temporal alguna vez menor que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_evle"><varname>?&lt;=</varname></link>: ¿Es el valor temporal alguna vez menor o igual que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_evgt"><varname>?&gt;</varname></link>: ¿Es el valor temporal alguna vez mayor que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_evge"><varname>?&gt;=</varname></link>: ¿Es el valor temporal alguna vez mayor o igual que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_evle"><varname>?&lt;=</varname></link>: ¿Es el valor temporal alguna vez menor o igual que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_aleq"><varname>%=</varname></link>: ¿Es el valor temporal siempre igual que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_evge"><varname>?&gt;=</varname></link>: ¿Es el valor temporal alguna vez mayor o igual que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_alne"><varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal siempre diferente que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_aleq"><varname>%=</varname></link>: ¿Es el valor temporal siempre igual que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_allt"><varname>%&lt;</varname></link>: ¿Es el valor temporal siempre menor que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_alne"><varname>%&lt;&gt;</varname></link>: ¿Es el valor temporal siempre diferente que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_algt"><varname>%&gt;</varname></link>: ¿Es el valor temporal siempre mayor que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_allt"><varname>%&lt;</varname></link>: ¿Es el valor temporal siempre menor que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_alle"><varname>%&lt;=</varname></link>: ¿Es el valor temporal siempre menor o igual que el valor?</para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_algt"><varname>%&gt;</varname></link>: ¿Es el valor temporal siempre mayor que el valor?</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_alge"><varname>%&gt;=</varname></link>: ¿Es el valor temporal siempre mayor o igual que el valor?</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
+					<listitem>
+						<para><link linkend="ttype_alle"><varname>%&lt;=</varname></link>: ¿Es el valor temporal siempre menor o igual que el valor?</para>
+					</listitem>
 
-		<sect2>
-			<title>Operadores de comparación temporal</title>
+					<listitem>
+						<para><link linkend="ttype_alge"><varname>%&gt;=</varname></link>: ¿Es el valor temporal siempre mayor o igual que el valor?</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="ttype_teq"><varname>#=</varname></link>: Igual temporal</para>
-				</listitem>
+			<sect3>
+				<title>Operadores de comparación temporal</title>
 
-				<listitem>
-					<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Diferente temporal </para>
-				</listitem>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="ttype_teq"><varname>#=</varname></link>: Igual temporal</para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_tlt"><varname>#&lt;</varname></link>: Menor que temporal </para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_tne"><varname>#&lt;&gt;</varname></link>: Diferente temporal </para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_tgt"><varname>#&gt;</varname></link>: Mayor que temporal </para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_tlt"><varname>#&lt;</varname></link>: Menor que temporal </para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_tle"><varname>#&lt;=</varname></link>: Menor o igual que temporal </para>
-				</listitem>
+					<listitem>
+						<para><link linkend="ttype_tgt"><varname>#&gt;</varname></link>: Mayor que temporal </para>
+					</listitem>
 
-				<listitem>
-					<para><link linkend="ttype_tge"><varname>#&gt;=</varname></link>: Mayor o igual que temporal </para>
-				</listitem>
-			</itemizedlist>
+					<listitem>
+						<para><link linkend="ttype_tle"><varname>#&lt;=</varname></link>: Menor o igual que temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="ttype_tge"><varname>#&gt;=</varname></link>: Mayor o igual que temporal </para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 		</sect2>
 
 		<sect2>
@@ -1285,6 +1131,251 @@
 		</sect2>
 
 		<sect2>
+			<title>Funciones espaciales</title>
+
+			<sect3>
+				<title>Funciones de entrada/salida</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="asText"><varname>asText</varname></link>: Obtener la representación de texto conocido (Well-Known Text o WKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="asEWKT"><varname>asEWKT</varname></link>: Obtener la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="asMFJSON"><varname>asMFJSON</varname></link>: Obtener la representación JSON de características móviles (Moving Features)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="asBinary"><varname>asBinary</varname></link>: Obtener la representación binaria conocida (Well-Known Binary o WKB)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="asEWKB"><varname>asEWKB</varname></link>: Obtener la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="asHexEWKB"><varname>asHexEWKB</varname></link>: Obtener la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompointFromText"><varname>tgeompointFromText</varname></link>: Entrar un punto temporal geométrico en representación de texto conocido (Well-Known Text o WKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeogpointFromText"><varname>tgeogpointFromText</varname></link>: Entrar un punto temporal geográfico en representación de texto conocido (Well-Known Text o WKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompointFromEWKT"><varname>tgeompointFromEWKT</varname></link>: Entrar un punto temporal geométrico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeogpointFromEWKT"><varname>tgeogpointFromEWKT</varname></link>: Entrar un punto temporal geográfico en representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompointFromMFJSON"><varname>tgeompointFromMFJSON</varname></link>: Entrar un punto temporal geométrico en una representación JSON de características móviles (Moving Features)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeogpointFromMFJSON"><varname>tgeogpointFromMFJSON</varname></link>: Entrar un punto temporal geográfico en una representación JSON de características móviles (Moving Features)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompointFromBinary"><varname>tgeompointFromBinary</varname></link>: Entrar un punto temporal geométrico en representación binaria conocida (Well-Known Binary o WKB)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeogpointFromBinary"><varname>tgeogpointFromBinary</varname></link>: Entrar un punto temporal geográfico en representación binaria conocida (Well-Known Binary o WKB)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompointFromEWKB"><varname>tgeompointFromEWKB</varname></link>: Entrar un punto temporal geométrico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeogpointFromEWKB"><varname>tgeogpointFromEWKB</varname></link>: Entrar un punto temporal geográfico en una representación extendida binaria conocida (Extended Well-Known Binary o EWKB) </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeompointFromHexEWKB"><varname>tgeompointFromHexEWKB</varname></link>: Entrar un punto temporal geométrico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tgeogpointFromHexEWKB"><varname>tgeogpointFromHexEWKB</varname></link>: Entrar un punto temporal geográfico en representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o EWKB) en formato texto </para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Funciones de sistema de referencia espacial</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpoint_SRID"><varname>SRID</varname></link>: Obtener el identificador de referencia espacial</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpoint_setSRID"><varname>setSRID</varname></link>: Establecer el identificador de referencia espacial </para>
+						</listitem>
+
+					<listitem>
+						<para><link linkend="tpoint_transform"><varname>transform</varname></link>: Transformar a una referencia espacial diferente</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Funciones de accesor</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="getX"><varname>getX</varname></link>: Obtener los valores de las coordenadas X como un número flotante temporal</para>
+					</listitem>
+
+				<listitem>
+					<para><link linkend="getY"><varname>getY</varname></link>: Obtener los valores de las coordenadas Y como un número flotante temporal</para>
+				</listitem>
+
+					<listitem>
+						<para><link linkend="getZ"><varname>getZ</varname></link>: Obtener los valores de las coordenadas Z como un número flotante temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="isSimple"><varname>isSimple</varname></link>: Devuelve verdadero si el punto temporal no se auto-intersecta espacialmente</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="length"><varname>length</varname></link>: Obtener la longitud atravesada por el punto temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="cumulativeLength"><varname>cumulativeLength</varname></link>: Obtener la longitud acumulada atravesada por el punto temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="speed"><varname>speed</varname></link>: Obtener la velocidad del punto temporal en unidades por segundo </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="twCentroid"><varname>twCentroid</varname></link>: Obtener el centroide ponderado en el tiempo</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="azimuth"><varname>azimuth</varname></link>: Obtener el acimut temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="bearing"><varname>bearing</varname></link>: Obtener el rumbo temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Funciones de manipulación</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="makeSimple"><varname>makeSimple</varname></link>: Devuelve una matriz de fragmentos del punto temporal que son simples</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="simplify"><varname>simplify</varname></link>: Simplificar un punto temporal usando una generalización del algoritmo de Douglas-Peucker</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="geoMeasure"><varname>geoMeasure</varname></link>: Construir una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="asMVTGeom"><varname>asMVTGeom</varname></link>: Transformar un punto geométrico temporal en el espacio de coordenadas de un Mapbox Vector Tile</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Operadores de distancia</title>
+
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Obtener la distancia mínima que haya existido</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="nearestApproachInstant"><varname>nearestApproachInstant</varname></link>: Obtener el instante del primer punto temporal en el que los dos argumentos están a la distancia más cercana</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="shortestLine"><varname>shortestLine</varname></link>: Obtener la línea que conecta el punto de aproximación más cercano</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Relaciones espaciales</title>
+
+			<sect3>
+				<title>Relaciones posibles </title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Puede ser disjunto</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Puede estar a distancia de</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Relaciones temporales</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+		<sect2>
 			<title>Mosaicos multidimensionales</title>
 
 			<sect3>
@@ -1353,74 +1444,6 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
-		</sect2>
-
-		<sect2>
-			<title>Operadores de distancia</title>
-
-			<itemizedlist>
-				<listitem>
-					<para><link linkend="smallest_distance"><varname>|=|</varname></link>: Obtener la distancia mínima que haya existido</para>
-				</listitem>
-
-				<listitem>
-					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia temporal</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2>
-			<title>Relaciones espaciales</title>
-
-			<sect3>
-				<title>Relaciones posibles </title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="contains"><varname>contains</varname></link>: Puede contener</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="disjoint"><varname>disjoint</varname></link>: Puede ser disjunto</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="dwithin"><varname>dwithin</varname></link>: Puede estar a distancia de</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="intersects"><varname>intersects</varname></link>: Puede cruzarse</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="touches"><varname>touches</varname></link>: Puede tocar</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
-
-			<sect3>
-				<title>Relaciones temporales</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tcontains"><varname>tcontains</varname></link>: Contiene temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tdisjoint"><varname>tdisjoint</varname></link>: Disjunto temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tdwithin"><varname>tdwithin</varname></link>: Estar a distancia de temporal </para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="tintersects"><varname>tintersects</varname></link>: Intersección temporal</para>
-					</listitem>
-
-					<listitem>
-						<para><link linkend="ttouches"><varname>ttouches</varname></link>: Toca temporal</para>
-					</listitem>
-				</itemizedlist>
-				</sect3>
 		</sect2>
 
 		<sect2>

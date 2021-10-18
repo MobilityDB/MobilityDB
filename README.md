@@ -107,8 +107,12 @@ make
 sudo make install
 psql -c 'CREATE EXTENSION MobilityDB CASCADE'
 ```
+The above commands install the `master` branch. If you want to install another branch, for example, `develop` you can replace the first command above as follows
+```bash
+git clone --branch develop https://github.com/MobilityDB/MobilityDB
+```
 
-You should also set the following in `postgresql.conf` depending on the version of PostGIS you have installed (below PostGIS 3):
+You should also set the following in `postgresql.conf` depending on the version of PostGIS you have installed (below we use PostGIS 3):
 ```bash
 shared_preload_libraries = 'postgis-3'
 max_locks_per_transaction = 128
@@ -138,22 +142,31 @@ Documentation
 
 ### User's Manual
 
-If you are in the `doc` directory of MobilityDB you can generate the user's manual from the sources as follows:
+You can generate the user's manual in HTML, PDF, and EPUB formats. The manual is generated in English and in other available languages (currently only Spanish). For this, it is necessary to specify appropriate options in the `cmake` command as follows:
 
-*   HTML
-    ```bash
-    xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl mobilitydb-manual.xml
-    ```
+*   `DOC_ALL`: Generate in HTML, PDF, and EPUB formats
 
-*   PDF
-    ```bash
-    dblatex -s texstyle.sty mobilitydb-manual.xml
-    ```
+*   `DOC_HTML`: Generate in HTML format
 
-*   EPUB
-    ```bash
-    dbtoepub -o mobilitydb-manual.epub mobilitydb-manual.xml
-    ```
+*   `DOC_PDF`: Generate in PDF format
+
+*   `DOC_EPUB`: Generate in EPUB format
+
+*   `LANG_ALL`: Generate in all available languages
+
+*   `ES`: Generate the Spanish documentation
+
+For example, the following command generates the documentation in all formats and in all languages.
+```bash
+cmake -DDOC_ALL=true -DLANG_ALL=true ..
+make doc
+```
+As another example, the following command generates the English documentation in PDF.
+```bash
+cmake -DDOC_PDF=true ..
+make doc
+```
+The resulting documentation will be generated in the `doc` directory of the build directory.
 
 In addition, pregenerated versions of them are available.
 
@@ -169,12 +182,14 @@ The documentation is also avaible in Spanish.
 
 ### Developer's Documentation
 
-If you are in the root directory of MobilityDB you can generate the developer's documentation from the source files as follows:
+You can generate the English developer's documentation in HTML format. For this, it is necessary to the option `DOC_DEV` in the `cmake` command as follows:
+
 ```bash
-doxygen Doxyfile
+cmake -DDOC_DEV=true ..
+make doc_dev
 ```
 
-The resulting HTML documentation will be generated in the `docs` directory of MobilityDB.
+The resulting HTML documentation will be generated in the `doxygen` directory of the build directory.
 
 In addition, a pregenerated version of the documentation is available.
 

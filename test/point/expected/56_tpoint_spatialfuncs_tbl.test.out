@@ -578,22 +578,6 @@ WHERE bearing(temp, g) IS NOT NULL ORDER BY 1 LIMIT 10;
   0.60685
 (10 rows)
 
-SELECT maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6)) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
-WHERE bearing(t1.temp, t2.temp) IS NOT NULL ORDER BY 1 LIMIT 10;
- maxvalue 
-----------
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-(10 rows)
-
 SELECT maxValue(round(degrees(bearing(g, temp)), 6)) FROM tbl_geom_point3D t1, tbl_tgeompoint3D t2
 WHERE bearing(g, temp) IS NOT NULL ORDER BY 1 LIMIT 10;
  maxvalue 
@@ -672,22 +656,6 @@ WHERE bearing(temp, g) IS NOT NULL ORDER BY 1 LIMIT 10;
  0.158826
  0.171682
  0.171682
-(10 rows)
-
-SELECT maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6)) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
-WHERE bearing(t1.temp, t2.temp) IS NOT NULL ORDER BY 1 LIMIT 10;
- maxvalue 
-----------
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-        0
-        0
 (10 rows)
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE isSimple(temp);
