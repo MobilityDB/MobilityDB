@@ -1,3 +1,12 @@
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
 	<sect1>
 		<title>Funciones y operadores espaciales</title>
 		<para>A continuación, especificamos con el símbolo &Z_support; que la función admite puntos 3D y con el  símbolo &geography_support; que la función está disponible para geografías.</para>

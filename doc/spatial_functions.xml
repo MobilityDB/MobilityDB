@@ -1,3 +1,12 @@
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
 	<sect1>
 		<title>Spatial Functions and Operators</title>
 		<para>In the following, we specify with the symbol &Z_support; that the function supports 3D points and with the symbol &geography_support; that the function is available for geographies.</para>
@@ -409,7 +418,7 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012
   tgeompoint '[Point(0 0)@2012-01-01, Point(2 0)@2012-01-03]')), 3);
 -- [243.435@2012-01-01, 116.565@2012-01-03]
 </programlisting>
-					<para>Please notice that this function currently does not accept to temporal geographic points.</para>
+					<para>Please notice that this function currently does not accept two temporal geographic points.</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
