@@ -56,7 +56,7 @@
  *****************************************************************************/
 
 /**
- * Create a bit matrix 
+ * Create a bit matrix
  */
 BitMatrix *
 bitmatrix_make(int *count, int numdims)
@@ -81,7 +81,7 @@ bitmatrix_make(int *count, int numdims)
 }
 
 /**
- * Get the value of the bit in the bit matrix 
+ * Get the value of the bit in the bit matrix
  */
 bool
 bitmatrix_get(const BitMatrix *bm, int *coords)
@@ -105,7 +105,7 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
 }
 
 /**
- * Set the value of the bit in the bit matrix 
+ * Set the value of the bit in the bit matrix
  */
 void
 bitmatrix_set(BitMatrix *bm, int *coords, bool value)
@@ -330,7 +330,7 @@ bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
     p[i] = 2 * delta[i] - delta[axis];
   }
   /* Make a copy of the start coordinates */
-  memcpy(coords, coords1, sizeof(neighbors));  
+  memcpy(coords, coords1, sizeof(neighbors));
   /* Loop from start to end tile
    * The end of the loop is after printing the last element */
   while (true)
@@ -435,7 +435,7 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
  * @param[in] torigin Time origin of the tiles
  *
  * @pre The size argument must be greater to 0.
- * @note The tunits argument may be equal to 0. In that case only the spatial 
+ * @note The tunits argument may be equal to 0. In that case only the spatial
  * dimension is tiled.
  */
 static STboxGridState *
@@ -651,7 +651,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = 
+    MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = stbox_tile_state_make(NULL, bounds, size, tunits, pt,
@@ -677,7 +677,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
    * generated and thus there is no associated bit matrix */
   stbox_tile_state_get(box, state);
   stbox_tile_state_next(state);
-  /* Form tuple and return 
+  /* Form tuple and return
    * The i value was incremented with the previous _next function call */
   tuple_arr[0] = Int32GetDatum(state->i - 1);
   tuple_arr[1] = PointerGetDatum(box);
@@ -806,7 +806,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   double x = float_bucket_internal(p.x, state->size, state->box.xmin);
   double y = float_bucket_internal(p.y, state->size, state->box.ymin);
   double z = 0;
-  TimestampTz t;
+  TimestampTz t = 0;
   if (hasz)
     z = float_bucket_internal(p.z, state->size, state->box.zmin);
   if (hast)
@@ -953,7 +953,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = 
+    MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
@@ -1035,7 +1035,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     if (state->done)
     {
       /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext = 
+      MemoryContext oldcontext =
         MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
       if (state->bm) pfree(state->bm);
       pfree(state);
@@ -1044,7 +1044,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     }
 
     /* Get current tile (if any) and advance state
-     * It is necessary to test if we found a tile since the previous tile 
+     * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
     memset(&box, 0, sizeof(STBOX));
     bool found = stbox_tile_state_get(&box, state);
@@ -1089,7 +1089,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = 
+    MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
@@ -1173,7 +1173,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (state->done)
     {
       /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext = 
+      MemoryContext oldcontext =
         MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
       if (state->bm) pfree(state->bm);
       pfree(state);
@@ -1182,7 +1182,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     }
 
     /* Get current tile (if any) and advance state
-     * It is necessary to test if we found a tile since the previous tile 
+     * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
     memset(&box, 0, sizeof(STBOX));
     bool found = stbox_tile_state_get(&box, state);

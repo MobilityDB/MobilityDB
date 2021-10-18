@@ -145,15 +145,10 @@ Documentation
 You can generate the user's manual in HTML, PDF, and EPUB formats. The manual is generated in English and in other available languages (currently only Spanish). For this, it is necessary to specify appropriate options in the `cmake` command as follows:
 
 *   `DOC_ALL`: Generate in HTML, PDF, and EPUB formats
-
 *   `DOC_HTML`: Generate in HTML format
-
 *   `DOC_PDF`: Generate in PDF format
-
 *   `DOC_EPUB`: Generate in EPUB format
-
 *   `LANG_ALL`: Generate in all available languages
-
 *   `ES`: Generate the Spanish documentation
 
 For example, the following command generates the documentation in all formats and in all languages.

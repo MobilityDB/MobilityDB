@@ -1,0 +1,14 @@
+---
+engines:
+  cppcheck:
+    language: c
+    exclude_paths:
+      - "postgis/**"
+  duplication:
+    exclude_paths:
+      - "postgis/**"
+    config:
+      languages:
+        - "c"
+exclude_paths:
+  - "postgis/**"
