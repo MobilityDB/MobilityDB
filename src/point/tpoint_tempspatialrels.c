@@ -1285,6 +1285,7 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   /* 3D only if both arguments are 3D */
 #if POSTGIS_VERSION_NUMBER < 30000
   lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->flags) ?
@@ -1292,17 +1293,20 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist)
   lfinfo.func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
 #endif
     (varfunc) &geom_dwithin3d : (varfunc) &geom_dwithin2d;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = dist;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
   lfinfo.restypid = BOOLOID;
   lfinfo.invert = INVERT_NO;
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp,
-      PointerGetDatum(gs), temp->basetypid, dist, lfinfo);
+      PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp,
-      PointerGetDatum(gs), temp->basetypid, dist, lfinfo);
+      PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_geo((TSequence *) temp,
         PointerGetDatum(gs), dist);
@@ -1371,17 +1375,19 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
 
   datum_func3 func = get_dwithin_fn(temp1->flags, temp2->flags);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = dist;
   lfinfo.restypid = BOOLOID;
   Temporal *result;
   ensure_valid_tempsubtype(sync1->subtype);
   if (sync1->subtype == INSTANT)
     result = (Temporal *) sync_tfunc_tinstant_tinstant(
-      (TInstant *) sync1, (TInstant *) sync2, dist, lfinfo);
+      (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
   else if (sync1->subtype == INSTANTSET)
     result = (Temporal *) sync_tfunc_tinstantset_tinstantset(
-      (TInstantSet *) sync1, (TInstantSet *) sync2, dist, lfinfo);
+      (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
   else if (sync1->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_tpointseq(
       (TSequence *) sync1, (TSequence *) sync2, dist, func);

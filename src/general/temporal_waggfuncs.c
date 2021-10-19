@@ -680,7 +680,7 @@ PG_FUNCTION_INFO_V1(tint_wmin_transfn);
 PGDLLEXPORT Datum
 tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_wagg_transfn(fcinfo, &datum_min_int32, MIN, CROSSINGS);
+  return temporal_wagg_transfn(fcinfo, &datum_min_int32, GET_MIN, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
@@ -690,7 +690,7 @@ PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
 PGDLLEXPORT Datum
 tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_wagg_transfn(fcinfo, &datum_min_float8, MIN, CROSSINGS);
+  return temporal_wagg_transfn(fcinfo, &datum_min_float8, GET_MIN, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tint_wmax_transfn);
@@ -700,7 +700,7 @@ PG_FUNCTION_INFO_V1(tint_wmax_transfn);
 PGDLLEXPORT Datum
 tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_wagg_transfn(fcinfo, &datum_max_int32, MAX, CROSSINGS);
+  return temporal_wagg_transfn(fcinfo, &datum_max_int32, GET_MAX, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
@@ -710,7 +710,7 @@ PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
 PGDLLEXPORT Datum
 tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_wagg_transfn(fcinfo, &datum_max_float8, MAX, CROSSINGS);
+  return temporal_wagg_transfn(fcinfo, &datum_max_float8, GET_MAX, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(tint_wsum_transfn);
@@ -720,7 +720,7 @@ PG_FUNCTION_INFO_V1(tint_wsum_transfn);
 PGDLLEXPORT Datum
 tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_wagg_transfn(fcinfo, &datum_sum_int32, MIN, CROSSINGS_NO);
+  return temporal_wagg_transfn(fcinfo, &datum_sum_int32, GET_MIN, CROSSINGS_NO);
 }
 
 PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
@@ -730,7 +730,7 @@ PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
 PGDLLEXPORT Datum
 tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
-  return temporal_wagg_transfn(fcinfo, &datum_sum_float8, MIN, CROSSINGS);
+  return temporal_wagg_transfn(fcinfo, &datum_sum_float8, GET_MIN, CROSSINGS);
 }
 
 PG_FUNCTION_INFO_V1(temporal_wcount_transfn);

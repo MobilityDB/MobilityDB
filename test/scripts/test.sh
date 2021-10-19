@@ -13,6 +13,8 @@ BIN_DIR="@POSTGRESQL_BIN_DIR@"
 PSQL="${BIN_DIR}/psql -h ${WORKDIR}/lock -e --set ON_ERROR_STOP=0 postgres"
 DBDIR="${WORKDIR}/db"
 
+MAX_RETRIES=10
+
 pg_status() {
   @POSTGRESQL_BIN_DIR@//pg_ctl -D "${DBDIR}" status
 }
@@ -94,10 +96,16 @@ run_compare)
   TESTNAME=$2
   TESTFILE=$3
 
-  if ! pg_status; then
+  retries=0
+  while ! pg_status; do
     $PGCTL start
-    sleep 2
-  fi
+    sleep 1
+    retries=$(( retries + 1 ))
+    if (( retries == MAX_RETRIES )); then
+      echo "Failed to start PostgreSQL" >> "${WORKDIR}/out/${TESTNAME}.out"
+      exit 1
+    fi
+  done
 
   if [ "${TESTFILE: -3}" == ".xz" ]; then
     "${XZCAT}" "${TESTFILE}" | $PSQL 2>&1 | tee "${WORKDIR}"/out/"${TESTNAME}".out > /dev/null
@@ -127,10 +135,16 @@ run_passfail)
   TESTNAME=$2
   TESTFILE=$3
 
-  if ! pg_status; then
+  retries=0
+  while ! pg_status; do
     $PGCTL start
-    sleep 2
-  fi
+    sleep 1
+    retries=$(( retries + 1 ))
+    if (( retries == MAX_RETRIES )); then
+      echo "Failed to start PostgreSQL" >> "${WORKDIR}/out/${TESTNAME}.out"
+      exit 1
+    fi
+  done
 
   {
     echo "TESTNAME=${TESTNAME}"

@@ -163,7 +163,8 @@ timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   else
   {
     assert(state->elemtype == TIMESTAMPTZ);
-    skiplist_splice(fcinfo, state, (void **) times, ts->count, NULL, false);
+    skiplist_splice(fcinfo, state, (void **) times, ts->count, NULL,
+      CROSSINGS_NO);
     result = state;
   }
   return result;
@@ -187,7 +188,7 @@ period_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   else
   {
     assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) &per, 1, NULL, false);
+    skiplist_splice(fcinfo, state, (void **) &per, 1, NULL, CROSSINGS_NO);
     result = state;
   }
   return result;
@@ -212,7 +213,8 @@ periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   else
   {
     assert(state->elemtype == PERIOD);
-    skiplist_splice(fcinfo, state, (void **) periods, ps->count, NULL, false);
+    skiplist_splice(fcinfo, state, (void **) periods, ps->count, NULL,
+      CROSSINGS_NO);
     result = state;
   }
   pfree(periods);
@@ -241,7 +243,7 @@ time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
   assert(state1->elemtype == state2->elemtype);
   int count2 = state2->length;
   void **values = skiplist_values(state2);
-  skiplist_splice(fcinfo, state1, values, count2, NULL, false);
+  skiplist_splice(fcinfo, state1, values, count2, NULL, CROSSINGS_NO);
   pfree(values);
   return state1;
 }
@@ -520,7 +522,7 @@ timestampset_tcount_transfn(PG_FUNCTION_ARGS)
   {
     ensure_same_timetype_skiplist(state, INSTANT);
     skiplist_splice(fcinfo, state, (void **) instants, ts->count,
-      &datum_sum_int32, false);
+      &datum_sum_int32, CROSSINGS_NO);
   }
   else
   {
@@ -555,7 +557,7 @@ period_tcount_transfn(PG_FUNCTION_ARGS)
   {
     ensure_same_timetype_skiplist(state, SEQUENCE);
     skiplist_splice(fcinfo, state, (void **) &seq, 1,
-      &datum_sum_int32, false);
+      &datum_sum_int32, CROSSINGS_NO);
   }
   else
   {
@@ -589,7 +591,7 @@ periodset_tcount_transfn(PG_FUNCTION_ARGS)
   {
     ensure_same_timetype_skiplist(state, SEQUENCE);
     skiplist_splice(fcinfo, state, (void **) sequences, ps->count,
-      &datum_sum_int32, false);
+      &datum_sum_int32, CROSSINGS_NO);
   }
   else
   {

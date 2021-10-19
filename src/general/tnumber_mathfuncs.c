@@ -79,7 +79,7 @@ datum_degrees(Datum value)
  @note This function is called only when both sequences are linear.
  */
 static bool
-tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1,
+tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   TimestampTz *t)
 {
@@ -89,10 +89,10 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
   double x3 = datum_double(tinstant_value(start2), start2->basetypid);
   double x4 = datum_double(tinstant_value(end2), start2->basetypid);
   /* Compute the instants t1 and t2 at which the linear functions of the two
-     segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-     minimum/maximum exactly at the middle between t1 and t2.
-     To reduce problems related to floating point arithmetic, t1 and t2
-     are shifted, respectively, to 0 and 1 before the computation */
+   * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
+   * minimum/maximum exactly at the middle between t1 and t2.
+   * To reduce problems related to floating point arithmetic, t1 and t2
+   * are shifted, respectively, to 0 and 1 before the computation */
   if ((x2 - x1) == 0.0 || (x4 - x3) == 0.0)
     return false;
 
@@ -108,6 +108,41 @@ tnumberseq_mult_maxmin_at_timestamp(const TInstant *start1, const TInstant *end1
 
   *t = start1->t + (TimestampTz) (duration * fraction);
   return true;
+}
+
+static bool
+tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  char op, Datum *value, TimestampTz *t)
+{
+  if (! tnumber_arithop_tp_at_timestamp1(start1, end1, linear1,
+    start2, end2, linear2, t))
+    return false;
+  Datum value1 = tsequence_value_at_timestamp1(start1, end1, linear1, *t);
+  Datum value2 = tsequence_value_at_timestamp1(start2, end2, linear2, *t);
+  assert (op == '*' || op == '/');
+  *value = (op == '*') ?
+    datum_mult(value1, value2, start1->basetypid, start2->basetypid) :
+    datum_div(value1, value2, start1->basetypid, start2->basetypid);
+  return true;
+}
+
+static bool
+tnumber_mult_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  Datum *value, TimestampTz *t)
+{
+  return tnumber_arithop_tp_at_timestamp(start1, end1, linear1, start2, end2,
+    linear2, '*', value, t);
+}
+
+static bool
+tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  Datum *value, TimestampTz *t)
+{
+  return tnumber_arithop_tp_at_timestamp(start1, end1, linear1, start2, end2,
+    linear2, '/', value, t);
 }
 
 /*****************************************************************************
@@ -152,14 +187,20 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
 
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = basetypid;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   /* This parameter is not used for tnumber <op> base */
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal_base(temp, value, basetypid, (Datum) NULL, lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
 /**
@@ -214,7 +255,7 @@ static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
   bool (*tpfunc)(const TInstant *, const TInstant *, bool,
-    const TInstant *, const TInstant *, bool, TimestampTz *))
+    const TInstant *, const TInstant *, bool, Datum *, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
@@ -236,16 +277,20 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
 
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
   lfinfo.restypid = base_oid_from_temporal(temptypid);
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -353,7 +398,7 @@ PGDLLEXPORT Datum
 mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT,
-    &tnumberseq_mult_maxmin_at_timestamp);
+    &tnumber_mult_tp_at_timestamp);
 }
 
 /*****************************************************************************
@@ -388,7 +433,7 @@ PGDLLEXPORT Datum
 div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_div, DIV,
-    &tnumberseq_mult_maxmin_at_timestamp);
+    &tnumber_div_tp_at_timestamp);
 }
 
 /*****************************************************************************
@@ -406,10 +451,17 @@ tnumber_round(PG_FUNCTION_ARGS)
   Datum digits = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_round;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = digits;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = INT4OID;
   lfinfo.restypid = FLOAT8OID;
-  Temporal *result = tfunc_temporal(temp, digits, lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -424,10 +476,15 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_degrees;
-  lfinfo.numparam = 1;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
   lfinfo.restypid = FLOAT8OID;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

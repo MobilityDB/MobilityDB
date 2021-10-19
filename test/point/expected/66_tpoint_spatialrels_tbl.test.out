@@ -169,7 +169,7 @@ SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2
   WHERE NOT ST_IsCollection(trajectory(t1.temp)::geometry) AND NOT ST_IsCollection(trajectory(t2.temp)::geometry) AND dwithin(t1.temp, t2.temp, 10);
  count 
 -------
-    68
+    73
 (1 row)
 
 set parallel_tuple_cost=100;

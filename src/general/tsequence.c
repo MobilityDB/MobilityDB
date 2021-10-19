@@ -281,12 +281,15 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
  * @param[out] t Timestamp
  */
 bool
-tsequence_intersection1(const TInstant *start1, const TInstant *end1,
+tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  TimestampTz *t)
+  Datum *value, TimestampTz *t)
 {
-  return tsequence_intersection(start1, end1, linear1, start2, end2,
-    linear2, NULL, NULL, t);
+  if (! tsequence_intersection(start1, end1, linear1, start2, end2,
+    linear2, NULL, NULL, t))
+    return false;
+  *value = (Datum) 0;
+  return true;
 }
 
 /*****************************************************************************
@@ -3223,6 +3226,8 @@ tsequence_value_at_timestamp1(const TInstant *inst1, const TInstant *inst2,
   long double duration1 = (long double) (t - inst1->t);
   long double duration2 = (long double) (inst2->t - inst1->t);
   long double ratio = duration1 / duration2;
+  // TEST !!!! USED FOR ASSESSING FLOATINGING POINT PRECISION IN MOBILITYDB !!!
+  // long double ratio = (double)(t - inst1->t) / (double)(inst2->t - inst1->t);
   ensure_base_type_continuous((Temporal *) inst1);
   if (basetypid == FLOAT8OID)
   {

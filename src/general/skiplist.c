@@ -66,7 +66,7 @@ set_aggregation_context(FunctionCallInfo fcinfo)
   MemoryContext ctx;
   if (!AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-        errmsg("Operation not supported")));
+      errmsg("Operation not supported")));
   return  MemoryContextSwitchTo(ctx);
 }
 
@@ -84,22 +84,22 @@ unset_aggregation_context(MemoryContext ctx)
 static int
 ffsl(long int i)
 {
-    int result = 1;
-    while(! (i & 1))
-    {
-        result ++;
-        i >>= 1;
-    }
-    return result;
+  int result = 1;
+  while(! (i & 1))
+  {
+    result ++;
+    i >>= 1;
+  }
+  return result;
 }
 #endif
 
 static long int
 gsl_random48()
 {
-    if(! _aggregation_rng)
-      _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
-    return gsl_rng_get(_aggregation_rng);
+  if(! _aggregation_rng)
+    _aggregation_rng = gsl_rng_alloc(gsl_rng_ranlxd1);
+  return gsl_rng_get(_aggregation_rng);
 }
 
 /**
@@ -192,13 +192,11 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
       return pos_timestamp_timestamp((TimestampTz) list->elems[cur].value, t);
     if (list->elemtype == PERIOD)
       return pos_period_timestamp((Period *) list->elems[cur].value, t);
+    /* list->elemtype == TEMPORAL */
+    if (((Temporal *) list->elems[cur].value)->subtype == INSTANT)
+      return pos_timestamp_timestamp(((TInstant *) list->elems[cur].value)->t, t);
     else
-    {
-      if (((Temporal *) list->elems[cur].value)->subtype == INSTANT)
-        return pos_timestamp_timestamp(((TInstant *) list->elems[cur].value)->t, t);
-      else
-        return pos_period_timestamp(&((TSequence *) list->elems[cur].value)->period, t);
-    }
+      return pos_period_timestamp(&((TSequence *) list->elems[cur].value)->period, t);
   }
 }
 
@@ -232,7 +230,7 @@ skiplist_print(const SkipList *list)
         val = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(e->value));
       else if (list->elemtype == PERIOD)
         val = period_to_string(e->value);
-      else
+      else /* list->elemtype == TEMPORAL */
       {
         Period p;
         temporal_period(&p, e->value);
@@ -301,7 +299,7 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count, ElemType elemty
     for (int i = 0; i < count - 2; i ++)
       result->elems[i + 1].value = period_copy((Period *) values[i]);
   }
-  else
+  else /* state->elemtype == TEMPORAL */
   {
     for (int i = 0; i < count - 2; i ++)
       result->elems[i + 1].value = temporal_copy(values[i]);
@@ -391,7 +389,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
       ((Period *) values[0])->lower_inc,
       ((Period *) values[count - 1])->upper_inc);
   }
-  else
+  else /* list->elemtype == TEMPORAL */
   {
     subtype = ((Temporal *) skiplist_headval(list))->subtype;
     if (subtype == INSTANT)
@@ -484,7 +482,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
       /* Delete the spliced-out period values */
       pfree_array(spliced, spliced_count);
     }
-    else
+    else /* list->elemtype == TEMPORAL */
     {
       if (subtype == INSTANT)
         newtemps = (void **) tinstant_tagg((TInstant **) spliced,
@@ -522,7 +520,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
       newelm->value = values[i];
     else if (list->elemtype == PERIOD)
       newelm->value = period_copy(values[i]);
-    else
+    else /* list->elemtype == TEMPORAL */
       newelm->value = temporal_copy(values[i]);
     unset_aggregation_context(ctx);
     newelm->height = rheight;
@@ -603,7 +601,7 @@ aggstate_write(SkipList *state, StringInfo buf)
     for (int i = 0; i < state->length; i ++)
       period_write((const Period *) values[i], buf);
   }
-  else
+  else /* state->elemtype == TEMPORAL */
   {
     Oid basetypid = InvalidOid;
     if (state->length > 0)
@@ -654,7 +652,7 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
     result = skiplist_make(fcinfo, values, length, PERIOD);
     pfree_array(values, length);
   }
-  else
+  else /* elemtype == TEMPORAL */
   {
     Oid basetypid = pq_getmsgint(buf, 4);
     for (int i = 0; i < length; i ++)

@@ -79,3 +79,24 @@ CREATE AGGREGATE tcentroid(tnpoint) (
 );
 
 /*****************************************************************************/
+
+CREATE FUNCTION temporal_merge_transfn(internal, tnpoint)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tnpoint_tagg_finalfn(internal)
+  RETURNS tnpoint
+  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE merge(tnpoint) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tnpoint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = safe
+);
+
+/*****************************************************************************/

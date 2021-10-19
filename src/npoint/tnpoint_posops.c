@@ -134,7 +134,7 @@ posop_stbox_tnpoint(FunctionCallInfo fcinfo,
   if (! MOBDB_FLAGS_GET_X(box->flags))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  ensure_not_geodetic_stbox(box);
+  ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
   memset(&box1, 0, sizeof(STBOX));
@@ -185,7 +185,7 @@ posop_tnpoint_stbox(FunctionCallInfo fcinfo,
   if (! MOBDB_FLAGS_GET_X(box->flags))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_not_geodetic_stbox(box);
+  ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
   memset(&box1, 0, sizeof(STBOX));

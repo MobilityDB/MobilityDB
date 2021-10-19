@@ -37,6 +37,13 @@
 
 #include <assert.h>
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
+#define M_PI 3.14159265358979323846
+#define RADIANS_PER_DEGREE 0.0174532925199432957692
+#else
+#include <utils/float.h>
+#endif
+
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -46,6 +53,7 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
+#include "general/rangetypes_ext.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
@@ -54,6 +62,7 @@
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
+#include "point/tpoint_distance.h"
 #include "point/tpoint_spatialrels.h"
 
 /*****************************************************************************
@@ -369,7 +378,33 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * Ensure that the spatiotemporal boxes have the same type of coordinates,
+ * Ensure that the spatial argument has planar coordinates
+ */
+void
+ensure_not_geodetic_gs(const GSERIALIZED *gs)
+{
+#if POSTGIS_VERSION_NUMBER < 30000
+  if ( FLAGS_GET_GEODETIC(gs->flags) )
+#else
+  if ( FLAGS_GET_GEODETIC(gs->gflags) )
+#endif
+    elog(ERROR, "Only planar coordinates supported");
+  return;
+}
+
+/**
+ * Ensure that the spatiotemporal argument has planar coordinates
+ */
+void
+ensure_not_geodetic(int16 flags)
+{
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
+    elog(ERROR, "Only planar coordinates supported");
+  return;
+}
+
+/**
+ * Ensure that the spatiotemporal argument have the same type of coordinates,
  * either planar or geodetic
  */
 void
@@ -377,7 +412,23 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 {
   if (MOBDB_FLAGS_GET_X(flags1) && MOBDB_FLAGS_GET_X(flags2) &&
     MOBDB_FLAGS_GET_GEODETIC(flags1) != MOBDB_FLAGS_GET_GEODETIC(flags2))
-    elog(ERROR, "The values must be both planar or both geodetic");
+    elog(ERROR, "Operation on mixed planar and geodetic coordinates");
+  return;
+}
+
+/**
+ * Ensure that the spatiotemporal argument have the same type of coordinates,
+ * either planar or geodetic
+ */
+void
+ensure_same_geodetic_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+#if POSTGIS_VERSION_NUMBER < 30000
+    if (FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
+#else
+    if (FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
+#endif
+    elog(ERROR, "Operation on mixed planar and geodetic coordinates");
   return;
 }
 
@@ -454,7 +505,23 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
   if (MOBDB_FLAGS_GET_X(flags1) != MOBDB_FLAGS_GET_X(flags2) ||
     MOBDB_FLAGS_GET_Z(flags1) != MOBDB_FLAGS_GET_Z(flags2))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal values must be of the same spatial dimensionality")));
+      errmsg("Operation on mixed 2D/3D dimensions")));
+  return;
+}
+
+/**
+ * Ensure that the geometries/geographies have the same dimensionality
+ */
+void
+ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+#if POSTGIS_VERSION_NUMBER < 30000
+  if (FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags))
+#else
+  if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
+#endif
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Operation on mixed 2D/3D dimensions")));
   return;
 }
 
@@ -470,7 +537,7 @@ ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs
   if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->gflags))
 #endif
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point and the geometry must be of the same dimensionality")));
+      errmsg("Operation on mixed 2D/3D dimensions")));
   return;
 }
 
@@ -511,7 +578,7 @@ ensure_has_Z_tpoint(const Temporal *temp)
 {
   if (! MOBDB_FLAGS_GET_Z(temp->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point do not have Z dimension")));
+      errmsg("The temporal point does not have Z dimension")));
   return;
 }
 
@@ -2515,10 +2582,14 @@ tpoint_set_precision(PG_FUNCTION_ARGS)
   Datum prec = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_set_precision;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = prec;
   lfinfo.restypid = temp->basetypid;
-  Temporal *result = tfunc_temporal(temp, prec, lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2538,25 +2609,6 @@ point_get_x(Datum point)
   return Float8GetDatum(p.x);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_get_x);
-/**
- * Get the X coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_x(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->basetypid);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &point_get_x;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = FLOAT8OID;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * Get the Y coordinates of the temporal point
  */
@@ -2566,25 +2618,6 @@ point_get_y(Datum point)
   POINT4D p;
   datum_get_point4d(&p, point);
   return Float8GetDatum(p.y);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_get_y);
-/**
- * Get the Y coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_y(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->basetypid);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &point_get_y;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = FLOAT8OID;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -2598,6 +2631,65 @@ point_get_z(Datum point)
   return Float8GetDatum(p.z);
 }
 
+/**
+ * Get the X coordinates of the temporal point (internal function)
+ */
+Temporal *
+tpoint_get_coord_internal(const Temporal *temp, char c)
+{
+  ensure_tgeo_base_type(temp->basetypid);
+  if (c == 'z')
+    ensure_has_Z_tpoint(temp);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  assert(c == 'x' || c == 'y' || c == 'z');
+  switch(c)
+  {
+    case 'x':
+      lfinfo.func = (varfunc) &point_get_x;
+      break;
+    case 'y':
+      lfinfo.func = (varfunc) &point_get_y;
+      break;
+    default: /* c == 'z' */
+      lfinfo.func = (varfunc) &point_get_z;
+      break;
+  }
+  lfinfo.numparam = 0;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_x);
+/**
+ * Get the X coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_get_coord_internal(temp, 'x');
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_get_y);
+/**
+ * Get the Y coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+tpoint_get_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *result = tpoint_get_coord_internal(temp, 'y');
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(tpoint_get_z);
 /**
  * Get the Z coordinates of the temporal point
@@ -2606,14 +2698,7 @@ PGDLLEXPORT Datum
 tpoint_get_z(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
-  ensure_tgeo_base_type(temp->basetypid);
-  ensure_has_Z_tpoint(temp);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  lfinfo.func = (varfunc) &point_get_z;
-  lfinfo.numparam = 1;
-  lfinfo.restypid = FLOAT8OID;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  Temporal *result = tpoint_get_coord_internal(temp, 'z');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -3234,6 +3319,399 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_azimuth((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Temporal bearing
+ *****************************************************************************/
+
+extern Datum dsin(PG_FUNCTION_ARGS);
+extern Datum dcos(PG_FUNCTION_ARGS);
+extern Datum datan(PG_FUNCTION_ARGS);
+extern Datum datan2(PG_FUNCTION_ARGS);
+
+/**
+ * Normalize the bearing from -180° to + 180° (in radians) to
+ * 0° to 360° (in radians)
+ */
+static double
+alpha(const POINT2D *p1, const POINT2D *p2)
+{
+  if (p1->x <= p2->x && p1->y <= p2->y)
+    return 0.0;
+  if ((p1->x < p2->x && p1->y > p2->y) ||
+      (p1->x >= p2->x && p1->y > p2->y))
+    return M_PI;
+  else /* p1->x > p2->x && p1->y <= p2->y */
+    return M_PI * 2.0;
+}
+
+/**
+ * Computes the bearing between two geometric points
+ */
+Datum
+geom_bearing(Datum point1, Datum point2)
+{
+  const POINT2D *p1 = datum_get_point2d_p(point1);
+  const POINT2D *p2 = datum_get_point2d_p(point2);
+  if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
+      (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
+    return 0.0;
+  if (fabs(p1->y - p2->y) > MOBDB_EPSILON)
+  {
+    double bearing = DatumGetFloat8(call_function1(datan,
+      Float8GetDatum((p1->x - p2->x) / (p1->y - p2->y)))) + alpha(p1, p2);
+    if (fabs(bearing) <= MOBDB_EPSILON)
+      bearing = 0.0;
+    return Float8GetDatum(bearing);
+  }
+  if (p1->x < p2->x)
+      return Float8GetDatum(M_PI / 2.0);
+    else
+      return Float8GetDatum(M_PI * 3.0 / 2.0);
+}
+
+/**
+ * Computes the bearing between two geographic points.
+ * Derived from https://gist.github.com/jeromer/2005586
+ *
+ * N.B. In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
+ * The formulae used is the following:
+ *   lat  = sin(Δlong).cos(lat2)
+ *   long = cos(lat1).sin(lat2) − sin(lat1).cos(lat2).cos(Δlong)
+ *   θ    = atan2(lat, long)
+ */
+Datum
+geog_bearing(Datum point1, Datum point2)
+{
+  const POINT2D *p1 = datum_get_point2d_p(point1);
+  const POINT2D *p2 = datum_get_point2d_p(point2);
+  if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
+      (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
+    return 0.0;
+#if POSTGRESQL_VERSION_NUMBER < 120000
+  double lat1 = p1->y * RADIANS_PER_DEGREE;
+  double lat2 = p2->y * RADIANS_PER_DEGREE;
+  double diffLong = (p2->x - p1->x) * RADIANS_PER_DEGREE;
+#else
+  double lat1 = float8_mul(p1->y, RADIANS_PER_DEGREE);
+  double lat2 = float8_mul(p2->y, RADIANS_PER_DEGREE);
+  double diffLong = float8_mul(p2->x - p1->x, RADIANS_PER_DEGREE);
+#endif
+  double lat = DatumGetFloat8(call_function1(dsin, Float8GetDatum(diffLong))) *
+    DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2)));
+  double lgt =
+    ( DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat1))) *
+      DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat2))) ) -
+    ( DatumGetFloat8(call_function1(dsin, Float8GetDatum(lat1))) *
+      DatumGetFloat8(call_function1(dcos, Float8GetDatum(lat2))) *
+      DatumGetFloat8(call_function1(dcos, Float8GetDatum(diffLong))) );
+  /* Notice that the arguments are inverted, e.g., wrt the atan2 in Python */
+  double initial_bearing = DatumGetFloat8(call_function2(datan2,
+    Float8GetDatum(lat), Float8GetDatum(lgt)));
+  /* Normalize the bearing from -180° to + 180° (in radians) to
+   * 0° to 360° (in radians) */
+  double bearing = fmod(initial_bearing + M_PI * 2.0, M_PI * 2.0);
+  return Float8GetDatum(bearing);
+}
+
+/**
+ * Select the appropriate bearing function
+ */
+datum_func2
+get_bearing_fn(int16 flags)
+{
+  datum_func2 result;
+  if (MOBDB_FLAGS_GET_GEODETIC(flags))
+    result = &geog_bearing;
+  else
+    result = &geom_bearing;
+  return result;
+}
+
+/**
+ * Returns the single timestamp at which the a temporal point segment
+ * and a point are at the minimum bearing.
+ *
+ * @param[in] start,end Instants defining the segment
+ * @param[in] point Geometric/geographic point
+ * @param[in] basetypid Oid of the base type
+ * @param[out] value Projected point
+ * @param[out] t Timestamp
+ * @pre The segment is not constant and has linear interpolation.
+ * @note The parameter basetypid is not needed for temporal points
+ */
+bool
+tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
+  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
+{
+  Datum dstart = tinstant_value(start);
+  Datum dend = tinstant_value(end);
+  const POINT2D *p1 = datum_get_point2d_p(dstart);
+  const POINT2D *p2 = datum_get_point2d_p(dend);
+  const POINT2D *p = datum_get_point2d_p(point);
+  const POINT2D *q;
+  long double seglength, length, fraction;
+  Datum proj;
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(start->flags);
+  if (geodetic)
+  {
+    GEOGRAPHIC_EDGE e, e1;
+    GEOGRAPHIC_POINT gp, inter;
+    geographic_point_init(p->x, p->y, &gp);
+    geographic_point_init(p1->x, p1->y, &(e.start));
+    geographic_point_init(p2->x, p2->y, &(e.end));
+    if (! edge_contains_coplanar_point(&e, &gp))
+      return false;
+    /* Create an edge in the same meridian as p */
+    geographic_point_init(p->x, 89.999999, &(e1.start));
+    geographic_point_init(p->x, -89.999999, &(e1.end));
+    edge_intersection(&e, &e1, &inter);
+    proj = point_make(rad2deg(inter.lon), rad2deg(inter.lat), 0,
+      false, true, tpointinst_srid(start));
+    fraction = geoseg_locate_point(dstart, dend, proj, NULL);
+  }
+  else
+  {
+    bool ds = (p1->x - p->x) > 0;
+    bool de = (p2->x - p->x) > 0;
+    /* If there is not a North passage */
+    if (ds == de)
+      return false;
+    length = (long double)(p->x - p1->x);
+    seglength = (long double)(p2->x - p1->x);
+    fraction = length / seglength;
+  }
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+    return false;
+  long double duration = (end->t - start->t);
+  *t = start->t + (TimestampTz) (duration * fraction);
+  *value = (Datum) 0;
+  /* Compute the projected value only for geometries */
+  if (! geodetic)
+    proj = tsequence_value_at_timestamp1(start, end, LINEAR, *t);
+  q = datum_get_point2d_p(proj);
+  /* We add a turning point only if p is to the North of q */
+  return FP_GTEQ(p->y, q->y) ? true : false;
+}
+
+/**
+ * Returns the single timestamp at which the two temporal point segments
+ * are at the minimum bearing.
+ *
+ * @param[in] start1,end1 Instants defining the first segment
+ * @param[in] start2,end2 Instants defining the second segment
+ * @param[in] linear1,linear2 State whether the interpolation is linear
+ * @param[out] t Timestamp
+ * @pre The segments are not both constants and at least one is linear.
+ * @note This function is currently not available for two temporal geographic
+ * points
+ */
+bool
+tpoint_min_bearing_at_timestamp(const TInstant *start1,
+  const TInstant *end1, bool linear1, const TInstant *start2,
+  const TInstant *end2, bool linear2, Datum *value, TimestampTz *t)
+{
+  assert(linear1 && linear2);
+  assert(!MOBDB_FLAGS_GET_GEODETIC(start1->flags));
+  const POINT2D *sp1 = datum_get_point2d_p(tinstant_value(start1));
+  const POINT2D *ep1 = datum_get_point2d_p(tinstant_value(end1));
+  const POINT2D *sp2 = datum_get_point2d_p(tinstant_value(start2));
+  const POINT2D *ep2 = datum_get_point2d_p(tinstant_value(end2));
+  /* It there is a North passage we call the function
+    tgeompoint_min_dist_at_timestamp */
+  bool ds = (sp1->x - sp2->x) > 0;
+  bool de = (ep1->x - ep2->x) > 0;
+  if (ds == de)
+    return false;
+
+  /*
+   * Compute the instants t1 and t2 at which the linear functions of the two
+   * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
+   * minimum/maximum exactly at the middle between t1 and t2.
+   * To reduce problems related to floating point arithmetic, t1 and t2
+   * are shifted, respectively, to 0 and 1 before the computation
+   * N.B. The code that follows is adapted from the function
+   * tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
+   */
+  if ((ep1->x - sp1->x) == 0.0 || (ep2->x - sp2->x) == 0.0)
+    return false;
+
+  long double d1 = (-1 * sp1->x) / (ep1->x - sp1->x);
+  long double d2 = (-1 * sp2->x) / (ep2->x - sp2->x);
+  long double min = Min(d1, d2);
+  long double max = Max(d1, d2);
+  long double fraction = min + (max - min)/2;
+  long double duration = (long double) (end1->t - start1->t);
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+    /* Minimum/maximum occurs out of the period */
+    return false;
+
+  *t = start1->t + (TimestampTz) (duration * fraction);
+  /* We need to verify that at timestamp t the first segment is to the
+   * North of the second */
+  Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
+  Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
+  sp1 = datum_get_point2d_p(value1);
+  sp2 = datum_get_point2d_p(value2);
+  if (sp1->y > sp2->y) // TODO Use MOBDB_EPSILON
+    return false;
+ /* We know that the bearing is 0 */
+  if (value)
+    *value = Float8GetDatum(0.0);
+  return true;
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(bearing_geo_geo);
+/**
+ * Returns the temporal bearing between the geometry/geography points
+ *
+ * @note The following function is meant to be included in PostGIS one day
+ */
+PGDLLEXPORT Datum
+bearing_geo_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
+  ensure_point_type(gs1); ensure_point_type(gs2);
+  ensure_same_geodetic_gs(gs1, gs2);
+  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
+  ensure_same_dimensionality_gs(gs1, gs2);
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    PG_RETURN_NULL();
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+#if POSTGIS_VERSION_NUMBER < 30000
+  Datum result = FLAGS_GET_GEODETIC(gs1->flags) ?
+#else
+  Datum result = FLAGS_GET_GEODETIC(gs1->gflags) ?
+#endif
+    geog_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2)) :
+    geom_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2));
+  PG_FREE_IF_COPY(gs1, 0);
+  PG_FREE_IF_COPY(gs2, 1);
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Returns the temporal bearing between the temporal point and the
+ * geometry/geography point (distpatch function)
+ */
+Temporal *
+bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) get_bearing_fn(temp->flags);
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.invert = invert;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = (Temporal *) tfunc_temporal_base(temp, geo, &lfinfo);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(bearing_geo_tpoint);
+/**
+ * Returns the temporal bearing between the geometry/geography point
+ * and the temporal point
+ */
+PGDLLEXPORT Datum
+bearing_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  ensure_point_type(gs);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = bearing_tpoint_geo_internal(temp, PointerGetDatum(gs), INVERT);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(bearing_tpoint_geo);
+/**
+ * Returns the temporal bearing between the temporal point and the
+ * geometry/geography point
+ */
+PGDLLEXPORT Datum
+bearing_tpoint_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  ensure_point_type(gs);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = bearing_tpoint_geo_internal(temp, PointerGetDatum(gs), INVERT_NO);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * Returns the temporal bearing between the two temporal points
+ * (dispatch function)
+ */
+Temporal *
+bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
+{
+  datum_func2 func = get_bearing_fn(temp1->flags);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_bearing_at_timestamp : NULL;
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(bearing_tpoint_tpoint);
+/**
+ * Returns the temporal bearing between the two temporal points
+ */
+PGDLLEXPORT Datum
+bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
+
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = bearing_tpoint_tpoint_internal(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -4591,16 +5069,101 @@ tpoint_minus_geometry(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
+ * Assemble a 2D point for its x and y coordinates, srid, and geodetic flag
+ */
+Datum
+point2D_assemble(Datum x, Datum y, Datum srid, Datum geodetic)
+{
+  double x1 = DatumGetFloat8(x);
+  double y1 = DatumGetFloat8(y);
+  int srid1 = DatumGetInt32(srid);
+  LWPOINT *lwpoint = lwpoint_make2d(srid1, x1, y1);
+  FLAGS_SET_GEODETIC(lwpoint->flags, DatumGetBool(geodetic));
+  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
+  lwpoint_free(lwpoint);
+  return result;
+}
+
+/**
+ * Assemble a 2D temporal point for two temporal floats, srid, and geodetic
+ * flag
+ */
+Temporal *
+tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
+  bool geodetic)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &point2D_assemble;
+  lfinfo.numparam = 2;
+  lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.param[1] = BoolGetDatum(geodetic);
+  lfinfo.restypid = type_oid(T_GEOMETRY); // TODO Geography ???
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp_x->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp_y->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return sync_tfunc_temporal_temporal(temp_x, temp_y, &lfinfo);
+}
+
+/**
+ * Add a z value to a 2D point
+ */
+Datum
+point2D_add_z(Datum point, Datum z, Datum srid)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
+#else
+  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
+#endif
+  const POINT2D *pt = datum_get_point2d_p(point);
+  double z1 = DatumGetFloat8(z);
+  int srid1 = DatumGetInt32(srid);
+  LWPOINT *lwpoint = lwpoint_make3dz(srid1, pt->x, pt->y, z1);
+  FLAGS_SET_GEODETIC(lwpoint->flags, geodetic);
+  Datum result = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
+  lwpoint_free(lwpoint);
+  return result;
+}
+
+/**
+ * Assemble a 2D temporal point for two temporal floats
+ */
+Temporal *
+tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &point2D_add_z;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.restypid = type_oid(T_GEOMETRY); // TODO Geography ???
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp_z->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  return sync_tfunc_temporal_temporal(temp, temp_z, &lfinfo);
+}
+
+/**
  * Restrict the temporal point to the spatiotemporal box
  *
  * @pre The arguments are of the same dimensionality and
  * have the same SRID
  */
 Temporal *
-tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
+tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
+  bool upper_inc)
 {
   /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   assert(hasx || hast);
 
@@ -4615,7 +5178,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
   if (hast)
   {
     Period p;
-    period_set(&p, box->tmin, box->tmax, true, true);
+    period_set(&p, box->tmin, box->tmax, true, upper_inc);
     temp1 = temporal_at_period_internal(temp, &p);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */
@@ -4625,23 +5188,53 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box)
   else
     temp1 = (Temporal *) temp;
 
-  Temporal *result;
+  Temporal *result = NULL;
   if (hasx)
   {
-    Datum gbox = PointerGetDatum(stbox_to_gbox(box));
-    Datum geom = MOBDB_FLAGS_GET_Z(box->flags) ?
-      call_function1(BOX3D_to_LWGEOM, gbox) :
-      call_function1(BOX2D_to_LWGEOM, gbox);
-    Datum geom1 = call_function2(LWGEOM_set_srid, geom,
-      Int32GetDatum(box->srid));
-    result = tpoint_restrict_geometry_internal(temp1, geom1, REST_AT);
-    pfree(DatumGetPointer(gbox)); pfree(DatumGetPointer(geom));
-    pfree(DatumGetPointer(geom1));
-    if (hast)
-      pfree(temp1);
+    /* Split the temporal point into temporal floats for each coordinate */
+    Temporal *temp_x = tpoint_get_coord_internal(temp1, 'x');
+    Temporal *temp_y = tpoint_get_coord_internal(temp1, 'y');
+    Temporal *temp_z = NULL;
+    if (hasz)
+      temp_z = tpoint_get_coord_internal(temp1, 'z');
+    RangeType *range_x = range_make(Float8GetDatum(box->xmin),
+      Float8GetDatum(box->xmax), true, upper_inc, FLOAT8OID);
+    RangeType *range_y = range_make(Float8GetDatum(box->ymin),
+      Float8GetDatum(box->ymax), true, upper_inc, FLOAT8OID);
+    RangeType *range_z = NULL;
+    if (hasz)
+      range_z = range_make(Float8GetDatum(box->zmin),
+        Float8GetDatum(box->zmax), true, upper_inc, FLOAT8OID);
+    Temporal *at_temp_x = tnumber_restrict_range_internal(temp_x, range_x, REST_AT);
+    Temporal *at_temp_y = tnumber_restrict_range_internal(temp_y, range_y, REST_AT);
+    Temporal *at_temp_z = NULL;
+    if (hasz)
+      at_temp_z = tnumber_restrict_range_internal(temp_z, range_z, REST_AT);
+    Temporal *result2D = NULL;
+    if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
+    {
+      /* Combine the temporal floats for each coordinate into a temporal point */
+      int srid = tpoint_srid_internal(temp1);
+      bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp1->flags);
+      result2D = tpoint_assemble_coords_xy(at_temp_x, at_temp_y, srid,
+        geodetic);
+      result = (result2D != NULL && hasz) ?
+        tpoint_add_z(result2D, at_temp_z, srid) : result2D;
+    }
+    pfree(temp_x); pfree(range_x); pfree(temp_y); pfree(range_y);
+    if (at_temp_x != NULL) pfree(at_temp_x);
+    if (at_temp_y != NULL) pfree(at_temp_y);
+    if (hasz)
+    {
+      pfree(temp_z); pfree(range_z);
+      if (at_temp_z != NULL) pfree(at_temp_z);
+      if (result2D != NULL) pfree(result2D);
+    }
   }
   else
     result = temp1;
+  if (hasx && hast)
+    pfree(temp1);
   return result;
 }
 
@@ -4665,7 +5258,7 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
     return temporal_copy(temp);
 
   Temporal *result = NULL;
-  Temporal *temp1 = tpoint_at_stbox_internal(temp, box);
+  Temporal *temp1 = tpoint_at_stbox_internal(temp, box, UPPER_INC);
   if (temp1 != NULL)
   {
     PeriodSet *ps1 = temporal_get_time_internal(temp);
@@ -4696,8 +5289,9 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
   {
     ensure_same_geodetic(temp->flags, box->flags);
     ensure_same_srid_tpoint_stbox(temp, box);
+    ensure_same_spatial_dimensionality(temp->flags, box->flags);
   }
-  Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box) :
+  Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box, UPPER_INC) :
     tpoint_minus_stbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

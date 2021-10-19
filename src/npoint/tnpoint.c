@@ -323,10 +323,14 @@ tnpoint_set_precision(PG_FUNCTION_ARGS)
   Datum size = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &npoint_set_precision_internal;
-  lfinfo.numparam = 2;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = size;
   lfinfo.restypid = temp->basetypid;
-  Temporal *result = tfunc_temporal(temp, size, lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -376,7 +380,7 @@ tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
   /* The following function removes duplicate values */
-  int count1 = tinstantset_values(values, ti);   
+  int count1 = tinstantset_values(values, ti);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
