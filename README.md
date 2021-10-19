@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/MobilityDB/MobilityDB/actions/workflows/pgversion.yml/badge.svg)
+[![Build Status](https://github.com/MobilityDB/MobilityDB/actions/workflows/pgversion.yml/badge.svg)]
 [![Coverage Status](https://coveralls.io/repos/github/MobilityDB/MobilityDB/badge.svg?branch=develop)](https://coveralls.io/github/MobilityDB/MobilityDB?branch=develop)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/833ae1093bab48cda7450e2eea456084)](https://www.codacy.com/gh/MobilityDB/MobilityDB?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MobilityDB/MobilityDB&amp;utm_campaign=Badge_Grade)
 [![Gitter](https://badges.gitter.im/MobilityDBProject/MobilityDB.svg)](https://gitter.im/MobilityDBProject/MobilityDB?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -70,8 +70,8 @@ For general questions and topics about how to use MobilityDB, please write to th
 Branches
 --------
 
-*   The *master* branch has the latest release
-*   The *develop* branch has the development of the next release. The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
+*   The `master` branch has the latest release
+*   The `develop` branch has the development of the next release. The complete list of releases is available [here](https://github.com/MobilityDB/MobilityDB/releases)
 
 Status
 ------
@@ -89,10 +89,11 @@ Requirements
 *   GNU Scientific Library (GSL)
 *   Development files for PostgreSQL, PostGIS/liblwgeom, PROJ, JSON-C
 
-For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems:
+For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 13 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-11 liblwgeom-dev libproj-dev libjson-c-dev
+apt install build-essential cmake postgresql-server-dev-13 libproj-dev libjson-c-dev
 ```
+Notice that if you want to use PostGIS 2.5, this requires in addition to add the dependency `liblwgeom-dev` to the above command.
 
 Building & Installation
 -----------------------
@@ -117,6 +118,7 @@ You should also set the following in `postgresql.conf` depending on the version 
 shared_preload_libraries = 'postgis-3'
 max_locks_per_transaction = 128
 ```
+You can replace `postgis-2.5` above if you want to use PostGIS 2.5.
 
 Docker Container
 -----------------
@@ -153,12 +155,12 @@ You can generate the user's manual in HTML, PDF, and EPUB formats. The manual is
 
 For example, the following command generates the documentation in all formats and in all languages.
 ```bash
-cmake -DDOC_ALL=true -DLANG_ALL=true ..
+cmake -D DOC_ALL=true -D LANG_ALL=true ..
 make doc
 ```
 As another example, the following command generates the English documentation in PDF.
 ```bash
-cmake -DDOC_PDF=true ..
+cmake -D DOC_PDF=true ..
 make doc
 ```
 The resulting documentation will be generated in the `doc` directory of the build directory.
@@ -180,7 +182,7 @@ The documentation is also avaible in Spanish.
 You can generate the English developer's documentation in HTML format. For this, it is necessary to the option `DOC_DEV` in the `cmake` command as follows:
 
 ```bash
-cmake -DDOC_DEV=true ..
+cmake -D DOC_DEV=true ..
 make doc_dev
 ```
 
