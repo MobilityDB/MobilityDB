@@ -33,34 +33,9 @@
  * Discrete Frechet function for temporal points.
  */
 
-CREATE FUNCTION frechetDistanceRec(tgeompoint, tgeompoint)
+CREATE FUNCTION frechetDistance(tgeompoint, tgeompoint)
 RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_rec'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION frechetDistanceIter(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_iterative'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION frechetDistanceLinear(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_linear_space'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION frechetDistanceFast(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_fast'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION frechetDistanceSparse(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_sparse'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION frechetDistanceHSparse(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dfd_hsparse'
+AS 'MODULE_PATHNAME', 'tpoint_discfrechet'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

@@ -285,8 +285,8 @@ coord_print(int *coords, int numdims)
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] numdims Number of dimensions of the grid
  */
-void
-bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
+static void
+bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 {
   int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
     neighbors[MAXDIMS];
@@ -880,7 +880,7 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     tpointinst_get_coords(coords2, inst2, hasz, hast, state);
-    bresenham(bm, coords1, coords2, numdims);
+    bresenham_bm(bm, coords1, coords2, numdims);
   }
   return;
 }
