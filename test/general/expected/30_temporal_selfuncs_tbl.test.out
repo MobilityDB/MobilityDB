@@ -1,7 +1,4 @@
-DROP FUNCTION IF EXISTS bbox_statistics_validate;
-NOTICE:  function bbox_statistics_validate() does not exist, skipping
-DROP FUNCTION
-CREATE OR REPLACE FUNCTION bbox_statistics_validate()
+CREATE FUNCTION bbox_statistics_validate()
 RETURNS XML AS $$
 DECLARE
   Query CHAR(5);

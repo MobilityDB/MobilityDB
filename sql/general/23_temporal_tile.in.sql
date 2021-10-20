@@ -47,34 +47,34 @@ CREATE TYPE number_floatrange AS (
   range floatrange
 );
 
-CREATE OR REPLACE FUNCTION bucketList(bounds intrange, size integer,
+CREATE FUNCTION bucketList(bounds intrange, size integer,
   origin integer DEFAULT 0)
   RETURNS SETOF number_intrange
   AS 'MODULE_PATHNAME', 'range_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION bucketList(bounds floatrange, size float,
+CREATE FUNCTION bucketList(bounds floatrange, size float,
   origin float DEFAULT 0.0)
   RETURNS SETOF number_floatrange
   AS 'MODULE_PATHNAME', 'range_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION valueBucket("value" integer, size integer,
+CREATE FUNCTION valueBucket("value" integer, size integer,
   origin integer DEFAULT 0)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION valueBucket("value" float, size float,
+CREATE FUNCTION valueBucket("value" float, size float,
   origin float DEFAULT '0.0')
   RETURNS float
   AS 'MODULE_PATHNAME', 'number_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-CREATE OR REPLACE FUNCTION rangeBucket(value integer, size integer,
+CREATE FUNCTION rangeBucket(value integer, size integer,
   origin integer DEFAULT 0)
   RETURNS intrange
   AS 'MODULE_PATHNAME', 'range_bucket'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION rangeBucket(value float, size float,
+CREATE FUNCTION rangeBucket(value float, size float,
   origin float DEFAULT 0.0)
   RETURNS floatrange
   AS 'MODULE_PATHNAME', 'range_bucket'
@@ -87,28 +87,28 @@ CREATE TYPE time_period AS (
   period period
 );
 
-CREATE OR REPLACE FUNCTION bucketList(period, interval,
+CREATE FUNCTION bucketList(period, interval,
   timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_period
   AS 'MODULE_PATHNAME', 'period_bucket_list'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- bucketing of timestamptz happens at UTC time
-CREATE OR REPLACE FUNCTION timeBucket("time" timestamptz, duration interval,
+CREATE FUNCTION timeBucket("time" timestamptz, duration interval,
   origin timestamptz DEFAULT '2000-01-03')
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'timestamptz_bucket'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 -- If an interval is given as the third argument, the bucket alignment is offset by the interval.
--- CREATE OR REPLACE FUNCTION timeBucket(ts timestamptz, size interval, "offset" interval)
+-- CREATE FUNCTION timeBucket(ts timestamptz, size interval, "offset" interval)
   -- RETURNS timestamptz
   -- LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT AS
 -- $BODY$
     -- SELECT @extschema@.timeBucket(ts-"offset", size)+"offset";
 -- $BODY$;
 
-CREATE OR REPLACE FUNCTION periodBucket("time" timestamptz, duration interval,
+CREATE FUNCTION periodBucket("time" timestamptz, duration interval,
   origin timestamptz DEFAULT '2000-01-03')
   RETURNS period
   AS 'MODULE_PATHNAME', 'period_bucket'
@@ -123,14 +123,14 @@ CREATE TYPE index_tbox AS (
   box tbox
 );
 
-CREATE OR REPLACE FUNCTION multidimGrid(bounds tbox, size float,
+CREATE FUNCTION multidimGrid(bounds tbox, size float,
   duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_tbox
   AS 'MODULE_PATHNAME', 'tbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION multidimTile("value" float, "time" timestamptz,
+CREATE FUNCTION multidimTile("value" float, "time" timestamptz,
   size float, duration interval, vorigin float DEFAULT 0.0,
   torigin timestamptz DEFAULT '2000-01-03')
   RETURNS tbox
@@ -150,12 +150,12 @@ CREATE TYPE float_tfloat AS (
   tnumber tfloat
 );
 
-CREATE OR REPLACE FUNCTION valueSplit(tint, size integer,
+CREATE FUNCTION valueSplit(tint, size integer,
     origin integer DEFAULT 0)
   RETURNS SETOF int_tint
   AS 'MODULE_PATHNAME', 'tnumber_value_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION valueSplit(tfloat, size float,
+CREATE FUNCTION valueSplit(tfloat, size float,
     origin float DEFAULT 0.0)
   RETURNS SETOF float_tfloat
   AS 'MODULE_PATHNAME', 'tnumber_value_split'
@@ -180,22 +180,22 @@ CREATE TYPE time_ttext AS (
   temp ttext
 );
 
-CREATE OR REPLACE FUNCTION timeSplit(tbool, size interval,
+CREATE FUNCTION timeSplit(tbool, size interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tbool
   AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeSplit(tint, size interval,
+CREATE FUNCTION timeSplit(tint, size interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tint
   AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeSplit(tfloat, size interval,
+CREATE FUNCTION timeSplit(tfloat, size interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_tfloat
   AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeSplit(ttext, size interval,
+CREATE FUNCTION timeSplit(ttext, size interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF time_ttext
   AS 'MODULE_PATHNAME', 'temporal_time_split'
@@ -214,12 +214,12 @@ CREATE TYPE float_time_tfloat AS (
   tnumber tfloat
 );
 
-CREATE OR REPLACE FUNCTION valueTimeSplit(tint, size integer, duration interval,
+CREATE FUNCTION valueTimeSplit(tint, size integer, duration interval,
     vorigin integer DEFAULT 0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF int_time_tint
   AS 'MODULE_PATHNAME', 'tnumber_value_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION valueTimeSplit(tfloat, size float, duration interval,
+CREATE FUNCTION valueTimeSplit(tfloat, size float, duration interval,
     vorigin float DEFAULT 0.0, torigin timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF float_time_tfloat
   AS 'MODULE_PATHNAME', 'tnumber_value_time_split'

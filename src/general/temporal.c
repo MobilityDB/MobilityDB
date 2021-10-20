@@ -1049,36 +1049,19 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   return;
 }
 
-PG_FUNCTION_INFO_V1(temporal_merge);
-/**
- * Merge the two temporal values
- *
- * @result Merged value. Returns NULL if both arguments are NULL.
- * If one argument is null the other argument is output.
- */
-PGDLLEXPORT Datum
-temporal_merge(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
 
+Temporal *
+temporal_merge_internal(const Temporal *temp1, const Temporal *temp2)
+{
   Temporal *result;
   /* Can't do anything with null inputs */
   if (!temp1 && !temp2)
-    PG_RETURN_NULL();
+    return NULL;
   /* One argument is null, return a copy of the other temporal */
   if (!temp1)
-  {
-    result = temporal_copy(temp2);
-    PG_FREE_IF_COPY(temp2, 1);
-    PG_RETURN_POINTER(result);
-  }
+    return temporal_copy(temp2);
   if (!temp2)
-  {
-    result = temporal_copy(temp1);
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_RETURN_POINTER(result);
-  }
+    return temporal_copy(temp1);
 
   /* Both arguments are temporal */
   ensure_same_base_type(temp1, temp2);
@@ -1105,8 +1088,28 @@ temporal_merge(PG_FUNCTION_ARGS)
     pfree(new1);
   if (temp2 != new2)
     pfree(new2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_merge);
+/**
+ * Merge the two temporal values
+ *
+ * @result Merged value. Returns NULL if both arguments are NULL.
+ * If one argument is null the other argument is output.
+ */
+PGDLLEXPORT Datum
+temporal_merge(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+  Temporal *result = temporal_merge_internal(temp1, temp2);
+  if (temp1)
+    PG_FREE_IF_COPY(temp1, 0);
+  if (temp2)
+    PG_FREE_IF_COPY(temp2, 1);
+  if (!result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -1275,7 +1278,7 @@ temporal_from_base(const Temporal *temp, Datum value, Oid basetypid,
 
 /**
  * Cast a temporal integer to an intrange.
- * Note that the temporal subtypes having with bounding box are
+ * Note that the temporal subtypes having bounding box are
  * INSTANTSET, SEQUENCE, and SEQUENCESET
  */
 RangeType *
@@ -3543,7 +3546,7 @@ PG_FUNCTION_INFO_V1(temporal_at_min);
 PGDLLEXPORT Datum
 temporal_at_min(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MIN, REST_AT);
+  return temporal_restrict_minmax(fcinfo, GET_MIN, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_min);
@@ -3553,7 +3556,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_min);
 PGDLLEXPORT Datum
 temporal_minus_min(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MIN, REST_MINUS);
+  return temporal_restrict_minmax(fcinfo, GET_MIN, REST_MINUS);
 }
 
 PG_FUNCTION_INFO_V1(temporal_at_max);
@@ -3563,7 +3566,7 @@ PG_FUNCTION_INFO_V1(temporal_at_max);
 PGDLLEXPORT Datum
 temporal_at_max(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MAX, REST_AT);
+  return temporal_restrict_minmax(fcinfo, GET_MAX, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(temporal_minus_max);
@@ -3573,7 +3576,7 @@ PG_FUNCTION_INFO_V1(temporal_minus_max);
 PGDLLEXPORT Datum
 temporal_minus_max(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_minmax(fcinfo, MAX, REST_MINUS);
+  return temporal_restrict_minmax(fcinfo, GET_MAX, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -3886,7 +3889,9 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 
   /* At least one of MOBDB_FLAGS_GET_T and MOBDB_FLAGS_GET_X is true */
   Temporal *temp1;
-  if (MOBDB_FLAGS_GET_T(box->flags))
+  bool hasx = MOBDB_FLAGS_GET_X(box->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box->flags);
+  if (hast)
   {
     Period p;
     period_set(&p, box->tmin, box->tmax, true, true);
@@ -3897,10 +3902,10 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
       return NULL;
   }
   else
-    temp1 = temporal_copy(temp);
+    temp1 = (Temporal *) temp;
 
   Temporal *result;
-  if (MOBDB_FLAGS_GET_X(box->flags))
+  if (hasx)
   {
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_base_type(temp->basetypid);
@@ -3914,11 +3919,12 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
       range = range_make(Float8GetDatum(box->xmin),
         Float8GetDatum(box->xmax), true, true, FLOAT8OID);
     result = tnumber_restrict_range_internal(temp1, range, true);
-    pfree(DatumGetPointer(range));
-    pfree(temp1);
+    pfree(range);
   }
   else
     result = temp1;
+  if (hasx && hast)
+    pfree(temp1);
   return result;
 }
 

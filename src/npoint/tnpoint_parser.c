@@ -42,6 +42,9 @@
 
 /*****************************************************************************/
 
+/**
+ * Parse a network point value from the buffer
+ */
 npoint *
 npoint_parse(char **str)
 {
@@ -79,6 +82,9 @@ npoint_parse(char **str)
   return npoint_make(rid, pos);
 }
 
+/**
+ * Parse a network segment value from the buffer
+ */
 nsegment *
 nsegment_parse(char **str)
 {

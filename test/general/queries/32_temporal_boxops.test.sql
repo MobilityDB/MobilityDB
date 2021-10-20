@@ -2037,4 +2037,3 @@ SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
 SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b -|- t2.b;
 
 -------------------------------------------------------------------------------
-

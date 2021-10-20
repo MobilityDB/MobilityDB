@@ -96,7 +96,7 @@ findMemberByName(json_object *poObj, const char *pszName )
  * "coordinates":[1,1]
  */
 static Datum
-parse_mfjson_coord(json_object *poObj, int srid, bool is_geodetic)
+parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
 {
   if (json_type_array != json_object_get_type(poObj))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -131,7 +131,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool is_geodetic)
   }
   else
     point = lwpoint_make2d(srid, x, y);
-  FLAGS_SET_GEODETIC(point->flags, is_geodetic);
+  FLAGS_SET_GEODETIC(point->flags, geodetic);
 
   Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
   lwpoint_free(point);
@@ -145,7 +145,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool is_geodetic)
  * "coordinates":[[1,1],[2,2]]
  */
 static Datum *
-parse_mfjson_points(json_object *mfjson, int srid, bool is_geodetic,
+parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
   int *count)
 {
   json_object *mfjsonTmp = mfjson;
@@ -168,7 +168,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool is_geodetic,
   {
     json_object *coords = NULL;
     coords = json_object_array_get_idx(coordinates, i);
-    values[i] = parse_mfjson_coord(coords, srid, is_geodetic);
+    values[i] = parse_mfjson_coord(coords, srid, geodetic);
   }
   *count = numpoints;
   return values;
@@ -221,13 +221,13 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 static TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, Oid basetypid)
 {
-  bool is_geodetic = basetypid == type_oid(T_GEOGRAPHY);
+  bool geodetic = basetypid == type_oid(T_GEOGRAPHY);
   /* Get coordinates */
   json_object *coordinates = findMemberByName(mfjson, "coordinates");
   if (coordinates == NULL)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Unable to find 'coordinates' in MFJSON string")));
-  Datum value = parse_mfjson_coord(coordinates, srid, is_geodetic);
+  Datum value = parse_mfjson_coord(coordinates, srid, geodetic);
 
   /* Get datetimes
    * The maximum length of a datetime is 32 characters, e.g.,
@@ -261,10 +261,10 @@ static TInstant **
 tpointinstarr_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
   int *count)
 {
-  bool is_geodetic = basetypid == type_oid(T_GEOGRAPHY);
+  bool geodetic = basetypid == type_oid(T_GEOGRAPHY);
   /* Get coordinates and datetimes */
   int numpoints, numdates;
-  Datum *values = parse_mfjson_points(mfjson, srid, is_geodetic, &numpoints);
+  Datum *values = parse_mfjson_points(mfjson, srid, geodetic, &numpoints);
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &numdates);
   if (numpoints != numdates)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -516,8 +516,8 @@ typedef struct
   bool swap_bytes;     /**< Do an endian flip? */
   uint8_t subtype;     /**< Current subtype we are handling */
   int32_t srid;        /**< Current SRID we are handling */
-  bool has_z;          /**< Z? */
-  bool is_geodetic;    /**< Geodetic? */
+  bool hasz;          /**< Z? */
+  bool geodetic;    /**< Geodetic? */
   bool has_srid;       /**< SRID? */
   bool linear;         /**< Linear interpolation? */
   const uint8_t *pos;  /**< Current parse position */
@@ -625,13 +625,13 @@ timestamp_from_wkb_state(wkb_parse_state *s)
 static void
 tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 {
-  s->has_z = false;
-  s->is_geodetic = false;
+  s->hasz = false;
+  s->geodetic = false;
   s->has_srid = false;
   if (wkb_type & MOBDB_WKB_ZFLAG)
-    s->has_z = true;
+    s->hasz = true;
   if (wkb_type & MOBDB_WKB_GEODETICFLAG)
-    s->is_geodetic = true;
+    s->geodetic = true;
   if (wkb_type & MOBDB_WKB_SRIDFLAG)
     s->has_srid = true;
   if (wkb_type & MOBDB_WKB_LINEAR_INTERP)
@@ -670,11 +670,11 @@ point_from_wkb_state(wkb_parse_state *s)
   double x, y, z;
   x = double_from_wkb_state(s);
   y = double_from_wkb_state(s);
-  if (s->has_z)
+  if (s->hasz)
     z = double_from_wkb_state(s);
-  LWPOINT *point = s->has_z ? lwpoint_make3dz(s->srid, x, y, z) :
+  LWPOINT *point = s->hasz ? lwpoint_make3dz(s->srid, x, y, z) :
     lwpoint_make2d(s->srid, x, y);
-  FLAGS_SET_GEODETIC(point->flags, s->is_geodetic);
+  FLAGS_SET_GEODETIC(point->flags, s->geodetic);
   Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
   lwpoint_free(point);
   return result;
@@ -691,14 +691,14 @@ static TInstant *
 tpointinst_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
-  uint32_t ndims = (s->has_z) ? 3 : 2;
+  uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Does the data we want to read exist? */
   size_t size = (ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE;
   wkb_parse_state_check(s, size);
   /* Create the instant point */
   Datum value = point_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
-  TInstant *result = tinstant_make(value, t, (s->is_geodetic) ?
+  TInstant *result = tinstant_make(value, t, (s->geodetic) ?
     type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
   pfree(DatumGetPointer(value));
   return result;
@@ -711,7 +711,7 @@ static TInstant **
 tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 {
   TInstant **result = palloc(sizeof(TInstant *) * count);
-  Oid geotype = (s->is_geodetic) ?
+  Oid geotype = (s->geodetic) ?
     type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
   for (int i = 0; i < count; i++)
   {
@@ -731,7 +731,7 @@ static TInstantSet *
 tpointinstset_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions */
-  uint32_t ndims = (s->has_z) ? 3 : 2;
+  uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of instants */
   int count = integer_from_wkb_state(s);
   assert(count > 0);
@@ -767,7 +767,7 @@ static TSequence *
 tpointseq_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
-  uint32_t ndims = (s->has_z) ? 3 : 2;
+  uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of instants */
   int count = integer_from_wkb_state(s);
   assert(count > 0);
@@ -791,7 +791,7 @@ static TSequenceSet *
 tpointseqset_from_wkb_state(wkb_parse_state *s)
 {
   /* Count the dimensions. */
-  uint32_t ndims = (s->has_z) ? 3 : 2;
+  uint32_t ndims = (s->hasz) ? 3 : 2;
   /* Get the number of sequences */
   int count = integer_from_wkb_state(s);
   assert(count > 0);
@@ -809,7 +809,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
     size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
     wkb_parse_state_check(s, size);
     /* Parse the instants */
-    Oid geotype = (s->is_geodetic) ?
+    Oid geotype = (s->geodetic) ?
       type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)
@@ -887,8 +887,8 @@ tpoint_from_ewkb_internal(uint8_t *wkb, int size)
   s.swap_bytes = false;
   s.subtype = ANYTEMPSUBTYPE;
   s.srid = SRID_UNKNOWN;
-  s.has_z = false;
-  s.is_geodetic = false;
+  s.hasz = false;
+  s.geodetic = false;
   s.has_srid = false;
   s.linear = false;
   s.pos = wkb;

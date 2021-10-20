@@ -57,7 +57,7 @@ CREATE FUNCTION setPrecision(geography, integer)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'geo_set_precision'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
+
 /*****************************************************************************/
 
 CREATE FUNCTION SRID(tgeompoint)
@@ -195,6 +195,44 @@ CREATE FUNCTION azimuth(tgeogpoint)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'tpoint_azimuth'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+-- The following two functions are meant to be included in PostGIS one day
+CREATE FUNCTION bearing(geometry, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'bearing_geo_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bearing(geography, geography)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'bearing_geo_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bearing(geometry, tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'bearing_geo_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bearing(tgeompoint, geometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'bearing_tpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bearing(tgeompoint, tgeompoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'bearing_tpoint_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION bearing(geography, tgeogpoint)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'bearing_geo_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION bearing(tgeogpoint, geography)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'bearing_tpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION bearing(tgeogpoint, tgeogpoint)
+  -- RETURNS tfloat
+  -- AS 'MODULE_PATHNAME', 'bearing_tpoint_tpoint'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

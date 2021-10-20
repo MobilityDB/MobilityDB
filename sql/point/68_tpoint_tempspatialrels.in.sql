@@ -68,6 +68,17 @@ CREATE FUNCTION tintersects(tgeompoint, geometry)
   AS 'MODULE_PATHNAME', 'tintersects_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Alias for temporal equals, that is, tpoint_eq or #=
+CREATE FUNCTION tintersects(tgeompoint, tgeompoint)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- Alias for temporal equals, that is, tpoint_eq or #=
+CREATE FUNCTION tintersects(tgeogpoint, tgeogpoint)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  
 /*****************************************************************************
  * ttouches
  *****************************************************************************/

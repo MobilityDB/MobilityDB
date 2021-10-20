@@ -504,13 +504,15 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
  * Find interpolation point p between geography points p1 and p2
  * so that the len(p1,p) == len(p1,p2)
  * f and p falls on p1,p2 segment.
+ *
+ * @param[in] p1,p2 3D-space points we are interpolating between
+ * @param[in] v1,v2 real values and z/m coordinates
+ * @param[in] f Fraction
+ * @param[out] p Result 
  */
 void
-interpolate_point4d_sphere(
-  const POINT3D *p1, const POINT3D *p2, /* 3-space points we are interpolating between */
-  const POINT4D *v1, const POINT4D *v2, /* real values and z/m values */
-  double f, /* fraction */
-  POINT4D *p) /* write out results here */
+interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
+  const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p)
 {
   /* Calculate interpolated point */
   POINT3D mid;
