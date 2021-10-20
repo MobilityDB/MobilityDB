@@ -63,7 +63,7 @@
  *****************************************************************************/
 
 /**
- * Set the spatiotemporal box from the temporal instant point value
+ * Set the spatiotemporal box from the temporal point value
  */
 void
 tpointinst_make_stbox(STBOX *box, const TInstant *inst)
@@ -77,7 +77,7 @@ tpointinst_make_stbox(STBOX *box, const TInstant *inst)
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal instant point values
+ * Set the spatiotemporal box from the array of temporal point values
  *
  * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
@@ -98,7 +98,7 @@ tpointinstarr_to_stbox(STBOX *box, const TInstant **instants, int count)
 }
 
 /**
- * Set the spatiotemporal box from the array of temporal sequence point values
+ * Set the spatiotemporal box from the array of temporal point values
  *
  * @param[out] box Spatiotemporal box
  * @param[in] sequences Temporal instant values
@@ -434,7 +434,8 @@ contains_bbox_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(contains_bbox_tpoint_stbox);
 /**
- * Returns true if the spatiotemporal box of the temporal point contains the spatiotemporal box
+ * Returns true if the spatiotemporal box of the temporal point contains the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS)

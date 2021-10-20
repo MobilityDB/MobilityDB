@@ -9,25 +9,25 @@
 # User's documentation options
 #---------------------------------------------
 
-option(ALL_DOC
+option(DOC_ALL
   "Set ON|OFF (default=OFF) to build the user's documentation in all formats: HTML, PDF, and EPUB
 
   When OFF and want to build specific format, use the format code in capital letters:
-  -D HTML=ON
+  -D DOC_HTML=ON
   "
   OFF
 )
-option(HTML
+option(DOC_HTML
   "Set ON|OFF (default=OFF) to build the user's documentation in HTML format" OFF)
-option(PDF
+option(DOC_PDF
   "Set ON|OFF (default=OFF) to build the user's documentation in PDF format" OFF)
-option(EPUB
+option(DOC_EPUB
   "Set ON|OFF (default=OFF) to build the user's documentation in EPUB format" OFF)
 
 # Defining the user's documentation format options
-foreach(format HTML PDF EPUB)
+foreach(format DOC_HTML DOC_PDF DOC_EPUB)
   string(TOUPPER ${format} opt)
-  if(${opt} OR ALL_DOC)
+  if(${opt} OR DOC_ALL)
     list(APPEND PROJECT_DOC_TARGETS ${opt})
     set(${opt} ON)
   endif()
@@ -49,7 +49,7 @@ set(PROJECT_ENGLISH_STRING "English")
 # Language options
 #---------------------------------------------
 
-option(ALL_LANG
+option(LANG_ALL
   "Set ON|OFF (default=OFF) to build all the supported languages:
   Main language will always be built:
   ${PROJECT_ENGLISH_STRING}
@@ -76,9 +76,9 @@ list(APPEND PROJECT_BUILD_LANGUAGES ${PROJECT_ENGLISH})
 list(APPEND PROJECT_BUILD_LANGUAGES_STRING ${PROJECT_ENGLISH_STRING})
 foreach(lang ${PROJECT_SUPPORTED_LANGUAGES})
   string(TOUPPER ${lang} opt)
-  if(${opt} OR ALL_LANG)
-    list(FIND PROJECT_SUPPORTED_LANGUAGES ${lang} idx)
-    list(GET PROJECT_SUPPORTED_LANGUAGES_STRING ${idx} lang_str)
+  if(${opt} OR LANG_ALL)
+    list(FIND PROJECT_SUPPORTED_LANGUAGES lang idx)
+    list(GET PROJECT_SUPPORTED_LANGUAGES_STRING idx lang_str)
     list(APPEND PROJECT_BUILD_LANGUAGES ${lang})
     list(APPEND PROJECT_BUILD_LANGUAGES_STRING ${lang_str})
   endif()
@@ -90,12 +90,17 @@ message(STATUS "PROJECT_BUILD_LANGUAGES_STRING = ${PROJECT_BUILD_LANGUAGES_STRIN
 # Processing
 #---------------------------------------------
 
-if(HTML OR PDF OR EPUB OR ALL_DOC)
+if(DOC_HTML OR DOC_PDF OR DOC_EPUB OR DOC_ALL)
   message(STATUS "Build the user's documentation.")
   # Required package for generating the user's documentation in any format
   find_package(DocBook REQUIRED)
   # Required package for validating the XML files of the user's documentation with xmllint
   find_package(LibXml2 REQUIRED)
+
+  # Add an empty main doc target that will be dependent on the main format targets
+  add_custom_target(doc
+    COMMENT "Generating the user's documentation" VERBATIM
+  )
 
   # Optional packages for generating the user's documentation in
   # HTML, PDF, or EPUB depending on the selected options
@@ -103,14 +108,14 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
   # Set the message level
   # - to WARNING for finding at least one target when building all formats
   # - to FATAL_ERROR when the requested target cannot be built
-  if(ALL_DOC)
+  if(DOC_ALL)
     set(msg_level "WARNING")
   else()
     set(msg_level "FATAL_ERROR")
   endif()
 
   # Required packages for generating the user's documentation in HTML format
-  if(HTML)
+  if(DOC_HTML)
     find_package(LibXslt)
     if(NOT LIBXSLT_FOUND)
       message(${msg_level} "No package found for generating the user's documentation in HTML format")
@@ -118,7 +123,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
   endif()
 
   # Required packages for generating the user's documentation in PDF format
-  if(PDF)
+  if(DOC_PDF)
     find_package(DBLATEX)
     if(NOT DBLATEX_FOUND)
       message(${msg_level} "No package found for generating the user's documentation in PDF format")
@@ -126,7 +131,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
   endif()
 
   # Required packages for generating the user's documentation in EPUB format
-  if(EPUB)
+  if(DOC_EPUB)
     find_package(LibXslt)
     find_package(DBTOEPUB)
     if(NOT LIBXSLT_FOUND OR NOT DBTOEPUB_FOUND)
@@ -135,14 +140,10 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
   endif()
 
   # When building all formats verify that at least one format will be produced
-  if(ALL_DOC)
+  if(DOC_ALL)
     if(NOT LIBXSLT_FOUND AND NOT DBLATEX_FOUND AND NOT DBTOEPUB_FOUND)
       message(FATAL_ERROR "No package found for generating the user's documentation")
     endif()
-    # Add an empty main doc target that will be dependent on the main format targets
-    add_custom_target(doc
-      COMMENT "Generating the user's documentation" VERBATIM
-    )
   endif()
 
   # Function that validates the XML files of the user's documentation
@@ -177,7 +178,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
       COMMENT "Generating the user's documentation in HTML format" VERBATIM
     )
     # Make the main doc target dependent on the main html target
-    if(ALL_DOC)
+    if(DOC_ALL OR DOC_HTML)
       add_dependencies(doc doc_html)
     endif()
     # Add target copying the image directory and make the main html target dependent on it
@@ -206,7 +207,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
           # Make section numbers to include the chapter number. This assumes chapter numbering is turned on
           --stringparam section.autolabel 1 --stringparam section.label.includes.component.label 1
           # Generated text for chapters, sections, figures... is only the number and not the tile
-          --stringparam xref.with.number.and.title 0 
+          --stringparam xref.with.number.and.title 0
           # Placement for the legend for figures is after
           --stringparam formal.title.placement "figure after table after"
           # Allow controlling individual cell borders
@@ -245,7 +246,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
       COMMENT "Generating the user's documentation in PDF format" VERBATIM
     )
     # Make the main doc target dependent on the main pdf target
-    if(ALL_DOC)
+    if(DOC_ALL OR DOC_PDF)
       add_dependencies(doc doc_pdf)
     endif()
     # Loop for all build languages
@@ -289,7 +290,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
         COMMENT "Generating the user's documentation in EPUB format" VERBATIM
     )
     # Make the main doc target dependent on the main epub target
-    if(ALL_DOC)
+    if(DOC_ALL OR DOC_EPUB)
       add_dependencies(doc doc_epub)
     endif()
     # Loop for all build languages
@@ -305,7 +306,7 @@ if(HTML OR PDF OR EPUB OR ALL_DOC)
       list(GET PROJECT_BUILD_LANGUAGES_STRING "${idx}" lang_str)
       # Add epub target for every language and make the main epub target dependent on it
       add_custom_target(doc_epub_${lang}
-        ${DBTOEPUB_COMMAND} -c ${CMAKE_CURRENT_SOURCE_DIR}/docbook.css 
+        ${DBTOEPUB_COMMAND} -c ${CMAKE_CURRENT_SOURCE_DIR}/docbook.css
           -s ${CMAKE_CURRENT_BINARY_DIR}/epub.xsl
           -o ${CMAKE_CURRENT_BINARY_DIR}${locale}/mobilitydb-manual.epub
           ${CMAKE_CURRENT_SOURCE_DIR}${locale}/mobilitydb-manual.xml

@@ -286,10 +286,13 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   ensure_valid_tempsubtype(temp->subtype);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
-  lfinfo.numparam = 1;
+  lfinfo.numparam = 0;
   lfinfo.restypid = temp->basetypid;
-  Temporal *result = tfunc_temporal(temp, (Datum) NULL, lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

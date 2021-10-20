@@ -18,6 +18,7 @@
 <!ENTITY temporal_types SYSTEM "temporal_types.xml">
 <!ENTITY manipulating_box_types SYSTEM "manipulating_box_types.xml">
 <!ENTITY manipulating_temporal_types SYSTEM "manipulating_temporal_types.xml">
+<!ENTITY spatial_functions SYSTEM "spatial_functions.xml">
 <!ENTITY temporal_network_points SYSTEM "temporal_network_points.xml">
 <!ENTITY reference SYSTEM "reference.xml">
 <!ENTITY data_generator SYSTEM "data_generator.xml">

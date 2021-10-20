@@ -33,15 +33,15 @@
  * Aggregate functions for temporal points.
  */
 
-CREATE OR REPLACE FUNCTION tpoint_extent_transfn(stbox, tgeompoint)
+CREATE FUNCTION tpoint_extent_transfn(stbox, tgeompoint)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
+CREATE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tpoint_extent_combinefn(stbox, stbox)
+CREATE FUNCTION tpoint_extent_combinefn(stbox, stbox)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -138,6 +138,45 @@ CREATE AGGREGATE tcentroid(tgeompoint) (
   SERIALFUNC = tagg_serialize,
   DESERIALFUNC = tagg_deserialize,
   PARALLEL = SAFE
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION temporal_merge_transfn(internal, tgeompoint)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION temporal_merge_transfn(internal, tgeogpoint)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION tgeompoint_tagg_finalfn(internal)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint_tagg_finalfn(internal)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE AGGREGATE merge(tgeompoint) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tgeompoint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = safe
+);
+CREATE AGGREGATE merge(tgeogpoint) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tgeogpoint_tagg_finalfn,
+  SERIALFUNC = tagg_serialize,
+  DESERIALFUNC = tagg_deserialize,
+  PARALLEL = safe
 );
 
 /*****************************************************************************/

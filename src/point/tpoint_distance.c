@@ -154,69 +154,33 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *****************************************************************************/
 
 /**
- * Returns the temporal distance between the temporal sequence point and
- * the geometry/geography point
+ * Returns the single timestamp at which the a temporal point segment and a
+ * point are at the minimum distance. These are the turning points when
+ * computing the temporal distance.
  *
- * @param[in] seq Temporal point
- * @param[in] point Point
- * @param[in] func Distance function
+ * @param[in] start1,end1 Instants defining the first segment
+ * @param[in] linear States whether the interpolation is linear
+ * @param[in] point Base point
+ * @param[in] basetypid Oid of the base point
+ * @param[out] projvalue Projected value at turning point
+ * @param[out] t Timestamp at turning point
+ * @pre The segment is not constant.
+ * @note The parameter basetypid is not needed for temporal points
  */
-static TSequence *
-distance_tpointseq_geo(const TSequence *seq, Datum point, datum_func2 func)
+static bool
+tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
+  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
 {
-  int k = 0;
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  for (int i = 1; i < seq->count; i++)
-  {
-    /* Each iteration of the loop adds between one and two points */
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    instants[k++] = tinstant_make(func(point, value1),
-      inst1->t, FLOAT8OID);
-
-    /* If not constant segment and linear interpolation */
-    if (! datum_point_eq(value1, value2) && linear)
-    {
-      /* The trajectory is a line */
-      long double duration = (long double) (inst2->t - inst1->t);
-      double dist;
-      long double fraction =
-        geoseg_locate_point(value1, value2, point, &dist);
-      if (fraction != 0.0 && fraction != 1.0)
-      {
-        TimestampTz time = inst1->t + (TimestampTz) (duration * fraction);
-        instants[k++] = tinstant_make(Float8GetDatum(dist), time, FLOAT8OID);
-      }
-    }
-    inst1 = inst2; value1 = value2;
-  }
-  instants[k++] = tinstant_make(func(point, value1), inst1->t, FLOAT8OID);
-
-  return tsequence_make_free(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, linear, NORMALIZE);
-}
-
-/**
- * Returns the temporal distance between the temporal sequence set point and
- * the geometry/geography point
- *
- * @param[in] ts Temporal point
- * @param[in] point Point
- * @param[in] func Distance function
- */
-static TSequenceSet *
-distance_tpointseqset_geo(const TSequenceSet *ts, Datum point, datum_func2 func)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = distance_tpointseq_geo(seq, point, func);
-  }
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
+  long double duration = (long double) (end->t - start->t);
+  Datum value1 = tinstant_value(start);
+  Datum value2 = tinstant_value(end);
+  double dist;
+  long double fraction = geoseg_locate_point(value1, value2, point, &dist);
+  if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
+    return false;
+  *value = Float8GetDatum(dist);
+  *t = start->t + (TimestampTz) (duration * fraction);
+  return true;
 }
 
 /**
@@ -236,15 +200,15 @@ distance_tpointseqset_geo(const TSequenceSet *ts, Datum point, datum_func2 func)
  * @note
  */
 static bool
-tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2, const TInstant *end2,
-  TimestampTz *t)
+tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   long double denum, fraction;
   long double dx1, dy1, dx2, dy2, f1, f2, f3, f4;
   long double duration = (long double) (end1->t - start1->t);
 
-  if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
+  bool hasz = MOBDB_FLAGS_GET_Z(start1->flags);
+  if (hasz) /* 3D */
   {
     long double dz1, dz2, f5, f6;
     const POINT3DZ *p1 = datum_get_point3dz_p(tinstant_value(start1));
@@ -304,6 +268,11 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
+  /* We know that this function is called only for linear segments */
+  Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
+  Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
+  *value = hasz ? 
+    geom_distance3d(value1, value2) : geom_distance2d(value1, value2);
   return true;
 }
 
@@ -319,9 +288,8 @@ tgeompointseq_min_dist_at_timestamp(const TInstant *start1,
  * @pre The segments are not both constants.
  */
 static bool
-tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
-  const TInstant *end1, const TInstant *start2,
-  const TInstant *end2, double *mindist, TimestampTz *t)
+tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+  const TInstant *start2, const TInstant *end2, Datum *mindist, TimestampTz *t)
 {
   const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
   const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
@@ -342,7 +310,8 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
   if (edge_intersects(&A1, &A2, &B1, &B2))
   {
     /* We know that the distance is 0 */
-    *mindist = 0.0;
+    if (mindist)
+      *mindist = 0.0;
     /* In this case we must take the temporality into account */
     long double dx1, dy1, dz1, dx2, dy2, dz2, f1, f2, f3, f4, f5, f6, denum;
     dx1 = A2.x - A1.x;
@@ -373,8 +342,9 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
     if (geographic_point_equals(&e1.start, &close1) ||
       geographic_point_equals(&e1.end, &close1))
       return false;
-    /* Compute distance fbetween closest points */
-    *mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
+    /* Compute distance between closest points */
+    if (mindist)
+      *mindist = WGS84_RADIUS * sphere_distance(&close1, &close2);
     /* Compute distance from beginning of the segment to one closest point */
     long double seglength = sphere_distance(&(e1.start), &(e1.end));
     long double length = sphere_distance(&(e1.start), &close1);
@@ -399,15 +369,15 @@ tgeogpointseq_min_dist_at_timestamp(const TInstant *start1,
  * @pre The segments are not both constants.
  */
 bool
-tpointseq_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  TimestampTz *t)
+  Datum *value, TimestampTz *t)
 {
-  double d;
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
-    return tgeogpointseq_min_dist_at_timestamp(start1, end1, start2, end2, &d, t);
+    /* The distance output parameter is not used here */
+    return tgeogpoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
   else
-    return tgeompointseq_min_dist_at_timestamp(start1, end1, start2, end2, t);
+    return tgeompoint_min_dist_at_timestamp(start1, end1, start2, end2, value, t);
 }
 
 /*****************************************************************************/
@@ -419,30 +389,19 @@ tpointseq_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 Temporal *
 distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
-  datum_func2 func = get_distance_fn(temp->flags);
   LiftedFunctionInfo lfinfo;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-  {
-    lfinfo.func = (varfunc) func;
-    lfinfo.numparam = 2;
-    lfinfo.restypid = FLOAT8OID;
-    lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-    lfinfo.invert = INVERT_NO;
-    lfinfo.discont = CONTINUOUS;
-    lfinfo.tpfunc = NULL;
-  }
-  Temporal *result;
-  if (temp->subtype == INSTANT)
-    result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, geo,
-      temp->basetypid, (Datum) NULL, lfinfo);
-  else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp, geo,
-      temp->basetypid, (Datum) NULL, lfinfo);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) distance_tpointseq_geo((TSequence *) temp, geo, func);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) distance_tpointseqset_geo((TSequenceSet *) temp, geo, func);
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) get_pt_distance_fn(temp->flags);
+  lfinfo.numparam = 0;
+  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = lfinfo.reslinear ?
+    &tpoint_geo_min_dist_at_timestamp : NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal_base(temp, geo, &lfinfo);
   return result;
 }
 
@@ -455,12 +414,12 @@ PGDLLEXPORT Datum
 distance_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
@@ -477,13 +436,13 @@ PG_FUNCTION_INFO_V1(distance_tpoint_geo);
 PGDLLEXPORT Datum
 distance_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
@@ -500,20 +459,17 @@ Temporal *
 distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
   LiftedFunctionInfo lfinfo;
-  if (MOBDB_FLAGS_GET_GEODETIC(temp1->flags))
-    lfinfo.func = (varfunc) &geog_distance;
-  else
-    lfinfo.func = MOBDB_FLAGS_GET_Z(temp1->flags) ?
-      (varfunc) &pt_distance3d : (varfunc) &pt_distance2d;
-  lfinfo.numparam = 2;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) get_pt_distance_fn(temp1->flags);
+  lfinfo.numparam = 0;
   lfinfo.restypid = FLOAT8OID;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpointseq_min_dist_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_dist_at_timestamp : NULL;
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 
@@ -830,7 +786,7 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  datum_func2 func = get_distance_fn(temp->flags);
+  datum_func2 func = get_pt_distance_fn(temp->flags);
   TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)

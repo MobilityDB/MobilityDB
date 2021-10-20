@@ -279,11 +279,11 @@ CREATE OPERATOR -|- (
  * Aggregate functions for range types
  ******************************************************************************/
 
-CREATE OR REPLACE FUNCTION range_extent_transfn(anyrange, anyrange)
+CREATE FUNCTION range_extent_transfn(anyrange, anyrange)
   RETURNS anyrange
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION range_extent_combinefn(anyrange, anyrange)
+CREATE FUNCTION range_extent_combinefn(anyrange, anyrange)
   RETURNS anyrange
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;

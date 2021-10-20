@@ -61,15 +61,15 @@ CREATE FUNCTION temporal_send(tgeompoint)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OR REPLACE FUNCTION tgeompoint_typmod_in(cstring[])
+CREATE FUNCTION tgeompoint_typmod_in(cstring[])
   RETURNS integer
   AS 'MODULE_PATHNAME','tgeompoint_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tgeogpoint_typmod_in(cstring[])
+CREATE FUNCTION tgeogpoint_typmod_in(cstring[])
   RETURNS integer
   AS 'MODULE_PATHNAME','tgeogpoint_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tpoint_typmod_out(integer)
+CREATE FUNCTION tpoint_typmod_out(integer)
   RETURNS cstring
   AS 'MODULE_PATHNAME','tpoint_typmod_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -123,11 +123,11 @@ CREATE TYPE tgeogpoint (
 );
 
 -- Special cast for enforcing the typmod restrictions
-CREATE OR REPLACE FUNCTION tgeompoint(tgeompoint, integer)
+CREATE FUNCTION tgeompoint(tgeompoint, integer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME','tpoint_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE OR REPLACE FUNCTION tgeogpoint(tgeogpoint, integer)
+CREATE FUNCTION tgeogpoint(tgeogpoint, integer)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME','tpoint_enforce_typmod'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -824,12 +824,12 @@ CREATE TYPE time_tgeogpoint AS (
   temp tgeogpoint
 );
 
-CREATE OR REPLACE FUNCTION timeSplit(tgeompoint, bucket_width interval,
+CREATE FUNCTION timeSplit(tgeompoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeompoint
   AS 'MODULE_PATHNAME', 'temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
-CREATE OR REPLACE FUNCTION timeSplit(tgeogpoint, bucket_width interval,
+CREATE FUNCTION timeSplit(tgeogpoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeogpoint
   AS 'MODULE_PATHNAME', 'temporal_time_split'

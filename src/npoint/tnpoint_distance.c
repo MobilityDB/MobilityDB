@@ -50,7 +50,10 @@
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(distance_geo_tnpoint);
-
+/**
+ * Returns the temporal distance between the geometry point and the temporal
+ * network point
+ */
 PGDLLEXPORT Datum
 distance_geo_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -73,7 +76,10 @@ distance_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(distance_npoint_tnpoint);
-
+/**
+ * Returns the temporal distance between the network point and the temporal
+ * network point
+ */
 PGDLLEXPORT Datum
 distance_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -90,7 +96,10 @@ distance_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(distance_tnpoint_geo);
-
+/**
+ * Returns the temporal distance between the temporal network point and the
+ * geometry point
+ */
 PGDLLEXPORT Datum
 distance_tnpoint_geo(PG_FUNCTION_ARGS)
 {
@@ -113,7 +122,10 @@ distance_tnpoint_geo(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(distance_tnpoint_npoint);
-
+/**
+ * Returns the temporal distance between the temporal network point and the
+ * network point
+ */
 PGDLLEXPORT Datum
 distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
@@ -129,6 +141,9 @@ distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Returns the temporal distance between the two temporal network points
+ */
 Temporal *
 distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
@@ -147,7 +162,10 @@ distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
 }
 
 PG_FUNCTION_INFO_V1(distance_tnpoint_tnpoint);
-
+/**
+ * Returns the temporal distance between the temporal network point and the
+ * network point
+ */
 PGDLLEXPORT Datum
 distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
@@ -165,12 +183,13 @@ distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Nearest approach instant
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(NAI_geometry_tnpoint);
+PG_FUNCTION_INFO_V1(NAI_geo_tnpoint);
 /**
- * Nearest approach instant of a geometry and a temporal network point
+ * Returns the nearest approach instant of the geometry and the temporal
+ * network point
  */
 PGDLLEXPORT Datum
-NAI_geometry_tnpoint(PG_FUNCTION_ARGS)
+NAI_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -195,7 +214,8 @@ NAI_geometry_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
 /**
- * Nearest approach instant of a network point and a temporal network point
+ * Returns the nearest approach instant of the network point and the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -217,12 +237,13 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(NAI_tnpoint_geometry);
+PG_FUNCTION_INFO_V1(NAI_tnpoint_geo);
 /**
- * Nearest approach instant of a temporal network point and a geometry
+ * Returns the nearest approach instant of the temporal network point and the
+ * geometry
  */
 PGDLLEXPORT Datum
-NAI_tnpoint_geometry(PG_FUNCTION_ARGS)
+NAI_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -247,7 +268,8 @@ NAI_tnpoint_geometry(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAI_tnpoint_npoint);
 /**
- * Nearest approach instant of a temporal network point and a network point
+ * Returns the nearest approach instant of the temporal network point and the
+ * network point
  */
 PGDLLEXPORT Datum
 NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -271,7 +293,7 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAI_tnpoint_tnpoint);
 /**
- * Nearest approach instant of two temporal network points
+ * Returns the nearest approach instant of the two temporal network points
  */
 PGDLLEXPORT Datum
 NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -306,12 +328,13 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Nearest approach distance
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(NAD_geometry_tnpoint);
+PG_FUNCTION_INFO_V1(NAD_geo_tnpoint);
 /**
- * Nearest approach distance of a geometry and a temporal network point
+ * Returns the nearest approach distance of the geometry and the temporal
+ * network point
  */
 PGDLLEXPORT Datum
-NAD_geometry_tnpoint(PG_FUNCTION_ARGS)
+NAD_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -336,7 +359,8 @@ NAD_geometry_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
 /**
- * Nearest approach distance of a network point and a temporal network point
+ * Returns the nearest approach distance of the network point and the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -358,12 +382,13 @@ NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(NAD_tnpoint_geometry);
+PG_FUNCTION_INFO_V1(NAD_tnpoint_geo);
 /**
- * Nearest approach distance of a temporal network point and a geometry
+ * Returns the nearest approach distance of the temporal network point and the
+ * geometry
  */
 PGDLLEXPORT Datum
-NAD_tnpoint_geometry(PG_FUNCTION_ARGS)
+NAD_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -388,7 +413,8 @@ NAD_tnpoint_geometry(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnpoint_npoint);
 /**
- * Nearest approach distance of a temporal network point and a network point
+ * Returns the nearest approach distance of the temporal network point and the
+ * network point
  */
 PGDLLEXPORT Datum
 NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -412,7 +438,7 @@ NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(NAD_tnpoint_tnpoint);
 /**
- * Nearest approach distance of two temporal network points
+ * Returns the nearest approach distance of the two temporal network points
  */
 PGDLLEXPORT Datum
 NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -438,12 +464,13 @@ NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(shortestline_geometry_tnpoint);
+PG_FUNCTION_INFO_V1(shortestline_geo_tnpoint);
 /**
- * Shortest line of a geometry and a temporal network point
+ * Returns the line connecting the nearest approach point between the geometry
+ * and the temporal network point
  */
 PGDLLEXPORT Datum
-shortestline_geometry_tnpoint(PG_FUNCTION_ARGS)
+shortestline_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
@@ -464,7 +491,8 @@ shortestline_geometry_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(shortestline_npoint_tnpoint);
 /**
- * Shortest line of a network point and a temporal network point
+ * Returns the line connecting the nearest approach point between the network
+ * point and the temporal network point
  */
 PGDLLEXPORT Datum
 shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -482,12 +510,13 @@ shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(shortestline_tnpoint_geometry);
+PG_FUNCTION_INFO_V1(shortestline_tnpoint_geo);
 /**
- * Shortest line of a temporal network point and a geometry
+ * Returns the line connecting the nearest approach point between the temporal
+ * network point and the geometry
  */
 PGDLLEXPORT Datum
-shortestline_tnpoint_geometry(PG_FUNCTION_ARGS)
+shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -508,7 +537,8 @@ shortestline_tnpoint_geometry(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(shortestline_tnpoint_npoint);
 /**
- * Shortest line of a temporal network point and a network point
+ * Returns the line connecting the nearest approach point between the temporal
+ * network point and the network point
  */
 PGDLLEXPORT Datum
 shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -530,7 +560,8 @@ shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(shortestline_tnpoint_tnpoint);
 /**
- * Shortest line of two temporal network points
+ * Returns the line connecting the nearest approach point between the two
+ * temporal networks
  */
 PGDLLEXPORT Datum
 shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)

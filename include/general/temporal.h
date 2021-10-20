@@ -77,13 +77,17 @@
 #define REST_AT         true
 #define REST_MINUS      false
 
+/** Symbolic constants for the restriction functions with boxes */
+#define UPPER_INC       true
+#define UPPER_EXC       false
+
 /** Symbolic constants for the ever/always functions */
 #define EVER            true
 #define ALWAYS          false
 
 /** Symbolic constants for the restriction and the aggregation functions */
-#define MIN             true
-#define MAX             false
+#define GET_MIN          true
+#define GET_MAX          false
 
 /** Symbolic constants for the synchronization and the aggregation functions */
 #define CROSSINGS       true
@@ -499,6 +503,8 @@ extern Datum temporal_append_tinstant(PG_FUNCTION_ARGS);
 extern Datum temporal_merge(PG_FUNCTION_ARGS);
 extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
 
+extern Temporal *temporal_merge_internal(const Temporal *temp1,
+  const Temporal *temp2);
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
   Oid basetypid, bool linear);
 

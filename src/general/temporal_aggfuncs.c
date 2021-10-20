@@ -589,8 +589,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   ensure_valid_tempsubtype(temp->subtype);
   SkipList *result;
   if (temp->subtype == INSTANT)
-    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp,
-      func);
+    result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp, func);
   else if (temp->subtype == INSTANTSET)
     result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *) temp,
       func);
@@ -1405,6 +1404,28 @@ tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
     (Temporal *) tsequence_tavg_finalfn((TSequence **)values, state->length);
   pfree(values);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_merge_transfn);
+/**
+ * Transition function for union aggregate of periods
+ */
+PGDLLEXPORT Datum
+temporal_merge_transfn(PG_FUNCTION_ARGS)
+{
+  return temporal_tagg_transfn(fcinfo, NULL, CROSSINGS_NO);
+}
+
+PG_FUNCTION_INFO_V1(temporal_merge_combinefn);
+/**
+ * Combine function for union aggregate of time types
+ */
+PGDLLEXPORT Datum
+temporal_merge_combinefn(PG_FUNCTION_ARGS)
+{
+  return temporal_tagg_combinefn(fcinfo, NULL, CROSSINGS_NO);
 }
 
 /*****************************************************************************/

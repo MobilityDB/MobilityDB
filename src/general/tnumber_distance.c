@@ -77,77 +77,6 @@ datum_distance(Datum l, Datum r, Oid typel, Oid typer)
 /*****************************************************************************/
 
 /**
- * Returns the temporal distance between the temporal sequence number and
- * the value
- *
- * @param[in] seq Temporal number
- * @param[in] value Value
- * @param[in] basetypid Type of the base value
- * @param[in] restypid Type of the result
- */
-static TSequence *
-distance_tnumberseq_base(const TSequence *seq, Datum value, Oid basetypid,
-  Oid restypid)
-{
-  int k = 0;
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
-  const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
-  bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  Datum zero = (restypid == INT4OID) ? Int32GetDatum(0) : Float8GetDatum(0);
-  for (int i = 1; i < seq->count; i++)
-  {
-    /* Each iteration of the loop adds between one and two points */
-    const TInstant *inst2 = tsequence_inst_n(seq, i);
-    Datum value2 = tinstant_value(inst2);
-    instants[k++] = tinstant_make(
-      datum_distance(value1, value, seq->basetypid, basetypid),
-      inst1->t, restypid);
-
-    /* Constant segment or step interpolation */
-    if (! datum_eq(value1, value2, seq->basetypid) && linear)
-    {
-      TimestampTz crosstime;
-      if (tlinearseq_intersection_value(inst1, inst2, value, basetypid, NULL,
-        &crosstime))
-      {
-        instants[k++] = tinstant_make(zero, crosstime, restypid);
-      }
-    }
-    inst1 = inst2; value1 = value2;
-  }
-  instants[k++] = tinstant_make(datum_distance(value, value1, basetypid, seq->basetypid),
-    inst1->t, restypid);
-
-  return tsequence_make_free(instants, k, seq->period.lower_inc,
-    seq->period.upper_inc, linear, NORMALIZE);
-}
-
-/**
- * Returns the temporal distance between the temporal sequence set point and
- * the value
- *
- * @param[in] ts Temporal number
- * @param[in] value Value
- * @param[in] basetypid Type of the base value
- * @param[in] restypid Type of the result
- */
-static TSequenceSet *
-distance_tnumberseqset_base(const TSequenceSet *ts, Datum value, Oid basetypid,
-  Oid restypid)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = distance_tnumberseq_base(seq, value, basetypid, restypid);
-  }
-  return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
-}
-
-/*****************************************************************************/
-
-/**
  * Returns the temporal distance between the temporal number and the
  * value (distpatch function)
  *
@@ -161,30 +90,19 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   Oid basetypid, Oid restypid)
 {
   LiftedFunctionInfo lfinfo;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-  {
-    lfinfo.func = (varfunc) datum_distance;
-    lfinfo.numparam = 4;
-    lfinfo.restypid = restypid;
-    lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
-    lfinfo.invert = INVERT_NO;
-    lfinfo.discont = CONTINUOUS;
-    lfinfo.tpfunc = NULL;
-  }
-  Temporal *result;
-  if (temp->subtype == INSTANT)
-    result = (Temporal *)tfunc_tinstant_base((TInstant *)temp, value,
-      basetypid, (Datum) NULL, lfinfo);
-  else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tfunc_tinstantset_base((TInstantSet *)temp, value,
-      basetypid, (Datum) NULL, lfinfo);
-  else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)distance_tnumberseq_base((TSequence *)temp, value,
-      basetypid, restypid);
-  else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)distance_tnumberseqset_base((TSequenceSet *)temp, value,
-      basetypid, restypid);
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) datum_distance;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp->basetypid;
+  lfinfo.argtypid[1] = basetypid;
+  lfinfo.restypid = restypid;
+  lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfunc_base = &tlinearseq_intersection_value;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal_base(temp, value, &lfinfo);
   return result;
 }
 
@@ -237,16 +155,19 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
   Oid restypid)
 {
   LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_distance;
-  lfinfo.numparam = 4;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
   lfinfo.restypid = restypid;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tsequence_intersection1 : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, (Datum) NULL,
-    lfinfo);
+  lfinfo.tpfunc = lfinfo.reslinear ? &tnumber_min_dist_at_timestamp : NULL;
+  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 

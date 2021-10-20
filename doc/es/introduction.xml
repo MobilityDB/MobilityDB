@@ -43,16 +43,31 @@
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="corporate_sponsors">
-		<title>Patrocinadores corporativos</title>
-		<para>
-			Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria directa al proyecto MobilityDB.
-			<itemizedlist>
-				<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
-				<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Bélgica</ulink></para></listitem>
-				<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Bélgica</ulink></para></listitem>
-			</itemizedlist>
-		</para>
+	<sect1 id="sponsors">
+		<title>Patrocinadores</title>
+		<sect2 id="research_sponsors">
+			<title>Patrocinadores de investigación</title>
+			<para>
+				Estas son organizaciones de financiación de investigación (en orden alfabético) que han contribuido con financiación monetaria al proyecto MobilityDB.
+				<itemizedlist>
+					<listitem><para><ulink url="https://ec.europa.eu/research/mariecurieactions/">European Commission</ulink></para></listitem>
+					<listitem><para><ulink url="https://www.frs-fnrs.be/en">Fonds de la Recherche Scientifique (FNRS), Belgium</ulink></para></listitem>
+					<listitem><para><ulink url="https://innoviris.brussels/">Innoviris, Belgium</ulink></para></listitem>
+				</itemizedlist>
+			</para>
+		</sect2>
+
+		<sect2 id="corporate_sponsors">
+			<title>Patrocinadores corporativos</title>
+			<para>
+				Estas son entidades corporativas (en orden alfabético) que han contribuido con tiempo de desarrollador o financiación monetaria al proyecto MobilityDB.
+				<itemizedlist>
+					<listitem><para><ulink url="https://www.adonmo.com/">Adonmo, India</ulink></para></listitem>
+					<listitem><para><ulink url="https://georepublic.info/en/">Georepublic, Germany</ulink></para></listitem>
+					<listitem><para><ulink url="https://www.ulb.be">Université libre de Bruxelles, Belgium</ulink></para></listitem>
+				</itemizedlist>
+			</para>
+		</sect2>
 	</sect1>
 
 	<sect1 id="license">
@@ -305,27 +320,27 @@ ctest -R '22_*'
 				</thead>
 				<tbody>
 					<row>
-						<entry><varname>ALL_DOC</varname></entry>
+						<entry><varname>DOC_ALL</varname></entry>
 						<entry><varname>BOOL=OFF</varname></entry>
 						<entry>La documentación del usuario se genera en formatos HTML, PDF y EPUB.</entry>
 					</row>
 					<row>
-						<entry><varname>HTML</varname></entry>
+						<entry><varname>DOC_HTML</varname></entry>
 						<entry><varname>BOOL=OFF</varname></entry>
 						<entry>La documentación del usuario se genera en formato HTML.</entry>
 					</row>
 					<row>
-						<entry><varname>PDF</varname></entry>
+						<entry><varname>DOC_PDF</varname></entry>
 						<entry><varname>BOOL=OFF</varname></entry>
 						<entry>La documentación del usuario se genera en formato PDF.</entry>
 					</row>
 					<row>
-						<entry><varname>EPUB</varname></entry>
+						<entry><varname>DOC_EPUB</varname></entry>
 						<entry><varname>BOOL=OFF</varname></entry>
 						<entry>La documentación del usuario se genera en formato EPUB.</entry>
 					</row>
 					<row>
-						<entry><varname>ALL_LANG</varname></entry>
+						<entry><varname>LANG_ALL</varname></entry>
 						<entry><varname>BOOL=OFF</varname></entry>
 						<entry>La documentación del usuario se genera en inglés y en todas las traducciones disponibles.</entry>
 					</row>
@@ -335,7 +350,7 @@ ctest -R '22_*'
 						<entry>La documentación del usuario se genera en inglés y en español.</entry>
 					</row>
 					<row>
-						<entry><varname>DOXY_DOC</varname></entry>
+						<entry><varname>DOC_DEV</varname></entry>
 						<entry><varname>BOOL=OFF</varname></entry>
 						<entry>La documentación del desarrollador en inglés se genera en formato HTML</entry>
 					</row>
@@ -346,30 +361,30 @@ ctest -R '22_*'
 				Generar la documentación del usuario y del desarrollador en todos los formatos y en todos los idiomas.
 			</para>
 			<programlisting xml:space="preserve">
-cmake -D ALL_DOC=ON -D ALL_LANG=ON -D DOXY_DOC=ON ..
+cmake -D DOC_ALL=ON -D LANG_ALL=ON -D DOC_DEV=ON ..
 make doc
-make doxy
+make doc_dev
 </programlisting>
 			<para>
 				Generar la documentación del usuario en formato HTML y en todos los idiomas.
 			</para>
 			<programlisting xml:space="preserve">
-cmake -D HTML=ON -D ALL_LANG=ON ..
-make doc_html
+cmake -D DOC_HTML=ON -D LANG_ALL=ON ..
+make doc
 </programlisting>
 			<para>
 				Generar la documentación del usuario en inglés en todos los formatos.
 			</para>
 			<programlisting xml:space="preserve">
-cmake -D ALL_DOC=ON ..
+cmake -D DOC_ALL=ON ..
 make doc
 </programlisting>
 			<para>
 				Generar la documentación del usuario en formato PDF en inglés y en español.
 			</para>
 			<programlisting xml:space="preserve">
-cmake -D PDF=ON -D ES=ON ..
-make doc_pdf
+cmake -D DOC_PDF=ON -D ES=ON ..
+make doc
 </programlisting>
 		</sect2>
 	</sect1>

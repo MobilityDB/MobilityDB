@@ -37,31 +37,31 @@
  * Temporal equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_eq(npoint, tnpoint)
+CREATE FUNCTION temporal_teq(npoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tnpoint, npoint)
+CREATE FUNCTION temporal_teq(tnpoint, npoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_eq(tnpoint, tnpoint)
+CREATE FUNCTION temporal_teq(tnpoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = #=
 );
 CREATE OPERATOR #= (
-  PROCEDURE = temporal_eq,
+  PROCEDURE = temporal_teq,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = #=
 );
