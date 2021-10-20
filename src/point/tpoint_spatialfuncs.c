@@ -3433,13 +3433,13 @@ get_bearing_fn(int16 flags)
 }
 
 /**
- * Returns the single timestamp at which the a temporal point segment
+ * Returns the value and timestamp at which the a temporal point segment
  * and a point are at the minimum bearing.
  *
  * @param[in] start,end Instants defining the segment
  * @param[in] point Geometric/geographic point
  * @param[in] basetypid Oid of the base type
- * @param[out] value Projected point
+ * @param[out] value Value
  * @param[out] t Timestamp
  * @pre The segment is not constant and has linear interpolation.
  * @note The parameter basetypid is not needed for temporal points
@@ -3499,12 +3499,13 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
 }
 
 /**
- * Returns the single timestamp at which the two temporal point segments
+ * Returns the value and timestamp at which the two temporal point segments
  * are at the minimum bearing.
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] linear1,linear2 State whether the interpolation is linear
+ * @param[out] value Value
  * @param[out] t Timestamp
  * @pre The segments are not both constants and at least one is linear.
  * @note This function is currently not available for two temporal geographic

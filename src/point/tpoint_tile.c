@@ -792,8 +792,9 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
  * Get the coordinates of the tile corresponding the temporal instant point
  *
  * @param[out] coords Tile coordinates
- * @param[out] lower Minimum values  of the tile (optional parameter)
  * @param[in] inst Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 void
@@ -821,6 +822,8 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
  *
  * @param[out] bm Bit matrix
  * @param[in] inst Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 void
@@ -841,6 +844,8 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
  *
  * @param[out] bm Bit matrix
  * @param[in] ti Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 void
@@ -864,6 +869,8 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
  *
  * @param[out] bm Bit matrix
  * @param[in] seq Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 void
@@ -890,6 +897,8 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
  *
  * @param[out] bm Bit matrix
  * @param[in] ts Temporal point
+ * @param[in] hasz Whether the tile has Z dimension
+ * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
 void

@@ -154,15 +154,14 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *****************************************************************************/
 
 /**
- * Returns the single timestamp at which the a temporal point segment and a
- * point are at the minimum distance. These are the turning points when
+ * Returns the value and timestamp at which the a temporal point segment and
+ * a point are at the minimum distance. These are the turning points when
  * computing the temporal distance.
  *
- * @param[in] start1,end1 Instants defining the first segment
- * @param[in] linear States whether the interpolation is linear
+ * @param[in] start,end Instants defining the first segment
  * @param[in] point Base point
  * @param[in] basetypid Oid of the base point
- * @param[out] projvalue Projected value at turning point
+ * @param[out] value Projected value at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
  * @note The parameter basetypid is not needed for temporal points
@@ -184,12 +183,13 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
 }
 
 /**
- * Returns the single timestamp at which the two temporal geometric point
+ * Returns the value and timestamp at which the two temporal geometric point
  * segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
+ * @param[out] value Value
  * @param[out] t Timestamp
  * @note The PostGIS functions `lw_dist2d_seg_seg` and `lw_dist3d_seg_seg`
  * cannot be used since they do not take time into consideration and would
@@ -359,12 +359,13 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Returns the single timestamp at which the two temporal point segments
+ * Returns the value and timestamp at which the two temporal point segments
  * are at the minimum distance (dispatch function).
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
  * @param[in] linear1,linear2 State whether the interpolation is linear
+ * @param[out] value Value
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */

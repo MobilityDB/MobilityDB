@@ -278,6 +278,7 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
  * @param[in] linear1 True if the first segment has linear interpolation
  * @param[in] start2,end2 Temporal instants defining the second segment
  * @param[in] linear2 True if the second segment has linear interpolation
+ * @param[out] value Value
  * @param[out] t Timestamp
  */
 bool
