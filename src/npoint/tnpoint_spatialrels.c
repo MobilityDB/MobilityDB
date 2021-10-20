@@ -96,10 +96,9 @@ spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom, Datum param,
 /**
  * Generic spatial relationships for two temporal network points
  *
- * @param[in] temp1, temp2 Temporal network points
+ * @param[in] temp1,temp2 Temporal network points
  * @param[in] param Parameter
  * @param[in] func PostGIS function to be called
- * @param[in] invert True if the arguments should be inverted
  */
 static Datum
 spatialrel3_tnpoint_tnpoint(const Temporal *temp1,const  Temporal *temp2,

@@ -182,7 +182,7 @@ number_bucket(PG_FUNCTION_ARGS)
  *
  * @param[in] timestamp Input timestamp
  * @param[in] size Size of the time buckets in PostgreSQL time units
- * @param[in] torigin Origin of the buckets
+ * @param[in] offset Origin of the buckets
  */
 TimestampTz
 timestamptz_bucket_internal(TimestampTz timestamp, int64 size,
