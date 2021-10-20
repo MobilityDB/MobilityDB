@@ -34,15 +34,60 @@
  */
 
 CREATE FUNCTION frechetDistance(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_discfrechet'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'tpoint_discfrechet'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
+CREATE FUNCTION dynamicTimeWarp(tint, tint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'temporal_dtw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarp(tint, tfloat)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'temporal_dtw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarp(tfloat, tint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'temporal_dtw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarp(tfloat, tfloat)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'temporal_dtw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dynamicTimeWarp(tgeompoint, tgeompoint)
-RETURNS float
-AS 'MODULE_PATHNAME', 'tpoint_dtw'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'temporal_dtw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarp(tgeogpoint, tgeogpoint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'temporal_dtw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+CREATE TYPE warp AS (
+  i integer,
+  j integer
+);
+
+CREATE FUNCTION dynamicTimeWarpPath(tint, tint)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'temporal_dtw_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarpPath(tfloat, tint)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'temporal_dtw_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarpPath(tint, tfloat)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'temporal_dtw_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dynamicTimeWarpPath(tfloat, tfloat)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'temporal_dtw_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+

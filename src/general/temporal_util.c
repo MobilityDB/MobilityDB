@@ -1468,7 +1468,7 @@ datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 Datum
 datum_div(Datum l, Datum r, Oid typel, Oid typer)
 {
-  Datum result = 0;
+  Datum result;
   if (typel == INT4OID)
   {
     if (typer == INT4OID)
@@ -1483,6 +1483,20 @@ datum_div(Datum l, Datum r, Oid typel, Oid typer)
     else /* typer == FLOAT8OID */
       result = Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
   }
+  return result;
+}
+
+/**
+ * Returns the absolute value of the number
+ */
+Datum
+datum_abs(Datum value, Oid type)
+{
+  Datum result;
+  if (type == INT4OID)
+    result = Int32GetDatum(abs(DatumGetInt32(value)));
+  else /* typel == FLOAT8OID */
+    result = Float8GetDatum(fabs(DatumGetFloat8(value)));
   return result;
 }
 
