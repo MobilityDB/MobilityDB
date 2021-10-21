@@ -29,6 +29,7 @@ SET(LOCAL_FILES
   32_temporal_boxops
   34_temporal_posops
   36_tnumber_distance
+  37_temporal_similarity
   38_temporal_aggfuncs
   40_temporal_waggfuncs
   42_temporal_gist

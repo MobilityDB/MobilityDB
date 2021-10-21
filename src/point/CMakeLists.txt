@@ -8,7 +8,6 @@ add_library(point OBJECT
   tpoint_boxops.c
   tpoint.c
   tpoint_datagen.c
-  tpoint_discfrechet.c
   tpoint_distance.c
   tpoint_gist.c
   tpoint_in.c

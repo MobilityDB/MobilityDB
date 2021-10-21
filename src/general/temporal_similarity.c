@@ -29,19 +29,21 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_discfrechet.c
- * Compute the discrete Frechet distance for temporal points.
+ * @file temporal_similarity.c
+ * Compute the similarity distance, e.g., Frechet or Dynamic Time Warping
+ * distance, for temporal values.
  */
 
-#include "point/tpoint_discfrechet.h"
+#include "general/temporal_similarity.h"
 
 #include <postgres.h>
 #include <assert.h>
 #include <funcapi.h>
 #include <math.h>
-#include <utils/float.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
+#else
+#include <utils/float.h>
 #endif
 
 #include <liblwgeom.h>
@@ -54,21 +56,6 @@
 /*****************************************************************************
  * Compute the distance between two instants
  *****************************************************************************/
-
-/**
- * Compute the distance between two temporal instants.
- *
- * @param[in] inst1, inst2 Temporal instants
- */
-static double
-tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
-{
-  datum_func2 func = get_pt_distance_fn(inst1->flags);
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  double result = func(value1, value2);
-  return result;
-}
 
 /**
  * Compute the distance between two temporal instants.
@@ -91,6 +78,21 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] inst1, inst2 Temporal instants
  */
 static double
+tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
+{
+  datum_func2 func = get_pt_distance_fn(inst1->flags);
+  Datum value1 = tinstant_value(inst1);
+  Datum value2 = tinstant_value(inst2);
+  double result = func(value1, value2);
+  return result;
+}
+
+/**
+ * Compute the distance between two temporal instants.
+ *
+ * @param[in] inst1, inst2 Temporal instants
+ */
+static double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2)
 {
   if (tnumber_base_type(inst1->basetypid))
@@ -101,121 +103,21 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
 }
 
 /*****************************************************************************
- * Linear space implementation of the discrete Frechet distance
+ * Linear space implementation of the similarity distance
  *****************************************************************************/
 
 /**
- * Linear space function computing the discrete Frechet distance between
- * two temporal points. Only two rows of the full matrix are used.
+ * Linear space function computing the similarity distance between
+ * two temporal values. Only two rows of the full matrix are used.
  *
  * @param[in] instants1, instants2 Temporal instants
  * @param[in] count1, count2 Number of instants
+ * @param[in] simfunc Similarity function, i.e., Frechet vs DTW
  * @param[out] dist Array keeping the distances
  */
 static double
-tpointseq_discfrechet1(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, double *dist)
-{
-  const TInstant *inst1, *inst2;
-  double d;
-  for (int i = 0; i < count1; i++)
-  {
-    for (int j = 0; j < count2; j++)
-    {
-      inst1 = instants1[i];
-      inst2 = instants2[j];
-      d = tpointinst_distance(inst1, inst2);
-      if (i > 0 && j > 0)
-      {
-        dist[i%2 * count2 + j] = Max(
-          Min(dist[(i - 1)%2 * count2 + j - 1],
-            Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1])),
-          d);
-      }
-      else if (i > 0 && j == 0)
-        dist[i%2 * count2] = Max(dist[(i - 1)%2 * count2], d);
-      else if (i == 0 && j > 0)
-        dist[j] = Max(dist[j - 1], d);
-      else /* i == 0 && j == 0 */
-        dist[0] = d;
-    }
-  }
-  return dist[(count1 - 1)%2 * count2 + count2 - 1];
-}
-
-/**
- * Computes the discrete Frechet distance for two temporal sequence points.
- *
- * @param[in] instants1, instants2 Temporal instants
- * @param[in] count1, count2 Number of instants
- */
-double
-tpointinstarr_discfrechet(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2)
-{
-  /* Allocate memory for two rows of the distance matrix */
-  double *dist = (double *) palloc(sizeof(double) * 2 * count2);
-  /* Initialise it with -1.0 */
-  for (int k = 0; k < 2 * count2; k++)
-    *(dist + k) = -1.0;
-
-  /* Call the linear_space computation of the discrete Frechet distance */
-  double result = tpointseq_discfrechet1(instants1, count1, instants2, count2, dist);
-  /* Free memory */
-  pfree(dist);
-
-  return result;
-}
-
-/*****************************************************************************/
-
-double
-tpoint_discfrechet_internal(Temporal *temp1, Temporal *temp2)
-{
-  double result;
-  int count1, count2;
-  const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
-  const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
-  result = count1 > count2 ?
-    tpointinstarr_discfrechet(instants1, count1, instants2, count2) :
-    tpointinstarr_discfrechet(instants2, count2, instants1, count1);
-  /* Free memory */
-  pfree(instants1); pfree(instants2);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(tpoint_discfrechet);
-/**
- * Computes the discrete Frechet distance between two temporal points.
- */
-Datum
-tpoint_discfrechet(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  double result = tpoint_discfrechet_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_FLOAT8(result);
-}
-
-/*****************************************************************************
- * Linear space implementation of the Dynamic Time Warp (DTW) distance
- *****************************************************************************/
-
-/**
- * Linear space function computing the Dynamic Time Warp (DTW) distance
- * between two temporal points. Only two rows of the full matrix are used.
- *
- * @param[in] instants1, instants2 Temporal instants
- * @param[in] count1, count2 Number of instants
- * @param[in] dist Array keeping the distances
- */
-static double
-tinstantarr_dtw1(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, double *dist)
+tinstantarr_similarity1(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, double *dist, SimFunc simfunc)
 {
   const TInstant *inst1, *inst2;
   double d;
@@ -228,83 +130,137 @@ tinstantarr_dtw1(const TInstant **instants1, int count1,
       d = tinstant_distance(inst1, inst2);
       if (i > 0 && j > 0)
       {
-        dist[i%2 * count2 + j] = d +
-          Min(dist[(i - 1)%2 * count2 + j - 1],
-            Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1]));
+        if (simfunc == FRECHET)
+        {
+          dist[i%2 * count2 + j] = Max(
+            Min(dist[(i - 1)%2 * count2 + j - 1],
+              Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1])),
+            d);
+        }
+        else /* simfunc == DYNTIMEWARP */
+        {
+          dist[i%2 * count2 + j] = d +
+            Min(dist[(i - 1)%2 * count2 + j - 1],
+              Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1]));
+        }
       }
       else if (i > 0 && j == 0)
-        dist[i%2 * count2] = d + dist[(i - 1)%2 * count2];
+      {
+        if (simfunc == FRECHET)
+        {
+          dist[i%2 * count2] = Max(dist[(i - 1)%2 * count2], d);
+        }
+        else /* simfunc == DYNTIMEWARP */
+        {
+          dist[i%2 * count2] = d + dist[(i - 1)%2 * count2];
+        }
+      }
       else if (i == 0 && j > 0)
-        dist[j] = d + dist[j - 1];
+      {
+        if (simfunc == FRECHET)
+        {
+          dist[j] = Max(dist[j - 1], d);
+        }
+        else /* simfunc == DYNTIMEWARP */
+        {
+          dist[j] = d + dist[j - 1];
+        }
+      }
       else /* i == 0 && j == 0 */
+      {
         dist[0] = d;
+      }
     }
   }
   return dist[(count1 - 1)%2 * count2 + count2 - 1];
 }
 
 /**
- * Computes the the Dynamic Time Warp (DTW) distance for two temporal sequence points.
+ * Computes the similarity distance for two temporal sequence values.
  *
  * @param[in] instants1, instants2 Temporal instants
  * @param[in] count1, count2 Number of instants
  */
 double
-tinstantarr_dtw(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2)
+tinstantarr_similarity(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, SimFunc simfunc)
 {
-  /* Allocate memory for dist */
+  /* Allocate memory for two rows of the distance matrix */
   double *dist = (double *) palloc(sizeof(double) * 2 * count2);
   /* Initialise it with -1.0 */
   for (int k = 0; k < 2 * count2; k++)
     *(dist + k) = -1.0;
-
-  /* Call the linear_space computation of the the Dynamic Time Warp (DTW) distance */
-  double result = tinstantarr_dtw1(instants1, count1, instants2, count2, dist);
+  /* Call the linear_space computation of the similarity distance */
+  double result = tinstantarr_similarity1(instants1, count1, instants2, count2,
+    dist, simfunc);
   /* Free memory */
   pfree(dist);
 
   return result;
 }
 
-/**
- * Computes the Dynamic Time Warp (DTW) distance between two temporal points.
- * (internal function)
- */
+/*****************************************************************************/
+
 double
-temporal_dtw_internal(Temporal *temp1, Temporal *temp2)
+temporal_similarity_internal(Temporal *temp1, Temporal *temp2,
+  SimFunc simfunc)
 {
   double result;
   int count1, count2;
   const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
   const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
   result = count1 > count2 ?
-    tinstantarr_dtw(instants1, count1, instants2, count2) :
-    tinstantarr_dtw(instants2, count2, instants1, count1);
+    tinstantarr_similarity(instants1, count1, instants2, count2, simfunc) :
+    tinstantarr_similarity(instants2, count2, instants1, count1, simfunc);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(temporal_dtw);
+/*****************************************************************************
+ * Linear space implementation of the Fréchet distance
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_frechet_distance);
 /**
- * Computes the Dynamic Time Warp (DTW) distance between two temporal points.
+ * Computes the similarity distance between two temporal points.
  */
 Datum
-temporal_dtw(PG_FUNCTION_ARGS)
+temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  double result = temporal_dtw_internal(temp1, temp2);
+  double result = temporal_similarity_internal(temp1, temp2, FRECHET);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************
- * Iterative implementation of the dynamic time warp distance
+ * Linear space implementation of the Dynamic Time Match (DTW) distance
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(temporal_dyntimewarp);
+/**
+ * Computes the Dynamic Time Match (DTW) distance between two temporal points.
+ */
+Datum
+temporal_dyntimewarp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = temporal_similarity_internal(temp1, temp2, DYNTIMEWARP);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
+ * Iterative implementation of the similarity distance with a full matrix
  *****************************************************************************/
 
 #ifdef DEBUG_BUILD
@@ -340,17 +296,16 @@ matrix_print(double *dist, int count1, int count2)
 #endif
 
 /**
- * Function computing the dynamic time warp path between
- * two temporal points.
+ * Function computing the similarity path between two temporal values.
  *
- * @param[in] count1,count2 Number of instants of the temporal points
+ * @param[in] count1,count2 Number of instants of the temporal values
  * @param[in] dist Array keeping the distances
  * @param[out] count Number of elements of the warp path
  */
-static Warp *
-tinstantarr_dtw_path(int count1, int count2, double *dist, int *count)
+static Match *
+tinstantarr_similarity_path(int count1, int count2, double *dist, int *count)
 {
-  Warp *result = palloc(sizeof(Warp) * Max(count1, count2));
+  Match *result = palloc(sizeof(Match) * Max(count1, count2));
   int i = count1 - 1;
   int j = count2 - 1;
   int k = 0;
@@ -360,17 +315,24 @@ tinstantarr_dtw_path(int count1, int count2, double *dist, int *count)
     result[k++].j = j;
     if (i == 0 && j == 0)
       break;
-    /* Compute the minimum distance of the 3 neighboring cells */
-    double d = Min(dist[(i - 1) * count2 + j - 1],
-      Min(dist[(i - 1) * count2 + j], dist[i * count2 + j - 1]));
-    /* We prioritize the diagonal in case of ties */
-    if (i > 0 && j > 0 && dist[(i - 1) * count2 + j - 1] == d)
+    if (i > 0 && j > 0)
     {
-      i--; j--;
+      /* Compute the minimum distance of the 3 neighboring cells */
+      double d = Min(dist[(i - 1) * count2 + j - 1],
+        Min(dist[(i - 1) * count2 + j], dist[i * count2 + j - 1]));
+      /* We prioritize the diagonal in case of ties */
+      if (dist[(i - 1) * count2 + j - 1] == d)
+      {
+        i--; j--;
+      }
+      else if (dist[(i - 1) * count2 + j] == d)
+        i--;
+      else /* (dist[(i) * count2 + j - 1] == d) */
+        j--;
     }
-    else if (i > 0 && dist[(i - 1) * count2 + j] == d)
+    else if (i > 0)
       i--;
-    else /* (j > 0 && dist[(i) * count2 + j - 1] == d) */
+    else /* j > 0 */
       j--;
   }
   *count = k;
@@ -378,7 +340,7 @@ tinstantarr_dtw_path(int count1, int count2, double *dist, int *count)
 }
 
 /**
- * Iterative function computing the dynamic time warp distance between
+ * Iterative function computing the similarity distance between
  * two temporal points.
  *
  * @param[in] instants1, instants2 Instants of the temporal points
@@ -386,8 +348,8 @@ tinstantarr_dtw_path(int count1, int count2, double *dist, int *count)
  * @param[in] dist Array keeping the distances
  */
 static void
-tinstantarr_dtw_iterative1(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, double *dist)
+tinstantarr_similarity_matrix1(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, double *dist, SimFunc simfunc)
 {
   const TInstant *inst1, *inst2;
   double d;
@@ -400,16 +362,46 @@ tinstantarr_dtw_iterative1(const TInstant **instants1, int count1,
       d = tinstant_distance(inst1, inst2);
       if (i > 0 && j > 0)
       {
-        dist[i * count2 + j] = d +
-          Min(dist[(i - 1) * count2 + j - 1],
-            Min(dist[(i - 1) * count2 + j], dist[i * count2 + j - 1]));
+        if (simfunc == FRECHET)
+        {
+          dist[i%2 * count2 + j] = Max(
+            Min(dist[(i - 1)%2 * count2 + j - 1],
+              Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1])),
+            d);
+        }
+        else /* simfunc == DYNTIMEWARP */
+        {
+          dist[i%2 * count2 + j] = d +
+            Min(dist[(i - 1)%2 * count2 + j - 1],
+              Min(dist[(i - 1)%2 * count2 + j], dist[i%2 * count2 + j - 1]));
+        }
       }
       else if (i > 0 && j == 0)
-        dist[i * count2] = d + dist[(i - 1) * count2];
+      {
+        if (simfunc == FRECHET)
+        {
+          dist[i%2 * count2] = Max(dist[(i - 1)%2 * count2], d);
+        }
+        else /* simfunc == DYNTIMEWARP */
+        {
+          dist[i%2 * count2] = d + dist[(i - 1)%2 * count2];
+        }
+      }
       else if (i == 0 && j > 0)
-        dist[j] = d + dist[j - 1];
+      {
+        if (simfunc == FRECHET)
+        {
+          dist[j] = Max(dist[j - 1], d);
+        }
+        else /* simfunc == DYNTIMEWARP */
+        {
+          dist[j] = d + dist[j - 1];
+        }
+      }
       else /* i == 0 && j == 0 */
+      {
         dist[0] = d;
+      }
     }
   }
   return;
@@ -420,9 +412,9 @@ tinstantarr_dtw_iterative1(const TInstant **instants1, int count1,
  *
  * @param[in] seq1, seq2 Temporal points
  */
-Warp *
-tinstantarr_dtw_iterative(const TInstant **instants1, int count1,
-  const TInstant **instants2, int count2, int *count)
+Match *
+tinstantarr_similarity_matrix(const TInstant **instants1, int count1,
+  const TInstant **instants2, int count2, int *count, SimFunc simfunc)
 {
   /* Allocate memory for dist */
   double *dist = (double *) palloc(sizeof(double) * count1 * count2);
@@ -430,11 +422,12 @@ tinstantarr_dtw_iterative(const TInstant **instants1, int count1,
   for (int k = 0; k < count1 * count2; k++)
     *(dist + k) = -1.0;
 
-  /* Call the iterative computation of the discrete Frechet distance */
-  tinstantarr_dtw_iterative1(instants1, count1, instants2, count2, dist);
-    
+  /* Call the iterative computation of the similarity distance */
+  tinstantarr_similarity_matrix1(instants1, count1, instants2, count2, dist,
+    simfunc);
+
   /* Compute the path */
-  Warp *result = tinstantarr_dtw_path(count1, count2, dist, count);
+  Match *result = tinstantarr_similarity_path(count1, count2, dist, count);
 
   /* Free memory */
   pfree(dist);
@@ -443,23 +436,24 @@ tinstantarr_dtw_iterative(const TInstant **instants1, int count1,
 }
 
 /*****************************************************************************
- * Compute the Dynamic Time Warp Path between two temporal points
+ * Compute the similarity path between two temporal points from the distance
+ * matrix
  *****************************************************************************/
 
 /**
  * Create the initial state that persists across multiple calls of the function
  *
- * @param[in] path Warp path
+ * @param[in] path Match path
  * @param[in] r Bounds for generating the bucket list
  * @param[in] size Size of the path
  *
  * @pre The size argument must be greater to 0.
  * @note The path is in reverse order and thus, we start from the last element
  */
-static WarpPathState *
-warp_path_state_make(Warp *path, int size)
+static SimilarityPathState *
+similarity_path_state_make(Match *path, int size)
 {
-  WarpPathState *state = palloc0(sizeof(WarpPathState));
+  SimilarityPathState *state = palloc0(sizeof(SimilarityPathState));
   /* Fill in state */
   state->done = false;
   state->size = size;
@@ -474,7 +468,7 @@ warp_path_state_make(Warp *path, int size)
  * @param[in] state State to increment
  */
 static void
-warp_path_state_next(WarpPathState *state)
+similarity_path_state_next(SimilarityPathState *state)
 {
   if (!state || state->done)
     return;
@@ -487,34 +481,34 @@ warp_path_state_next(WarpPathState *state)
 
 /*****************************************************************************/
 
-
 /**
- * Computes the Dynamic Time Warp (DTW) distance between two temporal points.
+ * Computes the similarity match path between two temporal points.
  * (internal function)
  */
-Warp *
-temporal_dtw_path_internal(Temporal *temp1, Temporal *temp2, int *count)
+Match *
+temporal_similarity_path_internal(Temporal *temp1, Temporal *temp2, int *count,
+  SimFunc simfunc)
 {
   int count1, count2;
   const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
   const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
-  Warp *result = count1 > count2 ?
-    tinstantarr_dtw_iterative(instants1, count1, instants2, count2, count) :
-    tinstantarr_dtw_iterative(instants2, count2, instants1, count1, count);
+  Match *result = count1 > count2 ?
+    tinstantarr_similarity_matrix(instants1, count1, instants2, count2, count, simfunc) :
+    tinstantarr_similarity_matrix(instants2, count2, instants1, count1, count, simfunc);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(temporal_dtw_path);
+PG_FUNCTION_INFO_V1(temporal_dyntimewarp_path);
 /**
- * Computes the Dynamic Time Warp (DTW) path between two temporal points.
+ * Computes the Dynamic Time Match (DTW) path between two temporal points.
  */
 Datum
-temporal_dtw_path(PG_FUNCTION_ARGS)
+temporal_dyntimewarp_path(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
-  WarpPathState *state;
+  SimilarityPathState *state;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
   HeapTuple tuple;
@@ -529,15 +523,15 @@ temporal_dtw_path(PG_FUNCTION_ARGS)
 
     /* Compute the path */
     int count;
-    Warp *path = temporal_dtw_path_internal(temp1, temp2, &count);
+    Match *path = temporal_similarity_path_internal(temp1, temp2, &count, DYNTIMEWARP);
 
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = 
+    MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
-    funcctx->user_fctx = warp_path_state_make(path, count);
+    funcctx->user_fctx = similarity_path_state_make(path, count);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
@@ -558,7 +552,7 @@ temporal_dtw_path(PG_FUNCTION_ARGS)
   tuple_arr[0] = Int32GetDatum(state->path[state->i].i);
   tuple_arr[1] = Int32GetDatum(state->path[state->i].j);
   /* Advance state */
-  warp_path_state_next(state);
+  similarity_path_state_next(state);
   /* Form tuple and return */
   tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
   result = HeapTupleGetDatum(tuple);
