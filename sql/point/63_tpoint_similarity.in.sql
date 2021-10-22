@@ -30,8 +30,8 @@
 
 /*
  * tpoint_similarity.sql
- * Similarity functions, i.e., discrete Frechet and Dynamic Time Warp distance,
- * for temporal points.
+ * Similarity distance for temporal values. Currently, the discrete Frechet
+ * distance and the Dynamic Time Warping (DTW) distance are implemented.
  */
 
 CREATE FUNCTION frechetDistance(tgeompoint, tgeompoint)
@@ -43,26 +43,33 @@ CREATE FUNCTION frechetDistance(tgeogpoint, tgeogpoint)
   AS 'MODULE_PATHNAME', 'temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION frechetDistancePath(tgeompoint, tgeompoint)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'temporal_frechet_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION frechetDistancePath(tgeogpoint, tgeogpoint)
+  RETURNS SETOF warp
+  AS 'MODULE_PATHNAME', 'temporal_frechet_path'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION dynamicTimeWarp(tgeompoint, tgeompoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'temporal_dyntimewarp'
+  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dynamicTimeWarp(tgeogpoint, tgeogpoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'temporal_dyntimewarp'
+  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/*****************************************************************************/
 
 CREATE FUNCTION dynamicTimeWarpPath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'temporal_dyntimewarp_path'
+  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dynamicTimeWarpPath(tgeogpoint, tgeogpoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'temporal_dyntimewarp_path'
+  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
