@@ -262,6 +262,9 @@ temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 #ifdef DEBUG_BUILD
+/**
+ * Print a distance matrix in tabular form
+ */
 void
 matrix_print(double *dist, int count1, int count2)
 {
@@ -291,6 +294,21 @@ matrix_print(double *dist, int count1, int count2)
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("MATRIX:\n%s", buf)));
   return;
 }
+
+/**
+ * Print a distant path found from the distance matrix
+ */
+void
+path_print(Match *path, int count)
+{
+  int len = 0;
+  char buf[65536];
+  int i, k = 0;
+  for (i = count - 1; i >= 0; i--)
+    len += sprintf(buf+len, "%d: (%2d,%2d)\n", k++, path[i].i, path[i].j);
+  ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("PATH:\n%s", buf)));
+  return;
+}
 #endif
 
 /**
@@ -304,7 +322,7 @@ matrix_print(double *dist, int count1, int count2)
 static Match *
 tinstantarr_similarity_path(double *dist, int count1, int count2, int *count)
 {
-  Match *result = palloc(sizeof(Match) * Max(count1, count2));
+  Match *result = palloc(sizeof(Match) * (count1 + count2));
   int i = count1 - 1;
   int j = count2 - 1;
   int k = 0;
@@ -534,8 +552,8 @@ temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_FREE_IF_COPY(temp2, 1);
+    // PG_FREE_IF_COPY(temp1, 0);
+    // PG_FREE_IF_COPY(temp2, 1);
   }
 
   /* Stuff done on every call of the function */

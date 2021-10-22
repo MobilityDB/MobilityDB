@@ -328,7 +328,8 @@ PG_FUNCTION_INFO_V1(range_bucket_list);
 /**
  * Generate a range bucket list.
  */
-Datum range_bucket_list(PG_FUNCTION_ARGS)
+Datum
+range_bucket_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   RangeBucketState *state;
@@ -356,7 +357,8 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = range_bucket_state_make(NULL, bounds, size, origin);
     /* Build a tuple description for the function output */
