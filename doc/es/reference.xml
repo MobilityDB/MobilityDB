@@ -1319,10 +1319,6 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
-		</sect2>
-
-		<sect2>
-			<title>Relaciones espaciales</title>
 
 			<sect3>
 				<title>Relaciones posibles </title>
@@ -1373,6 +1369,28 @@
 					</listitem>
 				</itemizedlist>
 			</sect3>
+		</sect2>
+
+		<sect2>
+			<title>Funciones de similaridad</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Obtener la distancia de Fréchet discreta entre dos valores temporales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Obtener la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+				</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2>

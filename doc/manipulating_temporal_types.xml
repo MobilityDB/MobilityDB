@@ -1976,6 +1976,95 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 	</sect1>
 
 	<sect1>
+		<title>Similarity Functions</title>
+		<itemizedlist>
+			<listitem id="frechetDistance">
+				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
+				<para>Get the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink> between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting xml:space="preserve">
+SELECT frechetDistance(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- 0.5
+SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]')::numeric, 6);
+-- 1.414214
+</programlisting>
+			</listitem>
+
+			<listitem id="frechetDistancePath">
+				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<para>Get the correspondences between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para>This function requires to allocate in memory a distance matrix whose size is quadratic in the number of instants of the temporal values. Therefore, the function will fail for temporal values with large number of instants depending on the available memory.</para>
+				<programlisting xml:space="preserve">
+SELECT frechetDistancePath(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- (0,0)
+   (1,0)
+   (2,1)
+   (3,2)
+   (4,2)
+SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]');
+-- (0,0)
+   (1,1)
+   (2,1)
+   (3,1)
+   (4,2)
+</programlisting>
+			</listitem>
+
+			<listitem id="dynamicTimeWarp">
+				<indexterm><primary><varname>dynamicTimeWarp</varname></primary></indexterm>
+				<para>Get the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;</para>
+				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para>This function has a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, its time complexity is quadratic in the number of instants of the temporal values. Therefore, the function will require considerable time for temporal values with large number of instants.</para>
+				<programlisting xml:space="preserve">
+SELECT dynamicTimeWarp(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- 2
+SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]')::numeric, 6);
+-- 3.380776
+</programlisting>
+			</listitem>
+
+			<listitem id="dynamicTimeWarpPath">
+				<indexterm><primary><varname>dynamicTimeWarpPath</varname></primary></indexterm>
+				<para>Get the correspondences between two temporal values with respect to the discrete Fréchet distance &Z_support; &geography_support; &SRF;</para>
+				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para>This function requires to allocate a distance matrix which is quadratic in the size of the number of instants of the temporal values. Therefore, memory allocation will fail for temporal values with large number of instants.</para>
+				<programlisting xml:space="preserve">
+SELECT dynamicTimeWarpPath(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- (0,0)
+   (1,0)
+   (2,1)
+   (3,2)
+   (4,2)
+SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]');
+-- (0,0)
+   (1,1)
+   (2,1)
+   (3,1)
+   (4,2)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1>
 		<title>Multidimensional Tiling</title>
 		<para>Multidimensional tiling is the mechanism used to partition the domain of temporal values in buckets or tiles of varying number of dimensions. In the case of a single dimension, the domain can be partitioned by value or by time using buckets of the same size or duration, respectively. For temporal numbers, the domain can be partitioned in two-dimensional tiles of the same size for the value dimension and the same duration for the time dimension. For temporal points, the domain can be partitioned in space in two- or three-dimensional tiles, depending on the number of dimensions of the spatial coordinates. Finally, for temporal points, the domain can be partitioned in space and time using three- or four-dimensional tiles. Furthermore, the temporal values can also be fragmented according to a multidimensional grid defined over the underlying domain.</para>
 

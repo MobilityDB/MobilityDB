@@ -1,0 +1,112 @@
+SELECT round(MAX(frechetDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 97.000000
+(1 row)
+
+SELECT round(MAX(frechetDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 96.545676
+(1 row)
+
+SELECT round(MAX(frechetDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 98.393268
+(1 row)
+
+SELECT round(MAX(frechetDistance(t1.temp, t2.temp))::numeric, 6) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+   round   
+-----------
+ 98.364005
+(1 row)
+
+WITH temp AS (
+  SELECT frechetDistancePath(t1.temp, t2.temp) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 61488
+(1 row)
+
+WITH temp AS (
+  SELECT frechetDistancePath(t1.temp, t2.temp) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 74440
+(1 row)
+
+WITH temp AS (
+  SELECT frechetDistancePath(t1.temp, t2.temp) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 63253
+(1 row)
+
+WITH temp AS (
+  SELECT frechetDistancePath(t1.temp, t2.temp) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 75733
+(1 row)
+
+SELECT round(MAX(dynamicTimeWarp(t1.temp, t2.temp))::numeric, 6) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k;
+    round    
+-------------
+ 2231.000000
+(1 row)
+
+SELECT round(MAX(dynamicTimeWarp(t1.temp, t2.temp))::numeric, 6) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+    round    
+-------------
+ 2583.512371
+(1 row)
+
+SELECT round(MAX(dynamicTimeWarp(t1.temp, t2.temp))::numeric, 6) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.k < t2.k;
+    round    
+-------------
+ 2282.788389
+(1 row)
+
+SELECT round(MAX(dynamicTimeWarp(t1.temp, t2.temp))::numeric, 6) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k;
+    round    
+-------------
+ 2755.127210
+(1 row)
+
+WITH temp AS (
+  SELECT dynamicTimeWarpPath(t1.temp, t2.temp) FROM tbl_tint t1, tbl_tint t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 61440
+(1 row)
+
+WITH temp AS (
+  SELECT dynamicTimeWarpPath(t1.temp, t2.temp) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 74418
+(1 row)
+
+WITH temp AS (
+  SELECT dynamicTimeWarpPath(t1.temp, t2.temp) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 63147
+(1 row)
+
+WITH temp AS (
+  SELECT dynamicTimeWarpPath(t1.temp, t2.temp) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.k < t2.k )
+SELECT COUNT(*) FROM temp;
+ count 
+-------
+ 75759
+(1 row)
+

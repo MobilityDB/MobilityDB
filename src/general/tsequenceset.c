@@ -1205,18 +1205,30 @@ tsequenceset_inst_n(const TSequenceSet *ts, int n)
 /**
  * Returns the distinct instants of the temporal value
  */
-ArrayType *
-tsequenceset_instants_array(const TSequenceSet *ts)
+const TInstant **
+tsequenceset_instants(const TSequenceSet *ts, int *count)
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * ts->totalcount);
+  const TInstant **result = palloc(sizeof(TInstant *) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     for (int j = 0; j < seq->count; j++)
-      instants[k++] = tsequence_inst_n(seq, j);
+      result[k++] = tsequence_inst_n(seq, j);
   }
-  int count = tinstantarr_remove_duplicates(instants, k);
+  *count = ts->totalcount;
+  return result;
+}
+
+/**
+ * Returns the distinct instants of the temporal value
+ */
+ArrayType *
+tsequenceset_instants_array(const TSequenceSet *ts)
+{
+  int count;
+  const TInstant **instants = tsequenceset_instants(ts, &count);
+  count = tinstantarr_remove_duplicates(instants, ts->totalcount);
   ArrayType *result = temporalarr_to_array((const Temporal **)instants, count);
   pfree(instants);
   return result;

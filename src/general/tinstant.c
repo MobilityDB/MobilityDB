@@ -488,6 +488,18 @@ tinstant_timestamps(const TInstant *inst)
 }
 
 /**
+ * Returns the instants of the temporal value as a C array
+ */
+const TInstant **
+tinstant_instants(const TInstant *inst, int *count)
+{
+  const TInstant **result = palloc(sizeof(TInstant *));
+  result[0] = inst;
+  *count = 1;
+  return result;
+}
+
+/**
  * Returns the temporal value as an array
  */
 ArrayType *

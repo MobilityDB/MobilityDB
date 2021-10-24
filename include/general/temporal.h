@@ -542,6 +542,8 @@ extern Datum temporal_timestamps(PG_FUNCTION_ARGS);
 extern Datum temporal_shift(PG_FUNCTION_ARGS);
 
 extern ArrayType *temporal_timestamps_internal(const Temporal *temp);
+extern const TInstant **temporal_instants_internal(const Temporal *temp,
+  int *count);
 
 extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);

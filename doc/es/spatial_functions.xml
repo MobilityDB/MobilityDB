@@ -465,7 +465,7 @@
 
 				<listitem id="simplify">
 					<indexterm><primary><varname>simplify</varname></primary></indexterm>
-					<para>Simplificar un punto temporal usando una generalización del algoritmo de Douglas-Peucker &Z_support;</para>
+					<para>Simplificar un punto temporal usando una generalización del <ulink url="https://es.wikipedia.org/wiki/Algoritmo_de_Ramer%E2%80%93Douglas%E2%80%93Peucker">algoritmo de Douglas-Peucker</ulink> &Z_support;</para>
 					<para><varname>simplify(tpoint,distance float): tpoint</varname></para>
 					<para><varname>simplify(tpoint,distance float,speed float): tpoint</varname></para>
 					<para>La primera versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento, que se especifica en las unidades del sistema de coordenadas. La segunda versión elimina los puntos cuya distancia es menor que la distancia pasada como segundo argumento siempre que la diferencia de velocidad entre el punto y el punto correspondiente en la versión simplificada sea menor que la velocidad pasada como tercer argumento, que se especifica en unidades por segundo. Observe que la simplificación se aplica sólo a secuencias temporales o conjuntos de secuencias con interpolación lineal. En todos los demás casos, se devuelve una copia del punto temporal dado.</para>

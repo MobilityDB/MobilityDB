@@ -69,36 +69,36 @@
  */
 const char *_type_names[] =
 {
-  "bool",
-  "double2",
-  "double3",
-  "double4",
-  "float8",
-  "floatrange",
-  "int4",
-  "intrange",
-  "period",
-  "periodset",
-  "stbox",
-  "tbool",
-  "tbox",
-  "tdouble2",
-  "tdouble3",
-  "tdouble4",
-  "text",
-  "tfloat",
-  "timestampset",
-  "timestamptz",
-  "tint",
-  "tstzrange",
-  "ttext",
-  "geometry",
-  "geography",
-  "tgeompoint",
-  "tgeogpoint",
-  "npoint",
-  "nsegment",
-  "tnpoint"
+  [T_BOOL] = "bool",
+  [T_DOUBLE2] = "double2",
+  [T_DOUBLE3] = "double3",
+  [T_DOUBLE4] = "double4",
+  [T_FLOAT8] = "float8",
+  [T_FLOATRANGE] = "floatrange",
+  [T_INT4] = "int4",
+  [T_INTRANGE] = "intrange",
+  [T_PERIOD] = "period",
+  [T_PERIODSET] = "periodset",
+  [T_STBOX] = "stbox",
+  [T_TBOOL] = "tbool",
+  [T_TBOX] = "tbox",
+  [T_TDOUBLE2] = "tdouble2",
+  [T_TDOUBLE3] = "tdouble3",
+  [T_TDOUBLE4] = "tdouble4",
+  [T_TEXT] = "text",
+  [T_TFLOAT] = "tfloat",
+  [T_TIMESTAMPSET] = "timestampset",
+  [T_TIMESTAMPTZ] = "timestamptz",
+  [T_TINT] = "tint",
+  [T_TSTZRANGE] = "tstzrange",
+  [T_TTEXT] = "ttext",
+  [T_GEOMETRY] = "geometry",
+  [T_GEOGRAPHY] = "geography",
+  [T_TGEOMPOINT] = "tgeompoint",
+  [T_TGEOGPOINT] = "tgeogpoint",
+  [T_NPOINT] = "npoint",
+  [T_NSEGMENT] = "nsegment",
+  [T_TNPOINT] = "tnpoint"
 };
 
 /**
@@ -108,36 +108,36 @@ const char *_type_names[] =
  */
 const char *_op_names[] =
 {
-  "=",  /* EQ_OP */
-  "<>",  /* NE_OP */
-  "<",  /* LT_OP */
-  "<=",  /* LE_OP */
-  ">",  /* GT_OP */
-  ">=",  /* GE_OP */
-  "-|-",  /* ADJACENT_OP */
-  "+",  /* UNION_OP */
-  "-",  /* MINUS_OP */
-  "*",  /* INTERSECT_OP */
-  "&&",  /* OVERLAPS_OP */
-  "@>",  /* CONTAINS_OP */
-  "<@",  /* CONTAINED_OP */
-  "~=",  /* SAME_OP */
-  "<<",  /* LEFT_OP */
-  "&<",  /* OVERLEFT_OP */
-  ">>",  /* RIGHT_OP */
-  "&>",  /* OVERRIGHT_OP */
-  "<<|",  /* BELOW_OP */
-  "&<|",  /* OVERBELOW_OP */
-  "|>>",  /* ABOVE_OP */
-  "|&>",  /* OVERABOVE_OP */
-  "<</",  /* FRONT_OP */
-  "&</",  /* OVERFRONT_OP */
-  "/>>",  /* BACK_OP */
-  "/&>",  /* OVERBACK_OP */
-  "<<#",  /* BEFORE_OP */
-  "&<#",  /* OVERBEFORE_OP */
-  "#>>",  /* AFTER_OP */
-  "#&>"  /* OVERAFTER_OP */
+  [EQ_OP] = "=",
+  [NE_OP] = "<>",
+  [LT_OP] = "<",
+  [LE_OP] = "<=",
+  [GT_OP] = ">",
+  [GE_OP] = ">=",
+  [ADJACENT_OP] = "-|-",
+  [UNION_OP] = "+",
+  [MINUS_OP] = "-",
+  [INTERSECT_OP] = "*",
+  [OVERLAPS_OP] = "&&",
+  [CONTAINS_OP] = "@>",
+  [CONTAINED_OP] = "<@",
+  [SAME_OP] = "~=",
+  [LEFT_OP] = "<<",
+  [OVERLEFT_OP] = "&<",
+  [RIGHT_OP] = ">>",
+  [OVERRIGHT_OP] = "&>",
+  [BELOW_OP] = "<<|",
+  [OVERBELOW_OP] = "&<|",
+  [ABOVE_OP] = "|>>",
+  [OVERABOVE_OP] = "|&>",
+  [FRONT_OP] = "<</",
+  [OVERFRONT_OP] = "&</",
+  [BACK_OP] = "/>>",
+  [OVERBACK_OP] = "/&>",
+  [BEFORE_OP] = "<<#",
+  [OVERBEFORE_OP] = "&<#",
+  [AFTER_OP] = "#>>",
+  [OVERAFTER_OP] = "#&>"
 };
 
 /*****************************************************************************
@@ -170,7 +170,7 @@ populate_temptype_cache()
 
   PG_TRY();
   {
-    bzero(_temptype_cache, sizeof(_temptype_cache));
+    memset(_temptype_cache, 0, sizeof(_temptype_cache));
     /*
      * This fetches the pre-computed temporal type cache from the catalog
      * where it is stored in a table.
@@ -308,7 +308,7 @@ populate_operators()
   PG_TRY();
   {
     populate_types();
-    bzero(_op_oids, sizeof(_op_oids));
+    memset(_op_oids, 0, sizeof(_op_oids));
     /*
      * This fetches the pre-computed operator cache from the catalog where
      * it is stored in a table. See the fill_opcache function below.

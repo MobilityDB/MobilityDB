@@ -1374,6 +1374,28 @@
 		</sect2>
 
 		<sect2>
+			<title>Similarity Functions</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="frechetDistance"><varname>frechetDistance</varname></link>: Get the discrete Fréchet distance between two temporal values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="frechetDistancePath"><varname>frechetDistancePath</varname></link>: Get the correspondence pairs between two temporal values with respect to the discrete Fréchet distance</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarp"><varname>dynamicTimeWarp</varname></link>: Get the Dynamic Time Warp distance between two temporal values</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="dynamicTimeWarpPath"><varname>dynamicTimeWarpPath</varname></link>: Get the correspondence pairs between two temporal values with respect to the Dynamic Time Warp distance</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Multidimensional Tiling</title>
 
 			<sect3>

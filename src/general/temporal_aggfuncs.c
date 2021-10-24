@@ -491,7 +491,8 @@ static SkipList *
 tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TInstantSet *ti, datum_func2 func)
 {
-  const TInstant **instants = tinstantset_instants(ti);
+  int count;
+  const TInstant **instants = tinstantset_instants(ti, &count);
   SkipList *result;
   if (! state)
     result = skiplist_make(fcinfo, (void **) instants, ti->count, TEMPORAL);

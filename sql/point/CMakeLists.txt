@@ -16,6 +16,7 @@ SET(LOCAL_FILES
   58_tpoint_boxops
   60_tpoint_posops
   62_tpoint_distance
+  63_tpoint_similarity
   64_tpoint_aggfuncs
   66_tpoint_spatialrels
   68_tpoint_tempspatialrels

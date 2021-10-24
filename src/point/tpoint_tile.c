@@ -285,8 +285,8 @@ coord_print(int *coords, int numdims)
  * @param[in] coords1, coords2 Coordinates of the input tiles
  * @param[in] numdims Number of dimensions of the grid
  */
-void
-bresenham(BitMatrix *bm, int *coords1, int *coords2, int numdims)
+static void
+bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
 {
   int i, j, delta[MAXDIMS], next[MAXDIMS], p[MAXDIMS], coords[MAXDIMS],
     neighbors[MAXDIMS];
@@ -668,7 +668,14 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all the grid tiles */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Allocate box */
   STBOX *box = (STBOX *) palloc0(sizeof(STBOX));
@@ -887,7 +894,7 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     tpointinst_get_coords(coords2, inst2, hasz, hast, state);
-    bresenham(bm, coords1, coords2, numdims);
+    bresenham_bm(bm, coords1, coords2, numdims);
   }
   return;
 }
@@ -1058,7 +1065,15 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     memset(&box, 0, sizeof(STBOX));
     bool found = stbox_tile_state_get(&box, state);
     if (! found)
+    {
+      /* Switch to memory context appropriate for multiple function calls */
+      MemoryContext oldcontext =
+        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+      if (state->bm) pfree(state->bm);
+      pfree(state);
+      MemoryContextSwitchTo(oldcontext);
       SRF_RETURN_DONE(funcctx);
+    }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
     Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
@@ -1196,7 +1211,15 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     memset(&box, 0, sizeof(STBOX));
     bool found = stbox_tile_state_get(&box, state);
     if (! found)
+    {
+      /* Switch to memory context appropriate for multiple function calls */
+      MemoryContext oldcontext =
+        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+      if (state->bm) pfree(state->bm);
+      pfree(state);
+      MemoryContextSwitchTo(oldcontext);
       SRF_RETURN_DONE(funcctx);
+    }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
     Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);

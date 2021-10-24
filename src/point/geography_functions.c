@@ -508,7 +508,7 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
  * @param[in] p1,p2 3D-space points we are interpolating between
  * @param[in] v1,v2 real values and z/m coordinates
  * @param[in] f Fraction
- * @param[out] p Result 
+ * @param[out] p Result
  */
 void
 interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
@@ -929,7 +929,7 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   double za = 0.0, zb = 0.0;
   double distance,
     length,   /* Used for computing lengths */
-    seglength, /* length of the segment where the closest point is located */
+    seglength = 0, /* length of the segment where the closest point is located */
     partlength, /* length from the beginning of the point array to the closest point */
     totlength;  /* length of the point array */
 
