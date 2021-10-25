@@ -369,8 +369,6 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
   g1 = PG_GETARG_GSERIALIZED_P(0);
   g2 = PG_GETARG_GSERIALIZED_P(1);
 
-  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
-
   /* Return NULL on empty arguments. */
   if ( gserialized_is_empty(g1) || gserialized_is_empty(g2) )
   {
@@ -378,6 +376,8 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY(g2, 1);
     PG_RETURN_NULL();
   }
+
+  ensure_same_srid(gserialized_get_srid(g1), gserialized_get_srid(g2));
 
   point = geography_tree_closestpoint(g1, g2, FP_TOLERANCE);
 
@@ -705,6 +705,13 @@ Datum geography_line_substring(PG_FUNCTION_ARGS)
   POINTARRAY* opa;
   GSERIALIZED *result;
 
+  /* Return NULL on empty argument. */
+  if ( gserialized_is_empty(gs) )
+  {
+    PG_FREE_IF_COPY(gs, 0);
+    PG_RETURN_NULL();
+  }
+
   if ( from_fraction < 0 || from_fraction > 1 )
   {
     elog(ERROR,"line_interpolate_point: 2nd arg isn't within [0,1]");
@@ -865,6 +872,13 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
   POINTARRAY* opa;
   SPHEROID s;
   GSERIALIZED *result;
+
+  /* Return NULL on empty argument. */
+  if ( gserialized_is_empty(gs) )
+  {
+    PG_FREE_IF_COPY(gs, 0);
+    PG_RETURN_NULL();
+  }
 
   if ( distance_fraction < 0 || distance_fraction > 1 )
   {
@@ -1036,10 +1050,10 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
     totlength += length;
 
     /* Add this segment length to the partial length */
-    if (i < seg)
+    if (i - 1 < seg)
       partlength += length;
-    else if (i == seg)
-      /* Save segment length */
+    else if (i - 1 == seg)
+      /* Save segment length for computing the final value of partlength */
       seglength = length;
 
     /* B gets incremented in the next loop, so we save the value here */
@@ -1113,6 +1127,14 @@ Datum geography_line_locate_point(PG_FUNCTION_ARGS)
   POINTARRAY *pa;
   POINT4D p, p_proj;
   double ret;
+
+  /* Return NULL on empty argument. */
+  if ( gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+  {
+    PG_FREE_IF_COPY(gs1, 0);
+    PG_FREE_IF_COPY(gs2, 1);
+    PG_RETURN_NULL();
+  }
 
   /* Initialize spheroid */
   /* We currently cannot use the following statement since PROJ4 API is not

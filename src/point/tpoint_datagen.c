@@ -98,14 +98,14 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
   return result / RADIANS_PER_DEGREE;
 }
 
-  /* Helper macro to add an instant containing the current position */
-#define ADD_CURRENT_POSITION                        \
-  do {                                  \
-      lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);       \
-      point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));    \
-      lwpoint_free(lwpoint);                      \
+/* Helper macro to add an instant containing the current position */
+#define ADD_CURRENT_POSITION  \
+  do {  \
+      lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);  \
+      point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));  \
+      lwpoint_free(lwpoint);  \
       instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));  \
-      pfree(DatumGetPointer(point));                  \
+      pfree(DatumGetPointer(point));  \
   } while (0)
 
 /**
@@ -137,9 +137,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
   double P_EVENT_ACC = 12.0;
 
   /* Probabilities for forced stops at crossings by road type transition
-   * defined by a matrix where lines and columns are ordered by
-   * side road (S), main road (M), freeway (F). The OSM highway types must be
-   * mapped to one of these categories using the function berlinmod_roadCategory */
+   * defined by a matrix where rows and columns are ordered by side road (S),
+   * main road (M), freeway (F). The OSM highway types must be mapped to one
+   * of these categories using the function berlinmod_roadCategory */
   double P_DEST_STOPPROB[3][3] =
     {{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}};
   /* Mean waiting time in seconds using an exponential distribution.

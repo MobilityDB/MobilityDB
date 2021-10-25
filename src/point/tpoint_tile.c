@@ -439,8 +439,8 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
  * dimension is tiled.
  */
 static STboxGridState *
-stbox_tile_state_make(Temporal *temp, STBOX *box, double size,
-  int64 tunits, POINT3DZ sorigin, TimestampTz torigin)
+stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
+  POINT3DZ sorigin, TimestampTz torigin)
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
@@ -1027,8 +1027,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
       count[1] = ( (state->box.ymax - state->box.ymin) / state->size ) + 1;
       if (MOBDB_FLAGS_GET_Z(state->box.flags))
         count[numdims++] = ( (state->box.zmax - state->box.zmin) / state->size ) + 1;
-      if (state->tunits)
-        count[numdims++] = ( (state->box.tmax - state->box.tmin) / state->tunits ) + 1;
+      /* We are sure that there is no additional time dimension */
       state->bm = bitmatrix_make(count, numdims);
       tpoint_set_tiles(state->bm, temp, state);
     }
