@@ -89,6 +89,7 @@ extern PeriodSet *tinstant_get_time(const TInstant *inst);
 extern void tinstant_period(Period *p, const TInstant *inst);
 extern ArrayType *tinstant_sequences_array(const TInstant *inst);
 extern ArrayType *tinstant_timestamps(const TInstant *inst);
+extern const TInstant **tinstant_instants(const TInstant *inst, int *count);
 extern ArrayType *tinstant_instants_array(const TInstant *inst);
 extern TInstant *tinstant_shift(const TInstant *inst, const Interval *interval);
 

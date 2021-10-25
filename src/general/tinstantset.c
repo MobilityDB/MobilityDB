@@ -804,11 +804,12 @@ tinstantset_sequences_array(const TInstantSet *ti)
  * Returns the instants of the temporal value as a C array
  */
 const TInstant **
-tinstantset_instants(const TInstantSet *ti)
+tinstantset_instants(const TInstantSet *ti, int *count)
 {
   const TInstant **result = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
     result[i] = tinstantset_inst_n(ti, i);
+  *count = ti->count;
   return result;
 }
 
@@ -818,9 +819,8 @@ tinstantset_instants(const TInstantSet *ti)
 ArrayType *
 tinstantset_instants_array(const TInstantSet *ti)
 {
-  const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
-    instants[i] = tinstantset_inst_n(ti, i);
+  int count;
+  const TInstant **instants = tinstantset_instants(ti, &count);
   ArrayType *result = temporalarr_to_array((const Temporal **) instants,
     ti->count);
   pfree(instants);

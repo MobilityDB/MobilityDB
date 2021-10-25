@@ -134,6 +134,8 @@ extern const TSequence **tsequenceset_sequences(const TSequenceSet *ts);
 extern ArrayType *tsequenceset_sequences_array(const TSequenceSet *ts);
 extern int tsequenceset_num_instants(const TSequenceSet *ts);
 extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ts, int n);
+extern const TInstant **tsequenceset_instants(const TSequenceSet *ts,
+  int *count);
 extern ArrayType *tsequenceset_instants_array(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_start_timestamp(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);

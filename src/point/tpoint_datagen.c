@@ -10,20 +10,20 @@
  * Copyright (c) 2001-2021, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -98,14 +98,14 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
   return result / RADIANS_PER_DEGREE;
 }
 
-  /* Helper macro to add an instant containing the current position */
-#define ADD_CURRENT_POSITION                        \
-  do {                                  \
-      lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);       \
-      point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));    \
-      lwpoint_free(lwpoint);                      \
+/* Helper macro to add an instant containing the current position */
+#define ADD_CURRENT_POSITION  \
+  do {  \
+      lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);  \
+      point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));  \
+      lwpoint_free(lwpoint);  \
       instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));  \
-      pfree(DatumGetPointer(point));                  \
+      pfree(DatumGetPointer(point));  \
   } while (0)
 
 /**
@@ -137,9 +137,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
   double P_EVENT_ACC = 12.0;
 
   /* Probabilities for forced stops at crossings by road type transition
-   * defined by a matrix where lines and columns are ordered by
-   * side road (S), main road (M), freeway (F). The OSM highway types must be
-   * mapped to one of these categories using the function berlinmod_roadCategory */
+   * defined by a matrix where rows and columns are ordered by side road (S),
+   * main road (M), freeway (F). The OSM highway types must be mapped to one
+   * of these categories using the function berlinmod_roadCategory */
   double P_DEST_STOPPROB[3][3] =
     {{0.33, 0.66, 1.00}, {0.33, 0.50, 0.66}, {0.10, 0.33, 0.05}};
   /* Mean waiting time in seconds using an exponential distribution.
@@ -173,9 +173,9 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
   /* Time to travel the fraction given the current speed */
   double travelTime;
   /* Angle between the current segment and the next one */
-  double alpha;
+  double alpha = 0; /* make compiler quiet */
   /* Maximum speed when approaching a turn between two segments */
-  double maxSpeedTurn;
+  double maxSpeedTurn = 0; /* make compiler quiet */
   /* Maximum speed and new speed of the car */
   double maxSpeed, newSpeed;
   /* Number in [0,1] used for determining the next point */

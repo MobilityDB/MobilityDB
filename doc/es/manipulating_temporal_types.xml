@@ -1976,6 +1976,95 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 		<para>Refiérase a la <xref linkend="box_topo_operators" /> y a la <xref linkend="box_relpos_operators" /> para los operadores de cuadro delimitador.</para>
 	</sect1>
 
+	<sect1>
+		<title>Funciones de similaridad</title>
+		<itemizedlist>
+			<listitem id="frechetDistance">
+				<indexterm><primary><varname>frechetDistance</varname></primary></indexterm>
+				<para>Obtener la <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">distancia de Fréchet</ulink> discreta entre dos valores temporales &Z_support; &geography_support;</para>
+				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para>Esta función tiene una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, la función requerirá un tiempo considerable para valores temporales con gran número de instantes.</para>
+				<programlisting xml:space="preserve">
+SELECT frechetDistance(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- 0.5
+SELECT round(frechetDistance(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]')::numeric, 6);
+-- 1.414214
+</programlisting>
+			</listitem>
+
+			<listitem id="frechetDistancePath">
+				<indexterm><primary><varname>frechetDistancePath</varname></primary></indexterm>
+				<para>Obtener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta &Z_support; &geography_support; &SRF;</para>
+				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para>Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible.</para>
+				<programlisting xml:space="preserve">
+SELECT frechetDistancePath(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- (0,0)
+   (1,0)
+   (2,1)
+   (3,2)
+   (4,2)
+SELECT frechetDistancePath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]');
+-- (0,0)
+   (1,1)
+   (2,1)
+   (3,1)
+   (4,2)
+</programlisting>
+			</listitem>
+
+			<listitem id="dynamicTimeWarp">
+				<indexterm><primary><varname>dynamicTimeWarp</varname></primary></indexterm>
+				<para>Obtener la distancia de distorsión de tiempo dinámica (<ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> o DTW) entre dos valores temporales &Z_support; &geography_support;</para>
+				<para><varname>dynamicTimeWarp({tnumber, tgeo}, {tnumber, tgeo}): float</varname></para>
+				<para>Esta función tiene una complejidad de espacio lineal ya que solo dos filas de la matriz de distancia son asignadas en la memoria. Sin embargo, su complejidad de tiempo es cuadrática en el número de instantes de los valores temporales. Por lo tanto, la función requerirá un tiempo considerable para valores temporales con gran número de instantes.</para>
+				<programlisting xml:space="preserve">
+SELECT dynamicTimeWarp(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- 2
+SELECT round(dynamicTimeWarp(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]')::numeric, 6);
+-- 3.380776
+</programlisting>
+			</listitem>
+
+			<listitem id="dynamicTimeWarpPath">
+				<indexterm><primary><varname>dynamicTimeWarpPath</varname></primary></indexterm>
+				<para>btener las parejas de correspondencia entre dos valores temporales con respecto a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp o DTW) &Z_support; &geography_support; &SRF;</para>
+				<para><varname>dynamicTimeWarpPath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para><varname>frechetDistancePath({tnumber, tgeo}, {tnumber, tgeo}): pairs</varname></para>
+				<para>Esta función requiere ubicar en memoria una matriz de distancias cuyo tamaño es cuadrático en el número de instantes de los valores temporales. Por tanto, la función fallará para valores temporales con gran número de instantes dependiendo de la memoria disponible.</para>
+				<programlisting xml:space="preserve">
+SELECT dynamicTimeWarpPath(tfloat '[1@2012-01-01, 3@2012-01-03, 1@2012-01-06]',
+ tfloat '[1@2012-01-01, 1.5@2012-01-02, 2.5@2012-01-03, 1.5@2012-01-04, 1.5@2012-01-05]');
+-- (0,0)
+   (1,0)
+   (2,1)
+   (3,2)
+   (4,2)
+SELECT dynamicTimeWarpPath(tgeompoint '[Point(1 1)@2012-01-01, Point(3 3)@2012-01-03,
+  Point(1 1)@2012-01-05]', tgeompoint '[Point(1.1 1.1)@2012-01-01,
+  Point(2.5 2.5)@2012-01-02, Point(4 4)@2012-01-03, Point(3 3)@2012-01-04,
+  Point(1.5 2)@2012-01-05]');
+-- (0,0)
+   (1,1)
+   (2,1)
+   (3,1)
+   (4,2)
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
 
 	<sect1>
 		<title>Mosaicos multidimensionales</title>

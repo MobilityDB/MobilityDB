@@ -271,7 +271,7 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   /* We know that this function is called only for linear segments */
   Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
   Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
-  *value = hasz ? 
+  *value = hasz ?
     geom_distance3d(value1, value2) : geom_distance2d(value1, value2);
   return true;
 }
@@ -571,7 +571,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
 static TInstant *
 NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
 {
-  const TInstant *inst;
+  const TInstant *inst = NULL; /* make compiler quiet */
   NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
   return tinstant_copy(inst);
 }
@@ -587,7 +587,7 @@ NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
 static TInstant *
 NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
-  const TInstant *inst;
+  const TInstant *inst = NULL; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
@@ -745,8 +745,8 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 static TInstant *
 NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
-  Datum closest, point;
-  TimestampTz t, t1;
+  Datum point, closest = PointerGetDatum(NULL); /* make compiler quiet */
+  TimestampTz t = 0, t1; /* make compiler quiet */
   bool tofree = false, tofree1;
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)

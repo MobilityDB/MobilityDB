@@ -1712,7 +1712,7 @@ tinstant_get_value(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   if (temp->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal instant")));
+      errmsg("The temporal value must be of subtype instant")));
 
   TInstant *inst = (TInstant *) temp;
   Datum result = tinstant_value_copy(inst);
@@ -1763,7 +1763,7 @@ tinstant_timestamp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   if (temp->subtype != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal instant")));
+      errmsg("The temporal value must be of subtype instant")));
 
   TimestampTz result = ((TInstant *) temp)->t;
   PG_FREE_IF_COPY(temp, 0);
@@ -2336,6 +2336,25 @@ temporal_instant_n(PG_FUNCTION_ARGS)
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
+}
+
+/**
+ * Returns the instants of the temporal value as a C array
+ */
+const TInstant **
+temporal_instants_internal(const Temporal *temp, int *count)
+{
+  const TInstant **result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tinstant_instants((TInstant *) temp, count);
+  else if (temp->subtype == INSTANTSET)
+    result = tinstantset_instants((TInstantSet *) temp, count);
+  else if (temp->subtype == SEQUENCE)
+    result = tsequence_instants((TSequence *) temp, count);
+  else /* temp->subtype == SEQUENCESET */
+    result = tsequenceset_instants((TSequenceSet *) temp, count);
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(temporal_instants);

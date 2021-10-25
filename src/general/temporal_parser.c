@@ -244,8 +244,8 @@ basetype_parse(char **str, Oid basetype)
 TBOX *
 tbox_parse(char **str)
 {
-  double xmin, xmax;
-  TimestampTz tmin, tmax;
+  double xmin = 0, xmax = 0; /* keep compiler quiet */
+  TimestampTz tmin = 0, tmax = 0; /* keep compiler quiet */
   bool hasx = false, hast = false;
 
   p_whitespace(str);

@@ -14,6 +14,7 @@ add_library(general OBJECT
   temporal_boxops.c
   temporal.c
   temporal_compops.c
+  temporal_similarity.c
   temporal_gist.c
   temporal_parser.c
   temporal_posops.c

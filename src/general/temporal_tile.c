@@ -71,7 +71,7 @@ int_bucket_internal(int value, int size, int offset)
   assert(size > 0);
   if (offset != 0)
   {
-    /* 
+    /*
      * We need to ensure that the value is in range _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
@@ -116,7 +116,7 @@ float_bucket_internal(double value, double size, double offset)
   assert(size > 0.0);
   if (offset != 0)
   {
-    /* 
+    /*
      * We need to ensure that the value is in range _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * value is at least the minimum integer value (PG_INT32_MIN) and when
@@ -188,11 +188,10 @@ TimestampTz
 timestamptz_bucket_internal(TimestampTz timestamp, int64 size,
   TimestampTz offset)
 {
-  // NEW VERSION
   assert(size > 0);
   if (offset != 0)
   {
-    /* 
+    /*
      * We need to ensure that the timestamp is in range _after_ the offset is
      * applied: when the offset is positive we need to make sure the resultant
      * time is at least the minimum time value value (DT_NOBEGIN) and when
@@ -291,7 +290,7 @@ range_bucket_state_make(Temporal *temp, RangeType *r, Datum size, Datum origin)
   state->done = false;
   state->i = 1;
   state->temp = temp;
-  state->basetypid = (r->rangetypid == type_oid(T_INTRANGE)) ? 
+  state->basetypid = (r->rangetypid == type_oid(T_INTRANGE)) ?
     INT4OID : FLOAT8OID;
   state->size = size;
   state->origin = origin;
@@ -328,7 +327,8 @@ PG_FUNCTION_INFO_V1(range_bucket_list);
 /**
  * Generate a range bucket list.
  */
-Datum range_bucket_list(PG_FUNCTION_ARGS)
+Datum
+range_bucket_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   RangeBucketState *state;
@@ -356,13 +356,15 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
     /* Switch to memory context appropriate for multiple function calls */
-    MemoryContext oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Create function state */
     funcctx->user_fctx = range_bucket_state_make(NULL, bounds, size, origin);
     /* Build a tuple description for the function output */
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(bounds, 0);
   }
 
   /* Stuff done on every call of the function */
@@ -371,7 +373,14 @@ Datum range_bucket_list(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all buckets */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store index */
   tuple_arr[0] = Int32GetDatum(state->i);
@@ -473,7 +482,8 @@ PG_FUNCTION_INFO_V1(period_bucket_list);
 /**
  * Generate a period bucket list.
  */
-Datum period_bucket_list(PG_FUNCTION_ARGS)
+Datum
+period_bucket_list(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   PeriodBucketState *state;
@@ -512,8 +522,14 @@ Datum period_bucket_list(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all buckets */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
-
+  }
   /* Store bucket time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
@@ -607,7 +623,7 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
 {
   TInstant **result = palloc(sizeof(TInstant *));
   TimestampTz *times = palloc(sizeof(TimestampTz));
-  result[0] = (TInstant *) inst;
+  result[0] = tinstant_copy(inst);
   times[0] = timestamptz_bucket_internal(inst->t, tunits, torigin);
   *buckets = times;
   *newcount = 1;
@@ -821,7 +837,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
   TSequence **fragments = palloc(sizeof(TSequence *) * (ts->count * count));
   /* Sequences for the buckets of the sequence set */
   TSequenceSet **result = palloc(sizeof(TSequenceSet *) * count);
-  /* Variable used to adjust the start timestamp passed to the 
+  /* Variable used to adjust the start timestamp passed to the
    * tsequence_time_split1 function in the loop */
   TimestampTz lower = start;
   int k = 0, /* Number of accumulated fragments of the current time bucket */
@@ -844,7 +860,7 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
     }
     /* Number of time buckets of the current sequence */
     int l = tsequence_time_split1(sequences, &times[m], seq, lower, end,
-      tunits, count); 
+      tunits, count);
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
     {
@@ -931,7 +947,8 @@ PG_FUNCTION_INFO_V1(temporal_time_split);
 /**
  * Split a temporal value into fragments with respect to period buckets.
  */
-Datum temporal_time_split(PG_FUNCTION_ARGS)
+Datum
+temporal_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   TimeSplitState *state;
@@ -981,6 +998,7 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(temp, 0);
   }
 
   /* Stuff done on every call of the function */
@@ -989,7 +1007,16 @@ Datum temporal_time_split(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've output all the fragments */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    for (int i = 0; i < state->count; i++)
+      pfree(state->fragments[i]);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store timestamp and split */
   tuple_arr[0] = TimestampTzGetDatum(state->buckets[state->i]);
@@ -1138,7 +1165,14 @@ Datum tbox_multidim_grid(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've used up all tiles */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store tile value and time */
   tuple_arr[0] = Int32GetDatum(state->i);
@@ -1262,7 +1296,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Oid basetypid = inst->basetypid;
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
-  result[0] = (TInstant *) inst;
+  result[0] = tinstant_copy(inst);
   values[0] = number_bucket_internal(value, size, start_bucket, basetypid);
   *buckets = values;
   *newcount = 1;
@@ -1533,7 +1567,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
           lower_inc1 = lower_inc(intersect);
           upper_inc1 = upper_inc(intersect);
         }
-        else 
+        else
         {
           lower_inc1 = upper_inc(intersect);
           upper_inc1 = lower_inc(intersect);
@@ -1553,7 +1587,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         break;
       seq_no = numseqs[j]++;
       result[j * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
-        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true, 
+        k, (k > 1) ? lower_inc1 : true, (k > 1) ? upper_inc1 : true,
         LINEAR, NORMALIZE_NO);
       bounds[first] = bounds[last];
       bucket_lower = bucket_upper;
@@ -1769,6 +1803,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(temp, 0);
   }
 
   /* Stuff done on every call of the function */
@@ -1777,7 +1812,16 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've output all the fragments */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    for (int i = 0; i < state->count; i++)
+      pfree(state->fragments[i]);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store timestamp and split */
   tuple_arr[0] = state->buckets[state->i];
@@ -1937,6 +1981,7 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
+    PG_FREE_IF_COPY(temp, 0);
   }
 
   /* stuff done on every call of the function */
@@ -1945,7 +1990,16 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
   state = funcctx->user_fctx;
   /* Stop when we've output all the fragments */
   if (state->done)
+  {
+    /* Switch to memory context appropriate for multiple function calls */
+    MemoryContext oldcontext =
+      MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+    for (int i = 0; i < state->count; i++)
+      pfree(state->fragments[i]);
+    pfree(state);
+    MemoryContextSwitchTo(oldcontext);
     SRF_RETURN_DONE(funcctx);
+  }
 
   /* Store value, timestamp, and split */
   tuple_arr[0] = state->value_buckets[state->i];

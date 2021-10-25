@@ -67,7 +67,7 @@ temporal_type(Oid temptypid)
 {
   if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TINT) ||
     temptypid == type_oid(T_TFLOAT) || temptypid == type_oid(T_TTEXT) ||
-    temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) || 
+    temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOGPOINT) ||
     temptypid == type_oid(T_TNPOINT))
     return true;
   return false;
@@ -1468,7 +1468,7 @@ datum_mult(Datum l, Datum r, Oid typel, Oid typer)
 Datum
 datum_div(Datum l, Datum r, Oid typel, Oid typer)
 {
-  Datum result = 0;
+  Datum result;
   if (typel == INT4OID)
   {
     if (typer == INT4OID)

@@ -2489,7 +2489,7 @@ datum_set_precision_geometrycollection(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == COLLECTIONTYPE);
-  LWCOLLECTION *lwcol =  lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
+  LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
   int ngeoms = lwcol->ngeoms;
 #if POSTGIS_VERSION_NUMBER < 30000
   bool hasz = (bool) FLAGS_GET_Z(gs->flags);
@@ -4400,11 +4400,11 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
 static int
 gsinter_get_points(Datum *result, GSERIALIZED *gsinter)
 {
-  int type = gserialized_get_type(gsinter);
+  int gstype = gserialized_get_type(gsinter);
   /* The gserialized is of point or multipoint type */
-  assert(type == POINTTYPE || type == MULTIPOINTTYPE);
+  assert(gstype == POINTTYPE || gstype == MULTIPOINTTYPE);
   int k = 0;
-  if (type == POINTTYPE)
+  if (gstype == POINTTYPE)
   {
     result[k++] = PointerGetDatum(gserialized_copy(gsinter));
   }
@@ -4625,8 +4625,8 @@ tpointseq_interperiods(const TSequence *seq, GSERIALIZED *gsinter,
   LWGEOM *lwgeom_inter = lwgeom_from_gserialized(gsinter);
   int type = lwgeom_inter->type;
   int countinter;
-  LWPOINT *lwpoint_inter;
-  LWLINE *lwline_inter;
+  LWPOINT *lwpoint_inter = NULL; /* make compiler quiet */
+  LWLINE *lwline_inter = NULL; /* make compiler quiet */
   LWCOLLECTION *coll;
   if (type == POINTTYPE)
   {
@@ -4737,7 +4737,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
    * temporal points */
   int countsimple;
   TSequence **simpleseqs = tpointseq_make_simple1(seq, &countsimple);
-  Period **allperiods;
+  Period **allperiods = NULL; /* make compiler quiet */
   int totalcount = 0;
 
   if (countsimple == 1)
@@ -4990,7 +4990,7 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
   memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   /* Non-empty geometries have a bounding box */
-  assert(geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom)));
+  geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom));
   if (!overlaps_stbox_stbox_internal(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 

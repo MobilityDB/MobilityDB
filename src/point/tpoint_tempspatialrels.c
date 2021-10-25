@@ -455,7 +455,7 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter)
   memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   /* Non-empty geometries have a bounding box */
-  assert(geo_to_stbox_internal(&box2, gs));
+  geo_to_stbox_internal(&box2, gs);
   if (!overlaps_stbox_stbox_internal(&box1, &box2))
     return temporal_from_base(temp, datum_no, BOOLOID, STEP);
 
