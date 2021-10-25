@@ -290,7 +290,7 @@ matrix_print(double *dist, int count1, int count2)
   len += sprintf(buf+len, "\n      ");
   for (j = 0; j < count2; j++)
     len += sprintf(buf+len, "    %2d    ", j);
-  len += sprintf(buf+len, "\n");
+  sprintf(buf+len, "\n"); /* make Codacy quiet by removing last assignment */
   ereport(WARNING, (errcode(ERRCODE_WARNING), errmsg("MATRIX:\n%s", buf)));
   return;
 }

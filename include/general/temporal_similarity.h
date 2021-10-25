@@ -52,7 +52,7 @@ typedef struct
  * Struct for storing the state that persists across multiple calls generating
  * the bucket list
  */
-typedef struct SimilarityPathState
+typedef struct
 {
   bool done;
   int i;
