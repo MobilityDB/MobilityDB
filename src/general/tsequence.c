@@ -648,7 +648,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     void *bbox = ((char *) result) + pdata + pos;
     if (hastraj)
     {
-      geo_to_stbox_internal(bbox, (GSERIALIZED *)DatumGetPointer(traj));
+      geo_to_stbox_internal(bbox, (GSERIALIZED *) DatumGetPointer(traj));
       ((STBOX *)bbox)->tmin = result->period.lower;
       ((STBOX *)bbox)->tmax = result->period.upper;
       MOBDB_FLAGS_SET_T(((STBOX *)bbox)->flags, true);
@@ -666,7 +666,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     pfree(DatumGetPointer(traj));
   }
 
-  if (normalize && count > 2)
+  if (normalize && count > 1)
     pfree(norminsts);
   return result;
 }

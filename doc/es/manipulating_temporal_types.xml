@@ -498,114 +498,6 @@ SELECT asText(geometry 'GEOMETRYCOLLECTION M (LINESTRING M (0 0 978307200,1 1 97
 		</itemizedlist>
 	</sect1>
 
-	<sect1 id="transformation_functions">
-		<title>Funciones de transformación</title>
-		<para>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</para>
-		<itemizedlist>
-			<listitem id="ttype_transform">
-				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
-				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
-				<para>Transformar un tipo temporal a otro subtipo</para>
-				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
-				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
-				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
-				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
-				<programlisting xml:space="preserve">
-SELECT tbool_inst(tbool '{[true@2001-01-01]}');
--- "t@2001-01-01 00:00:00+00"
-SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
--- ERROR: Cannot transform input to a temporal instant
-SELECT tbool_instset(tbool 'true@2001-01-01');
--- "{t@2001-01-01}"
-SELECT tint_seq(tint '1@2001-01-01');
--- "[1@2001-01-01]"
-SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
--- "{[2.5@2001-01-01]}"
-SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
--- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="toLinear">
-				<indexterm><primary><varname>toLinear</varname></primary></indexterm>
-				<para>Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
-				<para><varname>toLinear(ttype): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02,
-  1@2000-01-03, 2@2000-01-04]');
--- "{[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
-  [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}"
-SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
-  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
--- "{[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
-  [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="appendInstant">
-				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
-				<para>Anexar un instante temporal a un valor temporal</para>
-				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
--- "{1@2000-01-01, 1@2000-01-02}"
-SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
--- "[1@2000-01-01, 1@2000-01-02]"
-SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  tgeompoint 'Point(1 1 1)@2000-01-06'));
--- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
-  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="merge">
-				<indexterm><primary><varname>merge</varname></primary></indexterm>
-				<para>Fusionar los valores temporales</para>
-				<para><varname>merge(ttype,ttype): ttype</varname></para>
-				<para><varname>merge(ttype[]): ttype</varname></para>
-				<para>Los valores pueden compartir una sola marca de tiempo, en ese caso, los valores temporales se unen en el resultado si su valor en la marca de tiempo común es el mismo; de lo contrario, se genera un error.</para>
-				<programlisting xml:space="preserve">
-SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
--- "{1@2000-01-01, 1@2000-01-02}"
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
--- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
--- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}"
-SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
--- ERROR:  Both arguments have different value at their overlapping timestamp
-SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
-  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
-  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
--- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
-  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
-
-SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
--- "{1@2000-01-01, 1@2000-01-02}"
-SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
--- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}"
-SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
--- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}"
-SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
--- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
-SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
--- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}"
-SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
-  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
-  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
--- "{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
-  Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
-  [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}"
-SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
-  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
--- "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]"
-</programlisting>
-			</listitem>
-		</itemizedlist>
-	</sect1>
-
 	<sect1>
 		<title>Funciones de accesor</title>
 		<itemizedlist>
@@ -993,6 +885,167 @@ SELECT segments(tfloat '{[1@2012-01-01, 3@2012-01-02, 2@2012-01-03],
 </programlisting>
 			</listitem>
 
+			<listitem id="intersectsTimestamp">
+				<indexterm><primary><varname>intersectsTimestamp</varname></primary></indexterm>
+				<para>¿Se cruza el valor temporal con la marca de tiempo?</para>
+				<para><varname>intersectsTimestamp(ttype,timestamptz): boolean</varname></para>
+				<programlisting xml:space="preserve">
+SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '2012-01-03');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="intersectsTimestampSet">
+				<indexterm><primary><varname>intersectsTimestampSet</varname></primary></indexterm>
+				<para>¿Se cruza el valor temporal con el conjunto de marcas tiempo?</para>
+				<para><varname>intersectsTimestampSet(ttype,timestampset): boolean</varname></para>
+				<programlisting xml:space="preserve">
+SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
+  timestampset '{2012-01-01, 2012-01-03}');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="intersectsPeriod">
+				<indexterm><primary><varname>intersectsPeriod</varname></primary></indexterm>
+				<para>¿Se cruza el valor temporal con el período?</para>
+				<para><varname>intersectsPeriod(ttype,period): boolean</varname></para>
+				<programlisting xml:space="preserve">
+SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
+  period '[2012-01-01,2012-01-05)');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="intersectsPeriodSet">
+				<indexterm><primary><varname>intersectsPeriodSet</varname></primary></indexterm>
+				<para>¿Se cruza el valor temporal con el conjunto de períodos?</para>
+				<para><varname>intersectsPeriodSet(ttype,periodset): boolean</varname></para>
+				<programlisting xml:space="preserve">
+SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',
+  periodset '{[2012-01-01, 2012-01-03), [2012-01-05, 2012-01-07)}');
+-- true
+</programlisting>
+			</listitem>
+
+			<listitem id="twAvg">
+				<indexterm><primary><varname>twAvg</varname></primary></indexterm>
+				<para>Obtener el promedio ponderado en el tiempo</para>
+				<para><varname>twAvg(tnumber): float</varname></para>
+				<programlisting xml:space="preserve">
+SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)}');
+-- 1.75
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
+	<sect1 id="transformation_functions">
+		<title>Funciones de transformación</title>
+		<para>Un valor temporal se puede transformar en otro subtipo. Se genera un error si los subtipos son incompatibles.</para>
+		<itemizedlist>
+			<listitem id="ttype_transform">
+				<indexterm><primary><varname>ttype_inst</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_instset</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seq</varname></primary></indexterm>
+				<indexterm><primary><varname>ttype_seqset</varname></primary></indexterm>
+				<para>Transformar un tipo temporal a otro subtipo</para>
+				<para><varname>ttype_inst(ttype): ttype_inst</varname></para>
+				<para><varname>ttype_instset(ttype): ttype_instset</varname></para>
+				<para><varname>ttype_seq(ttype): ttype_seq</varname></para>
+				<para><varname>ttype_seqset(ttype): ttype_seqset</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tbool_inst(tbool '{[true@2001-01-01]}');
+-- "t@2001-01-01 00:00:00+00"
+SELECT tbool_inst(tbool '{[true@2001-01-01, true@2001-01-02]}');
+-- ERROR: Cannot transform input to a temporal instant
+SELECT tbool_instset(tbool 'true@2001-01-01');
+-- "{t@2001-01-01}"
+SELECT tint_seq(tint '1@2001-01-01');
+-- "[1@2001-01-01]"
+SELECT tfloat_seqset(tfloat '2.5@2001-01-01');
+-- "{[2.5@2001-01-01]}"
+SELECT tfloat_seqset(tfloat '{2.5@2001-01-01, 1.5@2001-01-02, 3.5@2001-01-02}');
+-- "{[2.5@2001-01-01],[1.5@2001-01-02],[3.5@2001-01-03]}"
+</programlisting>
+			</listitem>
+
+			<listitem id="toLinear">
+				<indexterm><primary><varname>toLinear</varname></primary></indexterm>
+				<para>Transformar un valor temporal con tipo de base continuo de interpolación escalonada a lineal</para>
+				<para><varname>toLinear(ttype): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT toLinear(tfloat 'Interp=Stepwise;[1@2000-01-01, 2@2000-01-02,
+  1@2000-01-03, 2@2000-01-04]');
+-- "{[1@2000-01-01, 1@2000-01-02), [2@2000-01-02, 2@2000-01-03),
+  [1@2000-01-03, 1@2000-01-04), [2@2000-01-04]}"
+SELECT asText(toLinear(tgeompoint 'Interp=Stepwise;{[Point(1 1)@2000-01-01,
+  Point(2 2)@2000-01-02], [Point(3 3)@2000-01-05, Point(4 4)@2000-01-06]}'));
+-- "{[POINT(1 1)@2000-01-01, POINT(1 1)@2000-01-02), [POINT(2 2)@2000-01-02],
+  [POINT(3 3)@2000-01-05, POINT(3 3)@2000-01-06), [POINT(4 4)@2000-01-06]}"
+</programlisting>
+			</listitem>
+
+			<listitem id="appendInstant">
+				<indexterm><primary><varname>appendInstant</varname></primary></indexterm>
+				<para>Anexar un instante temporal a un valor temporal</para>
+				<para><varname>appendInstant(ttype,ttype_inst): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT appendInstant(tint '1@2000-01-01', tint '1@2000-01-02');
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT appendInstant(tint_seq(tint '1@2000-01-01'), tint '1@2000-01-02');
+-- "[1@2000-01-01, 1@2000-01-02]"
+SELECT asText(appendInstant(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint 'Point(1 1 1)@2000-01-06'));
+-- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
+</programlisting>
+			</listitem>
+
+			<listitem id="merge">
+				<indexterm><primary><varname>merge</varname></primary></indexterm>
+				<para>Fusionar los valores temporales</para>
+				<para><varname>merge(ttype,ttype): ttype</varname></para>
+				<para><varname>merge(ttype[]): ttype</varname></para>
+				<para>Los valores pueden compartir una sola marca de tiempo, en ese caso, los valores temporales se unen en el resultado si su valor en la marca de tiempo común es el mismo; de lo contrario, se genera un error.</para>
+				<programlisting xml:space="preserve">
+SELECT merge(tint '1@2000-01-01', tint '1@2000-01-02');
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[2@2000-01-02, 1@2000-01-03]');
+-- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[3@2000-01-03, 1@2000-01-04]');
+-- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 1@2000-01-04]}"
+SELECT merge(tint '[1@2000-01-01, 2@2000-01-02]', tint '[1@2000-01-02, 2@2000-01-03]');
+-- ERROR:  Both arguments have different value at their overlapping timestamp
+SELECT asText(merge(tgeompoint '{[Point(1 1 1)@2000-01-01,
+  Point(2 2 2)@2000-01-02], [Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}',
+  tgeompoint '{[Point(3 3 3)@2000-01-05, Point(1 1 1)@2000-01-06]}'));
+-- "{[POINT Z (1 1 1)@2000-01-01, POINT Z (2 2 2)@2000-01-02],
+  [POINT Z (3 3 3)@2000-01-04, POINT Z (3 3 3)@2000-01-05, POINT Z (1 1 1)@2000-01-06]}"
+
+SELECT merge(ARRAY[tint '1@2000-01-01', '1@2000-01-02']);
+-- "{1@2000-01-01, 1@2000-01-02}"
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{2@2000-01-02, 3@2000-01-03}']);
+-- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03}"
+SELECT merge(ARRAY[tint '{1@2000-01-01, 2@2000-01-02}', '{3@2000-01-03, 4@2000-01-04}']);
+-- "{1@2000-01-01, 2@2000-01-02, 3@2000-01-03, 4@2000-01-04}"
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[2@2000-01-02, 1@2000-01-03]']);
+-- "[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]"
+SELECT merge(ARRAY[tint '[1@2000-01-01, 2@2000-01-02]', '[3@2000-01-03, 4@2000-01-04]']);
+-- "{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}"
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
+  [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}', '{[Point(4 4)@2000-01-04,
+  Point(3 3)@2000-01-05], [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}']);
+-- "{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03,
+  Point(4 4)@2000-01-04, Point(3 3)@2000-01-05],
+  [Point(6 6)@2000-01-06, Point(7 7)@2000-01-07]}"
+SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
+  '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
+-- "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]"
+</programlisting>
+			</listitem>
+
 			<listitem id="shift">
 				<indexterm><primary><varname>shift</varname></primary></indexterm>
 				<para>Desplazar el intervalo de tiempo del valor temporal con un intervalo</para>
@@ -1047,59 +1100,6 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 -- "{[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,
   POINT(1 1)@2001-01-02 12:00:00+01], [POINT(2 2) @2001-01-02 18:00:00+01,
   POINT(1 1)@2001-01-03 00:00:00+01]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsTimestamp">
-				<indexterm><primary><varname>intersectsTimestamp</varname></primary></indexterm>
-				<para>¿Se cruza el valor temporal con la marca de tiempo?</para>
-				<para><varname>intersectsTimestamp(ttype,timestamptz): boolean</varname></para>
-				<programlisting xml:space="preserve">
-SELECT intersectsTimestamp(tint '[1@2012-01-01, 1@2012-01-15)', timestamptz '2012-01-03');
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsTimestampSet">
-				<indexterm><primary><varname>intersectsTimestampSet</varname></primary></indexterm>
-				<para>¿Se cruza el valor temporal con el conjunto de marcas tiempo?</para>
-				<para><varname>intersectsTimestampSet(ttype,timestampset): boolean</varname></para>
-				<programlisting xml:space="preserve">
-SELECT intersectsTimestampSet(tint '[1@2012-01-01, 1@2012-01-15)',
-  timestampset '{2012-01-01, 2012-01-03}');
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsPeriod">
-				<indexterm><primary><varname>intersectsPeriod</varname></primary></indexterm>
-				<para>¿Se cruza el valor temporal con el período?</para>
-				<para><varname>intersectsPeriod(ttype,period): boolean</varname></para>
-				<programlisting xml:space="preserve">
-SELECT intersectsPeriod(tint '[1@2012-01-01, 1@2012-01-04)',
-  period '[2012-01-01,2012-01-05)');
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="intersectsPeriodSet">
-				<indexterm><primary><varname>intersectsPeriodSet</varname></primary></indexterm>
-				<para>¿Se cruza el valor temporal con el conjunto de períodos?</para>
-				<para><varname>intersectsPeriodSet(ttype,periodset): boolean</varname></para>
-				<programlisting xml:space="preserve">
-SELECT intersectsPeriodSet(tbool '[t@2012-01-01, f@2012-01-15]',
-  periodset '{[2012-01-01, 2012-01-03), [2012-01-05, 2012-01-07)}');
--- true
-</programlisting>
-			</listitem>
-
-			<listitem id="twAvg">
-				<indexterm><primary><varname>twAvg</varname></primary></indexterm>
-				<para>Obtener el promedio ponderado en el tiempo</para>
-				<para><varname>twAvg(tnumber): float</varname></para>
-				<programlisting xml:space="preserve">
-SELECT twAvg(tfloat '{[1@2012-01-01, 2@2012-01-03), [2@2012-01-04, 2@2012-01-06)}');
--- 1.75
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1780,6 +1780,20 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 	</sect1>
 
 	<sect1>
+		<title>Operadores de cuadro delimitador</title>
+
+		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en el <xref linkend="temporal_types" />, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en la <xref linkend="casting_box_types" />, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
+
+		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposicion (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), está contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
+
+		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
+
+		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
+
+		<para>Refiérase a la <xref linkend="box_topo_operators" /> y a la <xref linkend="box_relpos_operators" /> para los operadores de cuadro delimitador.</para>
+	</sect1>
+
+	<sect1>
 		<title>Funciones y operadores matemáticos</title>
 
 		<itemizedlist>
@@ -1961,20 +1975,6 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 	</sect1>
 
 	&spatial_functions;
-
-	<sect1>
-		<title>Operadores de cuadro delimitador</title>
-
-		<para>Estos operadores prueban si los cuadros delimitadores de sus argumentos satisfacen el predicado y dan como resultado un valor booleano. Como se indica en el <xref linkend="temporal_types" />, el cuadro delimitador asociado a un tipo temporal depende del tipo base: es el tipo <varname>period</varname> para los tipos <varname>tbool</varname> y <varname>ttext</varname>, el tipo <varname>tbox</varname> para los tipos <varname>tint</varname> y <varname>tfloat</varname> y el tipo <varname>stbox</varname> para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>. Además, como se dijo en la <xref linkend="casting_box_types" />, muchos tipos PostgreSQL, PostGIS o MobilityDB se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>. Por ejemplo, los tipos numéricos y los rangos se pueden convertir al tipo <varname>tbox</varname>, los tipos <varname>geometry</varname> y <varname>geography</varname> se pueden convertir al tipo <varname>stbox</varname> y los tipos de tiempo y los tipos temporales se pueden convertir a los tipos <varname>tbox</varname> y <varname>stbox</varname>.</para>
-
-		<para>Un primer conjunto de operadores considera las relaciones topológicas entre los cuadros delimitadores. Hay cinco operadores topológicos: superposicion (<varname>&amp;&amp;</varname>), contiene (<varname>@&gt;</varname>), está contenido (<varname>&lt;@</varname>), mismo (<varname>~=</varname>) y adyacente (<varname>-|-</varname>). Los argumentos de estos operadores pueden ser un tipo base, una cuadro delimitador o un tipo temporal y los operadores verifican la relación topológica teniendo en cuenta el valor y/o la dimensión temporal según el tipo de los argumentos.</para>
-
-		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
-
-		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
-
-		<para>Refiérase a la <xref linkend="box_topo_operators" /> y a la <xref linkend="box_relpos_operators" /> para los operadores de cuadro delimitador.</para>
-	</sect1>
 
 	<sect1>
 		<title>Funciones de similaridad</title>

@@ -885,63 +885,6 @@ SELECT segments(tfloat '{[1@2012-01-01, 3@2012-01-02, 2@2012-01-03],
 </programlisting>
 			</listitem>
 
-			<listitem id="shift">
-				<indexterm><primary><varname>shift</varname></primary></indexterm>
-				<para>Shift the timespan of the temporal value by an interval</para>
-				<para><varname>shift(ttype,interval): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- "{1@2001-01-02, 2@2001-01-04, 1@2001-01-06}"
-SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
--- "[1@2001-01-02, 2@2001-01-04]"
-SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
-  [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
--- "{[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
-  [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]}"
-</programlisting>
-			</listitem>
-
-			<listitem id="tscale">
-				<indexterm><primary><varname>tscale</varname></primary></indexterm>
-				<para>Scale the time span of the temporal value to an interval. If the time span of the temporal value is zero (for example, for a temporal instant), the result is the temporal value. The given interval must be strictly greater than zero.</para>
-				<para><varname>tscale(ttype,interval): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT tscale(tint '1@2001-01-01', '1 day');
--- "1@2001-01-01"
-SELECT tscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- "{1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}"
-SELECT tscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
--- "[1@2001-01-01, 2@2001-01-02]"
-SELECT asText(tscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
--- "{[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
-  POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
-  POINT(1 1)@2001-01-02 00:00:00+01]}"
-SELECT tscale(tint '1@2001-01-01', '-1 day');
--- ERROR:  The duration must be a positive interval: -1 days
-</programlisting>
-			</listitem>
-
-			<listitem id="shiftTscale">
-				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
-				<para>Shift and scale the time span of the temporal value to the two intervals. This function combines in a single step the functions <link linkend="shift"><varname>shift</varname></link> and <link linkend="tscale"><varname>tscale</varname></link>.</para>
-				<para><varname>shiftTscale(ttype,interval,interval): ttype</varname></para>
-				<programlisting xml:space="preserve">
-SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
--- "1@2001-01-02"
-SELECT shiftTscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day', '1 day');
--- "{1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}"
-SELECT shiftTscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
--- "[1@2001-01-02, 2@2001-01-03]"
-SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}',
-  '1 day', '1 day'));
--- "{[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,
-  POINT(1 1)@2001-01-02 12:00:00+01], [POINT(2 2) @2001-01-02 18:00:00+01,
-  POINT(1 1)@2001-01-03 00:00:00+01]}"
-</programlisting>
-			</listitem>
-
 			<listitem id="intersectsTimestamp">
 				<indexterm><primary><varname>intersectsTimestamp</varname></primary></indexterm>
 				<para>Does the temporal value intersect the timestamp?</para>
@@ -1100,6 +1043,63 @@ SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],
 SELECT merge(ARRAY[tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]}',
   '{[Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]}']);
 -- "[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]"
+</programlisting>
+			</listitem>
+
+			<listitem id="shift">
+				<indexterm><primary><varname>shift</varname></primary></indexterm>
+				<para>Shift the timespan of the temporal value by an interval</para>
+				<para><varname>shift(ttype,interval): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT shift(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+-- "{1@2001-01-02, 2@2001-01-04, 1@2001-01-06}"
+SELECT shift(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+-- "[1@2001-01-02, 2@2001-01-04]"
+SELECT asText(shift(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-03],
+  [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
+-- "{[POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-04],
+  [POINT(2 2)@2001-01-05, POINT(1 1)@2001-01-06]}"
+</programlisting>
+			</listitem>
+
+			<listitem id="tscale">
+				<indexterm><primary><varname>tscale</varname></primary></indexterm>
+				<para>Scale the time span of the temporal value to an interval. If the time span of the temporal value is zero (for example, for a temporal instant), the result is the temporal value. The given interval must be strictly greater than zero.</para>
+				<para><varname>tscale(ttype,interval): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tscale(tint '1@2001-01-01', '1 day');
+-- "1@2001-01-01"
+SELECT tscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
+-- "{1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}"
+SELECT tscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
+-- "[1@2001-01-01, 2@2001-01-02]"
+SELECT asText(tscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}', '1 day'));
+-- "{[POINT(1 1)@2001-01-01 00:00:00+01, POINT(2 2)@2001-01-01 06:00:00+01,
+  POINT(1 1)@2001-01-01 12:00:00+01], [POINT(2 2) @2001-01-01 18:00:00+01,
+  POINT(1 1)@2001-01-02 00:00:00+01]}"
+SELECT tscale(tint '1@2001-01-01', '-1 day');
+-- ERROR:  The duration must be a positive interval: -1 days
+</programlisting>
+			</listitem>
+
+			<listitem id="shiftTscale">
+				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
+				<para>Shift and scale the time span of the temporal value to the two intervals. This function combines in a single step the functions <link linkend="shift"><varname>shift</varname></link> and <link linkend="tscale"><varname>tscale</varname></link>.</para>
+				<para><varname>shiftTscale(ttype,interval,interval): ttype</varname></para>
+				<programlisting xml:space="preserve">
+SELECT shiftTscale(tint '1@2001-01-01', '1 day', '1 day');
+-- "1@2001-01-02"
+SELECT shiftTscale(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day', '1 day');
+-- "{1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}"
+SELECT shiftTscale(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
+-- "[1@2001-01-02, 2@2001-01-03]"
+SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03], [Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]}',
+  '1 day', '1 day'));
+-- "{[POINT(1 1)@2001-01-02 00:00:00+01, POINT(2 2)@2001-01-02 06:00:00+01,
+  POINT(1 1)@2001-01-02 12:00:00+01], [POINT(2 2) @2001-01-02 18:00:00+01,
+  POINT(1 1)@2001-01-03 00:00:00+01]}"
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1779,6 +1779,20 @@ SELECT 'AAA'::text #&gt; ttext '{[AAA@2012-01-01, AAA@2012-01-03),
 	</sect1>
 
 	<sect1>
+		<title>Bounding Box Operators</title>
+
+		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
+
+		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
+
+		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
+
+		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
+
+		<para>We refer to <xref linkend="box_topo_operators" /> and <xref linkend="box_relpos_operators" /> for the bounding box operators.</para>
+	</sect1>
+
+	<sect1>
 		<title>Mathematical Functions and Operators</title>
 
 		<itemizedlist>
@@ -1960,20 +1974,6 @@ SELECT lower(ttext '[AA@2000-01-01, bb@2000-01-02]');
 	</sect1>
 
 	&spatial_functions;
-
-	<sect1>
-		<title>Bounding Box Operators</title>
-
-		<para>These operators test whether the bounding boxes of their arguments satisfy the predicate and result in a Boolean value. As stated in <xref linkend="temporal_types" />, the bounding box associated to a temporal type depends on the base type: It is the <varname>period</varname> type for the <varname>tbool</varname> and <varname>ttext</varname> types, the <varname>tbox</varname> type for the <varname>tint</varname> and <varname>tfloat</varname> types, and the <varname>stbox</varname> type for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types. Furthermore, as seen in <xref linkend="casting_box_types" />, many PostgreSQL, PostGIS, or MobilityDB types can be cast to the <varname>tbox</varname> and <varname>stbox</varname> types. For example, numeric and range types can be casted to type <varname>tbox</varname>, types <varname>geometry</varname> and <varname>geography</varname> can be casted to type <varname>stbox</varname>, and time types and temporal types can be casted to types <varname>tbox</varname> and <varname>stbox</varname>.</para>
-
-		<para>A first set of operators consider the topological relationships between the bounding boxes. There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The arguments of these operators can be a base type, a box, or a temporal type and the operators verify the topological relationship taking into account the value and/or the time dimension depending on the type of the arguments.</para>
-
-		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for <varname>tint</varname> and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
-
-		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
-
-		<para>We refer to <xref linkend="box_topo_operators" /> and <xref linkend="box_relpos_operators" /> for the bounding box operators.</para>
-	</sect1>
 
 	<sect1>
 		<title>Similarity Functions</title>
