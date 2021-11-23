@@ -1,40 +1,40 @@
 # Postgres version dependant files
 if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 110000)
-  set(FILE_15 15_time_spgist)
-  set(FILE_44 44_temporal_spgist)
+  set(FILE_015 015_time_spgist)
+  set(FILE_044 044_temporal_spgist)
   if (${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL 120000)
-    set(FILE_19 19_geo_constructors)
+    set(FILE_019 019_geo_constructors)
   endif()
 endif()
 
 SET(LOCAL_FILES
-  00_catalog
-  01_period
-  03_timestampset
-  05_periodset
-  07_rangetypes_ext
-  11_timeops
-  13_time_gist
-  ${FILE_15}
-  17_time_aggfuncs
-  ${FILE_19}
-  20_doublen
-  21_tbox
-  22_temporal
-  23_temporal_tile
-  24_tnumber_mathfuncs
-  26_tbool_boolops
-  27_ttext_textfuncs
-  28_temporal_compops
-  32_temporal_boxops
-  34_temporal_posops
-  36_tnumber_distance
-  37_temporal_similarity
-  38_temporal_aggfuncs
-  40_temporal_waggfuncs
-  42_temporal_gist
-  ${FILE_44}
-  99_tempcache
+  000_catalog
+  001_period
+  003_timestampset
+  005_periodset
+  007_rangetypes_ext
+  011_timeops
+  013_time_gist
+  ${FILE_015}
+  017_time_aggfuncs
+  ${FILE_019}
+  020_doublen
+  021_tbox
+  022_temporal
+  023_temporal_tile
+  024_tnumber_mathfuncs
+  026_tbool_boolops
+  027_ttext_textfuncs
+  028_temporal_compops
+  032_temporal_boxops
+  034_temporal_posops
+  036_tnumber_distance
+  037_temporal_similarity
+  038_temporal_aggfuncs
+  040_temporal_waggfuncs
+  042_temporal_gist
+  ${FILE_044}
+  999_tempcache
   )
 
 foreach (f ${LOCAL_FILES})
