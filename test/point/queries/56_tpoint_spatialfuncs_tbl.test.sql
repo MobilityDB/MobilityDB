@@ -57,7 +57,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE startValue(transform(setSRID(temp, 5
 SELECT round(MAX(ST_X(startValue(transform_gk(temp))))::numeric, 6) FROM tbl_tgeompoint;
 
 SELECT round(MAX(ST_X(transform_gk(g)))::numeric, 6) FROM tbl_geom_point LIMIT 10;
-SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring LIMIT 10;
+SELECT round(MAX(ST_X(ST_StartPoint(transform_gk(g))))::numeric, 6) FROM tbl_geom_linestring WHERE NOT ST_IsEmpty(g) LIMIT 10;
 
 -------------------------------------------------------------------------------
 
