@@ -128,7 +128,7 @@ textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************

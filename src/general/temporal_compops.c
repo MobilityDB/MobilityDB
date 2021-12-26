@@ -119,7 +119,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

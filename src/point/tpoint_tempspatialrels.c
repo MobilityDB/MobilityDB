@@ -1383,10 +1383,10 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   Temporal *result;
   ensure_valid_tempsubtype(sync1->subtype);
   if (sync1->subtype == INSTANT)
-    result = (Temporal *) sync_tfunc_tinstant_tinstant(
+    result = (Temporal *) tfunc_tinstant_tinstant(
       (TInstant *) sync1, (TInstant *) sync2, &lfinfo);
   else if (sync1->subtype == INSTANTSET)
-    result = (Temporal *) sync_tfunc_tinstantset_tinstantset(
+    result = (Temporal *) tfunc_tinstantset_tinstantset(
       (TInstantSet *) sync1, (TInstantSet *) sync2, &lfinfo);
   else if (sync1->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_tpointseq(

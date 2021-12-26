@@ -290,7 +290,7 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

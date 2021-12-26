@@ -3692,7 +3692,7 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_bearing_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 
@@ -5106,7 +5106,7 @@ tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return sync_tfunc_temporal_temporal(temp_x, temp_y, &lfinfo);
+  return tfunc_temporal_temporal(temp_x, temp_y, &lfinfo);
 }
 
 /**
@@ -5149,7 +5149,7 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
-  return sync_tfunc_temporal_temporal(temp, temp_z, &lfinfo);
+  return tfunc_temporal_temporal(temp, temp_z, &lfinfo);
 }
 
 /**

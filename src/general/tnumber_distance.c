@@ -167,7 +167,7 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = lfinfo.reslinear ? &tnumber_min_dist_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 

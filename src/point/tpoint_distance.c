@@ -470,7 +470,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_dist_at_timestamp : NULL;
-  Temporal *result = sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
 

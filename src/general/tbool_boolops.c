@@ -92,7 +92,7 @@ boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2,
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc = NULL;
-  return sync_tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
 /*****************************************************************************

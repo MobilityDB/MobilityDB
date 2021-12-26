@@ -46,7 +46,7 @@
  * The mandatory parameters are `func`, `numparam`, and `restypid`. These
  * parameters are used by function `tfunc_temporal`, which applies the lifted
  * function to every instant of the temporal value. The remaining parameters
- * are used by functions `tfunc_temporal_base` and `sync_tfunc_temporal_temporal`
+ * are used by functions `tfunc_temporal_base` and `tfunc_temporal_temporal`
  * that apply the lifted function to two base values.
  */
 
@@ -94,11 +94,11 @@ extern TSequenceSet *tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value
 extern Temporal *tfunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo);
 
-extern TInstant *sync_tfunc_tinstant_tinstant(const TInstant *inst1,
+extern TInstant *tfunc_tinstant_tinstant(const TInstant *inst1,
   const TInstant *inst2, LiftedFunctionInfo *lfinfo);
-extern TInstantSet *sync_tfunc_tinstantset_tinstantset(const TInstantSet *ti1,
+extern TInstantSet *tfunc_tinstantset_tinstantset(const TInstantSet *ti1,
   const TInstantSet *ti2, LiftedFunctionInfo *lfinfo);
-extern Temporal *sync_tfunc_temporal_temporal(const Temporal *temp1,
+extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/
