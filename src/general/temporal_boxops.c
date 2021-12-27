@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -235,7 +234,7 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
     tpointinstarr_to_stbox((STBOX *) box, instants, count);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
     tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
-  else 
+  else
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
   return;
@@ -261,11 +260,8 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
       lower_inc, upper_inc);
   else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox((TBOX *) box, instants, count);
-  /* This case is currently not used since for temporal points the bounding
-   * box is computed from the trajectory for efficiency reasons. It is left
-   * here in case this is no longer the case
   else if (tgeo_base_type(instants[0]->basetypid))
-    tpointinstarr_to_stbox((STBOX *) box, instants, count); */
+    tpointinstarr_to_stbox((STBOX *) box, instants, count);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
   {
     if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
@@ -273,7 +269,7 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
     else
       tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
   }
-  else 
+  else
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
   return;
@@ -331,7 +327,7 @@ tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
     tpointseqarr_to_stbox((STBOX *) box, sequences, count);
   else if (sequences[0]->basetypid == type_oid(T_NPOINT))
     tnpointseqarr_to_stbox((STBOX *) box, sequences, count);
-  else 
+  else
     elog(ERROR, "unknown bounding box function for base type: %d",
       sequences[0]->basetypid);
   return;

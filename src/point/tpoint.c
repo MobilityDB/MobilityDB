@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -534,7 +533,11 @@ PGDLLEXPORT Datum
 tpoint_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+#ifdef STORE_TRAJ
   Datum result = tpoint_trajectory_external(temp);
+#else
+  Datum result = tpoint_trajectory_internal(temp);
+#endif
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

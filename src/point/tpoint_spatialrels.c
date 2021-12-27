@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -295,7 +294,11 @@ spatialrel_tpoint_geo1(Temporal *temp, Datum geo, Datum param,
     result = invert ? func(geo, traj) : func(traj, geo);
   else /* numparam == 3 */
     result = invert ? func(geo, traj, param) : func(traj, geo, param);
+#ifdef STORE_TRAJ
   tpoint_trajectory_free(temp, traj);
+#else
+  pfree(DatumGetPointer(traj));
+#endif
   return result;
 }
 
@@ -514,8 +517,8 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
     Datum traj1 = tpoint_trajectory_internal(sync1);
     Datum traj2 = tpoint_trajectory_internal(sync2);
     result = DatumGetBool(func(traj1, traj2, dist));
-    tpoint_trajectory_free(sync1, traj1);
-    tpoint_trajectory_free(sync2, traj2);
+    pfree(DatumGetPointer(traj1));
+    pfree(DatumGetPointer(traj2));
   }
   else if (sync1->subtype == SEQUENCE)
     result = dwithin_tpointseq_tpointseq((TSequence *)sync1,

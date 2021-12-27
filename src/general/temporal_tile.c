@@ -1,7 +1,6 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *

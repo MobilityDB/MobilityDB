@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -63,7 +62,7 @@ typedef struct
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
-  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid, 
+  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, bool, const TInstant *,
      const TInstant *, bool, Datum *,

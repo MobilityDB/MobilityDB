@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -614,6 +613,8 @@ extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
 extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
  RangeType *range, bool atfunc);
 
+extern Temporal *temporal_restrict_value_internal(const Temporal *temp,
+  Datum value, bool atfunc);
 extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
   TimestampTz t, bool atfunc);
 extern Temporal *temporal_at_period_internal(const Temporal *temp,

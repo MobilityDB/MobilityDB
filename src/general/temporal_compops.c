@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -73,10 +72,27 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
   Temporal *result = tcomp_temporal_base1(temp, value, basetypid,
     func, INVERT);
+  /* Restrict the result to the Boolean value in the fourth argument if any */
+  if (result != NULL && restr)
+  {
+    Temporal *at_result = temporal_restrict_value_internal(result, atvalue,
+      REST_AT);
+    pfree(result);
+    result = at_result;
+  }
   DATUM_FREE_IF_COPY(value, basetypid, 0);
   PG_FREE_IF_COPY(temp, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -87,10 +103,27 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum value = PG_GETARG_ANYDATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
   Temporal *result = tcomp_temporal_base1(temp, value, basetypid,
     func, INVERT_NO);
+  /* Restrict the result to the Boolean value in the third argument if any */
+  if (result != NULL && restr)
+  {
+    Temporal *at_result = temporal_restrict_value_internal(result, atvalue,
+      REST_AT);
+    pfree(result);
+    result = at_result;
+  }
   PG_FREE_IF_COPY(temp, 0);
   DATUM_FREE_IF_COPY(value, basetypid, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -100,6 +133,13 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
   if (tgeo_base_type(temp1->basetypid))
   {
     ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
@@ -120,6 +160,14 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  /* Restrict the result to the Boolean value in the fourth argument if any */
+  if (result != NULL && restr)
+  {
+    Temporal *at_result = temporal_restrict_value_internal(result, atvalue,
+      REST_AT);
+    pfree(result);
+    result = at_result;
+  }
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)

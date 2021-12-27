@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -198,23 +197,22 @@ stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
 }
 
 /**
- * Constructs a newly allocated GBOX
+ * Set the values of a GBOX
  */
-GBOX *
-gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
+void
+gbox_set(GBOX *box, bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax)
 {
-  GBOX *result = palloc0(sizeof(GBOX));
-  result->xmin = xmin;
-  result->xmax = xmax;
-  result->ymin = ymin;
-  result->ymax = ymax;
-  result->zmin = zmin;
-  result->zmax = zmax;
-  FLAGS_SET_Z(result->flags, hasz);
-  FLAGS_SET_M(result->flags, hasm);
-  FLAGS_SET_GEODETIC(result->flags, geodetic);
-  return result;
+  box->xmin = xmin;
+  box->xmax = xmax;
+  box->ymin = ymin;
+  box->ymax = ymax;
+  box->zmin = zmin;
+  box->zmax = zmax;
+  FLAGS_SET_Z(box->flags, hasz);
+  FLAGS_SET_M(box->flags, hasm);
+  FLAGS_SET_GEODETIC(box->flags, geodetic);
+  return;
 }
 
 /*****************************************************************************
@@ -542,13 +540,14 @@ geodstbox_constructor_zt(PG_FUNCTION_ARGS)
 /**
  * Cast the spatiotemporal box as a GBOX value for PostGIS
  */
-GBOX *
-stbox_to_gbox(const STBOX *box)
+void
+stbox_set_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
-  return gbox_make(MOBDB_FLAGS_GET_Z(box->flags),
+  gbox_set(gbox, MOBDB_FLAGS_GET_Z(box->flags),
     FLAGS_GET_GEODETIC(box->flags), false, box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(stbox_to_period);
@@ -578,29 +577,29 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
-  GBOX *result = stbox_to_gbox(box);
+  GBOX *result = palloc0(sizeof(GBOX));
+  stbox_set_gbox(box, result);
   PG_RETURN_POINTER(result);
 }
 
-BOX3D *
-stbox_to_box3d_internal(const STBOX *box)
+void
+stbox_set_box3d(const STBOX *box, BOX3D *box3d)
 {
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
 
   /* Initialize existing dimensions */
-  BOX3D *result = palloc0(sizeof(BOX3D));
-  result->xmin = box->xmin;
-  result->xmax = box->xmax;
-  result->ymin = box->ymin;
-  result->ymax = box->ymax;
+  box3d->xmin = box->xmin;
+  box3d->xmax = box->xmax;
+  box3d->ymin = box->ymin;
+  box3d->ymax = box->ymax;
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
-    result->zmin = box->zmin;
-    result->zmax = box->zmax;
+    box3d->zmin = box->zmin;
+    box3d->zmax = box->zmax;
   }
-  result->srid = box->srid;
-  return result;
+  box3d->srid = box->srid;
+  return;
 }
 
 PG_FUNCTION_INFO_V1(stbox_to_box3d);
@@ -611,7 +610,8 @@ PGDLLEXPORT Datum
 stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  BOX3D *result = stbox_to_box3d_internal(box);
+  BOX3D *result = palloc0(sizeof(BOX3D));
+  stbox_set_box3d(box, result);
   PG_RETURN_POINTER(result);
 }
 

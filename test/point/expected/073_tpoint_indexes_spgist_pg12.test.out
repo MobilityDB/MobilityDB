@@ -1,0 +1,50 @@
+ANALYZE tbl_tgeompoint;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
+NOTICE:  index "tbl_tgeompoint_spgist_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
+CREATE INDEX
+SELECT k, temp |=| geometry 'Point empty' FROM tbl_tgeompoint ORDER BY 2, 1 LIMIT 3;
+ k | ?column? 
+---+----------
+ 1 |         
+ 2 |         
+ 3 |         
+(3 rows)
+
+SELECT k, round((temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]')::numeric, 6) FROM tbl_tgeompoint ORDER BY 2, 1 LIMIT 3;
+ k  |   round   
+----+-----------
+ 75 | 14.759498
+ 99 | 32.168364
+ 80 | 32.372980
+(3 rows)
+
+SELECT k, round((temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]')::numeric, 6) FROM tbl_tgeompoint3D ORDER BY 2, 1 LIMIT 3;
+ k  |   round   
+----+-----------
+ 74 | 47.637594
+ 70 | 56.154029
+ 45 | 67.013694
+(3 rows)
+
+DROP INDEX tbl_tgeompoint_spgist_idx;
+DROP INDEX
+ANALYZE tbl_tgeompoint3D;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
+NOTICE:  index "tbl_tgeompoint3d_spgist_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tgeompoint3D_spgist_idx ON tbl_tgeompoint3D USING SPGIST(temp);
+CREATE INDEX
+SELECT k, round((temp |=| tgeompoint '[Point(1 1 1)@2001-06-01, Point(2 2 2)@2001-07-01]')::numeric, 6) FROM tbl_tgeompoint3D ORDER BY 2, 1 LIMIT 3;
+ k  |   round   
+----+-----------
+ 74 | 43.296456
+ 70 | 52.331073
+ 45 | 61.982585
+(3 rows)
+
+DROP INDEX tbl_tgeompoint3D_spgist_idx;
+DROP INDEX

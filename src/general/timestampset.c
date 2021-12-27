@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -87,7 +86,7 @@ timestampset_bbox(Period *p, const TimestampSet *ts)
  * ( TimestampSet | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2)_X |
  * --------------------------------------------------------------------------
  * @endcode
- * where the `X` are unused bytes added for double padding, and bbox is the 
+ * where the `X` are unused bytes added for double padding, and bbox is the
  * bounding box which is a period.
  *
  * @param[in] times Array of timestamps

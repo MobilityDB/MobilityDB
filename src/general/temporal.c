@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -3149,7 +3148,7 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
  */
-static Temporal *
+Temporal *
 temporal_restrict_value_internal(const Temporal *temp, Datum value,
   bool atfunc)
 {

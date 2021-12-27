@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -706,7 +705,7 @@ range_extent_combinefn(PG_FUNCTION_ARGS)
 
   TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
   /* Non-strict union */
-  RangeType *result = range_union_internal(typcache, r1, r2, false); 
+  RangeType *result = range_union_internal(typcache, r1, r2, false);
   PG_RETURN_POINTER(result);
 }
 

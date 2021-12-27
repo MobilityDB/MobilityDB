@@ -1,7 +1,6 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -1385,26 +1384,74 @@ tpointseq_make_trajectory(const TInstant **instants, int count, bool linear)
 }
 
 /**
+ * Compute the trajectory of a temporal sequence.
+ *
+ * @note This function is called when the trajectory of temporal sequences
+ * are not precomputed. The function returns a single Datum which is a
+ * geometry/geography. Since the sequence has been already validated
+ * there is no verification of the input in this function, in particular
+ * for geographies it is supposed that the composing points are geodetic
+ *
+ * @param[in] seq Temporal sequence
+ */
+Datum
+tpointseq_make_trajectory1(const TSequence *seq)
+{
+  /* Instantaneous sequence */
+  if (seq->count == 1)
+    return tinstant_value_copy(tsequence_inst_n(seq, 0));
+
+  LWPOINT **points = palloc(sizeof(LWPOINT *) * seq->count);
+  /* Remove two consecutive points if they are equal */
+  Datum value = tinstant_value(tsequence_inst_n(seq, 0));
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+  int k = 1;
+  for (int i = 1; i < seq->count; i++)
+  {
+    value = tinstant_value(tsequence_inst_n(seq, i));
+    gs = (GSERIALIZED *) DatumGetPointer(value);
+    LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
+    if (! lwpoint_same(lwpoint, points[k - 1]))
+      points[k++] = lwpoint;
+  }
+  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, k,
+    MOBDB_FLAGS_GET_LINEAR(seq->flags));
+  Datum result = PointerGetDatum(geo_serialize(lwgeom));
+  pfree(lwgeom);
+  for (int i = 0; i < k; i++)
+    lwpoint_free(points[i]);
+  pfree(points);
+  return result;
+}
+
+/**
  * Returns the precomputed trajectory of a temporal sequence point
  */
 Datum
 tpointseq_trajectory(const TSequence *seq)
 {
+#ifdef STORE_TRAJ
   void *traj = (char *) (&seq->offsets[seq->count + 2]) +   /* start of data */
-    seq->offsets[seq->count + 1];            /* offset */
+    seq->offsets[seq->count + 1];  /* offset */
   return PointerGetDatum(traj);
+#else
+  return tpointseq_make_trajectory1(seq);
+#endif
 }
 
+#ifdef STORE_TRAJ
 /**
  * Copy the precomputed trajectory of a temporal sequence point
  */
 Datum
 tpointseq_trajectory_copy(const TSequence *seq)
 {
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +   /* start of data */
-      seq->offsets[seq->count + 1];          /* offset */
+  void *traj = (char *) (&seq->offsets[seq->count + 2]) +  /* start of data */
+    seq->offsets[seq->count + 1];  /* offset */
   return PointerGetDatum(gserialized_copy(traj));
 }
+#endif
 
 /*****************************************************************************/
 
@@ -1420,7 +1467,11 @@ tpointseqset_trajectory(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
+#ifdef STORE_TRAJ
     return tpointseq_trajectory_copy(tsequenceset_seq_n(ts, 0));
+#else
+    return tpointseq_trajectory(tsequenceset_seq_n(ts, 0));
+#endif
 
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ts->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
@@ -1458,7 +1509,6 @@ tpointseqset_trajectory(const TSequenceSet *ts)
     /* k > 1 since otherwise it is a singleton sequence set and this case
      * was taken care at the begining of the function */
     // TODO add the bounding box instead of ask PostGIS to compute it again
-    // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *coll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t) k, geoms);
     FLAGS_SET_GEODETIC(coll->flags, geodetic);
@@ -1477,7 +1527,6 @@ tpointseqset_trajectory(const TSequenceSet *ts)
       /* We cannot lwpoint_free(points[i]); */
     }
     // TODO add the bounding box instead of ask PostGIS to compute it again
-    // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *coll = (LWGEOM *) lwcollection_construct(COLLECTIONTYPE,
       geoms[0]->srid, NULL, (uint32_t) k, geoms);
     FLAGS_SET_GEODETIC(coll->flags, geodetic);
@@ -1508,8 +1557,10 @@ tpoint_trajectory_internal(const Temporal *temp)
   return result;
 }
 
+#ifdef STORE_TRAJ
 /**
  * Free the trajectory after a call to tpoint_trajectory_internal
+ * when temporal sequence points have a precomputed trajectory
  */
 void
 tpoint_trajectory_free(const Temporal *temp, Datum traj)
@@ -1537,6 +1588,7 @@ tpoint_trajectory_external(const Temporal *temp)
     result = tpointseqset_trajectory((TSequenceSet *) temp);
   return result;
 }
+#endif
 
 PG_FUNCTION_INFO_V1(tpoint_trajectory);
 /**
@@ -1546,7 +1598,11 @@ PGDLLEXPORT Datum
 tpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+#ifdef STORE_TRAJ
   Datum result = tpoint_trajectory_external(temp);
+#else
+  Datum result = tpoint_trajectory_internal(temp);
+#endif
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
@@ -1731,10 +1787,12 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
       gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
       gserialized_set_srid(gs, srid);
     }
+#ifdef STORE_TRAJ
     /* Set the SRID of the precomputed trajectory */
     Datum traj = tpointseq_trajectory(seq);
     gs = (GSERIALIZED *) DatumGetPointer(traj);
     gserialized_set_srid(gs, srid);
+#endif
     /* Set the SRID of the bounding box */
     box = tsequence_bbox_ptr(seq);
     box->srid = srid;
@@ -2708,24 +2766,78 @@ tpoint_get_z(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * Returns the length traversed by the temporal sequence point with plannar
+ * coordinates
+ * @pre The temporal point has linear interpolation
+ */
+static double
+tpointseq_length_2d(const TSequence *seq)
+{
+  double result = 0;
+  Datum start = tinstant_value(tsequence_inst_n(seq , 0));
+  const POINT2D *p1 = datum_get_point2d_p(start);
+  for (int i = 1; i < seq->count; i++)
+  {
+    Datum end = tinstant_value(tsequence_inst_n(seq, i));
+    const POINT2D *p2 = datum_get_point2d_p(end);
+    result += sqrt( ((p1->x - p2->x)*(p1->x - p2->x)) +
+      ((p1->y - p2->y)*(p1->y - p2->y)) );
+    start = end;
+    p1 = p2;
+  }
+  return result;
+}
+
+/**
+ * Returns the length traversed by the temporal sequence point with plannar
+ * coordinates
+ * @pre The temporal point has linear interpolation
+ */
+static double
+tpointseq_length_3d(const TSequence *seq)
+{
+  double result = 0;
+  Datum start = tinstant_value(tsequence_inst_n(seq , 0));
+  const POINT3DZ *p1 = datum_get_point3dz_p(start);
+  for (int i = 1; i < seq->count; i++)
+  {
+    Datum end = tinstant_value(tsequence_inst_n(seq, i));
+    const POINT3DZ *p2 = datum_get_point3dz_p(end);
+    result += sqrt( ((p1->x - p2->x)*(p1->x - p2->x)) +
+      ((p1->y - p2->y)*(p1->y - p2->y)) +
+      ((p1->z - p2->z)*(p1->z - p2->z)) );
+    start = end;
+    p1 = p2;
+  }
+  return result;
+}
+
+/**
  * Returns the length traversed by the temporal sequence point
  */
 static double
 tpointseq_length(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  Datum traj = tpointseq_trajectory(seq);
-  GSERIALIZED *gstraj = (GSERIALIZED *) DatumGetPointer(traj);
-  if (gserialized_get_type(gstraj) == POINTTYPE)
+  if (seq->count == 1)
     return 0;
 
-  /* We are sure that the trajectory is a line */
-  double result = MOBDB_FLAGS_GET_GEODETIC(seq->flags) ?
-    DatumGetFloat8(call_function2(geography_length, traj,
-      BoolGetDatum(true))) :
-    /* The next function call works for 2D and 3D */
-    DatumGetFloat8(call_function1(LWGEOM_length_linestring, traj));
-  return result;
+  if (! MOBDB_FLAGS_GET_GEODETIC(seq->flags))
+  {
+    return MOBDB_FLAGS_GET_Z(seq->flags) ?
+      tpointseq_length_3d(seq) : tpointseq_length_2d(seq);
+  }
+  else
+  {
+    Datum traj = tpointseq_trajectory(seq);
+    /* We are sure that the trajectory is a line */
+    double result = DatumGetFloat8(call_function2(geography_length, traj,
+      BoolGetDatum(true)));
+#ifndef STORE_TRAJ
+    pfree(DatumGetPointer(traj));
+#endif
+    return result;
+  }
 }
 
 /**

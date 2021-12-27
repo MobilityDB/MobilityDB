@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -40,14 +39,14 @@
  * 1. The number of arguments of the function
  *  - unary functions, such as `degrees` for temporal floats or `setPrecision`
  *    for temporal points.
- *  - binary functions and operators, such as arithmetic operators and comparisons (e.g., 
+ *  - binary functions and operators, such as arithmetic operators and comparisons (e.g.,
  *    `+` or `<`) or spatial relationships functions (e.g.,`tintersects`).
  * 2. The type of the arguments for binary functions
  *   - a temporal type and a base type. In this case the non-lifted function
  *     is applied to each instant of the temporal type.
  *   - two temporal types. In this case the operands must be synchronized
  *     and the function is applied to each pair of synchronized instants.
- * 4. Whether the type of the arguments may vary. For example, temporal 
+ * 4. Whether the type of the arguments may vary. For example, temporal
  *    numbers can be of different base type (that is, integer and float).
  *    Therefore, the Oids of the arguments must be taken into account when
  *    computing binary operators (e.g., `+` or `<`) for temporal numbers.
@@ -56,7 +55,7 @@
  *    `tintersects`).
  *  - one argument, such as spatial relationships functions that need
  *    an additional parameter (e.g., `tdwithin`).
- *  - two arguments, e.g., when assembling a temporal point from two temporal 
+ *  - two arguments, e.g., when assembling a temporal point from two temporal
  *    floats, the SRID and a boolean flag stating whether the resulting
  *    temporal point is geometric or geographic are needed.
  * 6. Whether the function has instantaneous discontinuities at the crossings.
@@ -426,7 +425,7 @@ tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq,
 }
 
 /**
- * Applies the function to the temporal value and the base value when the 
+ * Applies the function to the temporal value and the base value when the
  * function has instantaneuous discontinuties
  *
  * @param[out] result Array on which the pointers of the newly constructed
@@ -576,7 +575,7 @@ tfunc_tsequence_base_discont(TSequence **result, const TSequence *seq,
 }
 
 /**
- * Applies the function to the temporal value and the base value. 
+ * Applies the function to the temporal value and the base value.
  * Dispatch function depending on whether the function has
  * instantaneous discontinuities.
  */
@@ -985,7 +984,7 @@ tfunc_tsequence_tsequence_lineareq(TSequence **result, const TSequence *seq1,
    * seq1 =  ...    *       *       *>
    * seq2 =    <*       *   *   * ...
    * result =  <S T S T S T * T S T S>
-   * where S, T, and * are values computed, respectively, at 
+   * where S, T, and * are values computed, respectively, at
    * Synchronization points, optional Turning points, and common points
    */
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
@@ -1061,7 +1060,7 @@ tfunc_tsequence_tsequence_lineareq(TSequence **result, const TSequence *seq1,
     /* We cannot DATUM_FREE(value, lfinfo->restypid); */
   }
   pfree(inter);
-  pfree_array((void **) tofree, l); 
+  pfree_array((void **) tofree, l);
   result[0] = tsequence_make_free(instants, k, inter->lower_inc,
     inter->upper_inc, lfinfo->reslinear, NORMALIZE);
   return 1;
@@ -1069,7 +1068,7 @@ tfunc_tsequence_tsequence_lineareq(TSequence **result, const TSequence *seq1,
 
 /**
  * Synchronizes the temporal values and applies to them the function.
- * This function is applied when one sequence has linear interpolation and 
+ * This function is applied when one sequence has linear interpolation and
  * the other step interpolation and the function does not have instantaneous
  * discontinuities. The result is an array of sequences.
  *
@@ -1165,9 +1164,9 @@ tfunc_tsequence_tsequence_linearstep(TSequence **result, const TSequence *seq1,
 }
 
 /**
- * Synchronizes the temporal values and applies to them the function. 
+ * Synchronizes the temporal values and applies to them the function.
  * This function is applied for functions with instantaneous discontinuities
- * and thus the result is an array of sequences. This function is applied 
+ * and thus the result is an array of sequences. This function is applied
  * when at least one temporal value has linear interpolation.
  *
  * @param[out] result Array on which the pointers of the newly constructed

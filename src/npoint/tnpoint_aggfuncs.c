@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -55,7 +54,7 @@ PG_FUNCTION_INFO_V1(tnpoint_tcentroid_transfn);
 PGDLLEXPORT Datum
 tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {

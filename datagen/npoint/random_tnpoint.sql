@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -39,7 +38,7 @@
 -------------------------------------------------------------------------------
 
 /**
- * Generate a random fraction between in the range [0,1] 
+ * Generate a random fraction between in the range [0,1]
  */
 CREATE OR REPLACE FUNCTION random_fraction()
   RETURNS float AS $$
@@ -173,7 +172,7 @@ FROM generate_series(1,10) k;
  *    sequence set value and in this case the start timestamp is already fixed
  */
 CREATE OR REPLACE FUNCTION random_tnpoint_seq(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int, 
+  lowtime timestamptz, hightime timestamptz, maxminutes int,
   mincard int, maxcard int,
   linear bool DEFAULT true, fixstart bool DEFAULT false)
   RETURNS tnpoint AS $$
@@ -232,7 +231,7 @@ FROM generate_series (1, 15) AS k;
  * @param[in] linear True when the sequence set has linear interpolation
  */
 CREATE OR REPLACE FUNCTION random_tnpoint_seqset(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int, 
+  lowtime timestamptz, hightime timestamptz, maxminutes int,
   mincardseq int, maxcardseq int, mincard int, maxcard int,
   linear bool DEFAULT true)
   RETURNS tnpoint AS $$

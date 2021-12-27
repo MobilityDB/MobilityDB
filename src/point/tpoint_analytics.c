@@ -1,7 +1,6 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -243,7 +242,6 @@ tpointseqset_to_geo(const TSequenceSet *ts)
       colltype = COLLECTIONTYPE;
   }
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
   Datum result = PointerGetDatum(geo_serialize(coll));
@@ -313,7 +311,6 @@ tpointseq_to_geo_segmentize(const TSequence *seq)
   else
   {
     // TODO add the bounding box instead of ask PostGIS to compute it again
-    // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
     result = PointerGetDatum(geo_serialize(segcoll));
@@ -362,7 +359,6 @@ tpointseqset_to_geo_segmentize(const TSequenceSet *ts)
   }
   Datum result;
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequenceset_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) k, geoms);
   result = PointerGetDatum(geo_serialize(coll));
@@ -821,7 +817,6 @@ tpointseqset_to_geo_measure(const TSequenceSet *ts, const TSequenceSet *measure)
       colltype = COLLECTIONTYPE;
   }
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
   Datum result = PointerGetDatum(geo_serialize(coll));
@@ -897,7 +892,6 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
   else
   {
     // TODO add the bounding box instead of ask PostGIS to compute it again
-    // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
     result = PointerGetDatum(geo_serialize(segcoll));
@@ -947,7 +941,6 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
   }
   Datum result;
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequenceset_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) k, geoms);
   result = PointerGetDatum(geo_serialize(coll));

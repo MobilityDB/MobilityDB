@@ -1,7 +1,6 @@
 ﻿/*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -34,7 +33,7 @@
  * and temporal point types.
  *
  * These functions use the random generator for these types that are in the
- * file random_tpoint.sql. Refer to that file for the meaning of the 
+ * file random_tpoint.sql. Refer to that file for the meaning of the
  * parameters used in the function calls of this file.
  */
 

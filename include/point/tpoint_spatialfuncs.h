@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2021, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -198,7 +201,7 @@ extern Datum geog_bearing(Datum point1, Datum point2);
 extern bool tgeompointseq_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end1, const TInstant *start2, const TInstant *end2,
   TimestampTz *t);
-  
+
 /* Restriction functions */
 
 extern Datum tpoint_at_geometry(PG_FUNCTION_ARGS);

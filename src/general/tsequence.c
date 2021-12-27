@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -591,9 +590,10 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
 
   /* Precompute the trajectory */
   size_t trajsize = 0;
+  bool isgeo = tgeo_base_type(instants[0]->basetypid);
+#ifdef STORE_TRAJ
   bool hastraj = false; /* keep compiler quiet */
   Datum traj = 0; /* keep compiler quiet */
-  bool isgeo = tgeo_base_type(instants[0]->basetypid);
   if (isgeo)
   {
     hastraj = type_has_precomputed_trajectory(instants[0]->basetypid);
@@ -605,6 +605,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
       trajsize += double_pad(VARSIZE(DatumGetPointer(traj)));
     }
   }
+#endif
 
   /* Create the temporal sequence */
   size_t seqsize = tsequence_make_size(norminsts, newcount, bboxsize, trajsize);
@@ -646,6 +647,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   if (bboxsize != 0)
   {
     void *bbox = ((char *) result) + pdata + pos;
+#ifdef STORE_TRAJ
     if (hastraj)
     {
       geo_to_stbox_internal(bbox, (GSERIALIZED *) DatumGetPointer(traj));
@@ -654,10 +656,12 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
       MOBDB_FLAGS_SET_T(((STBOX *)bbox)->flags, true);
     }
     else
+#endif
       tsequence_make_bbox(bbox, norminsts, newcount, lower_inc, upper_inc);
     result->offsets[newcount] = pos;
     pos += double_pad(bboxsize);
   }
+#ifdef STORE_TRAJ
   if (isgeo && hastraj)
   {
     result->offsets[newcount + 1] = pos;
@@ -665,6 +669,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
       VARSIZE(DatumGetPointer(traj)));
     pfree(DatumGetPointer(traj));
   }
+#endif
 
   if (normalize && count > 1)
     pfree(norminsts);

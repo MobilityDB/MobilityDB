@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -10,20 +9,20 @@
  * Copyright (c) 2001-2021, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -38,8 +37,8 @@
  * attribute. Please refer to the PostgreSQL file `pg_statistic_d.h` and the
  * PostGIS file `gserialized_estimate.c` for more information about the
  * statistics collected.
- * 
- * For the spatial dimension, the statistics collected are the same for all 
+ *
+ * For the spatial dimension, the statistics collected are the same for all
  * subtypes. These statistics are obtained by calling the PostGIS function
  * `gserialized_analyze_nd`.
  * - Slot 1
@@ -49,7 +48,7 @@
  *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_ND`.
  *     - `stanumbers` stores the ND histogram of occurrence of features.
  *
- * For the time dimension, the statistics collected in Slots 3 and 4 depend on 
+ * For the time dimension, the statistics collected in Slots 3 and 4 depend on
  * the subtype. Please refer to file temporal_analyze.c for more information.
  */
 
@@ -580,7 +579,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum datum;
     Temporal *temp;
-    GSERIALIZED *trajgs;
+    STBOX box;
     GBOX gbox;
     ND_BOX *nd_box;
     bool is_null;
@@ -604,26 +603,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* TO VERIFY */
     is_copy = VARATT_IS_EXTENDED(temp);
 
-    /* Get trajectory from temporal point */
-    if (tgeo_base_type(temp->basetypid))
-      trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
-    else if (temp->basetypid == type_oid(T_NPOINT))
-      trajgs = (GSERIALIZED *) DatumGetPointer(tnpoint_geom(temp));
-    else 
-      elog(ERROR, "unknown trajectory function for base type: %d",
-        temp->basetypid);
-
-    /* Read the bounds from the gserialized. */
-    if ( LW_FAILURE == gserialized_get_gbox_p(trajgs, &gbox) )
-    {
-      /* Skip empties too. */
-      continue;
-    }
-    /* Free trajectory */
-    if (tgeo_base_type(temp->basetypid))
-      tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
-    else if (temp->basetypid == type_oid(T_NPOINT))
-      pfree(DatumGetPointer(trajgs));
+    /* Get bounding box from temporal point */
+    memset(&box, 0, sizeof(STBOX));
+    temporal_bbox(&box, temp);
+    memset(&gbox, 0, sizeof(GBOX));
+    stbox_set_gbox(&box, &gbox);
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )

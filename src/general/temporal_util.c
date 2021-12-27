@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -280,6 +279,7 @@ ensure_tgeo_base_type(Oid basetypid)
   return;
 }
 
+#ifdef STORE_TRAJ
 /**
  * Returns true if the temporal type corresponding to the Oid of the
  * base type has its trajectory precomputed
@@ -291,6 +291,7 @@ type_has_precomputed_trajectory(Oid basetypid)
     return true;
   return false;
 }
+#endif
 
 /**
  * Returns true if the temporal type corresponding to the Oid of the

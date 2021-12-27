@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -882,7 +881,7 @@ tfloatseqset_to_range(const TSequenceSet *ts)
     pfree(normranges);
     return result;
   }
-  
+
   RangeType *start = normranges[0];
   RangeType *end = normranges[newcount - 1];
   result = range_make(lower_datum(start), upper_datum(end),

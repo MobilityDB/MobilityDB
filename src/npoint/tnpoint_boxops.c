@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -347,7 +346,7 @@ overlaps_bbox_geo_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_stbox_tnpoint);
 /**
- * Returns true if the spatiotemporal box and the spatiotemporal box of 
+ * Returns true if the spatiotemporal box and the spatiotemporal box of
  * the temporal network point overlap
  */
 PGDLLEXPORT Datum
@@ -382,7 +381,7 @@ overlaps_bbox_tnpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnpoint_stbox);
 /**
- * Returns true if the spatiotemporal box of the temporal network point and 
+ * Returns true if the spatiotemporal box of the temporal network point and
  * the spatiotemporal box overlap
  */
 PGDLLEXPORT Datum
@@ -393,7 +392,7 @@ overlaps_bbox_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(overlaps_bbox_tnpoint_npoint);
 /**
- * Returns true if the spatiotemporal boxes of the temporal network point and 
+ * Returns true if the spatiotemporal boxes of the temporal network point and
  * the network point overlap
  */
 PGDLLEXPORT Datum

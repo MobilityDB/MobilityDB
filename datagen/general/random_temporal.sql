@@ -1,7 +1,6 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
  * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
  * contributors
  *
@@ -30,7 +29,7 @@
 
 /*
  * random_temporal.sql
- * Basic synthetic data generator functions for some PostgreSQL data types 
+ * Basic synthetic data generator functions for some PostgreSQL data types
  * and for temporal data types.
  *
  * These functions use lower and upper bounds for the generated values:
@@ -66,7 +65,7 @@ FROM generate_series(1, 15) AS k;
 
 /**
  * Generate a random integer in a range
- * 
+ *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  */
 DROP FUNCTION IF EXISTS random_int;
@@ -92,7 +91,7 @@ ORDER BY 1;
 
 /**
  * Generate an array of random integers in a range
- * 
+ *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between two consecutive values
  * @param[in] mincard, maxcard Inclusive bounds of the cardinality of the array
@@ -138,7 +137,7 @@ FROM generate_series(1, 15) AS k;
 
 /**
  * Generate a random integer range
- * 
+ *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  * @param[in] maxdelta Maximum difference between the lower and upper bounds
  */
@@ -166,7 +165,7 @@ FROM generate_series(1,10) k;
 
 /**
  * Generate a random float in a range
- * 
+ *
  * @param[in] lowvalue, highvalue Inclusive bounds of the range
  */
 DROP FUNCTION IF EXISTS random_float;
@@ -437,7 +436,7 @@ FROM generate_series(1, 15) AS k;
  *
  * @param[in] lowtime, hightime Inclusive bounds of the maximal period
  * @param[in] maxminutes Maximum number of minutes between the timestamps
- * @param[in] fixstart True when this function is called for generating 
+ * @param[in] fixstart True when this function is called for generating
  *   a period set and in this case the start timestamp is already fixed
  */
 DROP FUNCTION IF EXISTS random_period;
@@ -1306,7 +1305,7 @@ FROM generate_series(1, 15) AS k;
 DROP FUNCTION IF EXISTS random_tfloat_seqset;
 CREATE FUNCTION random_tfloat_seqset(lowvalue float, highvalue float,
   lowtime timestamptz, hightime timestamptz, maxdelta float, maxminutes int,
-  mincardseq int, maxcardseq int, mincard int, maxcard int, 
+  mincardseq int, maxcardseq int, mincard int, maxcard int,
   linear bool DEFAULT true)
   RETURNS tfloat AS $$
 DECLARE
