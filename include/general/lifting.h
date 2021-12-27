@@ -102,4 +102,9 @@ extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
 
 /*****************************************************************************/
 
+extern int efunc_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, LiftedFunctionInfo *lfinfo);
+
+/*****************************************************************************/
+
 #endif

@@ -426,6 +426,7 @@ tinstantarr_similarity_matrix1(double *dist, const TInstant **instants1,
  *
  * @param[in] instants1,instants2 Arrays of temporal instants
  * @param[in] count1,count2 Number of instants in the arrays
+ * @param[out] count Number of elements in the resulting array
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 Match *

@@ -80,6 +80,7 @@ extern Oid base_oid_from_temporal(Oid temptypid);
 extern size_t double_pad(size_t size);
 extern Datum datum_copy(Datum value, Oid type);
 extern double datum_double(Datum d, Oid basetypid);
+extern text *cstring2text(const char *cstring);
 extern char *text2cstring(const text *textptr);
 
 /* PostgreSQL call helpers */

@@ -1,25 +1,33 @@
 env:
 # - PGMAJOR=10 PGISMAJOR=2.5 COVERAGE=0
-# - PGMAJOR=11 PGISMAJOR=2.5 COVERAGE=0
+- PGMAJOR=11 PGISMAJOR=2.5 COVERAGE=0
 # - PGMAJOR=12 PGISMAJOR=2.5 COVERAGE=0
 # - PGMAJOR=13 PGISMAJOR=2.5 COVERAGE=0
-- PGMAJOR=13 PGISMAJOR=3 COVERAGE=0
+# - PGMAJOR=13 PGISMAJOR=3 COVERAGE=0
 # - PGMAJOR=13 PGISMAJOR=3 COVERAGE=1
 
 language: c
 
-dist: xenial
+os:
+  - linux
+  # - osx
+
+dist: bionic
 
 compiler:
   - gcc
 
 before_install:
-  - sudo apt update && sudo apt install libgnutls-openssl27 libgnutls30
-  - echo 'deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
-  - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-  - sudo apt-get update
-  - sudo apt-get install -y postgresql-$PGMAJOR postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-$PGMAJOR libproj-dev postgresql-$PGMAJOR-postgis-$PGISMAJOR postgresql-$PGMAJOR-postgis-$PGISMAJOR-scripts libjson-c-dev libgsl-dev libprotobuf-c-dev
-  - pip install --user cpp-coveralls
+  # if [ "$TRAVIS_OS_NAME" = "linux" ]; then
+    - sudo apt update && sudo apt install libgnutls-openssl27 libgnutls30
+    - echo 'deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list
+    - curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+    - sudo apt-get update
+    - sudo apt-get install -y postgresql-$PGMAJOR postgis liblwgeom-dev libpq-dev libpqtypes-dev postgresql-server-dev-$PGMAJOR libproj-dev postgresql-$PGMAJOR-postgis-$PGISMAJOR postgresql-$PGMAJOR-postgis-$PGISMAJOR-scripts libjson-c-dev libgsl-dev libprotobuf-c-dev
+    - pip install --user cpp-coveralls
+  # ; fi
+  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update --quiet; fi
+  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; brew install postgresql postgis proj gsl; fi
 
 before_script:
   - mkdir build
@@ -29,6 +37,8 @@ before_script:
 script:
   - export PATH="/usr/lib/postgresql/$PGMAJOR/bin:$PATH"
   - make && make test
+  # - make -j
+  # - make test
 
 after_failure: ../test/scripts/print_fail.sh
 

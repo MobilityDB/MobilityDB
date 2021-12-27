@@ -42,7 +42,7 @@ CREATE FUNCTION _contains(geometry, tgeompoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(geometry, tgeompoint)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.@>) $2 AND @extschema@._contains($1,$2)'
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._contains($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
@@ -55,7 +55,7 @@ CREATE FUNCTION _disjoint(geometry, tgeompoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(geometry, tgeompoint)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _disjoint(tgeompoint, geometry)
@@ -64,7 +64,45 @@ CREATE FUNCTION _disjoint(tgeompoint, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(tgeompoint, geometry)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._disjoint($1,$2)'
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _disjoint(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'disjoint_tpoint_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION _disjoint(geography, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'disjoint_geo_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(geography, tgeogpoint)
+  RETURNS boolean
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _disjoint(tgeogpoint, geography)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'disjoint_tpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(tgeogpoint, geography)
+  RETURNS boolean
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _disjoint(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'disjoint_tpoint_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************
@@ -89,6 +127,15 @@ CREATE FUNCTION intersects(tgeompoint, geometry)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION _intersects(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION _intersects(geography, tgeogpoint)
@@ -109,6 +156,15 @@ CREATE FUNCTION intersects(tgeogpoint, geography)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION _intersects(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  
 /*****************************************************************************
  * touches
  *****************************************************************************/

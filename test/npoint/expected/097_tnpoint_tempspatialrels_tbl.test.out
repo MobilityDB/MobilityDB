@@ -22,7 +22,7 @@ SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE ttouches(ST_SetSRID(t
    400
 (1 row)
 
-SELECT count(*) FROM tbl_geometry t1, tbl_tnpoint t2 WHERE tdwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
+SELECT count(*) FROM tbl_geom_point t1, tbl_tnpoint t2 WHERE tdwithin(ST_SetSRID(t1.g, 5676), t2.temp, 0.01) IS NOT NULL AND t1.k%25 < 5 AND t2.k%25 < 5;
  count 
 -------
    380
@@ -70,7 +70,7 @@ SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE ttouches(t1.temp, ST_
     80
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_geometry t2 WHERE tdwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
+SELECT count(*) FROM tbl_tnpoint t1, tbl_geom_point t2 WHERE tdwithin(t1.temp, ST_SetSRID(t2.g, 5676), 0.01) IS NOT NULL AND t1.k < 5 AND t2.k%25 < 5;
  count 
 -------
     76

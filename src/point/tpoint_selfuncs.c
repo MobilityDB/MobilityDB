@@ -801,17 +801,9 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_sel);
-/**
- * Estimate the join selectivity value of the operators for temporal points
- */
-PGDLLEXPORT Datum
-tpoint_sel(PG_FUNCTION_ARGS)
+float8
+tpoint_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
   VariableStatData vardata;
   Node *other;
   bool varonleft;
@@ -826,7 +818,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
   bool found = tpoint_cachedop(operator, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+    return DEFAULT_TEMP_SELECTIVITY;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -834,7 +826,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
    */
   if (!get_restriction_variable(root, args, varRelid,
                   &vardata, &other, &varonleft))
-    PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
+    return default_tpoint_selectivity(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -842,7 +834,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
+    return default_tpoint_selectivity(cachedOp);
   }
 
   /*
@@ -852,7 +844,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
   if (((Const *) other)->constisnull)
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(0.0);
+    return 0.0;
   }
 
   /*
@@ -867,7 +859,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
+      return default_tpoint_selectivity(cachedOp);
     }
   }
 
@@ -878,7 +870,7 @@ tpoint_sel(PG_FUNCTION_ARGS)
   found = tpoint_const_to_stbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)
-    PG_RETURN_FLOAT8(default_tpoint_selectivity(cachedOp));
+    return default_tpoint_selectivity(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
@@ -910,12 +902,27 @@ tpoint_sel(PG_FUNCTION_ARGS)
     ensure_valid_tempsubtype_all(subtype);
 
     /* Compute the selectivity */
-    selec *= temporal_sel_internal(root, &vardata, &constperiod, cachedOp);
+    selec *= temporal_sel_internal_per(root, &vardata, &constperiod, cachedOp);
   }
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
-  PG_RETURN_FLOAT8(selec);
+  return selec;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_sel);
+/**
+ * Estimate the join selectivity value of the operators for temporal points
+ */
+PGDLLEXPORT Datum
+tpoint_sel(PG_FUNCTION_ARGS)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operator = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selectivity = tpoint_sel_internal(root, operator, args, varRelid);
+  PG_RETURN_FLOAT8(selectivity);
 }
 
 PG_FUNCTION_INFO_V1(tpoint_joinsel);

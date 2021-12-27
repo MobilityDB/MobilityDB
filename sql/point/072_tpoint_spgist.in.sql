@@ -188,7 +188,7 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
   OPERATOR  17    -|- (tgeompoint, stbox),
   OPERATOR  17    -|- (tgeompoint, tgeompoint),
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  -- distance
+  -- nearest approach distance
   OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
@@ -254,7 +254,7 @@ CREATE OPERATOR CLASS spgist_tgeogpoint_ops
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  -- distance
+  -- nearest approach distance
   OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,

@@ -338,7 +338,7 @@ default_temporal_selectivity(CachedOp operator)
  * respectively.
  */
 Selectivity
-temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
+temporal_sel_internal_per(PlannerInfo *root, VariableStatData *vardata,
   Period *period, CachedOp cachedOp)
 {
   double selec;
@@ -381,18 +381,13 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_sel);
 /**
- * Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a period, that is, tbool and ttext (internal function)
  */
-PGDLLEXPORT Datum
-temporal_sel(PG_FUNCTION_ARGS)
+float8
+temporal_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
   VariableStatData vardata;
   Node *other;
   bool varonleft;
@@ -406,7 +401,7 @@ temporal_sel(PG_FUNCTION_ARGS)
   bool found = temporal_cachedop(operator, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+    return DEFAULT_TEMP_SELECTIVITY;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -414,7 +409,7 @@ temporal_sel(PG_FUNCTION_ARGS)
    */
   if (!get_restriction_variable(root, args, varRelid,
     &vardata, &other, &varonleft))
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    return default_temporal_selectivity(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -422,7 +417,7 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    return default_temporal_selectivity(cachedOp);
   }
 
   /*
@@ -432,7 +427,7 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (((Const *) other)->constisnull)
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(0.0);
+    return 0.0;
   }
 
   /*
@@ -447,7 +442,7 @@ temporal_sel(PG_FUNCTION_ARGS)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+      return default_temporal_selectivity(cachedOp);
     }
   }
 
@@ -457,14 +452,30 @@ temporal_sel(PG_FUNCTION_ARGS)
   found = temporal_const_to_period(other, &constperiod);
   /* In the case of unknown constant */
   if (!found)
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    return default_temporal_selectivity(cachedOp);
 
   /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_internal(root, &vardata, &constperiod, cachedOp);
+  selec = temporal_sel_internal_per(root, &vardata, &constperiod, cachedOp);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
-  PG_RETURN_FLOAT8(selec);
+  return selec;
+}
+
+PG_FUNCTION_INFO_V1(temporal_sel);
+/**
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a period, that is, tbool and ttext.
+ */
+PGDLLEXPORT Datum
+temporal_sel(PG_FUNCTION_ARGS)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operator = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selectivity = temporal_sel_internal(root, operator, args, varRelid);
+  PG_RETURN_FLOAT8(selectivity);
 }
 
 PG_FUNCTION_INFO_V1(temporal_joinsel);

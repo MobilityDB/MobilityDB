@@ -49,6 +49,9 @@
 /* Buffer size for input and output of STBOX */
 #define MAXSTBOXLEN    256
 
+
+extern void ll2cart(const POINT2D *g, POINT3D *p);
+
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
@@ -653,12 +656,7 @@ box3d_to_stbox(PG_FUNCTION_ARGS)
 bool
 geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
 {
-  /* Exact bounding box */
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  GBOX gbox;
-  int ret = lwgeom_calculate_gbox(lwgeom, &gbox);
-  lwgeom_free(lwgeom);
-  if (ret == LW_FAILURE)
+  if (gserialized_is_empty(gs))
   {
     /* Spatial dimensions are set as missing for the SP-GiST index */
     MOBDB_FLAGS_SET_X(box->flags, false);
@@ -666,27 +664,58 @@ geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
     MOBDB_FLAGS_SET_T(box->flags, false);
     return false;
   }
-  box->xmin = gbox.xmin;
-  box->xmax = gbox.xmax;
-  box->ymin = gbox.ymin;
-  box->ymax = gbox.ymax;
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-#endif
-  if (hasz || geodetic)
-  {
-    box->zmin = gbox.zmin;
-    box->zmax = gbox.zmax;
-  }
+
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
   box->srid = gserialized_get_srid(gs);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_Z(box->flags, hasz);
   MOBDB_FLAGS_SET_T(box->flags, false);
   MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
+
+  /* Short-circuit the case where the geometry is a point */
+  if (gserialized_get_type(gs) == POINTTYPE)
+  {
+    if (geodetic)
+    {
+      const POINT2D *p = datum_get_point2d_p(PointerGetDatum(gs));
+      POINT3D A;
+      ll2cart(p, &A);
+      box->xmin = box->xmax = A.x;
+      box->ymin = box->ymax = A.y;
+      box->zmin = box->zmax = A.z;
+    }
+    else if (hasz)
+    {
+      const POINT3DZ *p = datum_get_point3dz_p(PointerGetDatum(gs));
+      box->xmin = box->xmax = p->x;
+      box->ymin = box->ymax = p->y;
+      box->zmin = box->zmax = p->z;
+    }
+    else
+    {
+      const POINT2D *p = datum_get_point2d_p(PointerGetDatum(gs));
+      box->xmin = box->xmax = p->x;
+      box->ymin = box->ymax = p->y;
+    }
+    return true;
+  }
+
+  /* General case for arbitrary geometry/geography */
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  GBOX gbox;
+  /* We are sure that the geometry/geography is not empty */
+  lwgeom_calculate_gbox(lwgeom, &gbox);
+  lwgeom_free(lwgeom);
+  box->xmin = gbox.xmin;
+  box->xmax = gbox.xmax;
+  box->ymin = gbox.ymin;
+  box->ymax = gbox.ymax;
+  if (hasz || geodetic)
+  {
+    box->zmin = gbox.zmin;
+    box->zmax = gbox.zmax;
+  }
   return true;
 }
 

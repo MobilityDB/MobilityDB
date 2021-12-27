@@ -29,7 +29,7 @@
 
 /*
  * tpoint_tempspatialrels.sql
- * Spatial relationships for temporal points.
+ * Temporal spatial relationships for temporal points.
  */
 
 /*****************************************************************************
@@ -67,7 +67,7 @@ CREATE FUNCTION tdisjoint(tgeogpoint, tgeogpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  
+
 CREATE FUNCTION tdisjoint(geometry, tgeompoint, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdisjoint_geo_tpoint'
@@ -164,6 +164,16 @@ CREATE FUNCTION tdwithin(tgeompoint, tgeompoint, dist float8)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
+CREATE FUNCTION tdwithin(geography, tgeogpoint, dist float8)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tdwithin_geo_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tdwithin(tgeogpoint, geography, dist float8)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tdwithin_tpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdwithin(tgeogpoint, tgeogpoint, dist float8)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'
@@ -180,6 +190,15 @@ CREATE FUNCTION tdwithin(tgeompoint, geometry, dist float8, atvalue bool)
 CREATE FUNCTION tdwithin(tgeompoint, tgeompoint, dist float8, atvalue bool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tdwithin(geography, tgeogpoint, dist float8, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tdwithin_geo_tpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tdwithin(tgeogpoint, geography, dist float8, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tdwithin_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tdwithin(tgeogpoint, tgeogpoint, dist float8, atvalue bool)
   RETURNS tbool

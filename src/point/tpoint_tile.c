@@ -632,11 +632,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -733,11 +729,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(point->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(point));
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
@@ -981,11 +973,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-#if POSTGIS_VERSION_NUMBER < 30000
-    ensure_same_geodetic(temp->flags, sorigin->flags);
-#else
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-#endif
+    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(&bounds, temp);
@@ -996,11 +984,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -1128,11 +1112,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
-#if POSTGIS_VERSION_NUMBER < 30000
-    ensure_same_geodetic(temp->flags, sorigin->flags);
-#else
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-#endif
+    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(&bounds, temp);
@@ -1141,11 +1121,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {

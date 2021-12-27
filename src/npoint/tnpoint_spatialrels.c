@@ -143,7 +143,7 @@ disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, true);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
 }
@@ -159,7 +159,7 @@ disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
   npoint *np  = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Datum geom = npoint_as_geom_internal(np);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, true);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -175,7 +175,7 @@ disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum geom = PG_GETARG_DATUM(1);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, false);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
@@ -191,7 +191,7 @@ disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   npoint *np  = PG_GETARG_NPOINT(1);
   Datum geom = npoint_as_geom_internal(np);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, true);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);

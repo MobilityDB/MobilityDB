@@ -73,6 +73,10 @@ extern Temporal *tdwithin_tpoint_geo_internal(const Temporal *temp,
 extern Temporal *tdwithin_tpoint_tpoint_internal(const Temporal *temp1,
   const Temporal *temp2, Datum dist, bool atvalue, Datum value);
 
+extern int tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, 
+  Datum ev2, TimestampTz lower, TimestampTz upper, double dist, bool hasz,
+  datum_func3 func, TimestampTz *t1, TimestampTz *t2);
+
 /*****************************************************************************/
 
 #endif

@@ -391,7 +391,7 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) get_pt_distance_fn(temp->flags);
+  lfinfo.func = (varfunc) get_distance_fn(temp->flags);
   lfinfo.numparam = 0;
   lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
   lfinfo.restypid = FLOAT8OID;
@@ -785,7 +785,7 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  datum_func2 func = get_pt_distance_fn(temp->flags);
+  datum_func2 func = get_distance_fn(temp->flags);
   TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)

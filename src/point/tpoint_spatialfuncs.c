@@ -112,7 +112,15 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * to modify the values, only read them.
  */
 
-#define GS_POINT_PTR(gs)    ((uint8_t *) gs->data + 8)
+#define LWFLAG_EXTFLAGS    0x20
+#define LWFLAG_VERSBIT2    0x80
+
+#define FLAGS_GET_EXTFLAGS(flags)     (((flags) & LWFLAG_EXTFLAGS)>>5)
+#define FLAGS_GET_VERSBIT2(flags)     (((flags) & LWFLAG_VERSBIT2)>>7)
+
+#define GS_POINT_PTR(gs)    ( (uint8_t *) gs->data + 8 + \
+  FLAGS_GET_BBOX(GS_FLAGS(gs)) * FLAGS_NDIMS_BOX(GS_FLAGS(gs)) * 8 + \
+  FLAGS_GET_VERSBIT2(GS_FLAGS(gs)) * 8 )
 
 /**
  * Returns a 2D point from the datum
@@ -120,28 +128,9 @@ store_fcinfo(FunctionCallInfo fcinfo)
 POINT2D
 datum_get_point2d(Datum geom)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
   return *point;
-}
-
-/**
- * Returns a pointer to a 2D point from the datum
- */
-const POINT2D *
-datum_get_point2d_p(Datum geom)
-{
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  return (const POINT2D *) GS_POINT_PTR(gs);
-}
-
-/**
- * Returns a 2D point from the serialized geometry
- */
-const POINT2D *
-gs_get_point2d_p(GSERIALIZED *gs)
-{
-  return (POINT2D *) GS_POINT_PTR(gs);
 }
 
 /**
@@ -150,28 +139,9 @@ gs_get_point2d_p(GSERIALIZED *gs)
 POINT3DZ
 datum_get_point3dz(Datum geom)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
   return *point;
-}
-
-/**
- * Returns a pointer to a 3DZ point from the datum
- */
-const POINT3DZ *
-datum_get_point3dz_p(Datum geom)
-{
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
-  return (const POINT3DZ *) GS_POINT_PTR(gs);
-}
-
-/**
- * Returns a 3DZ point from the serialized geometry
- */
-const POINT3DZ *
-gs_get_point3dz_p(GSERIALIZED *gs)
-{
-  return (const POINT3DZ *) GS_POINT_PTR(gs);
 }
 
 /**
@@ -181,13 +151,9 @@ gs_get_point3dz_p(GSERIALIZED *gs)
 void
 datum_get_point4d(POINT4D *p, Datum geom)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   memset(p, 0, sizeof(POINT4D));
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_Z(gs->flags))
-#else
-  if (FLAGS_GET_Z(gs->gflags))
-#endif
+  if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
     POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
     p->x = point->x;
@@ -203,28 +169,59 @@ datum_get_point4d(POINT4D *p, Datum geom)
   return;
 }
 
+/*****************************************************************************/
+
+/**
+ * Returns a pointer to a 2D point from the datum
+ */
+const POINT2D *
+datum_get_point2d_p(Datum geom)
+{
+  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  return (POINT2D *) GS_POINT_PTR(gs);
+}
+
+/**
+ * Returns a 2D point from the serialized geometry
+ */
+const POINT2D *
+gs_get_point2d_p(const GSERIALIZED *gs)
+{
+  return (POINT2D *) GS_POINT_PTR(gs);
+}
+
+/**
+ * Returns a pointer to a 3DZ point from the datum
+ */
+const POINT3DZ *
+datum_get_point3dz_p(Datum geom)
+{
+  const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
+  return (POINT3DZ *) GS_POINT_PTR(gs);
+}
+
+/**
+ * Returns a 3DZ point from the serialized geometry
+ */
+const POINT3DZ *
+gs_get_point3dz_p(const GSERIALIZED *gs)
+{
+  return (POINT3DZ *) GS_POINT_PTR(gs);
+}
+
 /**
  * Returns true if the two points are equal
  */
 bool
 datum_point_eq(Datum geopoint1, Datum geopoint2)
 {
-  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(geopoint1);
-  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(geopoint2);
+  const GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(geopoint1);
+  const GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(geopoint2);
   if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
-#if POSTGIS_VERSION_NUMBER < 30000
-    FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags) ||
-    FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
-#else
-    FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
-    FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
-#endif
+    FLAGS_GET_Z(GS_FLAGS(gs1)) != FLAGS_GET_Z(GS_FLAGS(gs2)) ||
+    FLAGS_GET_GEODETIC(GS_FLAGS(gs1)) != FLAGS_GET_GEODETIC(GS_FLAGS(gs2)))
     return false;
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_Z(gs1->flags))
-#else
-  if (FLAGS_GET_Z(gs1->gflags))
-#endif
+  if (FLAGS_GET_Z(GS_FLAGS(gs1)))
   {
     const POINT3DZ *point1 = gs_get_point3dz_p(gs1);
     const POINT3DZ *point2 = gs_get_point3dz_p(gs2);
@@ -240,16 +237,34 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /**
+ * Returns true if the two points are equal
+ */
+Datum
+datum2_point_eq(Datum geopoint1, Datum geopoint2)
+{
+  return BoolGetDatum(datum_point_eq(geopoint1, geopoint2));
+}
+
+/**
+ * Returns true if the two points are equal
+ */
+Datum
+datum2_point_ne(Datum geopoint1, Datum geopoint2)
+{
+  return BoolGetDatum(! datum_point_eq(geopoint1, geopoint2));
+}
+
+/**
  * Serialize a geometry/geography
  *
  *@pre It is supposed that the flags such as Z and geodetic have been
  * set up before by the calling function
  */
 GSERIALIZED *
-geo_serialize(LWGEOM *geom)
+geo_serialize(const LWGEOM *geom)
 {
   size_t size;
-  GSERIALIZED *result = gserialized_from_lwgeom(geom, &size);
+  GSERIALIZED *result = gserialized_from_lwgeom((LWGEOM *) geom, &size);
   SET_VARSIZE(result, size);
   return result;
 }
@@ -357,6 +372,19 @@ pt_distance3d(Datum geom1, Datum geom2)
   return Float8GetDatum(distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2));
 }
 
+/**
+ * Returns the 2D intersection between the two geometries
+ */
+Datum
+geom_intersection2d(Datum geom1, Datum geom2)
+{
+#if POSTGIS_VERSION_NUMBER < 30000
+  return call_function2(intersection, geom1, geom2);
+#else
+  return call_function2(ST_Intersection, geom1, geom2);
+#endif
+}
+
 /*****************************************************************************
  * Parameter tests
  *****************************************************************************/
@@ -378,18 +406,15 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * Ensure that the spatial argument has planar coordinates
- */
+ * THIS FUNCTION IS NOT CURRENTLY USED
 void
 ensure_not_geodetic_gs(const GSERIALIZED *gs)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if ( FLAGS_GET_GEODETIC(gs->flags) )
-#else
-  if ( FLAGS_GET_GEODETIC(gs->gflags) )
-#endif
+  if (FLAGS_GET_GEODETIC(GS_FLAGS(gs)))
     elog(ERROR, "Only planar coordinates supported");
   return;
 }
+*/
 
 /**
  * Ensure that the spatiotemporal argument has planar coordinates
@@ -422,11 +447,7 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 void
 ensure_same_geodetic_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_GEODETIC(gs1->flags) != FLAGS_GET_GEODETIC(gs2->flags))
-#else
-    if (FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
-#endif
+    if (FLAGS_GET_GEODETIC(GS_FLAGS(gs1)) != FLAGS_GET_GEODETIC(GS_FLAGS(gs2)))
     elog(ERROR, "Operation on mixed planar and geodetic coordinates");
   return;
 }
@@ -514,11 +535,7 @@ ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
 void
 ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_Z(gs1->flags) != FLAGS_GET_Z(gs2->flags))
-#else
-  if (FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags))
-#endif
+  if (FLAGS_GET_Z(GS_FLAGS(gs1)) != FLAGS_GET_Z(GS_FLAGS(gs2)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Operation on mixed 2D/3D dimensions")));
   return;
@@ -530,11 +547,7 @@ ensure_same_dimensionality_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 void
 ensure_same_dimensionality_tpoint_gs(const Temporal *temp, const GSERIALIZED *gs)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->flags))
-#else
-  if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(gs->gflags))
-#endif
+  if (MOBDB_FLAGS_GET_Z(temp->flags) != FLAGS_GET_Z(GS_FLAGS(gs)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Operation on mixed 2D/3D dimensions")));
   return;
@@ -547,11 +560,7 @@ void
 ensure_same_spatial_dimensionality_stbox_gs(const STBOX *box, const GSERIALIZED *gs)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags) ||
-#if POSTGIS_VERSION_NUMBER < 30000
-      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->flags))
-#else
-      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(gs->gflags))
-#endif
+      MOBDB_FLAGS_GET_Z(box->flags) != FLAGS_GET_Z(GS_FLAGS(gs)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The spatiotemporal box and the geometry must be of the same dimensionality")));
   return;
@@ -570,14 +579,14 @@ ensure_has_Z(int16 flags)
 }
 
 /**
- * Ensure that the temporal point has Z dimension
+ * Ensure that the temporal value has not Z dimension
  */
 void
-ensure_has_Z_tpoint(const Temporal *temp)
+ensure_has_not_Z(int16 flags)
 {
-  if (! MOBDB_FLAGS_GET_Z(temp->flags))
+  if (MOBDB_FLAGS_GET_Z(flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The temporal point does not have Z dimension")));
+      errmsg("The temporal value cannot have Z dimension")));
   return;
 }
 
@@ -587,11 +596,7 @@ ensure_has_Z_tpoint(const Temporal *temp)
 void
 ensure_has_Z_gs(const GSERIALIZED *gs)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (! FLAGS_GET_Z(gs->flags))
-#else
-  if (! FLAGS_GET_Z(gs->gflags))
-#endif
+  if (! FLAGS_GET_Z(GS_FLAGS(gs)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The geometry must have Z dimension")));
   return;
@@ -603,13 +608,9 @@ ensure_has_Z_gs(const GSERIALIZED *gs)
 void
 ensure_has_not_Z_gs(const GSERIALIZED *gs)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_Z(gs->flags))
-#else
-  if (FLAGS_GET_Z(gs->gflags))
-#endif
+  if (FLAGS_GET_Z(GS_FLAGS(gs)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Only geometries without Z dimension accepted")));
+      errmsg("The geometry cannot have Z dimension")));
   return;
 }
 
@@ -619,11 +620,7 @@ ensure_has_not_Z_gs(const GSERIALIZED *gs)
 void
 ensure_has_M_gs(const GSERIALIZED *gs)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (! FLAGS_GET_M(gs->flags))
-#else
-  if (! FLAGS_GET_M(gs->gflags))
-#endif
+  if (! FLAGS_GET_M(GS_FLAGS(gs)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries with M dimension accepted")));
   return;
@@ -635,11 +632,7 @@ ensure_has_M_gs(const GSERIALIZED *gs)
 void
 ensure_has_not_M_gs(const GSERIALIZED *gs)
 {
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_M(gs->flags))
-#else
-  if (FLAGS_GET_M(gs->gflags))
-#endif
+  if (FLAGS_GET_M(GS_FLAGS(gs)))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only geometries without M dimension accepted")));
   return;
@@ -884,13 +877,8 @@ geoseg_interpolate_point(Datum start, Datum end, long double ratio)
   POINT4D p1, p2, p;
   datum_get_point4d(&p1, start);
   datum_get_point4d(&p2, end);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
   if (geodetic)
   {
     POINT3D q1, q2;
@@ -931,11 +919,7 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
   long double result;
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_GEODETIC(gs->flags))
-#else
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-#endif
+  if (FLAGS_GET_GEODETIC(GS_FLAGS(gs)))
   {
     POINT4D p1, p2, p, closest;
     datum_get_point4d(&p1, start);
@@ -954,22 +938,14 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
     {
       d = WGS84_RADIUS * d;
       /* Add to the distance the vertical displacement if we're in 3D */
-#if POSTGIS_VERSION_NUMBER < 30000
-      if (FLAGS_GET_Z(gs->flags))
-#else
-      if (FLAGS_GET_Z(gs->gflags))
-#endif
+      if (FLAGS_GET_Z(GS_FLAGS(gs)))
         d = sqrt( (closest.z - p.z) * (closest.z - p.z) + d*d );
       *dist = d;
     }
   }
   else
   {
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(gs->flags))
-#else
-    if (FLAGS_GET_Z(gs->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(gs)))
     {
       const POINT3DZ *p1 = datum_get_point3dz_p(start);
       const POINT3DZ *p2 = datum_get_point3dz_p(end);
@@ -2291,13 +2267,8 @@ datum_set_precision_point(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == POINTTYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
   set_precision_point(lwpoint->point, 0, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoint);
@@ -2322,13 +2293,8 @@ datum_set_precision_linestring(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == LINETYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWLINE *lwline = lwgeom_as_lwline(lwgeom_from_gserialized(gs));
   set_precision_linestring(lwline, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwline);
@@ -2353,13 +2319,8 @@ datum_set_precision_triangle(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == TRIANGLETYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWTRIANGLE *lwtriangle = lwgeom_as_lwtriangle(lwgeom_from_gserialized(gs));
   set_precision_triangle(lwtriangle, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwtriangle);
@@ -2385,13 +2346,8 @@ datum_set_precision_circularstring(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWCIRCSTRING *lwcircstring = lwgeom_as_lwcircstring(lwgeom_from_gserialized(gs));
   set_precision_circularstring(lwcircstring, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwcircstring);
@@ -2421,13 +2377,8 @@ datum_set_precision_polygon(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == POLYGONTYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWPOLY *lwpoly = lwgeom_as_lwpoly(lwgeom_from_gserialized(gs));
   set_precision_polygon(lwpoly, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwpoly);
@@ -2455,13 +2406,8 @@ datum_set_precision_multipoint(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWMPOINT *lwmpoint =  lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   set_precision_multipoint(lwmpoint, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoint);
@@ -2491,13 +2437,8 @@ datum_set_precision_multilinestring(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == MULTILINETYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWMLINE *lwmline = lwgeom_as_lwmline(lwgeom_from_gserialized(gs));
   set_precision_multilinestring(lwmline, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwmline);
@@ -2525,13 +2466,8 @@ datum_set_precision_multipolygon(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   LWMPOLY *lwmpoly = lwgeom_as_lwmpoly(lwgeom_from_gserialized(gs));
   set_precision_multipolygon(lwmpoly, prec, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) lwmpoly);
@@ -2549,13 +2485,8 @@ datum_set_precision_geometrycollection(Datum value, Datum prec)
   assert(gserialized_get_type(gs) == COLLECTIONTYPE);
   LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
   int ngeoms = lwcol->ngeoms;
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-  bool hasm = (bool) FLAGS_GET_M(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-  bool hasm = (bool) FLAGS_GET_M(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+  bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
   for (int i = 0; i < ngeoms; i++)
   {
     LWGEOM *lwgeom = lwcol->geoms[i];
@@ -2697,7 +2628,7 @@ tpoint_get_coord_internal(const Temporal *temp, char c)
 {
   ensure_tgeo_base_type(temp->basetypid);
   if (c == 'z')
-    ensure_has_Z_tpoint(temp);
+    ensure_has_Z(temp->flags);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -3699,11 +3630,7 @@ bearing_geo_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-#if POSTGIS_VERSION_NUMBER < 30000
-  Datum result = FLAGS_GET_GEODETIC(gs1->flags) ?
-#else
-  Datum result = FLAGS_GET_GEODETIC(gs1->gflags) ?
-#endif
+  Datum result = FLAGS_GET_GEODETIC(GS_FLAGS(gs1)) ?
     geog_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2)) :
     geom_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2));
   PG_FREE_IF_COPY(gs1, 0);
@@ -4458,8 +4385,8 @@ tpoint_make_simple(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Restriction functions
- * N.B. In the PostGIS version currently used by MobilityDB (2.5) there is no
- * true ST_Intersection function for geography
+ * N.B. In the current PostGIS version there is no true ST_Intersection
+ * function for geography, it is implemented as ST_DWithin with tolerance 0
  *****************************************************************************/
 
 /**
@@ -4468,12 +4395,7 @@ tpoint_make_simple(PG_FUNCTION_ARGS)
 static TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
 {
-  bool inter = DatumGetBool(
-#if POSTGIS_VERSION_NUMBER < 30000
-    call_function2(intersects, tinstant_value(inst), geom));
-#else
-    call_function2(ST_Intersects, tinstant_value(inst), geom));
-#endif
+  bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst), geom));
   if ((atfunc && !inter) || (!atfunc && inter))
     return NULL;
   return tinstant_copy(inst);
@@ -4490,12 +4412,7 @@ tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    bool inter = DatumGetBool(
-#if POSTGIS_VERSION_NUMBER < 30000
-      call_function2(intersects, tinstant_value(inst), geom));
-#else
-      call_function2(ST_Intersects, tinstant_value(inst), geom));
-#endif
+    bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst), geom));
     if ((atfunc && inter) || (!atfunc && !inter))
       instants[k++] = inst;
   }
@@ -4557,11 +4474,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
   for (int i = 0; i < countsimple; i++)
   {
     Datum traj = tpointseq_trajectory(simpleseqs[i]);
-#if POSTGIS_VERSION_NUMBER < 30000
-    Datum inter = call_function2(intersection, traj, geom);
-#else
-    Datum inter = call_function2(ST_Intersection, traj, geom);
-#endif
+    Datum inter = geom_intersection2d(traj, geom);
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
@@ -4616,15 +4529,9 @@ tpointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
     gs1 = (GSERIALIZED *) DatumGetPointer(tinstant_value_copy(inst1));
     gs2 = (GSERIALIZED *) DatumGetPointer(tinstant_value_copy(inst2));
     gs = gserialized_copy((GSERIALIZED *) DatumGetPointer(value));
-#if POSTGIS_VERSION_NUMBER < 30000
-    FLAGS_SET_Z(gs1->flags, false);
-    FLAGS_SET_Z(gs2->flags, false);
-    FLAGS_SET_Z(gs->flags, false);
-#else
-    FLAGS_SET_Z(gs1->gflags, false);
-    FLAGS_SET_Z(gs2->gflags, false);
-    FLAGS_SET_Z(gs->gflags, false);
-#endif
+    FLAGS_SET_Z(GS_FLAGS(gs1), false);
+    FLAGS_SET_Z(GS_FLAGS(gs2), false);
+    FLAGS_SET_Z(GS_FLAGS(gs), false);
     value1 = PointerGetDatum(gs1);
     value2 = PointerGetDatum(gs2);
     val = PointerGetDatum(gs);
@@ -4857,11 +4764,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     /* Particular case when the input sequence is simple */
     pfree_array((void **) simpleseqs, countsimple);
     Datum traj = tpointseq_trajectory(seq);
-#if POSTGIS_VERSION_NUMBER < 30000
-    Datum inter = call_function2(intersection, traj, geom);
-#else
-    Datum inter = call_function2(ST_Intersection, traj, geom);
-#endif
+    Datum inter = geom_intersection2d(traj, geom);
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
@@ -4882,11 +4785,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     for (int i = 0; i < countsimple; i++)
     {
       Datum traj = tpointseq_trajectory(simpleseqs[i]);
-#if POSTGIS_VERSION_NUMBER < 30000
-      Datum inter = call_function2(intersection, traj, geom);
-#else
-      Datum inter = call_function2(ST_Intersection, traj, geom);
-#endif
+      Datum inter = geom_intersection2d(traj, geom);
       GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
       if (! gserialized_is_empty(gsinter))
       {
@@ -5228,11 +5127,7 @@ Datum
 point2D_add_z(Datum point, Datum z, Datum srid)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool geodetic = FLAGS_GET_GEODETIC(gs->flags);
-#else
-  bool geodetic = FLAGS_GET_GEODETIC(gs->gflags);
-#endif
+  bool geodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
   const POINT2D *pt = datum_get_point2d_p(point);
   double z1 = DatumGetFloat8(z);
   int srid1 = DatumGetInt32(srid);

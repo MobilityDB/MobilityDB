@@ -93,6 +93,9 @@
 extern Datum tpoint_sel(PG_FUNCTION_ARGS);
 extern Datum tpoint_joinsel(PG_FUNCTION_ARGS);
 
+extern float8 tpoint_sel_internal(PlannerInfo *root, Oid operator, List *args,
+  int varRelid);
+
 /*****************************************************************************/
 
 #endif

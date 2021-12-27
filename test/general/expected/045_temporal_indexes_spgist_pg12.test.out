@@ -1,0 +1,50 @@
+ANALYZE tbl_tint;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tint_spgist_idx;
+NOTICE:  index "tbl_tint_spgist_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tint_spgist_idx ON tbl_tint USING SPGIST(temp);
+CREATE INDEX
+SELECT k, temp |=| intrange '[100,100]'::tbox FROM tbl_tint ORDER BY 2, 1 LIMIT 3;
+ k  | ?column? 
+----+----------
+ 55 |        1
+ 64 |        1
+ 82 |        1
+(3 rows)
+
+SELECT k, temp |=| tint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tint ORDER BY 2, 1 LIMIT 3;
+ k  | ?column? 
+----+----------
+ 84 |        2
+ 85 |        2
+ 27 |        5
+(3 rows)
+
+DROP INDEX tbl_tint_spgist_idx;
+DROP INDEX
+ANALYZE tbl_tfloat;
+ANALYZE
+DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
+NOTICE:  index "tbl_tfloat_spgist_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tfloat_spgist_idx ON tbl_tfloat USING SPGIST(temp);
+CREATE INDEX
+SELECT k, round((temp |=| floatrange '[100,100]'::tbox)::numeric, 6) FROM tbl_tfloat ORDER BY 2, 1 LIMIT 3;
+ k  |  round   
+----+----------
+ 72 | 0.082398
+ 77 | 0.216814
+ 82 | 0.393097
+(3 rows)
+
+SELECT k, round((temp |=| tfloat '[1.5@2001-06-01, 2.5@2001-07-01]')::numeric, 6) FROM tbl_tfloat ORDER BY 2, 1 LIMIT 3;
+ k  |  round   
+----+----------
+ 44 | 0.382978
+ 45 | 2.851887
+ 86 | 3.794321
+(3 rows)
+
+DROP INDEX tbl_tfloat_spgist_idx;
+DROP INDEX

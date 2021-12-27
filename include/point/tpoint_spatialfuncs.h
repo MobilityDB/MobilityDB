@@ -41,6 +41,13 @@
 #include "general/temporal.h"
 #include "tpoint.h"
 
+/* Get the flags byte of a GSERIALIZED depending on the version */
+#if POSTGIS_VERSION_NUMBER < 30000
+#define GS_FLAGS(gs) (gs->flags)
+#else
+#define GS_FLAGS(gs) (gs->gflags)
+#endif
+
 /*****************************************************************************/
 
 /* Fetch from and store in the cache the fcinfo of the external function */
@@ -89,8 +96,8 @@ extern void ensure_non_empty(const GSERIALIZED *gs);
 
 /* Utility functions */
 
-extern const POINT2D *gs_get_point2d_p(GSERIALIZED *gs);
-extern const POINT3DZ *gs_get_point3dz_p(GSERIALIZED *gs);
+extern const POINT2D *gs_get_point2d_p(const GSERIALIZED *gs);
+extern const POINT3DZ *gs_get_point3dz_p(const GSERIALIZED *gs);
 extern POINT2D datum_get_point2d(Datum value);
 extern const POINT2D *datum_get_point2d_p(Datum value);
 extern POINT3DZ datum_get_point3dz(Datum value);
@@ -99,7 +106,9 @@ extern void datum_get_point4d(POINT4D *p, Datum value);
 extern Datum point_make(double x, double y, double z, bool hasz,
   bool geodetic, int32 srid);
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
-extern GSERIALIZED *geo_serialize(LWGEOM *geom);
+extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
+extern Datum datum2_point_ne(Datum geopoint1, Datum geopoint2);
+extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 extern Datum datum_transform(Datum value, Datum srid);
 
 extern datum_func2 get_distance_fn(int16 flags);
@@ -109,6 +118,8 @@ extern Datum geom_distance3d(Datum geom1, Datum geom2);
 extern Datum geog_distance(Datum geog1, Datum geog2);
 extern Datum pt_distance2d(Datum geom1, Datum geom2);
 extern Datum pt_distance3d(Datum geom1, Datum geom2);
+extern Datum geom_intersects2d(Datum geom1, Datum geom2);
+extern Datum geom_intersection2d(Datum geom1, Datum geom2);
 
 extern Datum geoseg_interpolate_point(Datum value1, Datum value2,
   long double ratio);

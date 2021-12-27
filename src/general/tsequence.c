@@ -411,13 +411,8 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
   {
     GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value1);
-#if POSTGIS_VERSION_NUMBER < 30000
-    bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-    bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->flags);
-#else
-    bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-    bool geodetic = (bool) FLAGS_GET_GEODETIC(gs->gflags);
-#endif
+    bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
+    bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
     return geopoint_collinear(value1, value2, value3, ratio, hasz, geodetic);
   }
   if (basetypid == type_oid(T_DOUBLE3))
