@@ -37,7 +37,7 @@
 
 #include <postgres.h>
 #include <catalog/pg_operator.h>
-#include <nodes/pathnodes.h>
+#include <utils/selfuncs.h>
 
 #include "temporal.h"
 
