@@ -18,6 +18,7 @@ add_library(point OBJECT
   tpoint_spatialfuncs.c
   tpoint_spatialrels.c
   tpoint_spgist.c
+  tpoint_supportfn.c
   tpoint_tempspatialrels.c
   tpoint_tile.c
   )

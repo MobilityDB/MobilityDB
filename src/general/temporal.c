@@ -2617,8 +2617,11 @@ temporal_shift_tscale(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the bounding box of the temporal value is ever equal to
- * the base value
+ * Returns true if the bounding box of the temporal value is ever/always equal
+ * to the base value
+ * @param[in] temp Temporal value
+ * @param[in] value Value to be found
+ * @param[in] ever True when testing ever, false when testing always
  */
 bool
 temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
@@ -2660,7 +2663,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
  *
  * @param[in] temp Temporal value
  * @param[in] value Base value
- * @param[in] ever True when testing ever false when testing always
+ * @param[in] ever True when testing ever, false when testing always
  */
 bool
 temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)

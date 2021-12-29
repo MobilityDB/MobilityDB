@@ -525,22 +525,22 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 /**
  * Get the enum value associated to the operator
  */
-static bool
-tpoint_cachedop(Oid operator, CachedOp *cachedOp)
+bool
+tpoint_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operator == oper_oid((CachedOp) i, T_STBOX, T_STBOX) ||
-      operator == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
-      operator == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
-      operator == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
-      operator == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
-      operator == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
-      operator == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
-      operator == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
-      operator == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
-      operator == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
-      operator == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
+    if (oper == oper_oid((CachedOp) i, T_STBOX, T_STBOX) ||
+        oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -554,9 +554,9 @@ tpoint_cachedop(Oid operator, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_tpoint_selectivity(CachedOp operator)
+default_tpoint_selectivity(CachedOp oper)
 {
-  switch (operator)
+  switch (oper)
   {
     case OVERLAPS_OP:
       return 0.005;
@@ -802,7 +802,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 /*****************************************************************************/
 
 float8
-tpoint_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
+tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -815,7 +815,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   /*
    * Get enumeration value associated to the operator
    */
-  bool found = tpoint_cachedop(operator, &cachedOp);
+  bool found = tpoint_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
     return DEFAULT_TEMP_SELECTIVITY;
@@ -854,8 +854,8 @@ tpoint_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
+    oper = get_commutator(oper);
+    if (!oper)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
@@ -912,16 +912,16 @@ tpoint_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
 
 PG_FUNCTION_INFO_V1(tpoint_sel);
 /**
- * Estimate the join selectivity value of the operators for temporal points
+ * Estimate the restriction selectivity value of the operators for temporal points
  */
 PGDLLEXPORT Datum
 tpoint_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
+  Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selectivity = tpoint_sel_internal(root, operator, args, varRelid);
+  float8 selectivity = tpoint_sel_internal(root, oper, args, varRelid);
   PG_RETURN_FLOAT8(selectivity);
 }
 

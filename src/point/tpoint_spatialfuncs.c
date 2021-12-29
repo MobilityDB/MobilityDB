@@ -406,7 +406,7 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * Ensure that the spatial argument has planar coordinates
- * THIS FUNCTION IS NOT CURRENTLY USED
+ * THIS FUNCTION IS CURRENTLY NOT USED
 void
 ensure_not_geodetic_gs(const GSERIALIZED *gs)
 {
@@ -660,6 +660,265 @@ ensure_non_empty(const GSERIALIZED *gs)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only non-empty geometries accepted")));
   return;
+}
+
+/*****************************************************************************
+ * Returns true if a point is in a segment (2D, 3D, or geodetic).
+ * For 2D/3D points we proceed as follows.
+ * If the cross product of (B-A) and (p-A) is 0, then the points A, B,
+ * and p are aligned. To know if p is between A and B, we also have to
+ * check that the dot product of (B-A) and (p-A) is positive and is less
+ * than the square of the distance between A and B.
+ * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
+ *****************************************************************************/
+/* 
+ * Returns true if point p is in the segment defined by A and B (2D)
+ * @note The test of p = A or p = B MUST BE done in the calling function
+ *   to take care of the inclusive/exclusive bounds for temporal sequences
+ */
+bool
+point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
+{
+  double crossproduct = (p->y - A->y) * (B->x - A->x) -
+    (p->x - A->x) * (B->y - A->y);
+  if (fabs(crossproduct) >= MOBDB_EPSILON)
+    return false;
+  double dotproduct = (p->x - A->x) * (B->x - A->x) +
+    (p->y - A->y) * (B->y - A->y);
+  return (dotproduct >= 0);
+}
+
+/* 
+ * Returns true if point p is in the segment defined by A and B (3D)
+ * @note The test of p = A or p = B MUST BE done in the calling function
+ *   to take care of the inclusive/exclusive bounds for temporal sequences
+ */
+bool
+point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
+{
+  /* Find the collinearity of the points using the cross product 
+   * http://www.ambrsoft.com/TrigoCalc/Line3D/LineColinear.htm */
+  double i = (p->y - A->y) * (B->z - A->z) - (p->z - A->z) * (B->y - A->y);
+  double j = (p->z - A->z) * (B->x - A->x) - (p->x - A->x) * (B->z - A->z);
+  double k = (p->x - A->x) * (B->y - A->y) - (p->y - A->y) * (B->x - A->x);
+  if (fabs(i) >= MOBDB_EPSILON || fabs(j) >= MOBDB_EPSILON ||
+    fabs(k) >= MOBDB_EPSILON)
+    return false;
+  double dotproduct = (p->x - A->x) * (B->x - A->x) + 
+    (p->y - A->y) * (B->y - A->y) + (p->z - A->z) * (B->z - A->z);
+  return (dotproduct >= 0);
+}
+
+/**
+ * Returns true if point p is in the segment defined by A and B (geodetic)
+ */
+long double
+point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
+{
+  GEOGRAPHIC_EDGE e;
+  GEOGRAPHIC_POINT gp, proj;
+  long double length, /* length from A to the closest point */
+    seglength; /* length of the segment AB */
+  long double result; /* ratio */
+
+  /* Initialize target point */
+  geographic_point_init(p->x, p->y, &gp);
+
+  /* Initialize edge */
+  geographic_point_init(A->x, A->y, &(e.start));
+  geographic_point_init(B->x, B->y, &(e.end));
+
+  /* Get the spherical distance between point and edge */
+  if (edge_distance_to_point(&e, &gp, &proj) > MOBDB_EPSILON)
+    return false;
+
+  /* Compute distance from beginning of the segment to closest point */
+  seglength = (long double) sphere_distance(&(e.start), &(e.end));
+  length = (long double) sphere_distance(&(e.start), &proj);
+  result = length / seglength;
+
+  /* Compute Z value for closest point */
+  double z = A->z + ((B->z - A->z) * result);
+  return FP_EQUALS(p->z, z);
+}
+
+/**
+ * Determine if a point is in a segment (dispatch function)
+ * @param[in] start,end Points defining the segment
+ * @param[in] point Point
+ */
+bool
+point_on_segment(Datum start, Datum end, Datum point)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
+  if (FLAGS_GET_GEODETIC(GS_FLAGS(gs)))
+  {
+    POINT4D p1, p2, p;
+    datum_get_point4d(&p1, start);
+    datum_get_point4d(&p2, end);
+    datum_get_point4d(&p, point);
+    return point_on_segment_sphere(&p, &p1, &p2); 
+  }
+  if (FLAGS_GET_Z(GS_FLAGS(gs)))
+  {
+    const POINT3DZ *p1 = datum_get_point3dz_p(start);
+    const POINT3DZ *p2 = datum_get_point3dz_p(end);
+    const POINT3DZ *p = datum_get_point3dz_p(point);
+    return point3dz_on_segment(p, p1, p2); 
+  }
+  /* 2D */
+  const POINT2D *p1 = datum_get_point2d_p(start);
+  const POINT2D *p2 = datum_get_point2d_p(end);
+  const POINT2D *p = datum_get_point2d_p(point);
+  return point2d_on_segment(p, p1, p2); 
+}
+
+/*****************************************************************************
+ * Ever equal comparison operator
+ *****************************************************************************/
+
+/**
+ * Returns true if the temporal point is ever equal to the point
+ */
+bool
+tpointinst_ever_eq(const TInstant *inst, Datum value)
+{
+  Datum value1 = tinstant_value(inst);
+  return datum_point_eq(value1, value);
+}
+
+/**
+ * Returns true if the temporal point is ever equal to the point
+ */
+bool
+tpointinstset_ever_eq(const TInstantSet *ti, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) ti, value, EVER))
+    return false;
+
+  for (int i = 0; i < ti->count; i++)
+  {
+    Datum value1 = tinstant_value(tinstantset_inst_n(ti, i));
+    if (datum_point_eq(value1, value))
+      return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if the temporal point is ever equal to the point
+ */
+bool
+tpointseq_ever_eq(const TSequence *seq, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
+    return false;
+
+  /* Stepwise interpolation or instantaneous sequence */
+  if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
+  {
+    for (int i = 0; i < seq->count; i++)
+    {
+      Datum value1 = tinstant_value(tsequence_inst_n(seq, i));
+      if (datum_point_eq(value1, value))
+        return true;
+    }
+    return false;
+  }
+
+  /* Linear interpolation*/
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
+  bool lower_inc = seq->period.lower_inc;
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Datum value2 = tinstant_value(inst2);
+    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    /* Constant segment */
+    if (datum_point_eq(value1, value2) && datum_point_eq(value1, value))
+      return true;
+    /* Test bounds */
+    if (datum_point_eq(value1, value))
+    {
+      if (lower_inc) return true;
+    }
+    else if (datum_point_eq(value2, value))
+    {
+      if (upper_inc) return true;
+    }
+    /* Test point on segment */
+    else if (point_on_segment(value1, value2, value))
+      return true;
+    inst1 = inst2;
+    value2 = value2;
+    lower_inc = true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if the temporal point is ever equal to the point
+ */
+bool
+tpointseqset_ever_eq(const TSequenceSet *ts, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) ts, value, EVER))
+    return false;
+
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    if (tpointseq_ever_eq(seq, value))
+      return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if the temporal value is ever equal to the base value
+ * (internal function)
+ */
+bool
+tpoint_ever_eq_internal(const Temporal *temp, Datum value)
+{
+  bool result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tpointinst_ever_eq((TInstant *) temp, value);
+  else if (temp->subtype == INSTANTSET)
+    result = tpointinstset_ever_eq((TInstantSet *) temp, value);
+  else if (temp->subtype == SEQUENCE)
+    result = tpointseq_ever_eq((TSequence *) temp, value);
+  else /* temp->subtype == SEQUENCESET */
+    result = tpointseqset_ever_eq((TSequenceSet *) temp, value);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tpoint_ever_eq);
+/**
+ * Returns true if the temporal value is ever equal to the base value
+ */
+Datum
+tpoint_ever_eq(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  if (gserialized_is_empty(gs))
+  {
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_BOOL(false);
+  }
+  bool result = tpoint_ever_eq_internal(temp, PointerGetDatum(gs));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -1005,18 +1264,18 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   /* We are sure that the trajectory is a line */
   Datum start = tinstant_value(inst1);
   Datum end = tinstant_value(inst2);
+  /* Compute faster the intersection if we do not need to output the timestamp */
+  if (t == NULL)
+    return point_on_segment(start, end, value);
+  
   double dist;
   double fraction = geoseg_locate_point(start, end, value, &dist);
   if (fabs(dist) >= MOBDB_EPSILON)
     return false;
-
-  if (t != NULL)
-  {
-    double duration = (inst2->t - inst1->t);
-    *t = inst1->t + (TimestampTz) (duration * fraction);
-    /* Note that due to roundoff errors it may be the case that the
-     * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  }
+  double duration = (inst2->t - inst1->t);
+  /* Note that due to roundoff errors it may be the case that the
+   * resulting timestamp t may be equal to inst1->t or to inst2->t */
+  *t = inst1->t + (TimestampTz) (duration * fraction);
   return true;
 }
 
@@ -3424,7 +3683,7 @@ geom_bearing(Datum point1, Datum point2)
  * N.B. In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
  * The formulae used is the following:
  *   lat  = sin(Δlong).cos(lat2)
- *   long = cos(lat1).sin(lat2) − sin(lat1).cos(lat2).cos(Δlong)
+ *   long = cos(lat1).sin(lat2) - sin(lat1).cos(lat2).cos(Δlong)
  *   θ    = atan2(lat, long)
  */
 Datum

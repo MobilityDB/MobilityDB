@@ -60,33 +60,33 @@
  * have statistics or cannot use them for some reason.
  */
 static double
-default_period_selectivity(Oid operator)
+default_period_selectivity(Oid oper)
 {
   return 0.01;
 }
 
 /* Get the enum associated to the operator from different cases */
 static bool
-get_time_cachedop(Oid operator, CachedOp *cachedOp)
+get_time_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operator == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
-      operator == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
-      operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
-      operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
-      operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
-      operator == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
-      operator == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
-      operator == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
-      {
+    if (oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+        {
         *cachedOp = (CachedOp) i;
         return true;
       }
@@ -95,7 +95,7 @@ get_time_cachedop(Oid operator, CachedOp *cachedOp)
 }
 
 static double
-calc_periodsel(VariableStatData *vardata, const Period *constval, Oid operator)
+calc_periodsel(VariableStatData *vardata, const Period *constval, Oid oper)
 {
   double    hist_selec;
   double    selec;
@@ -125,10 +125,10 @@ calc_periodsel(VariableStatData *vardata, const Period *constval, Oid operator)
    * Get enumeration value associated to the operator
    */
   CachedOp cachedOp;
-  bool found = get_time_cachedop(operator, &cachedOp);
+  bool found = get_time_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    return default_period_selectivity(operator);
+    return default_period_selectivity(oper);
 
   /*
    * Calculate selectivity using bound histograms. If that fails for
@@ -139,7 +139,7 @@ calc_periodsel(VariableStatData *vardata, const Period *constval, Oid operator)
    */
   hist_selec = calc_period_hist_selectivity(vardata, constval, cachedOp);
   if (hist_selec < 0.0)
-    hist_selec = default_period_selectivity(operator);
+    hist_selec = default_period_selectivity(oper);
 
   selec = hist_selec;
 
@@ -848,7 +848,7 @@ PGDLLEXPORT Datum
 periodsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid      operator = PG_GETARG_OID(1);
+  Oid      oper = PG_GETARG_OID(1);
   List     *args = (List *) PG_GETARG_POINTER(2);
   int      varRelid = PG_GETARG_INT32(3);
   VariableStatData vardata;
@@ -863,7 +863,7 @@ periodsel(PG_FUNCTION_ARGS)
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
                   &varonleft))
-    PG_RETURN_FLOAT8(default_period_selectivity(operator));
+    PG_RETURN_FLOAT8(default_period_selectivity(oper));
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -871,7 +871,7 @@ periodsel(PG_FUNCTION_ARGS)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_period_selectivity(operator));
+    PG_RETURN_FLOAT8(default_period_selectivity(oper));
   }
 
   /*
@@ -891,13 +891,13 @@ periodsel(PG_FUNCTION_ARGS)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
+    oper = get_commutator(oper);
+    if (!oper)
     {
       /* TODO: check whether there might still be a way to estimate.
       * Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_period_selectivity(operator));
+      PG_RETURN_FLOAT8(default_period_selectivity(oper));
     }
   }
 
@@ -952,9 +952,9 @@ periodsel(PG_FUNCTION_ARGS)
    * PERIOD_ELEM_CONTAINED_OP.
    */
   if (period)
-    selec = calc_periodsel(&vardata, period, operator);
+    selec = calc_periodsel(&vardata, period, oper);
   else
-    selec = default_period_selectivity(operator);
+    selec = default_period_selectivity(oper);
 
   ReleaseVariableStats(vardata);
 

@@ -150,6 +150,7 @@ extern Oid temporal_basetypid(Oid temptypid);
 extern bool _ready;
 
 extern Oid type_oid(CachedType t);
+extern CachedType cachedtype_oid(Oid typid);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
 extern Datum fill_opcache(PG_FUNCTION_ARGS);
 

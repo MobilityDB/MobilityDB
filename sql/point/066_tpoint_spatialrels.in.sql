@@ -138,6 +138,31 @@ CREATE FUNCTION intersects(tgeompoint, tgeompoint)
 
 /*****************************************************************************/
 
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION tpoint_index_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tpoint_index_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION intersects_new(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_geo_tpoint'
+  SUPPORT tpoint_index_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects_new(tgeompoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tpoint_geo'
+  SUPPORT tpoint_index_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects_new(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
+  SUPPORT tpoint_index_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
+/*****************************************************************************/
+
 CREATE FUNCTION _intersects(geography, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_geo_tpoint'

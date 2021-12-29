@@ -1403,12 +1403,20 @@ tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
    * function */
   assert(k > 0);
   if (k == 1)
-    return (Temporal *) sequences[0];
+  {
+    Temporal *result = (Temporal *) sequences[0];
+    pfree(sequences);
+    return result;
+  }
   else
   {
     TSequenceSet *result = tsequenceset_make_free(sequences, k, NORMALIZE);
     if (result->count == 1)
-      return (Temporal *) tsequenceset_seq_n(result, 0);
+    {
+      Temporal *resultseq = (Temporal *) tsequenceset_to_tsequence(result);
+      pfree(result);
+      return resultseq;
+    }
     else
       return (Temporal *) result;
   }

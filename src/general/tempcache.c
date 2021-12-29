@@ -366,6 +366,26 @@ type_oid(CachedType type)
 }
 
 /**
+ * Fetch from the cache the Oid of a type
+ *
+ * @arg[in] type Enum value for the type
+ */
+CachedType
+cachedtype_oid(Oid typid)
+{
+  if (!_ready)
+    populate_operators();
+  int n = sizeof(_type_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (_type_oids[i] == typid)
+      return i;
+  }
+  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+    errmsg("Unknown type %d", typid)));
+}
+
+/**
  * Fetch from the cache the Oid of an operator
  *
  * @arg[in] op Enum value for the operator

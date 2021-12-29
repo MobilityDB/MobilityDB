@@ -1248,25 +1248,25 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
  count 
 -------
-    78
+    98
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
  count 
 -------
-    85
+    96
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);
  count 
 -------
-    77
+    96
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp ?= startValue(temp);
  count 
 -------
-    80
+    96
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= startValue(temp);

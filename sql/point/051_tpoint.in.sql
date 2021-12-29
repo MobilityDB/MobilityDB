@@ -567,11 +567,11 @@ CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
 
 CREATE FUNCTION ever_eq(tgeompoint, geometry(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+  AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+  AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (

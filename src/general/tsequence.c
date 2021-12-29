@@ -129,7 +129,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   if (datum_eq2(value, value1, basetypid, inst1->basetypid) ||
-    datum_eq2(value, value2, basetypid, inst1->basetypid))
+      datum_eq2(value, value2, basetypid, inst2->basetypid))
     return false;
 
   ensure_base_type_continuous((Temporal *) inst1);
@@ -619,7 +619,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   if (isgeo)
   {
     MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
-    MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
+    MOBDB_FLAGS_SET_GEODETIC(result->flags,
+      MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
   /* Initialization of the variable-length part
    * Notice that the first offset is already declared in the struct */
@@ -796,10 +797,10 @@ tsequence_join(const TSequence *seq1, const TSequence *seq2,
   int start2 = removefirst ? 1 : 0;
   int count = count1 + (seq2->count - start2);
   const TInstant **instants = palloc(sizeof(TSequence *) * count);
-  int k = 0;
-  for (int i = 0; i < count1; i++)
+  int i, k = 0;
+  for (i = 0; i < count1; i++)
     instants[k++] = tsequence_inst_n(seq1, i);
-  for (int i = start2; i < seq2->count; i++)
+  for (i = start2; i < seq2->count; i++)
     instants[k++] = tsequence_inst_n(seq2, i);
   TSequence *result = tsequence_make1(instants, count,
     seq1->period.lower_inc, seq2->period.upper_inc,
@@ -2073,38 +2074,6 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
  *****************************************************************************/
 
 /**
- * Returns true if the segment of the temporal sequence value with
- * linear interpolation is ever equal to the base value
- *
- * @param[in] inst1,inst2 Instants defining the segment
- * @param[in] lower_inc,upper_inc Upper and lower bounds of the segment
- * @param[in] value Base value
- */
-static bool
-tlinearseq_ever_eq1(const TInstant *inst1, const TInstant *inst2,
-  bool lower_inc, bool upper_inc, Datum value)
-{
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  Oid basetypid = inst1->basetypid;
-
-  /* Constant segment */
-  if (datum_eq(value1, value2, basetypid) &&
-    datum_eq(value1, value, basetypid))
-    return true;
-
-  /* Test of bounds */
-  if (datum_eq(value1, value, basetypid))
-    return lower_inc;
-  if (datum_eq(value2, value, basetypid))
-    return upper_inc;
-
-  /* Interpolation for continuous base type */
-  return tlinearseq_intersection_value(inst1, inst2, value, basetypid,
-    NULL, NULL);
-}
-
-/**
  * Returns true if the temporal value is ever equal to the base value
  */
 bool
@@ -2114,10 +2083,12 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
     return false;
 
+  int i;
+
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
-    for (int i = 0; i < seq->count; i++)
+    for (i = 0; i < seq->count; i++)
     {
       Datum value1 = tinstant_value(tsequence_inst_n(seq, i));
       if (datum_eq(value1, value, seq->basetypid))
@@ -2127,15 +2098,34 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
   }
 
   /* Linear interpolation*/
+  Oid basetypid = seq->basetypid;
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
+  Datum value1 = tinstant_value(inst1);
   bool lower_inc = seq->period.lower_inc;
-  for (int i = 1; i < seq->count; i++)
+  for (i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
+    Datum value2 = tinstant_value(inst2);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (tlinearseq_ever_eq1(inst1, inst2, lower_inc, upper_inc, value))
+    /* Constant segment */
+    if (datum_eq(value1, value2, basetypid) && 
+        datum_eq(value1, value, basetypid))
       return true;
+    /* Test bounds */
+    if (datum_eq(value1, value, basetypid))
+    {
+      if (lower_inc) return true;
+    }
+    else if (datum_eq(value2, value, basetypid))
+    {
+      if (upper_inc) return true;
+    }
+    /* Interpolation for continuous base type */
+    else if (tlinearseq_intersection_value(inst1, inst2, value, basetypid,
+      NULL, NULL))
+      return true; 
     inst1 = inst2;
+    value1 = value2;
     lower_inc = true;
   }
   return false;
@@ -2253,11 +2243,12 @@ tsequence_ever_le(const TSequence *seq, Datum value)
     return false;
 
   Datum value1;
+  int i;
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
-    for (int i = 0; i < seq->count; i++)
+    for (i = 0; i < seq->count; i++)
     {
       value1 = tinstant_value(tsequence_inst_n(seq, i));
       if (datum_le(value1, value, seq->basetypid))
@@ -2269,7 +2260,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
   /* Linear interpolation */
   value1 = tinstant_value(tsequence_inst_n(seq, 0));
   bool lower_inc = seq->period.lower_inc;
-  for (int i = 1; i < seq->count; i++)
+  for (i = 1; i < seq->count; i++)
   {
     Datum value2 = tinstant_value(tsequence_inst_n(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
@@ -2293,11 +2284,12 @@ tsequence_always_lt(const TSequence *seq, Datum value)
     return false;
 
   Datum value1;
+  int i;
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
-    for (int i = 0; i < seq->count; i++)
+    for (i = 0; i < seq->count; i++)
     {
       value1 = tinstant_value(tsequence_inst_n(seq, i));
       if (! datum_lt(value1, value, seq->basetypid))
@@ -2309,7 +2301,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
   /* Linear interpolation */
   value1 = tinstant_value(tsequence_inst_n(seq, 0));
   bool lower_inc = seq->period.lower_inc;
-  for (int i = 1; i < seq->count; i++)
+  for (i = 1; i < seq->count; i++)
   {
     Datum value2 = tinstant_value(tsequence_inst_n(seq, i));
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
@@ -2936,7 +2928,7 @@ tnumberseq_restrict_range1(TSequence **result,
       upper_inc1, upper_inclu, linear, NORMALIZE_NO);
   }
 
-  for (int i = 0; i < 2; i++)
+  for (i = 0; i < 2; i++)
   {
     if (instbounds[i])
       pfree(instbounds[i]);
@@ -3435,12 +3427,12 @@ tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
   const TInstant *inst1, *inst2;
   inst1 = tsequence_inst_n(seq, 0);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
-  int k = 0;
+  int i, k = 0;
   int n = tsequence_find_timestamp(seq, t);
   /* Compute the first sequence until t */
   if (n != 0 || inst1->t < t)
   {
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
       instants[i] = (TInstant *) tsequence_inst_n(seq, i);
     inst1 = tsequence_inst_n(seq, n);
     inst2 = tsequence_inst_n(seq, n + 1);
@@ -3467,8 +3459,7 @@ tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
       instants[n] = (TInstant *) inst1;
       instants[n + 1] = linear ?
         tsequence_at_timestamp1(inst1, inst2, true, t) :
-        tinstant_make(tinstant_value(inst1), t,
-          inst1->basetypid);
+        tinstant_make(tinstant_value(inst1), t, inst1->basetypid);
       result[k++] = tsequence_make((const TInstant **) instants, n + 2,
         seq->period.lower_inc, false, linear, NORMALIZE_NO);
       pfree(instants[n + 1]);
@@ -3480,7 +3471,7 @@ tsequence_minus_timestamp1(TSequence **result, const TSequence *seq,
   if (t < inst2->t)
   {
     instants[0] = tsequence_at_timestamp1(inst1, inst2, linear, t);
-    for (int i = 1; i < seq->count - n; i++)
+    for (i = 1; i < seq->count - n; i++)
       instants[i] = (TInstant *) tsequence_inst_n(seq, i + n);
     result[k++] = tsequence_make((const TInstant **) instants, seq->count - n,
       false, seq->period.upper_inc, linear, NORMALIZE_NO);
@@ -3655,8 +3646,7 @@ tsequence_minus_timestampset1(TSequence **result, const TSequence *seq,
         /* The instant to remove is not the first one of the sequence */
         instants[l] = linear ?
           tsequence_at_timestamp1(instants[l - 1], inst, true, t) :
-          tinstant_make(tinstant_value(instants[l - 1]), t,
-            inst->basetypid);
+          tinstant_make(tinstant_value(instants[l - 1]), t, inst->basetypid);
         result[k++] = tsequence_make((const TInstant **) instants, l + 1,
           lower_inc, false, linear, NORMALIZE_NO);
         if (tofree)

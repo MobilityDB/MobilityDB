@@ -90,7 +90,7 @@
  * @note Function copied from selfuncs.c since it is not exported.
  */
 double
-var_eq_const(VariableStatData *vardata, Oid operator,
+var_eq_const(VariableStatData *vardata, Oid oper,
        Datum constval, bool constisnull,
        bool varonleft, bool negate)
 {
@@ -131,7 +131,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
   }
   else if (HeapTupleIsValid(vardata->statsTuple) &&
        statistic_proc_security_check(vardata,
-                       (opfuncoid = get_opcode(operator))))
+                       (opfuncoid = get_opcode(oper))))
   {
     AttStatsSlot sslot;
     bool    match = false;
@@ -146,7 +146,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
      */
     if (get_attstatsslot(&sslot, vardata->statsTuple,
                // EZ replaced InvalidOid by operator
-               STATISTIC_KIND_MCV, operator,
+               STATISTIC_KIND_MCV, oper,
                ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
     {
       FmgrInfo  eqproc;
@@ -271,19 +271,19 @@ temporal_const_to_period(Node *other, Period *period)
  * Returns the enum value associated to the operator
  */
 static bool
-temporal_cachedop(Oid operator, CachedOp *cachedOp)
+temporal_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-    if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+    if (oper == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -297,9 +297,9 @@ temporal_cachedop(Oid operator, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_temporal_selectivity(CachedOp operator)
+default_temporal_selectivity(CachedOp oper)
 {
-  switch (operator)
+  switch (oper)
   {
     case OVERLAPS_OP:
       return 0.005;
@@ -349,12 +349,12 @@ temporal_sel_internal_per(PlannerInfo *root, VariableStatData *vardata,
    */
   if (cachedOp == SAME_OP)
   {
-    Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+    Oid oper = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operator, PeriodGetDatum(period),
+    selec = var_eq_const(vardata, oper, PeriodGetDatum(period),
       false, false, false);
 #else
-    selec = var_eq_const(vardata, operator, DEFAULT_COLLATION_OID,
+    selec = var_eq_const(vardata, oper, DEFAULT_COLLATION_OID,
       PeriodGetDatum(period), false, false, false);
 #endif
   }
@@ -386,7 +386,7 @@ temporal_sel_internal_per(PlannerInfo *root, VariableStatData *vardata,
  * bounding box is a period, that is, tbool and ttext (internal function)
  */
 float8
-temporal_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
+temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -398,7 +398,7 @@ temporal_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   /*
    * Get enumeration value associated to the operator
    */
-  bool found = temporal_cachedop(operator, &cachedOp);
+  bool found = temporal_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
     return DEFAULT_TEMP_SELECTIVITY;
@@ -437,8 +437,8 @@ temporal_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
+    oper = get_commutator(oper);
+    if (!oper)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
@@ -471,10 +471,10 @@ PGDLLEXPORT Datum
 temporal_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
+  Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selectivity = temporal_sel_internal(root, operator, args, varRelid);
+  float8 selectivity = temporal_sel_internal(root, oper, args, varRelid);
   PG_RETURN_FLOAT8(selectivity);
 }
 
