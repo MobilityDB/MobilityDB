@@ -943,7 +943,7 @@ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
 
     /* Then read the geom status histogram from that */
 
-#if POSTGIS_PGSQL_VERSION < 100
+#if POSTGRESQL_VERSION_NUMBER < 100000
   {
     float4 *floatptr;
     int nvalues;

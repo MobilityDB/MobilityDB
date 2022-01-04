@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -37,14 +37,23 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 
 /* PostgreSQL */
+#include <postgres.h>
+#include <funcapi.h>
+#include <access/htup_details.h>
+#include <access/stratnum.h>
+#include <catalog/namespace.h>
 #include <catalog/pg_opfamily.h>
+#include <catalog/pg_type_d.h>
 #include <catalog/pg_am_d.h>
 #include <nodes/supportnodes.h>
 #include <nodes/nodeFuncs.h>
 #include <nodes/makefuncs.h>
 #include <optimizer/optimizer.h>
 #include <parser/parse_func.h>
+#include <utils/array.h>
+#include <utils/builtins.h>
 #include <utils/lsyscache.h>
+#include <utils/numeric.h>
 #include <utils/syscache.h>
 
 /* MobilityDB */
@@ -287,14 +296,14 @@ Datum tpoint_supportfn(PG_FUNCTION_ARGS)
        */
       Oid opfamilyam = opFamilyAmOid(opfamilyoid);
       if (opfamilyam != GIST_AM_OID && opfamilyam != SPGIST_AM_OID)
-        PG_RETURN_POINTER((Node *) NULL);
+        PG_RETURN_POINTER((Node *)NULL);
 
       /*
        * We can only do something with index matches on the first
        * or second argument.
        */
       if (req->indexarg > 1)
-        PG_RETURN_POINTER((Node *) NULL);
+        PG_RETURN_POINTER((Node *)NULL);
 
       /* Make sure we have enough arguments */
       if (nargs < 2 || nargs < idxfn.expand_arg)
@@ -353,11 +362,11 @@ Datum tpoint_supportfn(PG_FUNCTION_ARGS)
          * (not volatile or dependent on the target index table)
          */
 #if POSTGRESQL_VERSION_NUMBER >= 140000
-        if (!is_pseudo_constant_for_index(req->root, (Node *) expandexpr, req->index))
+        if (!is_pseudo_constant_for_index(req->root, (Node*)expandexpr, req->index))
 #else
-        if (!is_pseudo_constant_for_index((Node *) expandexpr, req->index))
+        if (!is_pseudo_constant_for_index((Node*)expandexpr, req->index))
 #endif
-          PG_RETURN_POINTER((Node *) NULL);
+          PG_RETURN_POINTER((Node*)NULL);
 
         /* OK, we can make an index expression */
         expr = make_opclause(oproid, BOOLOID, false, (Expr *) leftarg,
@@ -382,7 +391,7 @@ Datum tpoint_supportfn(PG_FUNCTION_ARGS)
 #else
         if (!is_pseudo_constant_for_index(rightarg, req->index))
 #endif
-          PG_RETURN_POINTER((Node *) NULL);
+          PG_RETURN_POINTER((Node*)NULL);
 
         expr = make_opclause(oproid, BOOLOID, false, (Expr *) leftarg,
           (Expr *) rightarg, InvalidOid, InvalidOid);
