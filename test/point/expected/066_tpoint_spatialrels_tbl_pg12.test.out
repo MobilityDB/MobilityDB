@@ -1,0 +1,44 @@
+CREATE INDEX tbl_tgeompoint_gist_idx ON tbl_tgeompoint USING gist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tgeogpoint_gist_idx ON tbl_tgeogpoint USING gist(temp);
+CREATE INDEX
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE contains(geometry 'Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(temp, geometry 'Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(geometry 'Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersects(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(temp, geometry 'Linestring(0 0,5 5)');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(geometry 'Linestring(0 0,5 5)', temp);
+ count 
+-------
+     0
+(1 row)
+
+DROP INDEX tbl_tgeompoint_gist_idx;
+DROP INDEX
+DROP INDEX tbl_tgeogpoint_gist_idx;
+DROP INDEX

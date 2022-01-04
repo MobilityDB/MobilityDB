@@ -32,41 +32,24 @@
  * Index support functions for temporal types.
  */
 
-// #include "../mobdb_config.h"
+#include "point/tpoint_supportfn.h"
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 
 /* PostgreSQL */
-#include "postgres.h"
-#include "funcapi.h"
-#include "access/htup_details.h"
-#include "access/stratnum.h"
-#include "catalog/namespace.h"
-#include "catalog/pg_opfamily.h"
-#include "catalog/pg_type_d.h"
-#include "catalog/pg_am_d.h"
-#include "nodes/supportnodes.h"
-#include "nodes/nodeFuncs.h"
-#include "nodes/makefuncs.h"
-#include "optimizer/optimizer.h"
-#include "parser/parse_func.h"
-#include "utils/array.h"
-#include "utils/builtins.h"
-#include "utils/lsyscache.h"
-#include "utils/numeric.h"
-#include "utils/syscache.h"
-
-/* PostGIS */
-// #include "liblwgeom.h"
-// #include "lwgeom_pg.h"
+#include <catalog/pg_opfamily.h>
+#include <catalog/pg_am_d.h>
+#include <nodes/supportnodes.h>
+#include <nodes/nodeFuncs.h>
+#include <nodes/makefuncs.h>
+#include <optimizer/optimizer.h>
+#include <parser/parse_func.h>
+#include <utils/lsyscache.h>
+#include <utils/syscache.h>
 
 /* MobilityDB */
-
 #include "general/tempcache.h"
 #include "point/tpoint_selfuncs.h"
-
-/* Local prototypes */
-Datum tpoint_index_supportfn(PG_FUNCTION_ARGS);
 
 enum FUNCTION_IDX
 {
@@ -85,7 +68,8 @@ static const int16 TGeomPointStrategies[] = {
   [DWITHIN_IDX]                = RTOverlapStrategyNumber,
 };
 
-/* We use InvalidStrategy for the functions that don't currently exist for geography */
+/* We use InvalidStrategy for the functions that don't currently exist for
+ * tgeogpoint/geography */
 static const int16 TGeogPointStrategies[] = {
   [CONTAINS_IDX]               = InvalidStrategy,
   [DISJOINT_IDX]               = RTOverlapStrategyNumber,
@@ -95,18 +79,12 @@ static const int16 TGeogPointStrategies[] = {
 };
 
 static int16
-get_strategy_by_type(Oid firtype, uint16_t index)
+get_strategy_by_type(Oid type, uint16_t index)
 {
-  if (firtype == type_oid(T_TGEOMPOINT))
-  {
+  if (type == type_oid(T_TGEOMPOINT))
     return TGeomPointStrategies[index];
-  }
-
-  if (firtype == type_oid(T_TGEOGPOINT))
-  {
+  if (type == type_oid(T_TGEOGPOINT))
     return TGeogPointStrategies[index];
-  }
-
   return InvalidStrategy;
 }
 
@@ -169,7 +147,7 @@ needsSpatiotemporalIndex(Oid funcid, IndexableFunction *idxfn)
 }
 
 /*
-* We only add spatial index enhancements for indexes that support 
+* We only add spatial index enhancements for indexes that support
 * spatiotemporal searches (range based searches like the && operator), so only
 * implementations based on GIST and SPGIST.
 */
@@ -194,15 +172,32 @@ opFamilyAmOid(Oid opfamilyoid)
 * To apply the "expand for radius search" pattern we need access to the expand
 * function, so lookup the function Oid using the function name and type number.
 */
-static Oid
-expandFunctionOid(Oid geotype, Oid callingfunc)
+static FuncExpr *
+makeExpandExpr(Node *rightarg, Oid rightdatatype, Node *radiusarg,
+  Oid callingfunc)
 {
   const Oid radiustype = FLOAT8OID; /* Should always be FLOAT8OID */
-  const Oid expandfn_args[2] = {geotype, radiustype};
   const bool noError = true;
+  Oid save;
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
-  List *expandfn_name = list_make2(makeString(nspname), makeString("expand"));
+  char *expname;
+  if (rightdatatype == type_oid(T_GEOMETRY))
+    expname = "st_expand";
+  else if (rightdatatype == type_oid(T_STBOX))
+    expname = "expandspatial";
+  else if (rightdatatype == type_oid(T_TGEOMPOINT) ||
+    rightdatatype == type_oid(T_TGEOGPOINT))
+  {
+    expname = "expandspatial";
+    /* The expand function is available only for type STBOX */
+    save = rightdatatype;
+    rightdatatype = type_oid(T_STBOX);
+  }
+  else
+    elog(ERROR, "Unknown expand function for type %d", rightdatatype);
+  List *expandfn_name = list_make2(makeString(nspname), makeString(expname));
+  const Oid expandfn_args[2] = {rightdatatype, radiustype};
   Oid expandfn_oid = LookupFuncName(expandfn_name, 2, expandfn_args, noError);
   if (expandfn_oid == InvalidOid)
   {
@@ -215,32 +210,38 @@ expandFunctionOid(Oid geotype, Oid callingfunc)
     expandfn_name = list_make2(makeString(nspname), makeString("_expand"));
     expandfn_oid = LookupFuncName(expandfn_name, 2, expandfn_args, noError);
     if (expandfn_oid == InvalidOid)
-      elog(ERROR, "%s: unable to lookup 'expand(Oid[%u], Oid[%u])'", __func__, geotype, radiustype);
+      elog(ERROR, "%s: unable to lookup '%s(Oid[%u], Oid[%u])'", __func__, 
+        expname, rightdatatype, radiustype);
   }
-  return expandfn_oid;
+  if (rightdatatype == type_oid(T_TGEOMPOINT) ||
+    rightdatatype == type_oid(T_TGEOGPOINT))
+    rightdatatype = save;
+    
+  return makeFuncExpr(expandfn_oid, rightdatatype,
+            list_make2(rightarg, radiusarg), InvalidOid, InvalidOid,
+            COERCE_EXPLICIT_CALL);
 }
 
 /*
-* For functions that we want enhanced with spatial
-* index lookups, add this support function to the
-* SQL function defintion, for example:
-*
-* CREATE OR REPLACE FUNCTION intersects(tgeompoint, tgeompoint)
-*  RETURNS boolean
-*  AS 'MODULE_PATHNAME','intersects_tpoint_tpoint'
-*  SUPPORT tpoint_index_supportfn
-*  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE
-*  COST 100;
-*
-* The function must also have an entry above in the IndexableFunctions array
-* so that we know what index search strategy we want to apply.
-*/
-PG_FUNCTION_INFO_V1(tpoint_index_supportfn);
-Datum tpoint_index_supportfn(PG_FUNCTION_ARGS)
+ * For functions that we want enhanced with spatial index lookups, add
+ * this support function to the SQL function defintion, for example:
+ *
+ * CREATE OR REPLACE FUNCTION intersects(tgeompoint, tgeompoint)
+ *   RETURNS boolean
+ *   AS 'MODULE_PATHNAME','intersects_tpoint_tpoint'
+ *   SUPPORT tpoint_supportfn
+ *   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+ *
+ * The function must also have an entry above in the IndexableFunctions array
+ * so that we know what index search strategy we want to apply.
+ */
+PG_FUNCTION_INFO_V1(tpoint_supportfn);
+Datum tpoint_supportfn(PG_FUNCTION_ARGS)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
 
+  /* Return estimated selectivity */
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
@@ -249,24 +250,15 @@ Datum tpoint_index_supportfn(PG_FUNCTION_ARGS)
     CachedType ltype = cachedtype_oid(lt);
     CachedType rtype = cachedtype_oid(rt);
     Oid oper = oper_oid(OVERLAPS_OP, ltype, rtype);
-    
     if (req->is_join)
-    {
-      // TODO 
-      // req->selectivity = tpoint_joinsel_internal(req->root, oper, req->args, req->jointype);
-      PG_RETURN_POINTER((Node *)NULL);      
-    }
+      req->selectivity = tpoint_joinsel_internal(req->root, oper, req->args,
+        req->jointype, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
     else
-    {
       req->selectivity = tpoint_sel_internal(req->root, oper, req->args, req->varRelid);
-      PG_RETURN_POINTER(req);
-    }
+    PG_RETURN_POINTER(req);
   }
 
-  /*
-  * This support function is strictly for adding spatial index
-  * support.
-  */
+  /* Add spatial index support */
   if (IsA(rawreq, SupportRequestIndexCondition))
   {
     SupportRequestIndexCondition *req = (SupportRequestIndexCondition *) rawreq;
@@ -278,165 +270,134 @@ Datum tpoint_index_supportfn(PG_FUNCTION_ARGS)
       IndexableFunction idxfn = {NULL, 0, 0, 0};
       Oid opfamilyoid = req->opfamily; /* OPERATOR FAMILY of the index */
 
-      if (needsSpatiotemporalIndex(funcid, &idxfn))
+      if (! needsSpatiotemporalIndex(funcid, &idxfn))
+        elog(WARNING, "support function '%s' called from unsupported spatial function",
+          __func__);
+
+      int nargs = list_length(clause->args);
+      Node *leftarg, *rightarg;
+      Oid leftdatatype, rightdatatype, oproid;
+
+      /*
+       * Only add an operator condition for GIST and SPGIST indexes.
+       * This means only these opclasses will get automatic indexing
+       * when used with one of the following indexable functions:
+       * gist_tgeompoint_ops, gist_tgeogpoint_ops,
+       * spgist_tgeompoint_ops, spgist_tgeogpoint_ops
+       */
+      Oid opfamilyam = opFamilyAmOid(opfamilyoid);
+      if (opfamilyam != GIST_AM_OID && opfamilyam != SPGIST_AM_OID)
+        PG_RETURN_POINTER((Node *) NULL);
+
+      /*
+       * We can only do something with index matches on the first
+       * or second argument.
+       */
+      if (req->indexarg > 1)
+        PG_RETURN_POINTER((Node *) NULL);
+
+      /* Make sure we have enough arguments */
+      if (nargs < 2 || nargs < idxfn.expand_arg)
+        elog(ERROR, "%s: associated with function with %d arguments", __func__, nargs);
+
+      /*
+       * Extract "leftarg" as the arg matching the index and "rightarg" as
+       * the other,even if they were in the opposite order in the call.
+       * N.B. This only works for symmetric operators like overlaps &&
+       */
+      if (req->indexarg == 0)
       {
-        int nargs = list_length(clause->args);
-        Node *leftarg, *rightarg;
-        Oid leftdatatype, rightdatatype, oproid;
-        bool swapped = false;
-
-        /*
-        * Only add an operator condition for GIST and SPGIST indexes.
-        * Effectively this means only these opclasses will get automatic
-        * indexing when used with one of the indexable functions
-        * gist_tgeompoint_ops, gist_tgeogpoint_ops,
-        * spgist_tgeompoint_ops, spgist_tgeogpoint_ops,
-        * spgigeometry_ops_2d, spgigeometry_ops_nd
-        */
-        Oid opfamilyam = opFamilyAmOid(opfamilyoid);
-        if (opfamilyam != GIST_AM_OID && opfamilyam != SPGIST_AM_OID)
-        {
-          PG_RETURN_POINTER((Node *)NULL);
-        }
-
-        /*
-        * We can only do something with index matches on the first
-        * or second argument.
-        */
-        if (req->indexarg > 1)
-          PG_RETURN_POINTER((Node *)NULL);
-
-        /*
-        * Make sure we have enough arguments.
-        */
-        if (nargs < 2 || nargs < idxfn.expand_arg)
-          elog(ERROR, "%s: associated with function with %d arguments", __func__, nargs);
-
-        /*
-        * Extract "leftarg" as the arg matching
-        * the index and "rightarg" as the other, even if
-        * they were in the opposite order in the call.
-        * NOTE: The functions we deal with here treat
-        * their first two arguments symmetrically
-        * enough that we needn't distinguish between
-        * the two cases beyond this. Could be more
-        * complications in the future.
-        */
-        if (req->indexarg == 0)
-        {
-          leftarg = linitial(clause->args);
-          rightarg = lsecond(clause->args);
-        }
-        else
-        {
-          rightarg = linitial(clause->args);
-          leftarg = lsecond(clause->args);
-          swapped = true;
-        }
-        /*
-        * Need the argument types (which should always be geometry/geography) as
-        * this support function is only ever bound to functions
-        * using those types.
-        */
-        leftdatatype = exprType(leftarg);
-        rightdatatype = exprType(rightarg);
-
-        /*
-        * Given the index operator family and the arguments and the
-        * desired strategy number we can now lookup the operator
-        * we want (usually && or &&&).
-        */
-        oproid = get_opfamily_member(opfamilyoid, leftdatatype, rightdatatype,
-          get_strategy_by_type(leftdatatype, idxfn.index));
-        if (!OidIsValid(oproid))
-          elog(ERROR, "no spatial operator found for '%s': opfamily %u type %d",
-            idxfn.fn_name, opfamilyoid, leftdatatype);
-
-        /*
-        * For the DWithin variants we need to build a more complex return.
-        * We want to expand the non-indexed side of the call by the
-        * radius and then apply the operator.
-        * dwithin(g1, g2, radius) yields this, if g1 is the indexarg:
-        * g1 && expand(g2, radius)
-        */
-        if (idxfn.expand_arg)
-        {
-          Expr *expr;
-          Node *radiusarg = (Node *) list_nth(clause->args, idxfn.expand_arg-1);
-          Oid expandfn_oid = expandFunctionOid(rightdatatype, clause->funcid);
-
-          FuncExpr *expandexpr = makeFuncExpr(expandfn_oid, rightdatatype,
-            list_make2(rightarg, radiusarg), InvalidOid, InvalidOid,
-            COERCE_EXPLICIT_CALL);
-
-          /*
-          * The comparison expression has to be a pseudo constant,
-          * (not volatile or dependent on the target index table)
-          */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
-          if (!is_pseudo_constant_for_index(req->root, (Node*)expandexpr, req->index))
-#else
-          if (!is_pseudo_constant_for_index((Node*)expandexpr, req->index))
-#endif
-            PG_RETURN_POINTER((Node*)NULL);
-
-          /* OK, we can make an index expression */
-          expr = make_opclause(oproid, BOOLOID, false, (Expr *) leftarg,
-            (Expr *) expandexpr, InvalidOid, InvalidOid);
-
-          ret = (Node *)(list_make1(expr));
-        }
-        /*
-        * For the Intersects variants we just need to return
-        * an index OpExpr with the original arguments on each
-        * side.
-        * intersects(g1, g2) yields: g1 && g2
-        */
-        else
-        {
-          Expr *expr;
-          /*
-          * The comparison expression has to be a pseudoconstant
-          * (not volatile or dependent on the target index's table)
-          */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
-          if (!is_pseudo_constant_for_index(req->root, rightarg, req->index))
-#else
-          if (!is_pseudo_constant_for_index(rightarg, req->index))
-#endif
-            PG_RETURN_POINTER((Node*)NULL);
-
-          /*
-          * Arguments were swapped to put the index value on the
-          * left, so we need the commutated operator for
-          * the OpExpr
-          */
-          if (swapped)
-          {
-            oproid = get_commutator(oproid);
-            if (!OidIsValid(oproid))
-              PG_RETURN_POINTER((Node *)NULL);
-          }
-
-          expr = make_opclause(oproid, BOOLOID, false, (Expr *) leftarg,
-            (Expr *) rightarg, InvalidOid, InvalidOid);
-
-          ret = (Node *)(list_make1(expr));
-        }
-
-        /*
-        * Set the lossy field on the SupportRequestIndexCondition parameter
-        * to indicate that the index alone is not sufficient to evaluate
-        * the condition. The function must also still be applied.
-        */
-        req->lossy = true;
-
-        PG_RETURN_POINTER(ret);
+        leftarg = linitial(clause->args);
+        rightarg = lsecond(clause->args);
       }
       else
       {
-        elog(WARNING, "support function '%s' called from unsupported spatial function", __func__);
+        rightarg = linitial(clause->args);
+        leftarg = lsecond(clause->args);
       }
+      /*
+       * Need the argument types as this support function is only ever bound
+       * to functions using those types.
+       */
+      leftdatatype = exprType(leftarg);
+      rightdatatype = exprType(rightarg);
+
+      /*
+      * Given the index operator family and the arguments and the
+      * desired strategy number we can now lookup the operator
+      * we want (usually && or &&&).
+      */
+      oproid = get_opfamily_member(opfamilyoid, leftdatatype, rightdatatype,
+        get_strategy_by_type(leftdatatype, idxfn.index));
+      if (!OidIsValid(oproid))
+        elog(ERROR, "no spatial operator found for '%s': opfamily %u type %d",
+          idxfn.fn_name, opfamilyoid, leftdatatype);
+
+      /*
+       * For the DWithin variants we need to build a more complex return.
+       * We want to expand the non-indexed side of the call by the
+       * radius and then apply the operator.
+       * dwithin(g1, g2, radius) yields this, if g1 is the indexarg:
+       * g1 && expand(g2, radius)
+       */
+      if (idxfn.expand_arg)
+      {
+        Expr *expr;
+        Node *radiusarg = (Node *) list_nth(clause->args, idxfn.expand_arg-1);
+
+        FuncExpr *expandexpr = makeExpandExpr(rightarg, rightdatatype,
+          radiusarg, clause->funcid);
+
+        /*
+         * The comparison expression has to be a pseudo constant,
+         * (not volatile or dependent on the target index table)
+         */
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+        if (!is_pseudo_constant_for_index(req->root, (Node *) expandexpr, req->index))
+#else
+        if (!is_pseudo_constant_for_index((Node *) expandexpr, req->index))
+#endif
+          PG_RETURN_POINTER((Node *) NULL);
+
+        /* OK, we can make an index expression */
+        expr = make_opclause(oproid, BOOLOID, false, (Expr *) leftarg,
+          (Expr *) expandexpr, InvalidOid, InvalidOid);
+
+        ret = (Node *)(list_make1(expr));
+      }
+      /*
+       * For the intersects variants we just need to return an index OpExpr
+       * with the original arguments on each side. For example, 
+       * intersects(g1, g2) yields: g1 && g2
+       */
+      else
+      {
+        Expr *expr;
+        /*
+         * The comparison expression has to be a pseudoconstant
+         * (not volatile or dependent on the target index's table)
+         */
+#if POSTGRESQL_VERSION_NUMBER >= 140000
+        if (!is_pseudo_constant_for_index(req->root, rightarg, req->index))
+#else
+        if (!is_pseudo_constant_for_index(rightarg, req->index))
+#endif
+          PG_RETURN_POINTER((Node *) NULL);
+
+        expr = make_opclause(oproid, BOOLOID, false, (Expr *) leftarg,
+          (Expr *) rightarg, InvalidOid, InvalidOid);
+
+        ret = (Node *)(list_make1(expr));
+      }
+
+      /*
+       * Set the lossy field on the SupportRequestIndexCondition parameter
+       * to indicate that the index alone is not sufficient to evaluate
+       * the condition. The function must also still be applied.
+       */
+      req->lossy = true;
+
+      PG_RETURN_POINTER(ret);
     }
   }
 

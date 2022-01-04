@@ -28,11 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_selfuncs.c
+ * @file tpoint_selfuncs.h
  * Selectivity functions for temporal point types.
- *
- * Most definitions in this file come from the PostGIS file
- * `gserialized_estimate.c`
  */
 
 #ifndef __TPOINT_SELFUNCS_H__
@@ -83,6 +80,12 @@
 #define STATISTIC_SLOT_2D 1
 
 /**
+* Default geometry selectivity factor
+*/
+#define DEFAULT_ND_SEL 0.0001
+#define DEFAULT_ND_JOINSEL 0.001
+
+/**
 * More modest fallafter selectivity factor
 */
 #define FALLBACK_ND_SEL 0.2
@@ -96,6 +99,8 @@ extern Datum tpoint_joinsel(PG_FUNCTION_ARGS);
 extern bool tpoint_cachedop(Oid operator, CachedOp *cachedOp);
 extern float8 tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
+extern float8 tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype, int mode);
 
 /*****************************************************************************/
 

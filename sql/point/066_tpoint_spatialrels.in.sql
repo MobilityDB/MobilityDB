@@ -30,12 +30,22 @@
 /*
  * tpoint_spatialrels.sql
  * Spatial relationships for temporal points.
+ * Depending on PostgreSQL version, index support for these functions is
+ * enabled with rewriting (version < 12) or support functions (version >= 12)
  */
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION tpoint_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tpoint_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************
  * contains
  *****************************************************************************/
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _contains(geometry, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_geo_tpoint'
@@ -44,11 +54,23 @@ CREATE FUNCTION contains(geometry, tgeompoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._contains($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION contains(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'contains_geo_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************
  * disjoint
  *****************************************************************************/
 
+-- TODO implement the rewriting in the tpoint_supportfn
+
+-- #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _disjoint(geometry, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'disjoint_geo_tpoint'
@@ -75,9 +97,31 @@ CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+-- #if POSTGRESQL_VERSION_NUMBER >= 120000
+-- CREATE FUNCTION disjoint(geometry, tgeompoint)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'disjoint_geo_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION disjoint(tgeompoint, geometry)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'disjoint_tpoint_geo'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'disjoint_tpoint_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/
 
+-- TODO implement the rewriting in the tpoint_supportfn
+
+-- #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _disjoint(geography, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'disjoint_geo_tpoint'
@@ -104,11 +148,30 @@ CREATE FUNCTION disjoint(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._disjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+-- #if POSTGRESQL_VERSION_NUMBER >= 120000
+-- CREATE FUNCTION disjoint(geography, tgeogpoint)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'disjoint_geo_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION disjoint(tgeogpoint, geography)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'disjoint_tpoint_geo'
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION disjoint(tgeogpoint, tgeogpoint)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'disjoint_tpoint_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************
  * intersects
  *****************************************************************************/
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _intersects(geometry, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_geo_tpoint'
@@ -135,34 +198,29 @@ CREATE FUNCTION intersects(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-/*****************************************************************************/
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-CREATE FUNCTION tpoint_index_supportfn(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tpoint_index_supportfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION intersects_new(geometry, tgeompoint)
+CREATE FUNCTION intersects(geometry, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_geo_tpoint'
-  SUPPORT tpoint_index_supportfn
+  SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects_new(tgeompoint, geometry)
+CREATE FUNCTION intersects(tgeompoint, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_tpoint_geo'
-  SUPPORT tpoint_index_supportfn
+  SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects_new(tgeompoint, tgeompoint)
+CREATE FUNCTION intersects(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
-  SUPPORT tpoint_index_supportfn
+  SUPPORT tpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _intersects(geography, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_geo_tpoint'
@@ -189,11 +247,31 @@ CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-  
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION intersects(geography, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_geo_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tgeogpoint, geography)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tpoint_geo'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tpoint_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
 /*****************************************************************************
  * touches
  *****************************************************************************/
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _touches(geometry, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'touches_geo_tpoint'
@@ -211,11 +289,28 @@ CREATE FUNCTION touches(tgeompoint, geometry)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION touches(geometry, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'touches_geo_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION touches(tgeompoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'touches_tpoint_geo'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************
  * dwithin
  *****************************************************************************/
 
+-- TODO implement the rewriting in the tpoint_supportfn
+
+-- #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _dwithin(geometry, tgeompoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
@@ -238,9 +333,31 @@ CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+-- #if POSTGRESQL_VERSION_NUMBER >= 120000
+-- CREATE FUNCTION dwithin(geometry, tgeompoint, dist float8)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION dwithin(tgeompoint, geometry, dist float8)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_geo'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/
 
+-- TODO implement the rewriting in the tpoint_supportfn
+
+-- #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _dwithin(geography, tgeogpoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
@@ -263,5 +380,24 @@ CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+-- #if POSTGRESQL_VERSION_NUMBER >= 120000
+-- CREATE FUNCTION dwithin(geography, tgeogpoint, dist float8)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION dwithin(tgeogpoint, geography, dist float8)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_geo'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
+  -- RETURNS boolean
+  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
+  -- SUPPORT tpoint_supportfn
+  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- #endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/

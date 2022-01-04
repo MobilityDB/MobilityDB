@@ -36,6 +36,8 @@
 
 #include <assert.h>
 #include <float.h>
+#include <parser/parsetree.h>
+#include <utils/syscache.h>
 
 #include "general/period.h"
 #include "general/temporal_selfuncs.h"
@@ -75,7 +77,7 @@ nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 
 /*****************************************************************************
  * Boolean functions for the operators
- * PostGIS provides nd_box_overlap and nd_box_overlap which are copied in
+ * PostGIS provides nd_box_contains and nd_box_overlap which are copied in
  * tpoint_analyze.c
  *****************************************************************************/
 
@@ -607,7 +609,7 @@ default_tpoint_selectivity(CachedOp oper)
  * gserialized_estimate.c
  */
 static float8
-calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
+geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 {
   ND_STATS *nd_stats;
   AttStatsSlot sslot;
@@ -620,7 +622,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   double min[ND_DIMS];
   double max[ND_DIMS];
   double total_count = 0.0;
-  int ndims_max;
+  int ndims;
   /*
    * The statistics currently collected by PostGIS does not allow us to
    * differentiate between the bounding box operators for computing the
@@ -640,10 +642,10 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   /* Clone the stats here so we can release the attstatsslot immediately */
   nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
   memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
-
   free_attstatsslot(&sslot);
+
   /* Calculate the number of common coordinate dimensions  on the histogram */
-  ndims_max = (int) Max(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
+  ndims = (int) Min(nd_stats->ndims, MOBDB_FLAGS_GET_Z(box->flags) ? 3 : 2);
 
   /* Initialize nd_box. */
   nd_box_from_stbox(box, &nd_box);
@@ -651,7 +653,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   /* Full histogram extent op box is false? */
   if (bboxop)
   {
-     if(! nd_box_intersects(&(nd_stats->extent), &nd_box, ndims_max))
+     if(! nd_box_intersects(&(nd_stats->extent), &nd_box, ndims))
       return 0.0;
   }
   else
@@ -676,7 +678,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   /* Full histogram extent op box is true? */
   if (bboxop)
   {
-     if(! nd_box_contains(&(nd_stats->extent), &nd_box, ndims_max))
+     if(nd_box_contains(&nd_box, &(nd_stats->extent), ndims))
       return 1.0;
   }
   else
@@ -705,7 +707,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   }
 
   /* Work out some measurements of the histogram */
-  for (d = 0; d < nd_stats->ndims; d++)
+  for (d = 0; d < ndims; d++)
   {
     /* Cell size in each dim */
     min[d] = nd_stats->extent.min[d];
@@ -717,7 +719,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   memset(&search_ibox, 0, sizeof(ND_IBOX));
   if (bboxop)
     /* Traverse only the cells that overlap the box */
-    for (d = 0; d < nd_stats->ndims; d++)
+    for (d = 0; d < ndims; d++)
     {
       search_ibox.min[d] = nd_ibox.min[d];
       search_ibox.max[d] = nd_ibox.max[d];
@@ -761,7 +763,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
   /* Initialize the counter */
   memset(at, 0, sizeof(int) * ND_DIMS);
-  for (d = 0; d < nd_stats->ndims; d++)
+  for (d = 0; d < ndims; d++)
     at[d] = search_ibox.min[d];
 
   /* Move through all the overlap values and sum them */
@@ -772,14 +774,14 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
     memset(&nd_cell, 0, sizeof(ND_BOX));
 
     /* We have to pro-rate partially overlapped cells. */
-    for (d = 0; d < nd_stats->ndims; d++)
+    for (d = 0; d < ndims; d++)
     {
       nd_cell.min[d] = (float4) (min[d] + (at[d]+0) * cell_size[d]);
       nd_cell.max[d] = (float4) (min[d] + (at[d]+1) * cell_size[d]);
     }
 
     if (bboxop)
-      ratio = (float4) (nd_box_ratio_overlaps(&nd_box, &nd_cell, (int) nd_stats->ndims));
+      ratio = (float4) (nd_box_ratio_overlaps(&nd_box, &nd_cell, ndims));
     else
       ratio = (float4) (nd_box_ratio_position(&nd_box, &nd_cell, op));
     cell_count = nd_stats->value[nd_stats_value_index(nd_stats, at)];
@@ -787,7 +789,7 @@ calc_geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
     /* Add the pro-rated count for this cell to the overall total */
     total_count += cell_count * ratio;
   }
-  while (nd_increment(&search_ibox, (int) nd_stats->ndims, at));
+  while (nd_increment(&search_ibox, (int) ndims, at));
 
   /* Scale by the number of features in our histogram to get the proportion */
   selectivity = total_count / nd_stats->histogram_features;
@@ -889,7 +891,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
       cachedOp == GE_OP)
       selec *= default_tpoint_selectivity(cachedOp);
     else
-      selec *= calc_geo_selectivity(&vardata, &constBox, cachedOp);
+      selec *= geo_selectivity(&vardata, &constBox, cachedOp);
   }
   /*
    * Estimate selectivity for the time dimension
@@ -925,14 +927,375 @@ tpoint_sel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(selectivity);
 }
 
+/*****************************************************************************
+ * Estimate join selectivity
+ *****************************************************************************/
+
+static ND_STATS *
+pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
+{
+  int stats_kind = STATISTIC_KIND_ND;
+  int rv;
+  ND_STATS *nd_stats;
+
+  /* If we're in 2D mode, set the kind appropriately */
+  if ( mode == 2 ) stats_kind = STATISTIC_KIND_2D;
+
+    /* Then read the geom status histogram from that */
+
+#if POSTGIS_PGSQL_VERSION < 100
+  {
+    float4 *floatptr;
+    int nvalues;
+
+    rv = get_attstatsslot(stats_tuple, 0, 0, stats_kind, InvalidOid,
+              NULL, NULL, NULL, &floatptr, &nvalues);
+
+    if ( ! rv )
+      return NULL;
+
+    /* Clone the stats here so we can release the attstatsslot immediately */
+    nd_stats = palloc(sizeof(float) * nvalues);
+    memcpy(nd_stats, floatptr, sizeof(float) * nvalues);
+
+    /* Clean up */
+    free_attstatsslot(0, NULL, 0, floatptr, nvalues);
+  }
+#else /* PostgreSQL 10 or higher */
+  {
+    AttStatsSlot sslot;
+    rv = get_attstatsslot(&sslot, stats_tuple, stats_kind, InvalidOid,
+               ATTSTATSSLOT_NUMBERS);
+    if ( ! rv )
+      return NULL;
+
+    /* Clone the stats here so we can release the attstatsslot immediately */
+    nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
+    memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
+
+    free_attstatsslot(&sslot);
+  }
+#endif
+
+  return nd_stats;
+}
+
+/**
+* Pull the stats object from the PgSQL system catalogs. Used
+* by the selectivity functions and the debugging functions.
+*/
+static ND_STATS*
+pg_get_nd_stats(const Oid table_oid, AttrNumber att_num, int mode, bool only_parent)
+{
+  HeapTuple stats_tuple = NULL;
+  ND_STATS *nd_stats;
+
+  /* First pull the stats tuple for the whole tree */
+  if ( ! only_parent )
+    stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table_oid), Int16GetDatum(att_num), BoolGetDatum(true));
+  /* Fall-back to main table stats only, if not found for whole tree or explicitly ignored */
+  if ( only_parent || ! stats_tuple )
+    stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table_oid), Int16GetDatum(att_num), BoolGetDatum(false));
+  if ( ! stats_tuple )
+    return NULL;
+
+  nd_stats = pg_nd_stats_from_tuple(stats_tuple, mode);
+  ReleaseSysCache(stats_tuple);
+  return nd_stats;
+}
+
+/**
+* Given two statistics histograms, what is the selectivity
+* of a join driven by the && operator?
+*
+* Join selectivity is defined as the number of rows returned by the
+* join operator divided by the number of rows that an
+* unconstrained join would return (nrows1*nrows2).
+*
+* To get the estimate of join rows, we walk through the cells
+* of one histogram, and multiply the cell value by the
+* proportion of the cells in the other histogram the cell
+* overlaps: val += val1 * ( val2 * overlap_ratio )
+*/
+static float8
+geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
+{
+  int ncells1, ncells2;
+  int ndims1, ndims2, ndims;
+  double ntuples_max;
+  double ntuples_not_null1, ntuples_not_null2;
+
+  ND_BOX extent1, extent2;
+  ND_IBOX ibox1, ibox2;
+  int at1[ND_DIMS];
+  int at2[ND_DIMS];
+  double min1[ND_DIMS];
+  double width1[ND_DIMS];
+  double cellsize1[ND_DIMS];
+  int size2[ND_DIMS];
+  double min2[ND_DIMS];
+  double width2[ND_DIMS];
+  double cellsize2[ND_DIMS];
+  int size1[ND_DIMS];
+  int d;
+  double val = 0;
+  float8 selectivity;
+
+  /* Drop out on null inputs */
+  if ( ! ( s1 && s2 ) )
+  {
+    elog(NOTICE, " geo_join_selectivity called with null inputs");
+    return FALLBACK_ND_SEL;
+  }
+
+  /* We need to know how many cells each side has... */
+  ncells1 = (int)roundf(s1->histogram_cells);
+  ncells2 = (int)roundf(s2->histogram_cells);
+
+  /* ...so that we can drive the summation loop with the smaller histogram. */
+  if ( ncells1 > ncells2 )
+  {
+    const ND_STATS *stats_tmp = s1;
+    s1 = s2;
+    s2 = stats_tmp;
+  }
+
+  /* Re-read that info after the swap */
+  ncells1 = (int) roundf(s1->histogram_cells);
+  ncells2 = (int) roundf(s2->histogram_cells);
+
+  /* Q: What's the largest possible join size these relations can create? */
+  /* A: The product of the # of non-null rows in each relation. */
+  ntuples_not_null1 = s1->table_features * (s1->not_null_features / s1->sample_features);
+  ntuples_not_null2 = s2->table_features * (s2->not_null_features / s2->sample_features);
+  ntuples_max = ntuples_not_null1 * ntuples_not_null2;
+
+  /* Get the ndims as ints */
+  ndims1 = (int)roundf(s1->ndims);
+  ndims2 = (int)roundf(s2->ndims);
+  ndims = Max(ndims1, ndims2);
+
+  /* Get the extents */
+  extent1 = s1->extent;
+  extent2 = s2->extent;
+
+  /* If relation stats do not intersect, join is very very selective. */
+  if ( ! nd_box_intersects(&extent1, &extent2, ndims) )
+    PG_RETURN_FLOAT8(0.0);
+
+  /*
+   * First find the index range of the part of the smaller
+   * histogram that overlaps the larger one.
+   */
+  if ( ! nd_box_overlap(s1, &extent2, &ibox1) )
+    PG_RETURN_FLOAT8(FALLBACK_ND_JOINSEL);
+
+  /* Initialize counters / constants on s1 */
+  for ( d = 0; d < ndims1; d++ )
+  {
+    at1[d] = ibox1.min[d];
+    min1[d] = s1->extent.min[d];
+    width1[d] = s1->extent.max[d] - s1->extent.min[d];
+    size1[d] = (int)roundf(s1->size[d]);
+    cellsize1[d] = width1[d] / size1[d];
+  }
+
+  /* Initialize counters / constants on s2 */
+  for ( d = 0; d < ndims2; d++ )
+  {
+    min2[d] = s2->extent.min[d];
+    width2[d] = s2->extent.max[d] - s2->extent.min[d];
+    size2[d] = (int)roundf(s2->size[d]);
+    cellsize2[d] = width2[d] / size2[d];
+  }
+
+  /* For each affected cell of s1... */
+  do
+  {
+    double val1;
+    /* Construct the bounds of this cell */
+    ND_BOX nd_cell1;
+    nd_box_init(&nd_cell1);
+    for ( d = 0; d < ndims1; d++ )
+    {
+      nd_cell1.min[d] = min1[d] + (at1[d]+0) * cellsize1[d];
+      nd_cell1.max[d] = min1[d] + (at1[d]+1) * cellsize1[d];
+    }
+
+    /* Find the cells of s2 that cell1 overlaps.. */
+    nd_box_overlap(s2, &nd_cell1, &ibox2);
+
+    /* Initialize counter */
+    for ( d = 0; d < ndims2; d++ )
+    {
+      at2[d] = ibox2.min[d];
+    }
+
+    /* Get the value at this cell */
+    val1 = s1->value[nd_stats_value_index(s1, at1)];
+
+    /* For each overlapped cell of s2... */
+    do
+    {
+      double ratio2;
+      double val2;
+
+      /* Construct the bounds of this cell */
+      ND_BOX nd_cell2;
+      nd_box_init(&nd_cell2);
+      for ( d = 0; d < ndims2; d++ )
+      {
+        nd_cell2.min[d] = min2[d] + (at2[d]+0) * cellsize2[d];
+        nd_cell2.max[d] = min2[d] + (at2[d]+1) * cellsize2[d];
+      }
+
+      /* Calculate overlap ratio of the cells */
+      ratio2 = nd_box_ratio_overlaps(&nd_cell1, &nd_cell2, Max(ndims1, ndims2));
+
+      /* Multiply the cell counts, scaled by overlap ratio */
+      val2 = s2->value[nd_stats_value_index(s2, at2)];
+      val += val1 * (val2 * ratio2);
+    }
+    while ( nd_increment(&ibox2, ndims2, at2) );
+
+  }
+  while( nd_increment(&ibox1, ndims1, at1) );
+
+  /*
+   * In order to compare our total cell count "val" to the
+   * ntuples_max, we need to scale val up to reflect a full
+   * table estimate. So, multiply by ratio of table size to
+   * sample size.
+   */
+  val *= (s1->table_features / s1->sample_features);
+  val *= (s2->table_features / s2->sample_features);
+
+  /*
+   * Because the cell counts are over-determined due to
+   * double counting of features that overlap multiple cells
+   * (see the compute_gserialized_stats routine)
+   * we also have to scale our cell count "val" *down*
+   * to adjust for the double counting.
+   */
+//  val /= (s1->cells_covered / s1->histogram_features);
+//  val /= (s2->cells_covered / s2->histogram_features);
+
+  /*
+   * Finally, the selectivity is the estimated number of
+   * rows to be returned divided by the maximum possible
+   * number of rows that can be returned.
+   */
+  selectivity = val / ntuples_max;
+
+  /* Guard against over-estimates and crazy numbers :) */
+  if ( isnan(selectivity) || ! isfinite(selectivity) || selectivity < 0.0 )
+  {
+    selectivity = DEFAULT_ND_JOINSEL;
+  }
+  else if ( selectivity > 1.0 )
+  {
+    selectivity = 1.0;
+  }
+
+  return selectivity;
+}
+
+/**
+* For (geometry &&& geometry) and (geography && geography)
+* we call into the N-D mode.
+*/
+PG_FUNCTION_INFO_V1(tpoint_joinsel_nd);
+Datum tpoint_joinsel_nd(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_DATUM(DirectFunctionCall5(
+     tpoint_joinsel,
+     PG_GETARG_DATUM(0), PG_GETARG_DATUM(1),
+     PG_GETARG_DATUM(2), PG_GETARG_DATUM(3),
+     Int32GetDatum(0) /* ND mode */
+  ));
+}
+
+/**
+* For (geometry && geometry)
+* we call into the 2-D mode.
+*/
+PG_FUNCTION_INFO_V1(tpoint_joinsel_2d);
+Datum tpoint_joinsel_2d(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_DATUM(DirectFunctionCall5(
+     tpoint_joinsel,
+     PG_GETARG_DATUM(0), PG_GETARG_DATUM(1),
+     PG_GETARG_DATUM(2), PG_GETARG_DATUM(3),
+     Int32GetDatum(2) /* 2D mode */
+  ));
+}
+
+double
+tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype, int mode)
+{
+  float8 selectivity;
+  Oid relid1, relid2;
+  ND_STATS *stats1, *stats2;
+  Node *arg1 = (Node *) linitial(args);
+  Node *arg2 = (Node *) lsecond(args);
+  Var *var1 = (Var *) arg1;
+  Var *var2 = (Var *) arg2;
+
+  /* We only do column joins right now, no functional joins */
+  /* TODO: handle g1 && ST_Expand(g2) */
+  if (!IsA(arg1, Var) || !IsA(arg2, Var))
+  {
+    return DEFAULT_ND_JOINSEL;
+  }
+
+  /* What are the Oids of our tables/relations? */
+  relid1 = rt_fetch(var1->varno, root->parse->rtable)->relid;
+  relid2 = rt_fetch(var2->varno, root->parse->rtable)->relid;
+
+  /* Pull the stats from the stats system. */
+  stats1 = pg_get_nd_stats(relid1, var1->varattno, mode, false);
+  stats2 = pg_get_nd_stats(relid2, var2->varattno, mode, false);
+
+  /* If we can't get stats, we have to stop here! */
+  if (!stats1)
+    return DEFAULT_ND_JOINSEL;
+  else if (!stats2)
+    return DEFAULT_ND_JOINSEL;
+
+  selectivity = geo_join_selectivity(stats1, stats2);
+  pfree(stats1);
+  pfree(stats2);
+  return selectivity;
+}
+
 PG_FUNCTION_INFO_V1(tpoint_joinsel);
 /**
- * Estimate the join selectivity value of the operators for temporal points
+ * Estimate the join selectivity value of the operators for temporal points.
+ *
+ * The selectivity is the ratio of the number of rows we think will be
+ * returned divided the maximum number of rows the join could possibly
+ * return (the full combinatoric join), that is,
+ *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
  */
 PGDLLEXPORT Datum
 tpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+  int mode = PG_GETARG_INT32(4);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+
+  PG_RETURN_FLOAT8(tpoint_joinsel_internal(root, oper, args, jointype, mode));
 }
 
 /*****************************************************************************/

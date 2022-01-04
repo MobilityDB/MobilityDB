@@ -547,8 +547,8 @@ void
 stbox_set_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
-  gbox_set(gbox, MOBDB_FLAGS_GET_Z(box->flags),
-    FLAGS_GET_GEODETIC(box->flags), false, box->xmin, box->xmax,
+  gbox_set(gbox, MOBDB_FLAGS_GET_Z(box->flags), false,
+    MOBDB_FLAGS_GET_GEODETIC(box->flags), box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax);
   return;
 }
@@ -673,19 +673,10 @@ geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
   MOBDB_FLAGS_SET_T(box->flags, false);
   MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
 
-  /* Short-circuit the case where the geometry is a point */
-  if (gserialized_get_type(gs) == POINTTYPE)
+  /* Short-circuit the case where the geometry is a geometric point */
+  if (gserialized_get_type(gs) == POINTTYPE && ! geodetic)
   {
-    if (geodetic)
-    {
-      const POINT2D *p = datum_get_point2d_p(PointerGetDatum(gs));
-      POINT3D A;
-      ll2cart(p, &A);
-      box->xmin = box->xmax = A.x;
-      box->ymin = box->ymax = A.y;
-      box->zmin = box->zmax = A.z;
-    }
-    else if (hasz)
+    if (hasz)
     {
       const POINT3DZ *p = datum_get_point3dz_p(PointerGetDatum(gs));
       box->xmin = box->xmax = p->x;

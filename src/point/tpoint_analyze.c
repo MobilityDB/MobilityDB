@@ -203,15 +203,18 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
     double smin = nd_stats->extent.min[d];
     double smax = nd_stats->extent.max[d];
     double width = smax - smin;
-    int size = (int) roundf(nd_stats->size[d]);
 
-    /* ... find cells the box overlaps with in this dimension */
-    nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
-    nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
+    if (width > 0)
+    {
+      /* ... find cells the box overlaps with in this dimension */
+      int size = (int) roundf(nd_stats->size[d]);
+      nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
+      nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
 
-    /* Push any out-of range values into range */
-    nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
-    nd_ibox->max[d] = Min(nd_ibox->max[d], size-1);
+      /* Push any out-of range values into range */
+      nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
+      nd_ibox->max[d] = Min(nd_ibox->max[d], size - 1);
+    }
   }
   return true;
 }
@@ -857,7 +860,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Find the cells that overlap with this box and put them into the ND_IBOX */
     nd_box_overlap(nd_stats, nd_box, &nd_ibox);
-    memset(at, 0, sizeof(int)*ND_DIMS);
+    memset(at, 0, sizeof(int) * ND_DIMS);
 
     for ( d = 0; d < nd_stats->ndims; d++ )
     {
@@ -1039,8 +1042,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     gserialized_compute_stats(stats, fetchfunc, sample_rows, total_rows, 0);
 
     /* Compute statistics for time dimension */
-    period_compute_stats1(stats, notnull_cnt, &slot_idx,
-      time_lowers, time_uppers, time_lengths);
+    period_compute_stats1(stats, notnull_cnt, &slot_idx, time_lowers,
+      time_uppers, time_lengths);
   }
   else if (null_cnt > 0)
   {

@@ -120,8 +120,10 @@ run_compare)
   else
     tmpactual=$(mktemp)
     tmpexpected=$(mktemp)
-    sed -e's/^ERROR:.*/ERROR/' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
-    sed -e's/^ERROR:.*/ERROR/' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
+    # Text of error messages may change across PostgreSQL/PostGIS/MobilityDB versions: Keep only 'ERROR' without text
+    # Depending on version, PostGIS may add CONTEXT: message after error: Remove completely the line
+    sed -e's/^ERROR:.*/ERROR/' -e's/^CONTEXT:.*/d' "${WORKDIR}"/out/"${TESTNAME}".out >> "$tmpactual"
+    sed -e's/^ERROR:.*/ERROR/' -e's/^CONTEXT:.*/d' "$(dirname "${TESTFILE}")/../expected/$(basename "${TESTFILE}" .sql).out" >> "$tmpexpected"
     echo
     echo "Differences"
     echo "==========="

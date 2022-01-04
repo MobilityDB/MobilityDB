@@ -748,8 +748,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
       srs = getSRSbySRID(fcinfo, srid, false);
     if (!srs)
     {
-      elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
-          srid);
+      elog(ERROR, "SRID %i unknown in spatial_ref_sys table", srid);
       PG_RETURN_NULL();
     }
   }
