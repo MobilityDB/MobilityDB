@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -924,7 +924,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   bool found = tnumber_cachedop(operator, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    return DEFAULT_TEMP_SELECTIVITY;
+    return DEFAULT_TEMP_SEL;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -1007,6 +1007,14 @@ tnumber_sel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(selectivity);
 }
 
+/*****************************************************************************/
+
+static double
+tnumber_joinsel_internal(PlannerInfo *root, List *args, JoinType jointype)
+{
+  return DEFAULT_TEMP_JOINSEL;
+}
+
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
 /**
  * Estimate the join selectivity value of the operators for temporal numbers
@@ -1014,7 +1022,20 @@ PG_FUNCTION_INFO_V1(tnumber_joinsel);
 PGDLLEXPORT Datum
 tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  /* Oid operator = PG_GETARG_OID(1); */
+  List *args = (List *) PG_GETARG_POINTER(2);
+  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, args, jointype));
 }
 
 /*****************************************************************************/

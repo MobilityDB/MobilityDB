@@ -1,12 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -820,7 +820,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   bool found = tpoint_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    return DEFAULT_TEMP_SELECTIVITY;
+    return DEFAULT_TEMP_SEL;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -939,43 +939,21 @@ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
   ND_STATS *nd_stats;
 
   /* If we're in 2D mode, set the kind appropriately */
-  if ( mode == 2 ) stats_kind = STATISTIC_KIND_2D;
+  if ( mode == 2 )
+    stats_kind = STATISTIC_KIND_2D;
 
-    /* Then read the geom status histogram from that */
+  /* Then read the geom status histogram from that */
+  AttStatsSlot sslot;
+  rv = get_attstatsslot(&sslot, stats_tuple, stats_kind, InvalidOid,
+             ATTSTATSSLOT_NUMBERS);
+  if ( ! rv )
+    return NULL;
 
-#if POSTGRESQL_VERSION_NUMBER < 100000
-  {
-    float4 *floatptr;
-    int nvalues;
+  /* Clone the stats here so we can release the attstatsslot immediately */
+  nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
+  memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
 
-    rv = get_attstatsslot(stats_tuple, 0, 0, stats_kind, InvalidOid,
-              NULL, NULL, NULL, &floatptr, &nvalues);
-
-    if ( ! rv )
-      return NULL;
-
-    /* Clone the stats here so we can release the attstatsslot immediately */
-    nd_stats = palloc(sizeof(float) * nvalues);
-    memcpy(nd_stats, floatptr, sizeof(float) * nvalues);
-
-    /* Clean up */
-    free_attstatsslot(0, NULL, 0, floatptr, nvalues);
-  }
-#else /* PostgreSQL 10 or higher */
-  {
-    AttStatsSlot sslot;
-    rv = get_attstatsslot(&sslot, stats_tuple, stats_kind, InvalidOid,
-               ATTSTATSSLOT_NUMBERS);
-    if ( ! rv )
-      return NULL;
-
-    /* Clone the stats here so we can release the attstatsslot immediately */
-    nd_stats = palloc(sizeof(float4) * sslot.nnumbers);
-    memcpy(nd_stats, sslot.numbers, sizeof(float4) * sslot.nnumbers);
-
-    free_attstatsslot(&sslot);
-  }
-#endif
+  free_attstatsslot(&sslot);
 
   return nd_stats;
 }
@@ -984,7 +962,7 @@ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
 * Pull the stats object from the PgSQL system catalogs. Used
 * by the selectivity functions and the debugging functions.
 */
-static ND_STATS*
+static ND_STATS *
 pg_get_nd_stats(const Oid table_oid, AttrNumber att_num, int mode, bool only_parent)
 {
   HeapTuple stats_tuple = NULL;
@@ -1049,8 +1027,8 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
   }
 
   /* We need to know how many cells each side has... */
-  ncells1 = (int)roundf(s1->histogram_cells);
-  ncells2 = (int)roundf(s2->histogram_cells);
+  ncells1 = (int) roundf(s1->histogram_cells);
+  ncells2 = (int) roundf(s2->histogram_cells);
 
   /* ...so that we can drive the summation loop with the smaller histogram. */
   if ( ncells1 > ncells2 )
@@ -1071,8 +1049,8 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
   ntuples_max = ntuples_not_null1 * ntuples_not_null2;
 
   /* Get the ndims as ints */
-  ndims1 = (int)roundf(s1->ndims);
-  ndims2 = (int)roundf(s2->ndims);
+  ndims1 = (int) roundf(s1->ndims);
+  ndims2 = (int) roundf(s2->ndims);
   ndims = Max(ndims1, ndims2);
 
   /* Get the extents */
@@ -1081,14 +1059,14 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
 
   /* If relation stats do not intersect, join is very very selective. */
   if ( ! nd_box_intersects(&extent1, &extent2, ndims) )
-    PG_RETURN_FLOAT8(0.0);
+    return 0.0;
 
   /*
    * First find the index range of the part of the smaller
    * histogram that overlaps the larger one.
    */
   if ( ! nd_box_overlap(s1, &extent2, &ibox1) )
-    PG_RETURN_FLOAT8(FALLBACK_ND_JOINSEL);
+    return FALLBACK_ND_JOINSEL;
 
   /* Initialize counters / constants on s1 */
   for ( d = 0; d < ndims1; d++ )
@@ -1189,45 +1167,11 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
 
   /* Guard against over-estimates and crazy numbers :) */
   if ( isnan(selectivity) || ! isfinite(selectivity) || selectivity < 0.0 )
-  {
     selectivity = DEFAULT_ND_JOINSEL;
-  }
   else if ( selectivity > 1.0 )
-  {
     selectivity = 1.0;
-  }
 
   return selectivity;
-}
-
-/**
-* For (geometry &&& geometry) and (geography && geography)
-* we call into the N-D mode.
-*/
-PG_FUNCTION_INFO_V1(tpoint_joinsel_nd);
-Datum tpoint_joinsel_nd(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_DATUM(DirectFunctionCall5(
-     tpoint_joinsel,
-     PG_GETARG_DATUM(0), PG_GETARG_DATUM(1),
-     PG_GETARG_DATUM(2), PG_GETARG_DATUM(3),
-     Int32GetDatum(0) /* ND mode */
-  ));
-}
-
-/**
-* For (geometry && geometry)
-* we call into the 2-D mode.
-*/
-PG_FUNCTION_INFO_V1(tpoint_joinsel_2d);
-Datum tpoint_joinsel_2d(PG_FUNCTION_ARGS)
-{
-  PG_RETURN_DATUM(DirectFunctionCall5(
-     tpoint_joinsel,
-     PG_GETARG_DATUM(0), PG_GETARG_DATUM(1),
-     PG_GETARG_DATUM(2), PG_GETARG_DATUM(3),
-     Int32GetDatum(2) /* 2D mode */
-  ));
 }
 
 double
@@ -1246,7 +1190,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   /* TODO: handle g1 && ST_Expand(g2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
   {
-    return DEFAULT_ND_JOINSEL;
+    return DEFAULT_TEMP_JOINSEL;
   }
 
   /* What are the Oids of our tables/relations? */
@@ -1263,7 +1207,8 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   else if (!stats2)
     return DEFAULT_ND_JOINSEL;
 
-  selectivity = geo_join_selectivity(stats1, stats2);
+  selectivity = geo_join_selectivity(stats1, stats2) *
+    temporal_joinsel_internal(root, args, jointype);
   pfree(stats1);
   pfree(stats2);
   return selectivity;
@@ -1285,15 +1230,15 @@ tpoint_joinsel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-  int mode = PG_GETARG_INT32(4);
+  int mode = Int32GetDatum(0) /* ND mode TO GENERALIZE */;
 
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
   /* Only respond to an inner join/unknown context join */
   if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(DEFAULT_ND_JOINSEL);
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
   PG_RETURN_FLOAT8(tpoint_joinsel_internal(root, oper, args, jointype, mode));
 }
