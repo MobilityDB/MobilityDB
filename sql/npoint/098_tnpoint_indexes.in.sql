@@ -47,7 +47,7 @@ CREATE FUNCTION tnpoint_gist_decompress(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER < 110000
 
-CREATE OPERATOR CLASS gist_tnpoint_ops
+CREATE OPERATOR CLASS tnpoint_gist_ops
   DEFAULT FOR TYPE tnpoint USING gist AS
   STORAGE stbox,
   -- strictly left
@@ -124,7 +124,7 @@ CREATE FUNCTION tnpoint_spgist_compress(internal)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS spgist_tnpoint_ops
+CREATE OPERATOR CLASS tnpoint_spgist_ops
   DEFAULT FOR TYPE tnpoint USING spgist AS
   -- strictly left
   OPERATOR  1   << (tnpoint, stbox),

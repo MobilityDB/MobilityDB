@@ -42,6 +42,186 @@ CREATE FUNCTION tnpoint_position_joinsel(internal, oid, internal, smallint, inte
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * timestamptz
+ *****************************************************************************/
+/* timestamptz op tnpoint */
+
+CREATE FUNCTION temporal_before(timestamptz, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(timestamptz, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(timestamptz, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(timestamptz, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = timestamptz, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = timestamptz, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = timestamptz, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = timestamptz, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************
+ * timestampset
+ *****************************************************************************/
+/* timestampset op tnpoint */
+
+CREATE FUNCTION temporal_before(timestampset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(timestampset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(timestampset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(timestampset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = timestampset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = timestampset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = timestampset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = timestampset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************
+ * period
+ *****************************************************************************/
+/* period op tnpoint */
+
+CREATE FUNCTION temporal_before(period, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(period, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(period, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(period, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = period, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = period, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = period, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = period, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************
+ * periodset
+ *****************************************************************************/
+/* periodset op tnpoint */
+
+CREATE FUNCTION temporal_before(periodset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(periodset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(periodset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(periodset, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = periodset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = periodset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = periodset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = periodset, RIGHTARG = tnpoint,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************
  * Geometry
  *****************************************************************************/
 
@@ -328,7 +508,178 @@ CREATE OPERATOR |&> (
 /*****************************************************************************
  * tnpoint
  *****************************************************************************/
+/* tnpoint op timestamptz */
 
+CREATE FUNCTION temporal_before(tnpoint, timestamptz)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tnpoint, timestamptz)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tnpoint, timestamptz)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tnpoint, timestamptz)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = tnpoint, RIGHTARG = timestamptz,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = tnpoint, RIGHTARG = timestamptz,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = tnpoint, RIGHTARG = timestamptz,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = tnpoint, RIGHTARG = timestamptz,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************/
+/* tnpoint op timestampset */
+
+CREATE FUNCTION temporal_before(tnpoint, timestampset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tnpoint, timestampset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tnpoint, timestampset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tnpoint, timestampset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = tnpoint, RIGHTARG = timestampset,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = tnpoint, RIGHTARG = timestampset,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = tnpoint, RIGHTARG = timestampset,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = tnpoint, RIGHTARG = timestampset,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************/
+/* tnpoint op period */
+
+CREATE FUNCTION temporal_before(tnpoint, period)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tnpoint, period)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tnpoint, period)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tnpoint, period)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = tnpoint, RIGHTARG = period,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = tnpoint, RIGHTARG = period,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = tnpoint, RIGHTARG = period,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = tnpoint, RIGHTARG = period,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************/
+/* tnpoint op periodset */
+
+CREATE FUNCTION temporal_before(tnpoint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overbefore(tnpoint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_after(tnpoint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_overafter(tnpoint, periodset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = tnpoint, RIGHTARG = periodset,
+  PROCEDURE = temporal_before,
+  COMMUTATOR = #>>,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = tnpoint, RIGHTARG = periodset,
+  PROCEDURE = temporal_overbefore,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = tnpoint, RIGHTARG = periodset,
+  PROCEDURE = temporal_after,
+  COMMUTATOR = <<#,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = tnpoint, RIGHTARG = periodset,
+  PROCEDURE = temporal_overafter,
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+);
+
+/*****************************************************************************/
 /* tnpoint op geometry */
 
 CREATE FUNCTION temporal_left(tnpoint, geometry)

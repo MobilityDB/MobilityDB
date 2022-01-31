@@ -32,7 +32,7 @@
  * Quad-tree SP-GiST index for temporal types
  */
 
-CREATE FUNCTION sptemporal_gist_compress(internal)
+CREATE FUNCTION temporal_spgist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -59,17 +59,20 @@ CREATE FUNCTION tbox_spgist_leaf_consistent(internal, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sptnumber_gist_compress(internal)
+CREATE FUNCTION tnumber_spgist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_tbool_ops
+CREATE OPERATOR CLASS tbool_spgist_ops
   DEFAULT FOR TYPE tbool USING spgist AS
   -- overlaps
-  OPERATOR  3    && (tbool, period),
+  OPERATOR  3    && (tbool, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tbool, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tbool, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tbool, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tbool, tbool),
     -- same
   OPERATOR  6    ~= (tbool, period),
@@ -96,12 +99,12 @@ CREATE OPERATOR CLASS spgist_tbool_ops
   OPERATOR  31    #&> (tbool, period),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  spperiod_gist_config(internal, internal),
-  FUNCTION  2  spperiod_gist_choose(internal, internal),
-  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
-  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
-  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
-  FUNCTION  6  sptemporal_gist_compress(internal);
+  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  2  period_spgist_choose(internal, internal),
+  FUNCTION  3  period_spgist_picksplit(internal, internal),
+  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/
 
@@ -168,7 +171,7 @@ CREATE OPERATOR CLASS tbox_spgist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_tint_ops
+CREATE OPERATOR CLASS tint_spgist_ops
   DEFAULT FOR TYPE tint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tint, intrange),
@@ -181,6 +184,11 @@ CREATE OPERATOR CLASS spgist_tint_ops
   OPERATOR  2    &< (tint, tint),
   OPERATOR  2    &< (tint, tfloat),
   -- overlaps
+  OPERATOR  3    && (tint, int),          -- index support for ?=
+  OPERATOR  3    && (tint, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tint, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tint, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tint, intrange),
   OPERATOR  3    && (tint, tbox),
   OPERATOR  3    && (tint, tint),
@@ -243,11 +251,11 @@ CREATE OPERATOR CLASS spgist_tint_ops
   FUNCTION  3  tbox_spgist_picksplit(internal, internal),
   FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  sptnumber_gist_compress(internal);
+  FUNCTION  6  tnumber_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_tfloat_ops
+CREATE OPERATOR CLASS tfloat_spgist_ops
   DEFAULT FOR TYPE tfloat USING spgist AS
   -- strictly left
   OPERATOR  1    << (tfloat, floatrange),
@@ -260,6 +268,11 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
   OPERATOR  2    &< (tfloat, tint),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
+  OPERATOR  3    && (tfloat, float),        -- index support for ?=
+  OPERATOR  3    && (tfloat, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tfloat, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tfloat, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tfloat, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tfloat, floatrange),
   OPERATOR  3    && (tfloat, tbox),
   OPERATOR  3    && (tfloat, tint),
@@ -322,14 +335,17 @@ CREATE OPERATOR CLASS spgist_tfloat_ops
   FUNCTION  3  tbox_spgist_picksplit(internal, internal),
   FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  sptnumber_gist_compress(internal);
+  FUNCTION  6  tnumber_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_ttext_ops
+CREATE OPERATOR CLASS ttext_spgist_ops
   DEFAULT FOR TYPE ttext USING spgist AS
   -- overlaps
-  OPERATOR  3    && (ttext, period),
+  OPERATOR  3    && (ttext, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (ttext, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (ttext, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (ttext, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (ttext, ttext),
     -- same
   OPERATOR  6    ~= (ttext, period),
@@ -356,11 +372,11 @@ CREATE OPERATOR CLASS spgist_ttext_ops
   OPERATOR  31    #&> (ttext, period),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  spperiod_gist_config(internal, internal),
-  FUNCTION  2  spperiod_gist_choose(internal, internal),
-  FUNCTION  3  spperiod_gist_picksplit(internal, internal),
-  FUNCTION  4  spperiod_gist_inner_consistent(internal, internal),
-  FUNCTION  5  spperiod_gist_leaf_consistent(internal, internal),
-  FUNCTION  6  sptemporal_gist_compress(internal);
+  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  2  period_spgist_choose(internal, internal),
+  FUNCTION  3  period_spgist_picksplit(internal, internal),
+  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/

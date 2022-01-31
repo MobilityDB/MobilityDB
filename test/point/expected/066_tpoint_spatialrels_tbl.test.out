@@ -118,18 +118,6 @@ SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE intersects(t
    118
 (1 row)
 
-SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE intersects(g, temp);
- count 
--------
-  3300
-(1 row)
-
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE intersects(temp, g);
- count 
--------
-  3300
-(1 row)
-
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE intersects(t1.temp, t2.temp);
  count 
 -------

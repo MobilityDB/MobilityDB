@@ -162,14 +162,14 @@ CREATE FUNCTION srid(nsegment)
  * Modification functions
  *****************************************************************************/
 
-CREATE FUNCTION setPrecision(npoint, int)
+CREATE FUNCTION round(npoint, int DEFAULT 0)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'npoint_set_precision'
+  AS 'MODULE_PATHNAME', 'npoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setPrecision(nsegment, int)
+CREATE FUNCTION round(nsegment, int DEFAULT 0)
   RETURNS nsegment
-  AS 'MODULE_PATHNAME', 'nsegment_set_precision'
+  AS 'MODULE_PATHNAME', 'nsegment_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

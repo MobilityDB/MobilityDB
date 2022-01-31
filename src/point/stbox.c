@@ -1091,25 +1091,25 @@ stbox_expand_temporal(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(stbox_expand_temporal_internal(box, interval));
 }
 
-PG_FUNCTION_INFO_V1(stbox_set_precision);
+PG_FUNCTION_INFO_V1(stbox_round);
 /**
  * Sets the precision of the coordinates of the spatiotemporal box
  */
 PGDLLEXPORT Datum
-stbox_set_precision(PG_FUNCTION_ARGS)
+stbox_round(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Datum prec = PG_GETARG_DATUM(1);
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round(Float8GetDatum(box->xmin), prec));
-  result->xmax = DatumGetFloat8(datum_round(Float8GetDatum(box->xmax), prec));
-  result->ymin = DatumGetFloat8(datum_round(Float8GetDatum(box->ymin), prec));
-  result->ymax = DatumGetFloat8(datum_round(Float8GetDatum(box->ymax), prec));
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), prec));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), prec));
+  result->ymin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymin), prec));
+  result->ymax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->ymax), prec));
   if (MOBDB_FLAGS_GET_Z(box->flags) || MOBDB_FLAGS_GET_GEODETIC(box->flags))
   {
-    result->zmin = DatumGetFloat8(datum_round(Float8GetDatum(box->zmin), prec));
-    result->zmax = DatumGetFloat8(datum_round(Float8GetDatum(box->zmax), prec));
+    result->zmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmin), prec));
+    result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), prec));
   }
   PG_RETURN_POINTER(result);
 }

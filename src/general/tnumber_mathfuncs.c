@@ -52,7 +52,7 @@
  * Round the number to the number of decimal places
  */
 Datum
-datum_round(Datum value, Datum prec)
+datum_round_float(Datum value, Datum prec)
 {
   Datum number = call_function1(float8_numeric, value);
   Datum round = call_function2(numeric_round, number, prec);
@@ -451,7 +451,7 @@ tnumber_round(PG_FUNCTION_ARGS)
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round;
+  lfinfo.func = (varfunc) &datum_round_float;
   lfinfo.numparam = 1;
   lfinfo.param[0] = digits;
   lfinfo.argoids = true;

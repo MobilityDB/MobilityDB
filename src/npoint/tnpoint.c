@@ -310,20 +310,20 @@ tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_set_precision);
+PG_FUNCTION_INFO_V1(tnpoint_round);
 /**
  * Set the precision of the fraction of the temporal network point to the
  * number of decimal places
  */
 PGDLLEXPORT Datum
-tnpoint_set_precision(PG_FUNCTION_ARGS)
+tnpoint_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum size = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &npoint_set_precision_internal;
+  lfinfo.func = (varfunc) &npoint_round_internal;
   lfinfo.numparam = 1;
   lfinfo.param[0] = size;
   lfinfo.restypid = temp->basetypid;

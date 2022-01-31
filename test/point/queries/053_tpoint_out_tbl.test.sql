@@ -29,42 +29,42 @@
 
 -------------------------------------------------------------------------------
 
-SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(setPrecision(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT asText(array_agg(setPrecision(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
-SELECT asText(array_agg(setPrecision(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
+SELECT asText(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asText(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
 
-SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asEWKT(setPrecision(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
-SELECT asEWKT(array_agg(setPrecision(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
-SELECT asEWKT(array_agg(setPrecision(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asEWKT(round(temp, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asEWKT(array_agg(round(g, 6) ORDER BY k)) FROM tbl_geography3D WHERE g IS NOT NULL AND k % 10 = 1;
+SELECT asEWKT(array_agg(round(temp, 6) ORDER BY k)) FROM tbl_tgeogpoint3D WHERE temp IS NOT NULL AND k % 10 = 1;
 
 -------------------------------------------------------------------------------
 -- Combination of input/output functions
 
 -- We need to add asewkt to avoid problems due to floating point precision
 SELECT DISTINCT asText(tgeompointFromText(asText(temp))) = asText(temp) FROM tbl_tgeompoint;
-SELECT DISTINCT asText(tgeompointFromText(asText(temp))) = asText(temp) FROM tbl_tgeogpoint;
+SELECT DISTINCT asText(tgeogpointFromText(asText(temp))) = asText(temp) FROM tbl_tgeogpoint;
 
 -- We need to add asewkt to avoid problems due to floating point precision
 SELECT DISTINCT asEWKT(tgeompointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeompoint;
-SELECT DISTINCT asEWKT(tgeompointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
+SELECT DISTINCT asEWKT(tgeogpointFromEWKT(asEWKT(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
 
 -- We need to add asewkt to avoid problems due to floating point precision
 SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeompoint;
-SELECT DISTINCT asEWKT(tgeompointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
+SELECT DISTINCT asEWKT(tgeogpointFromMFJSON(asMFJSON(temp))) = asEWKT(temp) FROM tbl_tgeogpoint;
 
 SELECT DISTINCT tgeompointFromBinary(asBinary(temp)) = temp FROM tbl_tgeompoint;
-SELECT DISTINCT tgeompointFromBinary(asBinary(temp)) = temp FROM tbl_tgeogpoint;
+SELECT DISTINCT tgeogpointFromBinary(asBinary(temp)) = temp FROM tbl_tgeogpoint;
 
 SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeompoint;
-SELECT DISTINCT tgeompointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeogpoint;
+SELECT DISTINCT tgeogpointFromEWKB(asEWKB(temp)) = temp FROM tbl_tgeogpoint;
 
 SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeompoint;
-SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
+SELECT DISTINCT tgeogpointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
 
 -------------------------------------------------------------------------------

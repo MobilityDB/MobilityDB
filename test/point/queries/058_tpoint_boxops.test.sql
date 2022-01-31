@@ -32,9 +32,9 @@
 SELECT geometry 'Point empty'::stbox;
 SELECT geometry 'Point(1 1)'::stbox;
 SELECT geometry 'Point(1 1 1)'::stbox;
-SELECT setPrecision(geography 'Point empty'::stbox, 13);
-SELECT setPrecision(geography 'Point(1 1)'::stbox, 13);
-SELECT setPrecision(geography 'Point(1 1 1)'::stbox, 13);
+SELECT round(geography 'Point empty'::stbox, 13);
+SELECT round(geography 'Point(1 1)'::stbox, 13);
+SELECT round(geography 'Point(1 1 1)'::stbox, 13);
 SELECT timestamptz '2000-01-01'::stbox;
 SELECT timestampset '{2000-01-01, 2000-01-02}'::stbox;
 SELECT period '[2000-01-01, 2000-01-02]'::stbox;
@@ -45,22 +45,22 @@ SELECT stbox(geometry 'Point(1 1 1)', timestamptz '2000-01-01');
 SELECT stbox(geometry 'Point empty', period '[2000-01-01, 2000-01-02]');
 SELECT stbox(geometry 'Point(1 1)', period '[2000-01-01, 2000-01-02]');
 SELECT stbox(geometry 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]');
-SELECT setPrecision(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
-SELECT setPrecision(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
-SELECT setPrecision(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
-SELECT setPrecision(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
-SELECT setPrecision(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
-SELECT setPrecision(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT round(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
+SELECT round(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
+SELECT round(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
+SELECT round(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT round(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+SELECT round(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01'::stbox;
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox;
 SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox;
 SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox;
 
-SELECT setPrecision(tgeogpoint 'Point(1 1)@2000-01-01'::stbox, 13);
-SELECT setPrecision(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox, 13);
-SELECT setPrecision(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox, 13);
-SELECT setPrecision(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox, 13);
+SELECT round(tgeogpoint 'Point(1 1)@2000-01-01'::stbox, 13);
+SELECT round(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox, 13);
+SELECT round(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox, 13);
+SELECT round(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox, 13);
 
 -------------------------------------------------------------------------------
 

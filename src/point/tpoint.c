@@ -434,6 +434,27 @@ tpoint_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Expand functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(tpoint_expand_spatial);
+/**
+ * Returns the bounding box of the temporal point value expanded on the
+ * spatial dimension
+ */
+PGDLLEXPORT Datum
+tpoint_expand_spatial(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  double d = PG_GETARG_FLOAT8(1);
+  STBOX *box = palloc0(sizeof(STBOX));
+  temporal_bbox(box, temp);
+  STBOX *result = stbox_expand_spatial_internal(box, d);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Temporal comparisons
  *****************************************************************************/
 

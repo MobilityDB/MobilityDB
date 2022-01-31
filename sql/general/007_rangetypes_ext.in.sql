@@ -53,9 +53,9 @@ CREATE TYPE floatrange AS RANGE (
 
 /******************************************************************************/
 
-CREATE FUNCTION setPrecision(floatrange, int)
+CREATE FUNCTION round(floatrange, integer DEFAULT 0)
   RETURNS floatrange
-  AS 'MODULE_PATHNAME', 'floatrange_set_precision'
+  AS 'MODULE_PATHNAME', 'floatrange_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

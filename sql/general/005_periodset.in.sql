@@ -108,7 +108,7 @@ CREATE FUNCTION period(periodset)
 CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
 CREATE CAST (timestampset AS periodset) WITH FUNCTION periodset(timestampset);
 CREATE CAST (period AS periodset) WITH FUNCTION periodset(period);
-CREATE CAST (periodset AS period) WITH FUNCTION period(periodset) AS IMPLICIT;
+CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
 
 /******************************************************************************
  * Functions
@@ -233,25 +233,25 @@ CREATE OPERATOR < (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = periodsel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = periodsel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = @JOIN_LE@
 );
 CREATE OPERATOR >= (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = periodsel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = @JOIN_GE@
 );
 CREATE OPERATOR > (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = periodsel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS periodset_ops

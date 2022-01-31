@@ -46,6 +46,7 @@
 
 #include "general/temporal_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/amapi.h>
 #include <access/heapam.h>
@@ -71,6 +72,7 @@
 #include "general/temporal_boxops.h"
 #include "general/timetypes.h"
 
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -297,7 +299,7 @@ temporal_cachedop(Oid oper, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_temporal_selectivity(CachedOp oper)
+default_temp_sel(CachedOp oper)
 {
   switch (oper)
   {
@@ -338,7 +340,7 @@ default_temporal_selectivity(CachedOp oper)
  * respectively.
  */
 Selectivity
-temporal_sel_internal_per(PlannerInfo *root, VariableStatData *vardata,
+temporal_sel_period(PlannerInfo *root, VariableStatData *vardata,
   Period *period, CachedOp cachedOp)
 {
   double selec;
@@ -370,11 +372,11 @@ temporal_sel_internal_per(PlannerInfo *root, VariableStatData *vardata,
     cachedOp == LT_OP || cachedOp == LE_OP ||
     cachedOp == GT_OP || cachedOp == GE_OP)
   {
-    selec = calc_period_hist_selectivity(vardata, period, cachedOp);
+    selec = period_hist_sel(vardata, period, cachedOp);
   }
   else /* Unknown operator */
   {
-    selec = default_temporal_selectivity(cachedOp);
+    selec = default_temp_sel(cachedOp);
   }
   return selec;
 }
@@ -409,7 +411,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid,
     &vardata, &other, &varonleft))
-    return default_temporal_selectivity(cachedOp);
+    return default_temp_sel(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -417,7 +419,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return default_temporal_selectivity(cachedOp);
+    return default_temp_sel(cachedOp);
   }
 
   /*
@@ -442,7 +444,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return default_temporal_selectivity(cachedOp);
+      return default_temp_sel(cachedOp);
     }
   }
 
@@ -452,10 +454,10 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   found = temporal_const_to_period(other, &constperiod);
   /* In the case of unknown constant */
   if (!found)
-    return default_temporal_selectivity(cachedOp);
+    return default_temp_sel(cachedOp);
 
   /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_internal_per(root, &vardata, &constperiod, cachedOp);
+  selec = temporal_sel_period(root, &vardata, &constperiod, cachedOp);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
@@ -474,14 +476,16 @@ temporal_sel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selectivity = temporal_sel_internal(root, oper, args, varRelid);
-  PG_RETURN_FLOAT8(selectivity);
+  PG_RETURN_FLOAT8(temporal_sel_internal(root, oper, args, varRelid));
 }
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Estimate the join selectivity
+ *****************************************************************************/
 
 double
-temporal_joinsel_internal(PlannerInfo *root, List *args, JoinType jointype)
+temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype)
 {
   return DEFAULT_TEMP_JOINSEL;
 }
@@ -495,7 +499,7 @@ PGDLLEXPORT Datum
 temporal_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  /* Oid operator = PG_GETARG_OID(1); */
+  Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
 
@@ -507,7 +511,7 @@ temporal_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(temporal_joinsel_internal(root, args, jointype));
+  PG_RETURN_FLOAT8(temporal_joinsel_internal(root, oper, args, jointype));
 }
 
 /*****************************************************************************/

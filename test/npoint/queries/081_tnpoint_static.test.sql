@@ -83,21 +83,21 @@ SELECT srid(nsegment 'nsegment(1,0.5,0.7)');
 -- Modification functions
 -------------------------------------------------------------------------------
 
-SELECT setPrecision(npoint 'NPoint(1, 0.123456789)', 6);
-SELECT setPrecision(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
+SELECT round(npoint 'NPoint(1, 0.123456789)', 6);
+SELECT round(nsegment 'NSegment(1, 0.123456789, 0.223456789)', 6);
 
 -------------------------------------------------------------------------------
 -- Cast functions between network and space
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(setPrecision(npoint 'npoint(1,0.2)'::geometry, 6));
+SELECT ST_AsText(round(npoint 'npoint(1,0.2)'::geometry, 6));
 
-SELECT ST_AsText(setPrecision(nsegment 'nsegment(1,0.5,0.7)'::geometry, 6));
+SELECT ST_AsText(round(nsegment 'nsegment(1,0.5,0.7)'::geometry, 6));
 
-SELECT setPrecision((npoint 'npoint(1,0.2)'::geometry)::npoint, 6);
+SELECT round((npoint 'npoint(1,0.2)'::geometry)::npoint, 6);
 
-SELECT setPrecision((nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment, 6);
-SELECT setPrecision((nsegment 'nsegment(1,0.5,0.5)'::geometry)::nsegment, 6);
+SELECT round((nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment, 6);
+SELECT round((nsegment 'nsegment(1,0.5,0.5)'::geometry)::nsegment, 6);
 
 SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::npoint;
 

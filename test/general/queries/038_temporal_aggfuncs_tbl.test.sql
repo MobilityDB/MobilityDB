@@ -40,27 +40,27 @@ SET force_parallel_mode=regress;
 SELECT extent(inst) FROM tbl_tbool_inst;
 SELECT extent(inst) FROM tbl_ttext_inst;
 SELECT extent(inst) FROM tbl_tint_inst;
-SELECT setPrecision(extent(inst), 13) FROM tbl_tfloat_inst;
+SELECT round(extent(inst), 13) FROM tbl_tfloat_inst;
 
 SELECT extent(ti) FROM tbl_tbool_instset;
 SELECT extent(ti) FROM tbl_ttext_instset;
 SELECT extent(ti) FROM tbl_tint_instset;
-SELECT setPrecision(extent(ti), 13) FROM tbl_tfloat_instset;
+SELECT round(extent(ti), 13) FROM tbl_tfloat_instset;
 
 SELECT extent(seq) FROM tbl_tbool_seq;
 SELECT extent(seq) FROM tbl_ttext_seq;
 SELECT extent(seq) FROM tbl_tint_seq;
-SELECT setPrecision(extent(seq), 13) FROM tbl_tfloat_seq;
+SELECT round(extent(seq), 13) FROM tbl_tfloat_seq;
 
 SELECT extent(ts) FROM tbl_tbool_seqset;
 SELECT extent(ts) FROM tbl_ttext_seqset;
 SELECT extent(ts) FROM tbl_tint_seqset;
-SELECT setPrecision(extent(ts), 13) FROM tbl_tfloat_seqset;
+SELECT round(extent(ts), 13) FROM tbl_tfloat_seqset;
 
 SELECT extent(temp) FROM tbl_tbool;
 SELECT extent(temp) FROM tbl_ttext;
 SELECT extent(temp) FROM tbl_tint;
-SELECT setPrecision(extent(temp), 13) FROM tbl_tfloat;
+SELECT round(extent(temp), 13) FROM tbl_tfloat;
 
 -------------------------------------------------------------------------------
 -- TemporalInst aggregate functions

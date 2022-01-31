@@ -360,7 +360,57 @@ distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
 
   return dx;
 }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
+
+/**
+ * Transform a query argument into a TBOX.
+ */
+static bool
+tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
+{
+  memset(result, 0, sizeof(TBOX));
+  if (tnumber_base_type(scankey->sk_subtype))
+  {
+    Datum value = scankey->sk_argument;
+    number_to_box(result, value, scankey->sk_subtype);
+  }
+  else if (tnumber_range_type(scankey->sk_subtype))
+  {
+    RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
+    range_to_tbox_internal(result, range);
+  }
+  else if (scankey->sk_subtype == TIMESTAMPTZOID)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    timestamp_to_tbox_internal(result, t);
+  }
+  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
+    timestampset_to_tbox_internal(result, ts);
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  {
+    Period *p = DatumGetPeriod(scankey->sk_argument);
+    period_to_tbox_internal(result, p);
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
+    periodset_to_tbox_internal(result, ps);
+  }
+  else if (scankey->sk_subtype == type_oid(T_TBOX))
+  {
+    memcpy(result, DatumGetTboxP(scankey->sk_argument), sizeof(TBOX));
+  }
+  else if (tnumber_type(scankey->sk_subtype))
+  {
+    temporal_bbox(result, DatumGetTemporal(scankey->sk_argument));
+  }
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+  return true;
+}
 
 /*****************************************************************************
  * SP-GiST config function
@@ -541,7 +591,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
           sizeof(double) * in->norderbys);
       }
     }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
     PG_RETURN_VOID();
   }
@@ -551,20 +601,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
   for (i = 0; i < in->nkeys; i++)
-  {
-    Oid subtype = in->scankeys[i].sk_subtype;
-    if (tnumber_range_type(subtype))
-      range_to_tbox_internal(&queries[i],
-        DatumGetRangeTypeP(in->scankeys[i].sk_argument));
-    else if (subtype == type_oid(T_TBOX))
-      memcpy(&queries[i], DatumGetTboxP(in->scankeys[i].sk_argument),
-        sizeof(TBOX));
-    else if (tnumber_type(subtype))
-      temporal_bbox(&queries[i],
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-    else
-      elog(ERROR, "Unrecognized subtype: %d", subtype);
-  }
+    tnumber_spgist_get_tbox(&queries[i], &in->scankeys[i]);
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
@@ -645,7 +682,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
           distances[j] = distanceBoxRectBox(box, next_rect_box);
         }
       }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
     else
@@ -682,9 +719,8 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   Datum leaf = in->leafDatum;
 #endif
-  TBOX *key = DatumGetTboxP(in->leafDatum), query;
+  TBOX *key = DatumGetTboxP(in->leafDatum);
   bool res = true;
-  int  i;
 
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
@@ -696,32 +732,15 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   out->leafValue = in->leafDatum;
 
   /* Perform the required comparison(s) */
-  for (i = 0; i < in->nkeys; i++)
+  for (int i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Oid subtype = in->scankeys[i].sk_subtype;
-    memset(&query, 0, sizeof(TBOX));
+    TBOX query;
 
-    if (tnumber_range_type(subtype))
-    {
-      RangeType *range = DatumGetRangeTypeP(in->scankeys[i].sk_argument);
-      range_to_tbox_internal(&query, range);
+    if (tnumber_spgist_get_tbox(&query, &in->scankeys[i]))
       res = tbox_index_consistent_leaf(key, &query, strategy);
-    }
-    else if (subtype == type_oid(T_TBOX))
-    {
-      TBOX *box = DatumGetTboxP(in->scankeys[i].sk_argument);
-      res = tbox_index_consistent_leaf(key, box, strategy);
-    }
-    else if (tnumber_type(subtype))
-    {
-      temporal_bbox(&query,
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-      res = tbox_index_consistent_leaf(key, &query, strategy);
-    }
     else
-      elog(ERROR, "Unrecognized strategy number: %d", strategy);
-
+      res = false;
     /* If any check is failed, we have found our answer. */
     if (!res)
       break;
@@ -735,7 +754,7 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
   }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_BOOL(res);
 }
@@ -744,12 +763,12 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptnumber_gist_compress);
+PG_FUNCTION_INFO_V1(tnumber_spgist_compress);
 /**
  * SP-GiST compress function for temporal numbers
  */
 PGDLLEXPORT Datum
-sptnumber_gist_compress(PG_FUNCTION_ARGS)
+tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TBOX *box = palloc0(sizeof(TBOX));
@@ -757,6 +776,7 @@ sptnumber_gist_compress(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TBOX_P(box);
 }
-#endif
+
+#endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */
 
 /*****************************************************************************/

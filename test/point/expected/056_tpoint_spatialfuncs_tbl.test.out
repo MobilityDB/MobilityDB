@@ -190,7 +190,7 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
  01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@2001-10-10 18:35:00+00
 (10 rows)
 
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
                   astext                   
 -------------------------------------------
  POINT(21.49 97.18)@2001-06-11 14:33:00+00
@@ -205,7 +205,7 @@ SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
  POINT(35.47 22.96)@2001-10-09 17:44:00+00
 (10 rows)
 
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
                   astext                   
 -------------------------------------------
  POINT(27.54 35.3)@2001-10-16 15:01:00+00
@@ -220,7 +220,7 @@ SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
  POINT(-7.17 44.32)@2001-12-09 09:19:00+00
 (10 rows)
 
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
                        astext                       
 ----------------------------------------------------
  POINT Z (59.14 18.26 87.38)@2001-01-01 05:13:00+00
@@ -235,7 +235,7 @@ SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
  POINT Z (72.48 35.63 62.94)@2001-04-26 00:13:00+00
 (10 rows)
 
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
                        astext                        
 -----------------------------------------------------
  POINT Z (23.51 35.36 420.4)@2001-06-22 10:37:00+00
@@ -444,7 +444,7 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
     37
 (1 row)
 
-SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
          st_astext          
 ----------------------------
  POINT(21.486354 97.184913)
@@ -459,7 +459,7 @@ SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10
  POINT(35.465402 22.960858)
 (10 rows)
 
-SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
                 st_astext                
 -----------------------------------------
  POINT Z (59.139841 18.256028 87.375377)

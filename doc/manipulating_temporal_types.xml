@@ -2334,7 +2334,7 @@ GROUP BY hour ORDER BY hour;
                [6.0625@2012-01-02 03:00:00+01, 6.25@2012-01-02 04:00:00+01)}
    ...
 SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
-  asText(setPrecision(merge((ts).temp), 2)) as temp
+  asText(round(merge((ts).temp), 2)) as temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-14)',
   '1 hour') AS ts) t
 GROUP BY dow, dow_no ORDER BY dow_no;

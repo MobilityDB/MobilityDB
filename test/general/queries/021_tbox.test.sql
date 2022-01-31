@@ -122,11 +122,11 @@ SELECT MAX(tmax(b)) FROM tbl_tbox;
 
 SELECT expandValue(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', 2);
 SELECT expandTemporal(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', interval '1 day');
-SELECT setPrecision(tbox 'TBOX((1.123456789,2001-01-01),(2.123456789,2001-01-02))', 2);
+SELECT round(tbox 'TBOX((1.123456789,2001-01-01),(2.123456789,2001-01-02))', 2);
 /* Errors */
 SELECT expandValue(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 SELECT expandTemporal(tbox 'TBOX((1),(2))', interval '1 day');
-SELECT setPrecision(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
+SELECT round(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 
 -------------------------------------------------------------------------------
 -- Topological operators
@@ -247,7 +247,7 @@ set parallel_tuple_cost=0;
 set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=2;
 
-SELECT setPrecision(extent(temp::tbox),6) FROM tbl_tfloat_big;
+SELECT round(extent(temp::tbox),6) FROM tbl_tfloat_big;
 
 -- reset to default values
 reset parallel_setup_cost;

@@ -125,13 +125,13 @@ CREATE FUNCTION tbox(periodset)
   AS 'MODULE_PATHNAME', 'periodset_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (int AS tbox) WITH FUNCTION tbox(int) AS IMPLICIT;
-CREATE CAST (float AS tbox) WITH FUNCTION tbox(float) AS IMPLICIT;
-CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric) AS IMPLICIT;
-CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz) AS IMPLICIT;
-CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset) AS IMPLICIT;
-CREATE CAST (period AS tbox) WITH FUNCTION tbox(period) AS IMPLICIT;
-CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset) AS IMPLICIT;
+CREATE CAST (integer AS tbox) WITH FUNCTION tbox(integer);
+CREATE CAST (float AS tbox) WITH FUNCTION tbox(float);
+CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric);
+CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz);
+CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset);
+CREATE CAST (period AS tbox) WITH FUNCTION tbox(period);
+CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset);
 
 -- We cannot make the castings from range to tbox implicit since this produces
 -- an ambiguity with the implicit castings to anyrange
@@ -227,9 +227,9 @@ CREATE FUNCTION expandTemporal(tbox, interval)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'tbox_expand_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(tbox, int)
+CREATE FUNCTION round(tbox, integer DEFAULT 0)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_set_precision'
+  AS 'MODULE_PATHNAME', 'tbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

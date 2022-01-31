@@ -35,53 +35,53 @@ set force_parallel_mode=regress;
 
 --------------------------------------------------------
 
-SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(round(temp::geometry, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(round(temp::geometry, 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT temp::geometry FROM tbl_tgeompoint LIMIT 10;
 SELECT temp::geometry FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT ST_AsText(round(temp::geography, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT ST_AsText(round(temp::geography, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT temp::geography FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
 
 --------------------------------------------------------
 
-SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT asGeometry(temp, true) FROM tbl_tgeompoint LIMIT 10;
 SELECT asGeometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT ST_AsText(round(asGeography(temp, true), 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT ST_AsText(round(asGeography(temp, true), 6)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT asGeography(temp, true) FROM tbl_tgeogpoint LIMIT 10;
 SELECT asGeography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT asText(setPrecision((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT asText(setPrecision((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT count(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
 SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
 
-SELECT asText(setPrecision((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(setPrecision((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint LIMIT 10;
 SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT ST_AsText(setPrecision(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
-SELECT ST_AsText(setPrecision(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
 
-SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
-SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
 
 -------------------------------------------------------------------------------
 

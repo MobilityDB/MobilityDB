@@ -134,7 +134,7 @@ extern Datum tbox_tmax(PG_FUNCTION_ARGS);
 
 extern Datum tbox_expand_value(PG_FUNCTION_ARGS);
 extern Datum tbox_expand_temporal(PG_FUNCTION_ARGS);
-extern Datum tbox_set_precision(PG_FUNCTION_ARGS);
+extern Datum tbox_round(PG_FUNCTION_ARGS);
 
 /* Topological functions */
 

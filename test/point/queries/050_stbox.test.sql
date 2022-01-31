@@ -178,15 +178,15 @@ SELECT ymax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT zmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 SELECT tmax(stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))');
 
-SELECT setPrecision(stbox 'STBOX((1.12345,1.12345),(2.12345,2.12345))', 2);
-SELECT setPrecision(stbox 'STBOX T((1.12345,1.12345,2000-01-01),(2.12345,2.12345,2000-01-02))', 2);
-SELECT setPrecision(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
-SELECT setPrecision(stbox 'STBOX ZT((1.12345,1.12345,1.12345,2000-01-01),(2.12345,2.12345,2.12345,2000-01-02))', 2);
-SELECT setPrecision(stbox 'GEODSTBOX((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
-SELECT setPrecision(stbox 'GEODSTBOX T((1.12345,1.12345,1.12345,2000-01-01),(2.12345,2.12345,2.12345,2000-01-02))', 2);
+SELECT round(stbox 'STBOX((1.12345,1.12345),(2.12345,2.12345))', 2);
+SELECT round(stbox 'STBOX T((1.12345,1.12345,2000-01-01),(2.12345,2.12345,2000-01-02))', 2);
+SELECT round(stbox 'STBOX Z((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
+SELECT round(stbox 'STBOX ZT((1.12345,1.12345,1.12345,2000-01-01),(2.12345,2.12345,2.12345,2000-01-02))', 2);
+SELECT round(stbox 'GEODSTBOX((1.12345,1.12345,1.12345),(2.12345,2.12345,2.12345))', 2);
+SELECT round(stbox 'GEODSTBOX T((1.12345,1.12345,1.12345,2000-01-01),(2.12345,2.12345,2.12345,2000-01-02))', 2);
 /* Errors */
-SELECT setPrecision(stbox 'STBOX T((,2000-01-01),(,2000-01-02))', 2);
-SELECT setPrecision(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 2);
+SELECT round(stbox 'STBOX T((,2000-01-01),(,2000-01-02))', 2);
+SELECT round(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 2);
 
 -------------------------------------------------------------------------------
 
@@ -422,7 +422,7 @@ set parallel_tuple_cost=0;
 set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=2;
 
-SELECT setPrecision(extent(temp::stbox),6) FROM tbl_tgeompoint3D_big;
+SELECT round(extent(temp::stbox),6) FROM tbl_tgeompoint3D_big;
 
 -- reset to default values
 reset parallel_setup_cost;

@@ -166,9 +166,9 @@ CREATE FUNCTION toLinear(tnpoint)
   AS 'MODULE_PATHNAME', 'tstep_to_linear'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setPrecision(tnpoint, int)
+CREATE FUNCTION round(tnpoint, int DEFAULT 0)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tnpoint_set_precision'
+  AS 'MODULE_PATHNAME', 'tnpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

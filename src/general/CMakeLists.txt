@@ -20,6 +20,7 @@ add_library(general OBJECT
   temporal_posops.c
   temporal_selfuncs.c
   temporal_spgist.c
+  temporal_supportfn.c
   temporal_tile.c
   temporal_util.c
   temporal_waggfuncs.c
@@ -29,6 +30,7 @@ add_library(general OBJECT
   timeops.c
   time_selfuncs.c
   time_spgist.c
+  time_supportfn.c
   timestampset.c
   tinstant.c
   tinstantset.c
@@ -37,6 +39,7 @@ add_library(general OBJECT
   tnumber_mathfuncs.c
   tnumber_selfuncs.c
   tnumber_spgist.c
+  tnumber_supportfn.c
   tsequence.c
   tsequenceset.c
   ttext_textfuncs.c

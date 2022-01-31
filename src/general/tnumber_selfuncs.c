@@ -875,7 +875,7 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
         value_oprid);
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
+      selec *= period_hist_sel(vardata, &period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
@@ -890,7 +890,7 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
+      selec *= period_hist_sel(vardata, &period, cachedOp);
   }
   else /* Unknown operator */
   {
@@ -1009,8 +1009,9 @@ tnumber_sel(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-static double
-tnumber_joinsel_internal(PlannerInfo *root, List *args, JoinType jointype)
+float8
+tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype)
 {
   return DEFAULT_TEMP_JOINSEL;
 }
@@ -1023,7 +1024,7 @@ PGDLLEXPORT Datum
 tnumber_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  /* Oid operator = PG_GETARG_OID(1); */
+  Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
 
@@ -1035,7 +1036,7 @@ tnumber_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, args, jointype));
+  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype));
 }
 
 /*****************************************************************************/

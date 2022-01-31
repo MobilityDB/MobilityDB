@@ -16,20 +16,20 @@ SELECT geometry 'Point(1 1 1)'::stbox;
  STBOX Z((1,1,1),(1,1,1))
 (1 row)
 
-SELECT setPrecision(geography 'Point empty'::stbox, 13);
- setprecision 
---------------
+SELECT round(geography 'Point empty'::stbox, 13);
+ round 
+-------
  
 (1 row)
 
-SELECT setPrecision(geography 'Point(1 1)'::stbox, 13);
-                                                       setprecision                                                       
+SELECT round(geography 'Point(1 1)'::stbox, 13);
+                                                          round                                                           
 --------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX((0.9996954135095,0.0174497483513,0.0174524064373),(0.9996954135095,0.0174497483513,0.0174524064373))
 (1 row)
 
-SELECT setPrecision(geography 'Point(1 1 1)'::stbox, 13);
-                                                        setprecision                                                        
+SELECT round(geography 'Point(1 1 1)'::stbox, 13);
+                                                           round                                                            
 ----------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX Z((0.9996954135095,0.0174497483513,0.0174524064373),(0.9996954135095,0.0174497483513,0.0174524064373))
 (1 row)
@@ -94,38 +94,38 @@ SELECT stbox(geometry 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]');
  STBOX ZT((1,1,1,2000-01-01 00:00:00+00),(1,1,1,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
- setprecision 
---------------
+SELECT round(stbox(geography 'Point empty', timestamptz '2000-01-01'), 13);
+ round 
+-------
  
 (1 row)
 
-SELECT setPrecision(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
-                                                                               setprecision                                                                               
+SELECT round(stbox(geography 'Point(1 1)', timestamptz '2000-01-01'), 13);
+                                                                                  round                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
-                                                                               setprecision                                                                                
+SELECT round(stbox(geography 'Point(1 1 1)', timestamptz '2000-01-01'), 13);
+                                                                                   round                                                                                   
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
- setprecision 
---------------
+SELECT round(stbox(geography 'Point empty', period '[2000-01-01, 2000-01-02]'), 13);
+ round 
+-------
  
 (1 row)
 
-SELECT setPrecision(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
-                                                                               setprecision                                                                               
+SELECT round(stbox(geography 'Point(1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+                                                                                  round                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0174497483513,0.0174524064373,2000-01-02 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
-                                                                               setprecision                                                                                
+SELECT round(stbox(geography 'Point(1 1 1)', period '[2000-01-01, 2000-01-02]'), 13);
+                                                                                   round                                                                                   
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX ZT((0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0174497483513,0.0174524064373,2000-01-02 00:00:00+00))
 (1 row)
@@ -154,26 +154,26 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
  STBOX T((1,1,2000-01-01 00:00:00+00),(3,3,2000-01-05 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(tgeogpoint 'Point(1 1)@2000-01-01'::stbox, 13);
-                                                                               setprecision                                                                               
+SELECT round(tgeogpoint 'Point(1 1)@2000-01-01'::stbox, 13);
+                                                                                  round                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox, 13);
-                                                                               setprecision                                                                               
+SELECT round(tgeogpoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::stbox, 13);
+                                                                                  round                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9987820251299,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0348782368721,0.0348994967025,2000-01-03 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox, 13);
-                                                                               setprecision                                                                               
+SELECT round(tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'::stbox, 13);
+                                                                                  round                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9987820251299,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0348782368721,0.0348994967025,2000-01-03 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox, 13);
-                                                                               setprecision                                                                               
+SELECT round(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'::stbox, 13);
+                                                                                  round                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  SRID=4326;GEODSTBOX T((0.9972609476841,0.0174497483513,0.0174524064373,2000-01-01 00:00:00+00),(0.9996954135095,0.0522642316338,0.0523359562429,2000-01-05 00:00:00+00))
 (1 row)
@@ -901,7 +901,7 @@ SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' && tgeogpoint '{[Poin
 
 /* Errors */
 SELECT stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))' && tgeompoint 'Point(1 1 1)@2000-01-01';
-ERROR:  The values must be both planar or both geodetic
+ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT stbox 'STBOX Z((1.0, 2.0, 2.0), (1.0, 2.0, 2.0))' && tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
@@ -1842,7 +1842,7 @@ ERROR:  Operation on mixed SRID
 SELECT stbox 'SRID=5676;STBOX T((1,1,2001-01-01),(2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 ERROR:  Operation on mixed SRID
 SELECT stbox 'GEODSTBOX T((1,1,1,2001-01-01),(2,2,2,2001-01-02))' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
-ERROR:  The values must be both planar or both geodetic
+ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT tgeompoint 'SRID=5676;Point(1 1)@2000-01-01' && stbox 'STBOX T((1,1,2001-01-01),(2,2,2001-01-02))';
 ERROR:  Operation on mixed SRID
 SELECT geometry 'Point(1 1)' @> tgeompoint 'Point(1 1)@2000-01-01';
@@ -5162,103 +5162,103 @@ SELECT geography 'Point Z empty' -|- tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01
 SELECT timestamptz '2000-01-01' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestamptz '2000-01-01' -|- tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
@@ -5282,7 +5282,7 @@ SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{[Point(1 1)@2000
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
@@ -5306,7 +5306,7 @@ SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{[Point(1.5 1.5)@
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -5330,7 +5330,7 @@ SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeompoint '{[Point(1 1 1)@20
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -5354,7 +5354,7 @@ SELECT timestampset '{2000-01-01, 2000-01-03}' -|- tgeogpoint '{[Point(1 1 1)@20
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
@@ -5378,7 +5378,7 @@ SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1)@2000-01-01,
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
@@ -5402,7 +5402,7 @@ SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1.5 1.5)@2000-01
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -5426,7 +5426,7 @@ SELECT period '[2000-01-01,2000-01-02]' -|- tgeompoint '{[Point(1 1 1)@2000-01-0
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -5450,7 +5450,7 @@ SELECT period '[2000-01-01,2000-01-02]' -|- tgeogpoint '{[Point(1 1 1)@2000-01-0
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint 'Point(1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}';
@@ -5474,7 +5474,7 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint 'Point(1.5 1.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}';
@@ -5498,7 +5498,7 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -5522,7 +5522,7 @@ SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeompo
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint 'Point(1 1 1)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}' -|- tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}';
@@ -5834,103 +5834,103 @@ SELECT tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-0
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03]' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03],[Point(3 3 3)@2000-01-04, Point(3 3 3)@2000-01-05]}' -|- timestamptz '2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
@@ -5954,7 +5954,7 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
@@ -5978,7 +5978,7 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
@@ -6002,7 +6002,7 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- timestampset '{2000-01-01, 2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- timestampset '{2000-01-01, 2000-01-03}';
@@ -6026,7 +6026,7 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
@@ -6050,7 +6050,7 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
@@ -6074,7 +6074,7 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
@@ -6098,7 +6098,7 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- period '[2000-01-01,2000-01-02]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- period '[2000-01-01,2000-01-02]';
@@ -6122,7 +6122,7 @@ SELECT tgeogpoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT tgeompoint 'Point(1 1)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
@@ -6146,7 +6146,7 @@ SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@20
 SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
@@ -6170,7 +6170,7 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
 SELECT tgeompoint 'Point(1 1 1)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
@@ -6194,7 +6194,7 @@ SELECT tgeompoint '{[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1
 SELECT tgeogpoint 'Point(1 1 1)@2000-01-01' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(1 1 1)@2000-01-03}' -|- periodset '{[2000-01-01,2000-01-02],[2000-01-03,2000-01-04]}';

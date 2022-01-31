@@ -70,10 +70,10 @@ SELECT temp::tgeompoint FROM tbl_tgeogpoint LIMIT 10;
 SELECT temp::tgeogpoint FROM tbl_tgeompoint3D LIMIT 10;
 SELECT temp::tgeompoint FROM tbl_tgeogpoint3D LIMIT 10;
 
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
-SELECT asText(setPrecision(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round(temp, 2)) FROM tbl_tgeogpoint3D LIMIT 10;
 
 SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeompoint;
 SELECT round(MAX(twavg(getX(temp)))::numeric, 6) FROM tbl_tgeogpoint;
@@ -111,8 +111,8 @@ AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instant
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE startValue(speed(temp)) <> 0 AND startTimestamp(temp) = startTimestamp(speed(temp))
 AND abs(startValue(speed(temp)) - st_distance(startValue(temp), getValue(instantN(temp,2))) / EXTRACT(epoch FROM timestampN(temp,2) - startTimestamp(temp))) < 1e-5;
 
-SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
-SELECT ST_AsText(setPrecision(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(round(twcentroid(temp), 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE azimuth(temp) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE azimuth(temp) IS NOT NULL;

@@ -37,7 +37,7 @@
  * The lifting of functions and operators must take into account the following
  * characteristic of the function to be lifted
  * 1. The number of arguments of the function
- *  - unary functions, such as `degrees` for temporal floats or `setPrecision`
+ *  - unary functions, such as `degrees` for temporal floats or `round`
  *    for temporal points.
  *  - binary functions and operators, such as arithmetic operators and comparisons (e.g.,
  *    `+` or `<`) or spatial relationships functions (e.g.,`tintersects`).

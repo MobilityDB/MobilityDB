@@ -1,30 +1,30 @@
-SELECT setPrecision(floatrange '[1.123456789,2.123456789]',6);
-    setprecision     
+SELECT round(floatrange '[1.123456789,2.123456789]',6);
+        round        
 ---------------------
  [1.123457,2.123457]
 (1 row)
 
-SELECT setPrecision(floatrange '[,2.123456789]',6);
- setprecision 
---------------
+SELECT round(floatrange '[,2.123456789]',6);
+    round    
+-------------
  (,2.123457]
 (1 row)
 
-SELECT setPrecision(floatrange '[-inf,2.123456789]',6);
-     setprecision     
+SELECT round(floatrange '[-inf,2.123456789]',6);
+        round         
 ----------------------
  [-Infinity,2.123457]
 (1 row)
 
-select setPrecision(floatrange '[1.123456789,inf]',6);
-    setprecision     
+select round(floatrange '[1.123456789,inf]',6);
+        round        
 ---------------------
  [1.123457,Infinity]
 (1 row)
 
-SELECT setPrecision(floatrange '[1.123456789,]',6);
- setprecision 
---------------
+SELECT round(floatrange '[1.123456789,]',6);
+    round    
+-------------
  [1.123457,)
 (1 row)
 

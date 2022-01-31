@@ -62,7 +62,7 @@
 extern Selectivity scalarineqsel(PlannerInfo *root, Oid oper, bool isgt,
   bool iseq, VariableStatData *vardata, Datum constval,
   Oid consttype);
-extern Selectivity temporal_sel_internal_per(PlannerInfo *root,
+extern Selectivity temporal_sel_period(PlannerInfo *root,
   VariableStatData *vardata, Period *period, CachedOp cachedOp);
 
 
@@ -82,8 +82,8 @@ extern Datum temporal_joinsel(PG_FUNCTION_ARGS);
 
 extern float8 temporal_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
-extern double temporal_joinsel_internal(PlannerInfo *root, List *args,
-  JoinType jointype);
+extern double temporal_joinsel_internal(PlannerInfo *root, Oid oper,
+  List *args, JoinType jointype);
 
 /*****************************************************************************/
 

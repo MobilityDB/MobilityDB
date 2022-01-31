@@ -29,12 +29,18 @@
 
 -------------------------------------------------------------------------------
 -- Tests of operators for time types.
--- File TimeOps.c
+-- File timeops.c
+-- This test file is continued by a companion file for testing SPGIST indexes
+-- since the latter are enabled for PostgreSQL versions >= 11
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
 DROP INDEX IF EXISTS tbl_period_gist_idx;
 DROP INDEX IF EXISTS tbl_periodset_gist_idx;
+
+DROP INDEX IF EXISTS tbl_timestampset_spgist_idx;
+DROP INDEX IF EXISTS tbl_period_spgist_idx;
+DROP INDEX IF EXISTS tbl_periodset_spgist_idx;
 
 -------------------------------------------------------------------------------
 
@@ -298,12 +304,6 @@ INSERT INTO test_timeops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'periodset', 'period', count(*) FROM tbl_periodset, tbl_period WHERE ps #&> p;
 INSERT INTO test_timeops(op, leftarg, rightarg, noidx)
 SELECT '#&>', 'periodset', 'periodset', count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps #&> t2.ps;
-
--------------------------------------------------------------------------------
-
-DROP INDEX IF EXISTS tbl_timestampset_gist_idx;
-DROP INDEX IF EXISTS tbl_period_gist_idx;
-DROP INDEX IF EXISTS tbl_periodset_gist_idx;
 
 -------------------------------------------------------------------------------
 

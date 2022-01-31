@@ -29,7 +29,7 @@
 
 -------------------------------------------------------------------------------
 -- Tests of operators that do not involved indexes for time types.
--- File TimeOps.c
+-- File timeops.c
 -------------------------------------------------------------------------------
 
 SELECT count(*) FROM tbl_timestamptz, tbl_period WHERE t -|- p;

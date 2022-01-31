@@ -32,11 +32,11 @@
 -- File Range.c
 -------------------------------------------------------------------------------
 
-SELECT setPrecision(floatrange '[1.123456789,2.123456789]',6);
-SELECT setPrecision(floatrange '[,2.123456789]',6);
-SELECT setPrecision(floatrange '[-inf,2.123456789]',6);
-select setPrecision(floatrange '[1.123456789,inf]',6);
-SELECT setPrecision(floatrange '[1.123456789,]',6);
+SELECT round(floatrange '[1.123456789,2.123456789]',6);
+SELECT round(floatrange '[,2.123456789]',6);
+SELECT round(floatrange '[-inf,2.123456789]',6);
+select round(floatrange '[1.123456789,inf]',6);
+SELECT round(floatrange '[1.123456789,]',6);
 
 -------------------------------------------------------------------------------
 

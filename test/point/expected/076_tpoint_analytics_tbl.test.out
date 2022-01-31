@@ -1,6 +1,6 @@
 set force_parallel_mode=regress;
 SET
-SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(round(temp::geometry, 6)) FROM tbl_tgeompoint LIMIT 10;
                 st_astext                 
 ------------------------------------------
  POINT M (21.486354 97.184913 992269980)
@@ -15,7 +15,7 @@ SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint LIMIT 10;
  POINT M (35.465402 22.960858 1002649440)
 (10 rows)
 
-SELECT ST_AsText(setPrecision(temp::geometry, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(round(temp::geometry, 6)) FROM tbl_tgeompoint3D LIMIT 10;
                      st_astext                      
 ----------------------------------------------------
  POINT ZM (59.139841 18.256028 87.375377 978325980)
@@ -60,7 +60,7 @@ SELECT temp::geometry FROM tbl_tgeompoint3D LIMIT 10;
  01010000C000005404A91E52400000387402D1414000007069D9784F4000000006B473CD41
 (10 rows)
 
-SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT ST_AsText(round(temp::geography, 6)) FROM tbl_tgeogpoint LIMIT 10;
                 st_astext                 
 ------------------------------------------
  POINT M (27.539502 35.304143 1003244460)
@@ -75,7 +75,7 @@ SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint LIMIT 10;
  POINT M (-7.169525 44.316298 1007889540)
 (10 rows)
 
-SELECT ST_AsText(setPrecision(temp::geography, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT ST_AsText(round(temp::geography, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
                       st_astext                       
 ------------------------------------------------------
  POINT ZM (23.510114 35.358126 420.396738 993206220)
@@ -120,7 +120,7 @@ SELECT temp::geography FROM tbl_tgeogpoint3D LIMIT 10;
  01010000E0E610000000003C6599203F400000C874E33051400000FABA469881400000006A4AE2CD41
 (10 rows)
 
-SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT ST_AsText(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint LIMIT 10;
                 st_astext                 
 ------------------------------------------
  POINT M (21.486354 97.184913 992269980)
@@ -135,7 +135,7 @@ SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint LI
  POINT M (35.465402 22.960858 1002649440)
 (10 rows)
 
-SELECT ST_AsText(setPrecision(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT ST_AsText(round(asGeometry(temp, true), 6)) FROM tbl_tgeompoint3D LIMIT 10;
                      st_astext                      
 ----------------------------------------------------
  POINT ZM (59.139841 18.256028 87.375377 978325980)
@@ -180,7 +180,7 @@ SELECT asGeometry(temp, true) FROM tbl_tgeompoint3D LIMIT 10;
  01010000C000005404A91E52400000387402D1414000007069D9784F4000000006B473CD41
 (10 rows)
 
-SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT ST_AsText(round(asGeography(temp, true), 6)) FROM tbl_tgeogpoint LIMIT 10;
                 st_astext                 
 ------------------------------------------
  POINT M (27.539502 35.304143 1003244460)
@@ -195,7 +195,7 @@ SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint L
  POINT M (-7.169525 44.316298 1007889540)
 (10 rows)
 
-SELECT ST_AsText(setPrecision(asGeography(temp, true), 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT ST_AsText(round(asGeography(temp, true), 6)) FROM tbl_tgeogpoint3D LIMIT 10;
                       st_astext                       
 ------------------------------------------------------
  POINT ZM (23.510114 35.358126 420.396738 993206220)
@@ -240,7 +240,7 @@ SELECT asGeography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
  01010000E0E610000000003C6599203F400000C874E33051400000FABA469881400000006A4AE2CD41
 (10 rows)
 
-SELECT asText(setPrecision((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint LIMIT 10;
+SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint LIMIT 10;
                       astext                       
 ---------------------------------------------------
  POINT(21.486354 97.184913)@2001-06-11 14:33:00+00
@@ -255,7 +255,7 @@ SELECT asText(setPrecision((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint
  POINT(35.465402 22.960858)@2001-10-09 17:44:00+00
 (10 rows)
 
-SELECT asText(setPrecision((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D LIMIT 10;
+SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D LIMIT 10;
                              astext                             
 ----------------------------------------------------------------
  POINT Z (59.139841 18.256028 87.375377)@2001-01-01 05:13:00+00
@@ -282,7 +282,7 @@ SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
     58
 (1 row)
 
-SELECT asText(setPrecision((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint LIMIT 10;
+SELECT asText(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint LIMIT 10;
                       astext                       
 ---------------------------------------------------
  POINT(27.539502 35.304143)@2001-10-16 15:01:00+00
@@ -297,7 +297,7 @@ SELECT asText(setPrecision((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoin
  POINT(-7.169525 44.316298)@2001-12-09 09:19:00+00
 (10 rows)
 
-SELECT asText(setPrecision((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
+SELECT asText(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D LIMIT 10;
                              astext                              
 -----------------------------------------------------------------
  POINT Z (23.510114 35.358126 420.396738)@2001-06-22 10:37:00+00
@@ -342,20 +342,20 @@ SELECT (temp::geography)::tgeogpoint FROM tbl_tgeogpoint3D LIMIT 10;
  01010000A0E610000000003C6599203F400000C874E33051400000FABA46988140@2001-10-10 18:35:00+00
 (10 rows)
 
-SELECT ST_AsText(setPrecision(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
                st_astext                
 ----------------------------------------
  POINT M (64.794129 75.767727 3.822991)
 (1 row)
 
-SELECT ST_AsText(setPrecision(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
+SELECT ST_AsText(round(geoMeasure(t1.temp, t2.temp), 6)) FROM tbl_tgeompoint3D t1, tbl_tfloat t2 WHERE getTime(t1.temp) && getTime(t2.temp);
                      st_astext                      
 ----------------------------------------------------
  POINT ZM (45.975082 97.438117 78.262014 28.601583)
  POINT ZM (45.975082 97.438117 78.262014 27.601583)
 (2 rows)
 
-SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint WHERE speed(temp) IS NOT NULL ORDER BY k;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               st_astext                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  LINESTRING M (80.064498 50.655267 0.06,71.458577 63.215618 0.6,19.92344 12.841544 0.6)
@@ -408,7 +408,7 @@ SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM t
  MULTILINESTRING M ((57.042413 64.829819 0.05,57.658401 51.738736 0.07,27.973528 32.874049 0.07,61.943841 26.789317 0.11,44.63254 54.049859 0.19,81.333296 28.779736 0.22,28.297573 88.229617 0.48,69.034419 11.471718 1.14,3.318313 31.227049 1.14),(89.428248 64.306563 0.27,47.086649 16.045298 0.18,75.060176 48.919347 0.39,37.004017 75.708664 0.18,81.636558 29.758523 0.06,62.969853 58.538259 0.1,91.267426 46.767876 0.07,60.301845 58.239594 0.07,63.620158 89.466643 0.07))
 (48 rows)
 
-SELECT ST_AsText(setPrecision(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
+SELECT ST_AsText(round(geoMeasure(temp, round(speed(temp),2)), 6)) FROM tbl_tgeompoint3D WHERE speed(temp) IS NOT NULL ORDER BY k;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            st_astext                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  LINESTRING ZM (90.55142 24.622339 3.988189 0.23,71.15583 1.632959 96.344809 0.23)

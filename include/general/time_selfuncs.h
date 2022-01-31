@@ -44,19 +44,10 @@
 
 /*****************************************************************************/
 
-extern double calc_period_hist_selectivity(VariableStatData *vardata,
+extern double period_hist_sel(VariableStatData *vardata,
   const Period *constval, CachedOp cachedOp);
-extern double calc_period_hist_selectivity_scalar(PeriodBound *constbound,
+extern double period_hist_sel_scalar(PeriodBound *constbound,
   PeriodBound *hist, int hist_nvalues, bool equal);
-extern double calc_period_hist_selectivity_contained(PeriodBound *lower,
-  PeriodBound *upper, PeriodBound *hist_lower, int hist_nvalues,
-  Datum *length_hist_values, int length_hist_nvalues);
-extern double calc_period_hist_selectivity_contains(PeriodBound *lower,
-  PeriodBound *upper,  PeriodBound *hist_lower, int hist_nvalues,
-  Datum *length_hist_values, int length_hist_nvalues);
-extern double calc_period_hist_selectivity_adjacent(PeriodBound *lower,
-  PeriodBound *upper, PeriodBound *hist_lower,
-  PeriodBound *hist_upper, int hist_nvalues);
 
 extern int length_hist_bsearch(Datum *length_hist_values,
   int length_hist_nvalues, double value, bool equal);
@@ -68,6 +59,11 @@ extern Datum period_analyze(PG_FUNCTION_ARGS);
 extern Datum timestampset_analyze(PG_FUNCTION_ARGS);
 extern Datum periodset_analyze(PG_FUNCTION_ARGS);
 
+extern float8 period_sel_internal(PlannerInfo *root, Oid oper, List *args,
+  int varRelid);
+extern float8 period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype, SpecialJoinInfo *sjinfo);
+  
 /*****************************************************************************/
 
 #endif

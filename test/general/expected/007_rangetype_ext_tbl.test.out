@@ -126,8 +126,8 @@ set min_parallel_table_scan_size=0;
 SET
 set max_parallel_workers_per_gather=2;
 SET
-SELECT setPrecision(extent(temp::floatrange),6) FROM tbl_tfloat_big;
-     setprecision      
+SELECT round(extent(temp::floatrange),6) FROM tbl_tfloat_big;
+         round         
 -----------------------
  [1.004155,100.999349]
 (1 row)

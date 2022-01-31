@@ -351,14 +351,14 @@ SELECT expandTemporal(stbox 'STBOX ZT((1,1,1,2012-01-01),(2,2,2,2012-01-03))',
 </programlisting>
 				</listitem>
 
-				<listitem id="box_setPrecision">
-					<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
+				<listitem id="box_round">
+					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
-					<para><varname>setPrecision(box,integer): box</varname></para>
+					<para><varname>round(box,integer): box</varname></para>
 					<programlisting xml:space="preserve">
-SELECT setPrecision(tbox 'TBOX((1.12345, 2000-01-01), (2.12345, 2000-01-02))', 2);
+SELECT round(tbox 'TBOX((1.12345, 2000-01-01), (2.12345, 2000-01-02))', 2);
 -- "TBOX((1.12,2000-01-01),(2.12,2000-01-02))"
-SELECT setPrecision(stbox 'STBOX T((1.12345, 1.12345, 2000-01-01),
+SELECT round(stbox 'STBOX T((1.12345, 1.12345, 2000-01-01),
   (2.12345, 2.12345, 2000-01-02))', 2);
 -- "STBOX T((1.12,1.12,2000-01-01),(2.12,2.12,2000-01-02))"
 </programlisting>

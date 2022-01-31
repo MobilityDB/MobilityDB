@@ -147,7 +147,7 @@ tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
+tnumber_gist_consistent_internal(const TBOX *key, const TBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -199,19 +199,24 @@ tbox_gist_consistent_internal(const TBOX *key, const TBOX *query,
 }
 
 /**
- * Transform the query into a box initializing the dimensions that must
- * not be taken into account by the operators to infinity.
+ * Transform the query argument into a box initializing the dimensions that
+ * must not be taken into account by the operators to infinity.
  */
 static bool
-tnumber_index_get_tbox(FunctionCallInfo fcinfo, TBOX *query, Oid subtype)
+tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
 {
-  memset(query, 0, sizeof(TBOX));
-  if (tnumber_range_type(subtype))
+  memset(result, 0, sizeof(TBOX));
+  if (tnumber_base_type(subtype))
+  {
+    Datum value = PG_GETARG_DATUM(1);
+    number_to_box(result, value, subtype);
+  }
+  else if (tnumber_range_type(subtype))
   {
 #if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(1);
+    RangeType *range = PG_GETARG_RANGE(1);
 #else
-  RangeType *range = PG_GETARG_RANGE_P(1);
+    RangeType *range = PG_GETARG_RANGE_P(1);
 #endif
     if (range == NULL)
       return false;
@@ -219,22 +224,44 @@ tnumber_index_get_tbox(FunctionCallInfo fcinfo, TBOX *query, Oid subtype)
     char flags = range_get_flags(range);
     if (flags & RANGE_EMPTY)
       return false;
-    range_to_tbox_internal(query, range);
+    range_to_tbox_internal(result, range);
     PG_FREE_IF_COPY(range, 1);
+  }
+  else if (subtype == TIMESTAMPTZOID)
+  {
+    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    timestamp_to_tbox_internal(result, t);
+  }
+  else if (subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+    timestampset_to_tbox_internal(result, ts);
+    PG_FREE_IF_COPY(ts, 1);
+  }
+  else if (subtype == type_oid(T_PERIOD))
+  {
+    Period *p = PG_GETARG_PERIOD(1);
+    period_to_tbox_internal(result, p);
+  }
+  else if (subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = PG_GETARG_PERIODSET(1);
+    periodset_to_tbox_internal(result, ps);
+    PG_FREE_IF_COPY(ps, 1);
   }
   else if (subtype == type_oid(T_TBOX))
   {
     TBOX *box = PG_GETARG_TBOX_P(1);
     if (box == NULL)
       return false;
-    memcpy(query, box, sizeof(TBOX));
+    memcpy(result, box, sizeof(TBOX));
   }
   else if (tnumber_type(subtype))
   {
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)
       return false;
-    temporal_bbox(query, temp);
+    temporal_bbox(result, temp);
     PG_FREE_IF_COPY(temp, 1);
   }
   else
@@ -253,8 +280,9 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
-  TBOX *key = DatumGetTboxP(entry->key), query;
-
+  const TBOX *key = DatumGetTboxP(entry->key);
+  TBOX query;
+  
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
    * and exclusive bounds.
@@ -265,13 +293,13 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
-  if (! tnumber_index_get_tbox(fcinfo, &query, subtype))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, subtype))
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
     result = tbox_index_consistent_leaf(key, &query, strategy);
   else
-    result = tbox_gist_consistent_internal(key, &query, strategy);
+    result = tnumber_gist_consistent_internal(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }
@@ -281,22 +309,20 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Increase the first box to include the second one
+ * Expand the first box to include the second one
  *
- * @param[inout] b Resulting box
- * @param[in] addon Input box
+ * @param[inout] box1 Resulting box
+ * @param[in] box2 Add-on box
+ * @note This function is similar to tbox_expand in file tbox.c but uses
+ *   NaN-aware comparisons for the value dimension
  */
 static void
-tbox_adjust(TBOX *b, const TBOX *addon)
+tbox_expand_rt(TBOX *box1, const TBOX *box2)
 {
-  if (FLOAT8_LT(b->xmax, addon->xmax))
-    b->xmax = addon->xmax;
-  if (FLOAT8_GT(b->xmin, addon->xmin))
-    b->xmin = addon->xmin;
-  if (FLOAT8_LT(b->tmax, addon->tmax))
-    b->tmax = addon->tmax;
-  if (FLOAT8_GT(b->tmin, addon->tmin))
-    b->tmin = addon->tmin;
+  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
+  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
+  box1->tmin = Min(box1->tmin, box2->tmin);
+  box1->tmax = Max(box1->tmax, box2->tmax);
   return;
 }
 
@@ -310,20 +336,11 @@ PGDLLEXPORT Datum
 tbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  int *sizep = (int *) PG_GETARG_POINTER(1);
-  int numranges, i;
-  TBOX *cur, *pageunion;
-  numranges = entryvec->n;
-  pageunion = (TBOX *) palloc0(sizeof(TBOX));
-  cur = DatumGetTboxP(entryvec->vector[0].key);
-  memcpy((void *) pageunion, (void *) cur, sizeof(TBOX));
-  for (i = 1; i < numranges; i++)
-  {
-    cur = DatumGetTboxP(entryvec->vector[i].key);
-    tbox_adjust(pageunion, cur);
-  }
-  *sizep = sizeof(TBOX);
-  PG_RETURN_POINTER(pageunion);
+  GISTENTRY *ent = entryvec->vector;
+  TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    tbox_expand_rt(result, DatumGetTboxP(ent[i].key));
+  PG_RETURN_PERIOD(result);
 }
 
 /*****************************************************************************
@@ -377,14 +394,15 @@ tnumber_gist_decompress(PG_FUNCTION_ARGS)
  *
  * @param[out] n Resulting box
  * @param[in] a,b Input boxes
+ * @note This function uses NaN-aware comparisons
  */
 static void
 tbox_union_rt(TBOX *n, const TBOX *a, const TBOX *b)
 {
-  n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
   n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
   n->tmin = FLOAT8_MIN(a->tmin, b->tmin);
+  n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
   return;
 }
 
@@ -424,7 +442,6 @@ static double
 tbox_penalty(const TBOX *original, const TBOX *new)
 {
   TBOX unionbox;
-
   memset(&unionbox, 0, sizeof(TBOX));
   tbox_union_rt(&unionbox, original, new);
   return tbox_size(&unionbox) - tbox_size(original);
@@ -441,9 +458,8 @@ tbox_gist_penalty(PG_FUNCTION_ARGS)
   GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
   GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
   float *result = (float *) PG_GETARG_POINTER(2);
-  TBOX *origbox = DatumGetTboxP(origentry->key);
-  TBOX *newbox = DatumGetTboxP(newentry->key);
-
+  const TBOX *origbox = DatumGetTboxP(origentry->key);
+  const TBOX *newbox = DatumGetTboxP(newentry->key);
   *result = (float) tbox_penalty(origbox, newbox);
   PG_RETURN_POINTER(result);
 }
@@ -482,7 +498,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
         *left_tbox = *cur;
       }
       else
-        tbox_adjust(left_tbox, cur);
+        tbox_expand_rt(left_tbox, cur);
 
       v->spl_nleft++;
     }
@@ -495,7 +511,7 @@ tbox_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
         *right_tbox = *cur;
       }
       else
-        tbox_adjust(right_tbox, cur);
+        tbox_expand_rt(right_tbox, cur);
 
       v->spl_nright++;
     }
@@ -732,7 +748,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
     if (i == FirstOffsetNumber)
       context.boundingBox = *box;
     else
-      tbox_adjust(&context.boundingBox, box);
+      tbox_expand_rt(&context.boundingBox, box);
   }
 
   /*
@@ -917,7 +933,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_LEFT(box, off)          \
   do {                    \
     if (v->spl_nleft > 0)          \
-      tbox_adjust(leftBox, box);      \
+      tbox_expand_rt(leftBox, box);      \
     else                  \
       *leftBox = *(box);          \
     v->spl_left[v->spl_nleft++] = off;    \
@@ -926,7 +942,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
 #define PLACE_RIGHT(box, off)          \
   do {                    \
     if (v->spl_nright > 0)          \
-      tbox_adjust(rightBox, box);      \
+      tbox_expand_rt(rightBox, box);      \
     else                  \
       *rightBox = *(box);          \
     v->spl_right[v->spl_nright++] = off;  \
@@ -1003,7 +1019,7 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
     {
       box = DatumGetTboxP(entryvec->vector[commonEntries[i].index].key);
       commonEntries[i].delta = Abs(tbox_penalty(leftBox, box) -
-                     tbox_penalty(rightBox, box));
+        tbox_penalty(rightBox, box));
     }
 
     /*
@@ -1098,7 +1114,7 @@ tbox_gist_distance(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Transform the query into a box */
-  if (! tnumber_index_get_tbox(fcinfo, &query, subtype))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, subtype))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,

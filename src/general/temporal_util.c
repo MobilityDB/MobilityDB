@@ -306,7 +306,6 @@ base_type_without_bbox(Oid basetypid)
   return false;
 }
 
-
 /**
  * Returns the size of the bounding box
  */

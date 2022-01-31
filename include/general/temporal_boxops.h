@@ -110,13 +110,29 @@ extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
 
+extern Datum boxop_timestamp_temporal(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_timestamp(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
+extern Datum boxop_timestampset_temporal(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_timestampset(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
 extern Datum boxop_period_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_period(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
+extern Datum boxop_periodset_temporal(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
+extern Datum boxop_temporal_periodset(FunctionCallInfo fcinfo,
+  bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 
+extern Datum boxop_number_tnumber(FunctionCallInfo fcinfo,
+  bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_number(FunctionCallInfo fcinfo,
+  bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo,

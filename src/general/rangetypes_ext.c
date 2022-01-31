@@ -600,12 +600,12 @@ elem_adjacent_range(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
-PG_FUNCTION_INFO_V1(floatrange_set_precision);
+PG_FUNCTION_INFO_V1(floatrange_round);
 /**
  * Set the precision of the float range to the number of decimal places
  */
 PGDLLEXPORT Datum
-floatrange_set_precision(PG_FUNCTION_ARGS)
+floatrange_round(PG_FUNCTION_ARGS)
 {
 #if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
@@ -623,7 +623,7 @@ floatrange_set_precision(PG_FUNCTION_ARGS)
   {
     lower.val = lower_datum(range);
     if (DatumGetFloat8(lower.val) != -1 * get_float8_infinity())
-      lower.val = datum_round(lower.val, size);
+      lower.val = datum_round_float(lower.val, size);
     lower.infinite = false;
   }
   else
@@ -632,7 +632,7 @@ floatrange_set_precision(PG_FUNCTION_ARGS)
   {
     upper.val = upper_datum(range);
     if (DatumGetFloat8(upper.val) != get_float8_infinity())
-      upper.val = datum_round(upper.val, size);
+      upper.val = datum_round_float(upper.val, size);
     upper.infinite = false;
   }
   else

@@ -425,16 +425,16 @@
 		<sect2>
 			<title>Funciones de manipulación</title>
 			<itemizedlist>
-				<listitem id="tpoint_setPrecision">
-					<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
+				<listitem id="tpoint_round">
+					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Redondear los valores de las coordenadas a un número de decimales &Z_support; &geography_support;</para>
-					<para><varname>setPrecision(tpoint,integer): tpoint</varname></para>
+					<para><varname>round(tpoint,integer): tpoint</varname></para>
 					<programlisting xml:space="preserve">
-	SELECT asText(setPrecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01,
+	SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01,
 		Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
 	-- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02,
 		POINT Z (1.12 1.12 1.12)@2000-01-03}"
-	SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
+	SELECT asText(round(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 	-- "POINT(1.12 1.12)@2000-01-01"
 	</programlisting>
 				</listitem>

@@ -440,16 +440,16 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 </programlisting>
 				</listitem>
 
-				<listitem id="floatrange_setPrecision">
-					<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
+				<listitem id="floatrange_round">
+					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Redondear los límites de un rango flotante a un número de decimales</para>
-					<para><varname>setPrecision(floatrange,integer): floatrange</varname></para>
+					<para><varname>round(floatrange,integer): floatrange</varname></para>
 					<programlisting xml:space="preserve">
-SELECT setPrecision(floatrange '[1.123456789,2.123456789)', 3);
+SELECT round(floatrange '[1.123456789,2.123456789)', 3);
 -- "[1.123,2.123)"
-SELECT setPrecision(floatrange '(,2.123456789]', 3);
+SELECT round(floatrange '(,2.123456789]', 3);
 -- "(,2.123]"
-SELECT setPrecision(floatrange '[1.123456789, inf)', 3);
+SELECT round(floatrange '[1.123456789, inf)', 3);
 -- "[1.123,Infinity)"
 </programlisting>
 				</listitem>

@@ -162,7 +162,7 @@ extern Datum stbox_transform(PG_FUNCTION_ARGS);
 
 extern Datum stbox_expand_spatial(PG_FUNCTION_ARGS);
 extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
-extern Datum stbox_set_precision(PG_FUNCTION_ARGS);
+extern Datum stbox_round(PG_FUNCTION_ARGS);
 
 extern STBOX *stbox_expand_spatial_internal(STBOX *box, double d);
 extern STBOX *stbox_expand_temporal_internal(STBOX *box, Datum interval);

@@ -34,13 +34,6 @@
  * enabled with rewriting (version < 12) or support functions (version >= 12)
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-CREATE FUNCTION tpoint_supportfn(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tpoint_supportfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
-
 /*****************************************************************************
  * contains
  *****************************************************************************/
@@ -68,7 +61,7 @@ CREATE FUNCTION contains(geometry, tgeompoint)
  * disjoint
  *****************************************************************************/
 
--- TODO implement the rewriting in the tpoint_supportfn
+-- TODO implement the index support in the tpoint_supportfn
 
 -- #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _disjoint(geometry, tgeompoint)
@@ -119,7 +112,7 @@ CREATE FUNCTION disjoint(tgeompoint, tgeompoint)
 
 /*****************************************************************************/
 
--- TODO implement the rewriting in the tpoint_supportfn
+-- TODO implement the index support in the tpoint_supportfn
 
 -- #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _disjoint(geography, tgeogpoint)
@@ -308,9 +301,9 @@ CREATE FUNCTION touches(tgeompoint, geometry)
  * dwithin
  *****************************************************************************/
 
--- TODO implement the rewriting in the tpoint_supportfn
+-- TODO implement the index support in the tpoint_supportfn
 
--- #if POSTGRESQL_VERSION_NUMBER < 120000
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _dwithin(geometry, tgeompoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
@@ -333,31 +326,31 @@ CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- #endif //POSTGRESQL_VERSION_NUMBER < 120000
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
 
--- #if POSTGRESQL_VERSION_NUMBER >= 120000
--- CREATE FUNCTION dwithin(geometry, tgeompoint, dist float8)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
-  -- SUPPORT tpoint_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION dwithin(tgeompoint, geometry, dist float8)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_geo'
-  -- SUPPORT tpoint_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
-  -- SUPPORT tpoint_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- #endif //POSTGRESQL_VERSION_NUMBER >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION dwithin(geometry, tgeompoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tgeompoint, geometry, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tpoint_geo'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tgeompoint, tgeompoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/
 
--- TODO implement the rewriting in the tpoint_supportfn
+-- TODO implement the index support in the tpoint_supportfn
 
--- #if POSTGRESQL_VERSION_NUMBER < 120000
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _dwithin(geography, tgeogpoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
@@ -380,24 +373,24 @@ CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- #endif //POSTGRESQL_VERSION_NUMBER < 120000
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
 
--- #if POSTGRESQL_VERSION_NUMBER >= 120000
--- CREATE FUNCTION dwithin(geography, tgeogpoint, dist float8)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
-  -- SUPPORT tpoint_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION dwithin(tgeogpoint, geography, dist float8)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_geo'
-  -- SUPPORT tpoint_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
-  -- SUPPORT tpoint_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- #endif //POSTGRESQL_VERSION_NUMBER >= 120000
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION dwithin(geography, tgeogpoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_geo_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tgeogpoint, geography, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tpoint_geo'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tgeogpoint, tgeogpoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tpoint_tpoint'
+  SUPPORT tpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/

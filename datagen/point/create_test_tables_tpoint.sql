@@ -336,7 +336,7 @@ SET ti = (SELECT ti FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_instset t1
-SET ti = (SELECT setPrecision(ti,6) FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
+SET ti = (SELECT round(ti,6) FROM tbl_tgeompoint_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint_instset t1
@@ -359,7 +359,7 @@ SET ti = (SELECT ti FROM tbl_tgeompoint3D_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_instset t1
-SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeompoint3D_instset t2 WHERE t2.k = t1.k+perc)
+SET ti = (SELECT round(ti,3) FROM tbl_tgeompoint3D_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint3D_instset t1
@@ -382,7 +382,7 @@ SET ti = (SELECT ti FROM tbl_tgeogpoint_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint_instset t1
-SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeogpoint_instset t2 WHERE t2.k = t1.k+perc)
+SET ti = (SELECT round(ti,3) FROM tbl_tgeogpoint_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint_instset t1
@@ -405,7 +405,7 @@ SET ti = (SELECT ti FROM tbl_tgeogpoint3D_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3D_instset t1
-SET ti = (SELECT setPrecision(ti,3) FROM tbl_tgeogpoint3D_instset t2 WHERE t2.k = t1.k+perc)
+SET ti = (SELECT round(ti,3) FROM tbl_tgeogpoint3D_instset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint3D_instset t1
@@ -430,7 +430,7 @@ SET seq = (SELECT seq FROM tbl_tgeompoint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeompoint_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeompoint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint_seq t1
@@ -452,7 +452,7 @@ SET seq = (SELECT seq FROM tbl_tgeompoint3D_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeompoint3D_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeompoint3D_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint3D_seq t1
@@ -474,7 +474,7 @@ SET seq = (SELECT seq FROM tbl_tgeogpoint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeogpoint_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeogpoint_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint_seq t1
@@ -496,7 +496,7 @@ SET seq = (SELECT seq FROM tbl_tgeogpoint3D_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3D_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeogpoint3D_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeogpoint3D_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint3D_seq t1
@@ -520,7 +520,7 @@ SET ts = (SELECT ts FROM tbl_tgeompoint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint_seqset t1
@@ -542,7 +542,7 @@ SET ts = (SELECT ts FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint3D_seqset t1
@@ -564,7 +564,7 @@ SET ts = (SELECT ts FROM tbl_tgeogpoint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeogpoint_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint_seqset t1
@@ -586,7 +586,7 @@ SET ts = (SELECT ts FROM tbl_tgeogpoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3D_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint3D_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeogpoint3D_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint3D_seqset t1
@@ -642,7 +642,7 @@ SET seq = (SELECT seq FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_step_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeompoint_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint_step_seq t1
@@ -664,7 +664,7 @@ SET seq = (SELECT seq FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_step_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeompoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint3D_step_seq t1
@@ -686,7 +686,7 @@ SET seq = (SELECT seq FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint_step_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeogpoint_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint_step_seq t1
@@ -708,7 +708,7 @@ SET seq = (SELECT seq FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3D_step_seq t1
-SET seq = (SELECT setPrecision(seq,3) FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
+SET seq = (SELECT round(seq,3) FROM tbl_tgeogpoint3D_step_seq t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint3D_step_seq t1
@@ -732,7 +732,7 @@ SET ts = (SELECT ts FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint_step_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint_step_seqset t1
@@ -754,7 +754,7 @@ SET ts = (SELECT ts FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeompoint3D_step_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeompoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeompoint3D_step_seqset t1
@@ -776,7 +776,7 @@ SET ts = (SELECT ts FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint_step_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeogpoint_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint_step_seqset t1
@@ -798,7 +798,7 @@ SET ts = (SELECT ts FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 /* Add perc tuples with the same timestamp */
 UPDATE tbl_tgeogpoint3D_step_seqset t1
-SET ts = (SELECT setPrecision(ts,3) FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
+SET ts = (SELECT round(ts,3) FROM tbl_tgeogpoint3D_step_seqset t2 WHERE t2.k = t1.k+perc)
 WHERE k IN (SELECT i FROM generate_series(1 + 2*perc, 3*perc) i);
 /* Add perc tuples that meet */
 UPDATE tbl_tgeogpoint3D_step_seqset t1

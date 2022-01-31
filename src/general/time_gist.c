@@ -144,6 +144,55 @@ period_index_recheck(StrategyNumber strategy)
   return true;
 }
 
+/**
+ * Transform the query argument into a period
+ */
+static bool
+time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
+{
+  memset(result, 0, sizeof(Period));
+  if (subtype == TIMESTAMPTZOID)
+  {
+    /* Since function period_gist_consistent is strict, t is not NULL */
+    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    period_set(result, t, t, true, true);
+  }
+  else if (subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+    if (ts == NULL)
+      PG_RETURN_BOOL(false);
+    memcpy(result, timestampset_bbox_ptr(ts), sizeof(Period));
+    PG_FREE_IF_COPY(ts, 1);
+  }
+  else if (subtype == type_oid(T_PERIOD))
+  {
+    Period *p = PG_GETARG_PERIOD(1);
+    if (p == NULL)
+      PG_RETURN_BOOL(false);
+    memcpy(result, p, sizeof(Period));
+  }
+  else if (subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = PG_GETARG_PERIODSET(1);
+    if (ps == NULL)
+      PG_RETURN_BOOL(false);
+    memcpy(result, periodset_bbox_ptr(ps), sizeof(Period));
+    PG_FREE_IF_COPY(ps, 1);
+  }
+  else if (temporal_type(subtype))
+  {
+    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    if (temp == NULL)
+      PG_RETURN_BOOL(false);
+    temporal_bbox(result, temp);
+    PG_FREE_IF_COPY(temp, 1);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+  return true;
+}
+
 PG_FUNCTION_INFO_V1(period_gist_consistent);
 /**
  * GiST consistent method for time types and alpha temporal types whose
@@ -157,58 +206,23 @@ period_gist_consistent(PG_FUNCTION_ARGS)
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   bool result;
-  const Period *key = DatumGetPeriod(entry->key), *period;
-  Period p;
+  const Period *key = DatumGetPeriod(entry->key);
+  Period query;
 
   /* Determine whether the operator is exact */
   *recheck = period_index_recheck(strategy);
 
-  if (subtype == TIMESTAMPTZOID)
-  {
-    /* Since function period_gist_consistent is strict, query is not NULL */
-    TimestampTz query;
-    query = PG_GETARG_TIMESTAMPTZ(1);
-    period_set(&p, query, query, true, true);
-    period = &p;
-  }
-  else if (subtype == type_oid(T_TIMESTAMPSET))
-  {
-    TimestampSet *query = PG_GETARG_TIMESTAMPSET(1);
-    if (query == NULL)
-      PG_RETURN_BOOL(false);
-    period = timestampset_bbox_ptr(query);
-    PG_FREE_IF_COPY(query, 1);
-  }
-  else if (subtype == type_oid(T_PERIOD))
-  {
-    period = PG_GETARG_PERIOD(1);
-    if (period == NULL)
-      PG_RETURN_BOOL(false);
-  }
-  else if (subtype == type_oid(T_PERIODSET))
-  {
-    PeriodSet *query = PG_GETARG_PERIODSET(1);
-    if (query == NULL)
-      PG_RETURN_BOOL(false);
-    period = periodset_bbox_ptr(query);
-    PG_FREE_IF_COPY(query, 1);
-  }
-  else if (temporal_type(subtype))
-  {
-    Temporal *query = PG_GETARG_TEMPORAL(1);
-    if (query == NULL)
-      PG_RETURN_BOOL(false);
-    temporal_bbox(&p, query);
-    period = &p;
-    PG_FREE_IF_COPY(query, 1);
-  }
-  else
-    elog(ERROR, "unrecognized strategy number: %d", strategy);
+  if (key == NULL)
+    PG_RETURN_BOOL(false);
+
+  /* Transform the query into a box */
+  if (! time_gist_get_period(fcinfo, &query, subtype))
+    PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
-    result = period_index_consistent_leaf(key, period, strategy);
+    result = period_index_consistent_leaf(key, &query, strategy);
   else
-    result = period_gist_consistent_internal(key, period, strategy);
+    result = period_gist_consistent_internal(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }
@@ -244,7 +258,6 @@ PGDLLEXPORT Datum
 timestampset_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -255,7 +268,6 @@ timestampset_gist_compress(PG_FUNCTION_ARGS)
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-
   PG_RETURN_POINTER(entry);
 }
 
@@ -267,7 +279,6 @@ PGDLLEXPORT Datum
 period_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -275,7 +286,6 @@ period_gist_compress(PG_FUNCTION_ARGS)
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-
   PG_RETURN_POINTER(entry);
 }
 
@@ -287,7 +297,6 @@ PGDLLEXPORT Datum
 periodset_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
@@ -298,7 +307,6 @@ periodset_gist_compress(PG_FUNCTION_ARGS)
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-
   PG_RETURN_POINTER(entry);
 }
 
@@ -329,7 +337,7 @@ PG_FUNCTION_INFO_V1(period_gist_penalty);
  *
  * The penalty function has the following goals (in order from most to least
  * important):
- * - Avoid broadening (as determined by subtype_diff) the original predicate
+ * - Avoid broadening (as determined by period_to_secs) the original predicate
  * - Favor adding periods to narrower original predicates
  */
 PGDLLEXPORT Datum
@@ -341,15 +349,11 @@ period_gist_penalty(PG_FUNCTION_ARGS)
   const Period *orig = DatumGetPeriod(origentry->key);
   const Period *new = DatumGetPeriod(newentry->key);
   PeriodBound orig_lower, new_lower, orig_upper, new_upper;
-
   period_deserialize(orig, &orig_lower, &orig_upper);
   period_deserialize(new, &new_lower, &new_upper);
 
-  /*
-   * Calculate extension of original period by calling subtype_diff.
-   */
+  /* Calculate extension of original period by calling period_to_secs */
   float8 diff = 0.0;
-
   if (period_cmp_bounds(&new_lower, &orig_lower) < 0)
     diff += period_to_secs(orig->lower, new->lower);
   if (period_cmp_bounds(&new_upper, &orig_upper) > 0)
@@ -390,11 +394,9 @@ period_gist_penalty(PG_FUNCTION_ARGS)
 static void
 period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
-  Period  *left_period = NULL;
-  Period  *right_period = NULL;
-  OffsetNumber i,
-        maxoff,
-        split_idx;
+  Period *left_period = NULL;
+  Period *right_period = NULL;
+  OffsetNumber i, maxoff, split_idx;
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
   /* Split entries before this to left page, after to right: */
@@ -547,7 +549,6 @@ common_entry_cmp(const void *i1, const void *i2)
 {
   double delta1 = ((CommonEntry *) i1)->delta;
   double delta2 = ((CommonEntry *) i2)->delta;
-
   if (delta1 < delta2)
     return -1;
   else if (delta1 > delta2)
@@ -823,8 +824,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
      */
     for (i = 0; i < common_entries_count; i++)
     {
-      int      idx = common_entries[i].index;
-
+      int idx = common_entries[i].index;
       Period *period = DatumGetPeriod(entryvec->vector[idx].key);
 
       /*

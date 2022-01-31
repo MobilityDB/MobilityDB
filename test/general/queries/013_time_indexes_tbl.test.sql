@@ -28,6 +28,9 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- Tests of operators for time types.
+-- File timeops.c
+-------------------------------------------------------------------------------
 
 ANALYZE tbl_timestampset_big;
 ANALYZE tbl_period_big;
@@ -44,7 +47,6 @@ CREATE INDEX tbl_period_big_gist_idx ON tbl_period_big USING GIST(p);
 CREATE INDEX tbl_periodset_big_gist_idx ON tbl_periodset_big USING GIST(ps);
 
 SELECT count(*) FROM tbl_timestampset_big WHERE ts && period '[2001-01-01, 2001-02-01]';
-SELECT count(*) FROM tbl_timestampset_big WHERE ts @> period '[2001-01-01, 2001-02-01]';
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <@ period '[2001-01-01, 2001-02-01]';
 SELECT count(*) FROM tbl_timestampset_big WHERE ts -|- period '[2001-01-01, 2001-02-01]';
 SELECT count(*) FROM tbl_timestampset_big WHERE ts <<# period '[2001-01-01, 2001-02-01]';
@@ -52,9 +54,7 @@ SELECT count(*) FROM tbl_timestampset_big WHERE ts &<# period '[2001-01-01, 2001
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #>> period '[2001-01-01, 2001-02-01]';
 SELECT count(*) FROM tbl_timestampset_big WHERE ts #&> period '[2001-01-01, 2001-02-01]';
 
-SELECT count(*) FROM tbl_period_big WHERE p && timestamptz '2001-01-01';
 SELECT count(*) FROM tbl_period_big WHERE p @> timestamptz '2001-01-01';
-SELECT count(*) FROM tbl_period_big WHERE p <@ timestamptz '2001-01-01';
 SELECT count(*) FROM tbl_period_big WHERE p -|- timestamptz '2001-01-01';
 SELECT count(*) FROM tbl_period_big WHERE p <<# timestamptz '2001-01-01';
 SELECT count(*) FROM tbl_period_big WHERE p &<# timestamptz '2001-01-01';
@@ -63,7 +63,6 @@ SELECT count(*) FROM tbl_period_big WHERE p #&> timestamptz '2001-01-01';
 
 SELECT count(*) FROM tbl_period_big WHERE p && timestampset '{2001-01-01, 2001-02-01}';
 SELECT count(*) FROM tbl_period_big WHERE p @> timestampset '{2001-01-01, 2001-02-01}';
-SELECT count(*) FROM tbl_period_big WHERE p <@ timestampset '{2001-01-01, 2001-02-01}';
 SELECT count(*) FROM tbl_period_big WHERE p -|- timestampset '{2001-01-01, 2001-02-01}';
 SELECT count(*) FROM tbl_period_big WHERE p <<# timestampset '{2001-01-01, 2001-02-01}';
 SELECT count(*) FROM tbl_period_big WHERE p &<# timestampset '{2001-01-01, 2001-02-01}';

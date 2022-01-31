@@ -1,22 +1,22 @@
-SELECT ST_AsText(setPrecision(ST_LineInterpolatePoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0), 6));
+SELECT ST_AsText(round(ST_LineInterpolatePoint(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0), 6));
      st_astext     
 -------------------
  POINT(4.35 50.85)
 (1 row)
 
-SELECT ST_AsText(setPrecision(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, true), 6));
+SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.0, true), 6));
      st_astext     
 -------------------
  POINT(4.35 50.85)
 (1 row)
 
-SELECT ST_AsText(setPrecision(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false), 6));
+SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 1.0, false), 6));
          st_astext          
 ----------------------------
  POINT(37.617222 55.755833)
 (1 row)
 
-SELECT ST_AsText(setPrecision(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
+SELECT ST_AsText(round(ST_LineInterpolatePoints(geography 'Linestring(4.35 50.85, 37.617222 55.755833)', 0.1, true), 6));
                                                                                                      st_astext                                                                                                     
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  MULTIPOINT(7.222099 51.720243,10.232588 52.525434,13.373925 53.256689,16.634776 53.905679,19.999858 54.464967,23.45005 54.928333,26.962817 55.291077,30.512938 55.550263,34.073528 55.704869,37.617222 55.755833)

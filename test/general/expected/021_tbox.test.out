@@ -315,8 +315,8 @@ SELECT expandTemporal(tbox 'TBOX((1,2001-01-01),(2,2001-01-02))', interval '1 da
  TBOX((1,2000-12-31 00:00:00+00),(2,2001-01-03 00:00:00+00))
 (1 row)
 
-SELECT setPrecision(tbox 'TBOX((1.123456789,2001-01-01),(2.123456789,2001-01-02))', 2);
-                           setprecision                            
+SELECT round(tbox 'TBOX((1.123456789,2001-01-01),(2.123456789,2001-01-02))', 2);
+                               round                               
 -------------------------------------------------------------------
  TBOX((1.12,2001-01-01 00:00:00+00),(2.12,2001-01-02 00:00:00+00))
 (1 row)
@@ -326,7 +326,7 @@ SELECT expandValue(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 ERROR:  The box must have value dimension
 SELECT expandTemporal(tbox 'TBOX((1),(2))', interval '1 day');
 ERROR:  The box must have time dimension
-SELECT setPrecision(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
+SELECT round(tbox 'TBOX((,2001-01-01),(,2001-01-02))', 2);
 ERROR:  The box must have value dimension
 SELECT tbox 'TBOX((1,2001-01-01),(2,2001-01-02))' && tbox 'TBOX((1,2001-01-01),(2,2001-01-02))';
  ?column? 
@@ -646,8 +646,8 @@ set min_parallel_table_scan_size=0;
 SET
 set max_parallel_workers_per_gather=2;
 SET
-SELECT setPrecision(extent(temp::tbox),6) FROM tbl_tfloat_big;
-                                setprecision                                 
+SELECT round(extent(temp::tbox),6) FROM tbl_tfloat_big;
+                                    round                                    
 -----------------------------------------------------------------------------
  TBOX((1.004155,2000-12-31 23:36:00+00),(100.999349,2001-12-31 02:50:00+00))
 (1 row)

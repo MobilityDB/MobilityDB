@@ -73,8 +73,10 @@ SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE intersects(g, temp);
 SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE intersects(temp, g);
 SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE intersects(t1.temp, t2.temp);
 -- Geography
-SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE intersects(g, temp);
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE intersects(temp, g);
+-- The following two queries return different number result (3302 vs 3300) 
+-- depending on PostGIS version. For this reason they are commented out
+-- SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE intersects(g, temp);
+-- SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE intersects(temp, g);
 SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE intersects(t1.temp, t2.temp);
 -- 3D
 SELECT count(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE intersects(g, temp);

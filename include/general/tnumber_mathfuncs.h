@@ -53,7 +53,7 @@ typedef enum
 
 /*****************************************************************************/
 
-extern Datum datum_round(Datum value, Datum prec);
+extern Datum datum_round_float(Datum value, Datum prec);
 
 extern Datum add_base_temporal(PG_FUNCTION_ARGS);
 extern Datum add_temporal_base(PG_FUNCTION_ARGS);

@@ -66,7 +66,7 @@ extern Datum npoint_constructor(PG_FUNCTION_ARGS);
 extern Datum nsegment_constructor(PG_FUNCTION_ARGS);
 extern Datum nsegment_from_npoint(PG_FUNCTION_ARGS);
 
-extern Datum npoint_set_precision_internal(Datum npoint, Datum size);
+extern Datum npoint_round_internal(Datum npoint, Datum size);
 
 extern void npoint_set(npoint *np, int64 rid, double pos);
 extern npoint *npoint_make(int64 rid, double pos);

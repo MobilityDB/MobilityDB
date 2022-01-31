@@ -30,7 +30,7 @@
 /**
  * @file tpoint_analyze.c
  * Functions for gathering statistics from temporal point columns.
-
+ *
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype
  * of the temporal type, which is defined in the table schema by the `typmod`
@@ -43,7 +43,7 @@
  * `gserialized_analyze_nd`.
  * - Slot 1
  *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_2D`.
- *     - `stanumbers` stores the 2D histrogram of occurrence of features.
+ *     - `stanumbers` stores the 2D histogram of occurrence of features.
  * - Slot 2
  *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_ND`.
  *     - `stanumbers` stores the ND histogram of occurrence of features.

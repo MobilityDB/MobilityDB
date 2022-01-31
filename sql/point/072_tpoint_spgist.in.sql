@@ -133,7 +133,7 @@ CREATE OPERATOR CLASS stbox_spgist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_tgeompoint_ops
+CREATE OPERATOR CLASS tgeompoint_spgist_ops
   DEFAULT FOR TYPE tgeompoint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tgeompoint, geometry),
@@ -144,6 +144,10 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
   OPERATOR  2    &< (tgeompoint, stbox),
   OPERATOR  2    &< (tgeompoint, tgeompoint),
   -- overlaps
+  OPERATOR  3    && (tgeompoint, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tgeompoint, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tgeompoint, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tgeompoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeompoint, geometry),
   OPERATOR  3    && (tgeompoint, stbox),
   OPERATOR  3    && (tgeompoint, tgeompoint),
@@ -231,9 +235,13 @@ CREATE OPERATOR CLASS spgist_tgeompoint_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS spgist_tgeogpoint_ops
+CREATE OPERATOR CLASS tgeogpoint_spgist_ops
   DEFAULT FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
+  OPERATOR  3    && (tgeogpoint, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tgeogpoint, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tgeogpoint, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tgeogpoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeogpoint, geography),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),

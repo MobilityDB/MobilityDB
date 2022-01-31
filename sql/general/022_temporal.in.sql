@@ -1271,6 +1271,21 @@ CREATE FUNCTION minusTbox(tfloat, tbox)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Index Support Functions
+ *****************************************************************************/
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION temporal_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'temporal_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnumber_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tnumber_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
+/*****************************************************************************
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
@@ -1281,10 +1296,16 @@ CREATE FUNCTION ever_eq(tbool, boolean)
 CREATE FUNCTION ever_eq(tint, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnumber_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_eq(tfloat, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnumber_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_eq(ttext, text)
   RETURNS boolean
@@ -1301,13 +1322,13 @@ CREATE OPERATOR ?= (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = ever_eq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = ever_eq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1323,10 +1344,16 @@ CREATE FUNCTION always_eq(tbool, boolean)
 CREATE FUNCTION always_eq(tint, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_always_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnumber_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(tfloat, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_always_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnumber_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(ttext, text)
   RETURNS boolean
@@ -1343,13 +1370,13 @@ CREATE OPERATOR %= (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = always_eq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = always_eq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1385,13 +1412,13 @@ CREATE OPERATOR ?<> (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = ever_ne,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?<> (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = ever_ne,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?<> (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1427,13 +1454,13 @@ CREATE OPERATOR %<> (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = always_ne,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = always_ne,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1463,13 +1490,13 @@ CREATE OPERATOR ?< (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = ever_lt,
   NEGATOR = %>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?< (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = ever_lt,
   NEGATOR = %>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?< (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1495,13 +1522,13 @@ CREATE OPERATOR ?<= (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = ever_le,
   NEGATOR = %>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?<= (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = ever_le,
   NEGATOR = %>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?<= (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1527,13 +1554,13 @@ CREATE OPERATOR %< (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = always_lt,
   NEGATOR = ?>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %< (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = always_lt,
   NEGATOR = ?>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %< (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1559,13 +1586,13 @@ CREATE OPERATOR %<= (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = always_le,
   NEGATOR = ?>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<= (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = always_le,
   NEGATOR = ?>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %<= (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1591,13 +1618,13 @@ CREATE OPERATOR ?> (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = ever_gt,
   NEGATOR = %<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?> (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = ever_gt,
   NEGATOR = %<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?> (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1623,13 +1650,13 @@ CREATE OPERATOR ?>= (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = ever_ge,
   NEGATOR = %<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?>= (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = ever_ge,
   NEGATOR = %<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR ?>= (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1655,13 +1682,13 @@ CREATE OPERATOR %> (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = always_gt,
   NEGATOR = ?<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %> (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = always_gt,
   NEGATOR = ?<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %> (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1687,13 +1714,13 @@ CREATE OPERATOR %>= (
   LEFTARG = tint, RIGHTARG = integer,
   PROCEDURE = always_ge,
   NEGATOR = ?<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %>= (
   LEFTARG = tfloat, RIGHTARG = float,
   PROCEDURE = always_ge,
   NEGATOR = ?<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR %>= (
   LEFTARG = ttext, RIGHTARG = text,
@@ -1859,73 +1886,129 @@ CREATE FUNCTION minusPeriodSet(ttext, periodset)
   AS 'MODULE_PATHNAME', 'temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Intersection Functions
+ *****************************************************************************/
+
 CREATE FUNCTION intersectsTimestamp(tbool, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestamp(tint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestamp(tfloat, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestamp(ttext, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsTimestampSet(tbool, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestampSet(tint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestampSet(tfloat, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestampSet(ttext, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsPeriod(tbool, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriod(tint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriod(tfloat, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriod(ttext, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsPeriodSet(tbool, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriodSet(tint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriodSet(tfloat, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriodSet(ttext, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT temporal_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
+ * Value Aggregate Functions
+ *****************************************************************************/
 
 CREATE FUNCTION integral(tint)
   RETURNS float
@@ -1946,7 +2029,7 @@ CREATE FUNCTION twAvg(tfloat)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Selectively functions for operators
+ * Selectivity functions for operators
  *****************************************************************************/
 
 CREATE FUNCTION temporal_sel(internal, oid, internal, integer)
@@ -2073,13 +2156,13 @@ CREATE OPERATOR < (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tint, RIGHTARG = tint,
@@ -2097,13 +2180,13 @@ CREATE OPERATOR >= (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tint, RIGHTARG = tint,
   PROCEDURE = tint_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
 CREATE OPERATOR CLASS tint_ops
@@ -2150,13 +2233,13 @@ CREATE OPERATOR < (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = tnumber_sel, JOIN = scalarltjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tfloat, RIGHTARG = tfloat,
@@ -2174,13 +2257,13 @@ CREATE OPERATOR >= (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tfloat, RIGHTARG = tfloat,
   PROCEDURE = tfloat_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = tnumber_sel, JOIN = scalargtjoinsel
+  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
 );
 
 CREATE OPERATOR CLASS tfloat_ops

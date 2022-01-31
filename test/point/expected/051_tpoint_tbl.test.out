@@ -476,25 +476,25 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE memSize(temp) > 0;
    100
 (1 row)
 
-SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
+SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint;
  max 
 -----
  126
 (1 row)
 
-SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
+SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint;
  max 
 -----
  170
 (1 row)
 
-SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
+SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeompoint3D;
  max 
 -----
  161
 (1 row)
 
-SELECT MAX(char_length(setPrecision(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
+SELECT MAX(char_length(round(stbox(temp), 13)::text)) FROM tbl_tgeogpoint3D;
  max 
 -----
  171
@@ -1248,25 +1248,25 @@ SELECT COUNT(shiftTscale(temp, i, i)) FROM tbl_tgeogpoint3D, tbl_interval;
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= startValue(temp);
  count 
 -------
-    98
+    78
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp ?= startValue(temp);
  count 
 -------
-    96
+    85
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE temp ?= startValue(temp);
  count 
 -------
-    96
+    77
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint3D WHERE temp ?= startValue(temp);
  count 
 -------
-    96
+    80
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp %= startValue(temp);

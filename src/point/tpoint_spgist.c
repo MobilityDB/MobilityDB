@@ -515,6 +515,52 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 }
 #endif
 
+/**
+ * Transform a query argument into an STBOX.
+ */
+static bool
+tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
+{
+  memset(result, 0, sizeof(STBOX));
+  if (tgeo_base_type(scankey->sk_subtype))
+  {
+    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
+    /* The geometry can be empty */
+    if (!geo_to_stbox_internal(result, gs))
+      return false;
+  }
+  else if (scankey->sk_subtype == TIMESTAMPTZOID)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    timestamp_to_stbox_internal(result, t);
+  }
+  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
+    timestampset_to_stbox_internal(result, ts);
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  {
+    Period *p = DatumGetPeriod(scankey->sk_argument);
+    period_to_stbox_internal(result, p);
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
+    periodset_to_stbox_internal(result, ps);
+  }
+  else if (scankey->sk_subtype == type_oid(T_STBOX))
+  {
+    memcpy(result, DatumGetSTboxP(scankey->sk_argument), sizeof(STBOX));
+  }
+  else if (tspatial_type(scankey->sk_subtype))
+  {
+    temporal_bbox(result, DatumGetTemporal(scankey->sk_argument));
+  }
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+  return true;
+}
 
 /*****************************************************************************
  * SP-GiST config function
@@ -678,32 +724,6 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
-/**
- * Transform a query argument into an STBOX.
- */
-static bool
-stbox_spgist_get_stbox(STBOX *result, ScanKeyData scankey)
-{
-  if (tgeo_base_type(scankey.sk_subtype))
-  {
-    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey.sk_argument);
-    /* The geometry can be empty */
-    if (!geo_to_stbox_internal(result, gs))
-      return false;
-  }
-  else if (scankey.sk_subtype == type_oid(T_STBOX))
-  {
-    memcpy(result, DatumGetSTboxP(scankey.sk_argument), sizeof(STBOX));
-  }
-  else if (tspatial_type(scankey.sk_subtype))
-  {
-    temporal_bbox(result, DatumGetTemporal(scankey.sk_argument));
-  }
-  else
-    elog(ERROR, "Unsupported subtype for indexing: %d", scankey.sk_subtype);
-  return true;
-}
-
 /*****************************************************************************
  * SP-GiST inner consistent functions
  *****************************************************************************/
@@ -741,7 +761,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   STBOX *orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
   for (i = 0; i < in->norderbys; i++)
-    stbox_spgist_get_stbox(&orderbys[i], in->orderbys[i]);
+    tpoint_spgist_get_stbox(&orderbys[i], &in->orderbys[i]);
 #endif
 
   if (in->allTheSame)
@@ -780,7 +800,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
   for (i = 0; i < in->nkeys; i++)
-    stbox_spgist_get_stbox(&queries[i], in->scankeys[i]);
+    tpoint_spgist_get_stbox(&queries[i], &in->scankeys[i]);
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
@@ -939,7 +959,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= tpoint_index_recheck(strategy);
 
-    if (stbox_spgist_get_stbox(&query, in->scankeys[i]))
+    if (tpoint_spgist_get_stbox(&query, &in->scankeys[i]))
       res = stbox_index_consistent_leaf(key, &query, strategy);
     else
       res = false;

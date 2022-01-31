@@ -47,7 +47,7 @@ Benefits
 
 *   [Plugin](https://github.com/mschoema/move) to display the result of MobilityDB queries in [QGIS](https://qgis.org/)
 
-Experimental projects
+Experimental Projects
 -----------------------------
 
 These projects push the boundaries of MobilityDB and connect it with the PostgreSQL/PostGIS ecosystem.

@@ -904,7 +904,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     ensure_valid_tempsubtype_all(subtype);
 
     /* Compute the selectivity */
-    selec *= temporal_sel_internal_per(root, &vardata, &constperiod, cachedOp);
+    selec *= temporal_sel_period(root, &vardata, &constperiod, cachedOp);
   }
 
   ReleaseVariableStats(vardata);
@@ -1208,7 +1208,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
     return DEFAULT_ND_JOINSEL;
 
   selectivity = geo_join_selectivity(stats1, stats2) *
-    temporal_joinsel_internal(root, args, jointype);
+    temporal_joinsel_internal(root, oper, args, jointype);
   pfree(stats1);
   pfree(stats2);
   return selectivity;

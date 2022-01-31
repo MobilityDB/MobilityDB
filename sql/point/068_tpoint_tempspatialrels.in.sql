@@ -165,7 +165,6 @@ CREATE FUNCTION tdwithin(tgeompoint, tgeompoint, dist float8)
   AS 'MODULE_PATHNAME', 'tdwithin_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-
 CREATE FUNCTION tdwithin(geography, tgeogpoint, dist float8)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tdwithin_geo_tpoint'
