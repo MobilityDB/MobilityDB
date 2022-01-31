@@ -2630,7 +2630,6 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   if (tnumber_base_type(temp->basetypid))
   {
     TBOX box;
-    memset(&box, 0, sizeof(TBOX));
     temporal_bbox(&box, temp);
     double d = datum_double(value, temp->basetypid);
     return (ever && box.xmin <= d && d <= box.xmax) ||
@@ -2639,8 +2638,6 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
   else if (tspatial_base_type(temp->basetypid))
   {
     STBOX box1, box2;
-    memset(&box1, 0, sizeof(STBOX));
-    memset(&box2, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
     if (tgeo_base_type(temp->basetypid))
       geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(value));
@@ -2671,7 +2668,6 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
   if (tnumber_base_type(temp->basetypid))
   {
     TBOX box;
-    memset(&box, 0, sizeof(TBOX));
     temporal_bbox(&box, temp);
     double d = datum_double(value, temp->basetypid);
     if ((ever && d < box.xmin) || (!ever && d < box.xmax))
@@ -2977,10 +2973,8 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   if (tnumber_base_type(temp->basetypid))
   {
     TBOX box1, box2;
-    memset(&box1, 0, sizeof(TBOX));
-    memset(&box2, 0, sizeof(TBOX));
     temporal_bbox(&box1, temp);
-    number_to_box(&box2, value, temp->basetypid);
+    number_to_tbox_internal(&box2, value, temp->basetypid);
     return contains_tbox_tbox_internal(&box1, &box2);
   }
   if (tgeo_base_type(temp->basetypid))
@@ -2995,8 +2989,6 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     if (temp->subtype != INSTANT)
     {
       STBOX box1, box2;
-      memset(&box1, 0, sizeof(STBOX));
-      memset(&box2, 0, sizeof(STBOX));
       temporal_bbox(&box1, temp);
       geo_to_stbox_internal(&box2, gs);
       return contains_stbox_stbox_internal(&box1, &box2);
@@ -3026,13 +3018,11 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
   if (tnumber_base_type(temp->basetypid))
   {
     TBOX box1;
-    memset(&box1, 0, sizeof(TBOX));
     temporal_bbox(&box1, temp);
     for (int i = 0; i < count; i++)
     {
       TBOX box2;
-      memset(&box2, 0, sizeof(TBOX));
-      number_to_box(&box2, values[i], temp->basetypid);
+      number_to_tbox_internal(&box2, values[i], temp->basetypid);
       if (contains_tbox_tbox_internal(&box1, &box2))
         newvalues[k++] = values[i];
     }
@@ -3040,7 +3030,6 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
   if (tgeo_base_type(temp->basetypid))
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
     for (int i = 0; i < count; i++)
     {
@@ -3052,7 +3041,6 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
       if (! gserialized_is_empty(gs))
       {
         STBOX box2;
-        memset(&box2, 0, sizeof(STBOX));
         geo_to_stbox_internal(&box2, gs);
         if (contains_stbox_stbox_internal(&box1, &box2))
           newvalues[k++] = values[i];
@@ -3090,8 +3078,6 @@ tnumber_bbox_restrict_range(const Temporal *temp, const RangeType *range)
   /* Bounding box test */
   assert(tnumber_base_type(temp->basetypid));
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   range_to_tbox_internal(&box2, range);
   return overlaps_tbox_tbox_internal(&box1, &box2);
@@ -3115,7 +3101,6 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
   RangeType **newranges = palloc(sizeof(Datum) * count);
   int k = 0;
   TBOX box1;
-  memset(&box1, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   for (int i = 0; i < count; i++)
   {
@@ -3123,7 +3108,6 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
     if (flags & RANGE_EMPTY)
       continue;
     TBOX box2;
-    memset(&box2, 0, sizeof(TBOX));
     range_to_tbox_internal(&box2, ranges[i]);
     if (overlaps_tbox_tbox_internal(&box1, &box2))
       newranges[k++] = ranges[i];
@@ -3884,7 +3868,6 @@ tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box)
 {
   /* Bounding box test */
   TBOX box1;
-  memset(&box1, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   if (!overlaps_tbox_tbox_internal(box, &box1))
     return NULL;
@@ -3943,7 +3926,6 @@ tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box)
 {
   /* Bounding box test */
   TBOX box1;
-  memset(&box1, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   if (!overlaps_tbox_tbox_internal(box, &box1))
     return temporal_copy(temp);
@@ -4175,8 +4157,6 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
 
   /* Compare bounding box */
   bboxunion box1, box2;
-  memset(&box1, 0, sizeof(bboxunion));
-  memset(&box2, 0, sizeof(bboxunion));
   temporal_bbox(&box1, temp1);
   temporal_bbox(&box2, temp2);
   result = temporal_bbox_cmp(&box1, &box2, temp1->basetypid);

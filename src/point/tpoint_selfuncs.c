@@ -868,7 +868,6 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   /*
    * Transform the constant into an STBOX
    */
-  memset(&constBox, 0, sizeof(STBOX));
   found = tpoint_const_to_stbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)

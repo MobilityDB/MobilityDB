@@ -205,11 +205,10 @@ tnumber_gist_consistent_internal(const TBOX *key, const TBOX *query,
 static bool
 tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
 {
-  memset(result, 0, sizeof(TBOX));
   if (tnumber_base_type(subtype))
   {
     Datum value = PG_GETARG_DATUM(1);
-    number_to_box(result, value, subtype);
+    number_to_tbox_internal(result, value, subtype);
   }
   else if (tnumber_range_type(subtype))
   {

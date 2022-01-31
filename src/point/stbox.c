@@ -64,8 +64,8 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
   double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, TimestampTz tmin, TimestampTz tmax)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  /* Note: zero-fill is done in function stbox_set */
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   stbox_set(result, hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
     zmin, zmax, tmin, tmax);
   return result;
@@ -206,6 +206,8 @@ void
 gbox_set(GBOX *box, bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(GBOX));
   box->xmin = xmin;
   box->xmax = xmax;
   box->ymin = ymin;
@@ -591,6 +593,8 @@ stbox_set_box3d(const STBOX *box, BOX3D *box3d)
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
 
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box3d, 0, sizeof(BOX3D));
   /* Initialize existing dimensions */
   box3d->xmin = box->xmin;
   box3d->xmax = box->xmax;
@@ -656,6 +660,8 @@ box3d_to_stbox(PG_FUNCTION_ARGS)
 bool
 geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   if (gserialized_is_empty(gs))
   {
     /* Spatial dimensions are set as missing for the SP-GiST index */
@@ -720,7 +726,7 @@ geo_to_stbox(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   geo_to_stbox_internal(result, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
@@ -733,6 +739,8 @@ geo_to_stbox(PG_FUNCTION_ARGS)
 void
 timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   box->tmin = box->tmax = t;
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_Z(box->flags, false);
@@ -747,7 +755,7 @@ PGDLLEXPORT Datum
 timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   timestamp_to_stbox_internal(result, t);
   PG_RETURN_POINTER(result);
 }
@@ -760,6 +768,8 @@ void
 timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
 {
   const Period *p = timestampset_bbox_ptr(ts);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -773,7 +783,7 @@ PGDLLEXPORT Datum
 timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   timestampset_to_stbox_internal(result, ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
@@ -786,6 +796,8 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 void
 period_to_stbox_internal(STBOX *box, const Period *p)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -799,7 +811,7 @@ PGDLLEXPORT Datum
 period_to_stbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   period_to_stbox_internal(result, p);
   PG_RETURN_POINTER(result);
 }
@@ -811,6 +823,8 @@ period_to_stbox(PG_FUNCTION_ARGS)
 void
 periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   const Period *p = periodset_bbox_ptr(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
@@ -825,7 +839,7 @@ PGDLLEXPORT Datum
 periodset_to_stbox(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   periodset_to_stbox_internal(result, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
@@ -842,7 +856,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   geo_to_stbox_internal(result, gs);
   result->tmin = result->tmax = t;
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -861,7 +875,7 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Period *p = PG_GETARG_PERIOD(1);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = palloc(sizeof(STBOX));
   geo_to_stbox_internal(result, gs);
   result->tmin = p->lower;
   result->tmax = p->upper;

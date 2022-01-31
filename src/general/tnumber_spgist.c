@@ -368,11 +368,10 @@ distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
 static bool
 tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
 {
-  memset(result, 0, sizeof(TBOX));
   if (tnumber_base_type(scankey->sk_subtype))
   {
     Datum value = scankey->sk_argument;
-    number_to_box(result, value, scankey->sk_subtype);
+    number_to_tbox_internal(result, value, scankey->sk_subtype);
   }
   else if (tnumber_range_type(scankey->sk_subtype))
   {

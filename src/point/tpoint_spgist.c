@@ -521,7 +521,6 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 static bool
 tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
 {
-  memset(result, 0, sizeof(STBOX));
   if (tgeo_base_type(scankey->sk_subtype))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);

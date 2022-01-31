@@ -160,11 +160,7 @@ tinstant_make_bbox(void *box, const TInstant *inst)
   else if (tnumber_base_type(inst->basetypid))
   {
     double dvalue = datum_double(tinstant_value(inst), inst->basetypid);
-    TBOX *result = (TBOX *) box;
-    result->xmin = result->xmax = dvalue;
-    result->tmin = result->tmax = inst->t;
-    MOBDB_FLAGS_SET_X(result->flags, true);
-    MOBDB_FLAGS_SET_T(result->flags, true);
+    tbox_set((TBOX *) box, true, true, dvalue, dvalue, inst->t, inst->t);
   }
   else if (tgeo_base_type(inst->basetypid))
     tpointinst_make_stbox((STBOX *) box, inst);
@@ -206,7 +202,6 @@ tnumberinstarr_to_tbox(TBOX *box, const TInstant **instants, int count)
   for (int i = 1; i < count; i++)
   {
     TBOX box1;
-    memset(&box1, 0, sizeof(TBOX));
     tinstant_make_bbox(&box1, instants[i]);
     tbox_expand(box, &box1);
   }
@@ -1086,9 +1081,7 @@ boxop_number_tnumber(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
-  number_to_box(&box1, value, basetypid);
+  number_to_tbox_internal(&box1, value, basetypid);
   temporal_bbox(&box2, temp);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
@@ -1109,10 +1102,8 @@ boxop_tnumber_number(FunctionCallInfo fcinfo,
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
-  number_to_box(&box2, value, basetypid);
+  number_to_tbox_internal(&box2, value, basetypid);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -1139,8 +1130,6 @@ boxop_range_tnumber(FunctionCallInfo fcinfo,
     PG_RETURN_BOOL(func == &contained_tbox_tbox_internal);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   range_to_tbox_internal(&box1, range);
   temporal_bbox(&box2, temp);
   bool result = func(&box1, &box2);
@@ -1170,8 +1159,6 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
   if (flags & RANGE_EMPTY)
     PG_RETURN_BOOL(func == &contains_tbox_tbox_internal);
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   range_to_tbox_internal(&box2, range);
   bool result = func(&box1, &box2);
@@ -1193,7 +1180,6 @@ boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   TBOX *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   TBOX box1;
-  memset(&box1, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
@@ -1213,7 +1199,6 @@ boxop_tnumber_tbox(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
   TBOX box1;
-  memset(&box1, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
@@ -1233,8 +1218,6 @@ boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp1);
   temporal_bbox(&box2, temp2);
   bool result = func(&box1, &box2);

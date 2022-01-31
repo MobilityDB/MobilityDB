@@ -2954,8 +2954,6 @@ tnumberseq_restrict_range2(TSequence **result, const TSequence *seq,
 {
   /* Bounding box test */
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   tsequence_bbox(&box1, seq);
   range_to_tbox_internal(&box2, range);
   if (!overlaps_tbox_tbox_internal(&box1, &box2))

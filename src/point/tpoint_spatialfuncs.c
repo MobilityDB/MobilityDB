@@ -5256,8 +5256,6 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 {
   /* Bounding box test */
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   /* Non-empty geometries have a bounding box */
   geo_to_stbox_internal(&box2, (GSERIALIZED *) DatumGetPointer(geom));
@@ -5436,7 +5434,6 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
 
   /* Bounding box test */
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   if (!overlaps_stbox_stbox_internal(box, &box1))
     return NULL;
@@ -5519,7 +5516,6 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 {
   /* Bounding box test */
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   if (!overlaps_stbox_stbox_internal(box, &box1))
     return temporal_copy(temp);

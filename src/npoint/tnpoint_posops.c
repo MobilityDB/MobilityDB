@@ -74,8 +74,6 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   if (!geo_to_stbox_internal(&box1, gs))
   {
     PG_FREE_IF_COPY(gs, 0);
@@ -104,8 +102,6 @@ posop_tnpoint_geom(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   if (!geo_to_stbox_internal(&box2, gs))
   {
     PG_FREE_IF_COPY(temp, 0);
@@ -136,7 +132,6 @@ posop_stbox_tnpoint(FunctionCallInfo fcinfo,
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 1);
@@ -160,7 +155,6 @@ tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
   if (hast)
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
     result = func(box, &box1);
   }
@@ -187,7 +181,6 @@ posop_tnpoint_stbox(FunctionCallInfo fcinfo,
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
@@ -211,7 +204,6 @@ tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
   if (hast)
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
     temporal_bbox(&box1, temp);
     result = func(&box1, box);
   }
@@ -235,8 +227,6 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   /* Returns an error if the geometry is not found, is null, or is empty */
   npoint_to_stbox_internal(&box1, np);
   temporal_bbox(&box2, temp);
@@ -259,8 +249,6 @@ posop_tnpoint_npoint(FunctionCallInfo fcinfo,
   npoint *np = PG_GETARG_NPOINT(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   /* Returns an error if the geometry is not found, is null, or is empty */
   npoint_to_stbox_internal(&box2, np);
   temporal_bbox(&box1, temp);
@@ -283,8 +271,6 @@ posop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid(tnpoint_srid_internal(temp1), tnpoint_srid_internal(temp2));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp1);
   temporal_bbox(&box2, temp2);
   bool result = func(&box1, &box2);

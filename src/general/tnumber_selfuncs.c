@@ -972,7 +972,6 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   /*
    * Transform the constant into a TBOX
    */
-  memset(&constBox, 0, sizeof(TBOX));
   found = tnumber_const_to_tbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)

@@ -465,8 +465,6 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter,
 
   /* Bounding box test */
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   /* Non-empty geometries have a bounding box */
   geo_to_stbox_internal(&box2, gs);

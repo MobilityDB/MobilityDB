@@ -150,7 +150,6 @@ period_index_recheck(StrategyNumber strategy)
 static bool
 time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
 {
-  memset(result, 0, sizeof(Period));
   if (subtype == TIMESTAMPTZOID)
   {
     /* Since function period_gist_consistent is strict, t is not NULL */

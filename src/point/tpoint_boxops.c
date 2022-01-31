@@ -90,7 +90,6 @@ tpointinstarr_to_stbox(STBOX *box, const TInstant **instants, int count)
   for (int i = 1; i < count; i++)
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
     tpointinst_make_stbox(&box1, instants[i]);
     stbox_expand(box, &box1);
   }
@@ -149,7 +148,6 @@ tpointseq_stboxes1(STBOX *result, const TSequence *seq)
     tpointinst_make_stbox(&result[i], inst1);
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     STBOX box;
-    memset(&box, 0, sizeof(STBOX));
     tpointinst_make_stbox(&box, inst2);
     stbox_expand(&result[i], &box);
     inst1 = inst2;
@@ -240,8 +238,6 @@ boxop_geo_tpoint(FunctionCallInfo fcinfo,
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   geo_to_stbox_internal(&box1, gs);
   temporal_bbox(&box2, temp);
   bool result = func(&box1, &box2);
@@ -265,8 +261,6 @@ boxop_tpoint_geo(FunctionCallInfo fcinfo,
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   geo_to_stbox_internal(&box2, gs);
   bool result = func(&box1, &box2);
@@ -288,7 +282,6 @@ boxop_stbox_tpoint(FunctionCallInfo fcinfo,
   STBOX *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
@@ -308,7 +301,6 @@ boxop_tpoint_stbox(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
@@ -328,8 +320,6 @@ boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp1);
   temporal_bbox(&box2, temp2);
   bool result = func(&box1, &box2);

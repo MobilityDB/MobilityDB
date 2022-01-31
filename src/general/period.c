@@ -192,6 +192,8 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Period cannot be empty")));
 
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(p, 0, sizeof(Period));
   /* Now fill in the period */
   p->lower = lower;
   p->upper = upper;

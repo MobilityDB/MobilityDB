@@ -202,8 +202,6 @@ NAD_tnumber_base_internal(Temporal *temp, Datum value, Oid basetypid)
 {
   ensure_tnumber_base_type(basetypid);
   TBOX box1, box2;
-  memset(&box1, 0, sizeof(TBOX));
-  memset(&box2, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp);
   if (basetypid == INT4OID)
     int_to_tbox_internal(&box2, DatumGetInt32(value));
@@ -329,7 +327,6 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
     (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBOX box1;
-  memset(&box1, 0, sizeof(TBOX));
   temporal_bbox(&box1, temp1);
   if (overlaps_tbox_tbox_internal(box, &box1))
     return 0.0;

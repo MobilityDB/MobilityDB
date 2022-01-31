@@ -101,7 +101,6 @@ tnpointinstarr_step_to_stbox(STBOX *box, const TInstant **instants, int count)
   for (int i = 1; i < count; i++)
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
     tnpointinst_make_stbox(&box1, instants[i]);
     stbox_expand(box, &box1);
   }
@@ -295,8 +294,6 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   /* Returns an error if the geometry is not found, is null, or is empty */
   npoint_to_stbox_internal(&box1, np);
   temporal_bbox(&box2, temp);
@@ -319,8 +316,6 @@ boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
   npoint *np = PG_GETARG_NPOINT(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   temporal_bbox(&box1, temp);
   /* Returns an error if the geometry is not found, is null, or is empty */
   npoint_to_stbox_internal(&box2, np);

@@ -120,6 +120,8 @@ double2_send(PG_FUNCTION_ARGS)
 void
 double2_set(double2 *result, double a, double b)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(result, 0, sizeof(double2));
   result->a = a;
   result->b = b;
 }
@@ -227,6 +229,8 @@ double3_send(PG_FUNCTION_ARGS)
 void
 double3_set(double3 *result, double a, double b, double c)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(result, 0, sizeof(double3));
   result->a = a;
   result->b = b;
   result->c = c;
@@ -340,6 +344,8 @@ double4_send(PG_FUNCTION_ARGS)
 void
 double4_set(double4 *result, double a, double b, double c, double d)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(result, 0, sizeof(double4));
   result->a = a;
   result->b = b;
   result->c = c;

@@ -61,8 +61,8 @@ TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
+  /* Note: zero-fill is done in function tbox_set */
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   tbox_set(result, hasx, hast, xmin, xmax, tmin, tmax);
   return result;
 }
@@ -321,8 +321,10 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
  * Transform the value to a temporal box (internal function only)
  */
 void
-number_to_box(TBOX *box, Datum value, Oid basetypid)
+number_to_tbox_internal(TBOX *box, Datum value, Oid basetypid)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   ensure_tnumber_base_type(basetypid);
   if (basetypid == INT4OID)
     box->xmin = box->xmax = (double)(DatumGetInt32(value));
@@ -338,6 +340,8 @@ number_to_box(TBOX *box, Datum value, Oid basetypid)
 void
 int_to_tbox_internal(TBOX *box, int i)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   box->xmin = box->xmax = (double) i;
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
@@ -362,6 +366,8 @@ int_to_tbox(PG_FUNCTION_ARGS)
 void
 float_to_tbox_internal(TBOX *box, double d)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   box->xmin = box->xmax = d;
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
@@ -401,6 +407,8 @@ void
 range_to_tbox_internal(TBOX *box, const RangeType *range)
 {
   ensure_tnumber_range_type(range->rangetypid);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   range_bounds(range, &box->xmin, &box->xmax);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);

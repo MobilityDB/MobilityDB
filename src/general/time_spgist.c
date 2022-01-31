@@ -373,7 +373,6 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
 static bool
 time_spgist_get_period(Period *result, ScanKeyData *scankey)
 {
-  memset(result, 0, sizeof(Period));
   if (scankey->sk_subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);

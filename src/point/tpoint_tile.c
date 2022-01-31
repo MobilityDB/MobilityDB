@@ -106,8 +106,8 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
 /**
  * Set the value of the bit in the bit matrix
  */
-void
-bitmatrix_set(BitMatrix *bm, int *coords, bool value)
+static void
+bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
 {
   int i, j, pos = 0;
   for (i = 0; i < bm->numdims; i++)
@@ -336,7 +336,7 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
   {
     /* Set the current Bresenham diagonal tile */
     // coord_print(coords, numdims);
-    bitmatrix_set(bm, coords, true);
+    bitmatrix_set_cell(bm, coords, true);
     /* Exit the loop when finished */
     if (coords[axis] == coords2[axis])
       break;
@@ -353,14 +353,14 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
       if (neighbors[i] >= min)
       {
         // coord_print(neighbors, numdims);
-        bitmatrix_set(bm, coords, true);
+        bitmatrix_set_cell(bm, coords, true);
       }
       /* Top of the Bresenham diagonal cell for 2D */
       neighbors[i] += 2;
       if (neighbors[i] <= max)
       {
         // coord_print(neighbors, numdims);
-        bitmatrix_set(bm, coords, true);
+        bitmatrix_set_cell(bm, coords, true);
       }
     }
     // printf("-------\n");
@@ -833,7 +833,7 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
   memset(coords, 0, sizeof(coords));
   tpointinst_get_coords(coords, inst, hasz, hast, state);
   /* Set the corresponding bit in the matix */
-  bitmatrix_set(bm, coords, true);
+  bitmatrix_set_cell(bm, coords, true);
   return;
 }
 
@@ -857,7 +857,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
-    bitmatrix_set(bm, coords, true);
+    bitmatrix_set_cell(bm, coords, true);
   }
   return;
 }

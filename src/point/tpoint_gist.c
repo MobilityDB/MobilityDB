@@ -276,7 +276,6 @@ tpoint_index_recheck(StrategyNumber strategy)
 static bool
 tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
 {
-  memset(result, 0, sizeof(STBOX));
   if (tgeo_base_type(subtype))
   {
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -500,7 +499,6 @@ static double
 stbox_penalty(const STBOX *original, const STBOX *new)
 {
   STBOX unionbox;
-
   memset(&unionbox, 0, sizeof(STBOX));
   stbox_union_rt(&unionbox, original, new);
   return stbox_size(&unionbox) - stbox_size(original);

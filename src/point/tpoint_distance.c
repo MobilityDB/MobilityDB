@@ -960,13 +960,11 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   Datum geo;
   if (hasz || geodetic)
   {
-    memset(&box3d, 0, sizeof(BOX3D));
     stbox_set_box3d(box, &box3d);
     geo = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d));
   }
   else
   {
-    memset(&gbox, 0, sizeof(GBOX));
     stbox_set_gbox(box, &gbox);
     geo = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
   }
@@ -1041,8 +1039,6 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   datum_func2 func = get_distance_fn(box1->flags);
   /* Convert the boxes to geometries */
   GBOX gbox1, gbox2;
-  memset(&gbox1, 0, sizeof(GBOX));
-  memset(&gbox2, 0, sizeof(GBOX));
   stbox_set_gbox(box1, &gbox1);
   Datum geo1 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox1)) :
     call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
@@ -1108,7 +1104,6 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   datum_func2 func = get_distance_fn(box->flags);
   /* Convert the stbox to a geometry */
   GBOX gbox;
-  memset(&gbox, 0, sizeof(GBOX));
   stbox_set_gbox(box, &gbox);
   Datum geo = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox)) :
     call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
