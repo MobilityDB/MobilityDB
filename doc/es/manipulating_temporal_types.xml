@@ -1105,7 +1105,7 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="restriction_functions">
 		<title>Funciones de restricción</title>
 
 		<sect2>
@@ -1541,7 +1541,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
+		<sect2 id="ever_always_comparison">
 			<title>Operadores de comparación alguna vez y siempre</title>
 			<para>Una posible generalización de los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, etc.) a tipos temporales consiste en determinar si la comparación es alguna vez o siempre verdadera. En este caso, el resultado es un valor booleano. MobilityDB proporciona operadores para probar si la comparación de un valor temporal y un valor del tipo base es alguna vez o siempre verdadera. Estos operadores se indican anteponiendo los operadores de comparación tradicionales con, respectivamente, <varname>?</varname> (alguna vez) y <varname>%</varname> (siempre). Algunos ejemplos son <varname>?=</varname>, <varname>%&lt;&gt;</varname> o <varname>?&lt;=</varname>. La igualdad y la no igualdad alguna vez/siempre  están disponibles para todos los tipos temporales, mientras que las desigualdades alguna vez/siempre sólo están disponibles para los tipos temporales cuyo tipo base tiene un orden total definido, es decir, <varname>tint</varname>, <varname>tfloat</varname> o <varname>ttext</varname>. Las comparaciones alguna vez y siempre son operadores inversos: por ejemplo,<varname>?=</varname> es el inverso de <varname>%&lt;&gt;</varname> y <varname>?&gt;</varname> es el inverso de <varname>%&lt;=</varname>.</para>
 
@@ -2336,7 +2336,7 @@ GROUP BY hour ORDER BY hour;
                [6.0625@2012-01-02 03:00:00+01, 6.25@2012-01-02 04:00:00+01)}
    ...
 SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
-  asText(setPrecision(merge((ts).temp), 2)) as temp
+  asText(round(merge((ts).temp), 2)) as temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-14)',
   '1 hour') AS ts) t
 GROUP BY dow, dow_no ORDER BY dow_no;

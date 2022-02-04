@@ -1105,7 +1105,7 @@ SELECT asText(shiftTscale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-0
 		</itemizedlist>
 	</sect1>
 
-	<sect1>
+	<sect1 id="restriction_functions">
 		<title>Restriction Functions</title>
 
 		<sect2>
@@ -1541,7 +1541,7 @@ SELECT tint '[1@2012-01-01, 1@2012-01-04)' &gt;= tint '[2@2012-01-03, 2@2012-01-
 			</itemizedlist>
 		</sect2>
 
-		<sect2>
+		<sect2 id="ever_always_comparison">
 			<title>Ever and Always Comparison Operators</title>
 			<para>A possible generalization of the traditional comparison operators (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>,  etc.) to temporal types consists in determining whether the comparison is ever or always true. In this case, the result is a Boolean value. MobilityDB provides operators to test whether the comparison of a temporal value and a value of the base type is ever or always true. These operators are denoted by prefixing the traditional comparison operators with, respectively, <varname>?</varname> (ever) and <varname>%</varname> (always). Some examples are <varname>?=</varname>, <varname>%&lt;&gt;</varname>, or <varname>?&lt;=</varname>. Ever/always equality and non-equality are available for all temporal types, while ever/always inequalities are only available for temporal types whose base type has a total order defined, that is, <varname>tint</varname>, <varname>tfloat</varname>, or <varname>ttext</varname>. The ever and always comparisons are inverse operators: for example, <varname>?=</varname> is the inverse of <varname>%&lt;&gt;</varname>, and <varname>?&gt;</varname> is the inverse of <varname>%&lt;=</varname>.</para>
 			<itemizedlist>
@@ -2334,7 +2334,7 @@ GROUP BY hour ORDER BY hour;
                [6.0625@2012-01-02 03:00:00+01, 6.25@2012-01-02 04:00:00+01)}
    ...
 SELECT EXTRACT(DOW FROM (ts).time) as dow_no, TO_CHAR((ts).time, 'Dy') as dow,
-  asText(setPrecision(merge((ts).temp), 2)) as temp
+  asText(round(merge((ts).temp), 2)) as temp
 FROM (SELECT timeSplit(tgeompoint '[Point(1 1)@2012-01-01, Point(10 10)@2012-01-14)',
   '1 hour') AS ts) t
 GROUP BY dow, dow_no ORDER BY dow_no;

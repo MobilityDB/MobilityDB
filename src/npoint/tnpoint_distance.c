@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -346,11 +345,7 @@ NAD_geo_tnpoint(PG_FUNCTION_ARGS)
   }
 
   Datum traj = tnpoint_geom(temp);
-#if POSTGIS_VERSION_NUMBER < 30000
-  Datum result = call_function2(distance, traj, PointerGetDatum(gs));
-#else
-  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
-#endif
+  Datum result = geom_distance2d(traj, PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -370,11 +365,7 @@ NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_as_geom_internal(np);
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
-#if POSTGIS_VERSION_NUMBER < 30000
-  Datum result = call_function2(distance, traj, PointerGetDatum(gs));
-#else
-  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
-#endif
+  Datum result = geom_distance2d(traj, PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -400,11 +391,7 @@ NAD_tnpoint_geo(PG_FUNCTION_ARGS)
   }
 
   Datum traj = tnpoint_geom(temp);
-#if POSTGIS_VERSION_NUMBER < 30000
-  Datum result = call_function2(distance, traj, PointerGetDatum(gs));
-#else
-  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
-#endif
+  Datum result = geom_distance2d(traj, PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -424,11 +411,7 @@ NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_as_geom_internal(np);
   GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
-#if POSTGIS_VERSION_NUMBER < 30000
-  Datum result = call_function2(distance, traj, PointerGetDatum(gs));
-#else
-  Datum result = call_function2(ST_Distance, traj, PointerGetDatum(gs));
-#endif
+  Datum result = geom_distance2d(traj, PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));

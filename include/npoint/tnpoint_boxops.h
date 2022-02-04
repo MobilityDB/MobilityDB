@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,12 +48,11 @@ extern Datum npoint_timestamp_to_stbox(PG_FUNCTION_ARGS);
 extern Datum npoint_period_to_stbox(PG_FUNCTION_ARGS);
 extern Datum tnpoint_to_stbox(PG_FUNCTION_ARGS);
 
-extern bool npoint_to_stbox_internal(STBOX *box, const npoint *np);
-extern void tnpointinst_make_stbox(STBOX *box, const TInstant *inst);
-extern void tnpointinstarr_disc_to_stbox(STBOX *box, const TInstant **inst, int count);
-extern void tnpointinstarr_step_to_stbox(STBOX *box, const TInstant **inst, int count);
-extern void tnpointinstarr_linear_to_stbox(STBOX *box, const TInstant **inst, int count);
-extern void tnpointseqarr_to_stbox(STBOX *box, const TSequence **seq, int count);
+extern bool npoint_to_stbox_internal(const npoint *np, STBOX *box);
+extern void tnpointinst_make_stbox(const TInstant *inst, STBOX *box);
+extern void tnpointinstarr_step_to_stbox(const TInstant **inst, int count, STBOX *box);
+extern void tnpointinstarr_linear_to_stbox(const TInstant **inst, int count, STBOX *box);
+extern void tnpointseqarr_to_stbox(const TSequence **seq, int count, STBOX *box);
 
 extern Datum overlaps_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);

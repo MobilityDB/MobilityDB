@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -45,17 +44,17 @@ CREATE FUNCTION transform(stbox, integer)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(stbox, integer)
+CREATE FUNCTION round(stbox, integer DEFAULT 0)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'stbox_set_precision'
+  AS 'MODULE_PATHNAME', 'stbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(geometry, integer)
+CREATE FUNCTION round(geometry, integer DEFAULT 0)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'geo_set_precision'
+  AS 'MODULE_PATHNAME', 'geo_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(geography, integer)
+CREATE FUNCTION round(geography, integer DEFAULT 0)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'geo_set_precision'
+  AS 'MODULE_PATHNAME', 'geo_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -134,13 +133,13 @@ CREATE FUNCTION getZ(tgeogpoint)
   AS 'MODULE_PATHNAME', 'tpoint_get_z'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setPrecision(tgeompoint, int)
+CREATE FUNCTION round(tgeompoint, int DEFAULT 0)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tpoint_set_precision'
+  AS 'MODULE_PATHNAME', 'tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(tgeogpoint, int)
+CREATE FUNCTION round(tgeogpoint, int DEFAULT 0)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'tpoint_set_precision'
+  AS 'MODULE_PATHNAME', 'tpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trajectory(tgeompoint)

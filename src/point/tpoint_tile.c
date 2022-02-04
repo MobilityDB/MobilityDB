@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -107,8 +106,8 @@ bitmatrix_get(const BitMatrix *bm, int *coords)
 /**
  * Set the value of the bit in the bit matrix
  */
-void
-bitmatrix_set(BitMatrix *bm, int *coords, bool value)
+static void
+bitmatrix_set_cell(BitMatrix *bm, int *coords, bool value)
 {
   int i, j, pos = 0;
   for (i = 0; i < bm->numdims; i++)
@@ -337,7 +336,7 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
   {
     /* Set the current Bresenham diagonal tile */
     // coord_print(coords, numdims);
-    bitmatrix_set(bm, coords, true);
+    bitmatrix_set_cell(bm, coords, true);
     /* Exit the loop when finished */
     if (coords[axis] == coords2[axis])
       break;
@@ -354,14 +353,14 @@ bresenham_bm(BitMatrix *bm, int *coords1, int *coords2, int numdims)
       if (neighbors[i] >= min)
       {
         // coord_print(neighbors, numdims);
-        bitmatrix_set(bm, coords, true);
+        bitmatrix_set_cell(bm, coords, true);
       }
       /* Top of the Bresenham diagonal cell for 2D */
       neighbors[i] += 2;
       if (neighbors[i] <= max)
       {
         // coord_print(neighbors, numdims);
-        bitmatrix_set(bm, coords, true);
+        bitmatrix_set_cell(bm, coords, true);
       }
     }
     // printf("-------\n");
@@ -420,8 +419,8 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
     tmin = t;
     tmax = tmin + tunits;
   }
-  return stbox_set(result, true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax);
+  return stbox_set(true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, tmin, tmax, result);
 }
 
 /**
@@ -633,11 +632,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -734,11 +729,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (gs_srid != SRID_UNKNOWN)
     ensure_same_srid(srid, gs_srid);
   POINT3DZ pt, ptorig;
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(point->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(point->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(point));
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
@@ -810,7 +801,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
-  datum_get_point4d(&p, tinstant_value(inst));
+  datum_point4d(tinstant_value(inst), &p);
   double x = float_bucket_internal(p.x, state->size, state->box.xmin);
   double y = float_bucket_internal(p.y, state->size, state->box.ymin);
   double z = 0;
@@ -842,7 +833,7 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
   memset(coords, 0, sizeof(coords));
   tpointinst_get_coords(coords, inst, hasz, hast, state);
   /* Set the corresponding bit in the matix */
-  bitmatrix_set(bm, coords, true);
+  bitmatrix_set_cell(bm, coords, true);
   return;
 }
 
@@ -866,7 +857,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     tpointinst_get_coords(coords, inst, hasz, hast, state);
-    bitmatrix_set(bm, coords, true);
+    bitmatrix_set_cell(bm, coords, true);
   }
   return;
 }
@@ -982,14 +973,10 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
-#if POSTGIS_VERSION_NUMBER < 30000
-    ensure_same_geodetic(temp->flags, sorigin->flags);
-#else
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-#endif
+    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
-    temporal_bbox(&bounds, temp);
+    temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
@@ -997,11 +984,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Disallow T dimension for generating a spatial only grid */
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {
@@ -1129,24 +1112,16 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);
-#if POSTGIS_VERSION_NUMBER < 30000
-    ensure_same_geodetic(temp->flags, sorigin->flags);
-#else
-    ensure_same_geodetic(temp->flags, sorigin->gflags);
-#endif
+    ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
-    temporal_bbox(&bounds, temp);
+    temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
-#if POSTGIS_VERSION_NUMBER < 30000
-    if (FLAGS_GET_Z(sorigin->flags))
-#else
-    if (FLAGS_GET_Z(sorigin->gflags))
-#endif
+    if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
       pt = datum_get_point3dz(PointerGetDatum(sorigin));
     else
     {

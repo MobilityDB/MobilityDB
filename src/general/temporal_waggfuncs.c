@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -419,7 +418,7 @@ tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
   else /* inst->basetypid == FLOAT8OID */
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
-  double2_set(&dvalue, value, 1);
+  double2_set(value, 1, &dvalue);
   TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
     timestamptz_pl_interval, TimestampTzGetDatum(inst->t),
     PointerGetDatum(interval)));
@@ -489,7 +488,7 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq,
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
-    double2_set(&dvalue, value, 1);
+    double2_set(value, 1, &dvalue);
     TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
       timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
       PointerGetDatum(interval)));

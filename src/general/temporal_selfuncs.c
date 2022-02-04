@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -47,6 +46,7 @@
 
 #include "general/temporal_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/amapi.h>
 #include <access/heapam.h>
@@ -72,6 +72,7 @@
 #include "general/temporal_boxops.h"
 #include "general/timetypes.h"
 
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -91,7 +92,7 @@
  * @note Function copied from selfuncs.c since it is not exported.
  */
 double
-var_eq_const(VariableStatData *vardata, Oid operator,
+var_eq_const(VariableStatData *vardata, Oid oper,
        Datum constval, bool constisnull,
        bool varonleft, bool negate)
 {
@@ -132,7 +133,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
   }
   else if (HeapTupleIsValid(vardata->statsTuple) &&
        statistic_proc_security_check(vardata,
-                       (opfuncoid = get_opcode(operator))))
+                       (opfuncoid = get_opcode(oper))))
   {
     AttStatsSlot sslot;
     bool    match = false;
@@ -147,7 +148,7 @@ var_eq_const(VariableStatData *vardata, Oid operator,
      */
     if (get_attstatsslot(&sslot, vardata->statsTuple,
                // EZ replaced InvalidOid by operator
-               STATISTIC_KIND_MCV, operator,
+               STATISTIC_KIND_MCV, oper,
                ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
     {
       FmgrInfo  eqproc;
@@ -262,7 +263,7 @@ temporal_const_to_period(Node *other, Period *period)
   if (consttype == type_oid(T_PERIOD))
     memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
   else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-    temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
+    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), period);
   else
     return false;
   return true;
@@ -272,19 +273,19 @@ temporal_const_to_period(Node *other, Period *period)
  * Returns the enum value associated to the operator
  */
 static bool
-temporal_cachedop(Oid operator, CachedOp *cachedOp)
+temporal_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-    if (operator == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-      operator == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+    if (oper == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -298,9 +299,9 @@ temporal_cachedop(Oid operator, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_temporal_selectivity(CachedOp operator)
+default_temp_sel(CachedOp oper)
 {
-  switch (operator)
+  switch (oper)
   {
     case OVERLAPS_OP:
       return 0.005;
@@ -339,7 +340,7 @@ default_temporal_selectivity(CachedOp operator)
  * respectively.
  */
 Selectivity
-temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
+temporal_sel_period(PlannerInfo *root, VariableStatData *vardata,
   Period *period, CachedOp cachedOp)
 {
   double selec;
@@ -350,12 +351,12 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
    */
   if (cachedOp == SAME_OP)
   {
-    Oid operator = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+    Oid oper = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, operator, PeriodGetDatum(period),
+    selec = var_eq_const(vardata, oper, PeriodGetDatum(period),
       false, false, false);
 #else
-    selec = var_eq_const(vardata, operator, DEFAULT_COLLATION_OID,
+    selec = var_eq_const(vardata, oper, DEFAULT_COLLATION_OID,
       PeriodGetDatum(period), false, false, false);
 #endif
   }
@@ -371,29 +372,24 @@ temporal_sel_internal(PlannerInfo *root, VariableStatData *vardata,
     cachedOp == LT_OP || cachedOp == LE_OP ||
     cachedOp == GT_OP || cachedOp == GE_OP)
   {
-    selec = calc_period_hist_selectivity(vardata, period, cachedOp);
+    selec = period_hist_sel(vardata, period, cachedOp);
   }
   else /* Unknown operator */
   {
-    selec = default_temporal_selectivity(cachedOp);
+    selec = default_temp_sel(cachedOp);
   }
   return selec;
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_sel);
 /**
- * Estimate the selectivity value of the operators for temporal types
- * whose bounding box is a period, that is, tbool and ttext.
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a period, that is, tbool and ttext (internal function)
  */
-PGDLLEXPORT Datum
-temporal_sel(PG_FUNCTION_ARGS)
+float8
+temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
   VariableStatData vardata;
   Node *other;
   bool varonleft;
@@ -404,10 +400,10 @@ temporal_sel(PG_FUNCTION_ARGS)
   /*
    * Get enumeration value associated to the operator
    */
-  bool found = temporal_cachedop(operator, &cachedOp);
+  bool found = temporal_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+    return DEFAULT_TEMP_SEL;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -415,7 +411,7 @@ temporal_sel(PG_FUNCTION_ARGS)
    */
   if (!get_restriction_variable(root, args, varRelid,
     &vardata, &other, &varonleft))
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    return default_temp_sel(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -423,7 +419,7 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    return default_temp_sel(cachedOp);
   }
 
   /*
@@ -433,7 +429,7 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (((Const *) other)->constisnull)
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(0.0);
+    return 0.0;
   }
 
   /*
@@ -443,12 +439,12 @@ temporal_sel(PG_FUNCTION_ARGS)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
+    oper = get_commutator(oper);
+    if (!oper)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+      return default_temp_sel(cachedOp);
     }
   }
 
@@ -458,14 +454,40 @@ temporal_sel(PG_FUNCTION_ARGS)
   found = temporal_const_to_period(other, &constperiod);
   /* In the case of unknown constant */
   if (!found)
-    PG_RETURN_FLOAT8(default_temporal_selectivity(cachedOp));
+    return default_temp_sel(cachedOp);
 
   /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_internal(root, &vardata, &constperiod, cachedOp);
+  selec = temporal_sel_period(root, &vardata, &constperiod, cachedOp);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
-  PG_RETURN_FLOAT8(selec);
+  return selec;
+}
+
+PG_FUNCTION_INFO_V1(temporal_sel);
+/**
+ * Estimate the selectivity value of the operators for temporal types whose
+ * bounding box is a period, that is, tbool and ttext.
+ */
+PGDLLEXPORT Datum
+temporal_sel(PG_FUNCTION_ARGS)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  PG_RETURN_FLOAT8(temporal_sel_internal(root, oper, args, varRelid));
+}
+
+/*****************************************************************************
+ * Estimate the join selectivity
+ *****************************************************************************/
+
+double
+temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype)
+{
+  return DEFAULT_TEMP_JOINSEL;
 }
 
 PG_FUNCTION_INFO_V1(temporal_joinsel);
@@ -476,7 +498,20 @@ PG_FUNCTION_INFO_V1(temporal_joinsel);
 PGDLLEXPORT Datum
 temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  PG_RETURN_FLOAT8(temporal_joinsel_internal(root, oper, args, jointype));
 }
 
 /*****************************************************************************/

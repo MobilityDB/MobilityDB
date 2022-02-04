@@ -1,29 +1,28 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -32,7 +31,7 @@
  * @file time_spgist.c
  * Quad-tree SP-GiST index for time types.
  *
- * The functions in this file are based on those in the file 
+ * The functions in this file are based on those in the file
  * `rangetypes_spgist.c`.
  */
 
@@ -56,12 +55,12 @@
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spperiod_gist_config);
+PG_FUNCTION_INFO_V1(period_spgist_config);
 /**
  * SP-GiST config function for time types
  */
 PGDLLEXPORT Datum
-spperiod_gist_config(PG_FUNCTION_ARGS)
+period_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -120,12 +119,12 @@ getQuadrant(const Period *centroid, const Period *tst)
   }
 }
 
-PG_FUNCTION_INFO_V1(spperiod_gist_choose);
+PG_FUNCTION_INFO_V1(period_spgist_choose);
 /**
  * SP-GiST choose function for time types
  */
 PGDLLEXPORT Datum
-spperiod_gist_choose(PG_FUNCTION_ARGS)
+period_spgist_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -160,7 +159,7 @@ spperiod_gist_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spperiod_gist_picksplit);
+PG_FUNCTION_INFO_V1(period_spgist_picksplit);
 /**
  * SP-GiST pick-split function for time types
  *
@@ -168,7 +167,7 @@ PG_FUNCTION_INFO_V1(spperiod_gist_picksplit);
  * point as the median of the coordinates of the time types.
  */
 PGDLLEXPORT Datum
-spperiod_gist_picksplit(PG_FUNCTION_ARGS)
+period_spgist_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -349,8 +348,7 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
 {
   if (prev)
   {
-    int prevcmp;
-    int cmp;
+    int prevcmp, cmp;
 
     /*
      * Which direction were we supposed to traverse at previous level,
@@ -369,12 +367,48 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
   return adjacent_cmp_bounds(arg, centroid);
 }
 
-PG_FUNCTION_INFO_V1(spperiod_gist_inner_consistent);
+/**
+ * Transform a query argument into a period.
+ */
+static bool
+time_spgist_get_period(Period *result, ScanKeyData *scankey)
+{
+  if (scankey->sk_subtype == TIMESTAMPTZOID)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    period_set(t, t, true, true, result);
+  }
+  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
+    memcpy(result, timestampset_bbox_ptr(ts), sizeof(Period));
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  {
+    Period *p = DatumGetPeriod(scankey->sk_argument);
+    memcpy(result, p, sizeof(Period));
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
+    memcpy(result, periodset_bbox_ptr(ps), sizeof(Period));
+  }
+  /* For temporal types whose bounding box is a period */
+  else if (temporal_type(scankey->sk_subtype))
+  {
+    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+  }
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(period_spgist_inner_consistent);
 /**
  * SP-GiST inner consistent function function for time types
  */
 PGDLLEXPORT Datum
-spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
+period_spgist_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -416,13 +450,9 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Oid subtype = in->scankeys[i].sk_subtype;
-    PeriodBound  lower, upper;
-    Period period;
-    const Period *query = NULL;
+    Period query;
     Period *prevCentroid = NULL;
-    PeriodBound prevLower, prevUpper;
-
+    PeriodBound lower, upper, prevLower, prevUpper;
     /* Restrictions on period bounds according to scan strategy */
     PeriodBound *minLower = NULL, *maxLower = NULL,
       *minUpper = NULL, *maxUpper = NULL;
@@ -431,34 +461,9 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
     bool inclusive = true;
     int cmp, which1, which2;
 
-    /*
-     * Cast the query to Period for ease of the following operations.
-     */
-    if (subtype == TIMESTAMPTZOID)
-    {
-      TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);
-      period_set(&period, t, t, true, true);
-      query = &period;
-    }
-    else if (subtype == type_oid(T_TIMESTAMPSET))
-      query = timestampset_bbox_ptr(
-        DatumGetTimestampSet(in->scankeys[i].sk_argument));
-    else if (subtype == type_oid(T_PERIOD))
-      query = DatumGetPeriod(in->scankeys[i].sk_argument);
-    else if (subtype == type_oid(T_PERIODSET))
-      query = periodset_bbox_ptr(
-        DatumGetPeriodSet(in->scankeys[i].sk_argument));
-    /* For temporal types whose bounding box is a period */
-    else if (temporal_type(subtype))
-    {
-      temporal_bbox(&period,
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-      query = &period;
-    }
-    else
-      elog(ERROR, "Unrecognized strategy number: %d", strategy);
-
-    period_deserialize(query, &lower, &upper);
+    /* Cast the query to Period for ease of the following operations */
+    time_spgist_get_period(&query, &in->scankeys[i]);
+    period_deserialize(&query, &lower, &upper);
 
     /*
      * Most strategies are handled by forming a bounding box from the
@@ -553,7 +558,7 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
          * Equal period can be only in the same quadrant where
          * argument would be placed to.
          */
-        which &= (1 << getQuadrant(centroid, query));
+        which &= (1 << getQuadrant(centroid, &query));
         break;
 
       case RTBeforeStrategyNumber:
@@ -697,18 +702,17 @@ spperiod_gist_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(spperiod_gist_leaf_consistent);
+PG_FUNCTION_INFO_V1(period_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for time types
  */
 PGDLLEXPORT Datum
-spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
+period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   Period *key = DatumGetPeriod(in->leafDatum);
   bool res = true;
-  int i;
 
   /* Initialization so that all the tests are exact for time types. */
   out->recheck = false;
@@ -717,43 +721,21 @@ spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
   out->leafValue = in->leafDatum;
 
   /* Perform the required comparison(s) */
-  for (i = 0; i < in->nkeys; i++)
+  for (int i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Period period;
-    const Period *query;
-    Oid subtype = in->scankeys[i].sk_subtype;
+    Period query;
 
     /* Update the recheck flag according to the strategy */
     out->recheck |= period_index_recheck(strategy);
 
-    if (in->scankeys[i].sk_subtype == TIMESTAMPTZOID)
-    {
-      TimestampTz t = DatumGetTimestampTz(in->scankeys[i].sk_argument);
-      period_set(&period, t, t, true, true);
-      query = &period;
-    }
-    else if (in->scankeys[i].sk_subtype == type_oid(T_TIMESTAMPSET))
-      query = timestampset_bbox_ptr(
-        DatumGetTimestampSet(in->scankeys[i].sk_argument));
-    else if (in->scankeys[i].sk_subtype == type_oid(T_PERIOD))
-      query = DatumGetPeriod(in->scankeys[i].sk_argument);
-    else if (in->scankeys[i].sk_subtype ==  type_oid(T_PERIODSET))
-      query = periodset_bbox_ptr(
-        DatumGetPeriodSet(in->scankeys[i].sk_argument));
-    /* For temporal types whose bounding box is a period */
-    else if (temporal_type(subtype))
-    {
+    /* Cast the query to Period for ease of the following operations */
+    time_spgist_get_period(&query, &in->scankeys[i]);
+    if (temporal_type(in->scankeys[i].sk_subtype))
       /* All tests are lossy for temporal types */
       out->recheck = true;
-      temporal_bbox(&period,
-        DatumGetTemporal(in->scankeys[i].sk_argument));
-      query = &period;
-    }
-    else
-      elog(ERROR, "Unrecognized strategy number: %d", strategy);
-
-    res = period_index_consistent_leaf(key, query, strategy);
+    
+    res = period_index_consistent_leaf(key, &query, strategy);
 
     /* If any check is failed, we have found our answer. */
     if (!res)
@@ -767,12 +749,12 @@ spperiod_gist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sptimestampset_gist_compress);
+PG_FUNCTION_INFO_V1(timestampset_spgist_compress);
 /**
  * SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
-sptimestampset_gist_compress(PG_FUNCTION_ARGS)
+timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   Period *period = palloc0(sizeof(Period));
@@ -781,12 +763,12 @@ sptimestampset_gist_compress(PG_FUNCTION_ARGS)
   PG_RETURN_PERIOD(period);
 }
 
-PG_FUNCTION_INFO_V1(spperiodset_gist_compress);
+PG_FUNCTION_INFO_V1(periodset_spgist_compress);
 /**
  * SP-GiST compress function for period sets
  */
 PGDLLEXPORT Datum
-spperiodset_gist_compress(PG_FUNCTION_ARGS)
+periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
   Period *period = palloc0(sizeof(Period));
@@ -794,6 +776,6 @@ spperiodset_gist_compress(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_PERIOD(period);
 }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */
 
 /*****************************************************************************/

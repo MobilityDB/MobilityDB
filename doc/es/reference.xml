@@ -139,7 +139,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
+					<para><link linkend="floatrange_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -378,7 +378,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_setPrecision"><varname>setPrecision</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
+					<para><link linkend="box_round"><varname>round</varname></link>: Redondear el valor o las coordenadas del cuadro delimitador a un número de decimales</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1277,7 +1277,7 @@
 				<title>Funciones de manipulación</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
+						<para><link linkend="tpoint_round"><varname>round</varname></link>: Redondear los valores de las coordenadas a un número de decimales</para>
 					</listitem>
 
 					<listitem>
@@ -1564,7 +1564,7 @@
 				<title>Funciones de modificación</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
+						<para><link linkend="npoint_round"><varname>round</varname></link>: Redondear la(s) posición(es) del punto de red or el segmento de red en el número de posiciones decimales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1686,7 +1686,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_setPrecision"><varname>setPrecision</varname></link>: Establecer la precisión de la fracción del punto de red temporal en el número de posiciones decimales</para>
+						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Redondear la fracción del punto de red temporal en el número de posiciones decimales</para>
 					</listitem>
 
 					<listitem>

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -66,37 +65,63 @@ CREATE OPERATOR #= (
   COMMUTATOR = #=
 );
 
+CREATE FUNCTION temporal_teq(npoint, tnpoint, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_teq(tnpoint, npoint, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_teq(tnpoint, tnpoint, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Temporal not equal
  *****************************************************************************/
 
-CREATE FUNCTION temporal_ne(npoint, tnpoint)
+CREATE FUNCTION temporal_tne(npoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ne(tnpoint, npoint)
+CREATE FUNCTION temporal_tne(tnpoint, npoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_ne(tnpoint, tnpoint)
+CREATE FUNCTION temporal_tne(tnpoint, tnpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_ne,
+  PROCEDURE = temporal_tne,
   LEFTARG = npoint, RIGHTARG = tnpoint,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_ne,
+  PROCEDURE = temporal_tne,
   LEFTARG = tnpoint, RIGHTARG = npoint,
   COMMUTATOR = #<>
 );
 CREATE OPERATOR #<> (
-  PROCEDURE = temporal_ne,
+  PROCEDURE = temporal_tne,
   LEFTARG = tnpoint, RIGHTARG = tnpoint,
   COMMUTATOR = #<>
 );
+
+CREATE FUNCTION temporal_tne(npoint, tnpoint, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_tne(tnpoint, npoint, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_tne(tnpoint, tnpoint, atvalue bool)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

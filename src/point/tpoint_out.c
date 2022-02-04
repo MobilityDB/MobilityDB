@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -749,8 +748,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
       srs = getSRSbySRID(fcinfo, srid, false);
     if (!srs)
     {
-      elog(ERROR, "SRID %i unknown in spatial_ref_sys table",
-          srid);
+      elog(ERROR, "SRID %i unknown in spatial_ref_sys table", srid);
       PG_RETURN_NULL();
     }
   }
@@ -759,10 +757,9 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
 
   /* Get bounding box if needed */
   STBOX *bbox = NULL, tmp;
-  memset(&tmp, 0, sizeof(STBOX));
   if (has_bbox)
   {
-    temporal_bbox(&tmp, temp);
+    temporal_bbox(temp, &tmp);
     bbox = &tmp;
   }
 

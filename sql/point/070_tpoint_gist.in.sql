@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -156,7 +155,7 @@ CREATE FUNCTION tpoint_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'tpoint_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_tgeompoint_ops
+CREATE OPERATOR CLASS tgeompoint_gist_ops
   DEFAULT FOR TYPE tgeompoint USING gist AS
   STORAGE stbox,
   -- strictly left
@@ -168,6 +167,10 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
   OPERATOR  2    &< (tgeompoint, stbox),
   OPERATOR  2    &< (tgeompoint, tgeompoint),
   -- overlaps
+  OPERATOR  3    && (tgeompoint, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tgeompoint, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tgeompoint, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tgeompoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeompoint, geometry),
   OPERATOR  3    && (tgeompoint, stbox),
   OPERATOR  3    && (tgeompoint, tgeompoint),
@@ -255,10 +258,14 @@ CREATE OPERATOR CLASS gist_tgeompoint_ops
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
   FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
 
-CREATE OPERATOR CLASS gist_tgeogpoint_ops
+CREATE OPERATOR CLASS tgeogpoint_gist_ops
   DEFAULT FOR TYPE tgeogpoint USING gist AS
   STORAGE stbox,
   -- overlaps
+  OPERATOR  3    && (tgeogpoint, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tgeogpoint, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tgeogpoint, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tgeogpoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeogpoint, geography),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),

@@ -1,0 +1,142 @@
+SELECT COUNT(*) FROM tbl_intrange t1, tbl_int t2 WHERE t1.i << t2.i;
+ count 
+-------
+  4366
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intrange t2 WHERE t1.i << t2.i;
+ count 
+-------
+  4928
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intrange t1, tbl_int t2 WHERE t1.i >> t2.i;
+ count 
+-------
+  4928
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intrange t2 WHERE t1.i >> t2.i;
+ count 
+-------
+  4366
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intrange t1, tbl_int t2 WHERE t1.i &< t2.i;
+ count 
+-------
+  4366
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intrange t2 WHERE t1.i &< t2.i;
+ count 
+-------
+  5526
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intrange t1, tbl_int t2 WHERE t1.i &> t2.i;
+ count 
+-------
+  5048
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intrange t2 WHERE t1.i &> t2.i;
+ count 
+-------
+  4873
+(1 row)
+
+SELECT COUNT(*) FROM tbl_intrange t1, tbl_int t2 WHERE t1.i -|- t2.i;
+ count 
+-------
+   167
+(1 row)
+
+SELECT COUNT(*) FROM tbl_int t1, tbl_intrange t2 WHERE t1.i -|- t2.i;
+ count 
+-------
+   167
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatrange t1, tbl_float t2 WHERE t1.f << t2.f;
+ count 
+-------
+  4089
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatrange t2 WHERE t1.f << t2.f;
+ count 
+-------
+  5205
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatrange t1, tbl_float t2 WHERE t1.f >> t2.f;
+ count 
+-------
+  5205
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatrange t2 WHERE t1.f >> t2.f;
+ count 
+-------
+  4089
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatrange t1, tbl_float t2 WHERE t1.f &< t2.f;
+ count 
+-------
+  4089
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatrange t2 WHERE t1.f &< t2.f;
+ count 
+-------
+  5712
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatrange t1, tbl_float t2 WHERE t1.f &> t2.f;
+ count 
+-------
+  5205
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatrange t2 WHERE t1.f &> t2.f;
+ count 
+-------
+  4596
+(1 row)
+
+SELECT COUNT(*) FROM tbl_floatrange t1, tbl_float t2 WHERE t1.f -|- t2.f;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_float t1, tbl_floatrange t2 WHERE t1.f -|- t2.f;
+ count 
+-------
+     0
+(1 row)
+
+set parallel_setup_cost=0;
+SET
+set parallel_tuple_cost=0;
+SET
+set min_parallel_table_scan_size=0;
+SET
+set max_parallel_workers_per_gather=2;
+SET
+SELECT round(extent(temp::floatrange),6) FROM tbl_tfloat_big;
+         round         
+-----------------------
+ [1.004155,100.999349]
+(1 row)
+
+reset parallel_setup_cost;
+RESET
+reset parallel_tuple_cost;
+RESET
+reset min_parallel_table_scan_size;
+RESET
+reset max_parallel_workers_per_gather;
+RESET

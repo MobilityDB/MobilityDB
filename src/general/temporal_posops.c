@@ -1,29 +1,28 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -32,7 +31,7 @@
  * @file temporal_posops.c
  * Relative position operators for temporal types.
  *
- * The following operators are defined: 
+ * The following operators are defined:
  * - `left`, `overleft`, `right`, `overright` for the value dimension
  * - `before`, `overbefore`, `after`, `overafter`for the time dimension
  */
@@ -46,7 +45,87 @@
 #include "general/temporal_boxops.h"
 
 /*****************************************************************************/
-/* Period op Temporal */
+/* <Time> op Temporal */
+
+PG_FUNCTION_INFO_V1(before_timestamp_temporal);
+/**
+ * Returns true if the period value is strictly before the temporal value
+ */
+PGDLLEXPORT Datum
+before_timestamp_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestamp_temporal(fcinfo, &before_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_timestamp_temporal);
+/**
+ * Returns true if the period value is not after the temporal value
+ */
+PGDLLEXPORT Datum
+overbefore_timestamp_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestamp_temporal(fcinfo, &overbefore_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(after_timestamp_temporal);
+/**
+ * Returns true if the period value is strictly after the temporal value
+ */
+PGDLLEXPORT Datum
+after_timestamp_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestamp_temporal(fcinfo, &after_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overafter_timestamp_temporal);
+/**
+ * Returns true if the period value is not before the temporal value
+ */
+PGDLLEXPORT Datum
+overafter_timestamp_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestamp_temporal(fcinfo, &overafter_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(before_timestampset_temporal);
+/**
+ * Returns true if the period value is strictly before the temporal value
+ */
+PGDLLEXPORT Datum
+before_timestampset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestampset_temporal(fcinfo, &before_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_timestampset_temporal);
+/**
+ * Returns true if the period value is not after the temporal value
+ */
+PGDLLEXPORT Datum
+overbefore_timestampset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestampset_temporal(fcinfo, &overbefore_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(after_timestampset_temporal);
+/**
+ * Returns true if the period value is strictly after the temporal value
+ */
+PGDLLEXPORT Datum
+after_timestampset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestampset_temporal(fcinfo, &after_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overafter_timestampset_temporal);
+/**
+ * Returns true if the period value is not before the temporal value
+ */
+PGDLLEXPORT Datum
+overafter_timestampset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestampset_temporal(fcinfo, &overafter_period_period_internal);
+}
 
 PG_FUNCTION_INFO_V1(before_period_temporal);
 /**
@@ -86,6 +165,132 @@ PGDLLEXPORT Datum
 overafter_period_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_period_temporal(fcinfo, &overafter_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(before_periodset_temporal);
+/**
+ * Returns true if the period value is strictly before the temporal value
+ */
+PGDLLEXPORT Datum
+before_periodset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_periodset_temporal(fcinfo, &before_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_periodset_temporal);
+/**
+ * Returns true if the period value is not after the temporal value
+ */
+PGDLLEXPORT Datum
+overbefore_periodset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_periodset_temporal(fcinfo, &overbefore_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(after_periodset_temporal);
+/**
+ * Returns true if the period value is strictly after the temporal value
+ */
+PGDLLEXPORT Datum
+after_periodset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_periodset_temporal(fcinfo, &after_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overafter_periodset_temporal);
+/**
+ * Returns true if the period value is not before the temporal value
+ */
+PGDLLEXPORT Datum
+overafter_periodset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_periodset_temporal(fcinfo, &overafter_period_period_internal);
+}
+
+/*****************************************************************************/
+/* Temporal op Timestamptz */
+
+PG_FUNCTION_INFO_V1(before_temporal_timestamp);
+/**
+ * Returns true if the temporal value is strictly before the timestamptz value
+ */
+PGDLLEXPORT Datum
+before_temporal_timestamp(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestamp(fcinfo, &before_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_temporal_timestamp);
+/**
+ * Returns true if the temporal value is not after the timestamptz value
+ */
+PGDLLEXPORT Datum
+overbefore_temporal_timestamp(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestamp(fcinfo, &overbefore_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(after_temporal_timestamp);
+/**
+ * Returns true if the temporal value is strictly after the timestamptz value
+ */
+PGDLLEXPORT Datum
+after_temporal_timestamp(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestamp(fcinfo, &after_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overafter_temporal_timestamp);
+/**
+ * Returns true if the temporal value is not before the timestamptz value
+ */
+PGDLLEXPORT Datum
+overafter_temporal_timestamp(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestamp(fcinfo, &overafter_period_period_internal);
+}
+
+/*****************************************************************************/
+/* Temporal op Timestampset */
+
+PG_FUNCTION_INFO_V1(before_temporal_timestampset);
+/**
+ * Returns true if the temporal value is strictly before the timestampset value
+ */
+PGDLLEXPORT Datum
+before_temporal_timestampset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestampset(fcinfo, &before_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_temporal_timestampset);
+/**
+ * Returns true if the temporal value is not after the timestampset value
+ */
+PGDLLEXPORT Datum
+overbefore_temporal_timestampset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestampset(fcinfo, &overbefore_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(after_temporal_timestampset);
+/**
+ * Returns true if the temporal value is strictly after the timestampset value
+ */
+PGDLLEXPORT Datum
+after_temporal_timestampset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestampset(fcinfo, &after_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overafter_temporal_timestampset);
+/**
+ * Returns true if the temporal value is not before the timestampset value
+ */
+PGDLLEXPORT Datum
+overafter_temporal_timestampset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestampset(fcinfo, &overafter_period_period_internal);
 }
 
 /*****************************************************************************/
@@ -132,6 +337,49 @@ overafter_temporal_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+/* Temporal op PeriodSet */
+
+PG_FUNCTION_INFO_V1(before_temporal_periodset);
+/**
+ * Returns true if the temporal value is strictly before the periodset value
+ */
+PGDLLEXPORT Datum
+before_temporal_periodset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_periodset(fcinfo, &before_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overbefore_temporal_periodset);
+/**
+ * Returns true if the temporal value is not after the periodset value
+ */
+PGDLLEXPORT Datum
+overbefore_temporal_periodset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_periodset(fcinfo, &overbefore_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(after_temporal_periodset);
+/**
+ * Returns true if the temporal value is strictly after the periodset value
+ */
+PGDLLEXPORT Datum
+after_temporal_periodset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_periodset(fcinfo, &after_period_period_internal);
+}
+
+PG_FUNCTION_INFO_V1(overafter_temporal_periodset);
+/**
+ * Returns true if the temporal value is not before the periodset value
+ */
+PGDLLEXPORT Datum
+overafter_temporal_periodset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_periodset(fcinfo, &overafter_period_period_internal);
+}
+
+/*****************************************************************************/
 /* Temporal op Temporal */
 
 PG_FUNCTION_INFO_V1(before_temporal_temporal);
@@ -172,6 +420,53 @@ PGDLLEXPORT Datum
 overafter_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return boxop_temporal_temporal(fcinfo, &overafter_period_period_internal);
+}
+
+/*****************************************************************************/
+/* Number op Tnumber */
+
+PG_FUNCTION_INFO_V1(left_number_tnumber);
+/**
+ * Returns true if the number value is strictly to the left of the
+ * temporal number
+ */
+PGDLLEXPORT Datum
+left_number_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_number_tnumber(fcinfo, &left_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(overleft_number_tnumber);
+/**
+ * Returns true if the number value is not to the right of the
+ * temporal number
+ */
+PGDLLEXPORT Datum
+overleft_number_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_number_tnumber(fcinfo, &overleft_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(right_number_tnumber);
+/**
+ * Returns true if the number value is strictly to the right of the
+ * temporal number
+ */
+PGDLLEXPORT Datum
+right_number_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_number_tnumber(fcinfo, &right_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(overright_number_tnumber);
+/**
+ * Returns true if the number value is not to the left of the
+ * temporal number
+ */
+PGDLLEXPORT Datum
+overright_number_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_number_tnumber(fcinfo, &overright_tbox_tbox_internal);
 }
 
 /*****************************************************************************/
@@ -219,6 +514,53 @@ PGDLLEXPORT Datum
 overright_range_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_range_tnumber(fcinfo, &overright_tbox_tbox_internal);
+}
+
+/*****************************************************************************/
+/* Tnumber op Number */
+
+PG_FUNCTION_INFO_V1(left_tnumber_number);
+/**
+ * Returns true if the temporal number is strictly to the left of the
+ * number value
+ */
+PGDLLEXPORT Datum
+left_tnumber_number(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_number(fcinfo, &left_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(overleft_tnumber_number);
+/**
+ * Returns true if the temporal number is not to the right of the
+ * number value
+ */
+PGDLLEXPORT Datum
+overleft_tnumber_number(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_number(fcinfo, &overleft_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(right_tnumber_number);
+/**
+ * Returns true if the temporal number is strictly to the right of the
+ * number value
+ */
+PGDLLEXPORT Datum
+right_tnumber_number(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_number(fcinfo, &right_tbox_tbox_internal);
+}
+
+PG_FUNCTION_INFO_V1(overright_tnumber_number);
+/**
+ * Returns true if the temporal number is not to the left of the
+ * number value
+ */
+PGDLLEXPORT Datum
+overright_tnumber_number(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_number(fcinfo, &overright_tbox_tbox_internal);
 }
 
 /*****************************************************************************/

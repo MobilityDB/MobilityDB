@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -133,8 +132,8 @@ CREATE FUNCTION tgeogpoint(tgeogpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Casting CANNOT be implicit to avoid ambiguity
-CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer);
-CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, integer);
+CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer) AS IMPLICIT;
+CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, integer) AS IMPLICIT;
 
 /******************************************************************************
  * Constructors
@@ -563,16 +562,33 @@ CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Index Support Functions
+ *****************************************************************************/
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION tpoint_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tpoint_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
+/*****************************************************************************
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
 CREATE FUNCTION ever_eq(tgeompoint, geometry(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+  AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_eq(tgeogpoint, geography(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+  AS 'MODULE_PATHNAME', 'tpoint_ever_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
@@ -591,10 +607,16 @@ CREATE OPERATOR ?= (
 CREATE FUNCTION always_eq(tgeompoint, geometry(Point))
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_always_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_always_eq'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
@@ -642,13 +664,13 @@ CREATE FUNCTION always_ne(tgeogpoint, geography(Point))
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
-  LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
+  LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
   PROCEDURE = always_ne,
   NEGATOR = ?=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR %<> (
-  LEFTARG = tgeompoint, RIGHTARG = geometry(Point),
+  LEFTARG = tgeogpoint, RIGHTARG = geography(Point),
   PROCEDURE = always_ne,
   NEGATOR = ?=,
   RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
@@ -775,40 +797,68 @@ CREATE FUNCTION minusPeriodSet(tgeogpoint, periodset)
   AS 'MODULE_PATHNAME', 'temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Intersection Functions
+ *****************************************************************************/
+
 CREATE FUNCTION intersectsTimestamp(tgeompoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestamp(tgeogpoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsTimestampSet(tgeompoint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestampSet(tgeogpoint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsPeriod(tgeompoint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriod(tgeogpoint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsPeriodSet(tgeompoint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriodSet(tgeogpoint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

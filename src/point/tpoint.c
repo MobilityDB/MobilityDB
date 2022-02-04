@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -83,7 +82,8 @@ pg_notice(const char *fmt, va_list ap)
 /**
  * Set the handlers for initializing the liblwgeom library
  */
-void temporalgeom_init()
+void
+temporalgeom_init()
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
 }
@@ -213,7 +213,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
    * temporal type in the same column. Similarly for all generic modifiers.
    */
   deconstruct_array(arr, CSTRINGOID, -2, false, 'c', &elem_values, NULL, &n);
-  int16 temp_subtype = ANYTEMPSUBTYPE;
+  int16 tempsubtype = ANYTEMPSUBTYPE;
   uint8_t geometry_type = 0;
   int hasZ = 0, hasM = 0, srid = SRID_UNKNOWN;
   char *s[3] = {0,0,0};
@@ -229,7 +229,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   if (n == 3)
   {
     /* Type_modifier is (TempSubType, Geometry, SRID) */
-    if (tempsubtype_from_string(s[0], &temp_subtype) == false)
+    if (tempsubtype_from_string(s[0], &tempsubtype) == false)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid temporal type modifier: %s", s[0])));
     if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
@@ -242,7 +242,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   else if (n == 2)
   {
     /* Type modifier is either (TempSubType, Geometry) or (Geometry, SRID) */
-    if (tempsubtype_from_string(s[0], &temp_subtype))
+    if (tempsubtype_from_string(s[0], &tempsubtype))
     {
       if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -263,7 +263,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   {
     /* Type modifier: either (TempSubType) or (Geometry) */
     has_srid = false;
-    if (tempsubtype_from_string(s[0], &temp_subtype))
+    if (tempsubtype_from_string(s[0], &tempsubtype))
       ;
     else if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM))
       has_geo = true;
@@ -302,7 +302,7 @@ tpoint_typmod_in(ArrayType *arr, int is_geography)
   }
 
   /* Shift to restore the 4 bits of the temporal type */
-  TYPMOD_SET_SUBTYPE(typmod, temp_subtype);
+  TYPMOD_SET_SUBTYPE(typmod, tempsubtype);
 
   pfree(elem_values);
   return typmod;
@@ -345,7 +345,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
   char *s = (char *) palloc(64);
   char *str = s;
   int32 typmod = PG_GETARG_INT32(0);
-  int16 temp_subtype = TYPMOD_GET_SUBTYPE(typmod);
+  int16 tempsubtype = TYPMOD_GET_SUBTYPE(typmod);
   TYPMOD_DEL_SUBTYPE(typmod);
   int32 srid = TYPMOD_GET_SRID(typmod);
   uint8_t geometry_type = (uint8_t) TYPMOD_GET_TYPE(typmod);
@@ -353,7 +353,7 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
 
   /* No temporal type or geometry type? Then no typmod at all.
     Return empty string. */
-  if (typmod < 0 || (temp_subtype == ANYTEMPSUBTYPE && !geometry_type))
+  if (typmod < 0 || (tempsubtype == ANYTEMPSUBTYPE && !geometry_type))
   {
     *str = '\0';
     PG_RETURN_CSTRING(str);
@@ -361,11 +361,11 @@ tpoint_typmod_out(PG_FUNCTION_ARGS)
   /* Opening bracket */
   str += sprintf(str, "(");
   /* Has temporal type?  */
-  if (temp_subtype != ANYTEMPSUBTYPE)
-    str += sprintf(str, "%s", tempsubtype_name(temp_subtype));
+  if (tempsubtype != ANYTEMPSUBTYPE)
+    str += sprintf(str, "%s", tempsubtype_name(tempsubtype));
   if (geometry_type)
   {
-    if (temp_subtype != ANYTEMPSUBTYPE) str += sprintf(str, ",");
+    if (tempsubtype != ANYTEMPSUBTYPE) str += sprintf(str, ",");
     str += sprintf(str, "%s", lwtype_name(geometry_type));
     /* Has Z?  */
     if (hasz) str += sprintf(str, "Z");
@@ -429,7 +429,45 @@ tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(result, temp);
+  temporal_bbox(temp, result);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Expand functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(geo_expand_spatial);
+/**
+ * Returns the bounding box of the temporal point value expanded on the
+ * spatial dimension
+ */
+PGDLLEXPORT Datum
+geo_expand_spatial(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double d = PG_GETARG_FLOAT8(1);
+  STBOX *box = palloc(sizeof(STBOX));
+  geo_stbox(gs, box);
+  STBOX *result = stbox_expand_spatial_internal(box, d);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_expand_spatial);
+/**
+ * Returns the bounding box of the temporal point value expanded on the
+ * spatial dimension
+ */
+PGDLLEXPORT Datum
+tpoint_expand_spatial(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  double d = PG_GETARG_FLOAT8(1);
+  STBOX *box = palloc(sizeof(STBOX));
+  temporal_bbox(temp, box);
+  STBOX *result = stbox_expand_spatial_internal(box, d);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -441,7 +479,7 @@ tpoint_to_stbox(PG_FUNCTION_ARGS)
 /**
  * Returns the temporal comparison of the base value and temporal value
  */
-Datum
+static Datum
 tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
@@ -461,7 +499,7 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
 /**
  * Returns the temporal comparison of the temporal value and the base value
  */
-Datum
+static Datum
 tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
@@ -522,7 +560,7 @@ tne_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Assemble the Trajectory/values of a temporal point as a single
- * geometry/geography.
+ * geometry/geography
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tpoint_values);
@@ -534,7 +572,11 @@ PGDLLEXPORT Datum
 tpoint_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
+#ifdef STORE_TRAJ
   Datum result = tpoint_trajectory_external(temp);
+#else
+  Datum result = tpoint_trajectory_internal(temp);
+#endif
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

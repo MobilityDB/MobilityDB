@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -33,7 +32,8 @@
  * R-tree GiST index for time types
  */
 
-CREATE FUNCTION gist_timestampset_consistent(internal, timestampset, smallint, oid, internal)
+CREATE FUNCTION timestampset_gist_consistent(internal, timestampset, smallint,
+    oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'period_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -68,7 +68,7 @@ CREATE FUNCTION period_gist_fetch(internal)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_timestampset_ops
+CREATE OPERATOR CLASS timestampset_gist_ops
   DEFAULT FOR TYPE timestampset USING gist AS
   STORAGE period,
   -- overlaps
@@ -108,7 +108,8 @@ CREATE OPERATOR CLASS gist_timestampset_ops
   OPERATOR  31    #&> (timestampset, period),
   OPERATOR  31    #&> (timestampset, periodset),
   -- functions
-  FUNCTION  1  gist_timestampset_consistent(internal, timestampset, smallint, oid, internal),
+  FUNCTION  1  timestampset_gist_consistent(internal, timestampset, smallint,
+    oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  timestampset_gist_compress(internal),
 #if POSTGRESQL_VERSION_NUMBER < 110000
@@ -131,7 +132,6 @@ CREATE FUNCTION period_gist_compress(internal)
 
 CREATE OPERATOR CLASS period_gist_ops
   DEFAULT FOR TYPE period USING gist AS
-  STORAGE period,
   -- overlaps
   OPERATOR  3    && (period, timestampset),
   OPERATOR  3    && (period, period),
@@ -183,7 +183,8 @@ CREATE OPERATOR CLASS period_gist_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION gist_periodset_consistent(internal, periodset, smallint, oid, internal)
+CREATE FUNCTION periodset_gist_consistent(internal, periodset, smallint, oid,
+    internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'period_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -192,7 +193,7 @@ CREATE FUNCTION periodset_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'periodset_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_periodset_ops
+CREATE OPERATOR CLASS periodset_gist_ops
   DEFAULT FOR TYPE periodset USING gist AS
   STORAGE period,
   -- overlaps
@@ -233,7 +234,8 @@ CREATE OPERATOR CLASS gist_periodset_ops
   OPERATOR  31    #&> (periodset, period),
   OPERATOR  31    #&> (periodset, periodset),
   -- functions
-  FUNCTION  1  gist_periodset_consistent(internal, periodset, smallint, oid, internal),
+  FUNCTION  1  periodset_gist_consistent(internal, periodset, smallint, oid,
+    internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  periodset_gist_compress(internal),
 #if POSTGRESQL_VERSION_NUMBER < 110000

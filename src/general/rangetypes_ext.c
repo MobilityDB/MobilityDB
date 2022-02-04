@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -601,12 +600,12 @@ elem_adjacent_range(PG_FUNCTION_ARGS)
 
 /******************************************************************************/
 
-PG_FUNCTION_INFO_V1(floatrange_set_precision);
+PG_FUNCTION_INFO_V1(floatrange_round);
 /**
  * Set the precision of the float range to the number of decimal places
  */
 PGDLLEXPORT Datum
-floatrange_set_precision(PG_FUNCTION_ARGS)
+floatrange_round(PG_FUNCTION_ARGS)
 {
 #if POSTGRESQL_VERSION_NUMBER < 110000
   RangeType *range = PG_GETARG_RANGE(0);
@@ -624,7 +623,7 @@ floatrange_set_precision(PG_FUNCTION_ARGS)
   {
     lower.val = lower_datum(range);
     if (DatumGetFloat8(lower.val) != -1 * get_float8_infinity())
-      lower.val = datum_round(lower.val, size);
+      lower.val = datum_round_float(lower.val, size);
     lower.infinite = false;
   }
   else
@@ -633,7 +632,7 @@ floatrange_set_precision(PG_FUNCTION_ARGS)
   {
     upper.val = upper_datum(range);
     if (DatumGetFloat8(upper.val) != get_float8_infinity())
-      upper.val = datum_round(upper.val, size);
+      upper.val = datum_round_float(upper.val, size);
     upper.infinite = false;
   }
   else
@@ -706,7 +705,7 @@ range_extent_combinefn(PG_FUNCTION_ARGS)
 
   TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
   /* Non-strict union */
-  RangeType *result = range_union_internal(typcache, r1, r2, false); 
+  RangeType *result = range_union_internal(typcache, r1, r2, false);
   PG_RETURN_POINTER(result);
 }
 

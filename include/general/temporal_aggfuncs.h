@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -56,7 +55,14 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-extern void ensure_same_temp_subtype_skiplist(SkipList *state, int16 subtype,
+/* Generic aggregation functions */
+ 
+extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
+  TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
+extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
+  TSequence **sequences2, int count2, Datum (*func)(Datum, Datum), bool crossings,
+  int *newcount);
+extern void ensure_same_tempsubtype_skiplist(SkipList *state, int16 subtype,
   Temporal *temp);
 extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   TSequence *seq, datum_func2 func, bool interpoint);

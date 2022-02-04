@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -109,7 +108,7 @@ CREATE FUNCTION period(periodset)
 CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
 CREATE CAST (timestampset AS periodset) WITH FUNCTION periodset(timestampset);
 CREATE CAST (period AS periodset) WITH FUNCTION periodset(period);
-CREATE CAST (periodset AS period) WITH FUNCTION period(periodset) AS IMPLICIT;
+CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
 
 /******************************************************************************
  * Functions
@@ -234,25 +233,25 @@ CREATE OPERATOR < (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = periodsel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = periodsel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = @JOIN_LE@
 );
 CREATE OPERATOR >= (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = periodsel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = @JOIN_GE@
 );
 CREATE OPERATOR > (
   LEFTARG = periodset, RIGHTARG = periodset,
   PROCEDURE = periodset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = periodsel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS periodset_ops

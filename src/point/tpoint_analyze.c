@@ -1,29 +1,28 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -31,25 +30,25 @@
 /**
  * @file tpoint_analyze.c
  * Functions for gathering statistics from temporal point columns.
-
+ *
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype
  * of the temporal type, which is defined in the table schema by the `typmod`
  * attribute. Please refer to the PostgreSQL file `pg_statistic_d.h` and the
  * PostGIS file `gserialized_estimate.c` for more information about the
  * statistics collected.
- * 
- * For the spatial dimension, the statistics collected are the same for all 
+ *
+ * For the spatial dimension, the statistics collected are the same for all
  * subtypes. These statistics are obtained by calling the PostGIS function
  * `gserialized_analyze_nd`.
  * - Slot 1
  *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_2D`.
- *     - `stanumbers` stores the 2D histrogram of occurrence of features.
+ *     - `stanumbers` stores the 2D histogram of occurrence of features.
  * - Slot 2
  *     - `stakind` contains the type of statistics which is `STATISTIC_SLOT_ND`.
  *     - `stanumbers` stores the ND histogram of occurrence of features.
  *
- * For the time dimension, the statistics collected in Slots 3 and 4 depend on 
+ * For the time dimension, the statistics collected in Slots 3 and 4 depend on
  * the subtype. Please refer to file temporal_analyze.c for more information.
  */
 
@@ -204,15 +203,18 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
     double smin = nd_stats->extent.min[d];
     double smax = nd_stats->extent.max[d];
     double width = smax - smin;
-    int size = (int) roundf(nd_stats->size[d]);
 
-    /* ... find cells the box overlaps with in this dimension */
-    nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
-    nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
+    if (width > 0)
+    {
+      /* ... find cells the box overlaps with in this dimension */
+      int size = (int) roundf(nd_stats->size[d]);
+      nd_ibox->min[d] = (int) floor(size * (nd_box->min[d] - smin) / width);
+      nd_ibox->max[d] = (int) floor(size * (nd_box->max[d] - smin) / width);
 
-    /* Push any out-of range values into range */
-    nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
-    nd_ibox->max[d] = Min(nd_ibox->max[d], size-1);
+      /* Push any out-of range values into range */
+      nd_ibox->min[d] = Max(nd_ibox->min[d], 0);
+      nd_ibox->max[d] = Min(nd_ibox->max[d], size - 1);
+    }
   }
   return true;
 }
@@ -580,7 +582,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum datum;
     Temporal *temp;
-    GSERIALIZED *trajgs;
+    STBOX box;
     GBOX gbox;
     ND_BOX *nd_box;
     bool is_null;
@@ -604,26 +606,9 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* TO VERIFY */
     is_copy = VARATT_IS_EXTENDED(temp);
 
-    /* Get trajectory from temporal point */
-    if (tgeo_base_type(temp->basetypid))
-      trajgs = (GSERIALIZED *) DatumGetPointer(tpoint_trajectory_internal(temp));
-    else if (temp->basetypid == type_oid(T_NPOINT))
-      trajgs = (GSERIALIZED *) DatumGetPointer(tnpoint_geom(temp));
-    else 
-      elog(ERROR, "unknown trajectory function for base type: %d",
-        temp->basetypid);
-
-    /* Read the bounds from the gserialized. */
-    if ( LW_FAILURE == gserialized_get_gbox_p(trajgs, &gbox) )
-    {
-      /* Skip empties too. */
-      continue;
-    }
-    /* Free trajectory */
-    if (tgeo_base_type(temp->basetypid))
-      tpoint_trajectory_free(temp, PointerGetDatum(trajgs));
-    else if (temp->basetypid == type_oid(T_NPOINT))
-      pfree(DatumGetPointer(trajgs));
+    /* Get bounding box from temporal point */
+    temporal_bbox(temp, &box);
+    stbox_gbox(&box, &gbox);
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )
@@ -873,7 +858,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
     /* Find the cells that overlap with this box and put them into the ND_IBOX */
     nd_box_overlap(nd_stats, nd_box, &nd_ibox);
-    memset(at, 0, sizeof(int)*ND_DIMS);
+    memset(at, 0, sizeof(int) * ND_DIMS);
 
     for ( d = 0; d < nd_stats->ndims; d++ )
     {
@@ -1017,7 +1002,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(temp);
 
     /* Get period from temporal point */
-    temporal_period(&period, temp);
+    temporal_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
     period_deserialize(&period, &period_lower, &period_upper);
@@ -1055,8 +1040,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     gserialized_compute_stats(stats, fetchfunc, sample_rows, total_rows, 0);
 
     /* Compute statistics for time dimension */
-    period_compute_stats1(stats, notnull_cnt, &slot_idx,
-      time_lowers, time_uppers, time_lengths);
+    period_compute_stats1(stats, notnull_cnt, &slot_idx, time_lowers,
+      time_uppers, time_lengths);
   }
   else if (null_cnt > 0)
   {

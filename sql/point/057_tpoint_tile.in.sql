@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -47,20 +46,20 @@ CREATE FUNCTION multidimGrid(bounds stbox, size float,
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION multidimGrid(bounds stbox, size float, 
+CREATE FUNCTION multidimGrid(bounds stbox, size float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION multidimTile(point geometry, size float, 
+CREATE FUNCTION multidimTile(point geometry, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION multidimTile(point geometry, "time" timestamptz, 
-    size float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)', 
+CREATE FUNCTION multidimTile(point geometry, "time" timestamptz,
+    size float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'stbox_multidim_tile'

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -96,7 +95,7 @@ CREATE FUNCTION period(timestampset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
-CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset) AS IMPLICIT;
+CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset);
 
 /******************************************************************************
  * Functions
@@ -191,25 +190,25 @@ CREATE OPERATOR < (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = periodsel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = periodsel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = @JOIN_LE@
 );
 CREATE OPERATOR >= (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = periodsel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = @JOIN_GE@
 );
 CREATE OPERATOR > (
   LEFTARG = timestampset, RIGHTARG = timestampset,
   PROCEDURE = timestampset_gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = periodsel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS timestampset_ops

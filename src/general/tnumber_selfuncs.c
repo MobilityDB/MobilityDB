@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -675,14 +674,14 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 
   if (tnumber_range_type(consttype))
 #if POSTGRESQL_VERSION_NUMBER < 110000
-    range_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
+    range_to_tbox_internal(DatumGetRangeType(((Const *) other)->constvalue), box);
 #else
-    range_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+    range_to_tbox_internal(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
 #endif
   else if (consttype == type_oid(T_TBOX))
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
   else if (tnumber_type(consttype))
-    temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), box);
   else
     return false;
   return true;
@@ -800,8 +799,8 @@ default_tnumber_selectivity(CachedOp operator)
  * while the selectivity functions for = and <> are eqsel and neqsel,
  * respectively.
  */
-Selectivity
-tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
+static Selectivity
+tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   CachedOp cachedOp, Oid basetypid)
 {
   Period period;
@@ -828,7 +827,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
     }
   }
   if (MOBDB_FLAGS_GET_T(box->flags))
-    period_set(&period, box->tmin, box->tmax, true, true);
+    period_set(box->tmin, box->tmax, true, true, &period);
 
   /*
    * There is no ~= operator for range/time types and thus it is necessary to
@@ -876,7 +875,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
         value_oprid);
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
+      selec *= period_hist_sel(vardata, &period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
@@ -891,7 +890,7 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= calc_period_hist_selectivity(vardata, &period, cachedOp);
+      selec *= period_hist_sel(vardata, &period, cachedOp);
   }
   else /* Unknown operator */
   {
@@ -904,17 +903,13 @@ tnumber_sel_internal(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_sel);
 /**
  * Estimate the selectivity value of the operators for temporal numbers
+ * (internal function)
  */
-PGDLLEXPORT Datum
-tnumber_sel(PG_FUNCTION_ARGS)
+float8
+tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
   VariableStatData vardata;
   Node *other;
   bool varonleft;
@@ -929,15 +924,15 @@ tnumber_sel(PG_FUNCTION_ARGS)
   bool found = tnumber_cachedop(operator, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+    return DEFAULT_TEMP_SEL;
 
   /*
    * If expression is not (variable op something) or (something op
    * variable), then punt and return a default estimate.
    */
-  if (!get_restriction_variable(root, args, varRelid,
-                  &vardata, &other, &varonleft))
-    PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
+  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
+        &varonleft))
+    return default_tnumber_selectivity(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -945,7 +940,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
+    return default_tnumber_selectivity(cachedOp);
   }
 
   /*
@@ -955,7 +950,7 @@ tnumber_sel(PG_FUNCTION_ARGS)
   if (((Const *) other)->constisnull)
   {
     ReleaseVariableStats(vardata);
-    PG_RETURN_FLOAT8(0.0);
+    return 0.0;
   }
 
   /*
@@ -970,18 +965,17 @@ tnumber_sel(PG_FUNCTION_ARGS)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
+      return default_tnumber_selectivity(cachedOp);
     }
   }
 
   /*
    * Transform the constant into a TBOX
    */
-  memset(&constBox, 0, sizeof(TBOX));
   found = tnumber_const_to_tbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)
-    PG_RETURN_FLOAT8(default_tnumber_selectivity(cachedOp));
+    return default_tnumber_selectivity(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
@@ -990,11 +984,35 @@ tnumber_sel(PG_FUNCTION_ARGS)
   ensure_tnumber_base_type(basetypid);
 
   /* Compute the selectivity */
-  selec = tnumber_sel_internal(root, &vardata, &constBox, cachedOp, basetypid);
+  selec = tnumber_sel_internal_box(root, &vardata, &constBox, cachedOp, basetypid);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
-  PG_RETURN_FLOAT8(selec);
+  return selec;
+}
+
+PG_FUNCTION_INFO_V1(tnumber_sel);
+/**
+ * Estimate the selectivity value of the operators for temporal numbers
+ */
+PGDLLEXPORT Datum
+tnumber_sel(PG_FUNCTION_ARGS)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid operator = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selectivity = tnumber_sel_internal(root, operator, args, varRelid);
+  PG_RETURN_FLOAT8(selectivity);
+}
+
+/*****************************************************************************/
+
+float8
+tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+  JoinType jointype)
+{
+  return DEFAULT_TEMP_JOINSEL;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
@@ -1004,7 +1022,20 @@ PG_FUNCTION_INFO_V1(tnumber_joinsel);
 PGDLLEXPORT Datum
 tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_FLOAT8(DEFAULT_TEMP_SELECTIVITY);
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype));
 }
 
 /*****************************************************************************/

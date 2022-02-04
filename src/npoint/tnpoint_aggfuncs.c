@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -55,7 +54,7 @@ PG_FUNCTION_INFO_V1(tnpoint_tcentroid_transfn);
 PGDLLEXPORT Datum
 tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
-  SkipList *state = PG_ARGISNULL(0) ? NULL : 
+  SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   if (PG_ARGISNULL(1))
   {
@@ -67,7 +66,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Temporal *temp1 = tnpoint_as_tgeompoint_internal(temp);
 
-  geoaggstate_check_t(state, temp1);
+  geoaggstate_check_temp(state, temp1);
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
@@ -75,7 +74,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
   if (state)
   {
-    ensure_same_temp_subtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else

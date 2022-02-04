@@ -1,29 +1,28 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -478,8 +477,8 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
   /* Project the boxes to their common timespan */
   if (hast)
   {
-    period_set(&p1, query->tmin, query->tmax, true, true);
-    period_set(&p2, cube_box->left.tmin, cube_box->right.tmax, true, true);
+    period_set(query->tmin, query->tmax, true, true, &p1);
+    period_set(cube_box->left.tmin, cube_box->right.tmax, true, true, &p2);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
@@ -516,6 +515,51 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 }
 #endif
 
+/**
+ * Transform a query argument into an STBOX.
+ */
+static bool
+tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
+{
+  if (tgeo_base_type(scankey->sk_subtype))
+  {
+    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
+    /* The geometry can be empty */
+    if (!geo_stbox(gs, result))
+      return false;
+  }
+  else if (scankey->sk_subtype == TIMESTAMPTZOID)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    timestamp_stbox(t, result);
+  }
+  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
+    timestampset_stbox(ts, result);
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  {
+    Period *p = DatumGetPeriod(scankey->sk_argument);
+    period_stbox(p, result);
+  }
+  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
+    periodset_stbox(ps, result);
+  }
+  else if (scankey->sk_subtype == type_oid(T_STBOX))
+  {
+    memcpy(result, DatumGetSTboxP(scankey->sk_argument), sizeof(STBOX));
+  }
+  else if (tspatial_type(scankey->sk_subtype))
+  {
+    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+  }
+  else
+    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+  return true;
+}
 
 /*****************************************************************************
  * SP-GiST config function
@@ -679,32 +723,6 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   PG_RETURN_VOID();
 }
 
-/**
- * Transform a query argument into an STBOX.
- */
-static bool
-stbox_spgist_get_stbox(STBOX *result, ScanKeyData scankey)
-{
-  if (tgeo_base_type(scankey.sk_subtype))
-  {
-    GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey.sk_argument);
-    /* The geometry can be empty */
-    if (!geo_to_stbox_internal(result, gs))
-      return false;
-  }
-  else if (scankey.sk_subtype == type_oid(T_STBOX))
-  {
-    memcpy(result, DatumGetSTboxP(scankey.sk_argument), sizeof(STBOX));
-  }
-  else if (tspatial_type(scankey.sk_subtype))
-  {
-    temporal_bbox(result, DatumGetTemporal(scankey.sk_argument));
-  }
-  else
-    elog(ERROR, "Unsupported subtype for indexing: %d", scankey.sk_subtype);
-  return true;
-}
-
 /*****************************************************************************
  * SP-GiST inner consistent functions
  *****************************************************************************/
@@ -742,7 +760,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   STBOX *orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
   for (i = 0; i < in->norderbys; i++)
-    stbox_spgist_get_stbox(&orderbys[i], in->orderbys[i]);
+    tpoint_spgist_get_stbox(&orderbys[i], &in->orderbys[i]);
 #endif
 
   if (in->allTheSame)
@@ -781,7 +799,7 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
   for (i = 0; i < in->nkeys; i++)
-    stbox_spgist_get_stbox(&queries[i], in->scankeys[i]);
+    tpoint_spgist_get_stbox(&queries[i], &in->scankeys[i]);
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
@@ -940,7 +958,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= tpoint_index_recheck(strategy);
 
-    if (stbox_spgist_get_stbox(&query, in->scankeys[i]))
+    if (tpoint_spgist_get_stbox(&query, &in->scankeys[i]))
       res = stbox_index_consistent_leaf(key, &query, strategy);
     else
       res = false;
@@ -975,7 +993,7 @@ tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(result, temp);
+  temporal_bbox(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_STBOX_P(result);
 }

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -311,20 +310,20 @@ tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_set_precision);
+PG_FUNCTION_INFO_V1(tnpoint_round);
 /**
  * Set the precision of the fraction of the temporal network point to the
  * number of decimal places
  */
 PGDLLEXPORT Datum
-tnpoint_set_precision(PG_FUNCTION_ARGS)
+tnpoint_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum size = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &npoint_set_precision_internal;
+  lfinfo.func = (varfunc) &npoint_round_internal;
   lfinfo.numparam = 1;
   lfinfo.param[0] = size;
   lfinfo.restypid = temp->basetypid;
@@ -380,7 +379,7 @@ tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
   /* The following function removes duplicate values */
-  int count1 = tinstantset_values(values, ti);
+  int count1 = tinstantset_values(ti, values);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -399,7 +398,7 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * seq->count);
   /* The following function removes duplicate values */
-  int count1 = tsequence_values(values, seq);
+  int count1 = tsequence_values(seq, values);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -475,7 +474,7 @@ tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
   /* The following function removes duplicate values */
-  int count1 = tsequenceset_values(values, ts);
+  int count1 = tsequenceset_values(ts, values);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {

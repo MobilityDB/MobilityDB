@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -53,7 +52,7 @@
  * Round the number to the number of decimal places
  */
 Datum
-datum_round(Datum value, Datum prec)
+datum_round_float(Datum value, Datum prec)
 {
   Datum number = call_function1(float8_numeric, value);
   Datum round = call_function2(numeric_round, number, prec);
@@ -118,8 +117,8 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
   if (! tnumber_arithop_tp_at_timestamp1(start1, end1, linear1,
     start2, end2, linear2, t))
     return false;
-  Datum value1 = tsequence_value_at_timestamp1(start1, end1, linear1, *t);
-  Datum value2 = tsequence_value_at_timestamp1(start2, end2, linear2, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, linear1, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, linear2, *t);
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
     datum_mult(value1, value2, start1->basetypid, start2->basetypid) :
@@ -452,7 +451,7 @@ tnumber_round(PG_FUNCTION_ARGS)
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_round;
+  lfinfo.func = (varfunc) &datum_round_float;
   lfinfo.numparam = 1;
   lfinfo.param[0] = digits;
   lfinfo.argoids = true;

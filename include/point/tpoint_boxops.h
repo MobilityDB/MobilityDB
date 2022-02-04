@@ -1,9 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -44,9 +47,9 @@
 
 /* Functions computing the bounding box at the creation of the temporal point */
 
-extern void tpointinst_make_stbox(STBOX *box, const TInstant *inst);
-extern void tpointinstarr_to_stbox(STBOX *box, const TInstant **inst, int count);
-extern void tpointseqarr_to_stbox(STBOX *box, const TSequence **seq, int count);
+extern void tpointinst_stbox(const TInstant *inst, STBOX *box);
+extern void tpointinstarr_stbox(const TInstant **inst, int count, STBOX *box);
+extern void tpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
 
 /* Boxes functions */
 

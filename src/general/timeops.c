@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -3050,8 +3049,8 @@ union_period_period_internal(const Period *p1, const Period *p2)
 
   /* Compute the union of the overlapping periods */
   Period p;
-  period_set(&p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
-  period_expand(&p, p2);
+  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, &p);
+  period_expand(p2, &p);
   PeriodSet *result = period_to_periodset_internal(&p);
   return result;
 }
@@ -3225,12 +3224,12 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
           break;
         if (overlaps_period_period_internal(p1, q))
         {
-          period_expand(q, p1);
+          period_expand(p1, q);
           i++;
         }
         if (overlaps_period_period_internal(p2, q))
         {
-          period_expand(q, p2);
+          period_expand(p2, q);
           j++;
         }
       }
@@ -3241,7 +3240,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
         p1 = periodset_per_n(ps1, i);
         if (overlaps_period_period_internal(p1, q))
         {
-          period_expand(q, p1);
+          period_expand(p1, q);
           i++;
         }
         else
@@ -3252,7 +3251,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
         p2 = periodset_per_n(ps2, j);
         if (overlaps_period_period_internal(p2, q))
         {
-          period_expand(q, p2);
+          period_expand(p2, q);
           j++;
         }
         else

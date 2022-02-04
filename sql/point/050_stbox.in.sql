@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -47,7 +46,6 @@ CREATE FUNCTION stbox_out(stbox)
   RETURNS cstring
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-/*
 CREATE FUNCTION stbox_recv(internal)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
@@ -56,14 +54,13 @@ CREATE FUNCTION stbox_send(stbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-*/
 
 CREATE TYPE stbox (
   internallength = 72,
   input = stbox_in,
   output = stbox_out,
---  receive = stbox_recv,
---  send = stbox_send,
+  receive = stbox_recv,
+  send = stbox_send,
   storage = plain,
   alignment = double
 );
@@ -186,14 +183,14 @@ CREATE FUNCTION stbox(geography, period)
   AS 'MODULE_PATHNAME', 'geo_period_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d) AS IMPLICIT;
-CREATE CAST (box3d AS stbox) WITH FUNCTION stbox(box3d) AS IMPLICIT;
-CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry) AS IMPLICIT;
-CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography) AS IMPLICIT;
-CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz) AS IMPLICIT;
-CREATE CAST (timestampset AS stbox) WITH FUNCTION stbox(timestampset) AS IMPLICIT;
-CREATE CAST (period AS stbox) WITH FUNCTION stbox(period) AS IMPLICIT;
-CREATE CAST (periodset AS stbox) WITH FUNCTION stbox(periodset) AS IMPLICIT;
+CREATE CAST (box2d AS stbox) WITH FUNCTION stbox(box2d);
+CREATE CAST (box3d AS stbox) WITH FUNCTION stbox(box3d);
+CREATE CAST (geometry AS stbox) WITH FUNCTION stbox(geometry);
+CREATE CAST (geography AS stbox) WITH FUNCTION stbox(geography);
+CREATE CAST (timestamptz AS stbox) WITH FUNCTION stbox(timestamptz);
+CREATE CAST (timestampset AS stbox) WITH FUNCTION stbox(timestampset);
+CREATE CAST (period AS stbox) WITH FUNCTION stbox(period);
+CREATE CAST (periodset AS stbox) WITH FUNCTION stbox(periodset);
 
 /*****************************************************************************/
 

@@ -1,13 +1,12 @@
 /***********************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -92,11 +91,7 @@ point_to_trajpoint(Datum point, TimestampTz t)
   int32 srid = gserialized_get_srid(gs);
   double epoch = ((double) t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH;
   LWPOINT *result;
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_Z(gs->flags))
-#else
-  if (FLAGS_GET_Z(gs->gflags))
-#endif
+  if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
     const POINT3DZ *point = gs_get_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, epoch);
@@ -106,11 +101,7 @@ point_to_trajpoint(Datum point, TimestampTz t)
     const POINT2D *point = gs_get_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, epoch);
   }
-#if POSTGIS_VERSION_NUMBER < 30000
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
-#else
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-#endif
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
   return result;
 }
 
@@ -243,7 +234,6 @@ tpointseqset_to_geo(const TSequenceSet *ts)
       colltype = COLLECTIONTYPE;
   }
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
   Datum result = PointerGetDatum(geo_serialize(coll));
@@ -313,7 +303,6 @@ tpointseq_to_geo_segmentize(const TSequence *seq)
   else
   {
     // TODO add the bounding box instead of ask PostGIS to compute it again
-    // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
     result = PointerGetDatum(geo_serialize(segcoll));
@@ -362,7 +351,6 @@ tpointseqset_to_geo_segmentize(const TSequenceSet *ts)
   }
   Datum result;
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequenceset_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) k, geoms);
   result = PointerGetDatum(geo_serialize(coll));
@@ -463,11 +451,7 @@ geo_to_tpointinstset(GSERIALIZED *gs)
 {
   /* Geometry is a MULTIPOINT */
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   /* Verify that is a valid set of trajectory points */
   LWCOLLECTION *lwcoll = lwgeom_as_lwcollection(lwgeom);
   double m1 = -1 * DBL_MAX, m2;
@@ -509,11 +493,7 @@ static TSequence *
 geo_to_tpointseq(GSERIALIZED *gs)
 {
   /* Geometry is a LINESTRING */
-#if POSTGIS_VERSION_NUMBER < 30000
-  bool hasz = (bool) FLAGS_GET_Z(gs->flags);
-#else
-  bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
-#endif
+  bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   LWLINE *lwline = lwgeom_as_lwline(lwgeom);
   int npoints = lwline->points->npoints;
@@ -643,11 +623,7 @@ point_measure_to_geo_measure(Datum point, Datum measure)
   int32 srid = gserialized_get_srid(gs);
   double d = DatumGetFloat8(measure);
   LWPOINT *result;
-#if POSTGIS_VERSION_NUMBER < 30000
-  if (FLAGS_GET_Z(gs->flags))
-#else
-  if (FLAGS_GET_Z(gs->gflags))
-#endif
+  if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
     const POINT3DZ *point = gs_get_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
@@ -657,11 +633,7 @@ point_measure_to_geo_measure(Datum point, Datum measure)
     const POINT2D *point = gs_get_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, d);
   }
-#if POSTGIS_VERSION_NUMBER < 30000
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->flags));
-#else
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-#endif
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
   return result;
 }
 
@@ -821,7 +793,6 @@ tpointseqset_to_geo_measure(const TSequenceSet *ts, const TSequenceSet *measure)
       colltype = COLLECTIONTYPE;
   }
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
   Datum result = PointerGetDatum(geo_serialize(coll));
@@ -897,7 +868,6 @@ tpointseq_to_geo_measure_segmentize(const TSequence *seq,
   else
   {
     // TODO add the bounding box instead of ask PostGIS to compute it again
-    // GBOX *box = stbox_to_gbox(tsequence_bbox_ptr(seq));
     LWGEOM *segcoll = (LWGEOM *) lwcollection_construct(MULTILINETYPE,
       geoms[0]->srid, NULL, (uint32_t)(seq->count - 1), geoms);
     result = PointerGetDatum(geo_serialize(segcoll));
@@ -947,7 +917,6 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
   }
   Datum result;
   // TODO add the bounding box instead of ask PostGIS to compute it again
-  // GBOX *box = stbox_to_gbox(tsequenceset_bbox_ptr(seq));
   LWGEOM *coll = (LWGEOM *) lwcollection_construct(colltype,
     geoms[0]->srid, NULL, (uint32_t) k, geoms);
   result = PointerGetDatum(geo_serialize(coll));
@@ -1996,7 +1965,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 
   /* Read and round point */
   POINT4D p;
-  datum_get_point4d(&p, value);
+  datum_point4d(value, &p);
   double x = p.x;
   double y = p.y;
   double z = hasz ? p.z : 0;
@@ -2038,7 +2007,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     Datum value = tinstant_value(inst);
 
     /* Read and round point */
-    datum_get_point4d(&p, value);
+    datum_point4d(value, &p);
     /* make compiler quiet by also initializing prev_p */
     double x = prev_p.x = p.x;
     double y = prev_p.y = p.y;
@@ -2085,7 +2054,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     Datum value = tinstant_value(inst);
 
     /* Read and round point */
-    datum_get_point4d(&p, value);
+    datum_point4d(value, &p);
     /* make compiler quiet by also initializing prev_p */
     double x = prev_p.x = p.x;
     double y = prev_p.y = p.y;
@@ -2230,8 +2199,8 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   double min = -(double) buffer;
   int srid = tpoint_srid_internal(tpoint);
   STBOX clip_box;
-  stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
-    0, 0, 0, 0);
+  stbox_set(true, false, false, false, srid, min, max, min, max,
+    0, 0, 0, 0, &clip_box);
   Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box, UPPER_INC);
   pfree(tpoint4);
   if (tpoint5 == NULL)
@@ -2440,7 +2409,7 @@ AsMVTGeom(PG_FUNCTION_ARGS)
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBOX box;
-  temporal_bbox(&box, temp);
+  temporal_bbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   / * We use half of the square height and width as limit: We use this

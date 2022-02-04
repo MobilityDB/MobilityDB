@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -169,9 +168,9 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 Period *
 period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  Period *period = (Period *) palloc0(sizeof(Period));
-  period_set(period, lower, upper, lower_inc, upper_inc);
+  /* Note: zero-fill is done in the period_set function */
+  Period *period = (Period *) palloc(sizeof(Period));
+  period_set(lower, upper, lower_inc, upper_inc, period);
   return period;
 }
 
@@ -179,8 +178,8 @@ period_make(TimestampTz lower, TimestampTz upper, bool lower_inc, bool upper_inc
  * Set the period from the argument values
  */
 void
-period_set(Period *p, TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc)
+period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc, Period *p)
 {
   int cmp = timestamp_cmp_internal(lower, upper);
   /* error check: if lower bound value is above upper, it's wrong */
@@ -193,6 +192,8 @@ period_set(Period *p, TimestampTz lower, TimestampTz upper,
     ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
       errmsg("Period cannot be empty")));
 
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(p, 0, sizeof(Period));
   /* Now fill in the period */
   p->lower = lower;
   p->upper = upper;
@@ -230,12 +231,12 @@ period_to_secs(TimestampTz v1, TimestampTz v2)
  * @param[in] periods Array of periods
  * @param[in] count Number of elements in the input array
  * @param[out] newcount Number of elements in the output array
+ * @pre It is supposed that the periods are sorted.
+ * This should be ensured by the calling function !!!
  */
 Period **
 periodarr_normalize(Period **periods, int count, int *newcount)
 {
-  if (count > 1)
-    periodarr_sort(periods, count);
   int k = 0;
   Period **result = palloc(sizeof(Period *) * count);
   Period *current = periods[0];
@@ -248,7 +249,7 @@ periodarr_normalize(Period **periods, int count, int *newcount)
     {
       /* Compute the union of the periods */
       Period *newper = period_copy(current);
-      period_expand(newper, next);
+      period_expand(next, newper);
       if (isnew)
         pfree(current);
       current = newper;
@@ -284,7 +285,7 @@ Period *
 period_super_union(const Period *p1, const Period *p2)
 {
   Period *result = period_copy(p1);
-  period_expand(result, p2);
+  period_expand(p2, result);
   return result;
 }
 
@@ -292,7 +293,7 @@ period_super_union(const Period *p1, const Period *p2)
  * Expand the first period with the second one
  */
 void
-period_expand(Period *p1, const Period *p2)
+period_expand(const Period *p2, Period *p1)
 {
   int cmp1 = timestamp_cmp_internal(p1->lower, p2->lower);
   int cmp2 = timestamp_cmp_internal(p1->upper, p2->upper);
@@ -302,6 +303,7 @@ period_expand(Period *p1, const Period *p2)
   p1->lower_inc = lower1 ? p1->lower_inc : p2->lower_inc;
   p1->upper = upper1 ? p1->upper : p2->upper;
   p1->upper_inc = upper1 ? p1->upper_inc : p2->upper_inc;
+  return;
 }
 
 /*****************************************************************************

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -364,6 +363,26 @@ type_oid(CachedType type)
   if (!_ready)
     populate_operators();
   return _type_oids[type];
+}
+
+/**
+ * Fetch from the cache the Oid of a type
+ *
+ * @arg[in] type Enum value for the type
+ */
+CachedType
+cachedtype_oid(Oid typid)
+{
+  if (!_ready)
+    populate_operators();
+  int n = sizeof(_type_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (_type_oids[i] == typid)
+      return i;
+  }
+  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+    errmsg("Unknown type %d", typid)));
 }
 
 /**

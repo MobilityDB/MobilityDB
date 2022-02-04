@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -75,15 +74,13 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
-  if (!geo_to_stbox_internal(&box1, gs))
+  if (!geo_stbox(gs, &box1))
   {
     PG_FREE_IF_COPY(gs, 0);
     PG_FREE_IF_COPY(temp, 1);
     PG_RETURN_NULL();
   }
-  temporal_bbox(&box2, temp);
+  temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -105,15 +102,13 @@ posop_tnpoint_geom(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
-  if (!geo_to_stbox_internal(&box2, gs))
+  if (!geo_stbox(gs, &box2))
   {
     PG_FREE_IF_COPY(temp, 0);
     PG_FREE_IF_COPY(gs, 1);
     PG_RETURN_NULL();
   }
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -137,8 +132,7 @@ posop_stbox_tnpoint(FunctionCallInfo fcinfo,
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -161,8 +155,7 @@ tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
   if (hast)
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
-    temporal_bbox(&box1, temp);
+    temporal_bbox(temp, &box1);
     result = func(box, &box1);
   }
   PG_FREE_IF_COPY(temp, 1);
@@ -188,8 +181,7 @@ posop_tnpoint_stbox(FunctionCallInfo fcinfo,
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
-  memset(&box1, 0, sizeof(STBOX));
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -212,8 +204,7 @@ tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
   if (hast)
   {
     STBOX box1;
-    memset(&box1, 0, sizeof(STBOX));
-    temporal_bbox(&box1, temp);
+    temporal_bbox(temp, &box1);
     result = func(&box1, box);
   }
   PG_FREE_IF_COPY(temp, 0);
@@ -236,11 +227,9 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   /* Returns an error if the geometry is not found, is null, or is empty */
-  npoint_to_stbox_internal(&box1, np);
-  temporal_bbox(&box2, temp);
+  npoint_to_stbox_internal(np, &box1);
+  temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -260,11 +249,9 @@ posop_tnpoint_npoint(FunctionCallInfo fcinfo,
   npoint *np = PG_GETARG_NPOINT(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
   /* Returns an error if the geometry is not found, is null, or is empty */
-  npoint_to_stbox_internal(&box2, np);
-  temporal_bbox(&box1, temp);
+  npoint_to_stbox_internal(np, &box2);
+  temporal_bbox(temp, &box1);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -284,10 +271,8 @@ posop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   ensure_same_srid(tnpoint_srid_internal(temp1), tnpoint_srid_internal(temp2));
   STBOX box1, box2;
-  memset(&box1, 0, sizeof(STBOX));
-  memset(&box2, 0, sizeof(STBOX));
-  temporal_bbox(&box1, temp1);
-  temporal_bbox(&box2, temp2);
+  temporal_bbox(temp1, &box1);
+  temporal_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

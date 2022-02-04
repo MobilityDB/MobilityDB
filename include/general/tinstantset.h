@@ -1,29 +1,28 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without a written 
+ * documentation for any purpose, without fee, and without a written
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
  * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
  * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
- * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY 
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
- * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
- * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO 
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS. 
  *
  *****************************************************************************/
@@ -93,23 +92,23 @@ extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
 
 /* Accessor functions */
 
-extern int tinstantset_values(Datum *result, const TInstantSet *ti);
+extern int tinstantset_values(const TInstantSet *ti, Datum *result);
 extern ArrayType *tinstantset_values_array(const TInstantSet *ti);
-extern ArrayType *tfloatinstset_ranges(const TInstantSet *ti);
+extern ArrayType *tfloatinstset_ranges_array(const TInstantSet *ti);
 extern PeriodSet *tinstantset_get_time(const TInstantSet *ti);
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
-extern void tinstantset_bbox(void *box, const TInstantSet *ti);
+extern void tinstantset_bbox(const TInstantSet *ti, void *box);
 extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
-extern void tinstantset_period(Period *p, const TInstantSet *ti);
+extern void tinstantset_period(const TInstantSet *ti, Period *p);
 extern Datum tinstantset_timespan(const TInstantSet *ti);
-extern ArrayType *tinstantset_sequences_array(const TInstantSet *ti);
+extern ArrayType *tinstantset_segments_array(const TInstantSet *ti);
 extern const TInstant **tinstantset_instants(const TInstantSet *ti, int *count);
 extern ArrayType *tinstantset_instants_array(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
-extern TimestampTz *tinstantset_timestamps1(const TInstantSet *ti);
-extern ArrayType *tinstantset_timestamps(const TInstantSet *ti);
+extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti);
+extern ArrayType *tinstantset_timestamps_array(const TInstantSet *ti);
 extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
   const Interval *start, const Interval *duration);
 

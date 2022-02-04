@@ -427,16 +427,16 @@ SELECT round(degrees(bearing(tgeompoint '[Point(2 1)@2012-01-01, Point(0 1)@2012
 			<title>Manipulation Functions</title>
 
 			<itemizedlist>
-				<listitem id="tpoint_setPrecision">
-					<indexterm><primary><varname>setPrecision</varname></primary></indexterm>
+				<listitem id="tpoint_round">
+					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Round the coordinate values to a number of decimal places &Z_support; &geography_support;</para>
-					<para><varname>setPrecision(tpoint,integer): tpoint</varname></para>
+					<para><varname>round(tpoint,integer): tpoint</varname></para>
 					<programlisting xml:space="preserve">
-SELECT asText(setPrecision(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01,
+SELECT asText(round(tgeompoint '{Point(1.12345 1.12345 1.12345)@2000-01-01,
   Point(2 2 2)@2000-01-02, Point(1.12345 1.12345 1.12345)@2000-01-03}', 2));
 -- "{POINT Z (1.12 1.12 1.12)@2000-01-01, POINT Z (2 2 2)@2000-01-02,
   POINT Z (1.12 1.12 1.12)@2000-01-03}"
-SELECT asText(setPrecision(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
+SELECT asText(round(tgeogpoint 'Point(1.12345 1.12345)@2000-01-01', 2));
 -- "POINT(1.12 1.12)@2000-01-01"
 </programlisting>
 				</listitem>
@@ -719,51 +719,59 @@ SELECT tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-02)' &lt;-&gt;
 			<para>There are two versions of the spatial relationships:</para>
 			<itemizedlist>
 				<listitem>
-					<para>The <emphasis>possible relationships</emphasis> apply the traditional topological or distance relationship to the union of all values taken by the temporal point (which is a <varname>geometry</varname> or <varname>geography</varname>) and returns a <varname>boolean</varname>. Examples are the <varname>intersects</varname> and <varname>dwithin</varname> functions.</para>
+					<para>The <emphasis>ever relationships</emphasis> determine whether the topological or distance relationship is ever satisfied (see <xref linkend="ever_always_comparison" />) and returns a <varname>boolean</varname>. Examples are the <varname>intersects</varname> and <varname>dwithin</varname> functions.</para>
 				</listitem>
 
 				<listitem>
-					<para>The <emphasis>temporal relationships</emphasis> are defined with the temporal semantics, that is, the traditional topological or distance relationship is computed at each instant and results in a <varname>tbool</varname>. Examples are the <varname>tintersects</varname> and <varname>tdwithin</varname> functions.</para>
+					<para>The <emphasis>temporal relationships</emphasis> compute the topological or distance relationship at each instant and results in a <varname>tbool</varname>. Examples are the <varname>tintersects</varname> and <varname>tdwithin</varname> functions.</para>
 				</listitem>
 			</itemizedlist>
 
 			<para>
-				The semantics of the possible relationships varies depending on the relationship and the type of the arguments. For example, the following query
+				For example, the following query
 			</para>
 			<programlisting xml:space="preserve">
-SELECT intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
+SELECT intersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 2)@2012-01-01, Point(4 2)@2012-01-05)');
+-- t
 </programlisting>
 			<para>
-				tests whether the temporal point ever intersected the geometry, since the query is conceptually equivalent to the following one
+				tests whether the temporal point ever intersects the geometry. In this case, the query is equivalent to the following one
 			</para>
 			<programlisting xml:space="preserve">
-SELECT ST_Intersects(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  geometry 'Linestring(0 1,1 1)');
+SELECT ST_Intersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  geometry 'Linestring(0 2,4 2)');
 </programlisting>
 			<para>
-				where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point. On the other hand, the query
+				where the second geometry is obtained by applying the <varname>trajectory</varname> function to the temporal point. In contrast, the query
 			</para>
 			<programlisting xml:space="preserve">
-SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
-  tgeompoint '[Point(0 1)@2012-01-01, Point(1 1)@2012-01-03)');
+SELECT tintersects(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 2)@2012-01-01, Point(4 2)@2012-01-05)');
+-- {[f@2012-01-01, t@2012-01-02, t@2012-01-04], (f@2012-01-04, f@2012-01-05)}
 </programlisting>
 			<para>
-				tests whether the geometry always contains the temporal point. Finally, the following query
+				computes at each instant whether the temporal point intersects the geometry. Similarly, the following query
 			</para>
 			<programlisting xml:space="preserve">
-SELECT intersects(tgeompoint '[Point(0 1)@2012-01-01, Point(1 0)@2012-01-03)',
-  tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
+SELECT dwithin(tgeompoint '[Point(3 1)@2012-01-01, Point(5 1)@2012-01-03)',
+  tgeompoint '[Point(3 1)@2012-01-01, Point(1 1)@2012-01-03)', 2);
+-- t
 </programlisting>
 			<para>
-				tests whether the temporal points may intersect in space independently of time, since the query above is conceptually equivalent to the following one
+				tests whether the distance between the temporal points was ever less than or equal to 2, while the following query
 			</para>
 			<programlisting xml:space="preserve">
-SELECT ST_Intersects('Linestring(0 1,1 0)', 'Linestring(0 0,1 1)');
+SELECT tdwithin(tgeompoint '[Point(3 1)@2012-01-01, Point(5 1)@2012-01-03)',
+  tgeompoint '[Point(3 1)@2012-01-01, Point(1 1)@2012-01-03)', 2);
+-- {[t@2012-01-01, t@2012-01-02], (f@2012-01-02, f@2012-01-03)}
 </programlisting>
+			<para>
+				computes at each instant whether the distance between the temporal points is less than or equal to 2.
+			</para>
 
 			<para>
-			The possible relationships are typically used in combination with a spatiotemporal index when computing the temporal relationships. For example, the following query
+			The ever relationships are sometimes used in combination with a spatiotemporal index when computing the temporal relationships. For example, the following query
 			</para>
 			<programlisting xml:space="preserve">
 SELECT T.TripId, R.RegionId, tintersects(T.Trip, R.Geom)
@@ -780,11 +788,12 @@ WHERE intersects(T.Trip, R.Geom)
 		</sect2>
 
 		<sect2>
-			<title>Possible Spatial Relationships</title>
+			<title>Ever Spatial Relationships</title>
+			<para>All these functions automatically include a bounding box comparison that makes use of any spatial indexes that are available on the arguments.</para>
 			<itemizedlist>
 				<listitem id="contains">
 					<indexterm><primary><varname>contains</varname></primary></indexterm>
-					<para>May contain</para>
+					<para>Ever contains</para>
 					<para><varname>contains({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
 					<programlisting xml:space="preserve">
 SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -795,32 +804,35 @@ SELECT contains(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 
 				<listitem id="disjoint">
 					<indexterm><primary><varname>disjoint</varname></primary></indexterm>
-					<para>May be disjoint</para>
-					<para><varname>disjoint({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
+					<para>Is ever disjoint &Z_support; &geography_support;</para>
+					<para><varname>disjoint({geo,tpoint},{geo,tpoint}): boolean</varname></para>
 						<programlisting xml:space="preserve">
 SELECT disjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(1 1)@2012-01-03)');
 -- false
+SELECT disjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
+  tgeompoint '[Point(0 0 1)@2012-01-01, Point(1 1 0)@2012-01-03)');
+-- true
 </programlisting>
 				</listitem>
 
 				<listitem id="dwithin">
 					<indexterm><primary><varname>dwithin</varname></primary></indexterm>
-					<para>May be at distance within &Z_support;</para>
-					<para><varname>dwithin({geo,tpoint},{geo,tpoint},float): boolean</varname></para>
+					<para>Is ever at distance within &Z_support; &geography_support;</para>
+					<para><varname>dwithin({point,tpoint},{point,tpoint},float): boolean</varname></para>
 					<programlisting xml:space="preserve">
-SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint 'Point(0 2 1)@2000-01-01,Point(2 2 1)@2000-01-02', 1)
+SELECT dwithin(geometry 'Point(1 1 1)',
+  tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 0)@2000-01-02]', 1);
 -- true
 SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
-  tgeompoint 'Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02', 1)
--- false
+  tgeompoint '[Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02]', 1);
+-- ERROR:  Only point geometries accepted
 </programlisting>
 				</listitem>
 
 				<listitem id="intersects">
 					<indexterm><primary><varname>intersects</varname></primary></indexterm>
-					<para>May intersect &Z_support;</para>
+					<para>Ever intersects &Z_support; &geography_support;</para>
 					<para><varname>intersects({geo,tpoint},{geo,tpoint}): boolean</varname></para>
 					<programlisting xml:space="preserve">
 SELECT intersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
@@ -834,7 +846,7 @@ SELECT intersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 
 				<listitem id="touches">
 					<indexterm><primary><varname>touches</varname></primary></indexterm>
-					<para>May touch</para>
+					<para>Ever touches &Z_support;</para>
 					<para><varname>touches({geo,tgeompoint},{geo,tgeompoint}): boolean</varname></para>
 					<programlisting xml:space="preserve">
 SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -847,11 +859,24 @@ SELECT touches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 
 		<sect2>
 			<title>Temporal Spatial Relationships</title>
+			<para>A common requirement regarding the temporal spatial relationships is to restrict the result of the relationship to the instants when the value of the result is true (alternatively, false). As an example, the following query computes for each trip the time spent traveling in the Brussels municipality.</para>
+					<programlisting xml:space="preserve">
+SELECT TripId, duration(atValue(tintersects(T.trip, M.geom), True))
+FROM Trips T, Municipality M
+WHERE M.Name = "Brussels" AND atValue(tintersects(T.trip, M.geom), True) IS NOT NULL;
+</programlisting>
+			<para>To simplify query writing, the temporal spatial relationships have an optional last parameter, which if given applies the <varname>atValue</varname> function (see <xref linkend="restriction_functions" />) to the result of the relationship. In this way, the above query can be written as follows.</para>
+					<programlisting xml:space="preserve">
+SELECT TripId, duration(tintersects(T.trip, M.geom, True))
+FROM Trips T, Municipality M
+WHERE M.Name = "Brussels" AND tintersects(T.trip, M.geom, True) IS NOT NULL;
+</programlisting>
 			<itemizedlist>
 				<listitem id="tcontains">
 					<indexterm><primary><varname>tcontains</varname></primary></indexterm>
 					<para>Temporal contains</para>
-					<para><varname>tcontains({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
+					<para><varname>tcontains(geometry, tgeompoint}): tbool</varname></para>
+					<para><varname>tcontains(geometry, tgeompoint},atValue boolean): tbool</varname></para>
 					<programlisting xml:space="preserve">
 SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
@@ -862,7 +887,9 @@ SELECT tcontains(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
 				<listitem id="tdisjoint">
 					<indexterm><primary><varname>tdisjoint</varname></primary></indexterm>
 					<para>Temporal disjoint &Z_support; &geography_support;</para>
-					<para><varname>tdisjoint({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
+					<para><varname>tdisjoint({geo,tpoint},{geo,tpoint}): tbool</varname></para>
+					<para><varname>tdisjoint({geo,tpoint},{geo,tpoint},atValue boolean): tbool</varname></para>
+					<para>The function only supports 3D or geographies for two temporal points</para>
 					<programlisting xml:space="preserve">
 SELECT tdisjoint(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
@@ -876,7 +903,8 @@ SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 				<listitem id="tdwithin">
 					<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
 					<para>Temporal distance within &Z_support; &geography_support;</para>
-					<para><varname>tdwithin({geo,tpoint},{geo,tpoint},float): tbool</varname></para>
+					<para><varname>tdwithin({point,tpoint},{point,tpoint},float): tbool</varname></para>
+					<para><varname>tdwithin({point,tpoint},{point,tpoint},float,atValue boolean): tbool</varname></para>
 					<programlisting xml:space="preserve">
 SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 1);
@@ -891,6 +919,8 @@ SELECT tdwithin(tgeompoint '[Point(1 0)@2000-01-01, Point(1 4)@2000-01-05]',
 					<indexterm><primary><varname>tintersects</varname></primary></indexterm>
 					<para>Temporal intersects &Z_support; &geography_support;</para>
 					<para><varname>tintersects({geo,tpoint},{geo,tpoint}): tbool</varname></para>
+					<para><varname>tintersects({geo,tpoint},{geo,tpoint},atValue boolean): tbool</varname></para>
+					<para>The function only supports 3D or geographies for two temporal points</para>
 					<programlisting xml:space="preserve">
 SELECT tintersects(geometry 'MultiPoint(1 1,2 2)',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 3)@2012-01-04)');
@@ -906,6 +936,7 @@ SELECT tintersects(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 					<indexterm><primary><varname>ttouches</varname></primary></indexterm>
 					<para>Temporal touches</para>
 					<para><varname>ttouches({geo,tgeompoint},{geo,tgeompoint}): tbool</varname></para>
+					<para><varname>ttouches({geo,tgeompoint},{geo,tgeompoint},atValue boolean): tbool</varname></para>
 					<programlisting xml:space="preserve">
 SELECT ttouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)');

@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -280,6 +279,7 @@ ensure_tgeo_base_type(Oid basetypid)
   return;
 }
 
+#ifdef STORE_TRAJ
 /**
  * Returns true if the temporal type corresponding to the Oid of the
  * base type has its trajectory precomputed
@@ -291,6 +291,7 @@ type_has_precomputed_trajectory(Oid basetypid)
     return true;
   return false;
 }
+#endif
 
 /**
  * Returns true if the temporal type corresponding to the Oid of the
@@ -304,7 +305,6 @@ base_type_without_bbox(Oid basetypid)
     return true;
   return false;
 }
-
 
 /**
  * Returns the size of the bounding box
@@ -673,6 +673,23 @@ datum_double(Datum d, Oid basetypid)
   else if (basetypid == FLOAT8OID)
     return DatumGetFloat8(d);
   elog(ERROR, "unknown datum_double function for base type: %d", basetypid);
+}
+
+/**
+ * Convert a C string into a text value
+ *
+ * @note We don't include <utils/builtins.h> to avoid collisions with json-c/json.h
+ * @note Function taken from PostGIS file lwgeom_in_geojson.c
+ */
+
+text *
+cstring2text(const char *cstring)
+{
+  size_t len = strlen(cstring);
+  text *result = (text *) palloc(len + VARHDRSZ);
+  SET_VARSIZE(result, len + VARHDRSZ);
+  memcpy(VARDATA(result), cstring, len);
+  return result;
 }
 
 /**

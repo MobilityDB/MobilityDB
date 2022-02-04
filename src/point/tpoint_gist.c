@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -275,16 +274,37 @@ tpoint_index_recheck(StrategyNumber strategy)
  * must not be taken into account by the operators to infinity.
  */
 static bool
-tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
+tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
 {
-  memset(result, 0, sizeof(STBOX));
   if (tgeo_base_type(subtype))
   {
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
     if (gs == NULL)
       return false;
-    if (!geo_to_stbox_internal(result, gs))
+    if (!geo_stbox(gs, result))
       return false;
+  }
+  else if (subtype == TIMESTAMPTZOID)
+  {
+    TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    timestamp_stbox(t, result);
+  }
+  else if (subtype == type_oid(T_TIMESTAMPSET))
+  {
+    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+    timestampset_stbox(ts, result);
+    PG_FREE_IF_COPY(ts, 1);
+  }
+  else if (subtype == type_oid(T_PERIOD))
+  {
+    Period *p = PG_GETARG_PERIOD(1);
+    period_stbox(p, result);
+  }
+  else if (subtype == type_oid(T_PERIODSET))
+  {
+    PeriodSet *ps = PG_GETARG_PERIODSET(1);
+    periodset_stbox(ps, result);
+    PG_FREE_IF_COPY(ps, 1);
   }
   else if (subtype == type_oid(T_STBOX))
   {
@@ -298,7 +318,7 @@ tpoint_index_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)
       return false;
-    temporal_bbox(result, temp);
+    temporal_bbox(temp, result);
     PG_FREE_IF_COPY(temp, 1);
   }
   else
@@ -327,7 +347,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
-  if (! tpoint_index_get_stbox(fcinfo, &query, subtype))
+  if (! tpoint_gist_get_stbox(fcinfo, &query, subtype))
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
@@ -346,24 +366,16 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
  * Increase the first box to include the second one
  */
 static void
-stbox_adjust(STBOX *b, const STBOX *addon)
+stbox_adjust(STBOX *box1, const STBOX *box2)
 {
-  if (FLOAT8_LT(b->xmax, addon->xmax))
-    b->xmax = addon->xmax;
-  if (FLOAT8_GT(b->xmin, addon->xmin))
-    b->xmin = addon->xmin;
-  if (FLOAT8_LT(b->ymax, addon->ymax))
-    b->ymax = addon->ymax;
-  if (FLOAT8_GT(b->ymin, addon->ymin))
-    b->ymin = addon->ymin;
-  if (FLOAT8_LT(b->zmax, addon->zmax))
-    b->zmax = addon->zmax;
-  if (FLOAT8_GT(b->zmin, addon->zmin))
-    b->zmin = addon->zmin;
-  if (b->tmax < addon->tmax)
-    b->tmax = addon->tmax;
-  if (b->tmin > addon->tmin)
-    b->tmin = addon->tmin;
+  box1->xmin = FLOAT8_MIN(box1->xmin, box2->xmin);
+  box1->xmax = FLOAT8_MAX(box1->xmax, box2->xmax);
+  box1->ymin = FLOAT8_MIN(box1->ymin, box2->ymin);
+  box1->ymax = FLOAT8_MAX(box1->ymax, box2->ymax);
+  box1->zmin = FLOAT8_MIN(box1->zmin, box2->zmin);
+  box1->zmax = FLOAT8_MAX(box1->zmax, box2->zmax);
+  box1->tmin = Min(box1->tmin, box2->tmin);
+  box1->tmax = Max(box1->tmax, box2->tmax);
   return;
 }
 
@@ -377,20 +389,11 @@ PGDLLEXPORT Datum
 stbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  int  i;
-  STBOX *cur, *pageunion;
-
-  pageunion = (STBOX *)palloc0(sizeof(STBOX));
-  cur = (STBOX *)DatumGetPointer(entryvec->vector[0].key);
-  memcpy((void *)pageunion, (void *)cur, sizeof(STBOX));
-
-  for (i = 1; i < entryvec->n; i++)
-  {
-    cur = (STBOX *)DatumGetPointer(entryvec->vector[i].key);
-    stbox_adjust(pageunion, cur);
-  }
-
-  PG_RETURN_POINTER(pageunion);
+  GISTENTRY *ent = entryvec->vector;
+  STBOX *result = stbox_copy(DatumGetSTboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    stbox_adjust(result, DatumGetSTboxP(ent[i].key));
+  PG_RETURN_PERIOD(result);
 }
 
 /*****************************************************************************
@@ -410,7 +413,7 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Temporal *temp = DatumGetTemporal(entry->key);
     STBOX *box = palloc0(sizeof(STBOX));
-    temporal_bbox(box, temp);
+    temporal_bbox(temp, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -496,7 +499,6 @@ static double
 stbox_penalty(const STBOX *original, const STBOX *new)
 {
   STBOX unionbox;
-
   memset(&unionbox, 0, sizeof(STBOX));
   stbox_union_rt(&unionbox, original, new);
   return stbox_size(&unionbox) - stbox_size(original);
@@ -1172,7 +1174,7 @@ stbox_gist_distance(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Transform the query into a box */
-  if (! tpoint_index_get_stbox(fcinfo, &query, subtype))
+  if (! tpoint_gist_get_stbox(fcinfo, &query, subtype))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,

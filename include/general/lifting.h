@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -38,6 +37,7 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
+
 #include "temporal.h"
 
 /**
@@ -63,7 +63,7 @@ typedef struct
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */
-  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid, 
+  bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
   bool (*tpfunc)(const TInstant *, const TInstant *, bool, const TInstant *,
      const TInstant *, bool, Datum *,
@@ -99,6 +99,11 @@ extern TInstant *tfunc_tinstant_tinstant(const TInstant *inst1,
 extern TInstantSet *tfunc_tinstantset_tinstantset(const TInstantSet *ti1,
   const TInstantSet *ti2, LiftedFunctionInfo *lfinfo);
 extern Temporal *tfunc_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, LiftedFunctionInfo *lfinfo);
+
+/*****************************************************************************/
+
+extern int efunc_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, LiftedFunctionInfo *lfinfo);
 
 /*****************************************************************************/

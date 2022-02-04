@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -47,7 +46,6 @@ CREATE FUNCTION tbox_out(tbox)
   RETURNS cstring
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-/*
 CREATE FUNCTION tbox_recv(internal)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
@@ -56,14 +54,13 @@ CREATE FUNCTION tbox_send(tbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-*/
 
 CREATE TYPE tbox (
   internallength = 40,
   input = tbox_in,
   output = tbox_out,
---  receive = tbox_recv,
---  send = tbox_send,
+  receive = tbox_recv,
+  send = tbox_send,
   storage = plain,
   alignment = double
 );
@@ -126,13 +123,13 @@ CREATE FUNCTION tbox(periodset)
   AS 'MODULE_PATHNAME', 'periodset_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (int AS tbox) WITH FUNCTION tbox(int) AS IMPLICIT;
-CREATE CAST (float AS tbox) WITH FUNCTION tbox(float) AS IMPLICIT;
-CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric) AS IMPLICIT;
-CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz) AS IMPLICIT;
-CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset) AS IMPLICIT;
-CREATE CAST (period AS tbox) WITH FUNCTION tbox(period) AS IMPLICIT;
-CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset) AS IMPLICIT;
+CREATE CAST (integer AS tbox) WITH FUNCTION tbox(integer);
+CREATE CAST (float AS tbox) WITH FUNCTION tbox(float);
+CREATE CAST (numeric AS tbox) WITH FUNCTION tbox(numeric);
+CREATE CAST (timestamptz AS tbox) WITH FUNCTION tbox(timestamptz);
+CREATE CAST (timestampset AS tbox) WITH FUNCTION tbox(timestampset);
+CREATE CAST (period AS tbox) WITH FUNCTION tbox(period);
+CREATE CAST (periodset AS tbox) WITH FUNCTION tbox(periodset);
 
 -- We cannot make the castings from range to tbox implicit since this produces
 -- an ambiguity with the implicit castings to anyrange
@@ -228,9 +225,9 @@ CREATE FUNCTION expandTemporal(tbox, interval)
   RETURNS tbox
   AS 'MODULE_PATHNAME', 'tbox_expand_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setPrecision(tbox, int)
+CREATE FUNCTION round(tbox, integer DEFAULT 0)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_set_precision'
+  AS 'MODULE_PATHNAME', 'tbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

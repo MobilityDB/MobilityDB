@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -62,21 +61,21 @@ typedef struct
   void *value;
   int height;
   int next[SKIPLIST_MAXLEVEL];
-} Elem;
+} SkipListElem;
 
 typedef enum
 {
   TIMESTAMPTZ,
   PERIOD,
   TEMPORAL
-} ElemType;
+} SkipListElemType;
 
 /**
  * Structure to represent skiplists that keep the current state of an aggregation
  */
 typedef struct
 {
-  ElemType elemtype;
+  SkipListElemType elemtype;
   int capacity;
   int next;
   int length;
@@ -86,7 +85,7 @@ typedef struct
   int tail;
   void *extra;
   size_t extrasize;
-  Elem *elems;
+  SkipListElem *elems;
 } SkipList;
 
 /*****************************************************************************/
@@ -97,26 +96,13 @@ extern Datum tagg_deserialize(PG_FUNCTION_ARGS);
 /*****************************************************************************/
 
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,
-  int count, ElemType elemtype);
+  int count, SkipListElemType elemtype);
 extern void *skiplist_headval(SkipList *list);
 extern void skiplist_splice(FunctionCallInfo fcinfo, SkipList *list,
   void **values, int count, datum_func2 func, bool crossings);
 extern void **skiplist_values(SkipList *list);
 extern void aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state,
   void *data, size_t size);
-
-/*****************************************************************************/
-
-/* Functions for splicing the skiplist */
-
-TimestampTz *timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
-  int count2, int *newcount);
-Period **period_agg(Period **periods1, int count1, Period **periods2,
-  int count2, int *newcount);
-TInstant **tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
-  int count2, Datum (*func)(Datum, Datum), int *newcount);
-TSequence **tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
-  int count2, Datum (*func)(Datum, Datum), bool crossings, int *newcount);
 
 /*****************************************************************************/
 

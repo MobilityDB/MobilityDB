@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -98,7 +97,7 @@ CREATE FUNCTION tstzrange(period)
   AS 'MODULE_PATHNAME', 'period_to_tstzrange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz) AS IMPLICIT;
+CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
 CREATE CAST (tstzrange AS period) WITH FUNCTION period(tstzrange);
 CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);
 
@@ -136,10 +135,15 @@ CREATE FUNCTION shift(period, interval)
   AS 'MODULE_PATHNAME', 'period_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION periodsel(internal, oid, internal, integer)
+CREATE FUNCTION period_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION period_joinsel(internal, oid, internal, smallint, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 
 /******************************************************************************
  * Operators
@@ -190,25 +194,25 @@ CREATE OPERATOR < (
   PROCEDURE = period_lt,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = periodsel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   PROCEDURE = period_le,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = periodsel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = @JOIN_LE@
 );
 CREATE OPERATOR >= (
   PROCEDURE = period_ge,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = periodsel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = @JOIN_GE@
 );
 CREATE OPERATOR > (
   PROCEDURE = period_gt,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = periodsel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS period_ops

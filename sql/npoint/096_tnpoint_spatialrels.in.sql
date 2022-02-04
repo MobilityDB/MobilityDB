@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -175,7 +174,7 @@ CREATE FUNCTION _dwithin(npoint, tnpoint, dist float8)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
-  AS 'SELECT @extschema@.expandSpatial($1,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
+  AS 'SELECT @extschema@.expandSpatial($1::stbox,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(tnpoint, geometry, dist float8)
@@ -193,7 +192,7 @@ CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, npoint, dist float8)
   RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial($2,$3) AND @extschema@._dwithin($1, $2, $3)'
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial($2::stbox,$3) AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION dwithin(tnpoint, tnpoint, dist float8)

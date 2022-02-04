@@ -139,7 +139,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="floatrange_setPrecision"><varname>setPrecision</varname></link>: Round the bounds of a float range to a number of decimal places</para>
+					<para><link linkend="floatrange_round"><varname>round</varname></link>: Round the bounds of a float range to a number of decimal places</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -378,7 +378,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="box_setPrecision"><varname>setPrecision</varname></link>: Round the value or the coordinates of the bounding box to a number of decimal places</para>
+					<para><link linkend="box_round"><varname>round</varname></link>: Round the value or the coordinates of the bounding box to a number of decimal places</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1279,7 +1279,7 @@
 				<title>Manipulation Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpoint_setPrecision"><varname>setPrecision</varname></link>: Round the coordinate values to a number of decimal places</para>
+						<para><link linkend="tpoint_round"><varname>round</varname></link>: Round the coordinate values to a number of decimal places</para>
 					</listitem>
 
 					<listitem>
@@ -1591,7 +1591,7 @@
 				<title>Modification Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_setPrecision"><varname>setPrecision</varname></link>: Set the precision of the position(s) of the network point or the network segment to the number of decimal places</para>
+						<para><link linkend="npoint_round"><varname>round</varname></link>: Round the position(s) of the network point or the network segment to the number of decimal places</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1688,7 +1688,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_setPrecision"><varname>setPrecision</varname></link>: Set the precision of the fraction of the temporal network point to the number of decimal places</para>
+						<para><link linkend="tnpoint_round"><varname>round</varname></link>: Round the fraction of the temporal network point to the number of decimal places</para>
 					</listitem>
 
 					<listitem>

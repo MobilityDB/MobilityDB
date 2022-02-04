@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -53,13 +52,6 @@
 #include "general/temporal_boxops.h"
 #include "general/doublen.h"
 #include "general/time_aggfuncs.h"
-
-TInstant **
-tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
-  int count2, datum_func2 func, int *newcount);
-TSequence **
-tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
-  int count2, datum_func2 func, bool crossings, int *newcount);
 
 /*****************************************************************************
  * Aggregate functions on datums
@@ -159,7 +151,7 @@ datum_sum_double4(Datum l, Datum r)
 }
 
 /*****************************************************************************
- * TInstant generic aggregation functions
+ * Generic aggregation functions
  *****************************************************************************/
 
 /*
@@ -208,10 +200,6 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
   *newcount = count;
   return result;
 }
-
-/*****************************************************************************
- * TSequence generic aggregation functions
- *****************************************************************************/
 
 /**
  * Generic aggregate function for temporal sequences
@@ -288,12 +276,12 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
   int cmp2 = timestamp_cmp_internal(lower2, lower);
   if (cmp1 < 0 || (lower1_inc && !lower_inc && cmp1 == 0))
   {
-    period_set(&period, lower1, lower, lower1_inc, !lower_inc);
+    period_set(lower1, lower, lower1_inc, !lower_inc, &period);
     sequences[k++] = tsequence_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (lower2_inc && !lower_inc && cmp2 == 0))
   {
-    period_set(&period, lower2, lower, lower2_inc, !lower_inc);
+    period_set(lower2, lower, lower2_inc, !lower_inc, &period);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
 
@@ -321,12 +309,12 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
   cmp2 = timestamp_cmp_internal(upper, upper2);
   if (cmp1 < 0 || (!upper_inc && upper1_inc && cmp1 == 0))
   {
-    period_set(&period, upper, upper1, !upper_inc, upper1_inc);
+    period_set(upper, upper1, !upper_inc, upper1_inc, &period);
     sequences[k++] = tsequence_at_period(seq1, &period);
   }
   else if (cmp2 < 0 || (!upper_inc && upper2_inc && cmp2 == 0))
   {
-    period_set(&period, upper, upper2, !upper_inc, upper2_inc);
+    period_set(upper, upper2, !upper_inc, upper2_inc, &period);
     sequences[k++] = tsequence_at_period(seq2, &period);
   }
   pfree(intersect);
@@ -355,7 +343,7 @@ tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2
  * @param[in] count2 Number of elements in the temporal sequence set value
  * @param[in] func Function
  * @param[in] crossings State whether turning points are added in the segments
- * @param[in] newcount Number of elements in the result
+ * @param[out] newcount Number of elements in the result
  * @note Returns new sequences that must be freed by the calling function.
  */
 TSequence **
@@ -439,7 +427,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 void
-ensure_same_temp_subtype_skiplist(SkipList *state, int16 subtype,
+ensure_same_tempsubtype_skiplist(SkipList *state, int16 subtype,
   Temporal *temp)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
@@ -471,7 +459,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &inst, 1, TEMPORAL);
   else
   {
-    ensure_same_temp_subtype_skiplist(state, INSTANT, (Temporal *) inst);
+    ensure_same_tempsubtype_skiplist(state, INSTANT, (Temporal *) inst);
     skiplist_splice(fcinfo, state, (void **) &inst, 1, func, false);
     result = state;
   }
@@ -498,7 +486,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) instants, ti->count, TEMPORAL);
   else
   {
-    ensure_same_temp_subtype_skiplist(state, INSTANT, (Temporal *) ti);
+    ensure_same_tempsubtype_skiplist(state, INSTANT, (Temporal *) ti);
     skiplist_splice(fcinfo, state, (void **) instants, ti->count, func, false);
     result = state;
   }
@@ -525,7 +513,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
   else
   {
-    ensure_same_temp_subtype_skiplist(state, SEQUENCE, (Temporal *) seq);
+    ensure_same_tempsubtype_skiplist(state, SEQUENCE, (Temporal *) seq);
     skiplist_splice(fcinfo, state, (void **) &seq, 1, func, crossings);
     result = state;
   }
@@ -552,7 +540,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **)sequences, ts->count, TEMPORAL);
   else
   {
-    ensure_same_temp_subtype_skiplist(state, SEQUENCE, (Temporal *) ts);
+    ensure_same_tempsubtype_skiplist(state, SEQUENCE, (Temporal *) ts);
     skiplist_splice(fcinfo, state, (void **) sequences, ts->count, func, crossings);
     result = state;
   }
@@ -623,7 +611,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
     return state1;
 
   Temporal *head2 = (Temporal *) skiplist_headval(state2);
-  ensure_same_temp_subtype_skiplist(state1, head2->subtype, head2);
+  ensure_same_tempsubtype_skiplist(state1, head2->subtype, head2);
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
@@ -638,7 +626,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
  * @param[in] func Function
  * @param[in] crossings State whether turning points are added in the segments
  */
-Datum
+static Datum
 temporal_tagg_combinefn(FunctionCallInfo fcinfo, datum_func2 func,
   bool crossings)
 {
@@ -804,7 +792,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (state)
   {
-    ensure_same_temp_subtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, crossings);
   }
   else
@@ -946,7 +934,7 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (state)
   {
-    ensure_same_temp_subtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32, false);
   }
   else
@@ -992,7 +980,7 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
   if (!p)
   {
     result = palloc0(sizeof(Period));
-    temporal_bbox(result, temp);
+    temporal_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -1004,7 +992,7 @@ temporal_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  temporal_bbox(&p1, temp);
+  temporal_bbox(temp, &p1);
   result = period_super_union(p, &p1);
 
   PG_FREE_IF_COPY(temp, 1);
@@ -1051,7 +1039,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
   /* Null box and non-null temporal, return the bbox of the temporal */
   if (!box)
   {
-    temporal_bbox(result, temp);
+    temporal_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null box and null temporal, return the box */
@@ -1062,7 +1050,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   /* Both box and temporal are not null */
-  temporal_bbox(result, temp);
+  temporal_bbox(temp, result);
   tbox_expand(result, box);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -1312,7 +1300,7 @@ tnumberinst_transform_tavg(const TInstant *inst)
 {
   double value = datum_double(tinstant_value(inst), inst->basetypid);
   double2 dvalue;
-  double2_set(&dvalue, value, 1);
+  double2_set(value, 1, &dvalue);
   TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
     type_oid(T_DOUBLE2));
   return result;

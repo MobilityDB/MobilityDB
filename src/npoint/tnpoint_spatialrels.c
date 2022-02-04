@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -144,7 +143,7 @@ disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, true);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
 }
@@ -160,7 +159,7 @@ disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
   npoint *np  = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Datum geom = npoint_as_geom_internal(np);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, true);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -176,7 +175,7 @@ disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Datum geom = PG_GETARG_DATUM(1);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, false);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
@@ -192,7 +191,7 @@ disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   npoint *np  = PG_GETARG_NPOINT(1);
   Datum geom = npoint_as_geom_internal(np);
-  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint, true);
+  Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);

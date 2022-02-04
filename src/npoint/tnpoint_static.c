@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -578,43 +577,43 @@ nsegment_end_position(PG_FUNCTION_ARGS)
  * decimal places
  */
 Datum
-npoint_set_precision_internal(Datum npt, Datum size)
+npoint_round_internal(Datum npt, Datum size)
 {
   /* Set precision of position */
   npoint *np = (npoint *) DatumGetPointer(npt);
-  double pos = DatumGetFloat8(datum_round(Float8GetDatum(np->pos), size));
+  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
   return PointerGetDatum(npoint_make(np->rid, pos));
 }
 
-PG_FUNCTION_INFO_V1(npoint_set_precision);
+PG_FUNCTION_INFO_V1(npoint_round);
 /**
  * Set the precision of the position of a network point to the number of
  * decimal places
  */
 PGDLLEXPORT Datum
-npoint_set_precision(PG_FUNCTION_ARGS)
+npoint_round(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Datum size = PG_GETARG_DATUM(1);
   /* Set precision of position */
-  double pos = DatumGetFloat8(datum_round(Float8GetDatum(np->pos), size));
+  double pos = DatumGetFloat8(datum_round_float(Float8GetDatum(np->pos), size));
   npoint *result = npoint_make(np->rid, pos);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_set_precision);
+PG_FUNCTION_INFO_V1(nsegment_round);
 /**
  * Set the precision of the position of a network point to the number of
  * decimal places
  */
 PGDLLEXPORT Datum
-nsegment_set_precision(PG_FUNCTION_ARGS)
+nsegment_round(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   Datum size = PG_GETARG_DATUM(1);
   /* Set precision of positions */
-  double pos1 = DatumGetFloat8(datum_round(Float8GetDatum(ns->pos1), size));
-  double pos2 = DatumGetFloat8(datum_round(Float8GetDatum(ns->pos2), size));
+  double pos1 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos1), size));
+  double pos2 = DatumGetFloat8(datum_round_float(Float8GetDatum(ns->pos2), size));
   nsegment *result = nsegment_make(ns->rid, pos1, pos2);
   PG_RETURN_POINTER(result);
 }

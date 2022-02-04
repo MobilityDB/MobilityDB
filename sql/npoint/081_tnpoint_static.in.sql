@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -163,14 +162,14 @@ CREATE FUNCTION srid(nsegment)
  * Modification functions
  *****************************************************************************/
 
-CREATE FUNCTION setPrecision(npoint, int)
+CREATE FUNCTION round(npoint, int DEFAULT 0)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'npoint_set_precision'
+  AS 'MODULE_PATHNAME', 'npoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION setPrecision(nsegment, int)
+CREATE FUNCTION round(nsegment, int DEFAULT 0)
   RETURNS nsegment
-  AS 'MODULE_PATHNAME', 'nsegment_set_precision'
+  AS 'MODULE_PATHNAME', 'nsegment_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************

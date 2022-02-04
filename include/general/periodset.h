@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -42,11 +41,11 @@
 
 /*****************************************************************************/
 
-/* Assorted support functions */
+/* General functions */
 
 extern const Period *periodset_per_n(const PeriodSet *ps, int index);
 extern const Period *periodset_bbox_ptr(const PeriodSet *ps);
-extern void periodset_bbox(Period *p, const PeriodSet *ps);
+extern void periodset_bbox(const PeriodSet *ps, Period *p);
 extern PeriodSet *periodset_make(const Period **periods, int count,
   bool normalize);
 extern PeriodSet *periodset_make_free(Period **periods, int count,
@@ -79,6 +78,8 @@ extern PeriodSet *timestamp_to_periodset_internal(TimestampTz t);
 extern PeriodSet *period_to_periodset_internal(const Period *p);
 extern PeriodSet *timestampset_to_periodset_internal(const TimestampSet *ts);
 
+extern void periodset_to_period_internal(const PeriodSet *ps, Period *p);
+
 /* Accessor functions */
 
 extern Datum periodset_mem_size(PG_FUNCTION_ARGS);
@@ -96,7 +97,6 @@ extern Datum periodset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum periodset_timestamps(PG_FUNCTION_ARGS);
 extern Datum periodset_shift(PG_FUNCTION_ARGS);
 
-extern void periodset_to_period_internal(Period *p, const PeriodSet *ps);
 extern const Period **periodset_periods_internal(const PeriodSet *ps);
 extern TimestampTz periodset_start_timestamp_internal(const PeriodSet *ps);
 extern TimestampTz periodset_end_timestamp_internal(const PeriodSet *ps);

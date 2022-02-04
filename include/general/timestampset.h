@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -46,7 +45,7 @@
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
 extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
-extern void timestampset_bbox(Period *p, const TimestampSet *ts);
+extern void timestampset_bbox(const TimestampSet *ts, Period *p);
 extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
@@ -81,7 +80,7 @@ extern Datum timestampset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum timestampset_timestamps(PG_FUNCTION_ARGS);
 extern Datum timestampset_shift(PG_FUNCTION_ARGS);
 
-extern void timestampset_to_period_internal(Period *p, const TimestampSet *ts);
+extern void timestampset_to_period_internal(const TimestampSet *ts, Period *p);
 extern TimestampTz *timestampset_timestamps_internal(const TimestampSet *ts);
 extern TimestampSet *timestampset_shift_internal(const TimestampSet *ts, const Interval *interval);
 

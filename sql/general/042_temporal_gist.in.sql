@@ -1,13 +1,12 @@
 /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
- *
- * Copyright (c) 2016-2021, Université libre de Bruxelles and MobilityDB
+ * Copyright (c) 2016-2022, Université libre de Bruxelles and MobilityDB
  * contributors
  *
  * MobilityDB includes portions of PostGIS version 3 source code released
  * under the GNU General Public License (GPLv2 or later).
- * Copyright (c) 2001-2021, PostGIS contributors
+ * Copyright (c) 2001-2022, PostGIS contributors
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without a written
@@ -58,12 +57,14 @@ CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-
-CREATE OPERATOR CLASS gist_tbool_ops
+CREATE OPERATOR CLASS tbool_gist_ops
   DEFAULT FOR TYPE tbool USING gist AS
   STORAGE period,
   -- overlaps
-  OPERATOR  3    && (tbool, period),
+  OPERATOR  3    && (tbool, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tbool, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tbool, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tbool, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tbool, tbool),
     -- same
   OPERATOR  6    ~= (tbool, period),
@@ -196,7 +197,7 @@ AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER < 110000
 
-CREATE OPERATOR CLASS gist_tint_ops
+CREATE OPERATOR CLASS tint_gist_ops
   DEFAULT FOR TYPE tint USING gist AS
   STORAGE tbox,
   -- strictly left
@@ -210,6 +211,11 @@ CREATE OPERATOR CLASS gist_tint_ops
   OPERATOR  2    &< (tint, tint),
   OPERATOR  2    &< (tint, tfloat),
   -- overlaps
+  OPERATOR  3    && (tint, int),          -- index support for ?=
+  OPERATOR  3    && (tint, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tint, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tint, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tint, intrange),
   OPERATOR  3    && (tint, tbox),
   OPERATOR  3    && (tint, tint),
@@ -287,7 +293,7 @@ CREATE FUNCTION tfloat_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_tfloat_ops
+CREATE OPERATOR CLASS tfloat_gist_ops
   DEFAULT FOR TYPE tfloat USING gist AS
   STORAGE tbox,
   -- strictly left
@@ -301,6 +307,11 @@ CREATE OPERATOR CLASS gist_tfloat_ops
   OPERATOR  2    &< (tfloat, tint),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
+  OPERATOR  3    && (tfloat, float),        -- index support for ?=
+  OPERATOR  3    && (tfloat, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tfloat, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tfloat, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tfloat, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tfloat, floatrange),
   OPERATOR  3    && (tfloat, tbox),
   OPERATOR  3    && (tfloat, tint),
@@ -378,11 +389,14 @@ CREATE FUNCTION ttext_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'temporal_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS gist_ttext_ops
+CREATE OPERATOR CLASS ttext_gist_ops
   DEFAULT FOR TYPE ttext USING gist AS
   STORAGE period,
   -- overlaps
-  OPERATOR  3    && (ttext, period),
+  OPERATOR  3    && (ttext, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (ttext, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (ttext, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (ttext, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (ttext, ttext),
     -- same
   OPERATOR  6    ~= (ttext, period),
@@ -394,20 +408,20 @@ CREATE OPERATOR CLASS gist_ttext_ops
   OPERATOR  8    <@ (ttext, period),
   OPERATOR  8    <@ (ttext, ttext),
   -- adjacent
-  OPERATOR  17    -|- (ttext, period),
-  OPERATOR  17    -|- (ttext, ttext),
+  OPERATOR  17   -|- (ttext, period),
+  OPERATOR  17   -|- (ttext, ttext),
   -- overlaps or before
-  OPERATOR  28    &<# (ttext, period),
-  OPERATOR  28    &<# (ttext, ttext),
+  OPERATOR  28   &<# (ttext, period),
+  OPERATOR  28   &<# (ttext, ttext),
   -- strictly before
-  OPERATOR  29    <<# (ttext, period),
-  OPERATOR  29    <<# (ttext, ttext),
+  OPERATOR  29   <<# (ttext, period),
+  OPERATOR  29   <<# (ttext, ttext),
   -- strictly after
-  OPERATOR  30    #>> (ttext, period),
-  OPERATOR  30    #>> (ttext, ttext),
+  OPERATOR  30   #>> (ttext, period),
+  OPERATOR  30   #>> (ttext, ttext),
   -- overlaps or after
-  OPERATOR  31    #&> (ttext, period),
-  OPERATOR  31    #&> (ttext, ttext),
+  OPERATOR  31   #&> (ttext, period),
+  OPERATOR  31   #&> (ttext, ttext),
   -- functions
   FUNCTION  1  ttext_gist_consistent(internal, ttext, smallint, oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
