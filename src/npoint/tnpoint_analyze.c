@@ -101,7 +101,7 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(temp);
 
     /* Get period from temporal point */
-    temporal_period(&period, temp);
+    temporal_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
     period_deserialize(&period, &period_lower, &period_upper);

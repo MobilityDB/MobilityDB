@@ -65,12 +65,12 @@
  * Set the spatiotemporal box from the temporal point value
  */
 void
-tpointinst_make_stbox(STBOX *box, const TInstant *inst)
+tpointinst_stbox(const TInstant *inst, STBOX *box)
 {
   Datum value = tinstant_value(inst);
   GSERIALIZED *gs = (GSERIALIZED *) PointerGetDatum(value);
   /* Non-empty geometries have a bounding box */
-  geo_to_stbox_internal(box, gs);
+  geo_stbox(gs, box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
 }
@@ -84,15 +84,16 @@ tpointinst_make_stbox(STBOX *box, const TInstant *inst)
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
-tpointinstarr_to_stbox(STBOX *box, const TInstant **instants, int count)
+tpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
 {
-  tpointinst_make_stbox(box, instants[0]);
+  tpointinst_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
     STBOX box1;
-    tpointinst_make_stbox(&box1, instants[i]);
+    tpointinst_stbox(instants[i], &box1);
     stbox_expand(box, &box1);
   }
+  return;
 }
 
 /**
@@ -103,14 +104,15 @@ tpointinstarr_to_stbox(STBOX *box, const TInstant **instants, int count)
  * @param[in] count Number of elements in the array
  */
 void
-tpointseqarr_to_stbox(STBOX *box, const TSequence **sequences, int count)
+tpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(STBOX));
   for (int i = 1; i < count; i++)
   {
-    STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
+    const STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
     stbox_expand(box, box1);
   }
+  return;
 }
 
 /*****************************************************************************
@@ -128,7 +130,7 @@ tpointseqarr_to_stbox(STBOX *box, const TSequence **sequences, int count)
  * @return Number of elements in the array
  */
 static int
-tpointseq_stboxes1(STBOX *result, const TSequence *seq)
+tpointseq_stboxes1(const TSequence *seq, STBOX *result)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
   const TInstant *inst1;
@@ -137,7 +139,7 @@ tpointseq_stboxes1(STBOX *result, const TSequence *seq)
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    tpointinst_make_stbox(&result[0], inst1);
+    tpointinst_stbox(inst1, &result[0]);
     return 1;
   }
 
@@ -145,10 +147,10 @@ tpointseq_stboxes1(STBOX *result, const TSequence *seq)
   inst1 = tsequence_inst_n(seq, 0);
   for (int i = 0; i < seq->count - 1; i++)
   {
-    tpointinst_make_stbox(&result[i], inst1);
+    tpointinst_stbox(inst1, &result[i]);
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     STBOX box;
-    tpointinst_make_stbox(&box, inst2);
+    tpointinst_stbox(inst2, &box);
     stbox_expand(&result[i], &box);
     inst1 = inst2;
   }
@@ -169,7 +171,7 @@ tpointseq_stboxes(const TSequence *seq)
   if (count == 0)
     count = 1;
   STBOX *boxes = palloc0(sizeof(STBOX) * count);
-  tpointseq_stboxes1(boxes, seq);
+  tpointseq_stboxes1(seq, boxes);
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
   return result;
@@ -190,7 +192,7 @@ tpointseqset_stboxes(const TSequenceSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tpointseq_stboxes1(&boxes[k], seq);
+    k += tpointseq_stboxes1(seq, &boxes[k]);
   }
   ArrayType *result = stboxarr_to_array(boxes, k);
   pfree(boxes);
@@ -238,8 +240,8 @@ boxop_geo_tpoint(FunctionCallInfo fcinfo,
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   STBOX box1, box2;
-  geo_to_stbox_internal(&box1, gs);
-  temporal_bbox(&box2, temp);
+  geo_stbox(gs, &box1);
+  temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -261,8 +263,8 @@ boxop_tpoint_geo(FunctionCallInfo fcinfo,
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX box1, box2;
-  temporal_bbox(&box1, temp);
-  geo_to_stbox_internal(&box2, gs);
+  temporal_bbox(temp, &box1);
+  geo_stbox(gs, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -282,7 +284,7 @@ boxop_stbox_tpoint(FunctionCallInfo fcinfo,
   STBOX *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   STBOX box1;
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -301,7 +303,7 @@ boxop_tpoint_stbox(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
   STBOX box1;
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -320,8 +322,8 @@ boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   STBOX box1, box2;
-  temporal_bbox(&box1, temp1);
-  temporal_bbox(&box2, temp2);
+  temporal_bbox(temp1, &box1);
+  temporal_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

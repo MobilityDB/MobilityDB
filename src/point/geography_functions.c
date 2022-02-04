@@ -314,7 +314,7 @@ circ_tree_distance_tree_internal(const CIRC_NODE* n1, const CIRC_NODE* n2, doubl
  * Closest point and closest line functions for geographies.
  ***********************************************************************/
 
-LWGEOM *
+static LWGEOM *
 geography_tree_closestpoint(const GSERIALIZED* g1, const GSERIALIZED* g2, double threshold)
 {
   CIRC_NODE* circ_tree1 = NULL;
@@ -393,7 +393,7 @@ Datum geography_closestpoint(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-LWGEOM *
+static LWGEOM *
 geography_tree_shortestline(const GSERIALIZED* g1, const GSERIALIZED* g2,
   double threshold, const SPHEROID *spheroid)
 {
@@ -499,37 +499,8 @@ Datum geography_shortestline(PG_FUNCTION_ARGS)
  * ST_LineSubstring for geographies
  ***********************************************************************/
 
-/**
- * Find interpolation point p between geography points p1 and p2
- * so that the len(p1,p) == len(p1,p2)
- * f and p falls on p1,p2 segment.
- *
- * @param[in] p1,p2 3D-space points we are interpolating between
- * @param[in] v1,v2 real values and z/m coordinates
- * @param[in] f Fraction
- * @param[out] p Result
- */
-void
-interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
-  const POINT4D *v1, const POINT4D *v2, double f, POINT4D *p)
-{
-  /* Calculate interpolated point */
-  POINT3D mid;
-  mid.x = p1->x + ((p2->x - p1->x) * f);
-  mid.y = p1->y + ((p2->y - p1->y) * f);
-  mid.z = p1->z + ((p2->z - p1->z) * f);
-  normalize(&mid);
-
-  /* Calculate z/m values */
-  GEOGRAPHIC_POINT g;
-  cart2geog(&mid, &g);
-  p->x = rad2deg(g.lon);
-  p->y = rad2deg(g.lat);
-  p->z = v1->z + ((v2->z - v1->z) * f);
-  p->m = v1->m + ((v2->m - v1->m) * f);
-}
-
-double ptarray_length_sphere(const POINTARRAY *pa)
+static double
+ptarray_length_sphere(const POINTARRAY *pa)
 {
   GEOGRAPHIC_POINT a, b;
   POINT4D p;
@@ -555,7 +526,7 @@ double ptarray_length_sphere(const POINTARRAY *pa)
   return length;
 }
 
-POINTARRAY *
+static POINTARRAY *
 geography_substring(POINTARRAY *ipa, double from, double to,
   double tolerance)
 {
@@ -760,7 +731,8 @@ Datum geography_line_substring(PG_FUNCTION_ARGS)
  * Interpolate a point along a geographic line.
  ***********************************************************************/
 
-POINTARRAY* geography_interpolate_points(const LWLINE *line,
+static POINTARRAY *
+geography_interpolate_points(const LWLINE *line,
   double length_fraction, const SPHEROID *s, char repeat)
 {
   POINT4D pt;
@@ -844,7 +816,8 @@ POINTARRAY* geography_interpolate_points(const LWLINE *line,
 }
 
 #if POSTGIS_VERSION_NUMBER < 30000
-void spheroid_init(SPHEROID *s, double a, double b)
+void
+spheroid_init(SPHEROID *s, double a, double b)
 {
   s->a = a;
   s->b = b;
@@ -927,7 +900,7 @@ Datum geography_line_interpolate_point(PG_FUNCTION_ARGS)
  * Locate a point along a geographic line.
  ***********************************************************************/
 
-double
+static double
 ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   const SPHEROID *s, double tolerance, double *mindistout, POINT4D *proj4d)
 {
@@ -1109,7 +1082,6 @@ ptarray_locate_point_spheroid(const POINTARRAY *pa, const POINT4D *p4d,
   return partlength / totlength;
 }
 
-Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(geography_line_locate_point);
 Datum geography_line_locate_point(PG_FUNCTION_ARGS)
 {

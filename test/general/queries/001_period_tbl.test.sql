@@ -37,6 +37,7 @@ COPY tbl_period TO '/tmp/tbl_period' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_period_tmp;
 CREATE TABLE tbl_period_tmp AS TABLE tbl_period WITH NO DATA;
 COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
 DROP TABLE tbl_period_tmp;
 
 -------------------------------------------------------------------------------

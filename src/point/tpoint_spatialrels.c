@@ -886,7 +886,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tdwithin_tpointseq_tpointseq1(sv1, sev1, sv2, sev2,
+      int solutions = tdwithin_tpointsegment(sv1, sev1, sv2, sev2,
         lower, upper, dist_d, hasz, func, &t1, &t2);
       if (solutions == 2 ||
       (solutions == 1 && ((t1 != lower || lower_inc) &&

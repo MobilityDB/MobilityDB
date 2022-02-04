@@ -493,7 +493,7 @@ tfunc_tsequence_base_discont(TSequence **result, const TSequence *seq,
     {
       /* Compute the function at the middle time between start and the end instants */
       inttime = start->t + ((end->t - start->t)/2);
-      intvalue = tsequence_value_at_timestamp1(start, end, linear, inttime);
+      intvalue = tsegment_value_at_timestamp(start, end, linear, inttime);
       intresult = tfunc_base_base(intvalue, value, lfinfo);
       lower_eq = lower_inc && datum_eq(startresult, intresult, lfinfo->restypid);
       upper_eq = upper_inc && datum_eq(intresult, endresult, lfinfo->restypid);
@@ -1116,13 +1116,13 @@ tfunc_tsequence_tsequence_linearstep(TSequence **result, const TSequence *seq1,
     else if (cmp < 0)
     {
       i++;
-      end2 = tsequence_at_timestamp1(start2, end2, linear2, end1->t);
+      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
       tofree[l++] = end2;
     }
     else
     {
       j++;
-      end1 = tsequence_at_timestamp1(start1, end1, linear1, end2->t);
+      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
       tofree[l++] = end1;
     }
     /* Compute the function at the end instant */
@@ -1213,13 +1213,13 @@ tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1,
     else if (cmp < 0)
     {
       i++;
-      end2 = tsequence_at_timestamp1(start2, end2, linear2, end1->t);
+      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
       tofree[l++] = end2;
     }
     else
     {
       j++;
-      end1 = tsequence_at_timestamp1(start1, end1, linear1, end2->t);
+      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
       tofree[l++] = end1;
     }
     /* Compute the function at the end instant */
@@ -1250,8 +1250,8 @@ tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1,
     {
       /* Compute the function at the middle time between start and the end instants */
       inttime = start1->t + ((end1->t - start1->t) / 2);
-      intvalue1 = tsequence_value_at_timestamp1(start1, end1, linear1, inttime);
-      intvalue2 = tsequence_value_at_timestamp1(start2, end2, linear2, inttime);
+      intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
+      intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
       intresult = tfunc_base_base(intvalue1, intvalue2, lfinfo);
       lower_eq = lower_inc && datum_eq(startresult, intresult, lfinfo->restypid);
       upper_eq = datum_eq(intresult, endresult, lfinfo->restypid);
@@ -1538,8 +1538,8 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 {
   /* Bounding box test */
   Period p1, p2;
-  temporal_period(&p1, temp1);
-  temporal_period(&p2, temp2);
+  temporal_period(temp1, &p1);
+  temporal_period(temp2, &p2);
   if (! overlaps_period_period_internal(&p1, &p2))
     return NULL;
 
@@ -1931,13 +1931,13 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
     else if (cmp < 0)
     {
       i++;
-      end2 = tsequence_at_timestamp1(start2, end2, linear2, end1->t);
+      end2 = tsegment_at_timestamp(start2, end2, linear2, end1->t);
       tofree[l++] = end2;
     }
     else
     {
       j++;
-      end1 = tsequence_at_timestamp1(start1, end1, linear1, end2->t);
+      end1 = tsegment_at_timestamp(start1, end1, linear1, end2->t);
       tofree[l++] = end1;
     }
     /* Compute the function at the end instant */
@@ -1960,8 +1960,8 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
     {
       /* Compute the function at the middle time between start and the end instants */
       inttime = start1->t + ((end1->t - start1->t) / 2);
-      intvalue1 = tsequence_value_at_timestamp1(start1, end1, linear1, inttime);
-      intvalue2 = tsequence_value_at_timestamp1(start2, end2, linear2, inttime);
+      intvalue1 = tsegment_value_at_timestamp(start1, end1, linear1, inttime);
+      intvalue2 = tsegment_value_at_timestamp(start2, end2, linear2, inttime);
       if (DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo)))
       {
         pfree_array((void **) tofree, l);
@@ -2125,8 +2125,8 @@ efunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 {
   /* Bounding box test */
   Period p1, p2;
-  temporal_period(&p1, temp1);
-  temporal_period(&p2, temp2);
+  temporal_period(temp1, &p1);
+  temporal_period(temp2, &p2);
   if (! overlaps_period_period_internal(&p1, &p2))
     return -1;
 

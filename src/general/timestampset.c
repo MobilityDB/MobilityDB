@@ -69,10 +69,10 @@ timestampset_bbox_ptr(const TimestampSet *ts)
  * Copy in the first argument the bounding box of the timestamp set value
  */
 void
-timestampset_bbox(Period *p, const TimestampSet *ts)
+timestampset_bbox(const TimestampSet *ts, Period *p)
 {
   const Period *p1 = (Period *)&ts->period;
-  period_set(p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
+  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
   return;
 }
 
@@ -110,7 +110,7 @@ timestampset_make(const TimestampTz *times, int count)
   result->count = count;
 
   /* Compute the bounding box */
-  period_set(&result->period, times[0], times[count - 1], true, true);
+  period_set(times[0], times[count - 1], true, true, &result->period);
   /* Copy the timestamp array */
   for (int i = 0; i < count; i++)
     result->elems[i] = times[i];
@@ -328,11 +328,12 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-timestampset_to_period_internal(Period *p, const TimestampSet *ts)
+timestampset_to_period_internal(const TimestampSet *ts, Period *p)
 {
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-  period_set(p, start, end, true, true);
+  period_set(start, end, true, true, p);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_period);

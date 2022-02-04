@@ -739,7 +739,7 @@ tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *s
       if (instants[k - 1]->t < upper)
       {
         if (linear)
-          tofree[l] = tsequence_at_timestamp1(instants[k - 1], inst, linear,
+          tofree[l] = tsegment_at_timestamp(instants[k - 1], inst, linear,
             upper);
         else
         {
@@ -975,7 +975,7 @@ temporal_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the bounds */
     Period p;
-    temporal_period(&p, temp);
+    temporal_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
     TimestampTz start_bucket = timestamptz_bucket_internal(start_time, tunits,
@@ -1927,7 +1927,7 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
 
     /* Compute the time bounds */
     Period p;
-    temporal_period(&p, temp);
+    temporal_period(temp, &p);
     TimestampTz start_time = p.lower;
     TimestampTz end_time = p.upper;
     TimestampTz start_time_bucket = timestamptz_bucket_internal(start_time,

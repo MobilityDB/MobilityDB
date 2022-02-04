@@ -143,6 +143,31 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
 }
 
 /**
+ * Returns true if the two segments of the temporal values intersect at the
+ * timestamp.
+ *
+ * This function is passed to the lifting infrastructure when computing the
+ * temporal distance.
+ * @param[in] start1,end1 Temporal instants defining the first segment
+ * @param[in] linear1 True if the first segment has linear interpolation
+ * @param[in] start2,end2 Temporal instants defining the second segment
+ * @param[in] linear2 True if the second segment has linear interpolation
+ * @param[out] value Value
+ * @param[out] t Timestamp
+ */
+static bool
+tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
+  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
+  Datum *value, TimestampTz *t)
+{
+  if (! tsequence_intersection(start1, end1, linear1, start2, end2,
+    linear2, NULL, NULL, t))
+    return false;
+  *value = (Datum) 0;
+  return true;
+}
+
+/**
  * Returns the temporal distance between the two temporal points
  * (dispatch function)
  *
@@ -202,11 +227,11 @@ NAD_tnumber_base_internal(Temporal *temp, Datum value, Oid basetypid)
 {
   ensure_tnumber_base_type(basetypid);
   TBOX box1, box2;
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   if (basetypid == INT4OID)
-    int_to_tbox_internal(&box2, DatumGetInt32(value));
+    int_to_tbox_internal(DatumGetInt32(value), &box2);
   else /* basetypid == FLOAT8OID */
-    float_to_tbox_internal(&box2, DatumGetFloat8(value));
+    float_to_tbox_internal(DatumGetFloat8(value), &box2);
   return NAD_tbox_tbox_internal(&box1, &box2);
 }
 
@@ -256,8 +281,8 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   Period *inter;
   if (hast)
   {
-    period_set(&p1, box1->tmin, box1->tmax, true, true);
-    period_set(&p2, box2->tmin, box2->tmax, true, true);
+    period_set(box1->tmin, box1->tmax, true, true, &p1);
+    period_set(box2->tmin, box2->tmax, true, true, &p2);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
@@ -315,8 +340,8 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
   Period *inter;
   if (hast)
   {
-    temporal_period(&p1, temp);
-    period_set(&p2, box->tmin, box->tmax, true, true);
+    temporal_period(temp, &p1);
+    period_set(box->tmin, box->tmax, true, true, &p2);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
@@ -327,7 +352,7 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
     (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBOX box1;
-  temporal_bbox(&box1, temp1);
+  temporal_bbox(temp1, &box1);
   if (overlaps_tbox_tbox_internal(box, &box1))
     return 0.0;
 

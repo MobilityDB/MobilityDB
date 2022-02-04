@@ -281,29 +281,29 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
     if (gs == NULL)
       return false;
-    if (!geo_to_stbox_internal(result, gs))
+    if (!geo_stbox(gs, result))
       return false;
   }
   else if (subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_to_stbox_internal(result, t);
+    timestamp_stbox(t, result);
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
     TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-    timestampset_to_stbox_internal(result, ts);
+    timestampset_stbox(ts, result);
     PG_FREE_IF_COPY(ts, 1);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
     Period *p = PG_GETARG_PERIOD(1);
-    period_to_stbox_internal(result, p);
+    period_stbox(p, result);
   }
   else if (subtype == type_oid(T_PERIODSET))
   {
     PeriodSet *ps = PG_GETARG_PERIODSET(1);
-    periodset_to_stbox_internal(result, ps);
+    periodset_stbox(ps, result);
     PG_FREE_IF_COPY(ps, 1);
   }
   else if (subtype == type_oid(T_STBOX))
@@ -318,7 +318,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)
       return false;
-    temporal_bbox(result, temp);
+    temporal_bbox(temp, result);
     PG_FREE_IF_COPY(temp, 1);
   }
   else
@@ -413,7 +413,7 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     Temporal *temp = DatumGetTemporal(entry->key);
     STBOX *box = palloc0(sizeof(STBOX));
-    temporal_bbox(box, temp);
+    temporal_bbox(temp, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

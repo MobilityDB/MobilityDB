@@ -141,6 +141,23 @@ SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01-04))';
 ERROR:  An SRID is specified but not coordinates are given
 LINE 1: SELECT stbox 'SRID=4326;GEODSTBOX T((,2001-01-08), (,2001-01...
                      ^
+COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_stbox3d_tmp;
+NOTICE:  table "tbl_stbox3d_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_stbox3d_tmp AS TABLE tbl_stbox3d WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_stbox3d_tmp FROM '/tmp/tbl_stbox3d' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_stbox3d_tmp;
+DROP TABLE
 SELECT stbox_t('2001-01-03','2001-01-06');
                             stbox_t                             
 ----------------------------------------------------------------

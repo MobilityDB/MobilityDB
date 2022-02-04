@@ -92,23 +92,23 @@ extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
 
 /* Accessor functions */
 
-extern int tinstantset_values(Datum *result, const TInstantSet *ti);
+extern int tinstantset_values(const TInstantSet *ti, Datum *result);
 extern ArrayType *tinstantset_values_array(const TInstantSet *ti);
-extern ArrayType *tfloatinstset_ranges(const TInstantSet *ti);
+extern ArrayType *tfloatinstset_ranges_array(const TInstantSet *ti);
 extern PeriodSet *tinstantset_get_time(const TInstantSet *ti);
 extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
-extern void tinstantset_bbox(void *box, const TInstantSet *ti);
+extern void tinstantset_bbox(const TInstantSet *ti, void *box);
 extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
-extern void tinstantset_period(Period *p, const TInstantSet *ti);
+extern void tinstantset_period(const TInstantSet *ti, Period *p);
 extern Datum tinstantset_timespan(const TInstantSet *ti);
-extern ArrayType *tinstantset_sequences_array(const TInstantSet *ti);
+extern ArrayType *tinstantset_segments_array(const TInstantSet *ti);
 extern const TInstant **tinstantset_instants(const TInstantSet *ti, int *count);
 extern ArrayType *tinstantset_instants_array(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
-extern TimestampTz *tinstantset_timestamps1(const TInstantSet *ti);
-extern ArrayType *tinstantset_timestamps(const TInstantSet *ti);
+extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti);
+extern ArrayType *tinstantset_timestamps_array(const TInstantSet *ti);
 extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
   const Interval *start, const Interval *duration);
 

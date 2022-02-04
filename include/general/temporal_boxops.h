@@ -54,11 +54,11 @@ extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern void tinstant_make_bbox(void *bbox, const TInstant *inst);
-extern void tinstantset_make_bbox(void *bbox, const TInstant **inst, int count);
-extern void tsequence_make_bbox(void *bbox, const TInstant** inst, int count,
-  bool lower_inc, bool upper_inc);
-extern void tsequenceset_make_bbox(void *bbox, const TSequence **seqs, int count);
+extern void tinstant_make_bbox(const TInstant *inst, void *bbox);
+extern void tinstantset_make_bbox(const TInstant **inst, int count, void *bbox);
+extern void tsequence_make_bbox(const TInstant** inst, int count,
+  bool lower_inc, bool upper_inc, void *bbox);
+extern void tsequenceset_make_bbox(const TSequence **seqs, int count, void *bbox);
 
 /* Restriction at/minus tbox */
 

@@ -379,7 +379,7 @@ tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
   /* The following function removes duplicate values */
-  int count1 = tinstantset_values(values, ti);
+  int count1 = tinstantset_values(ti, values);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -398,7 +398,7 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * seq->count);
   /* The following function removes duplicate values */
-  int count1 = tsequence_values(values, seq);
+  int count1 = tsequence_values(seq, values);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
@@ -474,7 +474,7 @@ tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
 {
   Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
   /* The following function removes duplicate values */
-  int count1 = tsequenceset_values(values, ts);
+  int count1 = tsequenceset_values(ts, values);
   nsegment **result = palloc(sizeof(nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {

@@ -367,7 +367,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
   /* Split the temporal point in an array of non self-intersecting
    * temporal points */
   int newcount;
-  TSequence **simpleseqs = tpointseq_make_simple1(seq, &newcount);
+  TSequence **simpleseqs = tpointseq_make_simple(seq, &newcount);
   TSequence ***sequences = palloc(sizeof(TSequence *) * newcount);
   /* palloc0 used due to initialize the counters to 0 */
   int *countseqs = palloc0(sizeof(int) * newcount);
@@ -465,9 +465,9 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter,
 
   /* Bounding box test */
   STBOX box1, box2;
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_to_stbox_internal(&box2, gs);
+  geo_stbox(gs, &box2);
   if (!overlaps_stbox_stbox_internal(&box1, &box2))
     return temporal_from_base(temp, datum_no, BOOLOID, STEP);
 
@@ -609,7 +609,7 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  * of a single result both t1 and t2 are set to the unique timestamp
  */
 int
-tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
+tdwithin_tpointsegment(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2)
 {
@@ -832,7 +832,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tdwithin_tpointseq_tpointseq1(sv1, sev1, sv2, sev2,
+      int solutions = tdwithin_tpointsegment(sv1, sev1, sv2, sev2,
         lower, upper, dist_d, hasz, func, &t1, &t2);
 
       /* <  F  > */
@@ -1263,8 +1263,8 @@ tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
  * temporal point (internal function)
  */
 Temporal *
-tcontains_geo_tpoint_internal(GSERIALIZED *gs, Temporal *temp, bool restr,
-  Datum atvalue)
+tcontains_geo_tpoint_internal(GSERIALIZED *gs, const Temporal *temp,
+  bool restr, Datum atvalue)
 {
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
   Datum bound = call_function1(boundary, PointerGetDatum(gs));
@@ -1451,8 +1451,8 @@ tintersects_tpoint_geo(PG_FUNCTION_ARGS)
  * temporal point (internal version)
  */
 Temporal *
-ttouches_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, bool restr,
-  Datum atvalue)
+ttouches_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs,
+  bool restr, Datum atvalue)
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z(temp->flags); ensure_has_not_Z_gs(gs);

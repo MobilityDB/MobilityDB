@@ -71,10 +71,10 @@ periodset_bbox_ptr(const PeriodSet *ps)
  * Copy in the first argument the bounding box of the timestamp set value
  */
 void
-periodset_bbox(Period *p, const PeriodSet *ps)
+periodset_bbox(const PeriodSet *ps, Period *p)
 {
   const Period *p1 = (Period *)&ps->period;
-  period_set(p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
+  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
   return;
 }
 
@@ -119,12 +119,13 @@ periodset_make(const Period **periods, int count, bool normalize)
   result->count = newcount;
 
   /* Compute the bounding box */
-  period_set(&result->period, newperiods[0]->lower, newperiods[newcount - 1]->upper,
-    newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc);
+  period_set(newperiods[0]->lower, newperiods[newcount - 1]->upper,
+    newperiods[0]->lower_inc, newperiods[newcount - 1]->upper_inc,
+    &result->period);
   /* Copy the period array */
   for (int i = 0; i < newcount; i++)
-    period_set(&result->elems[i], newperiods[i]->lower, newperiods[i]->upper,
-      newperiods[i]->lower_inc, newperiods[i]->upper_inc);
+    period_set(newperiods[i]->lower, newperiods[i]->upper,
+      newperiods[i]->lower_inc, newperiods[i]->upper_inc, &result->elems[i]);
   /* Free after normalization */
   if (normalize && count > 1)
     pfree_array((void **) newperiods, newcount);
@@ -151,15 +152,6 @@ periodset_make_free(Period **periods, int count, bool normalize)
     count, normalize);
   pfree_array((void **) periods, count);
   return result;
-}
-
-/**
- * Construct a period set from a period (internal function)
- */
-PeriodSet *
-period_to_periodset_internal(const Period *period)
-{
-  return periodset_make((const Period **)&period, 1, NORMALIZE_NO);
 }
 
 /**
@@ -344,7 +336,7 @@ PeriodSet *
 timestamp_to_periodset_internal(TimestampTz t)
 {
   Period p;
-  period_set(&p, t, t, true, true);
+  period_set(t, t, true, true, &p);
   PeriodSet *result = period_to_periodset_internal(&p);
   return result;
 }
@@ -389,6 +381,15 @@ timestampset_to_periodset(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Construct a period set from a period (internal function)
+ */
+PeriodSet *
+period_to_periodset_internal(const Period *period)
+{
+  return periodset_make((const Period **) &period, 1, NORMALIZE_NO);
+}
+
 PG_FUNCTION_INFO_V1(period_to_periodset);
 /**
  * Cast the period value as a period set value
@@ -406,12 +407,11 @@ period_to_periodset(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-periodset_to_period_internal(Period *p, const PeriodSet *ps)
+periodset_to_period_internal(const PeriodSet *ps, Period *p)
 {
   const Period *start = periodset_per_n(ps, 0);
   const Period *end = periodset_per_n(ps, ps->count - 1);
-  period_set(p, start->lower, end->upper,
-    start->lower_inc, end->upper_inc);
+  period_set(start->lower, end->upper, start->lower_inc, end->upper_inc, p);
 }
 
 PG_FUNCTION_INFO_V1(periodset_to_period);
@@ -423,7 +423,7 @@ periodset_to_period(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  periodset_to_period_internal(result, ps);
+  periodset_to_period_internal(ps, result);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }

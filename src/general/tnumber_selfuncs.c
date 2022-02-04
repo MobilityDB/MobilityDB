@@ -674,14 +674,14 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 
   if (tnumber_range_type(consttype))
 #if POSTGRESQL_VERSION_NUMBER < 110000
-    range_to_tbox_internal(box, DatumGetRangeType(((Const *) other)->constvalue));
+    range_to_tbox_internal(DatumGetRangeType(((Const *) other)->constvalue), box);
 #else
-    range_to_tbox_internal(box, DatumGetRangeTypeP(((Const *) other)->constvalue));
+    range_to_tbox_internal(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
 #endif
   else if (consttype == type_oid(T_TBOX))
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
   else if (tnumber_type(consttype))
-    temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), box);
   else
     return false;
   return true;
@@ -827,7 +827,7 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
     }
   }
   if (MOBDB_FLAGS_GET_T(box->flags))
-    period_set(&period, box->tmin, box->tmax, true, true);
+    period_set(box->tmin, box->tmax, true, true, &period);
 
   /*
    * There is no ~= operator for range/time types and thus it is necessary to

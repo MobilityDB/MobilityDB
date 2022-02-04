@@ -66,7 +66,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Temporal *temp1 = tnpoint_as_tgeompoint_internal(temp);
 
-  geoaggstate_check_t(state, temp1);
+  geoaggstate_check_temp(state, temp1);
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?
     &datum_sum_double4 : &datum_sum_double3;
 
@@ -74,7 +74,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
   if (state)
   {
-    ensure_same_temp_subtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else

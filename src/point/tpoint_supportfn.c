@@ -171,11 +171,9 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname;
-  if (argoid == type_oid(T_GEOMETRY))
-    funcname = "st_expand";
-  else if (argoid == type_oid(T_GEOGRAPHY))
-    funcname = "_st_expand";
-  else if (argoid == type_oid(T_STBOX) ||
+  if (argoid == type_oid(T_GEOMETRY) ||
+      argoid == type_oid(T_GEOGRAPHY) ||
+      argoid == type_oid(T_STBOX) ||
       argoid == type_oid(T_TGEOMPOINT) ||
       argoid == type_oid(T_TGEOGPOINT))
     funcname = "expandspatial";
@@ -337,7 +335,9 @@ tpoint_supportfn(PG_FUNCTION_ARGS)
        * depending on whether there is an expand function */
       exproid = rightoid;
       if (idxfn.expand_arg &&
-          (rightoid == type_oid(T_STBOX) ||
+          (rightoid == type_oid(T_GEOMETRY) ||
+           rightoid == type_oid(T_GEOGRAPHY) ||
+           rightoid == type_oid(T_STBOX) ||
            rightoid == type_oid(T_TGEOMPOINT) ||
            rightoid == type_oid(T_TGEOGPOINT)))
           exproid = type_oid(T_STBOX);

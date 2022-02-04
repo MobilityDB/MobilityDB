@@ -105,18 +105,19 @@ extern bool period_gt_internal(const Period *p1, const Period *p2);
 
 /* Assorted support functions */
 
-extern void period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper);
+extern void period_deserialize(const Period *p, PeriodBound *lower,
+  PeriodBound *upper);
 extern int period_cmp_bounds(const PeriodBound *lower, const PeriodBound *upper);
 extern Period *period_make(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
-extern void period_set(Period *p, TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc);
+extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc, Period *p);
 extern Period *period_copy(const Period *p);
 extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
 extern Interval *period_duration_internal(const Period *p);
 extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
 extern Period *period_super_union(const Period *p1, const Period *p2);
-extern void period_expand(Period *p1, const Period *p2);
+extern void period_expand(const Period *p2, Period *p1);
 
 extern int period_bound_qsort_cmp(const void *a1, const void *a2);
 

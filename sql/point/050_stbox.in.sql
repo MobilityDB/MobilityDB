@@ -46,7 +46,6 @@ CREATE FUNCTION stbox_out(stbox)
   RETURNS cstring
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-/*
 CREATE FUNCTION stbox_recv(internal)
   RETURNS stbox
   AS 'MODULE_PATHNAME'
@@ -55,14 +54,13 @@ CREATE FUNCTION stbox_send(stbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-*/
 
 CREATE TYPE stbox (
   internallength = 72,
   input = stbox_in,
   output = stbox_out,
---  receive = stbox_recv,
---  send = stbox_send,
+  receive = stbox_recv,
+  send = stbox_send,
   storage = plain,
   alignment = double
 );

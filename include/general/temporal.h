@@ -624,11 +624,11 @@ extern Temporal *temporal_minus_period_internal(const Temporal *temp,
 extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp,
   const PeriodSet *ps, bool atfunc);
 
-extern void temporal_period(Period *p, const Temporal *temp);
+extern void temporal_period(const Temporal *temp, Period *p);
 extern char *temporal_to_string(const Temporal *temp,
   char *(*value_out)(Oid, Datum));
 extern void *temporal_bbox_ptr(const Temporal *temp);
-extern void temporal_bbox(void *box, const Temporal *temp);
+extern void temporal_bbox(const Temporal *temp, void *box);
 
 /* Comparison functions */
 

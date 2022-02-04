@@ -53,7 +53,11 @@ extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
   GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 #endif
 
+extern Datum geography_closestpoint(PG_FUNCTION_ARGS);
 extern Datum geography_shortestline(PG_FUNCTION_ARGS);
+extern Datum geography_line_substring(PG_FUNCTION_ARGS);
+extern Datum geography_line_interpolate_point(PG_FUNCTION_ARGS);
+extern Datum geography_line_locate_point(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

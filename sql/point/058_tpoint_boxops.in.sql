@@ -50,6 +50,15 @@ CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
 
 /*****************************************************************************/
 
+CREATE FUNCTION expandSpatial(geometry, float)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'geo_expand_spatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION expandSpatial(geography, float)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'geo_expand_spatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION expandSpatial(tgeompoint, float)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'

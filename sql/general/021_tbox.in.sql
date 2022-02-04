@@ -46,7 +46,6 @@ CREATE FUNCTION tbox_out(tbox)
   RETURNS cstring
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-/*
 CREATE FUNCTION tbox_recv(internal)
   RETURNS tbox
   AS 'MODULE_PATHNAME'
@@ -55,14 +54,13 @@ CREATE FUNCTION tbox_send(tbox)
   RETURNS bytea
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-*/
 
 CREATE TYPE tbox (
   internallength = 40,
   input = tbox_in,
   output = tbox_out,
---  receive = tbox_recv,
---  send = tbox_send,
+  receive = tbox_recv,
+  send = tbox_send,
   storage = plain,
   alignment = double
 );

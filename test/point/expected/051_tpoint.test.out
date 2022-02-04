@@ -3089,6 +3089,42 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point
  t
 (1 row)
 
+SELECT tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02}' ?= 'Point(1.5 1.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]' ?= 'Point(1 1)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(2 2)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(2 2)@2000-01-03, Point(1 1)@2000-01-04]}' ?= 'Point(0 0)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= 'Point(1.5 1.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= geometry 'Point empty';
  ?column? 
 ----------

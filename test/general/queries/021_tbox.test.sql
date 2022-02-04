@@ -49,6 +49,15 @@ SELECT tbox 'TBOX((1, 2000-01-01),(AA, 2000-01-02))';
 SELECT tbox 'TBOX((1, 2000-01-01),(2, AA))';
 SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
 
+-- Send/receive functions
+
+COPY tbl_tbox TO '/tmp/tbl_tbox' (FORMAT BINARY);
+DROP TABLE IF EXISTS tbl_tbox_tmp;
+CREATE TABLE tbl_tbox_tmp AS TABLE tbl_tbox WITH NO DATA;
+COPY tbl_tbox_tmp FROM '/tmp/tbl_tbox' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+DROP TABLE tbl_tbox_tmp;
+
 -------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
@@ -71,6 +80,8 @@ SELECT tbox 'TBOX((1.0,), (2.0, ))'::period;
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::floatrange;
 SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
 
+SELECT 1::tbox;
+SELECT 1.5::tbox;
 SELECT floatrange 'empty'::tbox;
 SELECT floatrange '[1,2]'::tbox;
 

@@ -63,6 +63,23 @@ SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
 ERROR:  Could not parse TBOX: Missing closing parenthesis
 LINE 1: SELECT tbox 'TBOX((1, 2000-01-01),(2, 2000-01-02)';
                     ^
+COPY tbl_tbox TO '/tmp/tbl_tbox' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_tbox_tmp;
+NOTICE:  table "tbl_tbox_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tbox_tmp AS TABLE tbl_tbox WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tbox_tmp FROM '/tmp/tbl_tbox' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tbox_tmp;
+DROP TABLE
 SELECT tbox(1,'2000-01-01',2,'2000-01-02');
                             tbox                             
 -------------------------------------------------------------
@@ -133,6 +150,18 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
                       period                      
 --------------------------------------------------
  [2000-01-01 00:00:00+00, 2000-01-02 00:00:00+00]
+(1 row)
+
+SELECT 1::tbox;
+      tbox       
+-----------------
+ TBOX((1,),(1,))
+(1 row)
+
+SELECT 1.5::tbox;
+        tbox         
+---------------------
+ TBOX((1.5,),(1.5,))
 (1 row)
 
 SELECT floatrange 'empty'::tbox;

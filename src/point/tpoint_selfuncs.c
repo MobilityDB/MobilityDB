@@ -487,12 +487,12 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
   Oid consttype = ((Const *) other)->consttype;
 
   if (tgeo_base_type(consttype))
-    geo_to_stbox_internal(box,
-      (GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue));
+    geo_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
+      box);
   else if (consttype == type_oid(T_STBOX))
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
   else if (tspatial_type(consttype))
-    temporal_bbox(box, DatumGetTemporal(((Const *) other)->constvalue));
+    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), box);
   else
     return false;
   return true;
@@ -898,7 +898,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (MOBDB_FLAGS_GET_T(constBox.flags))
   {
     /* Transform the STBOX into a Period */
-    period_set(&constperiod, constBox.tmin, constBox.tmax, true, true);
+    period_set(constBox.tmin, constBox.tmax, true, true, &constperiod);
     int16 subtype = TYPMOD_GET_SUBTYPE(vardata.atttypmod);
     ensure_valid_tempsubtype_all(subtype);
 
@@ -1038,8 +1038,8 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
   }
 
   /* Re-read that info after the swap */
-  ncells1 = (int) roundf(s1->histogram_cells);
-  ncells2 = (int) roundf(s2->histogram_cells);
+  // ncells1 = (int) roundf(s1->histogram_cells);
+  // ncells2 = (int) roundf(s2->histogram_cells);
 
   /* Q: What's the largest possible join size these relations can create? */
   /* A: The product of the # of non-null rows in each relation. */

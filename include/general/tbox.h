@@ -69,8 +69,8 @@ typedef struct
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax);
-extern void tbox_set(TBOX *box, bool hasx, bool hast, double xmin,
-  double xmax, TimestampTz tmin, TimestampTz tmax);
+extern void tbox_set(bool hasx, bool hast, double xmin, double xmax,
+  TimestampTz tmin, TimestampTz tmax, TBOX *box);
 extern TBOX *tbox_copy(const TBOX *box);
 extern void tbox_expand(TBOX *box1, const TBOX *box2);
 extern void tbox_shift_tscale(TBOX *box, const Interval *start,
@@ -86,6 +86,8 @@ extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
 
 extern Datum tbox_in(PG_FUNCTION_ARGS);
 extern Datum tbox_out(PG_FUNCTION_ARGS);
+extern Datum tbox_send(PG_FUNCTION_ARGS);
+extern Datum tbox_recv(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
@@ -114,14 +116,14 @@ extern Datum float_period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_period_to_tbox(PG_FUNCTION_ARGS);
 
-extern void number_to_tbox_internal(TBOX *box, Datum value, Oid basetypid);
-extern void range_to_tbox_internal(TBOX *box, const RangeType *r);
-extern void int_to_tbox_internal(TBOX *box, int i);
-extern void float_to_tbox_internal(TBOX *box, double d);
-extern void timestamp_to_tbox_internal(TBOX *box, TimestampTz t);
-extern void timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts);
-extern void period_to_tbox_internal(TBOX *box, const Period *p);
-extern void periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps);
+extern void number_to_tbox_internal(Datum value, Oid basetypid, TBOX *box);
+extern void range_to_tbox_internal(const RangeType *r, TBOX *box);
+extern void int_to_tbox_internal(int i, TBOX *box);
+extern void float_to_tbox_internal(double d, TBOX *box);
+extern void timestamp_to_tbox_internal(TimestampTz t, TBOX *box);
+extern void timestampset_to_tbox_internal(const TimestampSet *ts, TBOX *box);
+extern void period_to_tbox_internal(const Period *p, TBOX *box);
+extern void periodset_to_tbox_internal(const PeriodSet *ps, TBOX *box);
 
 /* Accessor functions */
 

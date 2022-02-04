@@ -55,7 +55,7 @@ struct GeoAggregateState
   bool hasz;
 };
 
-extern void geoaggstate_check_t(const SkipList *state, const Temporal *t);
+extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
 
 /*****************************************************************************/
 

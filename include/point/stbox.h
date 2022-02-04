@@ -76,14 +76,14 @@ typedef struct
 
 /*****************************************************************************/
 
-/* Miscellaneous functions */
+/* General functions */
 
 extern STBOX *stbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
   int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, TimestampTz tmin, TimestampTz tmax);
-extern void stbox_set(STBOX *box, bool hasx, bool hasz, bool hast, bool geodetic,
-  int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, TimestampTz tmin, TimestampTz tmax);
+extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic,
+  int32 srid, double xmin, double xmax, double ymin, double ymax,
+  double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
 extern STBOX *stbox_copy(const STBOX *box);
 extern void stbox_expand(STBOX *box1, const STBOX *box2);
 extern void stbox_shift_tscale(STBOX *box, const Interval *start,
@@ -98,6 +98,8 @@ extern void ensure_has_T_stbox(const STBOX *box);
 
 extern Datum stbox_in(PG_FUNCTION_ARGS);
 extern Datum stbox_out(PG_FUNCTION_ARGS);
+extern Datum stbox_send(PG_FUNCTION_ARGS);
+extern Datum stbox_recv(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
@@ -116,8 +118,8 @@ extern Datum stbox_to_period(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
 
-extern void stbox_set_box3d(const STBOX *box, BOX3D *box3d);
-extern void stbox_set_gbox(const STBOX *box, GBOX * gbox);
+extern void stbox_gbox(const STBOX *box, GBOX * gbox);
+extern void stbox_box3d(const STBOX *box, BOX3D *box3d);
 
 /* Transform a <Type> to a STBOX */
 
@@ -131,18 +133,18 @@ extern Datum periodset_to_stbox(PG_FUNCTION_ARGS);
 extern Datum geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
 extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
 
-extern bool geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs);
-extern void timestamp_to_stbox_internal(STBOX *box, TimestampTz t);
-extern void timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ps);
-extern void period_to_stbox_internal(STBOX *box, const Period *p);
-extern void periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps);
+extern bool geo_stbox(const GSERIALIZED *gs, STBOX *box);
+extern void timestamp_stbox(TimestampTz t, STBOX *box);
+extern void timestampset_stbox(const TimestampSet *ps, STBOX *box);
+extern void period_stbox(const Period *p, STBOX *box);
+extern void periodset_stbox(const PeriodSet *ps, STBOX *box);
 
 /* Accessor functions */
 
 extern Datum stbox_hasx(PG_FUNCTION_ARGS);
 extern Datum stbox_hasz(PG_FUNCTION_ARGS);
 extern Datum stbox_hast(PG_FUNCTION_ARGS);
-extern Datum stbox_geodetic(PG_FUNCTION_ARGS);
+extern Datum stbox_isgeodetic(PG_FUNCTION_ARGS);
 extern Datum stbox_xmin(PG_FUNCTION_ARGS);
 extern Datum stbox_xmax(PG_FUNCTION_ARGS);
 extern Datum stbox_ymin(PG_FUNCTION_ARGS);
@@ -225,6 +227,11 @@ extern Datum stbox_intersection(PG_FUNCTION_ARGS);
 extern STBOX *stbox_union_internal(const STBOX *box1, const STBOX *box2,
   bool strict);
 extern STBOX *stbox_intersection_internal(const STBOX *box1, const STBOX *box2);
+
+/* Extent aggregation */
+
+extern Datum stbox_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum stbox_extent_combinefn(PG_FUNCTION_ARGS);
 
 /* Comparison functions */
 

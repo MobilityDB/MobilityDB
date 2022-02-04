@@ -7,6 +7,12 @@ CREATE TABLE tbl_period_tmp AS TABLE tbl_period WITH NO DATA;
 CREATE TABLE AS
 COPY tbl_period_tmp FROM '/tmp/tbl_period' (FORMAT BINARY);
 COPY 100
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.p <> t2.p;
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_period_tmp;
 DROP TABLE
 SELECT max(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;

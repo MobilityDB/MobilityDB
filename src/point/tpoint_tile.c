@@ -419,8 +419,8 @@ stbox_tile_set(STBOX *result, double x, double y, double z, TimestampTz t,
     tmin = t;
     tmax = tmin + tunits;
   }
-  return stbox_set(result, true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax);
+  return stbox_set(true, hasz, hast, false, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, tmin, tmax, result);
 }
 
 /**
@@ -801,7 +801,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
 {
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
-  datum_get_point4d(&p, tinstant_value(inst));
+  datum_point4d(tinstant_value(inst), &p);
   double x = float_bucket_internal(p.x, state->size, state->box.xmin);
   double y = float_bucket_internal(p.y, state->size, state->box.ymin);
   double z = 0;
@@ -976,7 +976,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
-    temporal_bbox(&bounds, temp);
+    temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)
@@ -1115,7 +1115,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
     memset(&bounds, 0, sizeof(STBOX));
-    temporal_bbox(&bounds, temp);
+    temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN)

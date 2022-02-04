@@ -477,8 +477,8 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
   /* Project the boxes to their common timespan */
   if (hast)
   {
-    period_set(&p1, query->tmin, query->tmax, true, true);
-    period_set(&p2, cube_box->left.tmin, cube_box->right.tmax, true, true);
+    period_set(query->tmin, query->tmax, true, true, &p1);
+    period_set(cube_box->left.tmin, cube_box->right.tmax, true, true, &p2);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
@@ -525,28 +525,28 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
     /* The geometry can be empty */
-    if (!geo_to_stbox_internal(result, gs))
+    if (!geo_stbox(gs, result))
       return false;
   }
   else if (scankey->sk_subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_to_stbox_internal(result, t);
+    timestamp_stbox(t, result);
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
     TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
-    timestampset_to_stbox_internal(result, ts);
+    timestampset_stbox(ts, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIOD))
   {
     Period *p = DatumGetPeriod(scankey->sk_argument);
-    period_to_stbox_internal(result, p);
+    period_stbox(p, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIODSET))
   {
     PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
-    periodset_to_stbox_internal(result, ps);
+    periodset_stbox(ps, result);
   }
   else if (scankey->sk_subtype == type_oid(T_STBOX))
   {
@@ -554,7 +554,7 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   }
   else if (tspatial_type(scankey->sk_subtype))
   {
-    temporal_bbox(result, DatumGetTemporal(scankey->sk_argument));
+    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
@@ -993,7 +993,7 @@ tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(result, temp);
+  temporal_bbox(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_STBOX_P(result);
 }

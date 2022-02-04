@@ -53,8 +53,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(temp, tgeogpoint '[Point(0 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(temp, geometry 'Linestring(0 0,5 5)');
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(geometry 'Linestring(0 0,5 5)', temp);
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, geometry 'Linestring(0 0,15 15)', 5);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, geometry 'Linestring(0 0,15 15)', 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, geography 'Linestring(0 0,5 5)', 5);
@@ -92,8 +92,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersects(temp, tgeogpoint '[Point(0 
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(temp, geometry 'Linestring(0 0,5 5)');
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE touches(geometry 'Linestring(0 0,5 5)', temp);
 
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, geometry 'Linestring(0 0,5 5)', 5);
--- EXPLAIN ANALYZE SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, geometry 'Linestring(0 0,5 5)', 5);
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, geography 'Linestring(0 0,5 5)', 5);

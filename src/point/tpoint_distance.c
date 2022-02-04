@@ -268,8 +268,8 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
     return false;
   *t = start1->t + (TimestampTz) (duration * fraction);
   /* We know that this function is called only for linear segments */
-  Datum value1 = tsequence_value_at_timestamp1(start1, end1, LINEAR, *t);
-  Datum value2 = tsequence_value_at_timestamp1(start2, end2, LINEAR, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   *value = hasz ?
     geom_distance3d(value1, value2) : geom_distance2d(value1, value2);
   return true;
@@ -654,7 +654,7 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   *t = inst1->t + (TimestampTz) (duration * fraction);
   *tofree = true;
   /* We are sure that it is linear interpolation */
-  *closest =  tsequence_value_at_timestamp1(inst1, inst2, true, *t);
+  *closest =  tsegment_value_at_timestamp(inst1, inst2, true, *t);
   return dist;
 }
 
@@ -960,12 +960,12 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   Datum geo;
   if (hasz || geodetic)
   {
-    stbox_set_box3d(box, &box3d);
+    stbox_box3d(box, &box3d);
     geo = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d));
   }
   else
   {
-    stbox_set_gbox(box, &gbox);
+    stbox_gbox(box, &gbox);
     geo = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
   }
   Datum result = func(geo, PointerGetDatum(gs));
@@ -1026,8 +1026,8 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   Period *inter = NULL;
   if (hast)
   {
-    period_set(&p1, box1->tmin, box1->tmax, true, true);
-    period_set(&p2, box2->tmin, box2->tmax, true, true);
+    period_set(box1->tmin, box1->tmax, true, true, &p1);
+    period_set(box2->tmin, box2->tmax, true, true, &p2);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
@@ -1039,12 +1039,12 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   datum_func2 func = get_distance_fn(box1->flags);
   /* Convert the boxes to geometries */
   GBOX gbox1, gbox2;
-  stbox_set_gbox(box1, &gbox1);
+  stbox_gbox(box1, &gbox1);
   Datum geo1 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox1)) :
     call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
   Datum geo11 = call_function2(LWGEOM_set_srid, geo1,
     Int32GetDatum(box1->srid));
-  stbox_set_gbox(box2, &gbox2);
+  stbox_gbox(box2, &gbox2);
   Datum geo2 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox2)) :
     call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox2));
   Datum geo21 = call_function2(LWGEOM_set_srid, geo2,
@@ -1092,8 +1092,8 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   Period *inter;
   if (hast)
   {
-    temporal_period(&p1, temp);
-    period_set(&p2, box->tmin, box->tmax, true, true);
+    temporal_period(temp, &p1);
+    period_set(box->tmin, box->tmax, true, true, &p2);
     inter = intersection_period_period_internal(&p1, &p2);
     if (!inter)
       return DBL_MAX;
@@ -1104,7 +1104,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   datum_func2 func = get_distance_fn(box->flags);
   /* Convert the stbox to a geometry */
   GBOX gbox;
-  stbox_set_gbox(box, &gbox);
+  stbox_gbox(box, &gbox);
   Datum geo = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox)) :
     call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
   Datum geo1 = call_function2(LWGEOM_set_srid, geo,

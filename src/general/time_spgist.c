@@ -376,7 +376,7 @@ time_spgist_get_period(Period *result, ScanKeyData *scankey)
   if (scankey->sk_subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    period_set(result, t, t, true, true);
+    period_set(t, t, true, true, result);
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
@@ -396,7 +396,7 @@ time_spgist_get_period(Period *result, ScanKeyData *scankey)
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(scankey->sk_subtype))
   {
-    temporal_bbox(result, DatumGetTemporal(scankey->sk_argument));
+    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);

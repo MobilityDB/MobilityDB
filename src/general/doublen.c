@@ -118,7 +118,7 @@ double2_send(PG_FUNCTION_ARGS)
  * Set a double2 value from the double values
  */
 void
-double2_set(double2 *result, double a, double b)
+double2_set(double a, double b, double2 *result)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(result, 0, sizeof(double2));
@@ -130,7 +130,7 @@ double2_set(double2 *result, double a, double b)
  * Returns the addition of the double2 values
  */
 double2 *
-double2_add(double2 *d1, double2 *d2)
+double2_add(const double2 *d1, const double2 *d2)
 {
   double2 *result = (double2 *) palloc(sizeof(double2));
   result->a = d1->a + d2->a;
@@ -142,7 +142,7 @@ double2_add(double2 *d1, double2 *d2)
  * Returns true if the double2 values are equal
  */
 bool
-double2_eq(double2 *d1, double2 *d2)
+double2_eq(const double2 *d1, const double2 *d2)
 {
   return (d1->a == d2->a && d1->b == d2->b);
 }
@@ -227,7 +227,7 @@ double3_send(PG_FUNCTION_ARGS)
  * Set a double3 value from the double values
  */
 void
-double3_set(double3 *result, double a, double b, double c)
+double3_set(double a, double b, double c, double3 *result)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(result, 0, sizeof(double3));
@@ -240,7 +240,7 @@ double3_set(double3 *result, double a, double b, double c)
  * Returns the addition of the double3 values
  */
 double3 *
-double3_add(double3 *d1, double3 *d2)
+double3_add(const double3 *d1, const double3 *d2)
 {
   double3 *result = (double3 *) palloc(sizeof(double3));
   result->a = d1->a + d2->a;
@@ -253,7 +253,7 @@ double3_add(double3 *d1, double3 *d2)
  * Returns true if the double3 values are equal
  */
 bool
-double3_eq(double3 *d1, double3 *d2)
+double3_eq(const double3 *d1, const double3 *d2)
 {
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
@@ -342,7 +342,7 @@ double4_send(PG_FUNCTION_ARGS)
  * Set a double4 value from the double values
  */
 void
-double4_set(double4 *result, double a, double b, double c, double d)
+double4_set(double a, double b, double c, double d, double4 *result)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(result, 0, sizeof(double4));
@@ -356,7 +356,7 @@ double4_set(double4 *result, double a, double b, double c, double d)
  * Returns the addition of the double4 values
  */
 double4 *
-double4_add(double4 *d1, double4 *d2)
+double4_add(const double4 *d1, const double4 *d2)
 {
   double4 *result = (double4 *) palloc(sizeof(double4));
   result->a = d1->a + d2->a;
@@ -370,7 +370,7 @@ double4_add(double4 *d1, double4 *d2)
  * Returns true if the double4 values are equal
  */
 bool
-double4_eq(double4 *d1, double4 *d2)
+double4_eq(const double4 *d1, const double4 *d2)
 {
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c &&
     d1->d == d2->d);

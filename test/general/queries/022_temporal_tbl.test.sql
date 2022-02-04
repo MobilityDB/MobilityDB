@@ -51,6 +51,11 @@ COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
 COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
 COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
 
+SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+SELECT COUNT(*) FROM tbl_tint t1, tbl_tint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tfloat_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+
 DROP TABLE tbl_tbool_tmp;
 DROP TABLE tbl_tint_tmp;
 DROP TABLE tbl_tfloat_tmp;

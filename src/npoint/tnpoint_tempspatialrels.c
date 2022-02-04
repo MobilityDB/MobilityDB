@@ -148,7 +148,8 @@ tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
     restr = true;
   }
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
-  Temporal *result = tcontains_geo_tpoint_internal(gs, geomtemp, restr, atvalue);
+  Temporal *result = tcontains_geo_tpoint_internal(gs, geomtemp, restr,
+    atvalue);
   pfree(geomtemp);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);

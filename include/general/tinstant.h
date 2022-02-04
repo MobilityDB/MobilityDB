@@ -83,11 +83,11 @@ extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ts);
 /* Accessor functions */
 
 extern ArrayType *tinstant_values_array(const TInstant *inst);
-extern ArrayType *tfloatinst_ranges(const TInstant *inst);
+extern ArrayType *tfloatinst_ranges_array(const TInstant *inst);
 extern PeriodSet *tinstant_get_time(const TInstant *inst);
-extern void tinstant_period(Period *p, const TInstant *inst);
-extern ArrayType *tinstant_sequences_array(const TInstant *inst);
-extern ArrayType *tinstant_timestamps(const TInstant *inst);
+extern void tinstant_period(const TInstant *inst, Period *p);
+extern ArrayType *tinstant_segments_array(const TInstant *inst);
+extern ArrayType *tinstant_timestamps_array(const TInstant *inst);
 extern const TInstant **tinstant_instants(const TInstant *inst, int *count);
 extern ArrayType *tinstant_instants_array(const TInstant *inst);
 extern TInstant *tinstant_shift(const TInstant *inst, const Interval *interval);

@@ -1965,7 +1965,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 
   /* Read and round point */
   POINT4D p;
-  datum_get_point4d(&p, value);
+  datum_point4d(value, &p);
   double x = p.x;
   double y = p.y;
   double z = hasz ? p.z : 0;
@@ -2007,7 +2007,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     Datum value = tinstant_value(inst);
 
     /* Read and round point */
-    datum_get_point4d(&p, value);
+    datum_point4d(value, &p);
     /* make compiler quiet by also initializing prev_p */
     double x = prev_p.x = p.x;
     double y = prev_p.y = p.y;
@@ -2054,7 +2054,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     Datum value = tinstant_value(inst);
 
     /* Read and round point */
-    datum_get_point4d(&p, value);
+    datum_point4d(value, &p);
     /* make compiler quiet by also initializing prev_p */
     double x = prev_p.x = p.x;
     double y = prev_p.y = p.y;
@@ -2199,8 +2199,8 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   double min = -(double) buffer;
   int srid = tpoint_srid_internal(tpoint);
   STBOX clip_box;
-  stbox_set(&clip_box, true, false, false, false, srid, min, max, min, max,
-    0, 0, 0, 0);
+  stbox_set(true, false, false, false, srid, min, max, min, max,
+    0, 0, 0, 0, &clip_box);
   Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box, UPPER_INC);
   pfree(tpoint4);
   if (tpoint5 == NULL)
@@ -2409,7 +2409,7 @@ AsMVTGeom(PG_FUNCTION_ARGS)
 
   / * Bounding box test to drop geometries smaller than the resolution * /
   STBOX box;
-  temporal_bbox(&box, temp);
+  temporal_bbox(temp, &box);
   double tpoint_width = box.xmax - box.xmin;
   double tpoint_height = box.ymax - box.ymin;
   / * We use half of the square height and width as limit: We use this

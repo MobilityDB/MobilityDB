@@ -431,7 +431,7 @@ tinstant_values_array(const TInstant *inst)
  * Returns the base value of the temporal float value as a range
  */
 ArrayType *
-tfloatinst_ranges(const TInstant *inst)
+tfloatinst_ranges_array(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
   RangeType *range = range_make(value, value, true, true, inst->basetypid);
@@ -454,16 +454,16 @@ tinstant_get_time(const TInstant *inst)
  * Returns the bounding period on which the temporal instant value is defined
  */
 void
-tinstant_period(Period *p, const TInstant *inst)
+tinstant_period(const TInstant *inst, Period *p)
 {
-  return period_set(p, inst->t, inst->t, true, true);
+  return period_set(inst->t, inst->t, true, true, p);
 }
 
 /**
- * Returns the sequences of the temporal value as a PostgreSQL array
+ * Returns the segments of the temporal value as a PostgreSQL array
  */
 ArrayType *
-tinstant_sequences_array(const TInstant *inst)
+tinstant_segments_array(const TInstant *inst)
 {
   TSequence *seq = tinstant_to_tsequence(inst,
     MOBDB_FLAGS_GET_CONTINUOUS(inst->flags));
@@ -476,7 +476,7 @@ tinstant_sequences_array(const TInstant *inst)
  * Returns the timestamp of the temporal value as an array
  */
 ArrayType *
-tinstant_timestamps(const TInstant *inst)
+tinstant_timestamps_array(const TInstant *inst)
 {
   TimestampTz t = inst->t;
   return timestamparr_to_array(&t, 1);

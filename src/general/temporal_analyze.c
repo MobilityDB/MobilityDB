@@ -383,7 +383,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
         value_lengths[non_null_cnt] = DatumGetFloat8(range_upper.val) -
           DatumGetFloat8(range_lower.val);
     }
-    temporal_period(&period, temp);
+    temporal_period(temp, &period);
     period_deserialize(&period, &period_lower, &period_upper);
     time_lowers[non_null_cnt] = period_lower;
     time_uppers[non_null_cnt] = period_upper;

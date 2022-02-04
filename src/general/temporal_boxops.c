@@ -151,40 +151,24 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
  * @param[in] inst Temporal value
  */
 void
-tinstant_make_bbox(void *box, const TInstant *inst)
+tinstant_make_bbox(const TInstant *inst, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(inst->basetypid);
   if (talpha_base_type(inst->basetypid))
-    period_set((Period *) box, inst->t, inst->t, true, true);
+    period_set(inst->t, inst->t, true, true, (Period *) box);
   else if (tnumber_base_type(inst->basetypid))
   {
     double dvalue = datum_double(tinstant_value(inst), inst->basetypid);
-    tbox_set((TBOX *) box, true, true, dvalue, dvalue, inst->t, inst->t);
+    tbox_set(true, true, dvalue, dvalue, inst->t, inst->t, (TBOX *) box);
   }
   else if (tgeo_base_type(inst->basetypid))
-    tpointinst_make_stbox((STBOX *) box, inst);
+    tpointinst_stbox(inst, (STBOX *) box);
   else if (inst->basetypid == type_oid(T_NPOINT))
-    tnpointinst_make_stbox((STBOX *) box, inst);
+    tnpointinst_make_stbox(inst, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       inst->basetypid);
-  return;
-}
-
-/**
- * Set the period from the array of temporal instant values
- *
- * @param[in] period Period
- * @param[in] instants Temporal instants
- * @param[in] count Number of elements in the array
- * @param[in] lower_inc,upper_inc Period bounds
- */
-static void
-tinstantarr_to_period(Period *period, const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc)
-{
-  period_set(period, instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc);
   return;
 }
 
@@ -196,13 +180,13 @@ tinstantarr_to_period(Period *period, const TInstant **instants, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberinstarr_to_tbox(TBOX *box, const TInstant **instants, int count)
+tnumberinstarr_to_tbox(const TInstant **instants, int count, TBOX *box)
 {
-  tinstant_make_bbox(box, instants[0]);
+  tinstant_make_bbox(instants[0], box);
   for (int i = 1; i < count; i++)
   {
     TBOX box1;
-    tinstant_make_bbox(&box1, instants[i]);
+    tinstant_make_bbox(instants[i], &box1);
     tbox_expand(box, &box1);
   }
   return;
@@ -217,18 +201,19 @@ tnumberinstarr_to_tbox(TBOX *box, const TInstant **instants, int count)
  * @param[in] count Number of elements in the array
  */
 void
-tinstantset_make_bbox(void *box, const TInstant **instants, int count)
+tinstantset_make_bbox(const TInstant **instants, int count, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(instants[0]->basetypid);
   if (talpha_base_type(instants[0]->basetypid))
-    tinstantarr_to_period((Period *) box, instants, count, true, true);
+    period_set(instants[0]->t, instants[count - 1]->t, true, true,
+      (Period *) box);
   else if (tnumber_base_type(instants[0]->basetypid))
-    tnumberinstarr_to_tbox((TBOX *) box, instants, count);
+    tnumberinstarr_to_tbox(instants, count, (TBOX *) box);
   else if (tgeo_base_type(instants[0]->basetypid))
-    tpointinstarr_to_stbox((STBOX *) box, instants, count);
+    tpointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
-    tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
+    tnpointinstarr_step_to_stbox(instants, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
@@ -245,24 +230,24 @@ tinstantset_make_bbox(void *box, const TInstant **instants, int count)
  * @param[in] lower_inc,upper_inc Period bounds
  */
 void
-tsequence_make_bbox(void *box, const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc)
+tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(instants[0]->basetypid);
   if (talpha_base_type(instants[0]->basetypid))
-    tinstantarr_to_period((Period *) box, instants, count,
-      lower_inc, upper_inc);
+    period_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
+      (Period *) box);
   else if (tnumber_base_type(instants[0]->basetypid))
-    tnumberinstarr_to_tbox((TBOX *) box, instants, count);
+    tnumberinstarr_to_tbox(instants, count, (TBOX *) box);
   else if (tgeo_base_type(instants[0]->basetypid))
-    tpointinstarr_to_stbox((STBOX *) box, instants, count);
+    tpointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
   {
     if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
-      tnpointinstarr_linear_to_stbox((STBOX *) box, instants, count);
+      tnpointinstarr_linear_to_stbox(instants, count, (STBOX *) box);
     else
-      tnpointinstarr_step_to_stbox((STBOX *) box, instants, count);
+      tnpointinstarr_step_to_stbox(instants, count, (STBOX *) box);
   }
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
@@ -278,11 +263,13 @@ tsequence_make_bbox(void *box, const TInstant **instants, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tsequencearr_to_period_internal(Period *period, const TSequence **sequences, int count)
+tsequencearr_to_period_internal(const TSequence **sequences, int count,
+  Period *period)
 {
   const Period *first = &sequences[0]->period;
   const Period *last = &sequences[count - 1]->period;
-  period_set(period, first->lower, last->upper, first->lower_inc, last->upper_inc);
+  period_set(first->lower, last->upper, first->lower_inc, last->upper_inc,
+    period);
   return;
 }
 
@@ -294,12 +281,13 @@ tsequencearr_to_period_internal(Period *period, const TSequence **sequences, int
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_to_tbox_internal(TBOX *box, const TSequence **sequences, int count)
+tnumberseqarr_to_tbox_internal(const TSequence **sequences, int count,
+  TBOX *box)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
   for (int i = 1; i < count; i++)
   {
-    TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
+    const TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
     tbox_expand(box, box1);
   }
   return;
@@ -310,18 +298,18 @@ tnumberseqarr_to_tbox_internal(TBOX *box, const TSequence **sequences, int count
  * (dispatch function)
  */
 void
-tsequenceset_make_bbox(void *box, const TSequence **sequences, int count)
+tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
 {
   /* Only external types have bounding box */ // TODO
   ensure_temporal_base_type(sequences[0]->basetypid);
   if (talpha_base_type(sequences[0]->basetypid))
-    tsequencearr_to_period_internal((Period *) box, sequences, count);
+    tsequencearr_to_period_internal(sequences, count, (Period *) box);
   else if (tnumber_base_type(sequences[0]->basetypid))
-    tnumberseqarr_to_tbox_internal((TBOX *) box, sequences, count);
+    tnumberseqarr_to_tbox_internal(sequences, count, (TBOX *) box);
   else if (tgeo_base_type(sequences[0]->basetypid))
-    tpointseqarr_to_stbox((STBOX *) box, sequences, count);
+    tpointseqarr_stbox(sequences, count, (STBOX *) box);
   else if (sequences[0]->basetypid == type_oid(T_NPOINT))
-    tnpointseqarr_to_stbox((STBOX *) box, sequences, count);
+    tnpointseqarr_to_stbox(sequences, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       sequences[0]->basetypid);
@@ -346,8 +334,8 @@ boxop_timestamp_temporal(FunctionCallInfo fcinfo,
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Period p1, p2;
-  temporal_period(&p1, temp);
-  period_set(&p2, t, t, true, true);
+  temporal_period(temp, &p1);
+  period_set(t, t, true, true, &p2);
   bool result = func(&p2, &p1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -366,8 +354,8 @@ boxop_temporal_timestamp(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p1, p2;
-  temporal_period(&p1, temp);
-  period_set(&p2, t, t, true, true);
+  temporal_period(temp, &p1);
+  period_set(t, t, true, true, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -386,8 +374,8 @@ boxop_timestampset_temporal(FunctionCallInfo fcinfo,
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Period p1, p2;
-  temporal_period(&p1, temp);
-  timestampset_to_period_internal(&p2, ts);
+  temporal_period(temp, &p1);
+  timestampset_to_period_internal(ts, &p2);
   bool result = func(&p2, &p1);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -407,8 +395,8 @@ boxop_temporal_timestampset(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
   Period p1, p2;
-  temporal_period(&p1, temp);
-  timestampset_to_period_internal(&p2, ts);
+  temporal_period(temp, &p1);
+  timestampset_to_period_internal(ts, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -428,7 +416,7 @@ boxop_period_temporal(FunctionCallInfo fcinfo,
   Period *p = PG_GETARG_PERIOD(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Period p1;
-  temporal_period(&p1, temp);
+  temporal_period(temp, &p1);
   bool result = func(p, &p1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -447,7 +435,7 @@ boxop_temporal_period(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Period *p = PG_GETARG_PERIOD(1);
   Period p1;
-  temporal_period(&p1, temp);
+  temporal_period(temp, &p1);
   bool result = func(&p1, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -466,8 +454,8 @@ boxop_periodset_temporal(FunctionCallInfo fcinfo,
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Period p1, p2;
-  temporal_period(&p1, temp);
-  periodset_to_period_internal(&p2, ps);
+  temporal_period(temp, &p1);
+  periodset_to_period_internal(ps, &p2);
   bool result = func(&p2, &p1);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -487,8 +475,8 @@ boxop_temporal_periodset(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   PeriodSet *ps = PG_GETARG_PERIODSET(1);
   Period p1, p2;
-  temporal_period(&p1, temp);
-  periodset_to_period_internal(&p2, ps);
+  temporal_period(temp, &p1);
+  periodset_to_period_internal(ps, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -508,8 +496,8 @@ boxop_temporal_temporal(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   Period p1, p2;
-  temporal_period(&p1, temp1);
-  temporal_period(&p2, temp2);
+  temporal_period(temp1, &p1);
+  temporal_period(temp2, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -1081,8 +1069,8 @@ boxop_number_tnumber(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TBOX box1, box2;
-  number_to_tbox_internal(&box1, value, basetypid);
-  temporal_bbox(&box2, temp);
+  number_to_tbox_internal(value, basetypid, &box1);
+  temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -1102,8 +1090,8 @@ boxop_tnumber_number(FunctionCallInfo fcinfo,
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   TBOX box1, box2;
-  temporal_bbox(&box1, temp);
-  number_to_tbox_internal(&box2, value, basetypid);
+  temporal_bbox(temp, &box1);
+  number_to_tbox_internal(value, basetypid, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -1130,8 +1118,8 @@ boxop_range_tnumber(FunctionCallInfo fcinfo,
     PG_RETURN_BOOL(func == &contained_tbox_tbox_internal);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   TBOX box1, box2;
-  range_to_tbox_internal(&box1, range);
-  temporal_bbox(&box2, temp);
+  range_to_tbox_internal(range, &box1);
+  temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(range, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1159,8 +1147,8 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
   if (flags & RANGE_EMPTY)
     PG_RETURN_BOOL(func == &contains_tbox_tbox_internal);
   TBOX box1, box2;
-  temporal_bbox(&box1, temp);
-  range_to_tbox_internal(&box2, range);
+  temporal_bbox(temp, &box1);
+  range_to_tbox_internal(range, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(range, 1);
@@ -1180,7 +1168,7 @@ boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   TBOX *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   TBOX box1;
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(box, &box1);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -1199,7 +1187,7 @@ boxop_tnumber_tbox(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
   TBOX box1;
-  temporal_bbox(&box1, temp);
+  temporal_bbox(temp, &box1);
   bool result = func(&box1, box);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -1218,8 +1206,8 @@ boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Temporal *temp1 = PG_GETARG_TEMPORAL(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL(1);
   TBOX box1, box2;
-  temporal_bbox(&box1, temp1);
-  temporal_bbox(&box2, temp2);
+  temporal_bbox(temp1, &box1);
+  temporal_bbox(temp2, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);

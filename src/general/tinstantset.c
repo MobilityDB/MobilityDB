@@ -83,7 +83,7 @@ tinstantset_bbox_ptr(const TInstantSet *ti)
  * Copy in the first argument the bounding box of the temporal value
  */
 void
-tinstantset_bbox(void *box, const TInstantSet *ti)
+tinstantset_bbox(const TInstantSet *ti, void *box)
 {
   void *box1 = tinstantset_bbox_ptr(ti);
   size_t bboxsize = temporal_bbox_size(ti->basetypid);
@@ -151,7 +151,7 @@ tinstantset_make1(const TInstant **instants, int count)
   if (bboxsize != 0)
   {
     void *bbox = ((char *) result) + pdata + pos;
-    tinstantset_make_bbox(bbox, instants, count);
+    tinstantset_make_bbox(instants, count, bbox);
     result->offsets[count] = pos;
   }
   return result;
@@ -418,8 +418,8 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
-  tinstantset_period(&p1, ti1);
-  tinstantset_period(&p2, ti2);
+  tinstantset_period(ti1, &p1);
+  tinstantset_period(ti2, &p2);
   if (!overlaps_period_period_internal(&p1, &p2))
     return false;
 
@@ -621,7 +621,7 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
  * @result Number of elements in the output array
  */
 int
-tinstantset_values(Datum *result, const TInstantSet *ti)
+tinstantset_values(const TInstantSet *ti, Datum *result)
 {
   for (int i = 0; i < ti->count; i++)
     result[i] = tinstant_value(tinstantset_inst_n(ti, i));
@@ -639,7 +639,7 @@ ArrayType *
 tinstantset_values_array(const TInstantSet *ti)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
-  int count = tinstantset_values(values, ti);
+  int count = tinstantset_values(ti, values);
   ArrayType *result = datumarr_to_array(values, count, ti->basetypid);
   pfree(values);
   return result;
@@ -649,10 +649,10 @@ tinstantset_values_array(const TInstantSet *ti)
  * Returns the base values of the temporal float value as an array of ranges
  */
 ArrayType *
-tfloatinstset_ranges(const TInstantSet *ti)
+tfloatinstset_ranges_array(const TInstantSet *ti)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
-  int count = tinstantset_values(values, ti);
+  int count = tinstantset_values(ti, values);
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   for (int i = 0; i < count; i++)
     ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
@@ -750,11 +750,11 @@ tinstantset_max_value(const TInstantSet *ti)
  * Returns the bounding period on which the temporal value is defined
  */
 void
-tinstantset_period(Period *p, const TInstantSet *ti)
+tinstantset_period(const TInstantSet *ti, Period *p)
 {
   TimestampTz lower = tinstantset_start_timestamp(ti);
   TimestampTz upper = tinstantset_end_timestamp(ti);
-  return period_set(p, lower, upper, true, true);
+  return period_set(lower, upper, true, true, p);
 }
 
 /**
@@ -774,7 +774,7 @@ tinstantset_timespan(const TInstantSet *ti)
  * Returns the sequences of the temporal value as a C array
  */
 static TSequence **
-tinstantset_sequences(const TInstantSet *ti)
+tinstantset_segments(const TInstantSet *ti)
 {
   TSequence **result = palloc(sizeof(TSequence *) * ti->count);
   bool linear = MOBDB_FLAGS_GET_CONTINUOUS(ti->flags);
@@ -790,9 +790,9 @@ tinstantset_sequences(const TInstantSet *ti)
  * Returns the sequences of the temporal value as a PostgreSQL array
  */
 ArrayType *
-tinstantset_sequences_array(const TInstantSet *ti)
+tinstantset_segments_array(const TInstantSet *ti)
 {
-  TSequence **sequences = tinstantset_sequences(ti);
+  TSequence **sequences = tinstantset_segments(ti);
   ArrayType *result = temporalarr_to_array((const Temporal **) sequences,
     ti->count);
   pfree_array((void **) sequences, ti->count);
@@ -848,7 +848,7 @@ tinstantset_end_timestamp(const TInstantSet *ti)
  * Returns the distinct timestamps of the temporal value
  */
 TimestampTz *
-tinstantset_timestamps1(const TInstantSet *ti)
+tinstantset_timestamps(const TInstantSet *ti)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * ti->count);
   for (int i = 0; i < ti->count; i++)
@@ -860,9 +860,9 @@ tinstantset_timestamps1(const TInstantSet *ti)
  * Returns the distinct timestamps of the temporal value as a C array
  */
 ArrayType *
-tinstantset_timestamps(const TInstantSet *ti)
+tinstantset_timestamps_array(const TInstantSet *ti)
 {
-  TimestampTz *times = tinstantset_timestamps1(ti);
+  TimestampTz *times = tinstantset_timestamps(ti);
   ArrayType *result = timestamparr_to_array(times, ti->count);
   pfree(times);
   return result;
@@ -881,10 +881,10 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
   TInstantSet *result = tinstantset_copy(ti);
   /* Shift and/or scale the period */
   Period p1, p2;
-  period_set(&p1, tinstantset_inst_n(result, 0)->t,
-    tinstantset_inst_n(result, ti->count - 1)->t, true, true);
+  period_set(tinstantset_inst_n(result, 0)->t,
+    tinstantset_inst_n(result, ti->count - 1)->t, true, true, &p1);
   double orig_duration = (double) (p1.upper - p1.lower);
-  period_set(&p2, p1.lower, p1.upper, p1.lower_inc, p1.upper_inc);
+  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
   period_shift_tscale(&p2, start, duration);
   double new_duration = (double) (p2.upper - p2.lower);
 
@@ -1264,7 +1264,7 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
 {
   /* Bounding box test */
   Period p;
-  tinstantset_period(&p, ti);
+  tinstantset_period(ti, &p);
   if (!contains_period_timestamp_internal(&p, t))
     return atfunc ? NULL : (Temporal *) tinstantset_copy(ti);
 
@@ -1324,7 +1324,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
 
   /* Bounding box test */
   Period p1;
-  tinstantset_period(&p1, ti);
+  tinstantset_period(ti, &p1);
   const Period *p2 = timestampset_bbox_ptr(ts);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);
@@ -1383,7 +1383,7 @@ tinstantset_restrict_period(const TInstantSet *ti, const Period *period,
 {
   /* Bounding box test */
   Period p;
-  tinstantset_period(&p, ti);
+  tinstantset_period(ti, &p);
   if (!overlaps_period_period_internal(&p, period))
     return atfunc ? NULL : tinstantset_copy(ti);
 
@@ -1422,7 +1422,7 @@ tinstantset_restrict_periodset(const TInstantSet *ti, const PeriodSet *ps,
 
   /* Bounding box test */
   Period p1;
-  tinstantset_period(&p1, ti);
+  tinstantset_period(ti, &p1);
   const Period *p2 = periodset_bbox_ptr(ps);
   if (!overlaps_period_period_internal(&p1, p2))
     return atfunc ? NULL : tinstantset_copy(ti);

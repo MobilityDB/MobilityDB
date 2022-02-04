@@ -38,6 +38,7 @@ COPY tbl_timestampset TO '/tmp/tbl_timestampset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_timestampset_tmp;
 CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
 COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
 DROP TABLE tbl_timestampset_tmp;
 
 -------------------------------------------------------------------------------

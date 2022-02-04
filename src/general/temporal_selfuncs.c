@@ -263,7 +263,7 @@ temporal_const_to_period(Node *other, Period *period)
   if (consttype == type_oid(T_PERIOD))
     memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
   else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-    temporal_bbox(period, DatumGetTemporal(((Const *) other)->constvalue));
+    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), period);
   else
     return false;
   return true;

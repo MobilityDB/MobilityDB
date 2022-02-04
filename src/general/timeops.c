@@ -3049,8 +3049,8 @@ union_period_period_internal(const Period *p1, const Period *p2)
 
   /* Compute the union of the overlapping periods */
   Period p;
-  period_set(&p, p1->lower, p1->upper, p1->lower_inc, p1->upper_inc);
-  period_expand(&p, p2);
+  period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, &p);
+  period_expand(p2, &p);
   PeriodSet *result = period_to_periodset_internal(&p);
   return result;
 }
@@ -3224,12 +3224,12 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
           break;
         if (overlaps_period_period_internal(p1, q))
         {
-          period_expand(q, p1);
+          period_expand(p1, q);
           i++;
         }
         if (overlaps_period_period_internal(p2, q))
         {
-          period_expand(q, p2);
+          period_expand(p2, q);
           j++;
         }
       }
@@ -3240,7 +3240,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
         p1 = periodset_per_n(ps1, i);
         if (overlaps_period_period_internal(p1, q))
         {
-          period_expand(q, p1);
+          period_expand(p1, q);
           i++;
         }
         else
@@ -3251,7 +3251,7 @@ union_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2)
         p2 = periodset_per_n(ps2, j);
         if (overlaps_period_period_internal(p2, q))
         {
-          period_expand(q, p2);
+          period_expand(p2, q);
           j++;
         }
         else

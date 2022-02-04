@@ -106,9 +106,7 @@
  *****************************************************************************/
 
 extern void temporalgeom_init();
-#if POSTGIS_VERSION_NUMBER >= 30000
 extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
-#endif
 
 /* Input/output functions */
 
@@ -124,12 +122,16 @@ extern Datum tpointinst_constructor(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
-extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum tpoint_to_stbox(PG_FUNCTION_ARGS);
 
-/* Ever/always comparison operators */
+/* Expand functions */
+
+extern Datum geo_expand_spatial(PG_FUNCTION_ARGS);
+extern Datum tpoint_expand_spatial(PG_FUNCTION_ARGS);
+
+/* Alias for the tpoint_trajectory function */
 
 extern Datum tpoint_values(PG_FUNCTION_ARGS);
-extern Datum tpoint_stbox(PG_FUNCTION_ARGS);
 
 /* Temporal comparisons */
 

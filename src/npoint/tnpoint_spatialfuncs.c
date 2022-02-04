@@ -370,7 +370,7 @@ tnpoint_geom(const Temporal *temp)
  * @param[in] inst1, inst2 Temporal network point instants
  */
 Datum
-tnpointseq_trajectory1(const TInstant *inst1, const TInstant *inst2)
+tnpointseqsegm_trajectory(const TInstant *inst1, const TInstant *inst2)
 {
   npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
   npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
@@ -788,7 +788,7 @@ tnpointseq_azimuth1(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* Find all vertices in the segment */
-  Datum traj = tnpointseq_trajectory1(inst1, inst2);
+  Datum traj = tnpointseqsegm_trajectory(inst1, inst2);
   int countVertices = DatumGetInt32(call_function1(
     LWGEOM_numpoints_linestring, traj));
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);

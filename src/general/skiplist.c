@@ -46,7 +46,9 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
+#include "general/time_aggfuncs.h"
 #include "general/temporal_util.h"
+#include "general/temporal_aggfuncs.h"
 
 /*****************************************************************************
  * Functions manipulating skip lists
@@ -129,15 +131,15 @@ skiplist_alloc(FunctionCallInfo fcinfo, SkipList *list)
        * number of elements that we can fit within MaxAllocSize. If we have
        * previously reached this maximum and more capacity is required, an
        * error is generated. */
-      if (list->capacity == floor(MaxAllocSize / sizeof(Elem)))
+      if (list->capacity == floor(MaxAllocSize / sizeof(SkipListElem)))
         ereport(ERROR, (errcode(ERRCODE_DATA_EXCEPTION),
           errmsg("No more memory available to compute the aggregation")));
-      if (sizeof(Elem) * (list->capacity << 2) > MaxAllocSize)
-        list->capacity = floor(MaxAllocSize / sizeof(Elem));
+      if (sizeof(SkipListElem) * (list->capacity << 2) > MaxAllocSize)
+        list->capacity = floor(MaxAllocSize / sizeof(SkipListElem));
       else
         list->capacity <<= SKIPLIST_GROW;
       MemoryContext ctx = set_aggregation_context(fcinfo);
-      list->elems = repalloc(list->elems, sizeof(Elem) * list->capacity);
+      list->elems = repalloc(list->elems, sizeof(SkipListElem) * list->capacity);
       unset_aggregation_context(ctx);
     }
     list->next ++;
@@ -214,7 +216,7 @@ skiplist_print(const SkipList *list)
   int cur = 0;
   while (cur != -1)
   {
-    Elem *e = &list->elems[cur];
+    SkipListElem *e = &list->elems[cur];
     len += sprintf(buf+len, "\telm%d [label=\"", cur);
     for (int l = e->height - 1; l > 0; l --)
     {
@@ -232,7 +234,7 @@ skiplist_print(const SkipList *list)
       else /* list->elemtype == TEMPORAL */
       {
         Period p;
-        temporal_period(&p, e->value);
+        temporal_period(e->value, &p);
         val = period_to_string(&p);
       }
       len +=  sprintf(buf+len, "<p0>%s\"];\n", val);
@@ -266,7 +268,8 @@ skiplist_print(const SkipList *list)
  * @param[in] count Number of elements in the array
  */
 SkipList *
-skiplist_make(FunctionCallInfo fcinfo, void **values, int count, ElemType elemtype)
+skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
+  SkipListElemType elemtype)
 {
   assert(count > 0);
   //FIXME: tail should be a constant (e.g. 1) but is not, for ease of construction
@@ -277,7 +280,7 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count, ElemType elemty
   while (capacity <= count)
     capacity <<= 1;
   SkipList *result = palloc0(sizeof(SkipList));
-  result->elems = palloc0(sizeof(Elem) * capacity);
+  result->elems = palloc0(sizeof(SkipListElem) * capacity);
   int height = (int) ceil(log2(count - 1));
   result->elemtype = elemtype;
   result->capacity = capacity;
@@ -344,7 +347,7 @@ skiplist_tailval(SkipList *list)
 {
   // Despite the look, this is pretty much O(1)
   int cur = 0;
-  Elem *e = &list->elems[cur];
+  SkipListElem *e = &list->elems[cur];
   int height = e->height;
   while (e->next[height - 1] != list->tail)
     e = &list->elems[e->next[height - 1]];
@@ -378,34 +381,34 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   int16 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
-    period_set(&p, (TimestampTz) values[0],
-      (TimestampTz) values[count - 1], true, true);
+    period_set((TimestampTz) values[0], (TimestampTz) values[count - 1],
+      true, true, &p);
   }
   else if (list->elemtype == PERIOD)
   {
-    period_set(&p, ((Period *) values[0])->lower,
+    period_set(((Period *) values[0])->lower,
       ((Period *) values[count - 1])->upper,
       ((Period *) values[0])->lower_inc,
-      ((Period *) values[count - 1])->upper_inc);
+      ((Period *) values[count - 1])->upper_inc, &p);
   }
   else /* list->elemtype == TEMPORAL */
   {
     subtype = ((Temporal *) skiplist_headval(list))->subtype;
     if (subtype == INSTANT)
-      period_set(&p, ((TInstant *)values[0])->t,
-        ((TInstant *) values[count - 1])->t, true, true);
+      period_set(((TInstant *)values[0])->t,
+        ((TInstant *) values[count - 1])->t, true, true, &p);
     else
-      period_set(&p, ((TSequence *)values[0])->period.lower,
+      period_set(((TSequence *)values[0])->period.lower,
         ((TSequence *) values[count - 1])->period.upper,
         ((TSequence *) values[0])->period.lower_inc,
-        ((TSequence *) values[count - 1])->period.upper_inc);
+        ((TSequence *) values[count - 1])->period.upper_inc, &p);
   }
 
   int update[SKIPLIST_MAXLEVEL];
   memset(update, 0, sizeof(update));
   int cur = 0;
   int height = list->elems[cur].height;
-  Elem *e = &list->elems[cur];
+  SkipListElem *e = &list->elems[cur];
   for (int level = height - 1; level >= 0; level --)
   {
     while (e->next[level] != -1 &&
@@ -426,36 +429,40 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   {
     cur = e->next[0];
     e = &list->elems[cur];
-    spliced_count ++;
+    spliced_count++;
   }
   int upper = cur;
   if (upper >= 0 && skiplist_elmpos(list, upper, p.upper) == DURING)
   {
     upper = e->next[0]; /* if found upper, one more to remove */
-    spliced_count ++;
+    spliced_count++;
   }
 
-  /* Delete spliced-out elements but remember their values for later */
-  cur = lower;
-  void **spliced = palloc(sizeof(void *) * spliced_count);
-  spliced_count = 0;
-  while (cur != upper && cur != -1)
+  /* Delete spliced-out elements (if any) but remember their values for later */
+  void **spliced = NULL;
+  if (spliced_count != 0)
   {
-    for (int level = 0; level < height; level ++)
+    cur = lower;
+    spliced = palloc(sizeof(void *) * spliced_count);
+    spliced_count = 0;
+    while (cur != upper && cur != -1)
     {
-      Elem *prev = &list->elems[update[level]];
-      if (prev->next[level] != cur)
-        break;
-      prev->next[level] = list->elems[cur].next[level];
+      for (int level = 0; level < height; level ++)
+      {
+        SkipListElem *prev = &list->elems[update[level]];
+        if (prev->next[level] != cur)
+          break;
+        prev->next[level] = list->elems[cur].next[level];
+      }
+      spliced[spliced_count++] = list->elems[cur].value;
+      skiplist_free(fcinfo, list, cur);
+      cur = list->elems[cur].next[0];
     }
-    spliced[spliced_count++] = list->elems[cur].value;
-    skiplist_free(fcinfo, list, cur);
-    cur = list->elems[cur].next[0];
   }
 
   /* Level down head & tail if necessary */
-  Elem *head = &list->elems[0];
-  Elem *tail = &list->elems[list->tail];
+  SkipListElem *head = &list->elems[0];
+  SkipListElem *tail = &list->elems[list->tail];
   while (head->height > 1 && head->next[head->height - 1] == list->tail)
   {
     head->height--;
@@ -513,7 +520,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
       tail->height = rheight;
     }
     int new = skiplist_alloc(fcinfo, list);
-    Elem *newelm = &list->elems[new];
+    SkipListElem *newelm = &list->elems[new];
     MemoryContext ctx = set_aggregation_context(fcinfo);
     if (list->elemtype == TIMESTAMPTZ)
       newelm->value = values[i];
@@ -605,11 +612,11 @@ aggstate_write(SkipList *state, StringInfo buf)
     Oid basetypid = InvalidOid;
     if (state->length > 0)
       basetypid = ((Temporal *) values[0])->basetypid;
-  #if POSTGRESQL_VERSION_NUMBER < 110000
+#if POSTGRESQL_VERSION_NUMBER < 110000
     pq_sendint(buf, basetypid, 4);
-  #else
+#else
     pq_sendint32(buf, basetypid);
-  #endif
+#endif
     for (int i = 0; i < state->length; i ++)
     {
       SPI_connect();
@@ -633,7 +640,7 @@ aggstate_write(SkipList *state, StringInfo buf)
 static SkipList *
 aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
 {
-  ElemType elemtype = (ElemType) pq_getmsgint(buf, 4);
+  SkipListElemType elemtype = (SkipListElemType) pq_getmsgint(buf, 4);
   int length = pq_getmsgint(buf, 4);
   void **values = palloc0(sizeof(void *) * length);
   SkipList *result = NULL; /* make compiler quiet */

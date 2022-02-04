@@ -759,7 +759,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
   STBOX *bbox = NULL, tmp;
   if (has_bbox)
   {
-    temporal_bbox(&tmp, temp);
+    temporal_bbox(temp, &tmp);
     bbox = &tmp;
   }
 

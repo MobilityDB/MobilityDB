@@ -62,9 +62,7 @@ temporal_spgist_compress(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   Period *period = palloc(sizeof(Period));
-
-  temporal_bbox(period, temp);
-
+  temporal_bbox(temp, period);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_PERIOD(period);
 }

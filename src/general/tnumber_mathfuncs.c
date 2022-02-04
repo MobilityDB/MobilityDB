@@ -117,8 +117,8 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
   if (! tnumber_arithop_tp_at_timestamp1(start1, end1, linear1,
     start2, end2, linear2, t))
     return false;
-  Datum value1 = tsequence_value_at_timestamp1(start1, end1, linear1, *t);
-  Datum value2 = tsequence_value_at_timestamp1(start2, end2, linear2, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, linear1, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, linear2, *t);
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
     datum_mult(value1, value2, start1->basetypid, start2->basetypid) :

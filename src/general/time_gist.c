@@ -154,7 +154,7 @@ time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
   {
     /* Since function period_gist_consistent is strict, t is not NULL */
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    period_set(result, t, t, true, true);
+    period_set(t, t, true, true, result);
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
@@ -184,7 +184,7 @@ time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
     Temporal *temp = PG_GETARG_TEMPORAL(1);
     if (temp == NULL)
       PG_RETURN_BOOL(false);
-    temporal_bbox(result, temp);
+    temporal_bbox(temp, result);
     PG_FREE_IF_COPY(temp, 1);
   }
   else
@@ -241,7 +241,7 @@ period_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   Period *result = period_copy(DatumGetPeriod(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    period_expand(result, DatumGetPeriod(ent[i].key));
+    period_expand(DatumGetPeriod(ent[i].key), result);
   PG_RETURN_PERIOD(result);
 }
 
@@ -262,7 +262,7 @@ timestampset_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     TimestampSet *ts = DatumGetTimestampSet(entry->key);
     Period *period = palloc0(sizeof(Period));
-    timestampset_to_period_internal(period, ts);
+    timestampset_to_period_internal(ts, period);
     gistentryinit(*retval, PointerGetDatum(period),
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -301,7 +301,7 @@ periodset_gist_compress(PG_FUNCTION_ARGS)
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
     PeriodSet *ps = DatumGetPeriodSet(entry->key);
     Period *period = palloc0(sizeof(Period));
-    periodset_to_period_internal(period, ps);
+    periodset_to_period_internal(ps, period);
     gistentryinit(*retval, PointerGetDatum(period),
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);

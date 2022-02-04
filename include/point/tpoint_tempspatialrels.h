@@ -65,15 +65,15 @@ extern Datum tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 extern Temporal *tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs,
   bool tinter, bool atvalue, Datum value);
 extern Temporal *tcontains_geo_tpoint_internal(GSERIALIZED *gs,
-  Temporal *temp, bool atvalue, Datum value);
-extern Temporal *ttouches_tpoint_geo_internal(Temporal *temp,
+  const Temporal *temp, bool atvalue, Datum value);
+extern Temporal *ttouches_tpoint_geo_internal(const Temporal *temp,
   GSERIALIZED *gs, bool atvalue, Datum value);
 extern Temporal *tdwithin_tpoint_geo_internal(const Temporal *temp,
   GSERIALIZED *gs, Datum dist, bool atvalue, Datum value);
 extern Temporal *tdwithin_tpoint_tpoint_internal(const Temporal *temp1,
   const Temporal *temp2, Datum dist, bool atvalue, Datum value);
 
-extern int tdwithin_tpointseq_tpointseq1(Datum sv1, Datum ev1, Datum sv2, 
+extern int tdwithin_tpointsegment(Datum sv1, Datum ev1, Datum sv2, 
   Datum ev2, TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2);
 

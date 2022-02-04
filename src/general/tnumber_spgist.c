@@ -371,32 +371,32 @@ tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
   if (tnumber_base_type(scankey->sk_subtype))
   {
     Datum value = scankey->sk_argument;
-    number_to_tbox_internal(result, value, scankey->sk_subtype);
+    number_to_tbox_internal(value, scankey->sk_subtype, result);
   }
   else if (tnumber_range_type(scankey->sk_subtype))
   {
     RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
-    range_to_tbox_internal(result, range);
+    range_to_tbox_internal(range, result);
   }
   else if (scankey->sk_subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_to_tbox_internal(result, t);
+    timestamp_to_tbox_internal(t, result);
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
     TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
-    timestampset_to_tbox_internal(result, ts);
+    timestampset_to_tbox_internal(ts, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIOD))
   {
     Period *p = DatumGetPeriod(scankey->sk_argument);
-    period_to_tbox_internal(result, p);
+    period_to_tbox_internal(p, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIODSET))
   {
     PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
-    periodset_to_tbox_internal(result, ps);
+    periodset_to_tbox_internal(ps, result);
   }
   else if (scankey->sk_subtype == type_oid(T_TBOX))
   {
@@ -404,7 +404,7 @@ tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
   }
   else if (tnumber_type(scankey->sk_subtype))
   {
-    temporal_bbox(result, DatumGetTemporal(scankey->sk_argument));
+    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
@@ -771,7 +771,7 @@ tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL(0);
   TBOX *box = palloc0(sizeof(TBOX));
-  temporal_bbox(box, temp);
+  temporal_bbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TBOX_P(box);
 }

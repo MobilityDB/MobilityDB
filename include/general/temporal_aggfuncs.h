@@ -55,7 +55,14 @@ extern Datum datum_sum_double2(Datum l, Datum r);
 extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
-extern void ensure_same_temp_subtype_skiplist(SkipList *state, int16 subtype,
+/* Generic aggregation functions */
+ 
+extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
+  TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
+extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
+  TSequence **sequences2, int count2, Datum (*func)(Datum, Datum), bool crossings,
+  int *newcount);
+extern void ensure_same_tempsubtype_skiplist(SkipList *state, int16 subtype,
   Temporal *temp);
 extern SkipList *tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   TSequence *seq, datum_func2 func, bool interpoint);

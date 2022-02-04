@@ -418,7 +418,7 @@ tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
   else /* inst->basetypid == FLOAT8OID */
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
-  double2_set(&dvalue, value, 1);
+  double2_set(value, 1, &dvalue);
   TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
     timestamptz_pl_interval, TimestampTzGetDatum(inst->t),
     PointerGetDatum(interval)));
@@ -488,7 +488,7 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq,
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
     double value = DatumGetInt32(tinstant_value(inst1));
     double2 dvalue;
-    double2_set(&dvalue, value, 1);
+    double2_set(value, 1, &dvalue);
     TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
       timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
       PointerGetDatum(interval)));

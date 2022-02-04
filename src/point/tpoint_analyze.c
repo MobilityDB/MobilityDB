@@ -607,8 +607,8 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     is_copy = VARATT_IS_EXTENDED(temp);
 
     /* Get bounding box from temporal point */
-    temporal_bbox(&box, temp);
-    stbox_set_gbox(&box, &gbox);
+    temporal_bbox(temp, &box);
+    stbox_gbox(&box, &gbox);
 
     /* If we're in 2D mode, zero out the higher dimensions for "safety" */
     if ( mode == 2 )
@@ -1002,7 +1002,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(temp);
 
     /* Get period from temporal point */
-    temporal_period(&period, temp);
+    temporal_period(temp, &period);
 
     /* Remember time bounds and length for further usage in histograms */
     period_deserialize(&period, &period_lower, &period_upper);

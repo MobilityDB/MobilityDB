@@ -35,12 +35,14 @@ COPY tbl_npoint TO '/tmp/tbl_npoint' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_npoint_tmp;
 CREATE TABLE tbl_npoint_tmp AS TABLE tbl_npoint WITH NO DATA;
 COPY tbl_npoint_tmp FROM '/tmp/tbl_npoint' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_npoint t1, tbl_npoint_tmp t2 WHERE t1.k = t2.k AND t1.np <> t2.np;
 DROP TABLE tbl_npoint_tmp;
 
 COPY tbl_nsegment TO '/tmp/tbl_nsegment' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_nsegment_tmp;
 CREATE TABLE tbl_nsegment_tmp AS TABLE tbl_nsegment WITH NO DATA;
 COPY tbl_nsegment_tmp FROM '/tmp/tbl_nsegment' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_nsegment t1, tbl_nsegment_tmp t2 WHERE t1.k = t2.k AND t1.ns <> t2.ns;
 DROP TABLE tbl_nsegment_tmp;
 
 -------------------------------------------------------------------------------

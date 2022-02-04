@@ -35,6 +35,7 @@
 #include "general/tbox.h"
 
 #include <assert.h>
+#include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
 #include "general/tempcache.h"
@@ -63,7 +64,7 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
 {
   /* Note: zero-fill is done in function tbox_set */
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  tbox_set(result, hasx, hast, xmin, xmax, tmin, tmax);
+  tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
   return result;
 }
 
@@ -71,8 +72,8 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
  * Set the temporal box from the argument values
  */
 void
-tbox_set(TBOX *box, bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax)
+tbox_set(bool hasx, bool hast, double xmin, double xmax,
+  TimestampTz tmin, TimestampTz tmax, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -264,6 +265,79 @@ tbox_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
+/**
+ * Send function for TBOX (internal function)
+ */
+void
+tbox_write(const TBOX *box, StringInfo buf)
+{
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
+  pq_sendbyte(buf, MOBDB_FLAGS_GET_T(box->flags) ? (uint8) 1 : (uint8) 0);
+  if (MOBDB_FLAGS_GET_X(box->flags))
+  {
+    pq_sendfloat8(buf, box->xmin);
+    pq_sendfloat8(buf, box->xmax);
+  }
+  if (MOBDB_FLAGS_GET_T(box->flags))
+  {
+    bytea *tmin = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+    bytea *tmax = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
+    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
+    pfree(tmin); pfree(tmax);
+  }
+  return;
+}
+
+PG_FUNCTION_INFO_V1(tbox_send);
+/**
+ * Send function for TBOX
+ */
+PGDLLEXPORT Datum
+tbox_send(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  tbox_write(box, &buf);
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/**
+ * Receive function for TBOX (internal function)
+ */
+TBOX *
+tbox_read(StringInfo buf)
+{
+  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
+  bool hasx = (char) pq_getmsgbyte(buf);
+  bool hast = (char) pq_getmsgbyte(buf);
+  MOBDB_FLAGS_SET_X(result->flags, hasx);
+  MOBDB_FLAGS_SET_T(result->flags, hast);
+  if (hasx)
+  {
+    result->xmin = pq_getmsgfloat8(buf);
+    result->xmax = pq_getmsgfloat8(buf);
+  }
+  if (hast)
+  {
+    result->tmin = call_recv(TIMESTAMPTZOID, buf);
+    result->tmax = call_recv(TIMESTAMPTZOID, buf);
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(tbox_recv);
+/**
+ * Receive function for TBOX
+ */
+PGDLLEXPORT Datum
+tbox_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PG_RETURN_POINTER(tbox_read(buf));
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -321,7 +395,7 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
  * Transform the value to a temporal box (internal function only)
  */
 void
-number_to_tbox_internal(TBOX *box, Datum value, Oid basetypid)
+number_to_tbox_internal(Datum value, Oid basetypid, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -332,19 +406,21 @@ number_to_tbox_internal(TBOX *box, Datum value, Oid basetypid)
     box->xmin = box->xmax = DatumGetFloat8(value);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
+  return;
 }
 
 /**
  * Transform the integer to a temporal box (internal function)
  */
 void
-int_to_tbox_internal(TBOX *box, int i)
+int_to_tbox_internal(int i, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   box->xmin = box->xmax = (double) i;
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(int_to_tbox);
@@ -355,8 +431,8 @@ PGDLLEXPORT Datum
 int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  int_to_tbox_internal(result, i);
+  TBOX *result = palloc(sizeof(TBOX));
+  int_to_tbox_internal(i, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -364,13 +440,14 @@ int_to_tbox(PG_FUNCTION_ARGS)
  * Transform the float to a temporal box (internal function)
  */
 void
-float_to_tbox_internal(TBOX *box, double d)
+float_to_tbox_internal(double d, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   box->xmin = box->xmax = d;
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(float_to_tbox);
@@ -381,8 +458,8 @@ PGDLLEXPORT Datum
 float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  float_to_tbox_internal(result, d);
+  TBOX *result = palloc(sizeof(TBOX));
+  float_to_tbox_internal(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -395,8 +472,8 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
-  TBOX *result = palloc0(sizeof(TBOX));
-  float_to_tbox_internal(result, d);
+  TBOX *result = palloc(sizeof(TBOX));
+  float_to_tbox_internal(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -404,7 +481,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
  * Transform the range to a temporal box (internal function)
  */
 void
-range_to_tbox_internal(TBOX *box, const RangeType *range)
+range_to_tbox_internal(const RangeType *range, TBOX *box)
 {
   ensure_tnumber_range_type(range->rangetypid);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -412,6 +489,7 @@ range_to_tbox_internal(TBOX *box, const RangeType *range)
   range_bounds(range, &box->xmin, &box->xmax);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(range_to_tbox);
@@ -430,8 +508,8 @@ range_to_tbox(PG_FUNCTION_ARGS)
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
     PG_RETURN_NULL();
-  TBOX *result = palloc0(sizeof(TBOX));
-  range_to_tbox_internal(result, range);
+  TBOX *result = palloc(sizeof(TBOX));
+  range_to_tbox_internal(range, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -439,11 +517,14 @@ range_to_tbox(PG_FUNCTION_ARGS)
  * Transform the timestamp to a temporal box (internal function)
  */
 void
-timestamp_to_tbox_internal(TBOX *box, TimestampTz t)
+timestamp_to_tbox_internal(TimestampTz t, TBOX *box)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   box->tmin = box->tmax = t;
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(timestamp_to_tbox);
@@ -454,8 +535,8 @@ PGDLLEXPORT Datum
 timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  timestamp_to_tbox_internal(result, t);
+  TBOX *result = palloc(sizeof(TBOX));
+  timestamp_to_tbox_internal(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -463,13 +544,16 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
  * Transform the period set to a temporal box (internal function)
  */
 void
-timestampset_to_tbox_internal(TBOX *box, const TimestampSet *ts)
+timestampset_to_tbox_internal(const TimestampSet *ts, TBOX *box)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   const Period *p = timestampset_bbox_ptr(ts);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_tbox);
@@ -480,8 +564,8 @@ PGDLLEXPORT Datum
 timestampset_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  timestampset_to_tbox_internal(result, ts);
+  TBOX *result = palloc(sizeof(TBOX));
+  timestampset_to_tbox_internal(ts, result);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
@@ -490,12 +574,15 @@ timestampset_to_tbox(PG_FUNCTION_ARGS)
  * Transform the period to a temporal box (internal function)
  */
 void
-period_to_tbox_internal(TBOX *box, const Period *p)
+period_to_tbox_internal(const Period *p, TBOX *box)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(period_to_tbox);
@@ -506,8 +593,8 @@ PGDLLEXPORT Datum
 period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  period_to_tbox_internal(result, p);
+  TBOX *result = palloc(sizeof(TBOX));
+  period_to_tbox_internal(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -515,13 +602,16 @@ period_to_tbox(PG_FUNCTION_ARGS)
  * Transform the period set to a temporal box (internal function)
  */
 void
-periodset_to_tbox_internal(TBOX *box, const PeriodSet *ps)
+periodset_to_tbox_internal(const PeriodSet *ps, TBOX *box)
 {
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(TBOX));
   const Period *p = periodset_bbox_ptr(ps);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(periodset_to_tbox);
@@ -532,8 +622,8 @@ PGDLLEXPORT Datum
 periodset_to_tbox(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  periodset_to_tbox_internal(result, ps);
+  TBOX *result = palloc(sizeof(TBOX));
+  periodset_to_tbox_internal(ps, result);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }

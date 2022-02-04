@@ -47,14 +47,6 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
-TimestampTz *
-timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2, int count2,
-   int *newcount);
-
-Period **
-period_agg(Period **periods1, int count1, Period **periods2, int count2,
-  int *newcount);
-
 /*****************************************************************************
  * Aggregate functions for time types
  *****************************************************************************/
@@ -120,9 +112,9 @@ timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
  *
  * @param[in] periods1 Accumulated state
  * @param[in] count1 Number of elements in the accumulated state
- * @param[in] periods2 Periods of a period set value
+ * @param[in] periods2 Periods of a period (set) value
  * @param[in] count2 Number of elements in the period set value
- * @param[in] newcount Number of elements in the result
+ * @param[out] newcount Number of elements in the result
  * @note Returns new periods that must be freed by the calling function.
  */
 Period **
@@ -130,11 +122,24 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
   int *newcount)
 {
   Period **periods = palloc(sizeof(Period *) * (count1 + count2));
-  int k = 0;
-  for (int i = 0; i < count1; i++)
-    periods[k++] = periods1[i];
-  for (int i = 0; i < count2; i++)
-    periods[k++] = periods2[i];
+  int i = 0, j = 0, k = 0;
+  while (i < count1 && j < count2)
+  {
+    int cmp = period_cmp_internal(periods1[i], periods2[j]);
+    if (cmp == 0)
+    {
+      periods[k++] = periods1[i++];
+      j++;
+    }
+    else if (cmp < 0)
+      periods[k++] = periods1[i++];
+    else
+      periods[k++] = periods2[j++];
+  }
+  while (i < count1)
+    periods[k++] = periods1[i++];
+  while (j < count2)
+    periods[k++] = periods2[j++];
   Period **result = periodarr_normalize(periods, k, newcount);
   pfree(periods);
   return result;
@@ -269,8 +274,8 @@ timestampset_extent_transfn(PG_FUNCTION_ARGS)
   /* Null period and non-null timestampset, return the bbox of the timestampset */
   if (!p)
   {
-    result = palloc0(sizeof(Period));
-    timestampset_bbox(result, ts);
+    result = palloc(sizeof(Period));
+    timestampset_bbox(ts, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null timestampset, return the period */
@@ -282,7 +287,7 @@ timestampset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  timestampset_bbox(&p1, ts);
+  timestampset_bbox(ts, &p1);
   result = period_super_union(p, &p1);
 
   PG_FREE_IF_COPY(ts, 1);
@@ -313,7 +318,7 @@ period_extent_transfn(PG_FUNCTION_ARGS)
   else
   {
     Period p;
-    period_set(&p, p2->lower, p2->upper, p2->lower_inc, p2->upper_inc);
+    period_set(p2->lower, p2->upper, p2->lower_inc, p2->upper_inc, &p);
     result = period_super_union(p1, &p);
   }
   PG_RETURN_POINTER(result);
@@ -337,8 +342,8 @@ periodset_extent_transfn(PG_FUNCTION_ARGS)
   /* Null period and non-null period set, return the bbox of the period set */
   if (!p)
   {
-    result = palloc0(sizeof(Period));
-    periodset_bbox(result, ps);
+    result = palloc(sizeof(Period));
+    periodset_bbox(ps, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null period and null temporal, return the period */
@@ -350,7 +355,7 @@ periodset_extent_transfn(PG_FUNCTION_ARGS)
   }
 
   Period p1;
-  periodset_bbox(&p1, ps);
+  periodset_bbox(ps, &p1);
   result = period_super_union(p, &p1);
 
   PG_FREE_IF_COPY(ps, 1);

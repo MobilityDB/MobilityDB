@@ -7,6 +7,12 @@ CREATE TABLE tbl_timestampset_tmp AS TABLE tbl_timestampset WITH NO DATA;
 CREATE TABLE AS
 COPY tbl_timestampset_tmp FROM '/tmp/tbl_timestampset' (FORMAT BINARY);
 COPY 100
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset_tmp t2 WHERE t1.k = t2.k AND t1.ts <> t2.ts;
+ count 
+-------
+     0
+(1 row)
+
 DROP TABLE tbl_timestampset_tmp;
 DROP TABLE
 SELECT timestampset(array_agg(DISTINCT t ORDER BY t)) FROM tbl_timestamptz WHERE t IS NOT NULL LIMIT 10;

@@ -35,6 +35,7 @@
 #include "point/stbox.h"
 
 #include <assert.h>
+#include <libpq/pqformat.h>
 #include <utils/builtins.h>
 
 #include "general/period.h"
@@ -53,7 +54,7 @@
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 
 /*****************************************************************************
- * Miscellaneous functions
+ * General functions
  *****************************************************************************/
 
 /**
@@ -66,8 +67,8 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 {
   /* Note: zero-fill is done in function stbox_set */
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  stbox_set(result, hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
-    zmin, zmax, tmin, tmax);
+  stbox_set(hasx, hasz, hast, geodetic, srid, xmin, xmax, ymin, ymax,
+    zmin, zmax, tmin, tmax, result);
   return result;
 }
 
@@ -75,9 +76,9 @@ stbox_make(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
  * Set the spatiotemporal box from the argument values
  */
 void
-stbox_set(STBOX *box, bool hasx, bool hasz, bool hast, bool geodetic,
-  int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, TimestampTz tmin, TimestampTz tmax)
+stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -178,6 +179,7 @@ stbox_expand(STBOX *box1, const STBOX *box2)
     box1->tmin = Min(box1->tmin, box2->tmin);
     box1->tmax = Max(box1->tmax, box2->tmax);
   }
+  return;
 }
 
 /**
@@ -202,7 +204,7 @@ stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
 /**
  * Set the values of a GBOX
  */
-void
+static void
 gbox_set(GBOX *box, bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax)
 {
@@ -381,6 +383,99 @@ stbox_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
+/**
+ * Send function for STBOX (internal function)
+ */
+static void
+stbox_write(const STBOX *box, StringInfo buf)
+{
+#if POSTGRESQL_VERSION_NUMBER < 110000
+  pq_sendint(buf, (uint32) box->flags, 4);
+#else
+  pq_sendint32(buf, box->flags);
+#endif  
+  if (MOBDB_FLAGS_GET_X(box->flags))
+  {
+    pq_sendfloat8(buf, box->xmin);
+    pq_sendfloat8(buf, box->xmax);
+    pq_sendfloat8(buf, box->ymin);
+    pq_sendfloat8(buf, box->ymax);
+    if (MOBDB_FLAGS_GET_Z(box->flags))
+    {
+      pq_sendfloat8(buf, box->zmin);
+      pq_sendfloat8(buf, box->zmax);
+    }
+#if POSTGRESQL_VERSION_NUMBER < 110000
+    pq_sendint(buf, (uint32) box->srid, 4);
+#else
+    pq_sendint32(buf, box->srid);
+#endif
+  }
+  if (MOBDB_FLAGS_GET_T(box->flags))
+  {
+    bytea *tmin = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmin));
+    bytea *tmax = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(box->tmax));
+    pq_sendbytes(buf, VARDATA(tmin), VARSIZE(tmin) - VARHDRSZ);
+    pq_sendbytes(buf, VARDATA(tmax), VARSIZE(tmax) - VARHDRSZ);
+    pfree(tmin); pfree(tmax);
+  }
+  return;
+}
+
+PG_FUNCTION_INFO_V1(stbox_send);
+/**
+ * Send function for STBOX
+ */
+PGDLLEXPORT Datum
+stbox_send(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  stbox_write(box, &buf);
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/**
+ * Receive function for STBOX (internal function)
+ */
+static STBOX *
+stbox_read(StringInfo buf)
+{
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
+  result->flags = (int) pq_getmsgint(buf, 4);
+  if (MOBDB_FLAGS_GET_X(result->flags))
+  {
+    result->xmin = pq_getmsgfloat8(buf);
+    result->xmax = pq_getmsgfloat8(buf);
+    result->ymin = pq_getmsgfloat8(buf);
+    result->ymax = pq_getmsgfloat8(buf);
+    if (MOBDB_FLAGS_GET_Z(result->flags))
+    {
+      result->zmin = pq_getmsgfloat8(buf);
+      result->zmax = pq_getmsgfloat8(buf);
+    }
+    result->srid = (int) pq_getmsgint(buf, 4);
+  }
+  if (MOBDB_FLAGS_GET_T(result->flags))
+  {
+    result->tmin = call_recv(TIMESTAMPTZOID, buf);
+    result->tmax = call_recv(TIMESTAMPTZOID, buf);
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(stbox_recv);
+/**
+ * Receive function for STBOX
+ */
+PGDLLEXPORT Datum
+stbox_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  PG_RETURN_POINTER(stbox_read(buf));
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -546,7 +641,7 @@ geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Cast the spatiotemporal box as a GBOX value for PostGIS
  */
 void
-stbox_set_gbox(const STBOX *box, GBOX *gbox)
+stbox_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
   gbox_set(gbox, MOBDB_FLAGS_GET_Z(box->flags), false,
@@ -570,8 +665,6 @@ stbox_to_period(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/* Cast an STBOX as a box2d */
-
 PG_FUNCTION_INFO_V1(stbox_to_box2d);
 /**
  * Cast the spatiotemporal box as a GBOX value for PostGIS
@@ -583,12 +676,15 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
   GBOX *result = palloc0(sizeof(GBOX));
-  stbox_set_gbox(box, result);
+  stbox_gbox(box, result);
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * Cast the spatiotemporal box as a BOX3D value for PostGIS
+ */
 void
-stbox_set_box3d(const STBOX *box, BOX3D *box3d)
+stbox_box3d(const STBOX *box, BOX3D *box3d)
 {
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
@@ -618,7 +714,7 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   BOX3D *result = palloc0(sizeof(BOX3D));
-  stbox_set_box3d(box, result);
+  stbox_box3d(box, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -658,7 +754,7 @@ box3d_to_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-geo_to_stbox_internal(STBOX *box, const GSERIALIZED *gs)
+geo_stbox(const GSERIALIZED *gs, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -727,7 +823,7 @@ geo_to_stbox(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   STBOX *result = palloc(sizeof(STBOX));
-  geo_to_stbox_internal(result, gs);
+  geo_stbox(gs, result);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }
@@ -737,7 +833,7 @@ geo_to_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
+timestamp_stbox(TimestampTz t, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -745,6 +841,7 @@ timestamp_to_stbox_internal(STBOX *box, TimestampTz t)
   MOBDB_FLAGS_SET_X(box->flags, false);
   MOBDB_FLAGS_SET_Z(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(timestamp_to_stbox);
@@ -756,7 +853,7 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   STBOX *result = palloc(sizeof(STBOX));
-  timestamp_to_stbox_internal(result, t);
+  timestamp_stbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -765,7 +862,7 @@ timestamp_to_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
+timestampset_stbox(const TimestampSet *ts, STBOX *box)
 {
   const Period *p = timestampset_bbox_ptr(ts);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -773,6 +870,7 @@ timestampset_to_stbox_internal(STBOX *box, const TimestampSet *ts)
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(timestampset_to_stbox);
@@ -784,7 +882,7 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   STBOX *result = palloc(sizeof(STBOX));
-  timestampset_to_stbox_internal(result, ts);
+  timestampset_stbox(ts, result);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
@@ -794,13 +892,14 @@ timestampset_to_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-period_to_stbox_internal(STBOX *box, const Period *p)
+period_stbox(const Period *p, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(period_to_stbox);
@@ -812,7 +911,7 @@ period_to_stbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
   STBOX *result = palloc(sizeof(STBOX));
-  period_to_stbox_internal(result, p);
+  period_stbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -821,7 +920,7 @@ period_to_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
+periodset_stbox(const PeriodSet *ps, STBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
@@ -829,6 +928,7 @@ periodset_to_stbox_internal(STBOX *box, const PeriodSet *ps)
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
+  return;
 }
 
 PG_FUNCTION_INFO_V1(periodset_to_stbox);
@@ -840,7 +940,7 @@ periodset_to_stbox(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
   STBOX *result = palloc(sizeof(STBOX));
-  periodset_to_stbox_internal(result, ps);
+  periodset_stbox(ps, result);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
@@ -857,7 +957,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   STBOX *result = palloc(sizeof(STBOX));
-  geo_to_stbox_internal(result, gs);
+  geo_stbox(gs, result);
   result->tmin = result->tmax = t;
   MOBDB_FLAGS_SET_T(result->flags, true);
   PG_FREE_IF_COPY(gs, 0);
@@ -876,7 +976,7 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Period *p = PG_GETARG_PERIOD(1);
   STBOX *result = palloc(sizeof(STBOX));
-  geo_to_stbox_internal(result, gs);
+  geo_stbox(gs, result);
   result->tmin = p->lower;
   result->tmax = p->upper;
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -1038,6 +1138,82 @@ stbox_tmax(PG_FUNCTION_ARGS)
   if (!MOBDB_FLAGS_GET_T(box->flags))
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(box->tmax);
+}
+
+/*****************************************************************************
+ * Functions for spatial reference systems
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(stbox_srid);
+/**
+ * Returns the SRID of the spatiotemporal box
+ */
+PGDLLEXPORT Datum
+stbox_srid(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  PG_RETURN_INT32(box->srid);
+}
+
+PG_FUNCTION_INFO_V1(stbox_set_srid);
+/**
+ * Sets the SRID of the spatiotemporal box
+ */
+PGDLLEXPORT Datum
+stbox_set_srid(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  STBOX *result = stbox_copy(box);
+  result->srid = srid;
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_transform);
+/**
+ * Transform a spatiotemporal box into another spatial reference system
+ */
+PGDLLEXPORT Datum
+stbox_transform(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  Datum srid = PG_GETARG_DATUM(1);
+  ensure_has_X_stbox(box);
+  STBOX *result = stbox_copy(box);
+  result->srid = DatumGetInt32(srid);
+  bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
+  Datum min = point_make(box->xmin, box->ymin, box->zmin, hasz, geodetic,
+    box->srid);
+  Datum max = point_make(box->xmax, box->ymax, box->zmax, hasz, geodetic,
+    box->srid);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Datum min1 = datum_transform(min, srid);
+  Datum max1 = datum_transform(max, srid);
+  if (hasz)
+  {
+    const POINT3DZ *ptmin1 = datum_get_point3dz_p(min1);
+    const POINT3DZ *ptmax1 = datum_get_point3dz_p(max1);
+    result->xmin = ptmin1->x;
+    result->ymin = ptmin1->y;
+    result->zmin = ptmin1->z;
+    result->xmax = ptmax1->x;
+    result->ymax = ptmax1->y;
+    result->zmax = ptmax1->z;
+  }
+  else
+  {
+    const POINT2D *ptmin1 = datum_get_point2d_p(min1);
+    const POINT2D *ptmax1 = datum_get_point2d_p(max1);
+    result->xmin = ptmin1->x;
+    result->ymin = ptmin1->y;
+    result->xmax = ptmax1->x;
+    result->ymax = ptmax1->y;
+  }
+  pfree(DatumGetPointer(min)); pfree(DatumGetPointer(max));
+  pfree(DatumGetPointer(min1)); pfree(DatumGetPointer(max1));
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

@@ -37,6 +37,7 @@ COPY tbl_periodset TO '/tmp/tbl_periodset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_periodset_tmp;
 CREATE TABLE tbl_periodset_tmp AS TABLE tbl_periodset WITH NO DATA;
 COPY tbl_periodset_tmp FROM '/tmp/tbl_periodset' (FORMAT BINARY);
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset_tmp t2 WHERE t1.k = t2.k AND t1.ps <> t2.ps;
 DROP TABLE tbl_periodset_tmp;
 
 -------------------------------------------------------------------------------
