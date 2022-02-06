@@ -32,10 +32,10 @@
  * Index support functions for temporal point types.
  */
 
-#include "general/time_supportfn.h"
-#include "point/tpoint_supportfn.h"
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+
+#include "general/temporal_supportfn.h"
+#include "point/tpoint_supportfn.h"
 
 /* PostgreSQL */
 #include <postgres.h>

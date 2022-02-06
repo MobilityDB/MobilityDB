@@ -91,7 +91,7 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
  * @param[out] t Timestamp
  */
 bool
-tnpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
@@ -818,7 +818,7 @@ tnpointseq_azimuth1(const TInstant *inst1, const TInstant *inst2,
  * Temporal azimuth of the temporal network point of sequence subtype
  */
 static int
-tnpointseq_azimuth2(TSequence **result, const TSequence *seq)
+tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
 {
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -901,7 +901,7 @@ static TSequenceSet *
 tnpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
-  int count = tnpointseq_azimuth2(sequences, seq);
+  int count = tnpointseq_azimuth2(seq, sequences);
   if (count == 0)
   {
     pfree(sequences);
@@ -924,7 +924,7 @@ tnpointseqset_azimuth(const TSequenceSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    int countstep = tnpointseq_azimuth2(&sequences[k], seq);
+    int countstep = tnpointseq_azimuth2(seq, &sequences[k]);
     k += countstep;
   }
   if (k == 0)

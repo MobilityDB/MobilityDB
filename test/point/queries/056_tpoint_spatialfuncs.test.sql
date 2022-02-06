@@ -119,6 +119,15 @@ SELECT ST_AsText(round(geometry 'Polygon((1.123456789 1.123456789,4.123456789 4.
 SELECT ST_AsText(round(geometry 'MultiPoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789))', 6));
 SELECT ST_AsText(round(geometry 'MultiLinestring((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(4.123456789 4.123456789,5.123456789 5.123456789))', 6));
 SELECT ST_AsText(round(geometry 'MultiPolygon(((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789)),((3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789)))', 6));
+SELECT ST_AsText(round(geometry 'GeometryCollection(Point(1.123456789 1.123456789),
+  Linestring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),
+  Triangle((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 1.123456789,1.123456789 1.123456789)),
+  Circularstring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),
+  Polygon((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789),(3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789)))', 6));
+SELECT ST_AsText(round(geometry 'GeometryCollection(
+  MultiPoint((1.123456789 1.123456789),(2.123456789 2.123456789),(3.123456789 3.123456789)),
+  MultiLinestring((1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789),(4.123456789 4.123456789,5.123456789 5.123456789)),
+  MultiPolygon(((1.123456789 1.123456789,4.123456789 4.123456789,7.123456789 1.123456789,1.123456789 1.123456789)),((3.123456789 2.123456789,4.123456789 3.123456789,5.123456789 2.123456789,3.123456789 2.123456789))))', 6));
 
 SELECT ST_AsText(round(geometry 'Point Empty', 6));
 SELECT ST_AsText(round(geometry 'Linestring Empty', 6));
@@ -456,6 +465,8 @@ SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(-1 -1)'));
 SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(0 -1)'));
 SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point(1 -1)'));
 
+SELECT degrees(bearing(geometry 'Point(0 0)', geometry 'Point empty'));
+
 SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(0 0)'))::numeric, 6);
 SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 0)'))::numeric, 6);
 SELECT round(degrees(bearing(geography 'Point(0 0)', geography 'Point(1 1)'))::numeric, 6);
@@ -621,6 +632,9 @@ SELECT round(degrees(bearing(tgeompoint 'Interp=Stepwise;[Point(1 1)@2000-01-01,
 -- SELECT round(degrees(bearing(tgeogpoint '{Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')), 6);
 -- SELECT round(degrees(bearing(tgeogpoint '[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03]', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')), 6);
 -- SELECT round(degrees(bearing(tgeogpoint '{[Point(1.5 1.5 1.5)@2000-01-01, Point(2.5 2.5 2.5)@2000-01-02, Point(1.5 1.5 1.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}', tgeogpoint '{[Point(2.5 2.5 2.5)@2000-01-01, Point(1.5 1.5 1.5)@2000-01-02, Point(2.5 2.5 2.5)@2000-01-03],[Point(3.5 3.5 3.5)@2000-01-04, Point(3.5 3.5 3.5)@2000-01-05]}')), 6);
+
+/* Errors */
+SELECT bearing(geometry 'Point(1 1)', geometry 'PointZ(2 2 2)');
 
 --------------------------------------------------------
 

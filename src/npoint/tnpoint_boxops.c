@@ -122,14 +122,12 @@ tnpointinstarr_linear_to_stbox(const TInstant **instants, int count,
   npoint *np = DatumGetNpoint(tinstant_value(instants[0]));
   int64 rid = np->rid;
   double posmin = np->pos, posmax = np->pos;
-  TimestampTz tmin = instants[0]->t, tmax = instants[0]->t;
+  TimestampTz tmin = instants[0]->t, tmax = instants[count - 1]->t;
   for (int i = 1; i < count; i++)
   {
     np = DatumGetNpoint(tinstant_value(instants[i]));
     posmin = Min(posmin, np->pos);
     posmax = Max(posmax, np->pos);
-    tmin = Min(tmin, instants[i]->t);
-    tmax = Max(tmax, instants[i]->t);
   }
 
   Datum line = route_geom(rid);

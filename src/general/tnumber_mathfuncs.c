@@ -243,7 +243,7 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic arithmetic operator on a temporal number an a number
+ * Generic arithmetic operator on a temporal numbers
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function

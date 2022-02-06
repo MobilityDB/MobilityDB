@@ -387,8 +387,7 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Casting
- * The internal functions assume that the argument box is set to 0 before
- * with palloc0
+ * The internal functions set the argument box to 0
  *****************************************************************************/
 
 /**
@@ -628,8 +627,6 @@ periodset_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-/*****************************************************************************/
-
 PG_FUNCTION_INFO_V1(int_timestamp_to_tbox);
 /**
  * Transform the integer and the timestamp to a temporal box
@@ -729,6 +726,20 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
   range_bounds(range, &xmin, &xmax);
   TBOX *result = tbox_make(true, true, xmin, xmax, p->lower, p->upper);
   PG_FREE_IF_COPY(range, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(tnumber_to_tbox);
+/**
+ * Returns the bounding box of the temporal value
+ */
+PGDLLEXPORT Datum
+tnumber_to_tbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  TBOX *result = palloc0(sizeof(TBOX));
+  temporal_bbox(temp, result);
+  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 

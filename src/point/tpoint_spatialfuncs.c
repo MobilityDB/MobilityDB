@@ -671,7 +671,7 @@ ensure_non_empty(const GSERIALIZED *gs)
  * than the square of the distance between A and B.
  * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
  *****************************************************************************/
-/* 
+/*
  * Returns true if point p is in the segment defined by A and B (2D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
@@ -688,7 +688,7 @@ point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
   return (dotproduct >= 0);
 }
 
-/* 
+/*
  * Returns true if point p is in the segment defined by A and B (3D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
@@ -696,7 +696,7 @@ point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
 static bool
 point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
 {
-  /* Find the collinearity of the points using the cross product 
+  /* Find the collinearity of the points using the cross product
    * http://www.ambrsoft.com/TrigoCalc/Line3D/LineColinear.htm */
   double i = (p->y - A->y) * (B->z - A->z) - (p->z - A->z) * (B->y - A->y);
   double j = (p->z - A->z) * (B->x - A->x) - (p->x - A->x) * (B->z - A->z);
@@ -704,7 +704,7 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
   if (fabs(i) >= MOBDB_EPSILON || fabs(j) >= MOBDB_EPSILON ||
     fabs(k) >= MOBDB_EPSILON)
     return false;
-  double dotproduct = (p->x - A->x) * (B->x - A->x) + 
+  double dotproduct = (p->x - A->x) * (B->x - A->x) +
     (p->y - A->y) * (B->y - A->y) + (p->z - A->z) * (B->z - A->z);
   return (dotproduct >= 0);
 }
@@ -757,20 +757,20 @@ point_on_segment(Datum start, Datum end, Datum point)
     datum_point4d(start, &p1);
     datum_point4d(end, &p2);
     datum_point4d(point, &p);
-    return point_on_segment_sphere(&p, &p1, &p2); 
+    return point_on_segment_sphere(&p, &p1, &p2);
   }
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
     const POINT3DZ *p1 = datum_get_point3dz_p(start);
     const POINT3DZ *p2 = datum_get_point3dz_p(end);
     const POINT3DZ *p = datum_get_point3dz_p(point);
-    return point3dz_on_segment(p, p1, p2); 
+    return point3dz_on_segment(p, p1, p2);
   }
   /* 2D */
   const POINT2D *p1 = datum_get_point2d_p(start);
   const POINT2D *p2 = datum_get_point2d_p(end);
   const POINT2D *p = datum_get_point2d_p(point);
-  return point2d_on_segment(p, p1, p2); 
+  return point2d_on_segment(p, p1, p2);
 }
 
 /*****************************************************************************
@@ -812,6 +812,9 @@ tpointinstset_ever_eq(const TInstantSet *ti, Datum value)
 static bool
 tpointseq_ever_eq(const TSequence *seq, Datum value)
 {
+  int i;
+  Datum value1;
+
   /* Bounding box test */
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
     return false;
@@ -819,9 +822,9 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
-    for (int i = 0; i < seq->count; i++)
+    for (i = 0; i < seq->count; i++)
     {
-      Datum value1 = tinstant_value(tsequence_inst_n(seq, i));
+      value1 = tinstant_value(tsequence_inst_n(seq, i));
       if (datum_point_eq(value1, value))
         return true;
     }
@@ -830,9 +833,9 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 
   /* Linear interpolation*/
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
+  value1 = tinstant_value(inst1);
   bool lower_inc = seq->period.lower_inc;
-  for (int i = 1; i < seq->count; i++)
+  for (i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
@@ -1160,7 +1163,7 @@ point_make(double x, double y, double z, bool hasz, bool geodetic,
  * total length of the segment where the point must be located
  */
 Datum
-geoseg_interpolate_point(Datum start, Datum end, long double ratio)
+geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
   int srid = gserialized_get_srid(gs);
@@ -1205,7 +1208,7 @@ geoseg_interpolate_point(Datum start, Datum end, long double ratio)
  *@param[out] dist Distance
  */
 long double
-geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
+geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(start);
   long double result;
@@ -1282,7 +1285,7 @@ geoseg_locate_point(Datum start, Datum end, Datum point, double *dist)
  * @param[out] t Timestamp
  */
 bool
-tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
@@ -1295,18 +1298,17 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   /* We are sure that the trajectory is a line */
   Datum start = tinstant_value(inst1);
   Datum end = tinstant_value(inst2);
-  /* Compute faster the intersection if we do not need to output the timestamp */
-  if (t == NULL)
-    return point_on_segment(start, end, value);
-  
   double dist;
-  double fraction = geoseg_locate_point(start, end, value, &dist);
+  double fraction = geosegm_locate_point(start, end, value, &dist);
   if (fabs(dist) >= MOBDB_EPSILON)
     return false;
-  double duration = (inst2->t - inst1->t);
-  /* Note that due to roundoff errors it may be the case that the
-   * resulting timestamp t may be equal to inst1->t or to inst2->t */
-  *t = inst1->t + (TimestampTz) (duration * fraction);
+  if (t != NULL)
+  {
+    double duration = (inst2->t - inst1->t);
+    /* Note that due to roundoff errors it may be the case that the
+     * resulting timestamp t may be equal to inst1->t or to inst2->t */
+    *t = inst1->t + (TimestampTz) (duration * fraction);
+  }
   return true;
 }
 
@@ -1321,7 +1323,7 @@ tpointseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * end1->t = end2->t
  */
 bool
-tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
+tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
   long double fraction, xfraction = 0, yfraction = 0, xdenum, ydenum;
@@ -1429,7 +1431,7 @@ tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
  * end1->t = end2->t
  */
 bool
-tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
+tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
   GEOGRAPHIC_EDGE e1, e2;
@@ -1609,8 +1611,9 @@ tpointinstset_trajectory(const TInstantSet *ti)
 /**
  * Compute the trajectory of an array of instants
  *
- * @note This function is called by the constructor of a temporal sequence
- * and returns a single Datum which is a geometry/geography.
+ * @note This function is called by the constructor of a temporal point sequence
+ * when the trajectory must be precomputed or when the points are geodetic
+ * and returns a geometry/geography.
  * Since the composing points have been already validated in the constructor
  * there is no verification of the input in this function, in particular
  * for geographies it is supposed that the composing points are geodetic
@@ -1620,7 +1623,8 @@ tpointinstset_trajectory(const TInstantSet *ti)
  * @param[in] linear True when the interpolation is linear
  */
 Datum
-tpointseq_make_trajectory(const TInstant **instants, int count, bool linear)
+tpointinstarr_make_trajectory(const TInstant **instants, int count,
+  bool linear)
 {
   /* Instantaneous sequence */
   if (count == 1)
@@ -1649,20 +1653,35 @@ tpointseq_make_trajectory(const TInstant **instants, int count, bool linear)
   return result;
 }
 
+#ifdef STORE_TRAJ
 /**
- * Compute the trajectory of a temporal sequence
- *
- * @note This function is called when the trajectory of temporal sequences
- * are not precomputed. The function returns a single Datum which is a
- * geometry/geography. Since the sequence has been already validated
- * there is no verification of the input in this function, in particular
- * for geographies it is supposed that the composing points are geodetic
- *
- * @param[in] seq Temporal sequence
+ * Copy the precomputed trajectory of a temporal sequence point
  */
 static Datum
-tpointseq_make_trajectory1(const TSequence *seq)
+tpointseq_trajectory_copy(const TSequence *seq)
 {
+  void *traj = (char *) (&seq->offsets[seq->count + 2]) +  /* start of data */
+    seq->offsets[seq->count + 1];  /* offset */
+  return PointerGetDatum(gserialized_copy(traj));
+}
+#endif
+
+/**
+ * Returns the trajectory of a temporal sequence point
+ *
+ * @param[in] seq Temporal sequence
+ * @note Since the sequence has been already validated there is no
+ * verification of the input in this function, in particular for
+ * geographies it is supposed that the composing points are geodetic
+ */
+Datum
+tpointseq_trajectory(const TSequence *seq)
+{
+#ifdef STORE_TRAJ
+  void *traj = (char *) (&seq->offsets[seq->count + 2]) +   /* start of data */
+    seq->offsets[seq->count + 1];  /* offset */
+  return PointerGetDatum(traj);
+#else
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tinstant_value_copy(tsequence_inst_n(seq, 0));
@@ -1689,35 +1708,8 @@ tpointseq_make_trajectory1(const TSequence *seq)
     lwpoint_free(points[i]);
   pfree(points);
   return result;
-}
-
-/**
- * Returns the precomputed trajectory of a temporal sequence point
- */
-Datum
-tpointseq_trajectory(const TSequence *seq)
-{
-#ifdef STORE_TRAJ
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +   /* start of data */
-    seq->offsets[seq->count + 1];  /* offset */
-  return PointerGetDatum(traj);
-#else
-  return tpointseq_make_trajectory1(seq);
 #endif
 }
-
-#ifdef STORE_TRAJ
-/**
- * Copy the precomputed trajectory of a temporal sequence point
- */
-static Datum
-tpointseq_trajectory_copy(const TSequence *seq)
-{
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +  /* start of data */
-    seq->offsets[seq->count + 1];  /* offset */
-  return PointerGetDatum(gserialized_copy(traj));
-}
-#endif
 
 /**
  * Returns the trajectory of a temporal point with sequence set
@@ -3752,7 +3744,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
     edge_intersection(&e, &e1, &inter);
     proj = point_make(rad2deg(inter.lon), rad2deg(inter.lat), 0,
       false, true, tpointinst_srid(start));
-    fraction = geoseg_locate_point(dstart, dend, proj, NULL);
+    fraction = geosegm_locate_point(dstart, dend, proj, NULL);
   }
   else
   {
@@ -3792,7 +3784,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
  * points
  */
 static bool
-tpoint_min_bearing_at_timestamp(const TInstant *start1,
+tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
   const TInstant *end2, bool linear2, Datum *value, TimestampTz *t)
 {
@@ -3967,7 +3959,8 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = lfinfo.reslinear ? &tpoint_min_bearing_at_timestamp : NULL;
+  lfinfo.tpfunc = lfinfo.reslinear ?
+    &tpointsegm_min_bearing_at_timestamp : NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
 }
@@ -4790,7 +4783,7 @@ tpointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   else
   {
     double dist;
-    double fraction = geoseg_locate_point(value1, value2, val, &dist);
+    double fraction = geosegm_locate_point(value1, value2, val, &dist);
     if (fabs(dist) >= MOBDB_EPSILON)
       result = false;
     else
@@ -4811,7 +4804,7 @@ tpointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  *
  * This function is called by the atGeometry function to find the timestamp
  * at which an intersection point found by PostGIS is located. This function
- * differs from function tpointseq_intersection_value in particular since the
+ * differs from function tpointsegm_intersection_value in particular since the
  * latter is used for finding crossings during synchronization and thus it is
  * required that the timestamp in strictly between the timestamps of a segment.
  *
@@ -5423,7 +5416,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
   {
     Period p;
     period_set(box->tmin, box->tmax, true, upper_inc, &p);
-    temp1 = temporal_at_period_internal(temp, &p);
+    temp1 = temporal_restrict_period_internal(temp, &p, REST_AT);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */
     if (temp1 == NULL)
@@ -5485,7 +5478,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
 /**
  * Restrict the temporal point to the complement of the spatiotemporal box
  * (internal function)
- 
+
  * We cannot make the difference from each dimension separately, i.e.,
  * restrict at the period and then restrict to the polygon. Therefore, we
  * compute the atStbox and then compute the complement of the value obtained.

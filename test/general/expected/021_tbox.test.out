@@ -387,6 +387,12 @@ SELECT tbox 'TBOX((1,2001-02-01),(2,2001-01-02))' ~= tbox 'TBOX((1,2001-01-01),(
  f
 (1 row)
 
+SELECT period '[2000-01-01, 2000-01-02]'::tbox -|- period '[2000-01-02, 2000-01-03]'::tbox;
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT tbox 'TBOX((1),(2))' && tbox 'TBOX((,2001-01-01),(,2001-01-02))';
 ERROR:  The temporal values must have at least one common dimension

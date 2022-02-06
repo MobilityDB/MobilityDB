@@ -30,7 +30,6 @@ add_library(general OBJECT
   timeops.c
   time_selfuncs.c
   time_spgist.c
-  time_supportfn.c
   timestampset.c
   tinstant.c
   tinstantset.c

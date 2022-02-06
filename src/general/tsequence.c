@@ -236,7 +236,8 @@ tsequence_bbox(const TSequence *seq, void *box)
  * Return the size in bytes required for string a temporal sequence value
  */
 static size_t
-tsequence_make_size(const TInstant **instants, int count, size_t bboxsize, size_t trajsize)
+tsequence_make_size(const TInstant **instants, int count, size_t bboxsize,
+  size_t trajsize)
 {
   /* Add the bounding box size */
   size_t result = bboxsize;
@@ -420,7 +421,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     }
     else
 #endif
-      tsequence_make_bbox(norminsts, newcount, lower_inc, upper_inc, bbox);
+      tsequence_make_bbox(norminsts, newcount, lower_inc, upper_inc, linear,
+        bbox);
     result->offsets[newcount] = pos;
     pos += double_pad(bboxsize);
   }
@@ -996,7 +998,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
     {
       TimestampTz crosstime;
       Datum inter1, inter2;
-      if (tsequence_intersection(instants1[k - 1], inst1, linear1,
+      if (tsegment_intersection(instants1[k - 1], inst1, linear1,
         instants2[k - 1], inst2, linear2, &inter1, &inter2, &crosstime))
       {
         instants1[k] = tofree[l++] = tinstant_make(inter1,
@@ -1067,7 +1069,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @param[out] t Timestamp
  */
 static bool
-tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+tfloatsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, Oid basetypid, TimestampTz *t)
 {
   assert(inst1->basetypid == FLOAT8OID);
@@ -1089,9 +1091,9 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   if (t != NULL)
   {
     double duration = (inst2->t - inst1->t);
-    *t = inst1->t + (TimestampTz) (duration * fraction);
     /* Note that due to roundoff errors it may be the case that the
      * resulting timestamp t may be equal to inst1->t or to inst2->t */
+    *t = inst1->t + (TimestampTz) (duration * fraction);
   }
   return true;
 }
@@ -1109,7 +1111,7 @@ tfloatseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * @param[out] t Timestamp
  */
 bool
-tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
+tlinearsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, Oid basetypid, Datum *inter, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
@@ -1121,11 +1123,11 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
   ensure_base_type_continuous((Temporal *) inst1);
   bool result = false; /* make compiler quiet */
   if (inst1->basetypid == FLOAT8OID)
-    result = tfloatseq_intersection_value(inst1, inst2, value, basetypid, t);
+    result = tfloatsegm_intersection_value(inst1, inst2, value, basetypid, t);
   else if (tgeo_base_type(inst1->basetypid))
-    result = tpointseq_intersection_value(inst1, inst2, value, t);
+    result = tpointsegm_intersection_value(inst1, inst2, value, t);
   else if (inst1->basetypid == type_oid(T_NPOINT))
-    result = tnpointseq_intersection_value(inst1, inst2, value, t);
+    result = tnpointsegm_intersection_value(inst1, inst2, value, t);
   else
     elog(ERROR, "unknown intersection function for continuous base type: %d",
       inst1->basetypid);
@@ -1169,7 +1171,7 @@ tlinearseq_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * end1->t = end2->t
  */
 static bool
-tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
+tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
   double x1 = datum_double(tinstant_value(start1), start1->basetypid);
@@ -1214,7 +1216,7 @@ tnumberseq_intersection(const TInstant *start1, const TInstant *end1,
  * end1->t = end2->t
  */
 bool
-tsequence_intersection(const TInstant *start1, const TInstant *end1,
+tsegment_intersection(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   Datum *inter1, Datum *inter2, TimestampTz *t)
 {
@@ -1225,7 +1227,7 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
     value = tinstant_value(start1);
     if (inter1 != NULL)
       *inter1 = value;
-    result = tlinearseq_intersection_value(start2, end2,
+    result = tlinearsegm_intersection_value(start2, end2,
       value, start1->basetypid, inter2, t);
   }
   else if (! linear2)
@@ -1233,7 +1235,7 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
     value = tinstant_value(start2);
     if (inter2 != NULL)
       *inter2 = value;
-    result = tlinearseq_intersection_value(start1, end1,
+    result = tlinearsegm_intersection_value(start1, end1,
       value, start2->basetypid, inter1, t);
   }
   else
@@ -1241,11 +1243,11 @@ tsequence_intersection(const TInstant *start1, const TInstant *end1,
     /* Both segments have linear interpolation */
     ensure_temporal_base_type(start1->basetypid);
     if (tnumber_base_type(start1->basetypid))
-      result = tnumberseq_intersection(start1, end1, start2, end2, t);
+      result = tnumbersegm_intersection(start1, end1, start2, end2, t);
     else if (start1->basetypid == type_oid(T_GEOMETRY))
-      result = tgeompointseq_intersection(start1, end1, start2, end2, t);
+      result = tgeompointsegm_intersection(start1, end1, start2, end2, t);
     else if (start1->basetypid == type_oid(T_GEOGRAPHY))
-      result = tgeogpointseq_intersection(start1, end1, start2, end2, t);
+      result = tgeogpointsegm_intersection(start1, end1, start2, end2, t);
     /* We are sure it is linear interpolation */
     if (result && inter1 != NULL)
       *inter1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
@@ -1385,8 +1387,7 @@ tsequence_to_string(const TSequence *seq, bool component,
 }
 
 /**
- * Write the binary representation of the temporal value
- * into the buffer
+ * Write the binary representation of the temporal value into the buffer
  *
  * @param[in] seq Temporal value
  * @param[in] buf Buffer
@@ -1429,53 +1430,6 @@ tsequence_read(StringInfo buf, Oid basetypid)
     instants[i] = tinstant_read(buf, basetypid);
   return tsequence_make_free(instants, count, lower_inc,
     upper_inc, linear, NORMALIZE);
-}
-
-/*****************************************************************************
- * Cast functions
- *****************************************************************************/
-
-/**
- * Cast the temporal integer value as a temporal float value
- */
-TSequence *
-tintseq_to_tfloatseq(const TSequence *seq)
-{
-  TSequence *result = tsequence_copy(seq);
-  result->basetypid = FLOAT8OID;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
-    inst->basetypid = FLOAT8OID;
-    Datum *value_ptr = tinstant_value_ptr(inst);
-    *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
-  }
-  return result;
-}
-
-/**
- * Cast the temporal float value as a temporal integer value
- */
-TSequence *
-tfloatseq_to_tintseq(const TSequence *seq)
-{
-  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
-  TSequence *result = tsequence_copy(seq);
-  result->basetypid = INT4OID;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
-    inst->basetypid = INT4OID;
-    Datum *value_ptr = tinstant_value_ptr(inst);
-    *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
-  }
-  return result;
 }
 
 /*****************************************************************************
@@ -1531,6 +1485,53 @@ tsequence_from_base(PG_FUNCTION_ARGS)
   TSequence *result = tsequence_from_base_internal(value, basetypid, p, linear);
   DATUM_FREE_IF_COPY(value, basetypid, 0);
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
+
+/**
+ * Cast the temporal integer value as a temporal float value
+ */
+TSequence *
+tintseq_to_tfloatseq(const TSequence *seq)
+{
+  TSequence *result = tsequence_copy(seq);
+  result->basetypid = FLOAT8OID;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
+    inst->basetypid = FLOAT8OID;
+    Datum *value_ptr = tinstant_value_ptr(inst);
+    *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
+  }
+  return result;
+}
+
+/**
+ * Cast the temporal float value as a temporal integer value
+ */
+TSequence *
+tfloatseq_to_tintseq(const TSequence *seq)
+{
+  if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+  TSequence *result = tsequence_copy(seq);
+  result->basetypid = INT4OID;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *inst = (TInstant *) tsequence_inst_n(result, i);
+    inst->basetypid = INT4OID;
+    Datum *value_ptr = tinstant_value_ptr(inst);
+    *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
+  }
+  return result;
 }
 
 /*****************************************************************************
@@ -2064,18 +2065,19 @@ tsequence_timestamps_array(const TSequence *seq)
 bool
 tsequence_ever_eq(const TSequence *seq, Datum value)
 {
+  int i;
+  Datum value1;
+
   /* Bounding box test */
   if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, EVER))
     return false;
-
-  int i;
 
   /* Stepwise interpolation or instantaneous sequence */
   if (! MOBDB_FLAGS_GET_LINEAR(seq->flags) || seq->count == 1)
   {
     for (i = 0; i < seq->count; i++)
     {
-      Datum value1 = tinstant_value(tsequence_inst_n(seq, i));
+      value1 = tinstant_value(tsequence_inst_n(seq, i));
       if (datum_eq(value1, value, seq->basetypid))
         return true;
     }
@@ -2085,7 +2087,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
   /* Linear interpolation*/
   Oid basetypid = seq->basetypid;
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
-  Datum value1 = tinstant_value(inst1);
+  value1 = tinstant_value(inst1);
   bool lower_inc = seq->period.lower_inc;
   for (i = 1; i < seq->count; i++)
   {
@@ -2093,7 +2095,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
     Datum value2 = tinstant_value(inst2);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     /* Constant segment */
-    if (datum_eq(value1, value2, basetypid) && 
+    if (datum_eq(value1, value2, basetypid) &&
         datum_eq(value1, value, basetypid))
       return true;
     /* Test bounds */
@@ -2106,9 +2108,9 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
       if (upper_inc) return true;
     }
     /* Interpolation for continuous base type */
-    else if (tlinearseq_intersection_value(inst1, inst2, value, basetypid,
+    else if (tlinearsegm_intersection_value(inst1, inst2, value, basetypid,
       NULL, NULL))
-      return true; 
+      return true;
     inst1 = inst2;
     value1 = value2;
     lower_inc = true;
@@ -2346,9 +2348,9 @@ tsequence_always_le(const TSequence *seq, Datum value)
  * @return Number of resulting sequences returned
  */
 static int
-tsequence_restrict_value1(TSequence **result,
-  const TInstant *inst1, const TInstant *inst2, bool linear,
-  bool lower_inc, bool upper_inc, Datum value, bool atfunc)
+tsegment_restrict_value(const TInstant *inst1, const TInstant *inst2,
+  bool linear, bool lower_inc, bool upper_inc, Datum value, bool atfunc,
+  TSequence **result)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
@@ -2366,7 +2368,7 @@ tsequence_restrict_value1(TSequence **result,
    * value in the interior of the segment? */
   Datum projvalue;
   TimestampTz t;
-  bool inter = linear && !isconst && tlinearseq_intersection_value(
+  bool inter = linear && !isconst && tlinearsegm_intersection_value(
     inst1, inst2, value, basetypid, &projvalue, &t);
 
   /* Overall segment does not belong to the answer */
@@ -2479,7 +2481,7 @@ tsequence_restrict_value1(TSequence **result,
  * repeated here.
  */
 int
-tsequence_restrict_value2(const TSequence *seq, Datum value, bool atfunc,
+tsequence_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
   TSequence **result)
 {
   const TInstant *inst1;
@@ -2517,8 +2519,8 @@ tsequence_restrict_value2(const TSequence *seq, Datum value, bool atfunc,
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     /* Each iteration adds between 0 and 2 sequences */
-    k += tsequence_restrict_value1(&result[k], inst1, inst2, linear,
-      lower_inc, upper_inc, value, atfunc);
+    k += tsegment_restrict_value(inst1, inst2, linear, lower_inc, upper_inc,
+      value, atfunc, &result[k]);
     inst1 = inst2;
     lower_inc = true;
   }
@@ -2544,7 +2546,7 @@ tsequence_restrict_value(const TSequence *seq, Datum value, bool atfunc)
   if (!atfunc && MOBDB_FLAGS_GET_LINEAR(seq->flags))
     count *= 2;
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int newcount = tsequence_restrict_value2(seq, value, atfunc, sequences);
+  int newcount = tsequence_restrict_value1(seq, value, atfunc, sequences);
   return tsequenceset_make_free(sequences, newcount, NORMALIZE);
 }
 
@@ -2598,8 +2600,8 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
     for (int j = 0; j < count1; j++)
       /* Each iteration adds between 0 and 2 sequences */
-      k += tsequence_restrict_value1(&result[k], inst1, inst2, linear,
-        lower_inc, upper_inc, values1[j], REST_AT);
+      k += tsegment_restrict_value(inst1, inst2, linear, lower_inc,
+        upper_inc, values1[j], REST_AT, &result[k]);
     inst1 = inst2;
     lower_inc = true;
   }
@@ -2820,7 +2822,7 @@ tnumberseq_restrict_range1(TSequence **result,
       instants[i] = (TInstant *) inst2;
     else
     {
-      freei = tfloatseq_intersection_value(inst1, inst2, lower, basetypid, &t1);
+      freei = tfloatsegm_intersection_value(inst1, inst2, lower, basetypid, &t1);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
       instants[i] = RANGE_ROUNDOFF ?
@@ -2834,7 +2836,7 @@ tnumberseq_restrict_range1(TSequence **result,
       instants[j] = (TInstant *) inst2;
     else
     {
-      freej = tfloatseq_intersection_value(inst1, inst2, upper, basetypid, &t2);
+      freej = tfloatsegm_intersection_value(inst1, inst2, upper, basetypid, &t2);
       /* To reduce the roundoff errors we may take the bound instead of
        * projecting the value to the timestamp */
       instants[j] = RANGE_ROUNDOFF ?
@@ -2858,7 +2860,7 @@ tnumberseq_restrict_range1(TSequence **result,
   TInstant *instbounds[2] = {NULL, NULL};
   if (dlower != dvalue1 && dlower != dvalue2)
   {
-    tfloatseq_intersection_value(inst1, inst2, lower, basetypid, &t1);
+    tfloatsegm_intersection_value(inst1, inst2, lower, basetypid, &t1);
     /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
     instbounds[i] = RANGE_ROUNDOFF ?
@@ -2867,7 +2869,7 @@ tnumberseq_restrict_range1(TSequence **result,
   }
   if (dupper != dvalue1 && dupper != dvalue2)
   {
-    tfloatseq_intersection_value(inst1, inst2, upper, basetypid, &t2);
+    tfloatsegm_intersection_value(inst1, inst2, upper, basetypid, &t2);
     /* To reduce the roundoff errors we may take the bound instead of
      * projecting the value to the timestamp */
     instbounds[j] = RANGE_ROUNDOFF ?
@@ -3246,7 +3248,7 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   }
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
   {
-    return geoseg_interpolate_point(value1, value2, ratio);
+    return geosegm_interpolate_point(value1, value2, ratio);
   }
   if (basetypid == type_oid(T_NPOINT))
   {

@@ -53,8 +53,10 @@
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
+
 #include "point/tpoint.h"
 #include "point/stbox.h"
+#include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -93,6 +95,32 @@ tpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
     tpointinst_stbox(instants[i], &box1);
     stbox_expand(box, &box1);
   }
+  return;
+}
+
+/**
+ * Set the spatiotemporal box from the array of temporal geography point values
+ * with linear interpolation
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] instants Temporal instant values
+ * @param[in] count Number of elements in the array
+ * @note Temporal instant values do not have a precomputed bounding box
+ */
+void
+tgeogpointinstarr_stbox(const TInstant **instants, int count, bool linear,
+  STBOX *box)
+{
+  Datum traj = tpointinstarr_make_trajectory(instants, count, linear);
+  /* We are sure that the trajectory is not empty */
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
+  geo_stbox(gs, box);
+  box->tmin = instants[0]->t;
+  box->tmax = instants[count - 1]->t;
+  MOBDB_FLAGS_SET_T(box->flags, true);
+  MOBDB_FLAGS_SET_GEODETIC(box->flags, true);
+  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
+  pfree(DatumGetPointer(traj));
   return;
 }
 

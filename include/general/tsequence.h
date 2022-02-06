@@ -77,10 +77,10 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 
 /* Intersection functions */
 
-extern bool tlinearseq_intersection_value(const TInstant *inst1,
+extern bool tlinearsegm_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, Oid basetypid, Datum *inter,
   TimestampTz *t);
-extern bool tsequence_intersection(const TInstant *start1,
+extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
   const TInstant *end2, bool linear2, Datum *inter1, Datum *inter2,
   TimestampTz *t);
@@ -101,17 +101,17 @@ extern char *tsequence_to_string(const TSequence *seq, bool component,
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
 extern TSequence *tsequence_read(StringInfo buf, Oid basetypid);
 
-/* Cast functions */
-
-extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
-extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
-
 /* Constructor functions */
 
 extern TSequence *tsequence_from_base_internal(Datum value, Oid basetypid,
   const Period *p, bool linear);
 
 extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
+
+/* Cast functions */
+
+extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
+extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
 
 /* Transformation functions */
 
@@ -146,7 +146,7 @@ extern int tsequence_timestamps(const TSequence *seq, TimestampTz *result);
 extern ArrayType *tsequence_timestamps_array(const TSequence *seq);
 
 /* Ever/always comparison operators */
- 
+
 extern bool tsequence_ever_eq(const TSequence *seq, Datum value);
 extern bool tsequence_always_eq(const TSequence *seq, Datum value);
 extern bool tsequence_ever_lt(const TSequence *seq, Datum value);
@@ -156,7 +156,7 @@ extern bool tsequence_always_le(const TSequence *seq, Datum value);
 
 /* Restriction Functions */
 
-extern int tsequence_restrict_value2(const TSequence *seq, Datum value,
+extern int tsequence_restrict_value1(const TSequence *seq, Datum value,
   bool atfunc, TSequence **result);
 extern TSequenceSet *tsequence_restrict_value(const TSequence *seq,
   Datum value, bool atfunc);

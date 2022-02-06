@@ -262,7 +262,7 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 }
 
 /*****************************************************************************
- * Generic functions
+ * Generic ever spatial relationship functions
  *****************************************************************************/
 
 /**
@@ -335,6 +335,47 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
   pfree(DatumGetPointer(traj));
 #endif /* STORE_TRAJ */
   return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Returns true if the temporal points ever satisfy the spatial relationship
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Spatial relationship
+ */
+static Datum
+spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  /* Fill the lifted structure */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = temp1->basetypid;
+  lfinfo.argtypid[1] = temp2->basetypid;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  int result = efunc_temporal_temporal(temp1, temp2, &lfinfo);
+  /* Finish */
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result == 1 ? true : false);
 }
 
 /*****************************************************************************
@@ -530,31 +571,6 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/**
- * Returns true if the temporal points are ever disjoint
- * (dispatch function)
- */
-static int
-disjoint_tpoint_tpoint_internal(const Temporal *temp1,
-  const Temporal *temp2)
-{
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum2_point_ne;
-  lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return efunc_temporal_temporal(temp1, temp2, &lfinfo);
-}
-
 PG_FUNCTION_INFO_V1(disjoint_tpoint_tpoint);
 /**
  * Returns true if the temporal points are ever disjoint
@@ -562,18 +578,7 @@ PG_FUNCTION_INFO_V1(disjoint_tpoint_tpoint);
 PGDLLEXPORT Datum
 disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  int result = disjoint_tpoint_tpoint_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result == 1 ? true : false);
+  return spatialrel_tpoint_tpoint(fcinfo, &datum2_point_ne);
 }
 
 /*****************************************************************************
@@ -624,31 +629,6 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-/**
- * Returns true if the temporal points ever intersect
- * (dispatch function)
- */
-static int
-intersects_tpoint_tpoint_internal(const Temporal *temp1,
-  const Temporal *temp2)
-{
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum2_point_eq;
-  lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = BOOLOID;
-  lfinfo.reslinear = STEP;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
-    MOBDB_FLAGS_GET_LINEAR(temp2->flags);
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  return efunc_temporal_temporal(temp1, temp2, &lfinfo);
-}
-
 PG_FUNCTION_INFO_V1(intersects_tpoint_tpoint);
 /**
  * Returns true if the temporal points ever intersect
@@ -656,18 +636,7 @@ PG_FUNCTION_INFO_V1(intersects_tpoint_tpoint);
 PGDLLEXPORT Datum
 intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  int result = intersects_tpoint_tpoint_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result == 1 ? true : false);
+  return spatialrel_tpoint_tpoint(fcinfo, &datum2_point_eq);
 }
 
 /*****************************************************************************
@@ -876,17 +845,19 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
     {
       if (DatumGetBool(func(sv1,sv2, dist)))
         return true;
-      if (! linear1 && ! linear2 && upper_inc && DatumGetBool(func(ev1, ev2, dist)))
+      if (! linear1 && ! linear2 && upper_inc &&
+          DatumGetBool(func(ev1, ev2, dist)))
         return true;
     }
     /* General case */
     else
     {
-      /* Find the instants t1 and t2 (if any) during which the dwithin function is true */
+      /* Find the instants t1 and t2 (if any) during which the dwithin
+       * function is true */
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tdwithin_tpointsegment(sv1, sev1, sv2, sev2,
+      int solutions = tdwithin_tpointsegm_tpointsegm(sv1, sev1, sv2, sev2,
         lower, upper, dist_d, hasz, func, &t1, &t2);
       if (solutions == 2 ||
       (solutions == 1 && ((t1 != lower || lower_inc) &&

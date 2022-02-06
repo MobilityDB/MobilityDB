@@ -52,7 +52,7 @@ extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
 
 /* Interpolation functions */
 
-extern bool tnpointseq_intersection_value(const TInstant *inst1,
+extern bool tnpointsegm_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t);
 
 /* Functions for spatial reference systems */

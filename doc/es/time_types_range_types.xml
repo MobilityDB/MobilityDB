@@ -759,7 +759,7 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 				<listitem id="time_tcount">
 					<indexterm><primary><varname>tcount</varname></primary></indexterm>
 					<para>Conteo temporal</para>
-					<para><varname>tcount({timestampset,period,periodset}): {tinti,tints}</varname></para>
+					<para><varname>tcount({timestampset,period,periodset}): {tint_instset,tint_seqset}</varname></para>
 					<programlisting xml:space="preserve">
 WITH times(ts) AS (
   SELECT timestampset '{2000-01-01, 2000-01-03, 2000-01-05}' UNION
