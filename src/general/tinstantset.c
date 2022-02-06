@@ -211,30 +211,72 @@ tinstantset_make_free(TInstant **instants, int count, bool merge)
 }
 
 /**
- * Construct a temporal instant set value from a base value and a timestamp set
+ * Returns a copy of the temporal value
  */
 TInstantSet *
-tinstantset_from_base_internal(Datum value, Oid basetypid, const TimestampSet *ts)
+tinstantset_copy(const TInstantSet *ti)
 {
-  TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-    instants[i] = tinstant_make(value, timestampset_time_n(ts, i), basetypid);
-  return tinstantset_make_free(instants, ts->count, MERGE_NO);
+  TInstantSet *result = palloc0(VARSIZE(ti));
+  memcpy(result, ti, VARSIZE(ti));
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(tinstantset_from_base);
-
-PGDLLEXPORT Datum
-tinstantset_from_base(PG_FUNCTION_ARGS)
+/**
+ * Returns the location of the timestamp in the temporal instant set
+ * value using binary search
+ *
+ * If the timestamp is contained in the temporal value, the index
+ * of the sequence is returned in the output parameter. Otherwise,
+ * returns a number encoding whether the timestamp is before, between
+ * two sequences, or after the temporal value.
+ * For example, given a value composed of 3 instants and a timestamp,
+ * the value returned in the output parameter is as follows:
+ * @code
+ *            0        1        2
+ *            |        |        |
+ * 1)    t^                            => result = 0
+ * 2)        t^                        => result = 0
+ * 3)            t^                    => result = 1
+ * 4)                    t^            => result = 2
+ * 5)                            t^    => result = 3
+ * @endcode
+ *
+ * @param[in] ti Temporal instant set value
+ * @param[in] t Timestamp
+ * @param[out] loc Location
+ * @result Returns true if the timestamp is contained in the temporal value
+ */
+bool
+tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *loc)
 {
-  Datum value = PG_GETARG_ANYDATUM(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  TInstantSet *result = tinstantset_from_base_internal(value, basetypid, ts);
-  DATUM_FREE_IF_COPY(value, basetypid, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
+  int first = 0;
+  int last = ti->count - 1;
+  int middle = 0; /* make compiler quiet */
+  const TInstant *inst = NULL; /* make compiler quiet */
+  while (first <= last)
+  {
+    middle = (first + last)/2;
+    inst = tinstantset_inst_n(ti, middle);
+    int cmp = timestamp_cmp_internal(inst->t, t);
+    if (cmp == 0)
+    {
+      *loc = middle;
+      return true;
+    }
+    if (cmp > 0)
+      last = middle - 1;
+    else
+      first = middle + 1;
+  }
+  if (t > inst->t)
+    middle++;
+  *loc = middle;
+  return false;
 }
+
+/*****************************************************************************
+ * Append and merge functions
+ *****************************************************************************/
 
 /**
  * Append an instant to the temporal value
@@ -299,72 +341,6 @@ tinstantset_merge_array(const TInstantSet **instsets, int count)
   Temporal *result = tinstant_merge_array(instants, totalcount);
   pfree(instants);
   return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Returns a copy of the temporal value
- */
-TInstantSet *
-tinstantset_copy(const TInstantSet *ti)
-{
-  TInstantSet *result = palloc0(VARSIZE(ti));
-  memcpy(result, ti, VARSIZE(ti));
-  return result;
-}
-
-/**
- * Returns the location of the timestamp in the temporal instant set
- * value using binary search
- *
- * If the timestamp is contained in the temporal value, the index
- * of the sequence is returned in the output parameter. Otherwise,
- * returns a number encoding whether the timestamp is before, between
- * two sequences, or after the temporal value.
- * For example, given a value composed of 3 instants and a timestamp,
- * the value returned in the output parameter is as follows:
- * @code
- *            0        1        2
- *            |        |        |
- * 1)    t^                            => result = 0
- * 2)        t^                        => result = 0
- * 3)            t^                    => result = 1
- * 4)                    t^            => result = 2
- * 5)                            t^    => result = 3
- * @endcode
- *
- * @param[in] ti Temporal instant set value
- * @param[in] t Timestamp
- * @param[out] loc Location
- * @result Returns true if the timestamp is contained in the temporal value
- */
-bool
-tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t, int *loc)
-{
-  int first = 0;
-  int last = ti->count - 1;
-  int middle = 0; /* make compiler quiet */
-  const TInstant *inst = NULL; /* make compiler quiet */
-  while (first <= last)
-  {
-    middle = (first + last)/2;
-    inst = tinstantset_inst_n(ti, middle);
-    int cmp = timestamp_cmp_internal(inst->t, t);
-    if (cmp == 0)
-    {
-      *loc = middle;
-      return true;
-    }
-    if (cmp > 0)
-      last = middle - 1;
-    else
-      first = middle + 1;
-  }
-  if (t > inst->t)
-    middle++;
-  *loc = middle;
-  return false;
 }
 
 /*****************************************************************************
@@ -520,6 +496,38 @@ tinstantset_read(StringInfo buf, Oid basetypid)
 }
 
 /*****************************************************************************
+ * Constructor functions
+ *****************************************************************************/
+
+/**
+ * Construct a temporal instant set value from a base value and a timestamp set
+ */
+TInstantSet *
+tinstantset_from_base_internal(Datum value, Oid basetypid, const TimestampSet *ts)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+    instants[i] = tinstant_make(value, timestampset_time_n(ts, i), basetypid);
+  return tinstantset_make_free(instants, ts->count, MERGE_NO);
+}
+
+PG_FUNCTION_INFO_V1(tinstantset_from_base);
+/**
+ * Construct a temporal instant set value from a base value and a timestamp set
+ */
+PGDLLEXPORT Datum
+tinstantset_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  TInstantSet *result = tinstantset_from_base_internal(value, basetypid, ts);
+  DATUM_FREE_IF_COPY(value, basetypid, 0);
+  PG_FREE_IF_COPY(ts, 1);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Cast functions
  *****************************************************************************/
 
@@ -562,6 +570,15 @@ tfloatinstset_to_tintinstset(const TInstantSet *ti)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * Transform the temporal instant value into a temporal instant set value
+ */
+TInstantSet *
+tinstant_to_tinstantset(const TInstant *inst)
+{
+  return tinstantset_make(&inst, 1, MERGE_NO);
+}
 
 /**
  * Transforms the temporal sequence value into a temporal instant value
@@ -609,6 +626,48 @@ tsequenceset_to_tinstantset(const TSequenceSet *ts)
   return result;
 }
 
+/**
+ * Shift and/or scale the time span of the temporal value by the two intervals
+ *
+ * @pre The duration is greater than 0 if it is not NULL
+ */
+TInstantSet *
+tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
+  const Interval *duration)
+{
+  assert(start != NULL || duration != NULL);
+  TInstantSet *result = tinstantset_copy(ti);
+  /* Shift and/or scale the period */
+  Period p1, p2;
+  period_set(tinstantset_inst_n(result, 0)->t,
+    tinstantset_inst_n(result, ti->count - 1)->t, true, true, &p1);
+  double orig_duration = (double) (p1.upper - p1.lower);
+  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
+  period_shift_tscale(&p2, start, duration);
+  double new_duration = (double) (p2.upper - p2.lower);
+
+  /* Set the first instant */
+  TInstant *inst = (TInstant *) tinstantset_inst_n(result, 0);
+  inst->t = p2.lower;
+  if (ti->count > 1)
+  {
+    /* Shift and/or scale from the second to the penultimate instant */
+    for (int i = 1; i < ti->count - 1; i++)
+    {
+      inst = (TInstant *) tinstantset_inst_n(result, i);
+      double fraction = (double) (inst->t - p1.lower) / orig_duration;
+      inst->t = p2.lower + (TimestampTz) (new_duration * fraction);
+    }
+    /* Set the last instant */
+    inst = (TInstant *) tinstantset_inst_n(result, ti->count - 1);
+    inst->t = p2.upper;
+  }
+  /* Shift and/or scale bounding box */
+  void *bbox = tinstantset_bbox_ptr(result);
+  temporal_bbox_shift_tscale(bbox, start, duration, ti->basetypid);
+  return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -632,6 +691,7 @@ tinstantset_values(const TInstantSet *ti, Datum *result)
   }
   return 1;
 }
+
 /**
  * Returns the base values of the temporal value as a PostgreSQL array
  */
@@ -865,48 +925,6 @@ tinstantset_timestamps_array(const TInstantSet *ti)
   TimestampTz *times = tinstantset_timestamps(ti);
   ArrayType *result = timestamparr_to_array(times, ti->count);
   pfree(times);
-  return result;
-}
-
-/**
- * Shift and/or scale the time span of the temporal value by the two intervals
- *
- * @pre The duration is greater than 0 if it is not NULL
- */
-TInstantSet *
-tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
-  const Interval *duration)
-{
-  assert(start != NULL || duration != NULL);
-  TInstantSet *result = tinstantset_copy(ti);
-  /* Shift and/or scale the period */
-  Period p1, p2;
-  period_set(tinstantset_inst_n(result, 0)->t,
-    tinstantset_inst_n(result, ti->count - 1)->t, true, true, &p1);
-  double orig_duration = (double) (p1.upper - p1.lower);
-  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
-  period_shift_tscale(&p2, start, duration);
-  double new_duration = (double) (p2.upper - p2.lower);
-
-  /* Set the first instant */
-  TInstant *inst = (TInstant *) tinstantset_inst_n(result, 0);
-  inst->t = p2.lower;
-  if (ti->count > 1)
-  {
-    /* Shift and/or scale from the second to the penultimate instant */
-    for (int i = 1; i < ti->count - 1; i++)
-    {
-      inst = (TInstant *) tinstantset_inst_n(result, i);
-      double fraction = (double) (inst->t - p1.lower) / orig_duration;
-      inst->t = p2.lower + (TimestampTz) (new_duration * fraction);
-    }
-    /* Set the last instant */
-    inst = (TInstant *) tinstantset_inst_n(result, ti->count - 1);
-    inst->t = p2.upper;
-  }
-  /* Shift and/or scale bounding box */
-  void *bbox = tinstantset_bbox_ptr(result);
-  temporal_bbox_shift_tscale(bbox, start, duration, ti->basetypid);
   return result;
 }
 

@@ -231,7 +231,7 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  */
 void
 tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
-  bool upper_inc, void *box)
+  bool upper_inc, bool linear, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(instants[0]->basetypid);
@@ -240,11 +240,13 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
       (Period *) box);
   else if (tnumber_base_type(instants[0]->basetypid))
     tnumberinstarr_to_tbox(instants, count, (TBOX *) box);
-  else if (tgeo_base_type(instants[0]->basetypid))
+  else if (instants[0]->basetypid == type_oid(T_GEOMETRY))
     tpointinstarr_stbox(instants, count, (STBOX *) box);
+  else if (instants[0]->basetypid == type_oid(T_GEOGRAPHY))
+    tgeogpointinstarr_stbox(instants, count, linear, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
   {
-    if (MOBDB_FLAGS_GET_LINEAR(instants[0]->flags))
+    if (linear)
       tnpointinstarr_linear_to_stbox(instants, count, (STBOX *) box);
     else
       tnpointinstarr_step_to_stbox(instants, count, (STBOX *) box);

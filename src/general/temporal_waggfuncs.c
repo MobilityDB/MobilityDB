@@ -51,14 +51,14 @@
 /**
  * Extend the temporal instant value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] inst Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tinstant_extend(TSequence **result, const TInstant *inst,
-  const Interval *interval)
+tinstant_extend(const TInstant *inst, const Interval *interval,
+  TSequence **result)
 {
   TInstant *instants[2];
   TimestampTz upper = DatumGetTimestampTz(
@@ -77,19 +77,19 @@ tinstant_extend(TSequence **result, const TInstant *inst,
 /**
  * Extend the temporal instant set value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ti Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tinstantset_extend(TSequence **result, const TInstantSet *ti,
-  const Interval *interval)
+tinstantset_extend(const TInstantSet *ti, const Interval *interval,
+  TSequence **result)
 {
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    tinstant_extend(&result[i], inst, interval);
+    tinstant_extend(inst, interval, &result[i]);
   }
   return ti->count;
 }
@@ -97,19 +97,19 @@ tinstantset_extend(TSequence **result, const TInstantSet *ti,
 /**
  * Extend the temporal sequence value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] seq Temporal value
  * @param[in] interval Interval
  * @param[in] min True if the calling function is min, max otherwise.
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  * This parameter is only used for linear interpolation.
  */
 static int
-tsequence_extend(TSequence **result, const TSequence *seq,
-  const Interval *interval, bool min)
+tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
+  TSequence **result)
 {
   if (seq->count == 1)
-    return tinstant_extend(result, tsequence_inst_n(seq, 0), interval);
+    return tinstant_extend(tsequence_inst_n(seq, 0), interval, result);
 
   TInstant *instants[3];
   TInstant *inst1 = (TInstant *) tsequence_inst_n(seq, 0);
@@ -187,17 +187,17 @@ tsequence_extend(TSequence **result, const TSequence *seq,
  * This parameter is only used for linear interpolation.
  */
 static int
-tsequenceset_extend(TSequence **result, const TSequenceSet *ts,
-  const Interval *interval, bool min)
+tsequenceset_extend(const TSequenceSet *ts, const Interval *interval, bool min,
+  TSequence **result)
 {
   if (ts->count == 1)
-    return tsequence_extend(result, tsequenceset_seq_n(ts, 0), interval, min);
+    return tsequence_extend(tsequenceset_seq_n(ts, 0), interval, min, result);
 
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_extend(&result[k], seq, interval, min);
+    k += tsequence_extend(seq, interval, min, &result[k]);
   }
   return k;
 }
@@ -219,25 +219,25 @@ temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
-    *count = tinstant_extend(result, inst, interval);
+    *count = tinstant_extend(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
-    *count = tinstantset_extend(result, ti, interval);
+    *count = tinstantset_extend(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = tsequence_extend(result, seq, interval, min);
+    *count = tsequence_extend(seq, interval, min, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
-    *count = tsequenceset_extend(result, ts, interval, min);
+    *count = tsequenceset_extend(ts, interval, min, result);
   }
   return result;
 }
@@ -276,8 +276,8 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
  * @param[in] interval Interval
  */
 static int
-tinstant_transform_wcount(TSequence **result, const TInstant *inst,
-  const Interval *interval)
+tinstant_transform_wcount(const TInstant *inst, const Interval *interval,
+  TSequence **result)
 {
   result[0] = tinstant_transform_wcount1(inst->t, inst->t, true, true,
     interval);
@@ -287,19 +287,19 @@ tinstant_transform_wcount(TSequence **result, const TInstant *inst,
 /**
  * Transform the temporal number instant set value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ti Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tinstantset_transform_wcount(TSequence **result, const TInstantSet *ti,
-  const Interval *interval)
+tinstantset_transform_wcount(const TInstantSet *ti, const Interval *interval,
+  TSequence **result)
 {
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    tinstant_transform_wcount(&result[i], inst, interval);
+    tinstant_transform_wcount(inst, interval, &result[i]);
   }
   return ti->count;
 }
@@ -307,17 +307,18 @@ tinstantset_transform_wcount(TSequence **result, const TInstantSet *ti,
 /**
  * Transform the temporal number sequence value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] seq Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tsequence_transform_wcount(TSequence **result, const TSequence *seq,
-  const Interval *interval)
+tsequence_transform_wcount(const TSequence *seq, const Interval *interval,
+  TSequence **result)
 {
   if (seq->count == 1)
-    return tinstant_transform_wcount(result, tsequence_inst_n(seq, 0), interval);
+    return tinstant_transform_wcount(tsequence_inst_n(seq, 0), interval,
+      result);
 
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   bool lower_inc = seq->period.lower_inc;
@@ -336,20 +337,20 @@ tsequence_transform_wcount(TSequence **result, const TSequence *seq,
 /**
  * Transform the temporal number sequence set value by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ts Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tsequenceset_transform_wcount(TSequence **result, const TSequenceSet *ts,
-  const Interval *interval)
+tsequenceset_transform_wcount(const TSequenceSet *ts, const Interval *interval,
+  TSequence **result)
 {
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_transform_wcount(&result[k], seq, interval);
+    k += tsequence_transform_wcount(seq, interval, &result[k]);
   }
   return k;
 }
@@ -371,25 +372,25 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
-    *count = tinstant_transform_wcount(result, inst, interval);
+    *count = tinstant_transform_wcount(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
-    *count = tinstantset_transform_wcount(result, ti, interval);
+    *count = tinstantset_transform_wcount(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = tsequence_transform_wcount(result, seq, interval);
+    *count = tsequence_transform_wcount(seq, interval, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
-    *count = tsequenceset_transform_wcount(result, ts, interval);
+    *count = tsequenceset_transform_wcount(ts, interval, result);
   }
   return result;
 }
@@ -400,14 +401,14 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interval,
  * Transform the temporal number into a temporal double and extend it
  * by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] inst Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
-  const Interval *interval)
+tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
+  TSequence **result)
 {
   /* Should be additional attribute */
   bool linear = true;
@@ -437,19 +438,19 @@ tnumberinst_transform_wavg(TSequence **result, const TInstant *inst,
  * Transform the temporal number into a temporal double and extend it
  * by the time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ti Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  */
 static int
-tnumberinstset_transform_wavg(TSequence **result, const TInstantSet *ti,
-  const Interval *interval)
+tnumberinstset_transform_wavg(const TInstantSet *ti, const Interval *interval,
+  TSequence **result)
 {
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    tnumberinst_transform_wavg(&result[i], inst, interval);
+    tnumberinst_transform_wavg(inst, interval, &result[i]);
   }
   return ti->count;
 }
@@ -458,15 +459,15 @@ tnumberinstset_transform_wavg(TSequence **result, const TInstantSet *ti,
 * Transform the temporal integer sequence value into a temporal double and extend
  * it by a time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] seq Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  * @note There is no equivalent function for temporal float types
  */
 static int
-tintseq_transform_wavg(TSequence **result, const TSequence *seq,
-  const Interval *interval)
+tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
+  TSequence **result)
 {
   const TInstant *inst1;
 
@@ -476,7 +477,7 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq,
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    tnumberinst_transform_wavg(&result[0], inst1, interval);
+    tnumberinst_transform_wavg(inst1, interval, &result[0]);
     return 1;
   }
 
@@ -509,21 +510,21 @@ tintseq_transform_wavg(TSequence **result, const TSequence *seq,
 * Transform the temporal integer sequence set value into a temporal double and extend
  * it by a time interval
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * values are stored
  * @param[in] ts Temporal value
  * @param[in] interval Interval
+ * @param[out] result Array on which the pointers of the newly constructed
+ * values are stored
  * @note There is no equivalent function for temporal float types
  */
 static int
-tintseqset_transform_wavg(TSequence **result, const TSequenceSet *ts,
-  const Interval *interval)
+tintseqset_transform_wavg(const TSequenceSet *ts, const Interval *interval,
+  TSequence **result)
 {
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tintseq_transform_wavg(&result[k], seq, interval);
+    k += tintseq_transform_wavg(seq, interval, &result[k]);
   }
   return k;
 }
@@ -547,25 +548,25 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
-    *count = tnumberinst_transform_wavg(result, inst, interval);
+    *count = tnumberinst_transform_wavg(inst, interval, result);
   }
   else if (temp->subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
-    *count = tnumberinstset_transform_wavg(result, ti, interval);
+    *count = tnumberinstset_transform_wavg(ti, interval, result);
   }
   else if (temp->subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
-    *count = tintseq_transform_wavg(result, seq, interval);
+    *count = tintseq_transform_wavg(seq, interval, result);
   }
   else /* temp->subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
-    *count = tintseqset_transform_wavg(result, ts, interval);
+    *count = tintseqset_transform_wavg(ts, interval, result);
   }
   return result;
 }

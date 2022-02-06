@@ -355,15 +355,15 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value,
  * turning points should be added and when the function does not have
  * instantaneous discontinuities
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  */
 static int
-tfunc_tsequence_base_scan(TSequence **result, const TSequence *seq,
-  Datum value, LiftedFunctionInfo *lfinfo)
+tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
+  LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
@@ -382,15 +382,15 @@ tfunc_tsequence_base_scan(TSequence **result, const TSequence *seq,
  * Applies the function to the temporal value and the base value when turning
  * points should be added
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  */
 static int
-tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq,
-  Datum value, LiftedFunctionInfo *lfinfo)
+tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
+  LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   int k = 0;
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
@@ -440,8 +440,8 @@ tfunc_tsequence_base_turnpt(TSequence **result, const TSequence *seq,
  * the function func.
  */
 static int
-tfunc_tsequence_base_discont(TSequence **result, const TSequence *seq,
-  Datum value, LiftedFunctionInfo *lfinfo)
+tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
+  LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   const TInstant *start = tsequence_inst_n(seq, 0);
   Datum startvalue = tinstant_value(start);
@@ -518,7 +518,7 @@ tfunc_tsequence_base_discont(TSequence **result, const TSequence *seq,
     {
       /* Determine whether there is a crossing and compute the value
        * at the crossing if there is one */
-      bool hascross = tlinearseq_intersection_value(start, end, value,
+      bool hascross = tlinearsegm_intersection_value(start, end, value,
         lfinfo->argtypid[1], &intvalue, &inttime);
       if (hascross)
       {
@@ -591,16 +591,16 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   if (lfinfo->discont)
   {
-    int k = tfunc_tsequence_base_discont(sequences, seq, value, lfinfo);
+    int k = tfunc_tsequence_base_discont(seq, value, lfinfo, sequences);
     return (Temporal *) tsequenceset_make_free(sequences, k, NORMALIZE);
   }
   else
   {
     /* We are sure that the result is a single sequence */
     if (lfinfo->tpfunc_base != NULL)
-      tfunc_tsequence_base_turnpt(sequences, seq, value, lfinfo);
+      tfunc_tsequence_base_turnpt(seq, value, lfinfo, sequences);
     else
-      tfunc_tsequence_base_scan(sequences, seq, value, lfinfo);
+      tfunc_tsequence_base_scan(seq, value, lfinfo, sequences);
     return (Temporal *) sequences[0];
   }
 }
@@ -628,11 +628,11 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value,
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     if (lfinfo->discont)
-      k += tfunc_tsequence_base_discont(&sequences[k], seq, value, lfinfo);
+      k += tfunc_tsequence_base_discont(seq, value, lfinfo, &sequences[k]);
     else if (lfinfo->tpfunc_base != NULL)
-      k += tfunc_tsequence_base_turnpt(&sequences[k], seq, value, lfinfo);
+      k += tfunc_tsequence_base_turnpt(seq, value, lfinfo, &sequences[k]);
     else
-      k += tfunc_tsequence_base_scan(&sequences[k], seq, value, lfinfo);
+      k += tfunc_tsequence_base_scan(seq, value, lfinfo, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -716,7 +716,7 @@ tfunc_tinstantset_tinstant(const TInstantSet *ti, const TInstant *inst,
   Datum value1;
   if (!tinstantset_value_at_timestamp(ti, inst->t, &value1))
     return NULL;
-  
+
   Datum value2 = tinstant_value(inst);
   Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
   TInstant *result = tinstant_make(resvalue, inst->t, lfinfo->restypid);
@@ -960,16 +960,16 @@ tfunc_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *ts,
  * Synchronizes the temporal values and applies to them the function.
  * This function is applied when the result is a single sequence.
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @pre The sequences are both linear or both stepwise
  */
 static int
-tfunc_tsequence_tsequence_lineareq(TSequence **result, const TSequence *seq1,
-  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Period *inter)
+tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
+  LiftedFunctionInfo *lfinfo, Period *inter, TSequence **result)
 {
   /*
    * General case
@@ -1064,15 +1064,16 @@ tfunc_tsequence_tsequence_lineareq(TSequence **result, const TSequence *seq1,
  * the other step interpolation and the function does not have instantaneous
  * discontinuities. The result is an array of sequences.
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq1,seq2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  * @param[in] inter Overlapping period of the two sequences
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  */
 static int
-tfunc_tsequence_tsequence_linearstep(TSequence **result, const TSequence *seq1,
-  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Period *inter)
+tfunc_tsequence_tsequence_linearstep(const TSequence *seq1,
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Period *inter,
+  TSequence **result)
 {
   /* Array that keeps the new instants added for synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
@@ -1168,8 +1169,8 @@ tfunc_tsequence_tsequence_linearstep(TSequence **result, const TSequence *seq1,
  * @param[in] inter Overlapping period of the two sequences
  */
 static int
-tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1,
-  const TSequence *seq2, LiftedFunctionInfo *lfinfo, Period *inter)
+tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
+  LiftedFunctionInfo *lfinfo, Period *inter, TSequence **result)
 {
   /* Array that keeps the new instants added for the synchronization */
   TInstant **tofree = palloc(sizeof(TInstant *) *
@@ -1274,7 +1275,7 @@ tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1,
     {
       /* Determine whether there is a crossing and if there is one compute the
        * value at the crossing */
-      bool hascross = tsequence_intersection(start1, end1, linear1,
+      bool hascross = tsegment_intersection(start1, end1, linear1,
         start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
       if (hascross)
       {
@@ -1347,8 +1348,8 @@ tfunc_tsequence_tsequence_discont(TSequence **result, const TSequence *seq1,
  * sequence set and therefore the bounding period test is repeated
  */
 static int
-tfunc_tsequence_tsequence_dispatch(TSequence **result, const TSequence *seq1,
-  const TSequence *seq2, LiftedFunctionInfo *lfinfo)
+tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
+  const TSequence *seq2, LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period *inter = intersection_period_period_internal(&seq1->period,
@@ -1373,11 +1374,11 @@ tfunc_tsequence_tsequence_dispatch(TSequence **result, const TSequence *seq1,
   }
 
   if (lfinfo->discont)
-    return tfunc_tsequence_tsequence_discont(result, seq1, seq2, lfinfo, inter);
+    return tfunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, inter, result);
   if (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags))
-    return tfunc_tsequence_tsequence_lineareq(result, seq1, seq2, lfinfo, inter);
+    return tfunc_tsequence_tsequence_lineareq(seq1, seq2, lfinfo, inter, result);
   else
-    return tfunc_tsequence_tsequence_linearstep(result, seq1, seq2, lfinfo, inter);
+    return tfunc_tsequence_tsequence_linearstep(seq1, seq2, lfinfo, inter, result);
 }
 
 /**
@@ -1398,7 +1399,7 @@ tfunc_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       count = (seq1->count + seq2->count) * 2;
   }
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
-  int k = tfunc_tsequence_tsequence_dispatch(sequences, seq1, seq2, lfinfo);
+  int k = tfunc_tsequence_tsequence_dispatch(seq1, seq2, lfinfo, sequences);
   /* The following is ensured by the period bound test in the dispatch
    * function */
   assert(k > 0);
@@ -1453,7 +1454,7 @@ tfunc_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   for (int i = loc; i < ts->count; i++)
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts, i);
-    k += tfunc_tsequence_tsequence_dispatch(&sequences[k], seq1, seq, lfinfo);
+    k += tfunc_tsequence_tsequence_dispatch(seq1, seq, lfinfo, &sequences[k]);
     int cmp = timestamp_cmp_internal(seq->period.upper, seq1->period.upper);
     if (cmp < 0 ||
       (cmp == 0 && (!seq->period.upper_inc || seq1->period.upper_inc)))
@@ -1501,7 +1502,7 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ts2, j);
-    k += tfunc_tsequence_tsequence_dispatch(&sequences[k], seq1, seq2, lfinfo);
+    k += tfunc_tsequence_tsequence_dispatch(seq1, seq2, lfinfo, &sequences[k]);
     int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);
     if (cmp == 0)
     {
@@ -1972,7 +1973,7 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
     {
       /* Determine whether there is a crossing and if there is one compute the
        * value at the crossing */
-      bool hascross = tsequence_intersection(start1, end1, linear1,
+      bool hascross = tsegment_intersection(start1, end1, linear1,
         start2, end2, linear2, &intvalue1, &intvalue2, &inttime);
       if (hascross && DatumGetBool(tfunc_base_base(intvalue1, intvalue2, lfinfo)))
       {

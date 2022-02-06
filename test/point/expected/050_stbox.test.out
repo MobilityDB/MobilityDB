@@ -750,6 +750,12 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' ~= stbox 'STBOX Z((1.0,
  f
 (1 row)
 
+SELECT period '[2000-01-01, 2000-01-02]'::stbox -|- period '[2000-01-02, 2000-01-03]'::stbox;
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' && stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  Operation on mixed planar and geodetic coordinates

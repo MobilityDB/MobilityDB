@@ -191,10 +191,9 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
       j++;
     }
   }
-  /* Copy the instants from state1 or state2 that are after the end of the
-     other state */
-  while (i < count1)
-    result[count++] = tinstant_copy(instants1[i++]);
+  /* We finished to aggregate state1 */
+  assert (i == count1);
+  /* Copy the instants from state2 that are after the end of state1 */
   while (j < count2)
     result[count++] = tinstant_copy(instants2[j++]);
   *newcount = count;
@@ -204,16 +203,16 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
 /**
  * Generic aggregate function for temporal sequences
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * ranges are stored
  * @param[in] seq1,seq2 Temporal sequence values to be aggregated
  * @param[in] func Function
  * @param[in] crossings State whether turning points are added in the segments
+ * @param[out] result Array on which the pointers of the newly constructed
+ * ranges are stored
  * @note Returns new sequences that must be freed by the calling function
  */
 static int
-tsequence_tagg1(TSequence **result, const TSequence *seq1, const TSequence *seq2,
-  datum_func2 func, bool crossings)
+tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
+  datum_func2 func, bool crossings, TSequence **result)
 {
   Period *intersect = intersection_period_period_internal(&seq1->period, &seq2->period);
   if (intersect == NULL)
@@ -363,7 +362,7 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
   TSequence *seq2 = sequences2[j];
   while (i < count1 && j < count2)
   {
-    int countstep = tsequence_tagg1(&sequences[k], seq1, seq2, func, crossings);
+    int countstep = tsequence_tagg1(seq1, seq2, func, crossings, &sequences[k]);
     k += countstep - 1;
     /* If both upper bounds are equal */
     int cmp = timestamp_cmp_internal(seq1->period.upper, seq2->period.upper);

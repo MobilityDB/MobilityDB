@@ -32,17 +32,6 @@
  * Operators for time types.
  */
 
-/*****************************************************************************
- * Index Support Functions
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-CREATE FUNCTION time_supportfn(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'time_supportfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
-
 /******************************************************************************
  * Operators
  ******************************************************************************/
@@ -50,72 +39,42 @@ CREATE FUNCTION time_supportfn(internal)
 CREATE FUNCTION time_contains(timestampset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_timestampset_timestamp'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_timestampset_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(period, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_timestamp'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_period_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(periodset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_timestamp'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contains(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_periodset_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -184,72 +143,42 @@ CREATE OPERATOR @> (
 CREATE FUNCTION time_contained(timestamptz, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestamp_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(timestamptz, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestamp_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(timestamptz, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestamp_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestampset_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestampset_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_timestampset_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_period_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_period_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_periodset_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_contained(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contained_periodset_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -316,65 +245,38 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION time_overlaps(timestampset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_timestampset_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(timestampset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_timestampset_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(timestampset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_timestampset_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(period, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_period_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(period, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_period_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(period, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_period_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(periodset, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_periodset_timestampset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(periodset, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_periodset_period'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION time_overlaps(periodset, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'overlaps_periodset_periodset'
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT time_supportfn
-#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (

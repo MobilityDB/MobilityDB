@@ -963,6 +963,7 @@ SELECT tgeogpoint 'Point(1.5 1.5)@2000-01-01' ?= geography 'Point empty';
 SELECT tgeogpoint '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}' ?= geography 'Point empty';
 SELECT tgeogpoint '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]' ?= geography 'Point empty';
 SELECT tgeogpoint '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}' ?= geography 'Point empty';
+SELECT tgeogpoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' ?= geography 'POINT(1.49988573656168 1.5000570914792)';
 
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?<> geometry 'Point empty';

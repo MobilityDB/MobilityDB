@@ -609,7 +609,7 @@ tgeompoint '[POINT(4 3)@2000-01-04, POINT(5 3)@2000-01-05]', 1)
  * of a single result both t1 and t2 are set to the unique timestamp
  */
 int
-tdwithin_tpointsegment(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
+tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2)
 {
@@ -758,17 +758,17 @@ tdwithin_tpointsegment(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
  * Returns the timestamps at which the segments of two temporal points are
  * within the given distance
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @result Number of elements in the resulting array
  * @pre The temporal points must be synchronized.
  */
 static int
-tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
-  const TSequence *seq2, Datum dist, datum_func3 func)
+tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
+  Datum dist, datum_func3 func, TSequence **result)
 {
   const TInstant *start1 = tsequence_inst_n(seq1, 0);
   const TInstant *start2 = tsequence_inst_n(seq2, 0);
@@ -832,7 +832,7 @@ tdwithin_tpointseq_tpointseq2(TSequence **result, const TSequence *seq1,
       TimestampTz t1, t2;
       Datum sev1 = linear1 ? ev1 : sv1;
       Datum sev2 = linear2 ? ev2 : sv2;
-      int solutions = tdwithin_tpointsegment(sv1, sev1, sv2, sev2,
+      int solutions = tdwithin_tpointsegm_tpointsegm(sv1, sev1, sv2, sev2,
         lower, upper, dist_d, hasz, func, &t1, &t2);
 
       /* <  F  > */
@@ -904,7 +904,7 @@ tdwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
   Datum dist, datum_func3 func)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq1->count * 4);
-  int count = tdwithin_tpointseq_tpointseq2(sequences, seq1, seq2, dist, func);
+  int count = tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -932,8 +932,8 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
-    k += tdwithin_tpointseq_tpointseq2(&sequences[k], seq1, seq2, dist,
-      func);
+    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func,
+      &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -954,8 +954,8 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  * @result Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp
  */
-int
-tdwithin_tpointseq_point1(Datum start, Datum end, Datum point,
+static int
+tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
   datum_func3 func, TimestampTz *t1, TimestampTz *t2)
 {
@@ -1089,18 +1089,18 @@ tdwithin_tpointseq_point1(Datum start, Datum end, Datum point,
  * Returns the timestamps at which a temporal point and a point are
  * within the given distance
  *
- * @param[out] result Array on which the pointers of the newly constructed
- * sequences are stored
  * @param[in] seq Temporal point
  * @param[in] point Point
  * @param[in] dist Distance
  * @param[in] func DWithin function (2D or 3D)
+ * @param[out] result Array on which the pointers of the newly constructed
+ * sequences are stored
  * @result Number of elements in the resulting array
  * @pre The temporal points must be synchronized.
  */
 static int
-tdwithin_tpointseq_point2(TSequence **result, const TSequence *seq,
-  Datum point, Datum dist, datum_func3 func)
+tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
+  datum_func3 func, TSequence **result)
 {
   const TInstant *start = tsequence_inst_n(seq, 0);
   Datum sv = tinstant_value(start);
@@ -1153,9 +1153,10 @@ tdwithin_tpointseq_point2(TSequence **result, const TSequence *seq,
     /* General case */
     else
     {
-      /* Find the instants t1 and t2 (if any) during which the dwithin function is true */
+      /* Find the instants t1 and t2 (if any) during which the dwithin
+       * function is true */
       TimestampTz t1, t2;
-      int solutions = tdwithin_tpointseq_point1(sv, ev, point,
+      int solutions = tdwithin_tpointsegm_point(sv, ev, point,
         lower, upper, dist_d, hasz, func, &t1, &t2);
 
       /* <  F  > */
@@ -1221,7 +1222,7 @@ tdwithin_tpointseq_point(const TSequence *seq, Datum point, Datum dist,
   datum_func3 func)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count * 4);
-  int count = tdwithin_tpointseq_point2(sequences, seq, point, dist, func);
+  int count = tdwithin_tpointseq_point1(seq, point, dist, func, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -1248,8 +1249,8 @@ tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tdwithin_tpointseq_point2(&sequences[k], seq, point, dist,
-      func);
+    k += tdwithin_tpointseq_point1(seq, point, dist, func,
+      &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

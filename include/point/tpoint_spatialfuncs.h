@@ -132,19 +132,21 @@ extern void interpolate_point4d_sphere(const POINT3D *p1, const POINT3D *p2,
 
 extern Datum point_make(double x, double y, double z, bool hasz,
   bool geodetic, int32 srid);
-extern Datum geoseg_interpolate_point(Datum value1, Datum value2,
+extern Datum geosegm_interpolate_point(Datum start, Datum end,
   long double ratio);
-extern long double geoseg_locate_point(Datum start, Datum end, Datum point,
+extern long double geosegm_locate_point(Datum start, Datum end, Datum point,
   double *dist);
 
 /* Intersection functions */
 
-extern bool tpointseq_intersection_value(const TInstant *inst1,
+extern bool tpointsegm_intersection_value(const TInstant *inst1,
   const TInstant *inst2, Datum value, TimestampTz *t);
-extern bool tgeompointseq_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t);
-extern bool tgeogpointseq_intersection(const TInstant *start1, const TInstant *end1,
-  const TInstant *start2, const TInstant *end2, TimestampTz *t);
+extern bool tgeompointsegm_intersection(const TInstant *start1,
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  TimestampTz *t);
+extern bool tgeogpointsegm_intersection(const TInstant *start1,
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  TimestampTz *t);
 
 extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
   double ratio, bool hasz, bool geodetic);
@@ -159,8 +161,8 @@ extern LWLINE *geopoint_lwline(Datum value1, Datum value2);
 extern Datum geopoint_line(Datum value1, Datum value2);
 
 extern Datum tpointinstset_trajectory(const TInstantSet *ti);
-extern Datum tpointseq_make_trajectory(const TInstant **instants, int count,
-  bool linear);
+extern Datum tpointinstarr_make_trajectory(const TInstant **instants,
+  int count, bool linear);
 extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);

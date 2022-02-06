@@ -60,24 +60,8 @@
  * Returns the temporal disjoint/intersection relationship between the temporal
  * network point and the network point
  */
-Temporal *
-tinterrel_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter,
-  bool restr, Datum atvalue)
-{
-  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
-  /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo(geomtemp, gs, tinter, restr, atvalue);
-  pfree(geomtemp);
-  return result;
-}
-
-/**
- * Returns the temporal disjoint/intersection relationship between the temporal
- * network point and the network point
- */
-Temporal *
-tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter,
+static Temporal *
+tinterrel_tnpoint_npoint_internal(Temporal *temp, npoint *np, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
@@ -89,6 +73,132 @@ tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter,
   pfree(gs);
   return result;
 }
+
+/**
+ * Returns the temporal disjoint/intersection relationship between the temporal
+ * network point and the network point
+ */
+static Datum
+tinterrel_tnpoint_npoint(FunctionCallInfo fcinfo, bool tinter)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  npoint *np = PG_GETARG_NPOINT(1);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
+  Temporal *result = tinterrel_tnpoint_npoint_internal(temp, np, tinter, restr,
+    atvalue);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * Returns the temporal disjoint/intersection relationship between the network
+ * point and the temporal network point
+ */
+static Datum
+tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  npoint *np = PG_GETARG_NPOINT(0);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
+  Temporal *result = tinterrel_tnpoint_npoint_internal(temp, np, tinter, restr,
+    atvalue);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * Returns the temporal disjoint/intersection relationship between the temporal
+ * network point and the geometry
+ */
+static Temporal *
+tinterrel_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, bool tinter,
+  bool restr, Datum atvalue)
+{
+  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
+  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  /* Result depends on whether we are computing tintersects or tdisjoint */
+  Temporal *result = tinterrel_tpoint_geo(geomtemp, gs, tinter, restr, atvalue);
+  pfree(geomtemp);
+  return result;
+}
+
+/**
+ * Returns the temporal disjoint/intersection relationship between the geometry
+ * and the temporal network point
+ */
+static Datum
+tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
+  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *result = tinterrel_tnpoint_geo_internal(temp, gs, tinter, restr,
+    atvalue);
+  pfree(geomtemp);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * Returns the temporal disjoint/intersection relationship between the temporal
+ * network point and the geometry
+ */
+static Datum
+tinterrel_tnpoint_geo(FunctionCallInfo fcinfo, bool tinter)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
+  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *result = tinterrel_tnpoint_geo_internal(temp, gs, tinter, restr,
+    atvalue);
+  pfree(geomtemp);
+  PG_FREE_IF_COPY(gs, 1);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
 
 /**
  * Returns the temporal touches relationship between the temporal network point
@@ -170,21 +280,7 @@ PG_FUNCTION_INFO_V1(tdisjoint_geo_tnpoint);
 PGDLLEXPORT Datum
 tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_geo(temp, gs, TDISJOINT, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_geo_tnpoint(fcinfo, TDISJOINT);
 }
 
 PG_FUNCTION_INFO_V1(tdisjoint_npoint_tnpoint);
@@ -195,20 +291,7 @@ PG_FUNCTION_INFO_V1(tdisjoint_npoint_tnpoint);
 PGDLLEXPORT Datum
 tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_npoint(temp, np, TDISJOINT, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_npoint_tnpoint(fcinfo, TDISJOINT);
 }
 
 PG_FUNCTION_INFO_V1(tdisjoint_tnpoint_geo);
@@ -219,21 +302,7 @@ PG_FUNCTION_INFO_V1(tdisjoint_tnpoint_geo);
 PGDLLEXPORT Datum
 tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_geo(temp, gs, TDISJOINT, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_tnpoint_geo(fcinfo, TDISJOINT);
 }
 
 PG_FUNCTION_INFO_V1(tdisjoint_tnpoint_npoint);
@@ -244,20 +313,7 @@ PG_FUNCTION_INFO_V1(tdisjoint_tnpoint_npoint);
 PGDLLEXPORT Datum
 tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  npoint *np = PG_GETARG_NPOINT(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_npoint(temp, np, TDISJOINT, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_tnpoint_npoint(fcinfo, TDISJOINT);
 }
 
 /*****************************************************************************
@@ -272,21 +328,7 @@ PG_FUNCTION_INFO_V1(tintersects_geo_tnpoint);
 PGDLLEXPORT Datum
 tintersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_geo_tnpoint(fcinfo, TINTERSECTS);
 }
 
 PG_FUNCTION_INFO_V1(tintersects_npoint_tnpoint);
@@ -297,20 +339,7 @@ PG_FUNCTION_INFO_V1(tintersects_npoint_tnpoint);
 PGDLLEXPORT Datum
 tintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_npoint(temp, np, TINTERSECTS, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_npoint_tnpoint(fcinfo, TINTERSECTS);
 }
 
 PG_FUNCTION_INFO_V1(tintersects_tnpoint_geo);
@@ -321,21 +350,7 @@ PG_FUNCTION_INFO_V1(tintersects_tnpoint_geo);
 PGDLLEXPORT Datum
 tintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_geo(temp, gs, TINTERSECTS, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_tnpoint_geo(fcinfo, TINTERSECTS);
 }
 
 PG_FUNCTION_INFO_V1(tintersects_tnpoint_npoint);
@@ -346,20 +361,7 @@ PG_FUNCTION_INFO_V1(tintersects_tnpoint_npoint);
 PGDLLEXPORT Datum
 tintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  npoint *np = PG_GETARG_NPOINT(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
-  Temporal *result = tinterrel_tnpoint_npoint(temp, np, TINTERSECTS, restr, atvalue);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return tinterrel_tnpoint_npoint(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************
@@ -520,7 +522,7 @@ tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
   Temporal *result = tdwithin_tpoint_geo_internal(geomtemp, gs, dist, restr, atvalue);
-    pfree(gs);
+  pfree(gs);
   PG_FREE_IF_COPY(temp, 1);
   if (result == NULL)
     PG_RETURN_NULL();
