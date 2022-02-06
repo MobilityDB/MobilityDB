@@ -689,18 +689,18 @@ tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end
 /**
  * Split a temporal value into an array of fragments according to period buckets.
  *
- * @param[out] result Output array of fragments of the temporal value
- * @param[out] times Output array of bucket lower bounds
  * @param[in] seq Temporal value
  * @param[in] start,end Start and end timestamps of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
+ * @param[out] result Output array of fragments of the temporal value
+ * @param[out] times Output array of bucket lower bounds
  *
  * @note This function is called for each sequence of a temporal sequence set
  */
 static int
-tsequence_time_split1(TSequence **result, TimestampTz *times, const TSequence *seq,
-  TimestampTz start, TimestampTz end, int64 tunits, int count)
+tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
+  int64 tunits, int count, TSequence **result, TimestampTz *times)
 {
   TimestampTz lower = start;
   TimestampTz upper = lower + tunits;
@@ -794,8 +794,8 @@ tsequence_time_split(const TSequence *seq, TimestampTz start, TimestampTz end,
 {
   TSequence **result = palloc(sizeof(TSequence *) * count);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
-  *newcount = tsequence_time_split1(result, times, seq, start, end, tunits,
-    count);
+  *newcount = tsequence_time_split1(seq, start, end, tunits, count,
+    result, times);
   *buckets = times;
   return result;
 }
@@ -858,8 +858,8 @@ tsequenceset_time_split(const TSequenceSet *ts, TimestampTz start, TimestampTz e
       upper += tunits;
     }
     /* Number of time buckets of the current sequence */
-    int l = tsequence_time_split1(sequences, &times[m], seq, lower, end,
-      tunits, count);
+    int l = tsequence_time_split1(seq, lower, end, tunits, count,
+      sequences, &times[m]);
     /* If the current sequence has produced more than two time buckets */
     if (l > 1)
     {
@@ -1542,7 +1542,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         /* To reduce the roundoff errors we may take the bound instead of
          * projecting the value to the timestamp */
         Datum projvalue;
-        tlinearseq_intersection_value(inst1, inst2, bucket_upper, basetypid,
+        tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetypid,
           &projvalue, &t);
         tofree[l++] = bounds[last] =  RANGE_ROUNDOFF ?
           tinstant_make(bucket_upper, t, basetypid) :

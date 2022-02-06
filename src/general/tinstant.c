@@ -166,6 +166,38 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
 }
 
 /**
+ * Returns a copy of the temporal instant value
+ */
+TInstant *
+tinstant_copy(const TInstant *inst)
+{
+  TInstant *result = palloc0(VARSIZE(inst));
+  memcpy(result, inst, VARSIZE(inst));
+  return result;
+}
+
+/**
+ * Sets the value and the timestamp of the temporal instant value
+ *
+ * @param[in,out] inst Temporal value to be modified
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @pre This function only works for for base types passed by value.
+ * This should be ensured by the calling function!
+ */
+void
+tinstant_set(TInstant *inst, Datum value, TimestampTz t)
+{
+  inst->t = t;
+  Datum *value_ptr = tinstant_value_ptr(inst);
+  *value_ptr = value;
+}
+
+/*****************************************************************************
+ * Merge functions
+ *****************************************************************************/
+
+/**
  * Merge two temporal instant values
  */
 Temporal *
@@ -198,34 +230,6 @@ tinstant_merge_array(const TInstant **instants, int count)
     (Temporal *) tinstantset_make1(newinstants, newcount);
   pfree(newinstants);
   return result;
-}
-
-/**
- * Returns a copy of the temporal instant value
- */
-TInstant *
-tinstant_copy(const TInstant *inst)
-{
-  TInstant *result = palloc0(VARSIZE(inst));
-  memcpy(result, inst, VARSIZE(inst));
-  return result;
-}
-
-/**
- * Sets the value and the timestamp of the temporal instant value
- *
- * @param[in,out] inst Temporal value to be modified
- * @param[in] value Value
- * @param[in] t Timestamp
- * @pre This function only works for for base types passed by value.
- * This should be ensured by the calling function!
- */
-void
-tinstant_set(TInstant *inst, Datum value, TimestampTz t)
-{
-  inst->t = t;
-  Datum *value_ptr = tinstant_value_ptr(inst);
-  *value_ptr = value;
 }
 
 /*****************************************************************************
@@ -364,15 +368,6 @@ tfloatinst_to_tintinst(const TInstant *inst)
  *****************************************************************************/
 
 /**
- * Transform the temporal instant value into a temporal instant set value
- */
-TInstantSet *
-tinstant_to_tinstantset(const TInstant *inst)
-{
-  return tinstantset_make(&inst, 1, MERGE_NO);
-}
-
-/**
  * Transform the temporal instant set value into a temporal instant value
  */
 TInstant *
@@ -426,7 +421,6 @@ tinstant_values_array(const TInstant *inst)
   return datumarr_to_array(&value, 1, inst->basetypid);
 }
 
-/* Get values */
 /**
  * Returns the base value of the temporal float value as a range
  */

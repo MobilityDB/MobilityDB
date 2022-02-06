@@ -32,9 +32,9 @@
  * Index support functions for temporal types.
  */
 
-#include "general/time_supportfn.h"
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+
+#include "general/temporal_supportfn.h"
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -100,6 +100,58 @@ temporal_get_strategy_by_type(Oid type, uint16_t index)
     return TemporalStrategies[index];
   return InvalidStrategy;
 }
+
+/*****************************************************************************
+ * Generic functions
+ *****************************************************************************/
+
+/**
+ * Is the function calling the support function one of those we will enhance
+ * with index ops? If so, copy the metadata for the function into idxfn and
+ * return true. If false... how did the support function get added, anyways?
+ */
+bool
+func_needs_index(Oid funcid, const IndexableFunction *idxfns,
+  IndexableFunction *result)
+{
+  const char *fn_name = get_func_name(funcid);
+  do
+  {
+    if(strcmp(idxfns->fn_name, fn_name) == 0)
+    {
+      *result = *idxfns;
+      return true;
+    }
+    idxfns++;
+  }
+  while (idxfns->fn_name);
+
+  return false;
+}
+
+/**
+ * We only add index enhancements for indexes that support range-based
+ *searches like the && operator), so only implementations based on GIST
+ * and SPGIST.
+*/
+Oid
+opFamilyAmOid(Oid opfamilyoid)
+{
+  Form_pg_opfamily familyform;
+  // char *opfamilyname;
+  Oid opfamilyam;
+  HeapTuple familytup = SearchSysCache1(OPFAMILYOID, ObjectIdGetDatum(opfamilyoid));
+  if (!HeapTupleIsValid(familytup))
+    elog(ERROR, "cache lookup failed for operator family %u", opfamilyoid);
+  familyform = (Form_pg_opfamily) GETSTRUCT(familytup);
+  opfamilyam = familyform->opfmethod;
+  // opfamilyname = NameStr(familyform->opfname);
+  // elog(NOTICE, "found opfamily %s [%u]", opfamilyname, opfamilyam);
+  ReleaseSysCache(familytup);
+  return opfamilyam;
+}
+
+/*****************************************************************************/
 
 /*
  * For functions that we want enhanced with spatial index lookups, add

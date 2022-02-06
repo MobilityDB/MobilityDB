@@ -57,16 +57,8 @@ extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
 extern void tinstant_make_bbox(const TInstant *inst, void *bbox);
 extern void tinstantset_make_bbox(const TInstant **inst, int count, void *bbox);
 extern void tsequence_make_bbox(const TInstant** inst, int count,
-  bool lower_inc, bool upper_inc, void *bbox);
+  bool lower_inc, bool upper_inc, bool linear, void *bbox);
 extern void tsequenceset_make_bbox(const TSequence **seqs, int count, void *bbox);
-
-/* Restriction at/minus tbox */
-
-extern Datum tnumber_at_tbox(PG_FUNCTION_ARGS);
-extern Datum tnumber_minus_tbox(PG_FUNCTION_ARGS);
-
-extern Temporal *tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box);
-extern Temporal *tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box);
 
 /* Bounding box operators for temporal types */
 

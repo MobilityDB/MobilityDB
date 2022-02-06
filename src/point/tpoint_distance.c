@@ -173,7 +173,7 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
   Datum value1 = tinstant_value(start);
   Datum value2 = tinstant_value(end);
   double dist;
-  long double fraction = geoseg_locate_point(value1, value2, point, &dist);
+  long double fraction = geosegm_locate_point(value1, value2, point, &dist);
   if (fraction <= MOBDB_EPSILON || fraction >= (1.0 - MOBDB_EPSILON))
     return false;
   *value = Float8GetDatum(dist);
@@ -1109,7 +1109,8 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
     call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
   Datum geo1 = call_function2(LWGEOM_set_srid, geo,
     Int32GetDatum(box->srid));
-  Temporal *temp1 = hast ? temporal_at_period_internal(temp, inter) :
+  Temporal *temp1 = hast ?
+    temporal_restrict_period_internal(temp, inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
   Datum traj = tpoint_trajectory_internal(temp1);
