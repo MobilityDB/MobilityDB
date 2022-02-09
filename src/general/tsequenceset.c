@@ -58,36 +58,47 @@
  *****************************************************************************/
 
 /**
+ * Returns a pointer to the bounding box of the temporal value
+ */
+void *
+tsequenceset_bbox_ptr(const TSequenceSet *ts)
+{
+  return (void *)(((char *)ts) + double_pad(sizeof(TSequenceSet)));
+}
+
+/**
+ * Copy in the second argument the bounding box of the temporal value
+ */
+void
+tsequenceset_bbox(const TSequenceSet *ts, void *box)
+{
+  memset(box, 0, ts->bboxsize);
+  memcpy(box, tsequenceset_bbox_ptr(ts), ts->bboxsize);
+  return;
+}
+
+/**
+ * Returns a pointer to the offsets array of the temporal value
+ */
+static size_t *
+tsequenceset_offsets_ptr(const TSequenceSet *ts)
+{
+  return (size_t *)(((char *)ts) + double_pad(sizeof(TSequenceSet)) +
+    double_pad(ts->bboxsize));
+}
+
+/**
  * Returns the n-th sequence of the temporal value
  */
 const TSequence *
 tsequenceset_seq_n(const TSequenceSet *ts, int index)
 {
   return (TSequence *)(
-    (char *)(&ts->offsets[ts->count + 1]) +   /* start of data */
-      ts->offsets[index]);          /* offset */
-}
-
-/**
- * Returns a pointer to the precomputed bounding box of the temporal value
- */
-void *
-tsequenceset_bbox_ptr(const TSequenceSet *ts)
-{
-  return (char *)(&ts->offsets[ts->count + 1]) +  /* start of data */
-    ts->offsets[ts->count];            /* offset */
-}
-
-/**
- * Copy in the first argument the bounding box of the temporal value
- */
-void
-tsequenceset_bbox(const TSequenceSet *ts, void *box)
-{
-  void *box1 = tsequenceset_bbox_ptr(ts);
-  size_t bboxsize = temporal_bbox_size(ts->basetypid);
-  memcpy(box, box1, bboxsize);
-  return;
+    /* start of data */
+    ((char *)ts) + double_pad(sizeof(TSequenceSet)) + ts->bboxsize +
+      ts->count * sizeof(size_t) +
+      /* offset */
+      (tsequenceset_offsets_ptr(ts))[index]);
 }
 
 /**
@@ -95,19 +106,18 @@ tsequenceset_bbox(const TSequenceSet *ts, void *box)
  * sequence values
  *
  * For example, the memory structure of a temporal sequence set value
- * with 2 sequences is as follows
+ * with two sequences is as follows
  * @code
- * --------------------------------------------------------
- * ( TSequenceSet )_X | offset_0 | offset_1 | offset_2 | ...
- * --------------------------------------------------------
- * --------------------------------------------------------
- * ( TSequence_0 )_X | ( TSequence_1 )_X | ( bbox )_X |
- * --------------------------------------------------------
+ * ------------------------------------------------------------
+ * ( TSequenceSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
+ * ------------------------------------------------------------
+ * ---------------------------------------
+ * ( TSequence_0 )_X | ( TSequence_1 )_X |
+ * ---------------------------------------
  * @endcode
  * where the `_X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding sequences and `offset_2`
- * is the offset for the bounding box. Temporal sequence set values do not
- * have precomputed trajectory.
+ * `offset_1` are offsets for the corresponding sequences.
+ * Temporal sequence set values do not have precomputed trajectory.
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -121,30 +131,35 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
   /* Test the validity of the sequences */
   assert(count > 0);
   ensure_valid_tsequencearr(sequences, count);
-
-  TSequence **newsequences = (TSequence **) sequences;
+  /* Normalize the array of sequences */
+  TSequence **normseqs = (TSequence **) sequences;
   int newcount = count;
   if (normalize && count > 1)
-    newsequences = tsequencearr_normalize(sequences, count, &newcount);
-  /* Add the size of the struct and the offset array
-   * Notice that the first offset is already declared in the struct */
-  size_t pdata = double_pad(sizeof(TSequenceSet)) + newcount * sizeof(size_t);
-  size_t memsize = 0;
+    normseqs = tsequencearr_normalize(sequences, count, &newcount);
+
+  /* Get the bounding box size */
+  size_t bboxsize = temporal_bbox_size(sequences[0]->basetypid);
+
+  /* Compute the size of the temporal sequence */
+  /* Bounding box size */
+  size_t memsize = bboxsize;
+  /* Size of composing sequences */
   int totalcount = 0;
   for (int i = 0; i < newcount; i++)
   {
-    totalcount += newsequences[i]->count;
-    memsize += double_pad(VARSIZE(newsequences[i]));
+    totalcount += normseqs[i]->count;
+    memsize += double_pad(VARSIZE(normseqs[i]));
   }
-  /* Get the bounding box size */
-  size_t bboxsize = temporal_bbox_size(sequences[0]->basetypid);
-  memsize += double_pad(bboxsize);
-  TSequenceSet *result = palloc0(pdata + memsize);
-  SET_VARSIZE(result, pdata + memsize);
+  /* Size of the struct and the offset array */
+  memsize += double_pad(sizeof(TSequenceSet)) + newcount * sizeof(size_t);
+  /* Create the temporal sequence set */
+  TSequenceSet *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->totalcount = totalcount;
   result->basetypid = sequences[0]->basetypid;
   result->subtype = SEQUENCESET;
+  result->bboxsize = bboxsize;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags,
@@ -159,27 +174,30 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
       MOBDB_FLAGS_GET_GEODETIC(sequences[0]->flags));
   }
   /* Initialization of the variable-length part */
-  size_t pos = 0;
-  for (int i = 0; i < newcount; i++)
-  {
-    memcpy(((char *) result) + pdata + pos, newsequences[i],
-      VARSIZE(newsequences[i]));
-    result->offsets[i] = pos;
-    pos += double_pad(VARSIZE(newsequences[i]));
-  }
   /*
-   * Precompute the bounding box
-   * Only external types have precomputed bounding box, internal types such
-   * as double2, double3, or double4 do not have precomputed bounding box
+   * Compute the bounding box
+   * Only external types have bounding box, internal types such
+   * as double2, double3, or double4 do not have bounding box
    */
   if (bboxsize != 0)
   {
-    void *bbox = ((char *) result) + pdata + pos;
-    tsequenceset_make_bbox((const TSequence **) newsequences, newcount, bbox);
-    result->offsets[newcount] = pos;
+    tsequenceset_make_bbox((const TSequence **) normseqs, newcount,
+      tsequenceset_bbox_ptr(result));
   }
+  /* Store the composing instants */
+  size_t pdata = double_pad(sizeof(TSequenceSet)) + double_pad(bboxsize) +
+    newcount * sizeof(size_t);
+  size_t pos = 0;
+  for (int i = 0; i < newcount; i++)
+  {
+    memcpy(((char *) result) + pdata + pos, normseqs[i],
+      VARSIZE(normseqs[i]));
+    (tsequenceset_offsets_ptr(result))[i] = pos;
+    pos += double_pad(VARSIZE(normseqs[i]));
+  }
+
   if (normalize && count > 1)
-    pfree_array((void **) newsequences, newcount);
+    pfree_array((void **) normseqs, newcount);
   return result;
 }
 

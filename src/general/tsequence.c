@@ -200,56 +200,47 @@ datum_collinear(Oid basetypid, Datum value1, Datum value2, Datum value3,
  *****************************************************************************/
 
 /**
+ * Returns a pointer to the bounding box of the temporal value
+ */
+void *
+tsequence_bbox_ptr(const TSequence *seq)
+{
+  return (void *)(((char *)seq) + double_pad(sizeof(TSequence)));
+}
+
+/**
+ * Copy in the second argument the bounding box of the temporal value
+ */
+void
+tsequence_bbox(const TSequence *seq, void *box)
+{
+  memset(box, 0, seq->bboxsize);
+  memcpy(box, tsequence_bbox_ptr(seq), seq->bboxsize);
+  return;
+}
+
+/**
+ * Returns a pointer to the offsets array of the temporal value
+ */
+static size_t *
+tsequence_offsets_ptr(const TSequence *seq)
+{
+  return (size_t *)(((char *)seq) + double_pad(sizeof(TSequence)) +
+    double_pad(seq->bboxsize));
+}
+
+/**
  * Returns the n-th instant of the temporal value
  */
 const TInstant *
 tsequence_inst_n(const TSequence *seq, int index)
 {
   return (TInstant *)(
-    (char *)(&seq->offsets[seq->count + 2]) +   /* start of data */
-      seq->offsets[index]);          /* offset */
-}
-
-/**
- * Returns a pointer to the precomputed bounding box of the temporal value
- */
-void *
-tsequence_bbox_ptr(const TSequence *seq)
-{
-  return (char *)(&seq->offsets[seq->count + 2]) +    /* start of data */
-    seq->offsets[seq->count];            /* offset */
-}
-
-/**
- * Copy in the first argument the bounding box of the temporal value
- */
-void
-tsequence_bbox(const TSequence *seq, void *box)
-{
-  void *box1 = tsequence_bbox_ptr(seq);
-  size_t bboxsize = temporal_bbox_size(seq->basetypid);
-  memcpy(box, box1, bboxsize);
-  return;
-}
-
-/**
- * Return the size in bytes required for string a temporal sequence value
- */
-static size_t
-tsequence_make_size(const TInstant **instants, int count, size_t bboxsize,
-  size_t trajsize)
-{
-  /* Add the bounding box size */
-  size_t result = bboxsize;
-  /* Add the size of composing instants */
-  for (int i = 0; i < count; i++)
-    result += double_pad(VARSIZE(instants[i]));
-  /* Add the trajectory size */
-  result += trajsize;
-  /* Add the size of the struct and the offset array
-   * Notice that the first offset is already declared in the struct */
-  result += double_pad(sizeof(TSequence)) + (count + 1) * sizeof(size_t);
-  return result;
+    /* start of data */
+    ((char *)seq) + double_pad(sizeof(TSequence)) + seq->bboxsize +
+      seq->count * sizeof(size_t) +
+      /* offset */
+      (tsequence_offsets_ptr(seq))[index]);
 }
 
 /**
@@ -285,23 +276,23 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
  * @note The function does not create new instants, it creates an array of
  * pointers to a subset of the input instants
  */
-static const TInstant **
+static TInstant **
 tinstantarr_normalize(const TInstant **instants, bool linear, int count,
   int *newcount)
 {
   assert(count > 1);
   Oid basetypid = instants[0]->basetypid;
-  const TInstant **result = palloc(sizeof(TInstant *) * count);
+  TInstant **result = palloc(sizeof(TInstant *) * count);
   /* Remove redundant instants */
-  const TInstant *inst1 = instants[0];
+  TInstant *inst1 = (TInstant *) instants[0];
   Datum value1 = tinstant_value(inst1);
-  const TInstant *inst2 = instants[1];
+  TInstant *inst2 = (TInstant *) instants[1];
   Datum value2 = tinstant_value(inst2);
   result[0] = inst1;
   int k = 1;
   for (int i = 2; i < count; i++)
   {
-    const TInstant *inst3 = instants[i];
+    TInstant *inst3 = (TInstant *) instants[i];
     Datum value3 = tinstant_value(inst3);
     if (
       /* step sequences and 2 consecutive instants that have the same value
@@ -312,12 +303,14 @@ tinstantarr_normalize(const TInstant **instants, bool linear, int count,
       /* 3 consecutive linear instants that have the same value
         ... 1@t1, 1@t2, 1@t3, ... -> ... 1@t1, 1@t3, ...
       */
-      (linear && datum_eq(value1, value2, basetypid) && datum_eq(value2, value3, basetypid))
+      (linear && datum_eq(value1, value2, basetypid) &&
+        datum_eq(value2, value3, basetypid))
       ||
       /* collinear linear instants
         ... 1@t1, 2@t2, 3@t3, ... -> ... 1@t1, 3@t3, ...
       */
-      (linear && datum_collinear(basetypid, value1, value2, value3, inst1->t, inst2->t, inst3->t))
+      (linear && datum_collinear(basetypid, value1, value2, value3,
+        inst1->t, inst2->t, inst3->t))
       )
     {
       inst2 = inst3; value2 = value3;
@@ -343,15 +336,12 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear, bool normalize)
 {
   /* Normalize the array of instants */
-  const TInstant **norminsts = instants;
+  TInstant **norminsts = (TInstant **) instants;
   int newcount = count;
   if (normalize && count > 1)
     norminsts = tinstantarr_normalize(instants, linear, count, &newcount);
 
-  /* Get the bounding box size */
-  size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->basetypid));
-
-  /* Precompute the trajectory */
+  /* Precompute the trajectory, if any */
   size_t trajsize = 0;
   bool isgeo = tgeo_base_type(instants[0]->basetypid);
 #ifdef STORE_TRAJ
@@ -370,13 +360,27 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   }
 #endif
 
+  /* Get the bounding box size */
+  size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->basetypid));
+
+  /* Compute the size of the temporal sequence */
+  /* Bounding box size */
+  size_t memsize = bboxsize;
+  /* Size of composing instants */
+  for (int i = 0; i < count; i++)
+    memsize += double_pad(VARSIZE(instants[i]));
+  /* Trajectory size */
+  memsize += trajsize;
+  /* Size of the struct and the offset array */
+  // TODO ADD sizeof(size_t) if STORE_TRAJ
+  memsize += double_pad(sizeof(TSequence)) + count * sizeof(size_t);
   /* Create the temporal sequence */
-  size_t seqsize = tsequence_make_size(norminsts, newcount, bboxsize, trajsize);
-  TSequence *result = palloc0(seqsize);
-  SET_VARSIZE(result, seqsize);
+  TSequence *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->basetypid = instants[0]->basetypid;
   result->subtype = SEQUENCE;
+  result->bboxsize = bboxsize;
   period_set(norminsts[0]->t, norminsts[newcount - 1]->t, lower_inc, upper_inc,
     &result->period);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
@@ -390,41 +394,27 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     MOBDB_FLAGS_SET_GEODETIC(result->flags,
       MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
-  /* Initialization of the variable-length part
-   * Notice that the first offset is already declared in the struct */
-  size_t pdata = double_pad(sizeof(TSequence)) + (newcount + 1) * sizeof(size_t);
+  /* Initialization of the variable-length part */
+  /*
+   * Compute the bounding box
+   * Only external types have bounding box, internal types such
+   * as double2, double3, or double4 do not have bounding box
+   */
+  if (bboxsize != 0)
+  {
+    tsequence_make_bbox((const TInstant **) norminsts, newcount, lower_inc,
+      upper_inc, linear, tsequence_bbox_ptr(result));
+  }
+  /* Store the composing instants */
+  size_t pdata = double_pad(sizeof(TSequence)) + double_pad(bboxsize) +
+    newcount * sizeof(size_t);
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
     memcpy(((char *)result) + pdata + pos, norminsts[i],
       VARSIZE(norminsts[i]));
-    result->offsets[i] = pos;
+    (tsequence_offsets_ptr(result))[i] = pos;
     pos += double_pad(VARSIZE(norminsts[i]));
-  }
-  /*
-   * Precompute the bounding box
-   * Only external types have precomputed bounding box, internal types such
-   * as double2, double3, or double4 do not have precomputed bounding box.
-   * For temporal points the bounding box is computed from the trajectory
-   * for efficiency reasons.
-   */
-  if (bboxsize != 0)
-  {
-    void *bbox = ((char *) result) + pdata + pos;
-#ifdef STORE_TRAJ
-    if (hastraj)
-    {
-      geo_stbox((GSERIALIZED *) DatumGetPointer(traj), bbox);
-      ((STBOX *)bbox)->tmin = result->period.lower;
-      ((STBOX *)bbox)->tmax = result->period.upper;
-      MOBDB_FLAGS_SET_T(((STBOX *)bbox)->flags, true);
-    }
-    else
-#endif
-      tsequence_make_bbox(norminsts, newcount, lower_inc, upper_inc, linear,
-        bbox);
-    result->offsets[newcount] = pos;
-    pos += double_pad(bboxsize);
   }
 #ifdef STORE_TRAJ
   if (isgeo && hastraj)
@@ -446,20 +436,17 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
  * instant values
  *
  * For example, the memory structure of a temporal sequence value with
- * 2 instants and a precomputed trajectory is as follows:
+ * two instants and without precomputed trajectory is as follows:
  * @code
- * -------------------------------------------------------------------
- * ( TSequence )_X | offset_0 | offset_1 | offset_2 | offset_3 | ...
- * -------------------------------------------------------------------
- * ------------------------------------------------------------------------
- * ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X | ( Traj )_X  |
- * ------------------------------------------------------------------------
+ * ---------------------------------------------------------
+ * ( TSequence )_X | ( bbox )_X | offset_0 | offset_1 | ...
+ * ---------------------------------------------------------
+ * -------------------------------------
+ * ( TInstant_0 )_X | ( TInstant_1 )_X |
+ * -------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding instants, `offset_2` is the
- * offset for the bounding box and `offset_3` is the offset for the
- * precomputed trajectory. Precomputed trajectories are only kept for temporal
- * points of sequence type.
+ * `offset_1` are offsets for the corresponding instants
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array

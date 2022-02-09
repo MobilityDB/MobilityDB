@@ -264,12 +264,13 @@ typedef struct
  */
 typedef struct
 {
-  int32        vl_len_;       /**< varlena header (do not touch directly!) */
-  int16        subtype;       /**< subtype */
-  int16        flags;         /**< flags */
-  Oid          basetypid;     /**< base type's OID (4 bytes) */
-  int32        count;         /**< number of TInstant elements */
-  size_t       offsets[1];    /**< beginning of variable-length data */
+  int32         vl_len_;       /**< varlena header (do not touch directly!) */
+  int16         subtype;       /**< subtype */
+  int16         flags;         /**< flags */
+  Oid           basetypid;     /**< base type's OID (4 bytes) */
+  int32         count;         /**< number of TInstant elements */
+  int16         bboxsize;     /**< size of the bounding box */
+  /**< beginning of variable-length data */
 } TInstantSet;
 
 /**
@@ -283,7 +284,8 @@ typedef struct
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
   Period        period;       /**< time span (24 bytes) */
-  size_t        offsets[1];   /**< beginning of variable-length data */
+  int16         bboxsize;     /**< size of the bounding box */
+  /**< beginning of variable-length data */
 } TSequence;
 
 /**
@@ -297,7 +299,8 @@ typedef struct
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
-  size_t        offsets[1];   /**< beginning of variable-length data */
+  int16         bboxsize;     /**< size of the bounding box */
+  /**< beginning of variable-length data */
 } TSequenceSet;
 
 /**
