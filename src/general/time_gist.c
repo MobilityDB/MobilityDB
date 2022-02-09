@@ -393,8 +393,7 @@ period_gist_penalty(PG_FUNCTION_ARGS)
 static void
 period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
 {
-  Period *left_period = NULL;
-  Period *right_period = NULL;
+  Period *left_period = NULL, *right_period = NULL;
   OffsetNumber i, maxoff, split_idx;
 
   maxoff = (OffsetNumber) (entryvec->n - 1);
@@ -405,7 +404,7 @@ period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   v->spl_nright = 0;
   for (i = FirstOffsetNumber; i <= maxoff; i++)
   {
-    Period  *period = DatumGetPeriod(entryvec->vector[i].key);
+    Period *period = DatumGetPeriod(entryvec->vector[i].key);
 
     if (i < split_idx)
       PLACE_LEFT(period, i);
