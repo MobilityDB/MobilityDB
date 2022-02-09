@@ -85,7 +85,7 @@ static size_t *
 tinstantset_offsets_ptr(const TInstantSet *ti)
 {
   return (size_t *)(((char *)ti) + double_pad(sizeof(TInstantSet)) +
-    ti->bboxsize);
+    double_pad(ti->bboxsize));
 }
 
 /**

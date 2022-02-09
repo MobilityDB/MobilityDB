@@ -558,11 +558,11 @@ stbox_tile_state_next(STboxGridState *state)
 /**
  * Get the current tile of the multidimensional grid
  *
- * @param[out] box Current tile
  * @param[in] state State to increment
+ * @param[out] box Current tile
  */
 static bool
-stbox_tile_state_get(STBOX *box, STboxGridState *state)
+stbox_tile_state_get(STboxGridState *state, STBOX *box)
 {
   if (!state || state->done)
     return false;
@@ -673,11 +673,11 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   }
 
   /* Allocate box */
-  STBOX *box = (STBOX *) palloc0(sizeof(STBOX));
+  STBOX *box = (STBOX *) palloc(sizeof(STBOX));
   /* Get current tile and advance state
    * There is no need to test if the tile is found since all tiles should be
    * generated and thus there is no associated bit matrix */
-  stbox_tile_state_get(box, state);
+  stbox_tile_state_get(state, box);
   stbox_tile_state_next(state);
   /* Form tuple and return
    * The i value was incremented with the previous _next function call */
@@ -947,7 +947,6 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  STBOX box;
   bool hasz;
   bool isnull[2] = {0,0}; /* needed to say no value is null */
   Datum tuple_arr[2]; /* used to construct the composite return value */
@@ -1043,8 +1042,8 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     /* Get current tile (if any) and advance state
      * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
-    memset(&box, 0, sizeof(STBOX));
-    bool found = stbox_tile_state_get(&box, state);
+    STBOX box;
+    bool found = stbox_tile_state_get(state, &box);
     if (! found)
     {
       /* Switch to memory context appropriate for multiple function calls */
@@ -1081,7 +1080,6 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
-  STBOX box;
   bool hasz;
   bool isnull[3] = {0,0,0}; /* needed to say no value is null */
   Datum tuple_arr[3]; /* used to construct the composite return value */
@@ -1113,7 +1111,6 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     int64 tunits = get_interval_units(duration);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
@@ -1181,8 +1178,8 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     /* Get current tile (if any) and advance state
      * It is necessary to test if we found a tile since the previous tile
      * may be the last one set in the associated bit matrix */
-    memset(&box, 0, sizeof(STBOX));
-    bool found = stbox_tile_state_get(&box, state);
+    STBOX box;
+    bool found = stbox_tile_state_get(state, &box);
     if (! found)
     {
       /* Switch to memory context appropriate for multiple function calls */

@@ -445,20 +445,21 @@ tpoint_gist_decompress(PG_FUNCTION_ARGS)
 /**
  * Calculates the union of two tboxes.
  *
- * @param[out] n Resulting box
  * @param[in] a,b Input boxes
+ * @param[out] new Resulting box
  */
 static void
-stbox_union_rt(STBOX *n, const STBOX *a, const STBOX *b)
+stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
 {
-  n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  n->ymax = FLOAT8_MAX(a->ymax, b->ymax);
-  n->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-  n->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
-  n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
-  n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-  n->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
+  memset(new, 0, sizeof(STBOX));
+  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
+  new->ymax = FLOAT8_MAX(a->ymax, b->ymax);
+  new->zmax = FLOAT8_MAX(a->zmax, b->zmax);
+  new->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
+  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  new->ymin = FLOAT8_MIN(a->ymin, b->ymin);
+  new->zmin = FLOAT8_MIN(a->zmin, b->zmin);
+  new->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
   return;
 }
 
@@ -499,8 +500,7 @@ static double
 stbox_penalty(const STBOX *original, const STBOX *new)
 {
   STBOX unionbox;
-  memset(&unionbox, 0, sizeof(STBOX));
-  stbox_union_rt(&unionbox, original, new);
+  stbox_union_rt(original, new, &unionbox);
   return stbox_size(&unionbox) - stbox_size(original);
 }
 

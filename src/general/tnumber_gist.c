@@ -281,7 +281,7 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
   const TBOX *key = DatumGetTboxP(entry->key);
   TBOX query;
-  
+
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
    * and exclusive bounds.
@@ -391,17 +391,18 @@ tnumber_gist_decompress(PG_FUNCTION_ARGS)
 /**
  * Calculates the union of two tboxes.
  *
- * @param[out] n Resulting box
  * @param[in] a,b Input boxes
+ * @param[out] new Resulting box
  * @note This function uses NaN-aware comparisons
  */
 static void
-tbox_union_rt(TBOX *n, const TBOX *a, const TBOX *b)
+tbox_union_rt(const TBOX *a, const TBOX *b, TBOX *new)
 {
-  n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  n->tmin = FLOAT8_MIN(a->tmin, b->tmin);
-  n->tmax = FLOAT8_MAX(a->tmax, b->tmax);
+  memset(new, 0, sizeof(TBOX));
+  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
+  new->tmin = FLOAT8_MIN(a->tmin, b->tmin);
+  new->tmax = FLOAT8_MAX(a->tmax, b->tmax);
   return;
 }
 
@@ -441,8 +442,7 @@ static double
 tbox_penalty(const TBOX *original, const TBOX *new)
 {
   TBOX unionbox;
-  memset(&unionbox, 0, sizeof(TBOX));
-  tbox_union_rt(&unionbox, original, new);
+  tbox_union_rt(original, new, &unionbox);
   return tbox_size(&unionbox) - tbox_size(original);
 }
 
