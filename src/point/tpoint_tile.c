@@ -975,7 +975,6 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
     STBOX bounds;
-    memset(&bounds, 0, sizeof(STBOX));
     temporal_bbox(temp, &bounds);
     int32 srid = bounds.srid;
     int32 gs_srid = gserialized_get_srid(sorigin);

@@ -3104,7 +3104,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     {
       const TInstant *inst2 = tsequence_inst_n(seq, i);
       Datum value2 = tinstant_value(inst2);
-      if (datum_ne(value1, value2, inst1->basetypid))
+      if (! datum_point_eq(value1, value2))
         length += DatumGetFloat8(func(value1, value2));
       instants[i] = tinstant_make(Float8GetDatum(length), inst2->t,
         FLOAT8OID);
@@ -3115,10 +3115,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE);
 
-  for (int i = 1; i < seq->count; i++)
-    pfree(instants[i]);
-  pfree(instants);
-
+  pfree_array((void **) instants, seq->count);
   return result;
 }
 
@@ -3134,7 +3131,8 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = tpointseq_cumulative_length(seq, length);
-    const TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
+    /* sequences[i] may have less sequences than seq->count due to normalization */
+    const TInstant *end = tsequence_inst_n(sequences[i], sequences[i]->count - 1);
     length = DatumGetFloat8(tinstant_value(end));
   }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
@@ -3499,7 +3497,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (datum_ne(value1, value2, seq->basetypid))
+    if (! datum_point_eq(value1, value2))
     {
       azimuth = func(value1, value2);
       instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);

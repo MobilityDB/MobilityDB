@@ -155,6 +155,7 @@ tinstant_make_bbox(const TInstant *inst, void *box)
 {
   /* Only external types have bounding box */
   ensure_temporal_base_type(inst->basetypid);
+  memset(box, 0, temporal_bbox_size(inst->basetypid));
   if (talpha_base_type(inst->basetypid))
     period_set(inst->t, inst->t, true, true, (Period *) box);
   else if (tnumber_base_type(inst->basetypid))
