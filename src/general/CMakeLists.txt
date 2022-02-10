@@ -38,7 +38,6 @@ add_library(general OBJECT
   tnumber_mathfuncs.c
   tnumber_selfuncs.c
   tnumber_spgist.c
-  tnumber_supportfn.c
   tsequence.c
   tsequenceset.c
   ttext_textfuncs.c
