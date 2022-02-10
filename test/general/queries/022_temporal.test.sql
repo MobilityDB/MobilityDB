@@ -1838,6 +1838,8 @@ SELECT minusRanges(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', AR
 SELECT minusRanges(tfloat '{[1@2000-01-01, 4@2000-01-02],[2@2000-01-03, 3@2000-01-04]}', ARRAY[floatrange '[1,1]', '[4,4]']);
 SELECT minusRanges(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', ARRAY[floatrange '[5,6]']);
 SELECT minusRanges(tfloat'[1@2000-01-01, 2@2000_01-03]',ARRAY[floatrange '[1,1.1]','[1.5,2]']);
+SELECT minusRanges(tfloat '[1@2000-01-01, 2@2000-01-02]', ARRAY[floatrange '[3,4]', '[5,6]']);
+SELECT minusRanges(tfloat '1@2000-01-01', ARRAY[floatrange '[0,1)', '(1,2]']);
 
 SELECT atMin(tint '1@2000-01-01');
 SELECT atMin(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');

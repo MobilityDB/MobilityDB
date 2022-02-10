@@ -115,6 +115,7 @@ extern Datum int_period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum float_period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
 
 extern void number_to_tbox_internal(Datum value, Oid basetypid, TBOX *box);
 extern void range_to_tbox_internal(const RangeType *r, TBOX *box);

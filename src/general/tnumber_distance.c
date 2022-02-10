@@ -99,7 +99,7 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfunc_base = &tlinearseq_intersection_value;
+  lfinfo.tpfunc_base = &tlinearsegm_intersection_value;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_base(temp, value, &lfinfo);
   return result;
@@ -160,7 +160,7 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
   Datum *value, TimestampTz *t)
 {
-  if (! tsequence_intersection(start1, end1, linear1, start2, end2,
+  if (! tsegment_intersection(start1, end1, linear1, start2, end2,
     linear2, NULL, NULL, t))
     return false;
   *value = (Datum) 0;
@@ -348,8 +348,8 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
-  Temporal *temp1 = hast ? temporal_at_period_internal(temp, inter) :
-    (Temporal *) temp;
+  Temporal *temp1 = hast ?
+    temporal_restrict_period_internal(temp, inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBOX box1;
   temporal_bbox(temp1, &box1);
