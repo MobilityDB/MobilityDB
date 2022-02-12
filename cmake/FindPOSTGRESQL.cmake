@@ -24,10 +24,20 @@ if(NOT "${POSTGRESQL_BIN}" STREQUAL "")
     )
 else()
   # Checking POSTGRESQL_PG_CONFIG
+  # First we search for installation via source compilation
+  # If not found, we search for normal installation (via package repositories)
   find_program(POSTGRESQL_PG_CONFIG NAMES pg_config
     PATHS
-    /usr/lib/postgresql/*/bin/
+    /usr/local/pgsql/bin/
+    NO_DEFAULT_PATH
     )
+  if(NOT POSTGRESQL_PG_CONFIG)
+    unset(POSTGRESQL_PG_CONFIG CACHE)
+    find_program(POSTGRESQL_PG_CONFIG NAMES pg_config
+      PATHS
+      /usr/lib/postgresql/*/bin/
+      )
+  endif()
 endif()
 
 if(POSTGRESQL_PG_CONFIG)
