@@ -674,9 +674,9 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 
   if (tnumber_range_type(consttype))
 #if POSTGRESQL_VERSION_NUMBER < 110000
-    range_to_tbox_internal(DatumGetRangeType(((Const *) other)->constvalue), box);
+    range_tbox(DatumGetRangeType(((Const *) other)->constvalue), box);
 #else
-    range_to_tbox_internal(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
+    range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
 #endif
   else if (consttype == type_oid(T_TBOX))
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));

@@ -424,18 +424,20 @@ typedef struct
   } while (0)
 
 /*
- * Define POSTGIS_FREE_IF_COPY_P if POSTGIS is not loaded.
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
  * for more details.
+ * This macro is the same as POSTGIS_FREE_IF_COPY_P.
  */
-#ifndef POSTGIS_FREE_IF_COPY_P
-#define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
+#define PG_FREE_IF_COPY_P(ptrsrc, ptrori) \
   do { \
     if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
       pfree(ptrsrc); \
   } while (0)
-#endif
+
+#define PG_DATUM_NEEDS_DETOAST(datum) \
+  (VARATT_IS_EXTENDED((datum)) || VARATT_IS_EXTERNAL((datum)) || \
+   VARATT_IS_COMPRESSED((datum)))
 
 /*****************************************************************************/
 
@@ -477,6 +479,7 @@ extern void ensure_non_empty_array(ArrayType *array);
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
 extern void temporal_bbox(const Temporal *temp, void *box);
+extern void temporal_bbox_slice(Datum tempdatum, void *box);
 extern Temporal *temporal_copy(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, TIntersection mode,

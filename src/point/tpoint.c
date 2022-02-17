@@ -424,13 +424,22 @@ PG_FUNCTION_INFO_V1(tpoint_to_stbox);
 /**
  * Returns the bounding box of the temporal point value
  */
+// PGDLLEXPORT Datum
+// tpoint_to_stbox(PG_FUNCTION_ARGS)
+// {
+  // Temporal *temp = PG_GETARG_TEMPORAL(0);
+  // STBOX *result = palloc0(sizeof(STBOX));
+  // temporal_bbox(temp, result);
+  // PG_FREE_IF_COPY(temp, 0);
+  // PG_RETURN_POINTER(result);
+// }
+
 PGDLLEXPORT Datum
 tpoint_to_stbox(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(temp, result);
-  PG_FREE_IF_COPY(temp, 0);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  STBOX *result = palloc(sizeof(STBOX));
+  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -48,6 +48,17 @@
  *****************************************************************************/
 
 /**
+ * Returns the size in bytes to read from toast to get the basic information
+ * from a variable-length time type: Time struct (i.e., TimestampSet
+ * or PeriodSet) and bounding box size
+*/
+uint32_t
+time_max_header_size(void)
+{
+  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
+}
+
+/**
  * Returns the n-th timestamp of the timestamp set value
  */
 TimestampTz
@@ -66,7 +77,7 @@ timestampset_bbox_ptr(const TimestampSet *ts)
 }
 
 /**
- * Copy in the first argument the bounding box of the timestamp set value
+ * Copy in the second argument the bounding box of the timestamp set value
  */
 void
 timestampset_bbox(const TimestampSet *ts, Period *p)
@@ -77,14 +88,32 @@ timestampset_bbox(const TimestampSet *ts, Period *p)
 }
 
 /**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_bbox_slice(Datum tsdatum, Period *p)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_bbox(ts, p);
+  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
+/**
  * Construct a timestamp set from an array of timestamps
  *
  * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
  * @code
- * --------------------------------------------------------------------------
- * ( TimestampSet | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2)_X |
- * --------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------
+ * ( TimestampSet )_X | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2 |
+ * ---------------------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, and bbox is the
  * bounding box which is a period.
@@ -103,7 +132,7 @@ timestampset_make(const TimestampTz *times, int count)
         errmsg("Invalid value for timestamp set")));
   }
   /* Notice that the first timestamp is already declared in the struct */
-  size_t memsize = double_pad(sizeof(TimestampSet) + sizeof(TimestampTz) * (count - 1));
+  size_t memsize = double_pad(sizeof(TimestampSet)) + sizeof(TimestampTz) * (count - 1);
   /* Create the TimestampSet */
   TimestampSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
@@ -328,10 +357,12 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-timestampset_to_period_internal(const TimestampSet *ts, Period *p)
+timestampset_period(const TimestampSet *ts, Period *p)
 {
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(p, 0, sizeof(Period));
   period_set(start, end, true, true, p);
   return;
 }
@@ -343,9 +374,9 @@ PG_FUNCTION_INFO_V1(timestampset_to_period);
 PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *result = period_copy(timestampset_bbox_ptr(ts));
-  PG_FREE_IF_COPY(ts, 0);
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  Period *result = (Period *) palloc(sizeof(Period));
+  timestampset_bbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 

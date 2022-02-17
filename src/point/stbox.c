@@ -873,6 +873,24 @@ timestampset_stbox(const TimestampSet *ts, STBOX *box)
   return;
 }
 
+/**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_stbox_slice(Datum tsdatum, STBOX *box)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_stbox(ts, box);
+  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(timestampset_to_stbox);
 /**
  * Transform a timestamp set to a spatiotemporal box
@@ -880,10 +898,9 @@ PG_FUNCTION_INFO_V1(timestampset_to_stbox);
 PGDLLEXPORT Datum
 timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  Datum tsdatum = PG_GETARG_DATUM(0);
   STBOX *result = palloc(sizeof(STBOX));
-  timestampset_stbox(ts, result);
-  PG_FREE_IF_COPY(ts, 0);
+  timestampset_stbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -931,6 +948,24 @@ periodset_stbox(const PeriodSet *ps, STBOX *box)
   return;
 }
 
+/**
+ * Peak into a period set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+periodset_stbox_slice(Datum psdatum, STBOX *box)
+{
+  PeriodSet *ps = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
+    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+      time_max_header_size());
+  else
+    ps = (PeriodSet *) psdatum;
+  periodset_stbox(ps, box);
+  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(periodset_to_stbox);
 /**
  * Transform a period set to a spatiotemporal box
@@ -938,10 +973,9 @@ PG_FUNCTION_INFO_V1(periodset_to_stbox);
 PGDLLEXPORT Datum
 periodset_to_stbox(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  Datum psdatum = PG_GETARG_DATUM(0);
   STBOX *result = palloc(sizeof(STBOX));
-  periodset_stbox(ps, result);
-  PG_FREE_IF_COPY(ps, 0);
+  periodset_stbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 

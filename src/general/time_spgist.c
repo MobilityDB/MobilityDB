@@ -756,11 +756,10 @@ PG_FUNCTION_INFO_V1(timestampset_spgist_compress);
 PGDLLEXPORT Datum
 timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *period = palloc0(sizeof(Period));
-  period = period_copy(timestampset_bbox_ptr(ts));
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_PERIOD(period);
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  Period *result = palloc(sizeof(Period));
+  timestampset_bbox_slice(tsdatum, result);
+  PG_RETURN_PERIOD(result);
 }
 
 PG_FUNCTION_INFO_V1(periodset_spgist_compress);
@@ -770,12 +769,12 @@ PG_FUNCTION_INFO_V1(periodset_spgist_compress);
 PGDLLEXPORT Datum
 periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *period = palloc0(sizeof(Period));
-  period = period_copy(periodset_bbox_ptr(ps));
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_PERIOD(period);
+  Datum psdatum = PG_GETARG_DATUM(0);
+  Period *result = palloc(sizeof(Period));
+  periodset_bbox_slice(psdatum, result);
+  PG_RETURN_PERIOD(result);
 }
+
 #endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */
 
 /*****************************************************************************/

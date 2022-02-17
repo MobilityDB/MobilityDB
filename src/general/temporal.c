@@ -545,7 +545,7 @@ temporal_bbox_ptr(const Temporal *temp)
 }
 
 /**
- * Set the first argument to the bounding box of the temporal value
+ * Set the second argument to the bounding box of the temporal value
  *
  * For temporal instant values the bounding box must be computed.
  * For the other subtypes a copy of the precomputed bounding box
@@ -563,6 +563,24 @@ temporal_bbox(const Temporal *temp, void *box)
     tsequence_bbox((TSequence *) temp, box);
   else /* temp->subtype == SEQUENCESET */
     tsequenceset_bbox((TSequenceSet *) temp, box);
+  return;
+}
+
+/**
+ * Peak into a temporal datum to find the bounding box. If the datum needs
+ * needs to be detoasted, extract only the header and not the full object.
+ */
+void
+temporal_bbox_slice(Datum tempdatum, void *box)
+{
+  Temporal *temp = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tempdatum))
+    temp = (Temporal *) PG_DETOAST_DATUM_SLICE(tempdatum, 0,
+      temporal_max_header_size());
+  else
+    temp = (Temporal *) tempdatum;
+  temporal_bbox(temp, box);
+  PG_FREE_IF_COPY_P(temp, DatumGetPointer(tempdatum));
   return;
 }
 
@@ -1473,6 +1491,9 @@ temporal_period(const Temporal *temp, Period *p)
 PG_FUNCTION_INFO_V1(temporal_to_period);
 /**
  * Returns the bounding period on which the temporal value is defined
+ *
+ * @note We cannot detoast only the header since we don't know whether the
+ * lower and upper bounds of the period are inclusive or not
  */
 PGDLLEXPORT Datum
 temporal_to_period(PG_FUNCTION_ARGS)
@@ -2943,7 +2964,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
   {
     TBOX box1, box2;
     temporal_bbox(temp, &box1);
-    number_to_tbox_internal(value, temp->basetypid, &box2);
+    number_tbox(value, temp->basetypid, &box2);
     return contains_tbox_tbox_internal(&box1, &box2);
   }
   if (tgeo_base_type(temp->basetypid))
@@ -2991,7 +3012,7 @@ temporal_bbox_restrict_values(const Temporal *temp, const Datum *values,
     for (int i = 0; i < count; i++)
     {
       TBOX box2;
-      number_to_tbox_internal(values[i], temp->basetypid, &box2);
+      number_tbox(values[i], temp->basetypid, &box2);
       if (contains_tbox_tbox_internal(&box1, &box2))
         newvalues[k++] = values[i];
     }
@@ -3048,7 +3069,7 @@ tnumber_bbox_restrict_range(const Temporal *temp, const RangeType *range)
   assert(tnumber_base_type(temp->basetypid));
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  range_to_tbox_internal(range, &box2);
+  range_tbox(range, &box2);
   return overlaps_tbox_tbox_internal(&box1, &box2);
 }
 
@@ -3077,7 +3098,7 @@ tnumber_bbox_restrict_ranges(const Temporal *temp, RangeType **ranges,
     if (flags & RANGE_EMPTY)
       continue;
     TBOX box2;
-    range_to_tbox_internal(ranges[i], &box2);
+    range_tbox(ranges[i], &box2);
     if (overlaps_tbox_tbox_internal(&box1, &box2))
       newranges[k++] = ranges[i];
   }

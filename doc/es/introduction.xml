@@ -27,8 +27,8 @@
 				<listitem><para>Krishna Chaitanya Bommakanti: <ulink url="https://github.com/adonmo/mobilitydb-sqlalchemy">MobilityDB SQLAlchemy</ulink>, <ulink url="https://github.com/adonmo/meos">MEOS (Mobility Engine Open Source)</ulink>, <ulink url="https://pypi.org/project/pymeos/">pyMEOS</ulink></para></listitem>
 				<listitem><para>Anita Graser: integración con <ulink url="https://github.com/anitagraser/movingpandas">Moving Pandas</ulink> y el ecosistema de Python, integración con <ulink url="https://qgis.org/">QGIS</ulink></para></listitem>
 				<listitem><para>Darafei Praliaskouski: integración con <ulink url="https://postgis.net/">PostGIS</ulink></para></listitem>
-				<listitem><para>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, miembro del OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>)</para></listitem>
-				<listitem><para>Vicky Vergara: integración con <ulink url="https://pgrouting.org/">pgRouting</ulink></para></listitem>
+				<listitem><para>Mahmoud Sakr: cofundador del proyecto MobilityDB, <ulink url="https://github.com/MobilityDB/MobilityDB-workshop">MobilityDB workshop</ulink>, copresidente del OGC Moving Feature Standard Working Group (<ulink url="https://www.ogc.org/projects/groups/movfeatswg">MF-SWG</ulink>)</para></listitem>
+				<listitem><para>Vicky Vergara: integración con <ulink url="https://pgrouting.org/">pgRouting</ulink>, enlace con <ulink url="https://osgeo.org/">OSGeo</ulink></para></listitem>
 				<listitem><para>Esteban Zimányi (chair): cofoundador del proyecto MobilityDB, coordinación general del proyecto, principal contribuidor del código de backend, <ulink url="https://github.com/MobilityDB/MobilityDB-BerlinMOD">BerlinMOD benchmark</ulink>, <ulink url="https://github.com/MobilityDB/MobilityDB-python">MobilityDB-python</ulink></para></listitem>
 			</itemizedlist>
 		</para>

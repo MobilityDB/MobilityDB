@@ -68,13 +68,31 @@ periodset_bbox_ptr(const PeriodSet *ps)
 }
 
 /**
- * Copy in the first argument the bounding box of the timestamp set value
+ * Copy in the second argument the bounding box of the timestamp set value
  */
 void
 periodset_bbox(const PeriodSet *ps, Period *p)
 {
-  const Period *p1 = (Period *)&ps->period;
+  const Period *p1 = (Period *) &ps->period;
   period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, p);
+  return;
+}
+
+/**
+ * Peak into a period set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+periodset_bbox_slice(Datum psdatum, Period *p)
+{
+  PeriodSet *ps = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
+    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+      time_max_header_size());
+  else
+    ps = (PeriodSet *) psdatum;
+  periodset_bbox(ps, p);
+  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 
@@ -85,7 +103,7 @@ periodset_bbox(const PeriodSet *ps, Period *p)
  * follows
  * @code
  * ---------------------------------------------------------------------------------
- * ( PeriodSet | ( bbox )_X | ( Period_0 )_X | ( Period_1 )_X | ( Period_2 )_X )_X |
+ * ( PeriodSet )_X | ( bbox )_X | ( Period_0 )_X | ( Period_1 )_X | ( Period_2 )_X |
  * ---------------------------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, and `bbox` is the
@@ -113,7 +131,7 @@ periodset_make(const Period **periods, int count, bool normalize)
   if (normalize && count > 1)
     newperiods = periodarr_normalize((Period **) periods, count, &newcount);
   /* Notice that the first period is already declared in the struct */
-  size_t memsize = double_pad(sizeof(PeriodSet) + sizeof(Period) * (newcount - 1));
+  size_t memsize = double_pad(sizeof(PeriodSet)) + double_pad(sizeof(Period)) * (newcount - 1);
   PeriodSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = newcount;
@@ -407,10 +425,12 @@ period_to_periodset(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-periodset_to_period_internal(const PeriodSet *ps, Period *p)
+periodset_period(const PeriodSet *ps, Period *p)
 {
   const Period *start = periodset_per_n(ps, 0);
   const Period *end = periodset_per_n(ps, ps->count - 1);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(p, 0, sizeof(Period));
   period_set(start->lower, end->upper, start->lower_inc, end->upper_inc, p);
 }
 
@@ -421,10 +441,9 @@ PG_FUNCTION_INFO_V1(periodset_to_period);
 PGDLLEXPORT Datum
 periodset_to_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
-  periodset_to_period_internal(ps, result);
-  PG_FREE_IF_COPY(ps, 0);
+  periodset_bbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 

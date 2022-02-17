@@ -256,13 +256,12 @@ PG_FUNCTION_INFO_V1(timestampset_gist_compress);
 PGDLLEXPORT Datum
 timestampset_gist_compress(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    TimestampSet *ts = DatumGetTimestampSet(entry->key);
-    Period *period = palloc0(sizeof(Period));
-    timestampset_to_period_internal(ts, period);
+    Period *period = palloc(sizeof(Period));
+    timestampset_bbox_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period),
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -299,9 +298,8 @@ periodset_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    PeriodSet *ps = DatumGetPeriodSet(entry->key);
-    Period *period = palloc0(sizeof(Period));
-    periodset_to_period_internal(ps, period);
+    Period *period = palloc(sizeof(Period));
+    periodset_bbox_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period),
       entry->rel, entry->page, entry->offset, false);
     PG_RETURN_POINTER(retval);

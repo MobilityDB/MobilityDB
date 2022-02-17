@@ -160,7 +160,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
-    POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;
 }

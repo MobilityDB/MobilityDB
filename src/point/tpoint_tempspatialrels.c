@@ -279,7 +279,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_from_base_internal(datum_yes, BOOLOID,
       &seq->period, STEP);
-    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
+    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
     *count = 1;
     return result;
@@ -1335,7 +1335,7 @@ tcontains_geo_tpoint_internal(GSERIALIZED *gs, const Temporal *temp,
     Temporal *not_inter_bound = tnot_tbool_internal(inter_bound);
     result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
     pfree(inter);
-    POSTGIS_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
+    PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
     pfree(DatumGetPointer(bound));
     pfree(inter_bound);
     pfree(not_inter_bound);
@@ -1454,7 +1454,7 @@ ttouches_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs,
   {
     result = tinterrel_tpoint_geo_internal(temp, gsbound, TINTERSECTS, restr,
       atvalue);
-    POSTGIS_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
+    PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
     pfree(DatumGetPointer(bound));
   }
   else

@@ -66,9 +66,9 @@ bool
 npoint_to_stbox_internal(const npoint *np, STBOX *box)
 {
   Datum geom = npoint_as_geom_internal(DatumGetNpoint(np));
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -134,7 +134,7 @@ tnpointinstarr_linear_to_stbox(const TInstant **instants, int count,
   Datum geom = (posmin == 0 && posmax == 1) ? line :
     call_function3(LWGEOM_line_substring, line, Float8GetDatum(posmin),
       Float8GetDatum(posmax));
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   geo_stbox(gs, box);
   box->tmin = tmin;
   box->tmax = tmax;
@@ -186,9 +186,9 @@ bool
 nsegment_to_stbox_internal(STBOX *box, const nsegment *ns)
 {
   Datum geom = nsegment_as_geom_internal(DatumGetNsegment(ns));
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
 }

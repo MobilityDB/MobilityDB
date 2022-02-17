@@ -66,10 +66,10 @@ CREATE TYPE timestampset (
   output = timestampset_out,
   receive = timestampset_recv,
   send = timestampset_send,
-  alignment = double
+  alignment = double,
 -- The following line makes NULL if size < 128
---  storage = extended
-   , analyze = timestampset_analyze
+  storage = extended,
+  analyze = timestampset_analyze
 );
 
 /******************************************************************************

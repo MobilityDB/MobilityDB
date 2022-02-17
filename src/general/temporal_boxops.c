@@ -68,6 +68,19 @@
  *****************************************************************************/
 
 /**
+ * Returns the size in bytes to read from toast to get the basic
+ * information from a temporal: Temporal struct (i.e., TInstant,
+ * TInstantSet, TSequence, or TSequenceSet) and bounding box size
+*/
+uint32_t
+temporal_max_header_size(void)
+{
+  size_t sz1 = Max(sizeof(TInstant), sizeof(TInstantSet));
+  size_t sz2 = Max(sizeof(TSequence), sizeof(TSequenceSet));
+  return double_pad(Max(sz1, sz2)) + double_pad(sizeof(bboxunion));
+}
+
+/**
  * Returns true if the bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
@@ -143,6 +156,37 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
  * Only external types have precomputed bbox, internal types such as double2,
  * double3, or double4 do not have precomputed bounding box.
  *****************************************************************************/
+
+/**
+ * Returns true if the temporal type corresponding to the Oid of the
+ * base type has its trajectory precomputed
+ */
+static bool
+base_type_without_bbox(Oid basetypid)
+{
+  if (basetypid == type_oid(T_DOUBLE2) || basetypid == type_oid(T_DOUBLE3) ||
+      basetypid == type_oid(T_DOUBLE4))
+    return true;
+  return false;
+}
+
+/**
+ * Returns the size of the bounding box
+ */
+size_t
+temporal_bbox_size(Oid basetypid)
+{
+  if (talpha_base_type(basetypid))
+    return sizeof(Period);
+  if (tnumber_base_type(basetypid))
+    return sizeof(TBOX);
+  if (tspatial_base_type(basetypid))
+    return sizeof(STBOX);
+  /* Types without bounding box, such as tdoubleN, must be explicity stated */
+  if (base_type_without_bbox(basetypid))
+    return 0;
+  elog(ERROR, "unknown temporal_bbox_size function for base type: %d", basetypid);
+}
 
 /**
  * Set the bounding box from a temporal instant value
@@ -378,7 +422,7 @@ boxop_timestampset_temporal(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Period p1, p2;
   temporal_period(temp, &p1);
-  timestampset_to_period_internal(ts, &p2);
+  timestampset_period(ts, &p2);
   bool result = func(&p2, &p1);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -399,7 +443,7 @@ boxop_temporal_timestampset(FunctionCallInfo fcinfo,
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
   Period p1, p2;
   temporal_period(temp, &p1);
-  timestampset_to_period_internal(ts, &p2);
+  timestampset_period(ts, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -458,7 +502,7 @@ boxop_periodset_temporal(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Period p1, p2;
   temporal_period(temp, &p1);
-  periodset_to_period_internal(ps, &p2);
+  periodset_period(ps, &p2);
   bool result = func(&p2, &p1);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -479,7 +523,7 @@ boxop_temporal_periodset(FunctionCallInfo fcinfo,
   PeriodSet *ps = PG_GETARG_PERIODSET(1);
   Period p1, p2;
   temporal_period(temp, &p1);
-  periodset_to_period_internal(ps, &p2);
+  periodset_period(ps, &p2);
   bool result = func(&p1, &p2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -1072,7 +1116,7 @@ boxop_number_tnumber(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TBOX box1, box2;
-  number_to_tbox_internal(value, basetypid, &box1);
+  number_tbox(value, basetypid, &box1);
   temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
@@ -1094,7 +1138,7 @@ boxop_tnumber_number(FunctionCallInfo fcinfo,
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  number_to_tbox_internal(value, basetypid, &box2);
+  number_tbox(value, basetypid, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -1121,7 +1165,7 @@ boxop_range_tnumber(FunctionCallInfo fcinfo,
     PG_RETURN_BOOL(func == &contained_tbox_tbox_internal);
   Temporal *temp = PG_GETARG_TEMPORAL(1);
   TBOX box1, box2;
-  range_to_tbox_internal(range, &box1);
+  range_tbox(range, &box1);
   temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(range, 0);
@@ -1151,7 +1195,7 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
     PG_RETURN_BOOL(func == &contains_tbox_tbox_internal);
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  range_to_tbox_internal(range, &box2);
+  range_tbox(range, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(range, 1);

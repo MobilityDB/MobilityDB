@@ -61,7 +61,7 @@
 #if POSTGIS_VERSION_NUMBER < 30000
 
 #define CIRC_NODE_SIZE 8
-#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *)PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
+#define PG_GETARG_GSERIALIZED_P_COPY(varno) ((GSERIALIZED *) PG_DETOAST_DATUM_COPY(PG_GETARG_DATUM(varno)))
 
 extern int ptarray_has_z(const POINTARRAY *pa);
 extern int ptarray_has_m(const POINTARRAY *pa);

@@ -92,9 +92,9 @@ typedef struct
  * fmgr macros for time types
  */
 
-#define DatumGetTimestampSet(X)    ((TimestampSet *) DatumGetPointer(X))
+#define DatumGetTimestampSet(X)    ((TimestampSet *) PG_DETOAST_DATUM(X))
 #define TimestampSetGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_TIMESTAMPSET(X)  DatumGetTimestampSet(PG_GETARG_POINTER(X))
+#define PG_GETARG_TIMESTAMPSET(X)  ((TimestampSet *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_TIMESTAMPSET(X)  PG_RETURN_POINTER(X)
 
 #define DatumGetPeriod(X)          ((Period *) DatumGetPointer(X))
@@ -102,9 +102,9 @@ typedef struct
 #define PG_GETARG_PERIOD(X)        DatumGetPeriod(PG_GETARG_POINTER(X))
 #define PG_RETURN_PERIOD(X)        PG_RETURN_POINTER(X)
 
-#define DatumGetPeriodSet(X)       ((PeriodSet *) DatumGetPointer(X))
+#define DatumGetPeriodSet(X)       ((PeriodSet *) PG_DETOAST_DATUM(X))
 #define PeriodSetGetDatum(X)       PointerGetDatum(X)
-#define PG_GETARG_PERIODSET(X)     DatumGetPeriodSet(PG_GETARG_POINTER(X))
+#define PG_GETARG_PERIODSET(X)     ((PeriodSet *) PG_GETARG_VARLENA_P(X))
 #define PG_RETURN_PERIODSET(X)     PG_RETURN_POINTER(X)
 
 /*****************************************************************************/

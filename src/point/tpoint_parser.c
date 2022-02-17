@@ -228,7 +228,7 @@ tpointinst_parse(char **str, Oid basetype, bool end, bool make, int *tpoint_srid
   p_whitespace(str);
   /* The next instruction will throw an exception if it fails */
   Datum geo = basetype_parse(str, basetype);
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geo);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
   ensure_point_type(gs);
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);

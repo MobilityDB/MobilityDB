@@ -394,7 +394,7 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
  * Transform the value to a temporal box (internal function only)
  */
 void
-number_to_tbox_internal(Datum value, Oid basetypid, TBOX *box)
+number_tbox(Datum value, Oid basetypid, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -412,7 +412,7 @@ number_to_tbox_internal(Datum value, Oid basetypid, TBOX *box)
  * Transform the integer to a temporal box (internal function)
  */
 void
-int_to_tbox_internal(int i, TBOX *box)
+int_tbox(int i, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -431,7 +431,7 @@ int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TBOX *result = palloc(sizeof(TBOX));
-  int_to_tbox_internal(i, result);
+  int_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -439,7 +439,7 @@ int_to_tbox(PG_FUNCTION_ARGS)
  * Transform the float to a temporal box (internal function)
  */
 void
-float_to_tbox_internal(double d, TBOX *box)
+float_tbox(double d, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -458,7 +458,7 @@ float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TBOX *result = palloc(sizeof(TBOX));
-  float_to_tbox_internal(d, result);
+  float_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -472,7 +472,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
   TBOX *result = palloc(sizeof(TBOX));
-  float_to_tbox_internal(d, result);
+  float_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -480,7 +480,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
  * Transform the range to a temporal box (internal function)
  */
 void
-range_to_tbox_internal(const RangeType *range, TBOX *box)
+range_tbox(const RangeType *range, TBOX *box)
 {
   ensure_tnumber_range_type(range->rangetypid);
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -508,7 +508,7 @@ range_to_tbox(PG_FUNCTION_ARGS)
   if (flags & RANGE_EMPTY)
     PG_RETURN_NULL();
   TBOX *result = palloc(sizeof(TBOX));
-  range_to_tbox_internal(range, result);
+  range_tbox(range, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -516,7 +516,7 @@ range_to_tbox(PG_FUNCTION_ARGS)
  * Transform the timestamp to a temporal box (internal function)
  */
 void
-timestamp_to_tbox_internal(TimestampTz t, TBOX *box)
+timestamp_tbox(TimestampTz t, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -535,7 +535,7 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   TBOX *result = palloc(sizeof(TBOX));
-  timestamp_to_tbox_internal(t, result);
+  timestamp_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -543,7 +543,7 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
  * Transform the period set to a temporal box (internal function)
  */
 void
-timestampset_to_tbox_internal(const TimestampSet *ts, TBOX *box)
+timestampset_tbox(const TimestampSet *ts, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -555,6 +555,24 @@ timestampset_to_tbox_internal(const TimestampSet *ts, TBOX *box)
   return;
 }
 
+/**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_tbox_slice(Datum tsdatum, TBOX *box)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_tbox(ts, box);
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(timestampset_to_tbox);
 /**
  * Transform the period set to a temporal box
@@ -562,10 +580,9 @@ PG_FUNCTION_INFO_V1(timestampset_to_tbox);
 PGDLLEXPORT Datum
 timestampset_to_tbox(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  Datum tsdatum = PG_GETARG_DATUM(0);
   TBOX *result = palloc(sizeof(TBOX));
-  timestampset_to_tbox_internal(ts, result);
-  PG_FREE_IF_COPY(ts, 0);
+  timestampset_tbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -573,7 +590,7 @@ timestampset_to_tbox(PG_FUNCTION_ARGS)
  * Transform the period to a temporal box (internal function)
  */
 void
-period_to_tbox_internal(const Period *p, TBOX *box)
+period_tbox(const Period *p, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -593,7 +610,7 @@ period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
   TBOX *result = palloc(sizeof(TBOX));
-  period_to_tbox_internal(p, result);
+  period_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -601,7 +618,7 @@ period_to_tbox(PG_FUNCTION_ARGS)
  * Transform the period set to a temporal box (internal function)
  */
 void
-periodset_to_tbox_internal(const PeriodSet *ps, TBOX *box)
+periodset_tbox(const PeriodSet *ps, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
@@ -613,6 +630,24 @@ periodset_to_tbox_internal(const PeriodSet *ps, TBOX *box)
   return;
 }
 
+/**
+ * Peak into a period set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+periodset_tbox_slice(Datum psdatum, TBOX *box)
+{
+  PeriodSet *ps = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
+    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+      time_max_header_size());
+  else
+    ps = (PeriodSet *) psdatum;
+  periodset_tbox(ps, box);
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(periodset_to_tbox);
 /**
  * Transform the period set to a temporal box
@@ -620,10 +655,9 @@ PG_FUNCTION_INFO_V1(periodset_to_tbox);
 PGDLLEXPORT Datum
 periodset_to_tbox(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  Datum psdatum = PG_GETARG_DATUM(0);
   TBOX *result = palloc(sizeof(TBOX));
-  periodset_to_tbox_internal(ps, result);
-  PG_FREE_IF_COPY(ps, 0);
+  periodset_tbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -736,10 +770,9 @@ PG_FUNCTION_INFO_V1(tnumber_to_tbox);
 PGDLLEXPORT Datum
 tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  TBOX *result = palloc0(sizeof(TBOX));
-  temporal_bbox(temp, result);
-  PG_FREE_IF_COPY(temp, 0);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -53,9 +53,8 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    STBOX *box = palloc0(sizeof(STBOX));
-    temporal_bbox(temp, box);
+    STBOX *box = palloc(sizeof(STBOX));
+    temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -91,10 +90,9 @@ PG_FUNCTION_INFO_V1(tnpoint_spgist_compress);
 PGDLLEXPORT Datum
 tnpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(temp, result);
-  PG_FREE_IF_COPY(temp, 0);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  STBOX *result = palloc(sizeof(STBOX));
+  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_STBOX_P(result);
 }
 

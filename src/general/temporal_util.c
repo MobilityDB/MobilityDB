@@ -293,37 +293,6 @@ type_has_precomputed_trajectory(Oid basetypid)
 }
 #endif
 
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-base_type_without_bbox(Oid basetypid)
-{
-  if (basetypid == type_oid(T_DOUBLE2) || basetypid == type_oid(T_DOUBLE3) ||
-      basetypid == type_oid(T_DOUBLE4))
-    return true;
-  return false;
-}
-
-/**
- * Returns the size of the bounding box
- */
-size_t
-temporal_bbox_size(Oid basetypid)
-{
-  if (talpha_base_type(basetypid))
-    return sizeof(Period);
-  if (tnumber_base_type(basetypid))
-    return sizeof(TBOX);
-  if (tspatial_base_type(basetypid))
-    return sizeof(STBOX);
-  /* Types without bounding box, such as tdoubleN, must be explicity stated */
-  if (base_type_without_bbox(basetypid))
-    return 0;
-  elog(ERROR, "unknown temporal_bbox_size function for base type: %d", basetypid);
-}
-
 /*****************************************************************************
  * Oid functions
  *****************************************************************************/

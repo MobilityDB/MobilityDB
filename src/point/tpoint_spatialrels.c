@@ -292,12 +292,12 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
   {
     GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
     if (gserialized_get_type(gstraj) != COLLECTIONTYPE)
-      POSTGIS_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
+      PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
     else /* type == COLLECTIONTYPE */
     {
       bool found = false;
       LWGEOM *lwtraj = lwgeom_from_gserialized(gstraj);
-      POSTGIS_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
+      PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
       LWCOLLECTION *coll = lwgeom_as_lwcollection(lwtraj);
       int ngeoms = coll->ngeoms;
       for (int i = 0; i < ngeoms; i++)
@@ -666,7 +666,7 @@ touches_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
     result = spatialrel_tpoint_geo(temp, gsbound, (Datum) NULL,
       func, 2, INVERT_NO, false);
   }
-  POSTGIS_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
+  PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
   pfree(DatumGetPointer(bound));
   return result;
 }

@@ -229,9 +229,9 @@ NAD_tnumber_base_internal(Temporal *temp, Datum value, Oid basetypid)
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
   if (basetypid == INT4OID)
-    int_to_tbox_internal(DatumGetInt32(value), &box2);
+    int_tbox(DatumGetInt32(value), &box2);
   else /* basetypid == FLOAT8OID */
-    float_to_tbox_internal(DatumGetFloat8(value), &box2);
+    float_tbox(DatumGetFloat8(value), &box2);
   return NAD_tbox_tbox_internal(&box1, &box2);
 }
 

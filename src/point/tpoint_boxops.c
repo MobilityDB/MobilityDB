@@ -119,7 +119,7 @@ tgeogpointinstarr_stbox(const TInstant **instants, int count, bool linear,
   box->tmax = instants[count - 1]->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   MOBDB_FLAGS_SET_GEODETIC(box->flags, true);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return;
 }

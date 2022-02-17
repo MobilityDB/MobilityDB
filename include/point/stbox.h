@@ -136,8 +136,10 @@ extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
 extern bool geo_stbox(const GSERIALIZED *gs, STBOX *box);
 extern void timestamp_stbox(TimestampTz t, STBOX *box);
 extern void timestampset_stbox(const TimestampSet *ps, STBOX *box);
+extern void timestampset_stbox_slice(Datum tsdatum, STBOX *box);
 extern void period_stbox(const Period *p, STBOX *box);
 extern void periodset_stbox(const PeriodSet *ps, STBOX *box);
+extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
 
 /* Accessor functions */
 

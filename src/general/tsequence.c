@@ -2929,7 +2929,7 @@ tnumberseq_restrict_range2(const TSequence *seq, const RangeType *range,
   /* Bounding box test */
   TBOX box1, box2;
   tsequence_bbox(seq, &box1);
-  range_to_tbox_internal(range, &box2);
+  range_tbox(range, &box2);
   if (!overlaps_tbox_tbox_internal(&box1, &box2))
   {
     if (atfunc)

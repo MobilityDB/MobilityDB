@@ -294,6 +294,8 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
     timestampset_stbox(ts, result);
     PG_FREE_IF_COPY(ts, 1);
+    // Datum tsdatum = PG_GETARG_DATUM(1);
+    // timestampset_stbox_slice(tsdatum, result);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
@@ -305,6 +307,8 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     PeriodSet *ps = PG_GETARG_PERIODSET(1);
     periodset_stbox(ps, result);
     PG_FREE_IF_COPY(ps, 1);
+    // Datum psdatum = PG_GETARG_DATUM(1);
+    // periodset_stbox_slice(psdatum, result);
   }
   else if (subtype == type_oid(T_STBOX))
   {
@@ -320,6 +324,10 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
       return false;
     temporal_bbox(temp, result);
     PG_FREE_IF_COPY(temp, 1);
+    // if (PG_ARGISNULL(1))
+      // return false;
+    // Datum tempdatum = PG_GETARG_DATUM(1);
+    // temporal_bbox_slice(tempdatum, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", subtype);
@@ -411,9 +419,8 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    STBOX *box = palloc0(sizeof(STBOX));
-    temporal_bbox(temp, box);
+    STBOX *box = palloc(sizeof(STBOX));
+    temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);

@@ -208,7 +208,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
   if (tnumber_base_type(subtype))
   {
     Datum value = PG_GETARG_DATUM(1);
-    number_to_tbox_internal(value, subtype, result);
+    number_tbox(value, subtype, result);
   }
   else if (tnumber_range_type(subtype))
   {
@@ -223,30 +223,34 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
     char flags = range_get_flags(range);
     if (flags & RANGE_EMPTY)
       return false;
-    range_to_tbox_internal(range, result);
+    range_tbox(range, result);
     PG_FREE_IF_COPY(range, 1);
   }
   else if (subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-    timestamp_to_tbox_internal(t, result);
+    timestamp_tbox(t, result);
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-    timestampset_to_tbox_internal(ts, result);
-    PG_FREE_IF_COPY(ts, 1);
+    // TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+    // timestampset_tbox(ts, result);
+    // PG_FREE_IF_COPY(ts, 1);
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_tbox_slice(tsdatum, result);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
     Period *p = PG_GETARG_PERIOD(1);
-    period_to_tbox_internal(p, result);
+    period_tbox(p, result);
   }
   else if (subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = PG_GETARG_PERIODSET(1);
-    periodset_to_tbox_internal(ps, result);
-    PG_FREE_IF_COPY(ps, 1);
+    // PeriodSet *ps = PG_GETARG_PERIODSET(1);
+    // periodset_tbox(ps, result);
+    // PG_FREE_IF_COPY(ps, 1);
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_tbox_slice(psdatum, result);
   }
   else if (subtype == type_oid(T_TBOX))
   {
@@ -257,11 +261,15 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
   }
   else if (tnumber_type(subtype))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
+    // Temporal *temp = PG_GETARG_TEMPORAL(1);
+    // if (temp == NULL)
+      // return false;
+    // temporal_bbox(temp, result);
+    // PG_FREE_IF_COPY(temp, 1);
+    if (PG_ARGISNULL(1))
       return false;
-    temporal_bbox(temp, result);
-    PG_FREE_IF_COPY(temp, 1);
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", subtype);
@@ -353,15 +361,14 @@ PG_FUNCTION_INFO_V1(tnumber_gist_compress);
 PGDLLEXPORT Datum
 tnumber_gist_compress(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    TBOX *box = palloc0(sizeof(TBOX));
-    temporal_bbox(temp, box);
-    gistentryinit(*retval, PointerGetDatum(box),
-      entry->rel, entry->page, entry->offset, false);
+    TBOX *box = palloc(sizeof(TBOX));
+    temporal_bbox_slice(entry->key, box);
+    gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
+      entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
   PG_RETURN_POINTER(entry);

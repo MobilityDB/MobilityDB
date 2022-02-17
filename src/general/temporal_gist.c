@@ -54,18 +54,15 @@ PGDLLEXPORT Datum
 temporal_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-
   if (entry->leafkey)
   {
     GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    Period *period = palloc0(sizeof(Period));
-    temporal_bbox(temp, period);
-    gistentryinit(*retval, PointerGetDatum(period),
-      entry->rel, entry->page, entry->offset, false);
+    Period *period = palloc(sizeof(Period));
+    temporal_bbox_slice(entry->key, period);
+    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
+      entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-
   PG_RETURN_POINTER(entry);
 }
 
