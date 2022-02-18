@@ -279,7 +279,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     result = palloc(sizeof(TSequence *));
     result[0] = tsequence_from_base_internal(datum_yes, BOOLOID,
       &seq->period, STEP);
-    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
+    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
     *count = 1;
     return result;
@@ -510,7 +510,7 @@ tinterrel_geo_tpoint(FunctionCallInfo fcinfo, bool tinter)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -535,7 +535,7 @@ tinterrel_geo_tpoint(FunctionCallInfo fcinfo, bool tinter)
 static Datum
 tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
@@ -1335,7 +1335,7 @@ tcontains_geo_tpoint_internal(GSERIALIZED *gs, const Temporal *temp,
     Temporal *not_inter_bound = tnot_tbool_internal(inter_bound);
     result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
     pfree(inter);
-    POSTGIS_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
+    PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
     pfree(DatumGetPointer(bound));
     pfree(inter_bound);
     pfree(not_inter_bound);
@@ -1364,7 +1364,7 @@ tcontains_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -1454,7 +1454,7 @@ ttouches_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs,
   {
     result = tinterrel_tpoint_geo_internal(temp, gsbound, TINTERSECTS, restr,
       atvalue);
-    POSTGIS_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
+    PG_FREE_IF_COPY_P(gsbound, DatumGetPointer(bound));
     pfree(DatumGetPointer(bound));
   }
   else
@@ -1481,7 +1481,7 @@ ttouches_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -1508,7 +1508,7 @@ ttouches_tpoint_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -1591,7 +1591,7 @@ tdwithin_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
@@ -1621,7 +1621,7 @@ tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum dist = PG_GETARG_DATUM(2);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
@@ -1699,8 +1699,8 @@ PG_FUNCTION_INFO_V1(tdwithin_tpoint_tpoint);
 PGDLLEXPORT Datum
 tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   bool restr = false;
   Datum atvalue = (Datum) NULL;

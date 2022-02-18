@@ -40,12 +40,16 @@
 #include <utils/rangetypes.h>
 
 #include "temporal.h"
+#include "period.h"
 #include "tbox.h"
+#include "point/stbox.h"
 
 /*****************************************************************************/
 
 /* Functions on generic bounding boxes of temporal types */
 
+extern size_t temporal_max_bbox_size();
+extern uint32_t temporal_max_header_size(void);
 extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid);
 extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid);
 extern void temporal_bbox_expand(void *box1, const void *box2, Oid basetypid);
@@ -54,6 +58,7 @@ extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
 
 /* Compute the bounding box at the creation of temporal values */
 
+extern size_t temporal_bbox_size(Oid basetypid);
 extern void tinstant_make_bbox(const TInstant *inst, void *bbox);
 extern void tinstantset_make_bbox(const TInstant **inst, int count, void *bbox);
 extern void tsequence_make_bbox(const TInstant** inst, int count,

@@ -601,7 +601,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
      * This changes wrt the original PostGIS function. We get a temporal
      * point while the original function gets a geometry.
      */
-    temp = DatumGetTemporal(datum);
+    temp = DatumGetTemporalP(datum);
 
     /* TO VERIFY */
     is_copy = VARATT_IS_EXTENDED(temp);
@@ -993,7 +993,7 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     /* Get temporal point */
-    temp = DatumGetTemporal(value);
+    temp = DatumGetTemporalP(value);
 
     /* TO VERIFY */
     is_copy = VARATT_IS_EXTENDED(temp);

@@ -59,35 +59,47 @@
  *****************************************************************************/
 
 /**
+ * Returns a pointer to the bounding box of the temporal value
+ */
+void *
+tinstantset_bbox_ptr(const TInstantSet *ti)
+{
+  return (void *)(((char *)ti) + double_pad(sizeof(TInstantSet)));
+}
+
+/**
+ * Copy in the second argument the bounding box of the temporal value
+ */
+void
+tinstantset_bbox(const TInstantSet *ti, void *box)
+{
+  memset(box, 0, ti->bboxsize);
+  memcpy(box, tinstantset_bbox_ptr(ti), ti->bboxsize);
+  return;
+}
+
+/**
+ * Returns a pointer to the offsets array of the temporal value
+ */
+static size_t *
+tinstantset_offsets_ptr(const TInstantSet *ti)
+{
+  return (size_t *)(((char *)ti) + double_pad(sizeof(TInstantSet)) +
+    double_pad(ti->bboxsize));
+}
+
+/**
  * Returns the n-th instant of the temporal value
  */
 const TInstant *
 tinstantset_inst_n(const TInstantSet *ti, int index)
 {
-  return (TInstant *) (
-    (char *)(&ti->offsets[ti->count + 1]) +   /* start of data */
-      ti->offsets[index]);          /* offset */
-}
-
-/**
- * Returns a pointer to the precomputed bounding box of the temporal value
- */
-void *
-tinstantset_bbox_ptr(const TInstantSet *ti)
-{
-  return (char *)(&ti->offsets[ti->count + 1]) +  /* start of data */
-    ti->offsets[ti->count];            /* offset */
-}
-
-/**
- * Copy in the first argument the bounding box of the temporal value
- */
-void
-tinstantset_bbox(const TInstantSet *ti, void *box)
-{
-  void *box1 = tinstantset_bbox_ptr(ti);
-  size_t bboxsize = temporal_bbox_size(ti->basetypid);
-  memcpy(box, box1, bboxsize);
+  return (TInstant *)(
+    /* start of data */
+    ((char *)ti) + double_pad(sizeof(TInstantSet)) + ti->bboxsize +
+      ti->count * sizeof(size_t) +
+      /* offset */
+      (tinstantset_offsets_ptr(ti))[index]);
 }
 
 /**
@@ -111,19 +123,22 @@ tinstantset_make1(const TInstant **instants, int count)
 {
   /* Get the bounding box size */
   size_t bboxsize = temporal_bbox_size(instants[0]->basetypid);
-  size_t memsize = double_pad(bboxsize);
-  /* Add the size of composing instants */
+
+  /* Compute the size of the temporal instant set */
+  /* Bounding box size */
+  size_t memsize = bboxsize;
+  /* Size of composing instants */
   for (int i = 0; i < count; i++)
     memsize += double_pad(VARSIZE(instants[i]));
-  /* Add the size of the struct and the offset array
-   * Notice that the first offset is already declared in the struct */
-  size_t pdata = double_pad(sizeof(TInstantSet) + count * sizeof(size_t));
+  /* Size of the struct and the offset array */
+  memsize +=  double_pad(sizeof(TInstantSet)) + count * sizeof(size_t);
   /* Create the TInstantSet */
-  TInstantSet *result = palloc0(pdata + memsize);
-  SET_VARSIZE(result, pdata + memsize);
+  TInstantSet *result = palloc0(memsize);
+  SET_VARSIZE(result, memsize);
   result->count = count;
   result->basetypid = instants[0]->basetypid;
   result->subtype = INSTANTSET;
+  result->bboxsize = bboxsize;
   bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
   MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
@@ -135,25 +150,26 @@ tinstantset_make1(const TInstant **instants, int count)
     MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
   }
   /* Initialization of the variable-length part */
-  size_t pos = 0;
-  for (int i = 0; i < count; i++)
-  {
-    memcpy(((char *)result) + pdata + pos, instants[i],
-      VARSIZE(instants[i]));
-    result->offsets[i] = pos;
-    pos += double_pad(VARSIZE(instants[i]));
-  }
   /*
-   * Precompute the bounding box
-   * Only external types have precomputed bounding box, internal types such
-   * as double2, double3, or double4 do not have one
+   * Compute the bounding box
+   * Only external types have bounding box, internal types such
+   * as double2, double3, or double4 do not have bounding box
    */
   if (bboxsize != 0)
   {
-    void *bbox = ((char *) result) + pdata + pos;
-    tinstantset_make_bbox(instants, count, bbox);
-    result->offsets[count] = pos;
+    tinstantset_make_bbox(instants, count, tinstantset_bbox_ptr(result));
   }
+  /* Store the composing instants */
+  size_t pdata = double_pad(sizeof(TInstantSet)) + double_pad(bboxsize) +
+    count * sizeof(size_t);
+  size_t pos = 0;
+  for (int i = 0; i < count; i++)
+  {
+    memcpy(((char *)result) + pdata + pos, instants[i], VARSIZE(instants[i]));
+    (tinstantset_offsets_ptr(result))[i] = pos;
+    pos += double_pad(VARSIZE(instants[i]));
+  }
+
   return result;
 }
 
@@ -162,18 +178,17 @@ tinstantset_make1(const TInstant **instants, int count)
  * instant values
  *
  * For example, the memory structure of a temporal instant set value
- * with 2 instants is as follows
+ * with two instants is as follows
  * @code
- *  ------------------------------------------------------
- *  ( TInstantSet | offset_0 | offset_1 | offset_2 )_X | ...
- *  ------------------------------------------------------
- *  ----------------------------------------------------------
- *  ( TInstant_0 )_X | ( TInstant_1 )_X | ( bbox )_X |
- *  ----------------------------------------------------------
+ *  -----------------------------------------------------------
+ *  ( TInstantSet )_X | ( bbox )_X | offset_0 | offset_1 | ...
+ *  -----------------------------------------------------------
+ *  -------------------------------------
+ *  ( TInstant_0 )_X | ( TInstant_1 )_X |
+ *  -------------------------------------
  * @endcode
  * where the `_X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding instants, and `offset_2`
- * is the offset for the bounding box.
+ * `offset_1` are offsets for the corresponding instants
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array
@@ -466,11 +481,7 @@ tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
 void
 tinstantset_write(const TInstantSet *ti, StringInfo buf)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, (uint32) ti->count, 4);
-#else
   pq_sendint32(buf, ti->count);
-#endif
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
@@ -519,7 +530,7 @@ PGDLLEXPORT Datum
 tinstantset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TInstantSet *result = tinstantset_from_base_internal(value, basetypid, ts);
   DATUM_FREE_IF_COPY(value, basetypid, 0);

@@ -66,9 +66,9 @@ bool
 npoint_to_stbox_internal(const npoint *np, STBOX *box)
 {
   Datum geom = npoint_as_geom_internal(DatumGetNpoint(np));
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -134,7 +134,7 @@ tnpointinstarr_linear_to_stbox(const TInstant **instants, int count,
   Datum geom = (posmin == 0 && posmax == 1) ? line :
     call_function3(LWGEOM_line_substring, line, Float8GetDatum(posmin),
       Float8GetDatum(posmax));
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   geo_stbox(gs, box);
   box->tmin = tmin;
   box->tmax = tmax;
@@ -172,7 +172,7 @@ PGDLLEXPORT Datum
 npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_to_stbox_internal(np, result);
   PG_RETURN_POINTER(result);
 }
@@ -186,9 +186,9 @@ bool
 nsegment_to_stbox_internal(STBOX *box, const nsegment *ns)
 {
   Datum geom = nsegment_as_geom_internal(DatumGetNsegment(ns));
-  GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(geom);
+  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -201,7 +201,7 @@ PGDLLEXPORT Datum
 nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   nsegment_to_stbox_internal(result, ns);
   PG_RETURN_POINTER(result);
 }
@@ -229,7 +229,7 @@ npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_timestamp_stbox(np, t, result);
   PG_RETURN_POINTER(result);
 }
@@ -257,8 +257,8 @@ PGDLLEXPORT Datum
 npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
-  Period *p = PG_GETARG_PERIOD(1);
-  STBOX *result = palloc0(sizeof(STBOX));
+  Period *p = PG_GETARG_PERIOD_P(1);
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_period_stbox(np, p, result);
   PG_RETURN_POINTER(result);
 }
@@ -272,8 +272,8 @@ PG_FUNCTION_INFO_V1(tnpoint_to_stbox);
 PGDLLEXPORT Datum
 tnpoint_to_stbox(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  STBOX *result = palloc0(sizeof(STBOX));
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   temporal_bbox(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -294,7 +294,7 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   npoint *np = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   /* Returns an error if the geometry is not found, is null, or is empty */
@@ -315,7 +315,7 @@ Datum
 boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;

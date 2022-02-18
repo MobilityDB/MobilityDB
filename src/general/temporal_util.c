@@ -279,51 +279,6 @@ ensure_tgeo_base_type(Oid basetypid)
   return;
 }
 
-#ifdef STORE_TRAJ
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-type_has_precomputed_trajectory(Oid basetypid)
-{
-  if (tgeo_base_type(basetypid))
-    return true;
-  return false;
-}
-#endif
-
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-base_type_without_bbox(Oid basetypid)
-{
-  if (basetypid == type_oid(T_DOUBLE2) || basetypid == type_oid(T_DOUBLE3) ||
-      basetypid == type_oid(T_DOUBLE4))
-    return true;
-  return false;
-}
-
-/**
- * Returns the size of the bounding box
- */
-size_t
-temporal_bbox_size(Oid basetypid)
-{
-  if (talpha_base_type(basetypid))
-    return sizeof(Period);
-  if (tnumber_base_type(basetypid))
-    return sizeof(TBOX);
-  if (tspatial_base_type(basetypid))
-    return sizeof(STBOX);
-  /* Types without bounding box, such as tdoubleN, must be explicity stated */
-  if (base_type_without_bbox(basetypid))
-    return 0;
-  elog(ERROR, "unknown temporal_bbox_size function for base type: %d", basetypid);
-}
-
 /*****************************************************************************
  * Oid functions
  *****************************************************************************/
@@ -1216,13 +1171,8 @@ period_sort_cmp(const Period **l, const Period **r)
 static int
 range_sort_cmp(const RangeType **l, const RangeType **r)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  return DatumGetInt32(call_function2(range_cmp, RangeTypeGetDatum(*l),
-    RangeTypeGetDatum(*r)));
-#else
   return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
     RangeTypePGetDatum(*r)));
-#endif
 }
 
 /**

@@ -142,7 +142,7 @@ PG_FUNCTION_INFO_V1(tpoint_as_text);
 PGDLLEXPORT Datum
 tpoint_as_text(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *result = tpoint_as_text_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -179,7 +179,7 @@ PG_FUNCTION_INFO_V1(tpoint_as_ewkt);
 PGDLLEXPORT Datum
 tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *result = tpoint_as_ewkt_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
@@ -712,7 +712,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
   char *srs = NULL;
 
   /* Get the temporal point */
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
 
   /* Retrieve precision if any (default is max) */
   if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
@@ -1431,7 +1431,7 @@ ensure_valid_endian_flag(const char *endian)
 Datum
 tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   uint8_t *wkb;
   size_t wkb_size;
   uint8_t variant = 0;
@@ -1494,7 +1494,7 @@ PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
 PGDLLEXPORT Datum
 tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *hexwkb;
   size_t hexwkb_size;
   uint8_t variant = 0;

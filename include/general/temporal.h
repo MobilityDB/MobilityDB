@@ -264,12 +264,13 @@ typedef struct
  */
 typedef struct
 {
-  int32        vl_len_;       /**< varlena header (do not touch directly!) */
-  int16        subtype;       /**< subtype */
-  int16        flags;         /**< flags */
-  Oid          basetypid;     /**< base type's OID (4 bytes) */
-  int32        count;         /**< number of TInstant elements */
-  size_t       offsets[1];    /**< beginning of variable-length data */
+  int32         vl_len_;       /**< varlena header (do not touch directly!) */
+  int16         subtype;       /**< subtype */
+  int16         flags;         /**< flags */
+  Oid           basetypid;     /**< base type's OID (4 bytes) */
+  int32         count;         /**< number of TInstant elements */
+  int16         bboxsize;     /**< size of the bounding box */
+  /**< beginning of variable-length data */
 } TInstantSet;
 
 /**
@@ -283,7 +284,8 @@ typedef struct
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
   Period        period;       /**< time span (24 bytes) */
-  size_t        offsets[1];   /**< beginning of variable-length data */
+  int16         bboxsize;     /**< size of the bounding box */
+  /**< beginning of variable-length data */
 } TSequence;
 
 /**
@@ -297,7 +299,8 @@ typedef struct
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
-  size_t        offsets[1];   /**< beginning of variable-length data */
+  int16         bboxsize;     /**< size of the bounding box */
+  /**< beginning of variable-length data */
 } TSequenceSet;
 
 /**
@@ -397,13 +400,13 @@ typedef struct
 
 /* Temporal types */
 
-#define DatumGetTemporal(X)       ((Temporal *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstant(X)       ((TInstant *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstantSet(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequence(X)      ((TSequence *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequenceSet(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstantP(X)       ((TInstant *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstantSetP(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceP(X)      ((TSequence *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceSetP(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
 
-#define PG_GETARG_TEMPORAL(X)     ((Temporal *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
 
 #define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
@@ -421,18 +424,20 @@ typedef struct
   } while (0)
 
 /*
- * Define POSTGIS_FREE_IF_COPY_P if POSTGIS is not loaded.
  * This macro is based on PG_FREE_IF_COPY, except that it accepts two pointers.
  * See PG_FREE_IF_COPY comment in src/include/fmgr.h in postgres source code
  * for more details.
+ * This macro is the same as POSTGIS_FREE_IF_COPY_P.
  */
-#ifndef POSTGIS_FREE_IF_COPY_P
-#define POSTGIS_FREE_IF_COPY_P(ptrsrc, ptrori) \
+#define PG_FREE_IF_COPY_P(ptrsrc, ptrori) \
   do { \
     if ((Pointer) (ptrsrc) != (Pointer) (ptrori)) \
       pfree(ptrsrc); \
   } while (0)
-#endif
+
+#define PG_DATUM_NEEDS_DETOAST(datum) \
+  (VARATT_IS_EXTENDED((datum)) || VARATT_IS_EXTERNAL((datum)) || \
+   VARATT_IS_COMPRESSED((datum)))
 
 /*****************************************************************************/
 
@@ -474,6 +479,7 @@ extern void ensure_non_empty_array(ArrayType *array);
 
 extern void *temporal_bbox_ptr(const Temporal *temp);
 extern void temporal_bbox(const Temporal *temp, void *box);
+extern void temporal_bbox_slice(Datum tempdatum, void *box);
 extern Temporal *temporal_copy(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, TIntersection mode,

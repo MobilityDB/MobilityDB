@@ -147,7 +147,7 @@ stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
 STBOX *
 stbox_copy(const STBOX *box)
 {
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   memcpy(result, box, sizeof(STBOX));
   return result;
 }
@@ -389,11 +389,7 @@ stbox_out(PG_FUNCTION_ARGS)
 static void
 stbox_write(const STBOX *box, StringInfo buf)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, (uint32) box->flags, 4);
-#else
   pq_sendint32(buf, box->flags);
-#endif  
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
     pq_sendfloat8(buf, box->xmin);
@@ -405,11 +401,7 @@ stbox_write(const STBOX *box, StringInfo buf)
       pq_sendfloat8(buf, box->zmin);
       pq_sendfloat8(buf, box->zmax);
     }
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    pq_sendint(buf, (uint32) box->srid, 4);
-#else
     pq_sendint32(buf, box->srid);
-#endif
   }
   if (MOBDB_FLAGS_GET_T(box->flags))
   {
@@ -675,7 +667,7 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
   STBOX *box = PG_GETARG_STBOX_P(0);
   if (!MOBDB_FLAGS_GET_X(box->flags))
     elog(ERROR, "The box does not have XY(Z) dimensions");
-  GBOX *result = palloc0(sizeof(GBOX));
+  GBOX *result = (GBOX *) palloc0(sizeof(GBOX));
   stbox_gbox(box, result);
   PG_RETURN_POINTER(result);
 }
@@ -713,7 +705,7 @@ PGDLLEXPORT Datum
 stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  BOX3D *result = palloc0(sizeof(BOX3D));
+  BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
   stbox_box3d(box, result);
   PG_RETURN_POINTER(result);
 }
@@ -822,7 +814,7 @@ geo_to_stbox(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  STBOX *result = palloc(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, result);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
@@ -852,7 +844,7 @@ PGDLLEXPORT Datum
 timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  STBOX *result = palloc(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   timestamp_stbox(t, result);
   PG_RETURN_POINTER(result);
 }
@@ -873,6 +865,24 @@ timestampset_stbox(const TimestampSet *ts, STBOX *box)
   return;
 }
 
+/**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_stbox_slice(Datum tsdatum, STBOX *box)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_stbox(ts, box);
+  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(timestampset_to_stbox);
 /**
  * Transform a timestamp set to a spatiotemporal box
@@ -880,10 +890,9 @@ PG_FUNCTION_INFO_V1(timestampset_to_stbox);
 PGDLLEXPORT Datum
 timestampset_to_stbox(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  STBOX *result = palloc(sizeof(STBOX));
-  timestampset_stbox(ts, result);
-  PG_FREE_IF_COPY(ts, 0);
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  timestampset_stbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -909,8 +918,8 @@ PG_FUNCTION_INFO_V1(period_to_stbox);
 PGDLLEXPORT Datum
 period_to_stbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  STBOX *result = palloc(sizeof(STBOX));
+  Period *p = PG_GETARG_PERIOD_P(0);
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   period_stbox(p, result);
   PG_RETURN_POINTER(result);
 }
@@ -931,6 +940,24 @@ periodset_stbox(const PeriodSet *ps, STBOX *box)
   return;
 }
 
+/**
+ * Peak into a period set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+periodset_stbox_slice(Datum psdatum, STBOX *box)
+{
+  PeriodSet *ps = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
+    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
+      time_max_header_size());
+  else
+    ps = (PeriodSet *) psdatum;
+  periodset_stbox(ps, box);
+  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  return;
+}
+
 PG_FUNCTION_INFO_V1(periodset_to_stbox);
 /**
  * Transform a period set to a spatiotemporal box
@@ -938,10 +965,9 @@ PG_FUNCTION_INFO_V1(periodset_to_stbox);
 PGDLLEXPORT Datum
 periodset_to_stbox(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  STBOX *result = palloc(sizeof(STBOX));
-  periodset_stbox(ps, result);
-  PG_FREE_IF_COPY(ps, 0);
+  Datum psdatum = PG_GETARG_DATUM(0);
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  periodset_stbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -956,7 +982,7 @@ geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  STBOX *result = palloc(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, result);
   result->tmin = result->tmax = t;
   MOBDB_FLAGS_SET_T(result->flags, true);
@@ -974,8 +1000,8 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Period *p = PG_GETARG_PERIOD(1);
-  STBOX *result = palloc(sizeof(STBOX));
+  Period *p = PG_GETARG_PERIOD_P(1);
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, result);
   result->tmin = p->lower;
   result->tmax = p->upper;
@@ -1225,7 +1251,7 @@ stbox_transform(PG_FUNCTION_ARGS)
  * (internal function)
  */
 STBOX *
-stbox_expand_spatial_internal(STBOX *box, double d)
+stbox_expand_spatial_internal(const STBOX *box, double d)
 {
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
@@ -1258,7 +1284,7 @@ stbox_expand_spatial(PG_FUNCTION_ARGS)
  * (internal function)
  */
 STBOX *
-stbox_expand_temporal_internal(STBOX *box, Datum interval)
+stbox_expand_temporal_internal(const STBOX *box, Datum interval)
 {
   ensure_has_T_stbox(box);
   STBOX *result = stbox_copy(box);
@@ -2038,7 +2064,7 @@ stbox_extent_transfn(PG_FUNCTION_ARGS)
   /* Can't do anything with null inputs */
   if (!box1 && !box2)
     PG_RETURN_NULL();
-  STBOX *result = palloc0(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   /* One of the boxes is null, return the other one */
   if (!box1)
   {

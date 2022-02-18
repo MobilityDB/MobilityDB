@@ -340,11 +340,7 @@ range_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    RangeType *bounds = PG_GETARG_RANGE(0);
-#else
     RangeType *bounds = PG_GETARG_RANGE_P(0);
-#endif
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
@@ -495,7 +491,7 @@ period_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Period *bounds = PG_GETARG_PERIOD(0);
+    Period *bounds = PG_GETARG_PERIOD_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
 
@@ -960,7 +956,7 @@ temporal_time_split(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
 
@@ -1554,13 +1550,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
       if (j == first_bucket || j == last_bucket)
       {
         RangeType *bucketrange = range_make(bucket_lower, bucket_upper, true, false, basetypid);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-        RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
-          PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
-#else
         RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
           PointerGetDatum(segrange), PointerGetDatum(bucketrange)));
-#endif
         if (incr)
         {
           lower_inc1 = lower_inc(intersect);
@@ -1763,7 +1754,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Datum size = PG_GETARG_DATUM(1);
     Datum origin = PG_GETARG_DATUM(2);
 
@@ -1897,7 +1888,7 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Datum size = PG_GETARG_DATUM(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     Datum origin = PG_GETARG_DATUM(3);

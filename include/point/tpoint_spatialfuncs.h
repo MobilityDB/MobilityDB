@@ -166,10 +166,6 @@ extern Datum tpointinstarr_make_trajectory(const TInstant **instants,
 extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);
-#ifdef STORE_TRAJ
-extern void tpoint_trajectory_free(const Temporal *temp, Datum traj);
-extern Datum tpoint_trajectory_external(const Temporal *temp);
-#endif
 
 /* Functions for spatial reference systems */
 

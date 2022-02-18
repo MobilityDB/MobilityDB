@@ -37,11 +37,7 @@
 #include <assert.h>
 #include <math.h>
 #include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#else
 #include <catalog/pg_collation_d.h>
-#endif
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
@@ -478,13 +474,8 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
   hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
   for (i = 0; i < nhist; i++)
   {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    range_deserialize(typcache, DatumGetRangeType(hslot.values[i]),
-              &hist_lower[i], &hist_upper[i], &empty);
-#else
     range_deserialize(typcache, DatumGetRangeTypeP(hslot.values[i]),
               &hist_lower[i], &hist_upper[i], &empty);
-#endif
     /* The histogram should not contain any empty ranges */
     if (empty)
       elog(ERROR, "bounds histogram contains an empty range");
@@ -673,15 +664,11 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
   Oid consttype = ((Const *) other)->consttype;
 
   if (tnumber_range_type(consttype))
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    range_to_tbox_internal(DatumGetRangeType(((Const *) other)->constvalue), box);
-#else
-    range_to_tbox_internal(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
-#endif
+    range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
   else if (consttype == type_oid(T_TBOX))
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
   else if (tnumber_type(consttype))
-    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), box);
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
   return true;
@@ -852,11 +839,11 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, PeriodGetDatum(&period),
+      selec *= var_eq_const(vardata, period_oprid, PeriodPGetDatum(&period),
         false, false, false);
 #else
       selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
-        PeriodGetDatum(&period), false, false, false);
+        PeriodPGetDatum(&period), false, false, false);
 #endif
     }
   }

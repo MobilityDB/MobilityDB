@@ -119,7 +119,7 @@ tgeogpointinstarr_stbox(const TInstant **instants, int count, bool linear,
   box->tmax = instants[count - 1]->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   MOBDB_FLAGS_SET_GEODETIC(box->flags, true);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
   pfree(DatumGetPointer(traj));
   return;
 }
@@ -234,7 +234,7 @@ PG_FUNCTION_INFO_V1(tpoint_stboxes);
 PGDLLEXPORT Datum
 tpoint_stboxes(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
@@ -266,7 +266,7 @@ boxop_geo_tpoint(FunctionCallInfo fcinfo,
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   STBOX box1, box2;
   geo_stbox(gs, &box1);
   temporal_bbox(temp, &box2);
@@ -289,7 +289,7 @@ boxop_tpoint_geo(FunctionCallInfo fcinfo,
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX box1, box2;
   temporal_bbox(temp, &box1);
   geo_stbox(gs, &box2);
@@ -310,7 +310,7 @@ boxop_stbox_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   STBOX box1;
   temporal_bbox(temp, &box1);
   bool result = func(box, &box1);
@@ -328,7 +328,7 @@ Datum
 boxop_tpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
   STBOX box1;
   temporal_bbox(temp, &box1);
@@ -347,8 +347,8 @@ Datum
 boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   STBOX box1, box2;
   temporal_bbox(temp1, &box1);
   temporal_bbox(temp2, &box2);

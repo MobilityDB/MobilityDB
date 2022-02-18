@@ -156,7 +156,7 @@ nsegmentarr_to_geom_internal(nsegment **segments, int count)
   {
     Datum line = route_geom(segments[i]->rid);
     if (segments[i]->pos1 == 0 && segments[i]->pos2 == 1)
-      geoms[i] = PointerGetDatum(gserialized_copy((GSERIALIZED *)PG_DETOAST_DATUM(line)));
+      geoms[i] = PointerGetDatum(gserialized_copy((GSERIALIZED *) PG_DETOAST_DATUM(line)));
     else if (segments[i]->pos1 == segments[i]->pos2)
       geoms[i] = call_function2(LWGEOM_line_interpolate_point, line, Float8GetDatum(segments[i]->pos1));
     else
@@ -983,7 +983,7 @@ route_geom(int64 rid)
     if (!isNull)
     {
       /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
-      GSERIALIZED *gs = (GSERIALIZED *)PG_DETOAST_DATUM(line);
+      GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(line);
       result = (GSERIALIZED *)SPI_palloc(gs->size);
       memcpy(result, gs, gs->size);
     }

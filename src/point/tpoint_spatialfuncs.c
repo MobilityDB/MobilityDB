@@ -908,7 +908,7 @@ PG_FUNCTION_INFO_V1(tpoint_ever_eq);
 Datum
 tpoint_ever_eq(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
@@ -1194,7 +1194,7 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
   }
 
   Datum result = point_make(p.x, p.y, p.z, hasz, geodetic, srid);
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(start));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(start));
   return result;
 }
 
@@ -1291,7 +1291,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
   if (gserialized_is_empty(gs))
   {
-    POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
     return false;
   }
 
@@ -1653,19 +1653,6 @@ tpointinstarr_make_trajectory(const TInstant **instants, int count,
   return result;
 }
 
-#ifdef STORE_TRAJ
-/**
- * Copy the precomputed trajectory of a temporal sequence point
- */
-static Datum
-tpointseq_trajectory_copy(const TSequence *seq)
-{
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +  /* start of data */
-    seq->offsets[seq->count + 1];  /* offset */
-  return PointerGetDatum(gserialized_copy(traj));
-}
-#endif
-
 /**
  * Returns the trajectory of a temporal sequence point
  *
@@ -1677,11 +1664,6 @@ tpointseq_trajectory_copy(const TSequence *seq)
 Datum
 tpointseq_trajectory(const TSequence *seq)
 {
-#ifdef STORE_TRAJ
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +   /* start of data */
-    seq->offsets[seq->count + 1];  /* offset */
-  return PointerGetDatum(traj);
-#else
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tinstant_value_copy(tsequence_inst_n(seq, 0));
@@ -1708,7 +1690,6 @@ tpointseq_trajectory(const TSequence *seq)
     lwpoint_free(points[i]);
   pfree(points);
   return result;
-#endif
 }
 
 /**
@@ -1723,11 +1704,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-#ifdef STORE_TRAJ
-    return tpointseq_trajectory_copy(tsequenceset_seq_n(ts, 0));
-#else
     return tpointseq_trajectory(tsequenceset_seq_n(ts, 0));
-#endif
 
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ts->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
@@ -1813,39 +1790,6 @@ tpoint_trajectory_internal(const Temporal *temp)
   return result;
 }
 
-#ifdef STORE_TRAJ
-/**
- * Free the trajectory after a call to tpoint_trajectory_internal
- * when temporal sequence points have a precomputed trajectory
- */
-void
-tpoint_trajectory_free(const Temporal *temp, Datum traj)
-{
-  /* We do not need to free the trajectory for temporal point sequences */
-  if (temp->subtype != SEQUENCE)
-    pfree(DatumGetPointer(traj));
-}
-
-/**
- * Returns the trajectory of a temporal point (dispatch function)
- */
-Datum
-tpoint_trajectory_external(const Temporal *temp)
-{
-  Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
-    result = tpointinstset_trajectory((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
-    result = tpointseq_trajectory_copy((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = tpointseqset_trajectory((TSequenceSet *) temp);
-  return result;
-}
-#endif
-
 PG_FUNCTION_INFO_V1(tpoint_trajectory);
 /**
  * Returns the trajectory of a temporal point
@@ -1853,12 +1797,8 @@ PG_FUNCTION_INFO_V1(tpoint_trajectory);
 PGDLLEXPORT Datum
 tpoint_trajectory(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-#ifdef STORE_TRAJ
-  Datum result = tpoint_trajectory_external(temp);
-#else
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result = tpoint_trajectory_internal(temp);
-#endif
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
@@ -1933,7 +1873,7 @@ PG_FUNCTION_INFO_V1(tpoint_srid);
 PGDLLEXPORT Datum
 tpoint_srid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result = tpoint_srid_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -2016,12 +1956,6 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
       gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
       gserialized_set_srid(gs, srid);
     }
-#ifdef STORE_TRAJ
-    /* Set the SRID of the precomputed trajectory */
-    Datum traj = tpointseq_trajectory(seq);
-    gs = (GSERIALIZED *) DatumGetPointer(traj);
-    gserialized_set_srid(gs, srid);
-#endif
     /* Set the SRID of the bounding box */
     box = tsequence_bbox_ptr(seq);
     box->srid = srid;
@@ -2059,7 +1993,7 @@ PG_FUNCTION_INFO_V1(tpoint_set_srid);
 PGDLLEXPORT Datum
 tpoint_set_srid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 srid = PG_GETARG_INT32(1);
   Temporal *result = tpoint_set_srid_internal(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
@@ -2109,7 +2043,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
     pfree(DatumGetPointer(point));
   }
   pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
   lwmpoint_free(lwmpoint);
 
   return tinstantset_make_free(instants, ti->count, MERGE_NO);
@@ -2160,7 +2094,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);
   pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
   lwmpoint_free(lwmpoint);
 
   return tsequence_make_free(instants, seq->count,
@@ -2231,7 +2165,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points); pfree(instants);
   pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
-  POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
   lwmpoint_free(lwmpoint);
   return result;
 }
@@ -2243,7 +2177,7 @@ PG_FUNCTION_INFO_V1(tpoint_transform);
 PGDLLEXPORT Datum
 tpoint_transform(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum srid = PG_GETARG_DATUM(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -2418,7 +2352,7 @@ PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
 PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2431,7 +2365,7 @@ PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
 PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2795,7 +2729,7 @@ PG_FUNCTION_INFO_V1(tpoint_round);
 PGDLLEXPORT Datum
 tpoint_round(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum prec = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -2888,7 +2822,7 @@ PG_FUNCTION_INFO_V1(tpoint_get_x);
 PGDLLEXPORT Datum
 tpoint_get_x(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord_internal(temp, 'x');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2901,7 +2835,7 @@ PG_FUNCTION_INFO_V1(tpoint_get_y);
 PGDLLEXPORT Datum
 tpoint_get_y(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord_internal(temp, 'y');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2914,7 +2848,7 @@ PG_FUNCTION_INFO_V1(tpoint_get_z);
 PGDLLEXPORT Datum
 tpoint_get_z(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord_internal(temp, 'z');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2992,9 +2926,6 @@ tpointseq_length(const TSequence *seq)
     /* We are sure that the trajectory is a line */
     double result = DatumGetFloat8(call_function2(geography_length, traj,
       BoolGetDatum(true)));
-#ifndef STORE_TRAJ
-    pfree(DatumGetPointer(traj));
-#endif
     return result;
   }
 }
@@ -3019,7 +2950,7 @@ PG_FUNCTION_INFO_V1(tpoint_length);
 PGDLLEXPORT Datum
 tpoint_length(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -3104,7 +3035,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     {
       const TInstant *inst2 = tsequence_inst_n(seq, i);
       Datum value2 = tinstant_value(inst2);
-      if (datum_ne(value1, value2, inst1->basetypid))
+      if (! datum_point_eq(value1, value2))
         length += DatumGetFloat8(func(value1, value2));
       instants[i] = tinstant_make(Float8GetDatum(length), inst2->t,
         FLOAT8OID);
@@ -3115,10 +3046,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE);
 
-  for (int i = 1; i < seq->count; i++)
-    pfree(instants[i]);
-  pfree(instants);
-
+  pfree_array((void **) instants, seq->count);
   return result;
 }
 
@@ -3134,7 +3062,8 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     sequences[i] = tpointseq_cumulative_length(seq, length);
-    const TInstant *end = tsequence_inst_n(sequences[i], seq->count - 1);
+    /* sequences[i] may have less sequences than seq->count due to normalization */
+    const TInstant *end = tsequence_inst_n(sequences[i], sequences[i]->count - 1);
     length = DatumGetFloat8(tinstant_value(end));
   }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
@@ -3154,7 +3083,7 @@ PG_FUNCTION_INFO_V1(tpoint_cumulative_length);
 PGDLLEXPORT Datum
 tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   /* Store fcinfo into a global variable */
@@ -3239,7 +3168,7 @@ PG_FUNCTION_INFO_V1(tpoint_speed);
 PGDLLEXPORT Datum
 tpoint_speed(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -3435,7 +3364,7 @@ PG_FUNCTION_INFO_V1(tpoint_twcentroid);
 PGDLLEXPORT Datum
 tpoint_twcentroid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result = tpoint_twcentroid_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -3499,7 +3428,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     Datum value2 = tinstant_value(inst2);
     upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (datum_ne(value1, value2, seq->basetypid))
+    if (! datum_point_eq(value1, value2))
     {
       azimuth = func(value1, value2);
       instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);
@@ -3576,7 +3505,7 @@ PG_FUNCTION_INFO_V1(tpoint_azimuth);
 PGDLLEXPORT Datum
 tpoint_azimuth(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = NULL;
@@ -3904,7 +3833,7 @@ bearing_geo_tpoint(PG_FUNCTION_ARGS)
   ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
@@ -3927,7 +3856,7 @@ bearing_tpoint_geo(PG_FUNCTION_ARGS)
   ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
@@ -3972,8 +3901,8 @@ PG_FUNCTION_INFO_V1(bearing_tpoint_tpoint);
 PGDLLEXPORT Datum
 bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
 
@@ -4344,7 +4273,7 @@ PG_FUNCTION_INFO_V1(tpoint_is_simple);
 PGDLLEXPORT Datum
 tpoint_is_simple(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool result;
   if (temp->subtype == INSTANT)
     result = true;
@@ -4600,7 +4529,7 @@ PG_FUNCTION_INFO_V1(tpoint_make_simple);
 PGDLLEXPORT Datum
 tpoint_make_simple(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
   if (temp->subtype == INSTANT)
     result = temporalarr_to_array((const Temporal **) &temp, 1);
@@ -4710,7 +4639,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
     pfree(DatumGetPointer(inter));
-    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
+    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
   }
   pfree_array((void **) simpleseqs, countsimple);
   if (k == 0)
@@ -5001,7 +4930,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
     pfree(DatumGetPointer(inter));
-    POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
+    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
     if (totalcount == 0)
     {
       *count = 0;
@@ -5026,7 +4955,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
         totalcount += countpers[i];
       }
       pfree(DatumGetPointer(inter));
-      POSTGIS_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
+      PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
     }
     pfree_array((void **) simpleseqs, countsimple);
     if (totalcount == 0)
@@ -5261,7 +5190,7 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 static Datum
 tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
   {
@@ -5519,7 +5448,7 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 static Datum
 tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
   ensure_common_dimension(temp->flags, box->flags);
   if (MOBDB_FLAGS_GET_X(box->flags))

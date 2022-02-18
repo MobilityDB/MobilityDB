@@ -354,13 +354,13 @@ SELECT memSize(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, N
 SELECT memSize(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]');
  memsize 
 ---------
-     272
+     264
 (1 row)
 
 SELECT memSize(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}');
  memsize 
 ---------
-     616
+     592
 (1 row)
 
 SELECT getValue(tnpoint 'Npoint(1, 0.5)@2000-01-01');

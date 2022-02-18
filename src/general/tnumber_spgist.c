@@ -371,32 +371,30 @@ tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
   if (tnumber_base_type(scankey->sk_subtype))
   {
     Datum value = scankey->sk_argument;
-    number_to_tbox_internal(value, scankey->sk_subtype, result);
+    number_tbox(value, scankey->sk_subtype, result);
   }
   else if (tnumber_range_type(scankey->sk_subtype))
   {
     RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
-    range_to_tbox_internal(range, result);
+    range_tbox(range, result);
   }
   else if (scankey->sk_subtype == TIMESTAMPTZOID)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    timestamp_to_tbox_internal(t, result);
+    timestamp_tbox(t, result);
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
-    timestampset_to_tbox_internal(ts, result);
+    timestampset_tbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIOD))
   {
-    Period *p = DatumGetPeriod(scankey->sk_argument);
-    period_to_tbox_internal(p, result);
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    period_tbox(p, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
-    periodset_to_tbox_internal(ps, result);
+    periodset_tbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_TBOX))
   {
@@ -404,7 +402,7 @@ tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
   }
   else if (tnumber_type(scankey->sk_subtype))
   {
-    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+    temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
@@ -498,7 +496,7 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
 
   median = in->nTuples / 2;
 
-  centroid = palloc0(sizeof(TBOX));
+  centroid = (TBOX *) palloc0(sizeof(TBOX));
 
   centroid->xmin = lowXs[median];
   centroid->xmax = highXs[median];
@@ -769,11 +767,10 @@ PG_FUNCTION_INFO_V1(tnumber_spgist_compress);
 PGDLLEXPORT Datum
 tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  TBOX *box = palloc0(sizeof(TBOX));
-  temporal_bbox(temp, box);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TBOX_P(box);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  TBOX *result = palloc(sizeof(TBOX));
+  temporal_bbox_slice(tempdatum, result);
+  PG_RETURN_TBOX_P(result);
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */

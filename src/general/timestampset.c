@@ -48,6 +48,17 @@
  *****************************************************************************/
 
 /**
+ * Returns the size in bytes to read from toast to get the basic information
+ * from a variable-length time type: Time struct (i.e., TimestampSet
+ * or PeriodSet) and bounding box size
+*/
+uint32_t
+time_max_header_size(void)
+{
+  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
+}
+
+/**
  * Returns the n-th timestamp of the timestamp set value
  */
 TimestampTz
@@ -66,7 +77,7 @@ timestampset_bbox_ptr(const TimestampSet *ts)
 }
 
 /**
- * Copy in the first argument the bounding box of the timestamp set value
+ * Copy in the second argument the bounding box of the timestamp set value
  */
 void
 timestampset_bbox(const TimestampSet *ts, Period *p)
@@ -77,14 +88,32 @@ timestampset_bbox(const TimestampSet *ts, Period *p)
 }
 
 /**
+ * Peak into a timestamp set datum to find the bounding box. If the datum needs
+ * to be detoasted, extract only the header and not the full object.
+ */
+void
+timestampset_bbox_slice(Datum tsdatum, Period *p)
+{
+  TimestampSet *ts = NULL;
+  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
+    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
+      time_max_header_size());
+  else
+    ts = (TimestampSet *) tsdatum;
+  timestampset_bbox(ts, p);
+  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  return;
+}
+
+/**
  * Construct a timestamp set from an array of timestamps
  *
  * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
  * @code
- * --------------------------------------------------------------------------
- * ( TimestampSet | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2)_X |
- * --------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------
+ * ( TimestampSet )_X | ( bbox )_X | Timestamp_0 | Timestamp_1 | Timestamp_2 |
+ * ---------------------------------------------------------------------------
  * @endcode
  * where the `X` are unused bytes added for double padding, and bbox is the
  * bounding box which is a period.
@@ -103,7 +132,7 @@ timestampset_make(const TimestampTz *times, int count)
         errmsg("Invalid value for timestamp set")));
   }
   /* Notice that the first timestamp is already declared in the struct */
-  size_t memsize = double_pad(sizeof(TimestampSet) + sizeof(TimestampTz) * (count - 1));
+  size_t memsize = double_pad(sizeof(TimestampSet)) + sizeof(TimestampTz) * (count - 1);
   /* Create the TimestampSet */
   TimestampSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
@@ -239,7 +268,7 @@ PG_FUNCTION_INFO_V1(timestampset_out);
 PGDLLEXPORT Datum
 timestampset_out(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   char *result = timestampset_to_string(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_CSTRING(result);
@@ -252,14 +281,10 @@ PG_FUNCTION_INFO_V1(timestampset_send);
 PGDLLEXPORT Datum
 timestampset_send(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(&buf, (uint32) ts->count, 4);
-#else
   pq_sendint32(&buf, ts->count);
-#endif
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
@@ -328,10 +353,12 @@ timestamp_to_timestampset(PG_FUNCTION_ARGS)
  * (internal function)
  */
 void
-timestampset_to_period_internal(const TimestampSet *ts, Period *p)
+timestampset_period(const TimestampSet *ts, Period *p)
 {
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(p, 0, sizeof(Period));
   period_set(start, end, true, true, p);
   return;
 }
@@ -343,9 +370,9 @@ PG_FUNCTION_INFO_V1(timestampset_to_period);
 PGDLLEXPORT Datum
 timestampset_to_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *result = period_copy(timestampset_bbox_ptr(ts));
-  PG_FREE_IF_COPY(ts, 0);
+  Datum tsdatum = PG_GETARG_DATUM(0);
+  Period *result = (Period *) palloc(sizeof(Period));
+  timestampset_bbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -360,7 +387,7 @@ PG_FUNCTION_INFO_V1(timestampset_mem_size);
 PGDLLEXPORT Datum
 timestampset_mem_size(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_DATUM(result);
@@ -373,7 +400,7 @@ PG_FUNCTION_INFO_V1(timestampset_timespan);
 PGDLLEXPORT Datum
 timestampset_timespan(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
   Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end),
@@ -389,7 +416,7 @@ PG_FUNCTION_INFO_V1(timestampset_num_timestamps);
 PGDLLEXPORT Datum
 timestampset_num_timestamps(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_INT32(ts->count);
 }
@@ -401,7 +428,7 @@ PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
 PGDLLEXPORT Datum
 timestampset_start_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz result = timestampset_time_n(ts, 0);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -414,7 +441,7 @@ PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
 PGDLLEXPORT Datum
 timestampset_end_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz result = timestampset_time_n(ts, ts->count - 1);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -427,7 +454,7 @@ PG_FUNCTION_INFO_V1(timestampset_timestamp_n);
 PGDLLEXPORT Datum
 timestampset_timestamp_n(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   if (n < 1 || n > ts->count)
   {
@@ -458,7 +485,7 @@ PG_FUNCTION_INFO_V1(timestampset_timestamps);
 PGDLLEXPORT Datum
 timestampset_timestamps(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz *times = timestampset_timestamps_internal(ts);
   ArrayType *result = timestamparr_to_array(times, ts->count);
   pfree(times);
@@ -490,7 +517,7 @@ PG_FUNCTION_INFO_V1(timestampset_shift);
 PGDLLEXPORT Datum
 timestampset_shift(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   TimestampSet *result = timestampset_shift_internal(ts, interval);
   PG_FREE_IF_COPY(ts, 0);
@@ -542,8 +569,8 @@ PG_FUNCTION_INFO_V1(timestampset_cmp);
 PGDLLEXPORT Datum
 timestampset_cmp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   int cmp = timestampset_cmp_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -580,8 +607,8 @@ PG_FUNCTION_INFO_V1(timestampset_eq);
 PGDLLEXPORT Datum
 timestampset_eq(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = timestampset_eq_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -607,8 +634,8 @@ PG_FUNCTION_INFO_V1(timestampset_ne);
 PGDLLEXPORT Datum
 timestampset_ne(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = timestampset_ne_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -623,8 +650,8 @@ PG_FUNCTION_INFO_V1(timestampset_lt);
 PGDLLEXPORT Datum
 timestampset_lt(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   int cmp = timestampset_cmp_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -639,8 +666,8 @@ PG_FUNCTION_INFO_V1(timestampset_le);
 PGDLLEXPORT Datum
 timestampset_le(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   int cmp = timestampset_cmp_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -655,8 +682,8 @@ PG_FUNCTION_INFO_V1(timestampset_ge);
 PGDLLEXPORT Datum
 timestampset_ge(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   int cmp = timestampset_cmp_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -670,8 +697,8 @@ PG_FUNCTION_INFO_V1(timestampset_gt);
 PGDLLEXPORT Datum
 timestampset_gt(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   int cmp = timestampset_cmp_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);

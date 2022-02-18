@@ -69,10 +69,10 @@ CREATE TYPE periodset (
   output = periodset_out,
   receive = periodset_recv,
   send = periodset_send,
-  alignment = double
+  alignment = double,
 -- The following line makes NULL if size < 128
---  storage = extended
-  , analyze = periodset_analyze
+  storage = extended,
+  analyze = periodset_analyze
 );
 
 /******************************************************************************

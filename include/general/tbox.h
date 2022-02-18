@@ -38,9 +38,6 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <utils/timestamp.h>
-#endif
 
 #include "timetypes.h"
 
@@ -60,8 +57,8 @@ typedef struct
 
 /* fmgr macros temporal types */
 
-#define DatumGetTboxP(X)  ((TBOX *) DatumGetPointer(X))
-#define TboxPGetDatum(X)  PointerGetDatum(X)
+#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
+#define TboxPGetDatum(X)    PointerGetDatum(X)
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
@@ -117,14 +114,16 @@ extern Datum range_timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
 
-extern void number_to_tbox_internal(Datum value, Oid basetypid, TBOX *box);
-extern void range_to_tbox_internal(const RangeType *r, TBOX *box);
-extern void int_to_tbox_internal(int i, TBOX *box);
-extern void float_to_tbox_internal(double d, TBOX *box);
-extern void timestamp_to_tbox_internal(TimestampTz t, TBOX *box);
-extern void timestampset_to_tbox_internal(const TimestampSet *ts, TBOX *box);
-extern void period_to_tbox_internal(const Period *p, TBOX *box);
-extern void periodset_to_tbox_internal(const PeriodSet *ps, TBOX *box);
+extern void number_tbox(Datum value, Oid basetypid, TBOX *box);
+extern void range_tbox(const RangeType *r, TBOX *box);
+extern void int_tbox(int i, TBOX *box);
+extern void float_tbox(double d, TBOX *box);
+extern void timestamp_tbox(TimestampTz t, TBOX *box);
+extern void timestampset_tbox(const TimestampSet *ts, TBOX *box);
+extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
+extern void period_tbox(const Period *p, TBOX *box);
+extern void periodset_tbox(const PeriodSet *ps, TBOX *box);
+extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 /* Accessor functions */
 

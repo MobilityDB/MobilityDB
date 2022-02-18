@@ -160,7 +160,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
-    POSTGIS_FREE_IF_COPY_P(gs, DatumGetPointer(value));
+    PG_FREE_IF_COPY_P(gs, DatumGetPointer(value));
   }
   return result;
 }
@@ -276,11 +276,7 @@ tinstant_write(const TInstant *inst, StringInfo buf)
   bytea *bt = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
   bytea *bv = call_send(inst->basetypid, tinstant_value(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, VARSIZE(bv) - VARHDRSZ, 4) ;
-#else
   pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
-#endif
   pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
 }
 

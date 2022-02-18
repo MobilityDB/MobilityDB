@@ -273,20 +273,20 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
       timetype == T_PERIODSET);
     if (timetype == T_PERIOD)
     {
-      period = DatumGetPeriod(value);
+      period = DatumGetPeriodP(value);
       /* Adjust the size */
       total_width += sizeof(Period);
     }
     else if (timetype == T_TIMESTAMPSET)
     {
-      TimestampSet *ts= DatumGetTimestampSet(value);
+      TimestampSet *ts= DatumGetTimestampSetP(value);
       period = timestampset_bbox_ptr(ts);
       /* Adjust the size */
       total_width += VARSIZE(ts);
     }
     else
     {
-      PeriodSet *ps= DatumGetPeriodSet(value);
+      PeriodSet *ps= DatumGetPeriodSetP(value);
       period = periodset_bbox_ptr(ps);
       /* Adjust the size */
       total_width += VARSIZE(ps);

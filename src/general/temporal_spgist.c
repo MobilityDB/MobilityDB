@@ -60,12 +60,12 @@ PG_FUNCTION_INFO_V1(temporal_spgist_compress);
 PGDLLEXPORT Datum
 temporal_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  Period *period = palloc(sizeof(Period));
-  temporal_bbox(temp, period);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_PERIOD(period);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  Period *result = (Period *) palloc(sizeof(Period));
+  temporal_bbox_slice(tempdatum, result);
+  PG_RETURN_PERIOD_P(result);
 }
+
 #endif
 
 /*****************************************************************************/

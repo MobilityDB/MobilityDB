@@ -54,36 +54,16 @@ PGDLLEXPORT Datum
 temporal_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    Period *period = palloc0(sizeof(Period));
-    temporal_bbox(temp, period);
-    gistentryinit(*retval, PointerGetDatum(period),
-      entry->rel, entry->page, entry->offset, false);
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    Period *period = (Period *) palloc(sizeof(Period));
+    temporal_bbox_slice(entry->key, period);
+    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
+      entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
-
   PG_RETURN_POINTER(entry);
 }
-
-/*****************************************************************************
- * GiST decompress method for temporal values
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(temporal_gist_decompress);
-/**
- * GiST decompress method for temporal values (result in a period)
- */
-PGDLLEXPORT Datum
-temporal_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************/

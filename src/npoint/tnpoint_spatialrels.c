@@ -123,7 +123,7 @@ PGDLLEXPORT Datum
 contains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_contains, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -142,7 +142,7 @@ PGDLLEXPORT Datum
 disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -157,7 +157,7 @@ PGDLLEXPORT Datum
 disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np  = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
   pfree(DatumGetPointer(geom));
@@ -173,7 +173,7 @@ PG_FUNCTION_INFO_V1(disjoint_tnpoint_geo);
 PGDLLEXPORT Datum
 disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, false);
   PG_FREE_IF_COPY(temp, 0);
@@ -188,7 +188,7 @@ PG_FUNCTION_INFO_V1(disjoint_tnpoint_npoint);
 PGDLLEXPORT Datum
 disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np  = PG_GETARG_NPOINT(1);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_disjoint2d, true);
@@ -210,7 +210,7 @@ PGDLLEXPORT Datum
 intersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_intersects2d, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -225,7 +225,7 @@ PGDLLEXPORT Datum
 intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np  = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_intersects2d, true);
   pfree(DatumGetPointer(geom));
@@ -241,7 +241,7 @@ PG_FUNCTION_INFO_V1(intersects_tnpoint_geo);
 PGDLLEXPORT Datum
 intersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_intersects2d, false);
   PG_FREE_IF_COPY(temp, 0);
@@ -256,7 +256,7 @@ PG_FUNCTION_INFO_V1(intersects_tnpoint_npoint);
 PGDLLEXPORT Datum
 intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np  = PG_GETARG_NPOINT(1);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_intersects2d, false);
@@ -278,7 +278,7 @@ PGDLLEXPORT Datum
 dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   Datum result = spatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d, true);
   PG_FREE_IF_COPY(temp, 1);
@@ -294,7 +294,7 @@ PGDLLEXPORT Datum
 dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np  = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d, true);
@@ -311,7 +311,7 @@ PG_FUNCTION_INFO_V1(dwithin_tnpoint_geo);
 PGDLLEXPORT Datum
 dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
   Datum dist = PG_GETARG_DATUM(2);
   Datum result = spatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d, false);
@@ -327,7 +327,7 @@ PG_FUNCTION_INFO_V1(dwithin_tnpoint_npoint);
 PGDLLEXPORT Datum
 dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np  = PG_GETARG_NPOINT(1);
   Datum dist = PG_GETARG_DATUM(2);
   Datum geom = npoint_as_geom_internal(np);
@@ -345,8 +345,8 @@ PG_FUNCTION_INFO_V1(dwithin_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
@@ -377,7 +377,7 @@ PGDLLEXPORT Datum
 touches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_touches, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_DATUM(result);
@@ -392,7 +392,7 @@ PGDLLEXPORT Datum
 touches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np  = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_touches, true);
   pfree(DatumGetPointer(geom));
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(touches_tnpoint_geo);
 PGDLLEXPORT Datum
 touches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_touches, false);
   PG_FREE_IF_COPY(temp, 0);
@@ -423,7 +423,7 @@ PG_FUNCTION_INFO_V1(touches_tnpoint_npoint);
 PGDLLEXPORT Datum
 touches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np  = PG_GETARG_NPOINT(1);
   Datum geom = npoint_as_geom_internal(np);
   Datum result = spatialrel_tnpoint_geom(temp, geom, &geom_touches, false);

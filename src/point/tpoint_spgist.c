@@ -92,8 +92,6 @@
  * that we don't yet have as infinity.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-
 #include "point/tpoint_spgist.h"
 
 #include <float.h>
@@ -535,18 +533,16 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
-    timestampset_stbox(ts, result);
+    timestampset_stbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIOD))
   {
-    Period *p = DatumGetPeriod(scankey->sk_argument);
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
     period_stbox(p, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
-    periodset_stbox(ps, result);
+    periodset_stbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_STBOX))
   {
@@ -554,7 +550,7 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   }
   else if (tspatial_type(scankey->sk_subtype))
   {
-    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+    temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
@@ -628,7 +624,7 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   STBOX *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  STBOX *  centroid = palloc0(sizeof(STBOX));
+  STBOX *centroid = (STBOX *) palloc0(sizeof(STBOX));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
   int  median, i;
@@ -991,12 +987,10 @@ PG_FUNCTION_INFO_V1(tpoint_spgist_compress);
 PGDLLEXPORT Datum
 tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-  STBOX *result = palloc0(sizeof(STBOX));
-  temporal_bbox(temp, result);
-  PG_FREE_IF_COPY(temp, 0);
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  STBOX *result = palloc(sizeof(STBOX));
+  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_STBOX_P(result);
 }
-#endif
 
 /*****************************************************************************/

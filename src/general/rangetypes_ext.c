@@ -293,11 +293,7 @@ Datum
 range_func_elem(FunctionCallInfo fcinfo,
   bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   Datum val = PG_GETARG_DATUM(1);
   PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
@@ -310,11 +306,7 @@ elem_func_range(FunctionCallInfo fcinfo,
   bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
 {
   Datum val = PG_GETARG_DATUM(0);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(1);
-#else
   RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
   PG_RETURN_BOOL(range_func_elem1(fcinfo, range, val, func));
 }
 
@@ -327,11 +319,7 @@ PG_FUNCTION_INFO_V1(intrange_canonical);
 PGDLLEXPORT Datum
 intrange_canonical(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   TypeCacheEntry *typcache;
   RangeBound lower_bound;
   RangeBound upper_bound;
@@ -339,11 +327,7 @@ intrange_canonical(PG_FUNCTION_ARGS)
   typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   range_deserialize(typcache, range, &lower_bound, &upper_bound, &empty);
   if (empty)
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    PG_RETURN_RANGE(range);
-#else
     PG_RETURN_RANGE_P(range);
-#endif
   if (!lower_bound.infinite && !lower_bound.inclusive)
   {
     lower_bound.val = DirectFunctionCall2(int4pl, lower_bound.val, Int32GetDatum(1));
@@ -354,11 +338,7 @@ intrange_canonical(PG_FUNCTION_ARGS)
     upper_bound.val = DirectFunctionCall2(int4pl, upper_bound.val, Int32GetDatum(1));
     upper_bound.inclusive = false;
   }
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  PG_RETURN_RANGE(range_serialize(typcache, &lower_bound, &upper_bound, false));
-#else
   PG_RETURN_RANGE_P(range_serialize(typcache, &lower_bound, &upper_bound, false));
-#endif
 }
 
 /*****************************************************************************/
@@ -607,11 +587,7 @@ PG_FUNCTION_INFO_V1(floatrange_round);
 PGDLLEXPORT Datum
 floatrange_round(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   Datum size = PG_GETARG_DATUM(1);
   RangeBound lower, upper;
   lower.lower = true;
@@ -654,13 +630,8 @@ PG_FUNCTION_INFO_V1(range_extent_transfn);
 PGDLLEXPORT Datum
 range_extent_transfn(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
-  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
-#else
   RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
   RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
-#endif
   RangeType *result;
 
   /* Can't do anything with null inputs */
@@ -688,22 +659,15 @@ PG_FUNCTION_INFO_V1(range_extent_combinefn);
 PGDLLEXPORT Datum
 range_extent_combinefn(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE(0);
-  RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE(1);
-#else
   RangeType *r1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_RANGE_P(0);
   RangeType *r2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_RANGE_P(1);
-#endif
-
   if (!r2 && !r1)
     PG_RETURN_NULL();
   if (r1 && !r2)
     PG_RETURN_POINTER(r1);
   if (r2 && !r1)
     PG_RETURN_POINTER(r2);
-
-  TypeCacheEntry* typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
   /* Non-strict union */
   RangeType *result = range_union_internal(typcache, r1, r2, false);
   PG_RETURN_POINTER(result);

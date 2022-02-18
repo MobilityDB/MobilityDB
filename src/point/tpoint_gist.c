@@ -291,20 +291,18 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-    timestampset_stbox(ts, result);
-    PG_FREE_IF_COPY(ts, 1);
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_stbox_slice(tsdatum, result);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
-    Period *p = PG_GETARG_PERIOD(1);
+    Period *p = PG_GETARG_PERIOD_P(1);
     period_stbox(p, result);
   }
   else if (subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = PG_GETARG_PERIODSET(1);
-    periodset_stbox(ps, result);
-    PG_FREE_IF_COPY(ps, 1);
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_stbox_slice(psdatum, result);
   }
   else if (subtype == type_oid(T_STBOX))
   {
@@ -315,11 +313,10 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
   }
   else if (tspatial_type(subtype))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
-    if (temp == NULL)
+    if (PG_ARGISNULL(1))
       return false;
-    temporal_bbox(temp, result);
-    PG_FREE_IF_COPY(temp, 1);
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", subtype);
@@ -393,7 +390,7 @@ stbox_gist_union(PG_FUNCTION_ARGS)
   STBOX *result = stbox_copy(DatumGetSTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     stbox_adjust(result, DatumGetSTboxP(ent[i].key));
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 /*****************************************************************************
@@ -410,10 +407,9 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Temporal *temp = DatumGetTemporal(entry->key);
-    STBOX *box = palloc0(sizeof(STBOX));
-    temporal_bbox(temp, box);
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    STBOX *box = (STBOX *) palloc(sizeof(STBOX));
+    temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_POINTER(retval);
@@ -422,43 +418,27 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST decompress method
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(tpoint_gist_decompress);
-/**
- * GiST decompress method for temporal point types (result in an stbox)
- */
-PGDLLEXPORT Datum
-tpoint_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
-
-/*****************************************************************************
  * GiST penalty method
  *****************************************************************************/
 
 /**
  * Calculates the union of two tboxes.
  *
- * @param[out] n Resulting box
  * @param[in] a,b Input boxes
+ * @param[out] new Resulting box
  */
 static void
-stbox_union_rt(STBOX *n, const STBOX *a, const STBOX *b)
+stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
 {
-  n->xmax = FLOAT8_MAX(a->xmax, b->xmax);
-  n->ymax = FLOAT8_MAX(a->ymax, b->ymax);
-  n->zmax = FLOAT8_MAX(a->zmax, b->zmax);
-  n->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
-  n->xmin = FLOAT8_MIN(a->xmin, b->xmin);
-  n->ymin = FLOAT8_MIN(a->ymin, b->ymin);
-  n->zmin = FLOAT8_MIN(a->zmin, b->zmin);
-  n->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
+  memset(new, 0, sizeof(STBOX));
+  new->xmax = FLOAT8_MAX(a->xmax, b->xmax);
+  new->ymax = FLOAT8_MAX(a->ymax, b->ymax);
+  new->zmax = FLOAT8_MAX(a->zmax, b->zmax);
+  new->tmax = a->tmax > b->tmax ? a->tmax : b->tmax;
+  new->xmin = FLOAT8_MIN(a->xmin, b->xmin);
+  new->ymin = FLOAT8_MIN(a->ymin, b->ymin);
+  new->zmin = FLOAT8_MIN(a->zmin, b->zmin);
+  new->tmin = a->tmin < b->tmin ? a->tmin : b->tmin;
   return;
 }
 
@@ -499,8 +479,7 @@ static double
 stbox_penalty(const STBOX *original, const STBOX *new)
 {
   STBOX unionbox;
-  memset(&unionbox, 0, sizeof(STBOX));
-  stbox_union_rt(&unionbox, original, new);
+  stbox_union_rt(original, new, &unionbox);
   return stbox_size(&unionbox) - stbox_size(original);
 }
 
@@ -965,8 +944,8 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
   v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
-  leftBox = palloc0(sizeof(STBOX));
-  rightBox = palloc0(sizeof(STBOX));
+  leftBox = (STBOX *) palloc0(sizeof(STBOX));
+  rightBox = (STBOX *) palloc0(sizeof(STBOX));
 
   /*
    * Allocate an array for "common entries" - entries which can be placed to
