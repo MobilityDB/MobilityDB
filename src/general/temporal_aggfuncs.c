@@ -968,7 +968,7 @@ PG_FUNCTION_INFO_V1(temporal_extent_transfn);
 PGDLLEXPORT Datum
 temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
+  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   Period *result;
 
@@ -1005,8 +1005,8 @@ PG_FUNCTION_INFO_V1(temporal_extent_combinefn);
 PGDLLEXPORT Datum
 temporal_extent_combinefn(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
-  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD(1);
+  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
 
   if (!p2 && !p1)
     PG_RETURN_NULL();

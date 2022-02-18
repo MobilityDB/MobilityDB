@@ -344,21 +344,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   /* Precompute the trajectory, if any */
   size_t trajsize = 0;
   bool isgeo = tgeo_base_type(instants[0]->basetypid);
-#ifdef STORE_TRAJ
-  bool hastraj = false; /* keep compiler quiet */
-  Datum traj = 0; /* keep compiler quiet */
-  if (isgeo)
-  {
-    hastraj = type_has_precomputed_trajectory(instants[0]->basetypid);
-    if (hastraj)
-    {
-      /* A trajectory is a geometry/geography, a point, a multipoint,
-       * or a linestring, which may be self-intersecting */
-      traj = tpointseq_make_trajectory(norminsts, newcount, linear);
-      trajsize += double_pad(VARSIZE(DatumGetPointer(traj)));
-    }
-  }
-#endif
 
   /* Get the bounding box size */
   size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->basetypid));
@@ -372,7 +357,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   /* Trajectory size */
   memsize += trajsize;
   /* Size of the struct and the offset array */
-  // TODO ADD sizeof(size_t) if STORE_TRAJ
   memsize += double_pad(sizeof(TSequence)) + count * sizeof(size_t);
   /* Create the temporal sequence */
   TSequence *result = palloc0(memsize);
@@ -416,16 +400,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
     (tsequence_offsets_ptr(result))[i] = pos;
     pos += double_pad(VARSIZE(norminsts[i]));
   }
-#ifdef STORE_TRAJ
-  if (isgeo && hastraj)
-  {
-    result->offsets[newcount + 1] = pos;
-    memcpy(((char *) result) + pdata + pos, DatumGetPointer(traj),
-      VARSIZE(DatumGetPointer(traj)));
-    pfree(DatumGetPointer(traj));
-  }
-#endif
-
   if (normalize && count > 1)
     pfree(norminsts);
   return result;
@@ -1458,7 +1432,7 @@ PGDLLEXPORT Datum
 tsequence_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool linear;
   if (PG_NARGS() == 2)
     linear = false;

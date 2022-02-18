@@ -274,7 +274,7 @@ PG_FUNCTION_INFO_V1(periodset_out);
 PGDLLEXPORT Datum
 periodset_out(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   char *result = periodset_to_string(ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_CSTRING(result);
@@ -287,7 +287,7 @@ PG_FUNCTION_INFO_V1(periodset_send);
 PGDLLEXPORT Datum
 periodset_send(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
   pq_sendint32(&buf, ps->count);
@@ -390,7 +390,7 @@ PG_FUNCTION_INFO_V1(timestampset_to_periodset);
 PGDLLEXPORT Datum
 timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   PeriodSet *result = timestampset_to_periodset_internal(ts);
   PG_RETURN_POINTER(result);
 }
@@ -411,7 +411,7 @@ PG_FUNCTION_INFO_V1(period_to_periodset);
 PGDLLEXPORT Datum
 period_to_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   PeriodSet *result = period_to_periodset_internal(p);
   PG_RETURN_POINTER(result);
 }
@@ -454,7 +454,7 @@ PG_FUNCTION_INFO_V1(periodset_mem_size);
 PGDLLEXPORT Datum
 periodset_mem_size(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ps)));
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_DATUM(result);
@@ -467,7 +467,7 @@ PG_FUNCTION_INFO_V1(periodset_timespan);
 PGDLLEXPORT Datum
 periodset_timespan(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   const Period *p1 = periodset_per_n(ps, 0);
   const Period *p2 = periodset_per_n(ps, ps->count - 1);
   Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p2->upper),
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(periodset_duration);
 PGDLLEXPORT Datum
 periodset_duration(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   const Period *p = periodset_per_n(ps, 0);
   Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(p->upper),
     TimestampTzGetDatum(p->lower));
@@ -507,7 +507,7 @@ PG_FUNCTION_INFO_V1(periodset_num_periods);
 PGDLLEXPORT Datum
 periodset_num_periods(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   int result = ps->count;
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_INT32(result);
@@ -520,7 +520,7 @@ PG_FUNCTION_INFO_V1(periodset_start_period);
 PGDLLEXPORT Datum
 periodset_start_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Period *result = period_copy(periodset_per_n(ps, 0));
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
@@ -533,7 +533,7 @@ PG_FUNCTION_INFO_V1(periodset_end_period);
 PGDLLEXPORT Datum
 periodset_end_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Period *result = period_copy(periodset_per_n(ps, ps->count - 1));
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
@@ -546,7 +546,7 @@ PG_FUNCTION_INFO_V1(periodset_period_n);
 PGDLLEXPORT Datum
 periodset_period_n(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
   Period *result = NULL;
   if (i >= 1 && i <= ps->count)
@@ -576,7 +576,7 @@ PG_FUNCTION_INFO_V1(periodset_periods);
 PGDLLEXPORT Datum
 periodset_periods(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   const Period **periods = periodset_periods_internal(ps);
   ArrayType *result = periodarr_to_array(periods, ps->count);
   pfree(periods);
@@ -591,7 +591,7 @@ PG_FUNCTION_INFO_V1(periodset_num_timestamps);
 PGDLLEXPORT Datum
 periodset_num_timestamps(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   const Period *p = periodset_per_n(ps, 0);
   TimestampTz prev = p->lower;
   bool start = false;
@@ -638,7 +638,7 @@ PG_FUNCTION_INFO_V1(periodset_start_timestamp);
 PGDLLEXPORT Datum
 periodset_start_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   const Period *p = periodset_per_n(ps, 0);
   TimestampTz result = p->lower;
   PG_FREE_IF_COPY(ps, 0);
@@ -662,7 +662,7 @@ PG_FUNCTION_INFO_V1(periodset_end_timestamp);
 PGDLLEXPORT Datum
 periodset_end_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   const Period *p = periodset_per_n(ps, ps->count - 1);
   TimestampTz result = p->upper;
   PG_FREE_IF_COPY(ps, 0);
@@ -676,7 +676,7 @@ PG_FUNCTION_INFO_V1(periodset_timestamp_n);
 PGDLLEXPORT Datum
 periodset_timestamp_n(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   int pernum = 0;
   const Period *p = periodset_per_n(ps, pernum);
@@ -726,7 +726,7 @@ PG_FUNCTION_INFO_V1(periodset_timestamps);
 PGDLLEXPORT Datum
 periodset_timestamps(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz *times = palloc(sizeof(TimestampTz) * 2 * ps->count);
   const Period *p = periodset_per_n(ps, 0);
   times[0] = p->lower;
@@ -770,7 +770,7 @@ PG_FUNCTION_INFO_V1(periodset_shift);
 PGDLLEXPORT Datum
 periodset_shift(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   PeriodSet *result = periodset_shift_internal(ps, interval);
   PG_FREE_IF_COPY(ps, 0);
@@ -824,8 +824,8 @@ PG_FUNCTION_INFO_V1(periodset_cmp);
 PGDLLEXPORT Datum
 periodset_cmp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   int cmp = periodset_cmp_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -862,8 +862,8 @@ PG_FUNCTION_INFO_V1(periodset_eq);
 PGDLLEXPORT Datum
 periodset_eq(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = periodset_eq_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -887,8 +887,8 @@ PG_FUNCTION_INFO_V1(periodset_ne);
 PGDLLEXPORT Datum
 periodset_ne(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = periodset_ne_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -904,8 +904,8 @@ PG_FUNCTION_INFO_V1(periodset_lt);
 PGDLLEXPORT Datum
 periodset_lt(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   int cmp = periodset_cmp_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -920,8 +920,8 @@ PG_FUNCTION_INFO_V1(periodset_le);
 PGDLLEXPORT Datum
 periodset_le(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   int cmp = periodset_cmp_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -936,8 +936,8 @@ PG_FUNCTION_INFO_V1(periodset_ge);
 PGDLLEXPORT Datum
 periodset_ge(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   int cmp = periodset_cmp_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -951,8 +951,8 @@ PG_FUNCTION_INFO_V1(periodset_gt);
 PGDLLEXPORT Datum
 periodset_gt(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   int cmp = periodset_cmp_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);

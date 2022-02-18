@@ -690,7 +690,7 @@ period_hist_sel(VariableStatData *vardata, const Period *constval,
   hist_lower = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
   hist_upper = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
   for (i = 0; i < nhist; i++)
-    period_deserialize(DatumGetPeriod(hslot.values[i]),
+    period_deserialize(DatumGetPeriodP(hslot.values[i]),
                &hist_lower[i], &hist_upper[i]);
 
   /* @> and @< also need a histogram of period lengths */
@@ -871,12 +871,12 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
      * a period, which is its bounding box.
      */
     period =  timestampset_bbox_ptr(
-      DatumGetTimestampSet(((Const *) other)->constvalue));
+      DatumGetTimestampSetP(((Const *) other)->constvalue));
   }
   else if (timetypid == type_oid(T_PERIOD))
   {
     /* just copy the value */
-    period = DatumGetPeriod(((Const *) other)->constvalue);
+    period = DatumGetPeriodP(((Const *) other)->constvalue);
   }
   else if (timetypid == type_oid(T_PERIODSET))
   {
@@ -884,7 +884,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
      * a period, which is its bounding box.
      */
     period =  periodset_bbox_ptr(
-      DatumGetPeriodSet(((Const *) other)->constvalue));
+      DatumGetPeriodSetP(((Const *) other)->constvalue));
   }
 
   /*

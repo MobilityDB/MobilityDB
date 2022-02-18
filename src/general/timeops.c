@@ -281,7 +281,7 @@ PG_FUNCTION_INFO_V1(contains_timestampset_timestamp);
 PGDLLEXPORT Datum
 contains_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = contains_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -325,8 +325,8 @@ PG_FUNCTION_INFO_V1(contains_timestampset_timestampset);
 PGDLLEXPORT Datum
 contains_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = contains_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -357,7 +357,7 @@ PG_FUNCTION_INFO_V1(contains_period_timestamp);
 PGDLLEXPORT Datum
 contains_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PG_RETURN_BOOL(contains_period_timestamp_internal(p, t));
 }
@@ -382,8 +382,8 @@ PG_FUNCTION_INFO_V1(contains_period_timestampset);
 PGDLLEXPORT Datum
 contains_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = contains_period_timestampset_internal(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -412,8 +412,8 @@ PG_FUNCTION_INFO_V1(contains_period_period);
 PGDLLEXPORT Datum
 contains_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(contains_period_period_internal(p1, p2));
 }
 
@@ -441,7 +441,7 @@ PG_FUNCTION_INFO_V1(contains_periodset_timestamp);
 PGDLLEXPORT Datum
 contains_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = contains_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -485,8 +485,8 @@ PG_FUNCTION_INFO_V1(contains_periodset_timestampset);
 PGDLLEXPORT Datum
 contains_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = contains_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -517,8 +517,8 @@ PG_FUNCTION_INFO_V1(contains_periodset_period);
 PGDLLEXPORT Datum
 contains_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = contains_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -541,8 +541,8 @@ PG_FUNCTION_INFO_V1(contains_period_periodset);
 PGDLLEXPORT Datum
 contains_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = contains_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -598,8 +598,8 @@ PG_FUNCTION_INFO_V1(contains_periodset_periodset);
 PGDLLEXPORT Datum
 contains_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = contains_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -617,7 +617,7 @@ PGDLLEXPORT Datum
 contained_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = contains_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -631,7 +631,7 @@ PGDLLEXPORT Datum
 contained_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(contains_period_timestamp_internal(p, t));
 }
 
@@ -643,7 +643,7 @@ PGDLLEXPORT Datum
 contained_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = contains_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -656,8 +656,8 @@ PG_FUNCTION_INFO_V1(contained_timestampset_timestampset);
 PGDLLEXPORT Datum
 contained_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = contains_timestampset_timestampset_internal(ts2, ts1);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -671,8 +671,8 @@ PG_FUNCTION_INFO_V1(contained_timestampset_period);
 PGDLLEXPORT Datum
 contained_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = contains_period_timestampset_internal(p, ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -685,8 +685,8 @@ PG_FUNCTION_INFO_V1(contained_timestampset_periodset);
 PGDLLEXPORT Datum
 contained_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = contains_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -710,8 +710,8 @@ PG_FUNCTION_INFO_V1(contained_period_period);
 PGDLLEXPORT Datum
 contained_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(contains_period_period_internal(p2, p1));
 }
 
@@ -722,8 +722,8 @@ PG_FUNCTION_INFO_V1(contained_period_periodset);
 PGDLLEXPORT Datum
 contained_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = contains_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -736,8 +736,8 @@ PG_FUNCTION_INFO_V1(contained_periodset_period);
 PGDLLEXPORT Datum
 contained_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = contains_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -750,8 +750,8 @@ PG_FUNCTION_INFO_V1(contained_periodset_periodset);
 PGDLLEXPORT Datum
 contained_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = contains_periodset_periodset_internal(ps2, ps1);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -796,8 +796,8 @@ PG_FUNCTION_INFO_V1(overlaps_timestampset_timestampset);
 PGDLLEXPORT Datum
 overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overlaps_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -831,8 +831,8 @@ PG_FUNCTION_INFO_V1(overlaps_timestampset_period);
 PGDLLEXPORT Datum
 overlaps_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = overlaps_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -872,8 +872,8 @@ PG_FUNCTION_INFO_V1(overlaps_timestampset_periodset);
 PGDLLEXPORT Datum
 overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overlaps_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -887,8 +887,8 @@ PG_FUNCTION_INFO_V1(overlaps_period_timestampset);
 PGDLLEXPORT Datum
 overlaps_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overlaps_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -917,8 +917,8 @@ PG_FUNCTION_INFO_V1(overlaps_period_period);
 PGDLLEXPORT Datum
 overlaps_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(overlaps_period_period_internal(p1, p2));
 }
 
@@ -954,8 +954,8 @@ PG_FUNCTION_INFO_V1(overlaps_period_periodset);
 PGDLLEXPORT Datum
 overlaps_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overlaps_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -968,8 +968,8 @@ PG_FUNCTION_INFO_V1(overlaps_periodset_timestampset);
 PGDLLEXPORT Datum
 overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overlaps_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -983,8 +983,8 @@ PG_FUNCTION_INFO_V1(overlaps_periodset_period);
 PGDLLEXPORT Datum
 overlaps_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = overlaps_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -1030,8 +1030,8 @@ PG_FUNCTION_INFO_V1(overlaps_periodset_periodset);
 PGDLLEXPORT Datum
 overlaps_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = overlaps_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -1060,7 +1060,7 @@ PGDLLEXPORT Datum
 before_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = before_timestamp_timestampset_internal(t, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -1085,7 +1085,7 @@ PGDLLEXPORT Datum
 before_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(before_timestamp_period_internal(t, p));
 }
 
@@ -1108,7 +1108,7 @@ PGDLLEXPORT Datum
 before_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = before_timestamp_periodset_internal(t, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -1132,7 +1132,7 @@ PG_FUNCTION_INFO_V1(before_timestampset_timestamp);
 PGDLLEXPORT Datum
 before_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = before_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -1158,8 +1158,8 @@ PG_FUNCTION_INFO_V1(before_timestampset_timestampset);
 PGDLLEXPORT Datum
 before_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = before_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -1184,8 +1184,8 @@ PG_FUNCTION_INFO_V1(before_timestampset_period);
 PGDLLEXPORT Datum
 before_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = before_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -1210,8 +1210,8 @@ PG_FUNCTION_INFO_V1(before_timestampset_periodset);
 PGDLLEXPORT Datum
 before_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = before_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -1237,7 +1237,7 @@ PG_FUNCTION_INFO_V1(before_period_timestamp);
 PGDLLEXPORT Datum
 before_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PG_RETURN_BOOL(before_period_timestamp_internal(p, t));
 }
@@ -1260,8 +1260,8 @@ PG_FUNCTION_INFO_V1(before_period_timestampset);
 PGDLLEXPORT Datum
 before_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = before_period_timestampset_internal(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -1285,8 +1285,8 @@ PG_FUNCTION_INFO_V1(before_period_period);
 PGDLLEXPORT Datum
 before_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(before_period_period_internal(p1, p2));
 }
 
@@ -1308,8 +1308,8 @@ PG_FUNCTION_INFO_V1(before_period_periodset);
 PGDLLEXPORT Datum
 before_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = before_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -1333,7 +1333,7 @@ PG_FUNCTION_INFO_V1(before_periodset_timestamp);
 PGDLLEXPORT Datum
 before_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = before_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -1359,8 +1359,8 @@ PG_FUNCTION_INFO_V1(before_periodset_timestampset);
 PGDLLEXPORT Datum
 before_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = before_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -1385,8 +1385,8 @@ PG_FUNCTION_INFO_V1(before_periodset_period);
 PGDLLEXPORT Datum
 before_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = before_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -1411,8 +1411,8 @@ PG_FUNCTION_INFO_V1(before_periodset_periodset);
 PGDLLEXPORT Datum
 before_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = before_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -1441,7 +1441,7 @@ PGDLLEXPORT Datum
 after_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = after_timestamp_timestampset_internal(t, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -1466,7 +1466,7 @@ PGDLLEXPORT Datum
 after_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(after_timestamp_period_internal(t, p));
 }
 
@@ -1489,7 +1489,7 @@ PGDLLEXPORT Datum
 after_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = after_timestamp_periodset_internal(t, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -1513,7 +1513,7 @@ PG_FUNCTION_INFO_V1(after_timestampset_timestamp);
 PGDLLEXPORT Datum
 after_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = after_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -1539,8 +1539,8 @@ PG_FUNCTION_INFO_V1(after_timestampset_timestampset);
 PGDLLEXPORT Datum
 after_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = after_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -1565,8 +1565,8 @@ PG_FUNCTION_INFO_V1(after_timestampset_period);
 PGDLLEXPORT Datum
 after_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = after_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -1591,8 +1591,8 @@ PG_FUNCTION_INFO_V1(after_timestampset_periodset);
 PGDLLEXPORT Datum
 after_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = after_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -1617,7 +1617,7 @@ PG_FUNCTION_INFO_V1(after_period_timestamp);
 PGDLLEXPORT Datum
 after_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PG_RETURN_BOOL(after_period_timestamp_internal(p, t));
 }
@@ -1640,8 +1640,8 @@ PG_FUNCTION_INFO_V1(after_period_timestampset);
 PGDLLEXPORT Datum
 after_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = after_period_timestampset_internal(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -1665,8 +1665,8 @@ PG_FUNCTION_INFO_V1(after_period_period);
 PGDLLEXPORT Datum
 after_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(after_period_period_internal(p1, p2));
 }
 
@@ -1688,8 +1688,8 @@ PG_FUNCTION_INFO_V1(after_period_periodset);
 PGDLLEXPORT Datum
 after_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = after_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -1713,7 +1713,7 @@ PG_FUNCTION_INFO_V1(after_periodset_timestamp);
 PGDLLEXPORT Datum
 after_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = after_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -1739,8 +1739,8 @@ PG_FUNCTION_INFO_V1(after_periodset_timestampset);
 PGDLLEXPORT Datum
 after_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = after_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -1765,8 +1765,8 @@ PG_FUNCTION_INFO_V1(after_periodset_period);
 PGDLLEXPORT Datum
 after_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = after_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -1791,8 +1791,8 @@ PG_FUNCTION_INFO_V1(after_periodset_periodset);
 PGDLLEXPORT Datum
 after_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = after_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -1821,7 +1821,7 @@ PGDLLEXPORT Datum
 overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overbefore_timestamp_timestampset_internal(t, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -1846,7 +1846,7 @@ PGDLLEXPORT Datum
 overbefore_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(overbefore_timestamp_period_internal(t, p));
 }
 
@@ -1869,7 +1869,7 @@ PGDLLEXPORT Datum
 overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overbefore_timestamp_periodset_internal(t, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -1893,7 +1893,7 @@ PG_FUNCTION_INFO_V1(overbefore_timestampset_timestamp);
 PGDLLEXPORT Datum
 overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = overbefore_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -1919,8 +1919,8 @@ PG_FUNCTION_INFO_V1(overbefore_timestampset_timestampset);
 PGDLLEXPORT Datum
 overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overbefore_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -1945,8 +1945,8 @@ PG_FUNCTION_INFO_V1(overbefore_timestampset_period);
 PGDLLEXPORT Datum
 overbefore_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = overbefore_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -1971,8 +1971,8 @@ PG_FUNCTION_INFO_V1(overbefore_timestampset_periodset);
 PGDLLEXPORT Datum
 overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overbefore_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -1996,7 +1996,7 @@ PG_FUNCTION_INFO_V1(overbefore_period_timestamp);
 PGDLLEXPORT Datum
 overbefore_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PG_RETURN_BOOL(overbefore_period_timestamp_internal(p, t));
 }
@@ -2019,8 +2019,8 @@ PG_FUNCTION_INFO_V1(overbefore_period_timestampset);
 PGDLLEXPORT Datum
 overbefore_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overbefore_period_timestampset_internal(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -2044,8 +2044,8 @@ PG_FUNCTION_INFO_V1(overbefore_period_period);
 PGDLLEXPORT Datum
 overbefore_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(overbefore_period_period_internal(p1, p2));
 }
 
@@ -2067,8 +2067,8 @@ PG_FUNCTION_INFO_V1(overbefore_period_periodset);
 PGDLLEXPORT Datum
 overbefore_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overbefore_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -2092,7 +2092,7 @@ PG_FUNCTION_INFO_V1(overbefore_periodset_timestamp);
 PGDLLEXPORT Datum
 overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = overbefore_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -2118,8 +2118,8 @@ PG_FUNCTION_INFO_V1(overbefore_periodset_timestampset);
 PGDLLEXPORT Datum
 overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overbefore_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -2144,8 +2144,8 @@ PG_FUNCTION_INFO_V1(overbefore_periodset_period);
 PGDLLEXPORT Datum
 overbefore_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = overbefore_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -2170,8 +2170,8 @@ PG_FUNCTION_INFO_V1(overbefore_periodset_periodset);
 PGDLLEXPORT Datum
 overbefore_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = overbefore_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -2200,7 +2200,7 @@ PGDLLEXPORT Datum
 overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overafter_timestamp_timestampset_internal(t, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -2225,7 +2225,7 @@ PGDLLEXPORT Datum
 overafter_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(overafter_timestamp_period_internal(t, p));
 }
 
@@ -2248,7 +2248,7 @@ PGDLLEXPORT Datum
 overafter_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overafter_timestamp_periodset_internal(t, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -2272,7 +2272,7 @@ PG_FUNCTION_INFO_V1(overafter_timestampset_timestamp);
 PGDLLEXPORT Datum
 overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = overafter_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -2298,8 +2298,8 @@ PG_FUNCTION_INFO_V1(overafter_timestampset_timestampset);
 PGDLLEXPORT Datum
 overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overafter_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -2324,8 +2324,8 @@ PG_FUNCTION_INFO_V1(overafter_timestampset_period);
 PGDLLEXPORT Datum
 overafter_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = overafter_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -2350,8 +2350,8 @@ PG_FUNCTION_INFO_V1(overafter_timestampset_periodset);
 PGDLLEXPORT Datum
 overafter_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overafter_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -2375,7 +2375,7 @@ PG_FUNCTION_INFO_V1(overafter_period_timestamp);
 PGDLLEXPORT Datum
 overafter_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PG_RETURN_BOOL(overafter_period_timestamp_internal(p, t));
 }
@@ -2398,8 +2398,8 @@ PG_FUNCTION_INFO_V1(overafter_period_timestampset);
 PGDLLEXPORT Datum
 overafter_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overafter_period_timestampset_internal(p, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -2423,8 +2423,8 @@ PG_FUNCTION_INFO_V1(overafter_period_period);
 PGDLLEXPORT Datum
 overafter_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(overafter_period_period_internal(p1, p2));
 }
 
@@ -2446,8 +2446,8 @@ PG_FUNCTION_INFO_V1(overafter_period_periodset);
 PGDLLEXPORT Datum
 overafter_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = overafter_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -2471,7 +2471,7 @@ PG_FUNCTION_INFO_V1(overafter_periodset_timestamp);
 PGDLLEXPORT Datum
 overafter_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = overafter_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -2497,8 +2497,8 @@ PG_FUNCTION_INFO_V1(overafter_periodset_timestampset);
 PGDLLEXPORT Datum
 overafter_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = overafter_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -2523,8 +2523,8 @@ PG_FUNCTION_INFO_V1(overafter_periodset_period);
 PGDLLEXPORT Datum
 overafter_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = overafter_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -2549,8 +2549,8 @@ PG_FUNCTION_INFO_V1(overafter_periodset_periodset);
 PGDLLEXPORT Datum
 overafter_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = overafter_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -2582,7 +2582,7 @@ PGDLLEXPORT Datum
 adjacent_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(adjacent_timestamp_period_internal(t, p));
 }
 
@@ -2610,7 +2610,7 @@ PGDLLEXPORT Datum
 adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = adjacent_timestamp_periodset_internal(t, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -2639,8 +2639,8 @@ PG_FUNCTION_INFO_V1(adjacent_timestampset_period);
 PGDLLEXPORT Datum
 adjacent_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = adjacent_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BOOL(result);
@@ -2671,8 +2671,8 @@ PG_FUNCTION_INFO_V1(adjacent_timestampset_periodset);
 PGDLLEXPORT Datum
 adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = adjacent_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -2686,7 +2686,7 @@ PG_FUNCTION_INFO_V1(adjacent_period_timestamp);
 PGDLLEXPORT Datum
 adjacent_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PG_RETURN_BOOL(adjacent_timestamp_period_internal(t, p));
 }
@@ -2698,8 +2698,8 @@ PG_FUNCTION_INFO_V1(adjacent_period_timestampset);
 PGDLLEXPORT Datum
 adjacent_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = adjacent_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -2726,8 +2726,8 @@ PG_FUNCTION_INFO_V1(adjacent_period_period);
 PGDLLEXPORT Datum
 adjacent_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(adjacent_period_period_internal(p1, p2));
 }
 
@@ -2754,8 +2754,8 @@ PG_FUNCTION_INFO_V1(adjacent_period_periodset);
 PGDLLEXPORT Datum
 adjacent_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result = adjacent_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -2768,7 +2768,7 @@ PG_FUNCTION_INFO_V1(adjacent_periodset_timestamp);
 PGDLLEXPORT Datum
 adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result = adjacent_timestamp_periodset_internal(t, ps);
   PG_FREE_IF_COPY(ps, 0);
@@ -2782,8 +2782,8 @@ PG_FUNCTION_INFO_V1(adjacent_periodset_timestampset);
 PGDLLEXPORT Datum
 adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result = adjacent_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -2797,8 +2797,8 @@ PG_FUNCTION_INFO_V1(adjacent_periodset_period);
 PGDLLEXPORT Datum
 adjacent_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result = adjacent_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_BOOL(result);
@@ -2829,8 +2829,8 @@ PG_FUNCTION_INFO_V1(adjacent_periodset_periodset);
 PGDLLEXPORT Datum
 adjacent_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   bool result = adjacent_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -2910,7 +2910,7 @@ PGDLLEXPORT Datum
 union_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   TimestampSet *result = union_timestamp_timestampset_internal(t, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -2924,7 +2924,7 @@ PGDLLEXPORT Datum
 union_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   Period *p1 = period_make(t, t, true, true);
   PeriodSet *result = union_period_period_internal(p, p1);
   pfree(p1);
@@ -2939,7 +2939,7 @@ PGDLLEXPORT Datum
 union_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   Period *p = period_make(t, t, true, true);
   PeriodSet *result = union_period_periodset_internal(p, ps);
   pfree(p);
@@ -2956,7 +2956,7 @@ PG_FUNCTION_INFO_V1(union_timestampset_timestamp);
 PGDLLEXPORT Datum
 union_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   TimestampSet *result = union_timestamp_timestampset_internal(t, ts);
   PG_FREE_IF_COPY(ts, 0);
@@ -2979,8 +2979,8 @@ PG_FUNCTION_INFO_V1(union_timestampset_timestampset);
 PGDLLEXPORT Datum
 union_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   TimestampSet *result = union_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -2994,8 +2994,8 @@ PG_FUNCTION_INFO_V1(union_timestampset_period);
 PGDLLEXPORT Datum
 union_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PeriodSet *ps = timestampset_to_periodset_internal(ts);
   PeriodSet *result = union_period_periodset_internal(p, ps);
   pfree(ps);
@@ -3010,8 +3010,8 @@ PG_FUNCTION_INFO_V1(union_timestampset_periodset);
 PGDLLEXPORT Datum
 union_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   PeriodSet *ps1 = timestampset_to_periodset_internal(ts);
   PeriodSet *result = union_periodset_periodset_internal(ps, ps1);
   pfree(ps1);
@@ -3062,7 +3062,7 @@ PG_FUNCTION_INFO_V1(union_period_timestamp);
 PGDLLEXPORT Datum
 union_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period *p1 = period_make(t, t, true, true);
   PeriodSet *result = union_period_period_internal(p, p1);
@@ -3077,8 +3077,8 @@ PG_FUNCTION_INFO_V1(union_period_timestampset);
 PGDLLEXPORT Datum
 union_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   PeriodSet *ps = timestampset_to_periodset_internal(ts);
   PeriodSet *result = union_period_periodset_internal(p, ps);
   pfree(ps);
@@ -3093,8 +3093,8 @@ PG_FUNCTION_INFO_V1(union_period_period);
 PGDLLEXPORT Datum
 union_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_POINTER(union_period_period_internal(p1, p2));
 }
 
@@ -3119,8 +3119,8 @@ PG_FUNCTION_INFO_V1(union_period_periodset);
 PGDLLEXPORT Datum
 union_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   PeriodSet *result = union_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
@@ -3135,7 +3135,7 @@ PG_FUNCTION_INFO_V1(union_periodset_timestamp);
 PGDLLEXPORT Datum
 union_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period *p = period_make(t, t, true, true);
   PeriodSet *result = union_period_periodset_internal(p, ps);
@@ -3151,8 +3151,8 @@ PG_FUNCTION_INFO_V1(union_periodset_timestampset);
 PGDLLEXPORT Datum
 union_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   PeriodSet *ps1 = timestampset_to_periodset_internal(ts);
   PeriodSet *result = union_periodset_periodset_internal(ps, ps1);
   pfree(ps1);
@@ -3168,8 +3168,8 @@ PG_FUNCTION_INFO_V1(union_periodset_period);
 PGDLLEXPORT Datum
 union_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PeriodSet *result = union_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
@@ -3282,8 +3282,8 @@ PG_FUNCTION_INFO_V1(union_periodset_periodset);
 PGDLLEXPORT Datum
 union_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   PeriodSet *result = union_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -3316,7 +3316,7 @@ PGDLLEXPORT Datum
 intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool contains = contains_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 1);
   if (!contains)
@@ -3332,7 +3332,7 @@ PGDLLEXPORT Datum
 intersection_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool contains = contains_period_timestamp_internal(p, t);
   PG_FREE_IF_COPY(p, 1);
   if (!contains)
@@ -3348,7 +3348,7 @@ PGDLLEXPORT Datum
 intersection_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool contains = contains_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 1);
   if (!contains)
@@ -3363,7 +3363,7 @@ PG_FUNCTION_INFO_V1(intersection_timestampset_timestamp);
 PGDLLEXPORT Datum
 intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool contains = contains_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -3389,8 +3389,8 @@ PG_FUNCTION_INFO_V1(intersection_timestampset_timestampset);
 PGDLLEXPORT Datum
 intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   TimestampSet *result = intersection_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -3415,8 +3415,8 @@ PG_FUNCTION_INFO_V1(intersection_timestampset_period);
 PGDLLEXPORT Datum
 intersection_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   TimestampSet *result = intersection_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(p, 1);
@@ -3441,8 +3441,8 @@ PG_FUNCTION_INFO_V1(intersection_timestampset_periodset);
 PGDLLEXPORT Datum
 intersection_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   TimestampSet *result = intersection_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -3460,7 +3460,7 @@ PG_FUNCTION_INFO_V1(intersection_period_timestamp);
 PGDLLEXPORT Datum
 intersection_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool contains = contains_period_timestamp_internal(p, t);
   PG_FREE_IF_COPY(p, 0);
@@ -3476,8 +3476,8 @@ PG_FUNCTION_INFO_V1(intersection_period_timestampset);
 PGDLLEXPORT Datum
 intersection_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *ps = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *ps = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   TimestampSet *result = intersection_timestampset_period_internal(ts, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -3512,12 +3512,12 @@ PG_FUNCTION_INFO_V1(intersection_period_period);
 PGDLLEXPORT Datum
 intersection_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   Period *result = intersection_period_period_internal(p1, p2);
   if (result == NULL)
     PG_RETURN_NULL();
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 /**
@@ -3560,8 +3560,8 @@ PG_FUNCTION_INFO_V1(intersection_period_periodset);
 PGDLLEXPORT Datum
 intersection_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   PeriodSet *result = intersection_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   if (result == NULL)
@@ -3578,7 +3578,7 @@ PG_FUNCTION_INFO_V1(intersection_periodset_timestamp);
 PGDLLEXPORT Datum
 intersection_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool contains = contains_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -3594,8 +3594,8 @@ PG_FUNCTION_INFO_V1(intersection_periodset_timestampset);
 PGDLLEXPORT Datum
 intersection_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   TimestampSet *result = intersection_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -3611,8 +3611,8 @@ PG_FUNCTION_INFO_V1(intersection_periodset_period);
 PGDLLEXPORT Datum
 intersection_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PeriodSet *result = intersection_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 0);
   if (result == NULL)
@@ -3668,8 +3668,8 @@ PG_FUNCTION_INFO_V1(intersection_periodset_periodset);
 PGDLLEXPORT Datum
 intersection_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   PeriodSet *result = intersection_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);
@@ -3705,7 +3705,7 @@ PGDLLEXPORT Datum
 minus_timestamp_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool contains = contains_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 1);
   if (contains)
@@ -3721,7 +3721,7 @@ PGDLLEXPORT Datum
 minus_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool contains = contains_period_timestamp_internal(p, t);
   PG_FREE_IF_COPY(p, 1);
   if (contains)
@@ -3737,7 +3737,7 @@ PGDLLEXPORT Datum
 minus_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool contains = contains_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 1);
   if (contains)
@@ -3776,7 +3776,7 @@ PG_FUNCTION_INFO_V1(minus_timestampset_timestamp);
 PGDLLEXPORT Datum
 minus_timestampset_timestamp(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   TimestampSet *result = minus_timestampset_timestamp_internal(ts, t);
   PG_FREE_IF_COPY(ts, 0);
@@ -3802,8 +3802,8 @@ PG_FUNCTION_INFO_V1(minus_timestampset_timestampset);
 PGDLLEXPORT Datum
 minus_timestampset_timestampset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
   TimestampSet *result = minus_timestampset_timestampset_internal(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
@@ -3828,8 +3828,8 @@ PG_FUNCTION_INFO_V1(minus_timestampset_period);
 PGDLLEXPORT Datum
 minus_timestampset_period(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   TimestampSet *result = minus_timestampset_period_internal(ts, p);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(p, 1);
@@ -3855,8 +3855,8 @@ PG_FUNCTION_INFO_V1(minus_timestampset_periodset);
 PGDLLEXPORT Datum
 minus_timestampset_periodset(PG_FUNCTION_ARGS)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   TimestampSet *result = minus_timestampset_periodset_internal(ts, ps);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -3924,7 +3924,7 @@ PG_FUNCTION_INFO_V1(minus_period_timestamp);
 PGDLLEXPORT Datum
 minus_period_timestamp(PG_FUNCTION_ARGS)
 {
-  Period *ps = PG_GETARG_PERIOD(0);
+  Period *ps = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PeriodSet *result = minus_period_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -3959,8 +3959,8 @@ PG_FUNCTION_INFO_V1(minus_period_timestampset);
 PGDLLEXPORT Datum
 minus_period_timestampset(PG_FUNCTION_ARGS)
 {
-  Period *ps = PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  Period *ps = PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   PeriodSet *result = minus_period_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -4058,8 +4058,8 @@ PG_FUNCTION_INFO_V1(minus_period_period);
 PGDLLEXPORT Datum
 minus_period_period(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PeriodSet *result = minus_period_period_internal(p1, p2);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -4130,8 +4130,8 @@ PG_FUNCTION_INFO_V1(minus_period_periodset);
 PGDLLEXPORT Datum
 minus_period_periodset(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  Period *p = PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   PeriodSet *result = minus_period_periodset_internal(p, ps);
   PG_FREE_IF_COPY(ps, 1);
   if (result == NULL)
@@ -4171,7 +4171,7 @@ PG_FUNCTION_INFO_V1(minus_periodset_timestamp);
 PGDLLEXPORT Datum
 minus_periodset_timestamp(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   PeriodSet *result = minus_periodset_timestamp_internal(ps, t);
   PG_FREE_IF_COPY(ps, 0);
@@ -4298,8 +4298,8 @@ PG_FUNCTION_INFO_V1(minus_periodset_timestampset);
 PGDLLEXPORT Datum
 minus_periodset_timestampset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   PeriodSet *result = minus_periodset_timestampset_internal(ps, ts);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -4338,8 +4338,8 @@ PG_FUNCTION_INFO_V1(minus_periodset_period);
 PGDLLEXPORT Datum
 minus_periodset_period(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
   PeriodSet *result = minus_periodset_period_internal(ps, p);
   PG_FREE_IF_COPY(ps, 0);
   if (result == NULL)
@@ -4408,8 +4408,8 @@ PG_FUNCTION_INFO_V1(minus_periodset_periodset);
 PGDLLEXPORT Datum
 minus_periodset_periodset(PG_FUNCTION_ARGS)
 {
-  PeriodSet *ps1 = PG_GETARG_PERIODSET(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
+  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
   PeriodSet *result = minus_periodset_periodset_internal(ps1, ps2);
   PG_FREE_IF_COPY(ps1, 0);
   PG_FREE_IF_COPY(ps2, 1);

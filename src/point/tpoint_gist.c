@@ -291,24 +291,18 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-    timestampset_stbox(ts, result);
-    PG_FREE_IF_COPY(ts, 1);
-    // Datum tsdatum = PG_GETARG_DATUM(1);
-    // timestampset_stbox_slice(tsdatum, result);
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_stbox_slice(tsdatum, result);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
-    Period *p = PG_GETARG_PERIOD(1);
+    Period *p = PG_GETARG_PERIOD_P(1);
     period_stbox(p, result);
   }
   else if (subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = PG_GETARG_PERIODSET(1);
-    periodset_stbox(ps, result);
-    PG_FREE_IF_COPY(ps, 1);
-    // Datum psdatum = PG_GETARG_DATUM(1);
-    // periodset_stbox_slice(psdatum, result);
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_stbox_slice(psdatum, result);
   }
   else if (subtype == type_oid(T_STBOX))
   {
@@ -319,15 +313,10 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
   }
   else if (tspatial_type(subtype))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-    if (temp == NULL)
+    if (PG_ARGISNULL(1))
       return false;
-    temporal_bbox(temp, result);
-    PG_FREE_IF_COPY(temp, 1);
-    // if (PG_ARGISNULL(1))
-      // return false;
-    // Datum tempdatum = PG_GETARG_DATUM(1);
-    // temporal_bbox_slice(tempdatum, result);
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", subtype);
@@ -401,7 +390,7 @@ stbox_gist_union(PG_FUNCTION_ARGS)
   STBOX *result = stbox_copy(DatumGetSTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     stbox_adjust(result, DatumGetSTboxP(ent[i].key));
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 /*****************************************************************************

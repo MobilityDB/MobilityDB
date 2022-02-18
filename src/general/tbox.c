@@ -604,7 +604,7 @@ PG_FUNCTION_INFO_V1(period_to_tbox);
 PGDLLEXPORT Datum
 period_to_tbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   period_tbox(p, result);
   PG_RETURN_POINTER(result);
@@ -691,7 +691,7 @@ PGDLLEXPORT Datum
 int_period_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
     p->upper);
   PG_RETURN_POINTER(result);
@@ -705,7 +705,7 @@ PGDLLEXPORT Datum
 float_period_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
   PG_RETURN_POINTER(result);
 }
@@ -742,7 +742,7 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
     PG_RETURN_NULL();
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   ensure_tnumber_range_type(range->rangetypid);
   double xmin, xmax;
   range_bounds(range, &xmin, &xmax);

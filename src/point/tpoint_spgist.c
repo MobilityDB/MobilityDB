@@ -533,19 +533,15 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
-    // TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
-    // timestampset_stbox(ts, result);
     timestampset_stbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIOD))
   {
-    Period *p = DatumGetPeriod(scankey->sk_argument);
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
     period_stbox(p, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIODSET))
   {
-    // PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
-    // periodset_stbox(ps, result);
     periodset_stbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_STBOX))
@@ -554,7 +550,6 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   }
   else if (tspatial_type(scankey->sk_subtype))
   {
-    // temporal_bbox(DatumGetTemporalP(scankey->sk_argument), result);
     temporal_bbox_slice(scankey->sk_argument, result);
   }
   else

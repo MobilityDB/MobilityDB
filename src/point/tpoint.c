@@ -571,11 +571,7 @@ PGDLLEXPORT Datum
 tpoint_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-#ifdef STORE_TRAJ
-  Datum result = tpoint_trajectory_external(temp);
-#else
   Datum result = tpoint_trajectory_internal(temp);
-#endif
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

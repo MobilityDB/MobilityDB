@@ -1653,19 +1653,6 @@ tpointinstarr_make_trajectory(const TInstant **instants, int count,
   return result;
 }
 
-#ifdef STORE_TRAJ
-/**
- * Copy the precomputed trajectory of a temporal sequence point
- */
-static Datum
-tpointseq_trajectory_copy(const TSequence *seq)
-{
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +  /* start of data */
-    seq->offsets[seq->count + 1];  /* offset */
-  return PointerGetDatum(gserialized_copy(traj));
-}
-#endif
-
 /**
  * Returns the trajectory of a temporal sequence point
  *
@@ -1677,11 +1664,6 @@ tpointseq_trajectory_copy(const TSequence *seq)
 Datum
 tpointseq_trajectory(const TSequence *seq)
 {
-#ifdef STORE_TRAJ
-  void *traj = (char *) (&seq->offsets[seq->count + 2]) +   /* start of data */
-    seq->offsets[seq->count + 1];  /* offset */
-  return PointerGetDatum(traj);
-#else
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tinstant_value_copy(tsequence_inst_n(seq, 0));
@@ -1708,7 +1690,6 @@ tpointseq_trajectory(const TSequence *seq)
     lwpoint_free(points[i]);
   pfree(points);
   return result;
-#endif
 }
 
 /**
@@ -1723,11 +1704,7 @@ tpointseqset_trajectory(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-#ifdef STORE_TRAJ
-    return tpointseq_trajectory_copy(tsequenceset_seq_n(ts, 0));
-#else
     return tpointseq_trajectory(tsequenceset_seq_n(ts, 0));
-#endif
 
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(ts->flags);
   LWPOINT **points = palloc(sizeof(LWPOINT *) * ts->totalcount);
@@ -1813,39 +1790,6 @@ tpoint_trajectory_internal(const Temporal *temp)
   return result;
 }
 
-#ifdef STORE_TRAJ
-/**
- * Free the trajectory after a call to tpoint_trajectory_internal
- * when temporal sequence points have a precomputed trajectory
- */
-void
-tpoint_trajectory_free(const Temporal *temp, Datum traj)
-{
-  /* We do not need to free the trajectory for temporal point sequences */
-  if (temp->subtype != SEQUENCE)
-    pfree(DatumGetPointer(traj));
-}
-
-/**
- * Returns the trajectory of a temporal point (dispatch function)
- */
-Datum
-tpoint_trajectory_external(const Temporal *temp)
-{
-  Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
-    result = tpointinstset_trajectory((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
-    result = tpointseq_trajectory_copy((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = tpointseqset_trajectory((TSequenceSet *) temp);
-  return result;
-}
-#endif
-
 PG_FUNCTION_INFO_V1(tpoint_trajectory);
 /**
  * Returns the trajectory of a temporal point
@@ -1854,11 +1798,7 @@ PGDLLEXPORT Datum
 tpoint_trajectory(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-#ifdef STORE_TRAJ
-  Datum result = tpoint_trajectory_external(temp);
-#else
   Datum result = tpoint_trajectory_internal(temp);
-#endif
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
@@ -2016,12 +1956,6 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
       gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(inst));
       gserialized_set_srid(gs, srid);
     }
-#ifdef STORE_TRAJ
-    /* Set the SRID of the precomputed trajectory */
-    Datum traj = tpointseq_trajectory(seq);
-    gs = (GSERIALIZED *) DatumGetPointer(traj);
-    gserialized_set_srid(gs, srid);
-#endif
     /* Set the SRID of the bounding box */
     box = tsequence_bbox_ptr(seq);
     box->srid = srid;
@@ -2992,9 +2926,6 @@ tpointseq_length(const TSequence *seq)
     /* We are sure that the trajectory is a line */
     double result = DatumGetFloat8(call_function2(geography_length, traj,
       BoolGetDatum(true)));
-#ifndef STORE_TRAJ
-    pfree(DatumGetPointer(traj));
-#endif
     return result;
   }
 }

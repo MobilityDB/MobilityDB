@@ -418,7 +418,7 @@ Datum
 boxop_timestampset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
@@ -440,7 +440,7 @@ boxop_temporal_timestampset(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
   timestampset_period(ts, &p2);
@@ -460,7 +460,7 @@ Datum
 boxop_period_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1;
   temporal_period(temp, &p1);
@@ -480,7 +480,7 @@ boxop_temporal_period(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
   temporal_period(temp, &p1);
   bool result = func(&p1, p);
@@ -498,7 +498,7 @@ Datum
 boxop_periodset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
@@ -520,7 +520,7 @@ boxop_temporal_periodset(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
   periodset_period(ps, &p2);

@@ -128,7 +128,7 @@ period_spgist_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-  Period *period = DatumGetPeriod(in->leafDatum),
+  Period *period = DatumGetPeriodP(in->leafDatum),
     *centroid;
   int16 quadrant;
 
@@ -137,11 +137,11 @@ period_spgist_choose(PG_FUNCTION_ARGS)
     out->resultType = spgMatchNode;
     /* nodeN will be set by core */
     out->result.matchNode.levelAdd = 0;
-    out->result.matchNode.restDatum = PeriodGetDatum(period);
+    out->result.matchNode.restDatum = PeriodPGetDatum(period);
     PG_RETURN_VOID();
   }
 
-  centroid = DatumGetPeriod(in->prefixDatum);
+  centroid = DatumGetPeriodP(in->prefixDatum);
   quadrant = getQuadrant(centroid, period);
 
   assert(quadrant <= in->nNodes);
@@ -150,7 +150,7 @@ period_spgist_choose(PG_FUNCTION_ARGS)
   out->resultType = spgMatchNode;
   out->result.matchNode.nodeN = quadrant - 1;
   out->result.matchNode.levelAdd = 1;
-  out->result.matchNode.restDatum = PeriodGetDatum(period);
+  out->result.matchNode.restDatum = PeriodPGetDatum(period);
 
   PG_RETURN_VOID();
 }
@@ -179,7 +179,7 @@ period_spgist_picksplit(PG_FUNCTION_ARGS)
 
   /* Construct "centroid" period from medians of lower and upper bounds */
   for (i = 0; i < in->nTuples; i++)
-    period_deserialize(DatumGetPeriod(in->datums[i]),
+    period_deserialize(DatumGetPeriodP(in->datums[i]),
       &lowerBounds[i], &upperBounds[i]);
 
   qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
@@ -192,7 +192,7 @@ period_spgist_picksplit(PG_FUNCTION_ARGS)
 
   /* Fill the output */
   out->hasPrefix = true;
-  out->prefixDatum = PeriodGetDatum(centroid);
+  out->prefixDatum = PeriodPGetDatum(centroid);
 
   out->nNodes = 4;
   out->nodeLabels = NULL;    /* we don't need node labels */
@@ -206,10 +206,10 @@ period_spgist_picksplit(PG_FUNCTION_ARGS)
    */
   for (i = 0; i < in->nTuples; i++)
   {
-    Period *period = DatumGetPeriod(in->datums[i]);
+    Period *period = DatumGetPeriodP(in->datums[i]);
     int16 quadrant = getQuadrant(centroid, period);
 
-    out->leafTupleDatums[i] = PeriodGetDatum(period);
+    out->leafTupleDatums[i] = PeriodPGetDatum(period);
     out->mapTuplesToNodes[i] = quadrant - 1;
   }
 
@@ -380,23 +380,21 @@ time_spgist_get_period(Period *result, ScanKeyData *scankey)
   }
   else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = DatumGetTimestampSet(scankey->sk_argument);
-    memcpy(result, timestampset_bbox_ptr(ts), sizeof(Period));
+    timestampset_bbox_slice(scankey->sk_argument, result);
   }
   else if (scankey->sk_subtype == type_oid(T_PERIOD))
   {
-    Period *p = DatumGetPeriod(scankey->sk_argument);
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
     memcpy(result, p, sizeof(Period));
   }
   else if (scankey->sk_subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = DatumGetPeriodSet(scankey->sk_argument);
-    memcpy(result, periodset_bbox_ptr(ps), sizeof(Period));
+    periodset_bbox_slice(scankey->sk_argument, result);
   }
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(scankey->sk_subtype))
   {
-    temporal_bbox(DatumGetTemporalP(scankey->sk_argument), result);
+    temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
@@ -435,7 +433,7 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
   }
 
   /* Fetch the centroid of this node. */
-  centroid = DatumGetPeriod(in->prefixDatum);
+  centroid = DatumGetPeriodP(in->prefixDatum);
   period_deserialize(centroid, &centroidLower, &centroidUpper);
 
   assert(in->nNodes == 4);
@@ -508,7 +506,7 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
          */
         if (in->traversalValue)
         {
-          prevCentroid = DatumGetPeriod(in->traversalValue);
+          prevCentroid = DatumGetPeriodP(in->traversalValue);
           period_deserialize(prevCentroid, &prevLower,
             &prevUpper);
         }
@@ -711,7 +709,7 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-  Period *key = DatumGetPeriod(in->leafDatum);
+  Period *key = DatumGetPeriodP(in->leafDatum);
   bool res = true;
 
   /* Initialization so that all the tests are exact for time types. */
@@ -759,7 +757,7 @@ timestampset_spgist_compress(PG_FUNCTION_ARGS)
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
   timestampset_bbox_slice(tsdatum, result);
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 PG_FUNCTION_INFO_V1(periodset_spgist_compress);
@@ -772,7 +770,7 @@ periodset_spgist_compress(PG_FUNCTION_ARGS)
   Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
   periodset_bbox_slice(psdatum, result);
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */

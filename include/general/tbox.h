@@ -57,8 +57,8 @@ typedef struct
 
 /* fmgr macros temporal types */
 
-#define DatumGetTboxP(X)  ((TBOX *) DatumGetPointer(X))
-#define TboxPGetDatum(X)  PointerGetDatum(X)
+#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
+#define TboxPGetDatum(X)    PointerGetDatum(X)
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 

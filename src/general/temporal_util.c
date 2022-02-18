@@ -279,20 +279,6 @@ ensure_tgeo_base_type(Oid basetypid)
   return;
 }
 
-#ifdef STORE_TRAJ
-/**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
- */
-bool
-type_has_precomputed_trajectory(Oid basetypid)
-{
-  if (tgeo_base_type(basetypid))
-    return true;
-  return false;
-}
-#endif
-
 /*****************************************************************************
  * Oid functions
  *****************************************************************************/

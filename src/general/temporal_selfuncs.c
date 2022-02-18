@@ -257,7 +257,7 @@ temporal_const_to_period(Node *other, Period *period)
   Oid consttype = ((Const *) other)->consttype;
 
   if (consttype == type_oid(T_PERIOD))
-    memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
+    memcpy(period, DatumGetPeriodP(((Const *) other)->constvalue), sizeof(Period));
   else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
     temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
@@ -349,11 +349,11 @@ temporal_sel_period(PlannerInfo *root, VariableStatData *vardata,
   {
     Oid oper = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, oper, PeriodGetDatum(period),
+    selec = var_eq_const(vardata, oper, PeriodPGetDatum(period),
       false, false, false);
 #else
     selec = var_eq_const(vardata, oper, DEFAULT_COLLATION_OID,
-      PeriodGetDatum(period), false, false, false);
+      PeriodPGetDatum(period), false, false, false);
 #endif
   }
   else if (cachedOp == OVERLAPS_OP || cachedOp == CONTAINS_OP ||

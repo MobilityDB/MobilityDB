@@ -63,7 +63,7 @@ temporal_spgist_compress(PG_FUNCTION_ARGS)
   Datum tempdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
   temporal_bbox_slice(tempdatum, result);
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 #endif

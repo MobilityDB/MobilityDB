@@ -839,11 +839,11 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
     {
       period_oprid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-      selec *= var_eq_const(vardata, period_oprid, PeriodGetDatum(&period),
+      selec *= var_eq_const(vardata, period_oprid, PeriodPGetDatum(&period),
         false, false, false);
 #else
       selec *= var_eq_const(vardata, period_oprid, DEFAULT_COLLATION_OID,
-        PeriodGetDatum(&period), false, false, false);
+        PeriodPGetDatum(&period), false, false, false);
 #endif
     }
   }

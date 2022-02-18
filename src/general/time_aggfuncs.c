@@ -264,8 +264,8 @@ PG_FUNCTION_INFO_V1(timestampset_extent_transfn);
 PGDLLEXPORT Datum
 timestampset_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
-  TimestampSet *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_TIMESTAMPSET(1);
+  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
+  TimestampSet *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_TIMESTAMPSET_P(1);
   Period *result;
 
   /* Can't do anything with null inputs */
@@ -302,8 +302,8 @@ PG_FUNCTION_INFO_V1(period_extent_transfn);
 PGDLLEXPORT Datum
 period_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
-  const Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD(1);
+  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
+  const Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
   Period *result;
 
   /* Can't do anything with null inputs */
@@ -332,8 +332,8 @@ PG_FUNCTION_INFO_V1(periodset_extent_transfn);
 PGDLLEXPORT Datum
 periodset_extent_transfn(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
-  PeriodSet *ps = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIODSET(1);
+  Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
+  PeriodSet *ps = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIODSET_P(1);
   Period *result;
 
   /* Can't do anything with null inputs */
@@ -381,7 +381,7 @@ timestampset_tunion_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   SkipList *result = timestampset_agg_transfn(fcinfo, state, ts);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
@@ -404,7 +404,7 @@ period_tunion_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   SkipList *result = period_agg_transfn(fcinfo, state, p);
   PG_RETURN_POINTER(result);
 }
@@ -426,7 +426,7 @@ periodset_tunion_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   SkipList *result = periodset_agg_transfn(fcinfo, state, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
@@ -520,7 +520,7 @@ timestampset_tcount_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   TInstant **instants = timestampset_transform_tcount(ts);
   if (state)
   {
@@ -555,7 +555,7 @@ period_tcount_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   TSequence *seq = period_transform_tcount(p);
   if (state)
   {
@@ -589,7 +589,7 @@ periodset_tcount_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   TSequence **sequences = periodset_transform_tcount(ps);
   if (state)
   {
@@ -618,8 +618,8 @@ PG_FUNCTION_INFO_V1(time_extent_combinefn);
 PGDLLEXPORT Datum
 time_extent_combinefn(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
-  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD(1);
+  Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
 
   if (!p2 && !p1)
     PG_RETURN_NULL();

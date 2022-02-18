@@ -362,7 +362,7 @@ PG_FUNCTION_INFO_V1(period_out);
 PGDLLEXPORT Datum
 period_out(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   PG_RETURN_CSTRING(period_to_string(p));
 }
 
@@ -389,7 +389,7 @@ PG_FUNCTION_INFO_V1(period_send);
 PGDLLEXPORT Datum
 period_send(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
   period_write(p, &buf);
@@ -438,7 +438,7 @@ period_constructor2(PG_FUNCTION_ARGS)
 
   period = period_make(lower, upper, true, false);
 
-  PG_RETURN_PERIOD(period);
+  PG_RETURN_PERIOD_P(period);
 }
 
 
@@ -457,7 +457,7 @@ period_constructor4(PG_FUNCTION_ARGS)
 
   period = period_make(lower, upper, lower_inc, upper_inc);
 
-  PG_RETURN_PERIOD(period);
+  PG_RETURN_PERIOD_P(period);
 }
 
 /*****************************************************************************
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(period_to_tstzrange);
 PGDLLEXPORT Datum
 period_to_tstzrange(PG_FUNCTION_ARGS)
 {
-  Period *period = PG_GETARG_PERIOD(0);
+  Period *period = PG_GETARG_PERIOD_P(0);
   RangeType *range;
   range = range_make(TimestampTzGetDatum(period->lower),
     TimestampTzGetDatum(period->upper), period->lower_inc,
@@ -534,7 +534,7 @@ PG_FUNCTION_INFO_V1(period_lower);
 PGDLLEXPORT Datum
 period_lower(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   PG_RETURN_TIMESTAMPTZ(p->lower);
 }
 
@@ -545,7 +545,7 @@ PG_FUNCTION_INFO_V1(period_upper);
 PGDLLEXPORT Datum
 period_upper(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   PG_RETURN_TIMESTAMPTZ(p->upper);
 }
 
@@ -558,7 +558,7 @@ PG_FUNCTION_INFO_V1(period_lower_inc);
 PGDLLEXPORT Datum
 period_lower_inc(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   PG_RETURN_BOOL(p->lower_inc != 0);
 }
 
@@ -569,7 +569,7 @@ PG_FUNCTION_INFO_V1(period_upper_inc);
 PGDLLEXPORT Datum
 period_upper_inc(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   PG_RETURN_BOOL(p->upper_inc != 0);
 }
 
@@ -596,7 +596,7 @@ PG_FUNCTION_INFO_V1(period_shift);
 PGDLLEXPORT Datum
 period_shift(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   Period *result = period_shift_internal(p, interval);
   PG_RETURN_POINTER(result);
@@ -639,7 +639,7 @@ PG_FUNCTION_INFO_V1(period_duration);
 PGDLLEXPORT Datum
 period_duration(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   Datum result = call_function2(timestamp_mi,
     TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
   PG_RETURN_DATUM(result);
@@ -671,8 +671,8 @@ PG_FUNCTION_INFO_V1(period_eq);
 PGDLLEXPORT Datum
 period_eq(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(period_eq_internal(p1, p2));
 }
 
@@ -693,8 +693,8 @@ PG_FUNCTION_INFO_V1(period_ne);
 PGDLLEXPORT Datum
 period_ne(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(period_ne_internal(p1, p2));
 }
 
@@ -731,8 +731,8 @@ PG_FUNCTION_INFO_V1(period_cmp);
 PGDLLEXPORT Datum
 period_cmp(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_INT32(period_cmp_internal(p1, p2));
 }
 
@@ -756,8 +756,8 @@ PG_FUNCTION_INFO_V1(period_lt);
 PGDLLEXPORT Datum
 period_lt(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(period_lt_internal(p1, p2));
 }
 
@@ -779,8 +779,8 @@ PG_FUNCTION_INFO_V1(period_le);
 PGDLLEXPORT Datum
 period_le(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(period_le_internal(p1, p2));
 }
 
@@ -802,8 +802,8 @@ PG_FUNCTION_INFO_V1(period_ge);
 PGDLLEXPORT Datum
 period_ge(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(period_ge_internal(p1, p2));
 }
 
@@ -825,8 +825,8 @@ PG_FUNCTION_INFO_V1(period_gt);
 PGDLLEXPORT Datum
 period_gt(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   PG_RETURN_BOOL(period_gt_internal(p1, p2));
 }
 
@@ -839,7 +839,7 @@ PG_FUNCTION_INFO_V1(period_hash);
 PGDLLEXPORT Datum
 period_hash(PG_FUNCTION_ARGS)
 {
-  Period     *p = PG_GETARG_PERIOD(0);
+  Period     *p = PG_GETARG_PERIOD_P(0);
   uint32    result;
   char    flags = '\0';
   uint32    lower_hash;
@@ -875,7 +875,7 @@ PG_FUNCTION_INFO_V1(period_hash_extended);
 PGDLLEXPORT Datum
 period_hash_extended(PG_FUNCTION_ARGS)
 {
-  Period     *p = PG_GETARG_PERIOD(0);
+  Period     *p = PG_GETARG_PERIOD_P(0);
   Datum    seed = PG_GETARG_DATUM(1);
   uint64    result;
   char    flags = '\0';

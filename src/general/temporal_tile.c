@@ -491,7 +491,7 @@ period_bucket_list(PG_FUNCTION_ARGS)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Period *bounds = PG_GETARG_PERIOD(0);
+    Period *bounds = PG_GETARG_PERIOD_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
 

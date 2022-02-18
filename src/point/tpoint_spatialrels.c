@@ -316,11 +316,7 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
           break;
         }
       }
-#ifdef STORE_TRAJ
-      tpoint_trajectory_free(temp, traj);
-#else
       pfree(DatumGetPointer(traj));
-#endif /* STORE_TRAJ */
       return BoolGetDatum(found);
     }
   }
@@ -329,11 +325,7 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
     result = invert ? func(geo, traj) : func(traj, geo);
   else /* numparam == 3 */
     result = invert ? func(geo, traj, param) : func(traj, geo, param);
-#ifdef STORE_TRAJ
-  tpoint_trajectory_free(temp, traj);
-#else
   pfree(DatumGetPointer(traj));
-#endif /* STORE_TRAJ */
   return result;
 }
 

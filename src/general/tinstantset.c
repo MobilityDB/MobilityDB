@@ -530,7 +530,7 @@ PGDLLEXPORT Datum
 tinstantset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TInstantSet *result = tinstantset_from_base_internal(value, basetypid, ts);
   DATUM_FREE_IF_COPY(value, basetypid, 0);

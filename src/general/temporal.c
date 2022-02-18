@@ -1502,7 +1502,7 @@ temporal_to_period(PG_FUNCTION_ARGS)
   Period *result = (Period *) palloc(sizeof(Period));
   temporal_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 /*****************************************************************************
@@ -3655,7 +3655,7 @@ static Datum
 temporal_restrict_timestampset(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -3729,7 +3729,7 @@ static Datum
 temporal_restrict_period(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   Temporal *result = temporal_restrict_period_internal(temp, p, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -3791,7 +3791,7 @@ static Datum
 temporal_restrict_periodset(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   Temporal *result = temporal_restrict_periodset_internal(temp, ps, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -3980,7 +3980,7 @@ PGDLLEXPORT Datum
 temporal_intersects_timestampset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -4004,7 +4004,7 @@ PGDLLEXPORT Datum
 temporal_intersects_period(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -4027,7 +4027,7 @@ PGDLLEXPORT Datum
 temporal_intersects_periodset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)

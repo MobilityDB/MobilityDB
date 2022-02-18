@@ -795,7 +795,7 @@ PGDLLEXPORT Datum
 tsequenceset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET(1);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool linear;
   if (PG_NARGS() == 2)
     linear = false;

@@ -140,7 +140,6 @@ period_index_recheck(StrategyNumber strategy)
     strategy == RTAfterStrategyNumber ||
     strategy == RTOverAfterStrategyNumber)
     return false;
-
   return true;
 }
 
@@ -158,34 +157,26 @@ time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
-    TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-    if (ts == NULL)
-      PG_RETURN_BOOL(false);
-    memcpy(result, timestampset_bbox_ptr(ts), sizeof(Period));
-    PG_FREE_IF_COPY(ts, 1);
+    Datum tsdatum = PG_GETARG_DATUM(1);
+    timestampset_bbox_slice(tsdatum, result);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
-    Period *p = PG_GETARG_PERIOD(1);
+    Period *p = PG_GETARG_PERIOD_P(1);
     if (p == NULL)
       PG_RETURN_BOOL(false);
     memcpy(result, p, sizeof(Period));
   }
   else if (subtype == type_oid(T_PERIODSET))
   {
-    PeriodSet *ps = PG_GETARG_PERIODSET(1);
-    if (ps == NULL)
-      PG_RETURN_BOOL(false);
-    memcpy(result, periodset_bbox_ptr(ps), sizeof(Period));
-    PG_FREE_IF_COPY(ps, 1);
+    Datum psdatum = PG_GETARG_DATUM(1);
+    periodset_bbox_slice(psdatum, result);
   }
+  /* For temporal types whose bounding box is a period */
   else if (temporal_type(subtype))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-    if (temp == NULL)
-      PG_RETURN_BOOL(false);
-    temporal_bbox(temp, result);
-    PG_FREE_IF_COPY(temp, 1);
+    Datum tempdatum = PG_GETARG_DATUM(1);
+    temporal_bbox_slice(tempdatum, result);
   }
   else
     elog(ERROR, "Unsupported type for indexing: %d", subtype);
@@ -205,7 +196,7 @@ period_gist_consistent(PG_FUNCTION_ARGS)
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   bool result;
-  const Period *key = DatumGetPeriod(entry->key);
+  const Period *key = DatumGetPeriodP(entry->key);
   Period query;
 
   /* Determine whether the operator is exact */
@@ -239,10 +230,10 @@ period_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
-  Period *result = period_copy(DatumGetPeriod(ent[0].key));
+  Period *result = period_copy(DatumGetPeriodP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    period_expand(DatumGetPeriod(ent[i].key), result);
-  PG_RETURN_PERIOD(result);
+    period_expand(DatumGetPeriodP(ent[i].key), result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 /*****************************************************************************
@@ -326,8 +317,8 @@ period_gist_penalty(PG_FUNCTION_ARGS)
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
   GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
   float *penalty = (float *) PG_GETARG_POINTER(2);
-  const Period *orig = DatumGetPeriod(origentry->key);
-  const Period *new = DatumGetPeriod(newentry->key);
+  const Period *orig = DatumGetPeriodP(origentry->key);
+  const Period *new = DatumGetPeriodP(newentry->key);
   PeriodBound orig_lower, new_lower, orig_upper, new_upper;
   period_deserialize(orig, &orig_lower, &orig_upper);
   period_deserialize(new, &new_lower, &new_upper);
@@ -385,7 +376,7 @@ period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   v->spl_nright = 0;
   for (i = FirstOffsetNumber; i <= maxoff; i++)
   {
-    Period *period = DatumGetPeriod(entryvec->vector[i].key);
+    Period *period = DatumGetPeriodP(entryvec->vector[i].key);
 
     if (i < split_idx)
       PLACE_LEFT(period, i);
@@ -393,8 +384,8 @@ period_gist_fallback_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
       PLACE_RIGHT(period, i);
   }
 
-  v->spl_ldatum = PeriodGetDatum(left_period);
-  v->spl_rdatum = PeriodGetDatum(right_period);
+  v->spl_ldatum = PeriodPGetDatum(left_period);
+  v->spl_rdatum = PeriodPGetDatum(right_period);
   return;
 }
 
@@ -587,7 +578,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
   /* Fill arrays of bounds */
   for (i = FirstOffsetNumber; i <= maxoff; i = OffsetNumberNext(i))
   {
-    Period  *period = DatumGetPeriod(entryvec->vector[i].key);
+    Period  *period = DatumGetPeriodP(entryvec->vector[i].key);
     period_deserialize(period, &by_lower[i - FirstOffsetNumber].lower,
       &by_lower[i - FirstOffsetNumber].upper);
   }
@@ -749,7 +740,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     /*
      * Get upper and lower bounds along selected axis.
      */
-    Period *period = DatumGetPeriod(entryvec->vector[i].key);
+    Period *period = DatumGetPeriodP(entryvec->vector[i].key);
     period_deserialize(period, &lower, &upper);
 
     if (period_cmp_bounds(&upper, &context.left_upper) <= 0)
@@ -804,7 +795,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     for (i = 0; i < common_entries_count; i++)
     {
       int idx = common_entries[i].index;
-      Period *period = DatumGetPeriod(entryvec->vector[idx].key);
+      Period *period = DatumGetPeriodP(entryvec->vector[idx].key);
 
       /*
        * Check if we have to place this entry in either group to achieve
@@ -862,8 +853,8 @@ PG_FUNCTION_INFO_V1(period_gist_same);
 PGDLLEXPORT Datum
 period_gist_same(PG_FUNCTION_ARGS)
 {
-  Period *p1 = PG_GETARG_PERIOD(0);
-  Period *p2 = PG_GETARG_PERIOD(1);
+  Period *p1 = PG_GETARG_PERIOD_P(0);
+  Period *p2 = PG_GETARG_PERIOD_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   *result = period_eq_internal(p1, p2);
   PG_RETURN_POINTER(result);

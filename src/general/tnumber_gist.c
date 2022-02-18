@@ -229,22 +229,16 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
   }
   else if (subtype == type_oid(T_TIMESTAMPSET))
   {
-    // TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
-    // timestampset_tbox(ts, result);
-    // PG_FREE_IF_COPY(ts, 1);
     Datum tsdatum = PG_GETARG_DATUM(1);
     timestampset_tbox_slice(tsdatum, result);
   }
   else if (subtype == type_oid(T_PERIOD))
   {
-    Period *p = PG_GETARG_PERIOD(1);
+    Period *p = PG_GETARG_PERIOD_P(1);
     period_tbox(p, result);
   }
   else if (subtype == type_oid(T_PERIODSET))
   {
-    // PeriodSet *ps = PG_GETARG_PERIODSET(1);
-    // periodset_tbox(ps, result);
-    // PG_FREE_IF_COPY(ps, 1);
     Datum psdatum = PG_GETARG_DATUM(1);
     periodset_tbox_slice(psdatum, result);
   }
@@ -257,11 +251,6 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
   }
   else if (tnumber_type(subtype))
   {
-    // Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-    // if (temp == NULL)
-      // return false;
-    // temporal_bbox(temp, result);
-    // PG_FREE_IF_COPY(temp, 1);
     if (PG_ARGISNULL(1))
       return false;
     Datum tempdatum = PG_GETARG_DATUM(1);
@@ -343,7 +332,7 @@ tbox_gist_union(PG_FUNCTION_ARGS)
   TBOX *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
     tbox_expand_rt(result, DatumGetTboxP(ent[i].key));
-  PG_RETURN_PERIOD(result);
+  PG_RETURN_PERIOD_P(result);
 }
 
 /*****************************************************************************

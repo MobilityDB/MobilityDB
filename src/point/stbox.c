@@ -918,7 +918,7 @@ PG_FUNCTION_INFO_V1(period_to_stbox);
 PGDLLEXPORT Datum
 period_to_stbox(PG_FUNCTION_ARGS)
 {
-  Period *p = PG_GETARG_PERIOD(0);
+  Period *p = PG_GETARG_PERIOD_P(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   period_stbox(p, result);
   PG_RETURN_POINTER(result);
@@ -1000,7 +1000,7 @@ geo_period_to_stbox(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Period *p = PG_GETARG_PERIOD(1);
+  Period *p = PG_GETARG_PERIOD_P(1);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, result);
   result->tmin = p->lower;
