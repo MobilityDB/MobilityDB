@@ -52,8 +52,8 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY* entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    STBOX *box = palloc(sizeof(STBOX));
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    STBOX *box = (STBOX *) palloc(sizeof(STBOX));
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
@@ -61,23 +61,6 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
   }
   PG_RETURN_POINTER(entry);
 }
-
-/*****************************************************************************
- * GiST decompress function
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(tnpoint_gist_decompress);
-/**
- * GiST decompress function for temporal network points (result in a period)
- */
-PGDLLEXPORT Datum
-tnpoint_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************
  * SP-GiST compress function
@@ -91,7 +74,7 @@ PGDLLEXPORT Datum
 tnpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  STBOX *result = palloc(sizeof(STBOX));
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_STBOX_P(result);
 }

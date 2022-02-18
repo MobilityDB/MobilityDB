@@ -492,7 +492,7 @@ tpoint_const_to_stbox(Node *other, STBOX *box)
   else if (consttype == type_oid(T_STBOX))
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
   else if (tspatial_type(consttype))
-    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), box);
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
   return true;

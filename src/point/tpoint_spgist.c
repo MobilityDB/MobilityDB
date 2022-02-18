@@ -554,7 +554,7 @@ tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
   }
   else if (tspatial_type(scankey->sk_subtype))
   {
-    // temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+    // temporal_bbox(DatumGetTemporalP(scankey->sk_argument), result);
     temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
@@ -629,7 +629,7 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   STBOX *box = DatumGetSTboxP(in->datums[0]);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
-  STBOX *  centroid = palloc0(sizeof(STBOX));
+  STBOX *centroid = (STBOX *) palloc0(sizeof(STBOX));
   centroid->srid = box->srid;
   centroid->flags = box->flags;
   int  median, i;

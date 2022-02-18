@@ -106,7 +106,7 @@ PGDLLEXPORT Datum
 tand_bool_tbool(PG_FUNCTION_ARGS)
 {
   Datum b = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(tand_tbool_bool);
 PGDLLEXPORT Datum
 tand_tbool_bool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum b = PG_GETARG_DATUM(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -133,8 +133,8 @@ PG_FUNCTION_INFO_V1(tand_tbool_tbool);
 PGDLLEXPORT Datum
 tand_tbool_tbool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_and);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -155,7 +155,7 @@ PGDLLEXPORT Datum
 tor_bool_tbool(PG_FUNCTION_ARGS)
 {
   Datum b = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -168,7 +168,7 @@ PG_FUNCTION_INFO_V1(tor_tbool_bool);
 PGDLLEXPORT Datum
 tor_tbool_bool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum b = PG_GETARG_DATUM(1);
   Temporal *result = boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -182,8 +182,8 @@ PG_FUNCTION_INFO_V1(tor_tbool_tbool);
 PGDLLEXPORT Datum
 tor_tbool_tbool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = boolop_tbool_tbool(temp1, temp2, &datum_or);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1(tnot_tbool);
 PGDLLEXPORT Datum
 tnot_tbool(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnot_tbool_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

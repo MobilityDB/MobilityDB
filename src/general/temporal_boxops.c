@@ -379,7 +379,7 @@ boxop_timestamp_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
   period_set(t, t, true, true, &p2);
@@ -398,7 +398,7 @@ Datum
 boxop_temporal_timestamp(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Period p1, p2;
   temporal_period(temp, &p1);
@@ -419,7 +419,7 @@ boxop_timestampset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
   timestampset_period(ts, &p2);
@@ -439,7 +439,7 @@ Datum
 boxop_temporal_timestampset(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(1);
   Period p1, p2;
   temporal_period(temp, &p1);
@@ -461,7 +461,7 @@ boxop_period_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Period *p = PG_GETARG_PERIOD(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1;
   temporal_period(temp, &p1);
   bool result = func(p, &p1);
@@ -479,7 +479,7 @@ Datum
 boxop_temporal_period(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *p = PG_GETARG_PERIOD(1);
   Period p1;
   temporal_period(temp, &p1);
@@ -499,7 +499,7 @@ boxop_periodset_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   PeriodSet *ps = PG_GETARG_PERIODSET(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Period p1, p2;
   temporal_period(temp, &p1);
   periodset_period(ps, &p2);
@@ -519,7 +519,7 @@ Datum
 boxop_temporal_periodset(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET(1);
   Period p1, p2;
   temporal_period(temp, &p1);
@@ -540,8 +540,8 @@ Datum
 boxop_temporal_temporal(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Period p1, p2;
   temporal_period(temp1, &p1);
   temporal_period(temp2, &p2);
@@ -1113,7 +1113,7 @@ boxop_number_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Datum value = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   TBOX box1, box2;
   number_tbox(value, basetypid, &box1);
@@ -1133,7 +1133,7 @@ Datum
 boxop_tnumber_number(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   TBOX box1, box2;
@@ -1154,16 +1154,12 @@ Datum
 boxop_range_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   /* Return false on empty range excepted for contained */
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
     PG_RETURN_BOOL(func == &contained_tbox_tbox_internal);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   TBOX box1, box2;
   range_tbox(range, &box1);
   temporal_bbox(temp, &box2);
@@ -1183,12 +1179,8 @@ Datum
 boxop_tnumber_range(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(1);
-#else
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
   /* Return false on empty range excepted for contains */
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
@@ -1213,7 +1205,7 @@ boxop_tbox_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   TBOX box1;
   temporal_bbox(temp, &box1);
   bool result = func(box, &box1);
@@ -1231,7 +1223,7 @@ Datum
 boxop_tnumber_tbox(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
   TBOX box1;
   temporal_bbox(temp, &box1);
@@ -1250,8 +1242,8 @@ Datum
 boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   TBOX box1, box2;
   temporal_bbox(temp1, &box1);
   temporal_bbox(temp2, &box2);

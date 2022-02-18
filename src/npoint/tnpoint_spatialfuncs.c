@@ -170,7 +170,7 @@ PG_FUNCTION_INFO_V1(tnpoint_srid);
 PGDLLEXPORT Datum
 tnpoint_srid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result = tnpoint_srid_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -406,7 +406,7 @@ PG_FUNCTION_INFO_V1(tnpoint_trajectory);
 PGDLLEXPORT Datum
 tnpoint_trajectory(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result = tnpoint_geom(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -496,7 +496,7 @@ PG_FUNCTION_INFO_V1(tnpoint_length);
 PGDLLEXPORT Datum
 tnpoint_length(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -630,7 +630,7 @@ PG_FUNCTION_INFO_V1(tnpoint_cumulative_length);
 PGDLLEXPORT Datum
 tnpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -730,7 +730,7 @@ PG_FUNCTION_INFO_V1(tnpoint_speed);
 PGDLLEXPORT Datum
 tnpoint_speed(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -758,7 +758,7 @@ PG_FUNCTION_INFO_V1(tnpoint_twcentroid);
 PGDLLEXPORT Datum
 tnpoint_twcentroid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *tgeom = tnpoint_as_tgeompoint_internal(temp);
   Datum result = tpoint_twcentroid_internal(tgeom);
   pfree(tgeom);
@@ -942,7 +942,7 @@ PG_FUNCTION_INFO_V1(tnpoint_azimuth);
 PGDLLEXPORT Datum
 tnpoint_azimuth(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -969,7 +969,7 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
 static Datum
 tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   if (gserialized_is_empty(gs))

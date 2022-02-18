@@ -63,7 +63,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     else
       PG_RETURN_NULL();
   }
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *temp1 = tnpoint_as_tgeompoint_internal(temp);
 
   geoaggstate_check_temp(state, temp1);

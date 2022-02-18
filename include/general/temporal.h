@@ -400,13 +400,13 @@ typedef struct
 
 /* Temporal types */
 
-#define DatumGetTemporal(X)       ((Temporal *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstant(X)       ((TInstant *) PG_DETOAST_DATUM(X))
-#define DatumGetTInstantSet(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequence(X)      ((TSequence *) PG_DETOAST_DATUM(X))
-#define DatumGetTSequenceSet(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTemporalP(X)       ((Temporal *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstantP(X)       ((TInstant *) PG_DETOAST_DATUM(X))
+#define DatumGetTInstantSetP(X)    ((TInstantSet *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceP(X)      ((TSequence *) PG_DETOAST_DATUM(X))
+#define DatumGetTSequenceSetP(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
 
-#define PG_GETARG_TEMPORAL(X)     ((Temporal *) PG_GETARG_VARLENA_P(X))
+#define PG_GETARG_TEMPORAL_P(X)    ((Temporal *) PG_GETARG_VARLENA_P(X))
 
 #define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))

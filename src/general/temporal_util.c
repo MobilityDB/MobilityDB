@@ -1185,13 +1185,8 @@ period_sort_cmp(const Period **l, const Period **r)
 static int
 range_sort_cmp(const RangeType **l, const RangeType **r)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  return DatumGetInt32(call_function2(range_cmp, RangeTypeGetDatum(*l),
-    RangeTypeGetDatum(*r)));
-#else
   return DatumGetInt32(call_function2(range_cmp, RangeTypePGetDatum(*l),
     RangeTypePGetDatum(*r)));
-#endif
 }
 
 /**

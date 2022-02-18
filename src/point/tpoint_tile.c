@@ -71,7 +71,7 @@ bitmatrix_make(int *count, int numdims)
    * already one byte allocated in the struct */
   size_t size = sizeof(BitMatrix) + byteCount - 1;
   /* palloc0 to set all bits to 0 */
-  BitMatrix *result = palloc0(size);
+  BitMatrix *result = (BitMatrix *) palloc0(size);
   /* Fill the structure */
   result->numdims = numdims;
   for (i = 0; i < numdims; i++)
@@ -443,7 +443,7 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
 {
   assert(size > 0);
   /* palloc0 to initialize the missing dimensions to 0 */
-  STboxGridState *state = palloc0(sizeof(STboxGridState));
+  STboxGridState *state = (STboxGridState *) palloc0(sizeof(STboxGridState));
   /* Fill in state */
   state->done = false;
   state->i = 1;
@@ -963,7 +963,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     double size = PG_GETARG_FLOAT8(1);
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(2);
     bool bitmatrix = PG_GETARG_BOOL(3);
@@ -1096,7 +1096,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
     /* Get input parameters */
-    Temporal *temp = PG_GETARG_TEMPORAL(0);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     double size = PG_GETARG_FLOAT8(1);
     Interval *duration = PG_GETARG_INTERVAL_P(2);
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(3);

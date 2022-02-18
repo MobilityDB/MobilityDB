@@ -114,7 +114,7 @@ distance_base_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid restypid = base_oid_from_temporal(temptypid);
   Temporal *result = distance_tnumber_base_internal(temp, value, basetypid,
@@ -131,7 +131,7 @@ PG_FUNCTION_INFO_V1(distance_tnumber_base);
 PGDLLEXPORT Datum
 distance_tnumber_base(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid restypid = base_oid_from_temporal(temptypid);
@@ -202,8 +202,8 @@ PG_FUNCTION_INFO_V1(distance_tnumber_tnumber);
 PGDLLEXPORT Datum
 distance_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid restypid = base_oid_from_temporal(temptypid);
   Temporal *result = distance_tnumber_tnumber_internal(temp1, temp2, restypid);
@@ -244,7 +244,7 @@ NAD_base_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = NAD_tnumber_base_internal(temp, value, basetypid);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_FLOAT8(result);
@@ -258,7 +258,7 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_base);
 PGDLLEXPORT Datum
 NAD_tnumber_base(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   double result = NAD_tnumber_base_internal(temp, value, basetypid);
@@ -376,7 +376,7 @@ PGDLLEXPORT Datum
 NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = NAD_tnumber_tbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 1);
   if (result == DBL_MAX)
@@ -392,7 +392,7 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_tbox);
 PGDLLEXPORT Datum
 NAD_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
   double result = NAD_tnumber_tbox_internal(temp, box);
   PG_FREE_IF_COPY(temp, 0);
@@ -408,8 +408,8 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_tnumber);
 PGDLLEXPORT Datum
 NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_tnumber_base_type(temp1->basetypid);
   ensure_tnumber_base_type(temp2->basetypid);
   /* Result of the distance function is a tint iff both arguments are tint */

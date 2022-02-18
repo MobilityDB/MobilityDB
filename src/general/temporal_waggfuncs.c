@@ -625,7 +625,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
       PG_RETURN_NULL();
     PG_RETURN_POINTER(state);
   }
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ((temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET) &&
     temp->basetypid == FLOAT8OID && func == &datum_sum_float8)
@@ -656,7 +656,7 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
       PG_RETURN_NULL();
     PG_RETURN_POINTER(state);
   }
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   int count;
   TSequence **sequences = transform(temp, interval, &count);

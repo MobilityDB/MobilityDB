@@ -172,7 +172,7 @@ PG_FUNCTION_INFO_V1(tnpoint_as_tgeompoint);
 PGDLLEXPORT Datum
 tnpoint_as_tgeompoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tnpoint_as_tgeompoint_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -295,7 +295,7 @@ PG_FUNCTION_INFO_V1(tgeompoint_as_tnpoint);
 PGDLLEXPORT Datum
 tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32_t srid_tpoint = tpoint_srid_internal(temp);
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_tpoint, srid_ways);
@@ -318,7 +318,7 @@ PG_FUNCTION_INFO_V1(tnpoint_round);
 PGDLLEXPORT Datum
 tnpoint_round(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum size = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -529,7 +529,7 @@ PG_FUNCTION_INFO_V1(tnpoint_positions);
 PGDLLEXPORT Datum
 tnpoint_positions(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   nsegment **segments = tnpoint_positions_internal(temp, &count);
   ArrayType *result = nsegmentarr_to_array(segments, count);
@@ -549,7 +549,7 @@ PG_FUNCTION_INFO_V1(tnpoint_route);
 PGDLLEXPORT Datum
 tnpoint_route(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   if (temp->subtype != INSTANT && temp->subtype != SEQUENCE)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Input must be a temporal instant or a temporal sequence")));
@@ -629,7 +629,7 @@ PG_FUNCTION_INFO_V1(tnpoint_routes);
 PGDLLEXPORT Datum
 tnpoint_routes(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)

@@ -70,7 +70,7 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
@@ -97,7 +97,7 @@ Datum
 posop_tnpoint_geom(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
@@ -128,7 +128,7 @@ posop_stbox_tnpoint(FunctionCallInfo fcinfo,
   STBOX *box = PG_GETARG_STBOX_P(0);
   if (! MOBDB_FLAGS_GET_X(box->flags))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
@@ -149,7 +149,7 @@ tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   bool result = false;
   if (hast)
@@ -177,7 +177,7 @@ posop_tnpoint_stbox(FunctionCallInfo fcinfo,
   STBOX *box = PG_GETARG_STBOX_P(1);
   if (! MOBDB_FLAGS_GET_X(box->flags))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_not_geodetic(box->flags);
   ensure_same_srid_tnpoint_stbox(temp, box);
   STBOX box1;
@@ -197,7 +197,7 @@ Datum
 tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
   bool result = false;
@@ -224,7 +224,7 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   npoint *np = PG_GETARG_NPOINT(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   /* Returns an error if the geometry is not found, is null, or is empty */
@@ -245,7 +245,7 @@ Datum
 posop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
@@ -267,8 +267,8 @@ Datum
 posop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp1), tnpoint_srid_internal(temp2));
   STBOX box1, box2;
   temporal_bbox(temp1, &box1);

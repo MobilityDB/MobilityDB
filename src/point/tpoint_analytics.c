@@ -371,7 +371,7 @@ PG_FUNCTION_INFO_V1(tpoint_to_geo);
 PGDLLEXPORT Datum
 tpoint_to_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -936,8 +936,8 @@ PG_FUNCTION_INFO_V1(tpoint_to_geo_measure);
 PGDLLEXPORT Datum
 tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 {
-  Temporal *tpoint = PG_GETARG_TEMPORAL(0);
-  Temporal *measure = PG_GETARG_TEMPORAL(1);
+  Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
+  Temporal *measure = PG_GETARG_TEMPORAL_P(1);
   bool segmentize = PG_GETARG_BOOL(2);
   ensure_tgeo_base_type(tpoint->basetypid);
   ensure_tnumber_base_type(measure->basetypid);
@@ -1157,7 +1157,7 @@ PG_FUNCTION_INFO_V1(tfloat_simplify);
 Datum
 tfloat_simplify(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
 
   Temporal *result;
@@ -1599,7 +1599,7 @@ PG_FUNCTION_INFO_V1(tpoint_simplify);
 Datum
 tpoint_simplify(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
   double eps_speed = PG_GETARG_FLOAT8(2);
 
@@ -2387,7 +2387,7 @@ PG_FUNCTION_INFO_V1(AsMVTGeom);
 Datum
 AsMVTGeom(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *bounds = PG_GETARG_STBOX_P(1);
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {

@@ -142,7 +142,7 @@ PGDLLEXPORT Datum
 textcat_base_ttext(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(textcat_ttext_base);
 PGDLLEXPORT Datum
 textcat_ttext_base(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
@@ -169,8 +169,8 @@ PG_FUNCTION_INFO_V1(textcat_ttext_ttext);
 PGDLLEXPORT Datum
 textcat_ttext_ttext(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -188,7 +188,7 @@ PG_FUNCTION_INFO_V1(ttext_upper);
 PGDLLEXPORT Datum
 ttext_upper(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_upper);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -201,7 +201,7 @@ PG_FUNCTION_INFO_V1(ttext_lower);
 PGDLLEXPORT Datum
 ttext_lower(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_lower);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

@@ -284,11 +284,7 @@ timestampset_send(PG_FUNCTION_ARGS)
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET(0);
   StringInfoData buf;
   pq_begintypsend(&buf);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(&buf, (uint32) ts->count, 4);
-#else
   pq_sendint32(&buf, ts->count);
-#endif
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);

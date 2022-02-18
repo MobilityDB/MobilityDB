@@ -348,8 +348,8 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
 static Datum
 spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
@@ -412,7 +412,7 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
   ensure_has_not_Z_gs(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_has_not_Z(temp->flags);
   bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL ,
     (varfunc) &geom_ever_contains, 2, INVERT_NO, true);
@@ -541,7 +541,7 @@ disjoint_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   bool result = disjoint_tpoint_geo_internal(temp, gs);
@@ -560,7 +560,7 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   bool result = disjoint_tpoint_geo_internal(temp, gs);
@@ -595,7 +595,7 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   datum_func2 func = get_intersects_fn_gs(temp->flags, GS_FLAGS(gs));
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -616,7 +616,7 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   datum_func2 func = get_intersects_fn_gs(temp->flags, GS_FLAGS(gs));
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -681,7 +681,7 @@ touches_geo_tpoint(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = touches_tpoint_geo_internal(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
@@ -698,7 +698,7 @@ touches_tpoint_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool result = touches_tpoint_geo_internal(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -722,7 +722,7 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
   // ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum param = PG_GETARG_DATUM(2);
   datum_func3 func = get_dwithin_fn_gs(temp->flags, GS_FLAGS(gs));
   /* Store fcinfo into a global variable */
@@ -746,7 +746,7 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
   // ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum param = PG_GETARG_DATUM(2);
   datum_func3 func = get_dwithin_fn_gs(temp->flags, GS_FLAGS(gs));
   /* Store fcinfo into a global variable */
@@ -904,8 +904,8 @@ PG_FUNCTION_INFO_V1(dwithin_tpoint_tpoint);
 PGDLLEXPORT Datum
 dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   Datum dist = PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */

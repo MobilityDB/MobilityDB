@@ -585,17 +585,13 @@ skiplist_values(SkipList *list)
 static void
 aggstate_write(SkipList *state, StringInfo buf)
 {
+  int i;
   void **values = skiplist_values(state);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, (uint32) state->elemtype, 4);
-  pq_sendint(buf, (uint32) state->length, 4);
-#else
   pq_sendint32(buf, (uint32) state->elemtype);
   pq_sendint32(buf, (uint32) state->length);
-#endif
   if (state->elemtype == TIMESTAMPTZ)
   {
-    for (int i = 0; i < state->length; i ++)
+    for (i = 0; i < state->length; i ++)
     {
       bytea *time = call_send(TIMESTAMPTZOID, TimestampTzGetDatum((TimestampTz) values[i]));
       pq_sendbytes(buf, VARDATA(time), VARSIZE(time) - VARHDRSZ);
@@ -604,7 +600,7 @@ aggstate_write(SkipList *state, StringInfo buf)
   }
   else if (state->elemtype == PERIOD)
   {
-    for (int i = 0; i < state->length; i ++)
+    for (i = 0; i < state->length; i ++)
       period_write((const Period *) values[i], buf);
   }
   else /* state->elemtype == TEMPORAL */
@@ -612,12 +608,8 @@ aggstate_write(SkipList *state, StringInfo buf)
     Oid basetypid = InvalidOid;
     if (state->length > 0)
       basetypid = ((Temporal *) values[0])->basetypid;
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    pq_sendint(buf, basetypid, 4);
-#else
     pq_sendint32(buf, basetypid);
-#endif
-    for (int i = 0; i < state->length; i ++)
+    for (i = 0; i < state->length; i ++)
     {
       SPI_connect();
       temporal_write((Temporal *) values[i], buf);

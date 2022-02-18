@@ -406,7 +406,7 @@ tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
   }
   else if (tnumber_type(scankey->sk_subtype))
   {
-    // temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+    // temporal_bbox(DatumGetTemporalP(scankey->sk_argument), result);
     temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
@@ -501,7 +501,7 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
 
   median = in->nTuples / 2;
 
-  centroid = palloc0(sizeof(TBOX));
+  centroid = (TBOX *) palloc0(sizeof(TBOX));
 
   centroid->xmin = lowXs[median];
   centroid->xmax = highXs[median];

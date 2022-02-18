@@ -396,7 +396,7 @@ time_spgist_get_period(Period *result, ScanKeyData *scankey)
   /* For temporal types whose bounding box is a period */
   else if (temporal_type(scankey->sk_subtype))
   {
-    temporal_bbox(DatumGetTemporal(scankey->sk_argument), result);
+    temporal_bbox(DatumGetTemporalP(scankey->sk_argument), result);
   }
   else
     elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
@@ -757,7 +757,7 @@ PGDLLEXPORT Datum
 timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
+  Period *result = (Period *) palloc(sizeof(Period));
   timestampset_bbox_slice(tsdatum, result);
   PG_RETURN_PERIOD(result);
 }
@@ -770,7 +770,7 @@ PGDLLEXPORT Datum
 periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  Period *result = palloc(sizeof(Period));
+  Period *result = (Period *) palloc(sizeof(Period));
   periodset_bbox_slice(psdatum, result);
   PG_RETURN_PERIOD(result);
 }

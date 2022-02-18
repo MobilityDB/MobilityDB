@@ -212,11 +212,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
   }
   else if (tnumber_range_type(subtype))
   {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    RangeType *range = PG_GETARG_RANGE(1);
-#else
     RangeType *range = PG_GETARG_RANGE_P(1);
-#endif
     if (range == NULL)
       return false;
     /* Return false on empty range */
@@ -261,7 +257,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
   }
   else if (tnumber_type(subtype))
   {
-    // Temporal *temp = PG_GETARG_TEMPORAL(1);
+    // Temporal *temp = PG_GETARG_TEMPORAL_P(1);
     // if (temp == NULL)
       // return false;
     // temporal_bbox(temp, result);
@@ -283,7 +279,7 @@ PG_FUNCTION_INFO_V1(tnumber_gist_consistent);
 PGDLLEXPORT Datum
 tnumber_gist_consistent(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
   Oid subtype = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
@@ -364,8 +360,8 @@ tnumber_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    TBOX *box = palloc(sizeof(TBOX));
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    TBOX *box = (TBOX *) palloc(sizeof(TBOX));
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
@@ -373,23 +369,6 @@ tnumber_gist_compress(PG_FUNCTION_ARGS)
   }
   PG_RETURN_POINTER(entry);
 }
-
-/*****************************************************************************
- * GiST decompress method
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(tnumber_gist_decompress);
-/**
- * GiST decompress method for temporal numbers (result in a temporal box)
- */
-PGDLLEXPORT Datum
-tnumber_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************
  * GiST penalty method
@@ -723,18 +702,13 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
-  OffsetNumber i,
-        maxoff;
+  OffsetNumber i, maxoff;
   ConsiderSplitContext context;
-  TBOX     *box,
-         *leftBox,
-         *rightBox;
-  int      dim,
-        commonEntriesCount;
-  SplitInterval *intervalsLower,
-         *intervalsUpper;
+  TBOX *box, *leftBox, *rightBox;
+  int dim, commonEntriesCount;
+  SplitInterval *intervalsLower, *intervalsUpper;
   CommonEntry *commonEntries;
-  int      nentries;
+  int nentries;
 
   memset(&context, 0, sizeof(ConsiderSplitContext));
 
@@ -925,8 +899,8 @@ tbox_gist_picksplit(PG_FUNCTION_ARGS)
   v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
-  leftBox = palloc0(sizeof(TBOX));
-  rightBox = palloc0(sizeof(TBOX));
+  leftBox = (TBOX *) palloc0(sizeof(TBOX));
+  rightBox = (TBOX *) palloc0(sizeof(TBOX));
 
   /*
    * Allocate an array for "common entries" - entries which can be placed to

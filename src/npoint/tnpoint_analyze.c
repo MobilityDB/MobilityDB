@@ -92,7 +92,7 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     }
 
     /* Get temporal point */
-    temp = DatumGetTemporal(value);
+    temp = DatumGetTemporalP(value);
 
     /* TO VERIFY */
     is_copy = VARATT_IS_EXTENDED(temp);

@@ -498,11 +498,7 @@ PG_FUNCTION_INFO_V1(tstzrange_to_period);
 PGDLLEXPORT Datum
 tstzrange_to_period(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   TypeCacheEntry *typcache;
   char flags = range_get_flags(range);
   RangeBound lower;

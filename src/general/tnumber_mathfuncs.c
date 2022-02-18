@@ -214,7 +214,7 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
     temp, value, basetypid, INVERT);
@@ -233,7 +233,7 @@ Datum
 arithop_tnumber_base(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
@@ -256,8 +256,8 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   bool (*tpfunc)(const TInstant *, const TInstant *, bool,
     const TInstant *, const TInstant *, bool, Datum *, TimestampTz *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(temp1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 
@@ -446,7 +446,7 @@ PG_FUNCTION_INFO_V1(tnumber_round);
 PGDLLEXPORT Datum
 tnumber_round(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum digits = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -472,7 +472,7 @@ PG_FUNCTION_INFO_V1(tnumber_degrees);
 PGDLLEXPORT Datum
 tnumber_degrees(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -557,7 +557,7 @@ PG_FUNCTION_INFO_V1(tnumber_derivative);
 PGDLLEXPORT Datum
 tnumber_derivative(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);

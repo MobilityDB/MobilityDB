@@ -110,7 +110,7 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
 TBOX *
 tbox_copy(const TBOX *box)
 {
-  TBOX *result = palloc0(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
   memcpy(result, box, sizeof(TBOX));
   return result;
 }
@@ -430,7 +430,7 @@ PGDLLEXPORT Datum
 int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   int_tbox(i, result);
   PG_RETURN_POINTER(result);
 }
@@ -457,7 +457,7 @@ PGDLLEXPORT Datum
 float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   float_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
@@ -471,7 +471,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   float_tbox(d, result);
   PG_RETURN_POINTER(result);
 }
@@ -498,16 +498,12 @@ PG_FUNCTION_INFO_V1(range_to_tbox);
 PGDLLEXPORT Datum
 range_to_tbox(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   /* Return null on empty range */
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
     PG_RETURN_NULL();
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   range_tbox(range, result);
   PG_RETURN_POINTER(result);
 }
@@ -534,7 +530,7 @@ PGDLLEXPORT Datum
 timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   timestamp_tbox(t, result);
   PG_RETURN_POINTER(result);
 }
@@ -581,7 +577,7 @@ PGDLLEXPORT Datum
 timestampset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   timestampset_tbox_slice(tsdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -609,7 +605,7 @@ PGDLLEXPORT Datum
 period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   period_tbox(p, result);
   PG_RETURN_POINTER(result);
 }
@@ -656,7 +652,7 @@ PGDLLEXPORT Datum
 periodset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   periodset_tbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -721,11 +717,7 @@ PG_FUNCTION_INFO_V1(range_timestamp_to_tbox);
 PGDLLEXPORT Datum
 range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   /* Return null on empty range */
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
@@ -745,11 +737,7 @@ PG_FUNCTION_INFO_V1(range_period_to_tbox);
 PGDLLEXPORT Datum
 range_period_to_tbox(PG_FUNCTION_ARGS)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *range = PG_GETARG_RANGE(0);
-#else
   RangeType *range = PG_GETARG_RANGE_P(0);
-#endif
   /* Return null on empty range */
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
@@ -771,7 +759,7 @@ PGDLLEXPORT Datum
 tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
-  TBOX *result = palloc(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -1445,7 +1433,7 @@ tbox_extent_transfn(PG_FUNCTION_ARGS)
   /* Can't do anything with null inputs */
   if (!box1 && !box2)
     PG_RETURN_NULL();
-  TBOX *result = palloc0(sizeof(TBOX));
+  TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
   /* One of the boxes is null, return the other one */
   if (!box1)
   {

@@ -319,7 +319,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
   }
   else if (tspatial_type(subtype))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(1);
     if (temp == NULL)
       return false;
     temporal_bbox(temp, result);
@@ -418,8 +418,8 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    STBOX *box = palloc(sizeof(STBOX));
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    STBOX *box = (STBOX *) palloc(sizeof(STBOX));
     temporal_bbox_slice(entry->key, box);
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
@@ -427,23 +427,6 @@ tpoint_gist_compress(PG_FUNCTION_ARGS)
   }
   PG_RETURN_POINTER(entry);
 }
-
-/*****************************************************************************
- * GiST decompress method
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(tpoint_gist_decompress);
-/**
- * GiST decompress method for temporal point types (result in an stbox)
- */
-PGDLLEXPORT Datum
-tpoint_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************
  * GiST penalty method
@@ -972,8 +955,8 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
   v->spl_nright = 0;
 
   /* Allocate bounding boxes of left and right groups */
-  leftBox = palloc0(sizeof(STBOX));
-  rightBox = palloc0(sizeof(STBOX));
+  leftBox = (STBOX *) palloc0(sizeof(STBOX));
+  rightBox = (STBOX *) palloc0(sizeof(STBOX));
 
   /*
    * Allocate an array for "common entries" - entries which can be placed to

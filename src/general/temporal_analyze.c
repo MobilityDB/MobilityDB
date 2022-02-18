@@ -70,13 +70,8 @@
 #else
 #include <access/heaptoast.h>
 #endif
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#include <catalog/pg_operator.h>
-#else
 #include <catalog/pg_collation_d.h>
 #include <catalog/pg_operator_d.h>
-#endif
 #include <commands/vacuum.h>
 #include <parser/parse_oper.h>
 #include <utils/datum.h>
@@ -366,7 +361,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     total_width += VARSIZE(value);
 
     /* Get Temporal value */
-    temp = DatumGetTemporal(value);
+    temp = DatumGetTemporalP(value);
 
     /* Remember bounds and length for further usage in histograms */
     if (valuestats)

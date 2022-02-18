@@ -572,7 +572,7 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
       PG_RETURN_NULL();
   }
 
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_valid_tempsubtype(temp->subtype);
   SkipList *result;
   if (temp->subtype == INSTANT)
@@ -786,7 +786,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
       PG_RETURN_NULL();
   }
 
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   int count;
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (state)
@@ -928,7 +928,7 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
 
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   int count;
   Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (state)
@@ -969,7 +969,7 @@ PGDLLEXPORT Datum
 temporal_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD(0);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   Period *result;
 
   /* Can't do anything with null inputs */
@@ -1029,7 +1029,7 @@ PGDLLEXPORT Datum
 tnumber_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
 
   /* Can't do anything with null inputs */
   if (!box && !temp)

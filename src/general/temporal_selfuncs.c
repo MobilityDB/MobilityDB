@@ -55,11 +55,7 @@
 #include <access/relscan.h>
 #include <access/visibilitymap.h>
 #include <access/skey.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#else
 #include <catalog/pg_collation_d.h>
-#endif
 #include <executor/tuptable.h>
 #include <optimizer/paths.h>
 #include <storage/bufmgr.h>
@@ -263,7 +259,7 @@ temporal_const_to_period(Node *other, Period *period)
   if (consttype == type_oid(T_PERIOD))
     memcpy(period, DatumGetPeriod(((Const *) other)->constvalue), sizeof(Period));
   else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
-    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), period);
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
     return false;
   return true;

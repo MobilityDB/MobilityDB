@@ -908,7 +908,7 @@ PG_FUNCTION_INFO_V1(tpoint_ever_eq);
 Datum
 tpoint_ever_eq(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
@@ -1853,7 +1853,7 @@ PG_FUNCTION_INFO_V1(tpoint_trajectory);
 PGDLLEXPORT Datum
 tpoint_trajectory(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
 #ifdef STORE_TRAJ
   Datum result = tpoint_trajectory_external(temp);
 #else
@@ -1933,7 +1933,7 @@ PG_FUNCTION_INFO_V1(tpoint_srid);
 PGDLLEXPORT Datum
 tpoint_srid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result = tpoint_srid_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -2059,7 +2059,7 @@ PG_FUNCTION_INFO_V1(tpoint_set_srid);
 PGDLLEXPORT Datum
 tpoint_set_srid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32 srid = PG_GETARG_INT32(1);
   Temporal *result = tpoint_set_srid_internal(temp, srid);
   PG_FREE_IF_COPY(temp, 0);
@@ -2243,7 +2243,7 @@ PG_FUNCTION_INFO_V1(tpoint_transform);
 PGDLLEXPORT Datum
 tpoint_transform(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum srid = PG_GETARG_DATUM(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -2418,7 +2418,7 @@ PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
 PGDLLEXPORT Datum
 tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2431,7 +2431,7 @@ PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
 PGDLLEXPORT Datum
 tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2795,7 +2795,7 @@ PG_FUNCTION_INFO_V1(tpoint_round);
 PGDLLEXPORT Datum
 tpoint_round(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum prec = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -2888,7 +2888,7 @@ PG_FUNCTION_INFO_V1(tpoint_get_x);
 PGDLLEXPORT Datum
 tpoint_get_x(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord_internal(temp, 'x');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2901,7 +2901,7 @@ PG_FUNCTION_INFO_V1(tpoint_get_y);
 PGDLLEXPORT Datum
 tpoint_get_y(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord_internal(temp, 'y');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2914,7 +2914,7 @@ PG_FUNCTION_INFO_V1(tpoint_get_z);
 PGDLLEXPORT Datum
 tpoint_get_z(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = tpoint_get_coord_internal(temp, 'z');
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -3019,7 +3019,7 @@ PG_FUNCTION_INFO_V1(tpoint_length);
 PGDLLEXPORT Datum
 tpoint_length(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -3152,7 +3152,7 @@ PG_FUNCTION_INFO_V1(tpoint_cumulative_length);
 PGDLLEXPORT Datum
 tpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   /* Store fcinfo into a global variable */
@@ -3237,7 +3237,7 @@ PG_FUNCTION_INFO_V1(tpoint_speed);
 PGDLLEXPORT Datum
 tpoint_speed(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -3433,7 +3433,7 @@ PG_FUNCTION_INFO_V1(tpoint_twcentroid);
 PGDLLEXPORT Datum
 tpoint_twcentroid(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result = tpoint_twcentroid_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -3574,7 +3574,7 @@ PG_FUNCTION_INFO_V1(tpoint_azimuth);
 PGDLLEXPORT Datum
 tpoint_azimuth(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = NULL;
@@ -3902,7 +3902,7 @@ bearing_geo_tpoint(PG_FUNCTION_ARGS)
   ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
@@ -3925,7 +3925,7 @@ bearing_tpoint_geo(PG_FUNCTION_ARGS)
   ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
@@ -3970,8 +3970,8 @@ PG_FUNCTION_INFO_V1(bearing_tpoint_tpoint);
 PGDLLEXPORT Datum
 bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
 
@@ -4342,7 +4342,7 @@ PG_FUNCTION_INFO_V1(tpoint_is_simple);
 PGDLLEXPORT Datum
 tpoint_is_simple(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool result;
   if (temp->subtype == INSTANT)
     result = true;
@@ -4598,7 +4598,7 @@ PG_FUNCTION_INFO_V1(tpoint_make_simple);
 PGDLLEXPORT Datum
 tpoint_make_simple(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
   if (temp->subtype == INSTANT)
     result = temporalarr_to_array((const Temporal **) &temp, 1);
@@ -5259,7 +5259,7 @@ tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
 static Datum
 tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
   {
@@ -5517,7 +5517,7 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 static Datum
 tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
   ensure_common_dimension(temp->flags, box->flags);
   if (MOBDB_FLAGS_GET_X(box->flags))

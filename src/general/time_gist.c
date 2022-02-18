@@ -181,7 +181,7 @@ time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
   }
   else if (temporal_type(subtype))
   {
-    Temporal *temp = PG_GETARG_TEMPORAL(1);
+    Temporal *temp = PG_GETARG_TEMPORAL_P(1);
     if (temp == NULL)
       PG_RETURN_BOOL(false);
     temporal_bbox(temp, result);
@@ -259,11 +259,11 @@ timestampset_gist_compress(PG_FUNCTION_ARGS)
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Period *period = palloc(sizeof(Period));
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    Period *period = (Period *) palloc(sizeof(Period));
     timestampset_bbox_slice(entry->key, period);
-    gistentryinit(*retval, PointerGetDatum(period),
-      entry->rel, entry->page, entry->offset, false);
+    gistentryinit(*retval, PointerGetDatum(period), entry->rel, entry->page,
+      entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
   PG_RETURN_POINTER(entry);
@@ -276,12 +276,12 @@ PG_FUNCTION_INFO_V1(period_gist_compress);
 PGDLLEXPORT Datum
 period_gist_compress(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    gistentryinit(*retval, entry->key,
-      entry->rel, entry->page, entry->offset, false);
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    gistentryinit(*retval, entry->key, entry->rel, entry->page,
+      entry->offset, false);
     PG_RETURN_POINTER(retval);
   }
   PG_RETURN_POINTER(entry);
@@ -294,11 +294,11 @@ PG_FUNCTION_INFO_V1(periodset_gist_compress);
 PGDLLEXPORT Datum
 periodset_gist_compress(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
   {
-    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
-    Period *period = palloc(sizeof(Period));
+    GISTENTRY *retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
+    Period *period = (Period *) palloc(sizeof(Period));
     periodset_bbox_slice(entry->key, period);
     gistentryinit(*retval, PointerGetDatum(period),
       entry->rel, entry->page, entry->offset, false);
@@ -306,23 +306,6 @@ periodset_gist_compress(PG_FUNCTION_ARGS)
   }
   PG_RETURN_POINTER(entry);
 }
-
-/*****************************************************************************
- * GiST decompress method for time types
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 110000
-PG_FUNCTION_INFO_V1(period_gist_decompress);
-/**
- * Decompress method for time types (result in a period)
- */
-PGDLLEXPORT Datum
-period_gist_decompress(PG_FUNCTION_ARGS)
-{
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(entry);
-}
-#endif
 
 /*****************************************************************************
  * GiST penalty method for time types
@@ -897,7 +880,7 @@ PG_FUNCTION_INFO_V1(period_gist_fetch);
 PGDLLEXPORT Datum
 period_gist_fetch(PG_FUNCTION_ARGS)
 {
-  GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   PG_RETURN_POINTER(entry);
 }
 

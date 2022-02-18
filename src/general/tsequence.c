@@ -1382,11 +1382,7 @@ tsequence_to_string(const TSequence *seq, bool component,
 void
 tsequence_write(const TSequence *seq, StringInfo buf)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, (uint32) seq->count, 4);
-#else
   pq_sendint32(buf, seq->count);
-#endif
   pq_sendbyte(buf, seq->period.lower_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, seq->period.upper_inc ? (uint8) 1 : (uint8) 0);
   pq_sendbyte(buf, MOBDB_FLAGS_GET_LINEAR(seq->flags) ? (uint8) 1 : (uint8) 0);
@@ -2722,13 +2718,8 @@ tnumberseq_restrict_range1(TSequence **result,
   RangeType *valuerange = increasing ?
     range_make(value1, value2, lower_inclu, upper_inclu, basetypid) :
     range_make(value2, value1, upper_inclu, lower_inclu, basetypid);
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  RangeType *intersect = DatumGetRangeType(call_function2(range_intersect,
-    PointerGetDatum(valuerange), PointerGetDatum(range)));
-#else
   RangeType *intersect = DatumGetRangeTypeP(call_function2(range_intersect,
     PointerGetDatum(valuerange), PointerGetDatum(range)));
-#endif
   pfree(valuerange);
   if (RangeIsEmpty(intersect))
   {

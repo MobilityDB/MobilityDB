@@ -38,9 +38,6 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <utils/timestamp.h>
-#endif
 
 #include "timetypes.h"
 

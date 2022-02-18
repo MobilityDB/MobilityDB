@@ -225,8 +225,8 @@ temporal_similarity_internal(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
 Datum
 temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable for temporal geographic points */
   if (temp1->basetypid == type_oid(T_GEOGRAPHY))
     store_fcinfo(fcinfo);
@@ -532,8 +532,8 @@ temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
   if (SRF_IS_FIRSTCALL())
   {
     /* Get input parameters */
-    Temporal *temp1 = PG_GETARG_TEMPORAL(0);
-    Temporal *temp2 = PG_GETARG_TEMPORAL(1);
+    Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+    Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
     /* Store fcinfo into a global variable for temporal geographic points */
     if (temp1->basetypid == type_oid(T_GEOGRAPHY))
       store_fcinfo(fcinfo);

@@ -37,11 +37,7 @@
 #include <assert.h>
 #include <math.h>
 #include <access/htup_details.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <catalog/pg_collation.h>
-#else
 #include <catalog/pg_collation_d.h>
-#endif
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
@@ -478,13 +474,8 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
   hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
   for (i = 0; i < nhist; i++)
   {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    range_deserialize(typcache, DatumGetRangeType(hslot.values[i]),
-              &hist_lower[i], &hist_upper[i], &empty);
-#else
     range_deserialize(typcache, DatumGetRangeTypeP(hslot.values[i]),
               &hist_lower[i], &hist_upper[i], &empty);
-#endif
     /* The histogram should not contain any empty ranges */
     if (empty)
       elog(ERROR, "bounds histogram contains an empty range");
@@ -673,15 +664,11 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
   Oid consttype = ((Const *) other)->consttype;
 
   if (tnumber_range_type(consttype))
-#if POSTGRESQL_VERSION_NUMBER < 110000
-    range_tbox(DatumGetRangeType(((Const *) other)->constvalue), box);
-#else
     range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
-#endif
   else if (consttype == type_oid(T_TBOX))
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
   else if (tnumber_type(consttype))
-    temporal_bbox(DatumGetTemporal(((Const *) other)->constvalue), box);
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
   return true;

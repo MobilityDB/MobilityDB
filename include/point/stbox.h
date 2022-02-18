@@ -37,9 +37,6 @@
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#if POSTGRESQL_VERSION_NUMBER < 110000
-#include <utils/timestamp.h>
-#endif
 #include <liblwgeom.h>
 
 #include "general/timetypes.h"
@@ -168,8 +165,8 @@ extern Datum stbox_expand_spatial(PG_FUNCTION_ARGS);
 extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
 extern Datum stbox_round(PG_FUNCTION_ARGS);
 
-extern STBOX *stbox_expand_spatial_internal(STBOX *box, double d);
-extern STBOX *stbox_expand_temporal_internal(STBOX *box, Datum interval);
+extern STBOX *stbox_expand_spatial_internal(const STBOX *box, double d);
+extern STBOX *stbox_expand_temporal_internal(const STBOX *box, Datum interval);
 
 /* Topological operators */
 

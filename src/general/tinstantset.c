@@ -481,11 +481,7 @@ tinstantset_to_string(const TInstantSet *ti, char *(*value_out)(Oid, Datum))
 void
 tinstantset_write(const TInstantSet *ti, StringInfo buf)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, (uint32) ti->count, 4);
-#else
   pq_sendint32(buf, ti->count);
-#endif
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);

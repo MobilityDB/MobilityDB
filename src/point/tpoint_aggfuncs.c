@@ -218,7 +218,7 @@ PGDLLEXPORT Datum
 tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
 
   /* Can't do anything with null inputs */
   if (!box && !temp)
@@ -285,7 +285,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
-  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL(1);
+  Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   /* Can't do anything with null inputs */
   if (!state && !temp)
     PG_RETURN_NULL();

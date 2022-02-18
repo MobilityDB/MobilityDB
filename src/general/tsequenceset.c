@@ -631,11 +631,7 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
 void
 tsequenceset_write(const TSequenceSet *ts, StringInfo buf)
 {
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  pq_sendint(buf, (uint32) ts->count, 4);
-#else
   pq_sendint32(buf, ts->count);
-#endif
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
