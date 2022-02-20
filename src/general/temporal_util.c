@@ -1179,7 +1179,7 @@ range_sort_cmp(const RangeType **l, const RangeType **r)
  * Comparator function for temporal instants
  */
 static int
-tinstantarr_sort_cmp(const TInstant **l, const TInstant **r)
+tinstarr_sort_cmp(const TInstant **l, const TInstant **r)
 {
   return timestamp_cmp_internal((*l)->t, (*r)->t);
 }
@@ -1188,7 +1188,7 @@ tinstantarr_sort_cmp(const TInstant **l, const TInstant **r)
  * Comparator function for temporal sequences
  */
 static int
-tsequencearr_sort_cmp(TSequence **l, TSequence **r)
+tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Period lp = (*l)->period;
   Period rp = (*r)->period;
@@ -1263,20 +1263,20 @@ rangearr_sort(RangeType **ranges, int count)
  * Sort function for temporal instants
  */
 void
-tinstantarr_sort(TInstant **instants, int count)
+tinstarr_sort(TInstant **instants, int count)
 {
   qsort(instants, (size_t) count, sizeof(TInstant *),
-    (qsort_comparator) &tinstantarr_sort_cmp);
+    (qsort_comparator) &tinstarr_sort_cmp);
 }
 
 /**
  * Sort function for temporal sequences
  */
 void
-tsequencearr_sort(TSequence **sequences, int count)
+tseqarr_sort(TSequence **sequences, int count)
 {
   qsort(sequences, (size_t) count, sizeof(TSequence *),
-    (qsort_comparator) &tsequencearr_sort_cmp);
+    (qsort_comparator) &tseqarr_sort_cmp);
 }
 
 /*****************************************************************************
@@ -1316,7 +1316,7 @@ timestamparr_remove_duplicates(TimestampTz *values, int count)
  * Remove duplicates from an array of temporal instants
  */
 int
-tinstantarr_remove_duplicates(const TInstant **instants, int count)
+tinstarr_remove_duplicates(const TInstant **instants, int count)
 {
   assert(count != 0);
   int newcount = 0;

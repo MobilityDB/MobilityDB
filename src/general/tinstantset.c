@@ -110,7 +110,7 @@ tinstantset_make_valid(const TInstant **instants, int count, bool merge)
 {
   /* Test the validity of the instants */
   assert(count > 0);
-  ensure_valid_tinstantarr(instants, count, merge, INSTANTSET);
+  ensure_valid_tinstarr(instants, count, merge, INSTANTSET);
   return;
 }
 

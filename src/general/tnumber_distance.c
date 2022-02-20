@@ -58,18 +58,24 @@
 /**
  * Returns the distance between the two numbers
  */
-static Datum
-datum_distance(Datum l, Datum r, Oid typel, Oid typer)
+Datum
+number_distance(Datum l, Datum r, Oid typel, Oid typer)
 {
   Datum result = 0;
-  if (typel == INT4OID && typer == INT4OID)
-    result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
-  else if (typel == INT4OID && typer == FLOAT8OID)
-    result = Float8GetDatum(fabs(DatumGetInt32(l) - DatumGetFloat8(r)));
-  else if (typel == FLOAT8OID && typer == INT4OID)
-    result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetInt32(r)));
-  else if (typel == FLOAT8OID && typer == FLOAT8OID)
-    result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
+  if (typel == INT4OID)
+  {
+    if (typer == INT4OID)
+      result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
+    else if (typer == FLOAT8OID)
+      result = Float8GetDatum(fabs(DatumGetInt32(l) - DatumGetFloat8(r)));
+  }
+  else if (typel == FLOAT8OID)
+  {
+    if (typer == INT4OID)
+      result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetInt32(r)));
+    else if (typer == FLOAT8OID)
+      result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
+  }
   return result;
 }
 
@@ -90,7 +96,7 @@ distance_tnumber_base_internal(const Temporal *temp, Datum value,
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) datum_distance;
+  lfinfo.func = (varfunc) &number_distance;
   lfinfo.numparam = 0;
   lfinfo.argoids = true;
   lfinfo.argtypid[0] = temp->basetypid;
@@ -180,7 +186,7 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_distance;
+  lfinfo.func = (varfunc) &number_distance;
   lfinfo.numparam = 0;
   lfinfo.argoids = true;
   lfinfo.argtypid[0] = temp1->basetypid;

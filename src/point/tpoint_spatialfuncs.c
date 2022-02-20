@@ -3127,9 +3127,9 @@ tpointseq_speed(const TSequence *seq)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
-    speed = datum_point_eq(value1, value2) ? 0 :
+    speed = datum_point_eq(value1, value2) ? 0.0 :
       DatumGetFloat8(func(value1, value2)) /
-        ((double)(inst2->t - inst1->t) / 1000000);
+        ((double)(inst2->t - inst1->t) / 1000000.0);
     instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t, FLOAT8OID);
     inst1 = inst2;
     value1 = value2;
@@ -4514,7 +4514,7 @@ tpointseqset_make_simple(const TSequenceSet *ts)
     totalcount += countseqs[i];
   }
   assert(totalcount > 0);
-  TSequence **allseqs = tsequencearr2_to_tsequencearr(sequences, countseqs,
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs,
     ts->count, totalcount);
   ArrayType *result = temporalarr_to_array((const Temporal **) allseqs,
     totalcount);
@@ -5082,7 +5082,7 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
     return NULL;
 
   /* It is necessary to sort the sequences */
-  tsequencearr_sort((TSequence **) sequences, count);
+  tseqarr_sort((TSequence **) sequences, count);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -5141,7 +5141,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
     pfree(sequences); pfree(countseqs);
     return NULL;
   }
-  TSequence **allseqs = tsequencearr2_to_tsequencearr(sequences,
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences,
     countseqs, ts->count, totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }

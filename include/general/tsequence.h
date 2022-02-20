@@ -49,13 +49,18 @@
 extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
 extern void *tsequence_bbox_ptr(const TSequence *seq);
 extern void tsequence_bbox(const TSequence *seq, void *box);
+extern int *tsequenceset_make_valid_gaps(const TInstant **instants, int count,
+  bool lower_inc, bool upper_inc, bool linear, double maxdist, Interval *maxt,
+  int *countsplits);
+extern TSequence *tsequence_make1(const TInstant **instants, int count,
+  bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_make(const TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_make_free(TInstant **instants,
   int count, bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_copy(const TSequence *seq);
 extern int tsequence_find_timestamp(const TSequence *seq, TimestampTz t);
-extern TSequence **tsequencearr2_to_tsequencearr(TSequence ***sequences,
+extern TSequence **tseqarr2_to_tseqarr(TSequence ***sequences,
   int *countseqs, int count, int totalseqs);
 
 /* Append and merge functions */
@@ -63,7 +68,7 @@ extern TSequence **tsequencearr2_to_tsequencearr(TSequence ***sequences,
 extern Temporal *tsequence_append_tinstant(const TSequence *seq,
   const TInstant *inst);
 extern Temporal *tsequence_merge(const TSequence *seq1, const TSequence *seq2);
-extern TSequence **tsequencearr_normalize(const TSequence **sequences,
+extern TSequence **tseqarr_normalize(const TSequence **sequences,
   int count, int *newcount);
 extern TSequence **tsequence_merge_array1(const TSequence **sequences,
   int count, int *totalcount);

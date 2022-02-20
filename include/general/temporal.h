@@ -467,9 +467,11 @@ extern void ensure_same_interpolation(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
-extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
+extern void ensure_valid_tinstarr(const TInstant **instants, int count,
   bool merge, int16 subtype);
-extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
+extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
+  bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
+extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, Oid type);
 extern void ensure_valid_duration(const Interval *duration);
