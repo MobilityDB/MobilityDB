@@ -1061,19 +1061,30 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tsequenceset_constructor_gaps);
 /**
  * Construct a temporal sequence set value from the array of temporal
  * instant values that are split in various sequences if two consecutive
  * instants have a spatial or temporal gap defined by the arguments
  */
 PGDLLEXPORT Datum
-tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
+tsequenceset_constructor_gaps(FunctionCallInfo fcinfo, bool get_interp)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
-  float maxdist = PG_GETARG_FLOAT8(1);
-  Interval *maxt = PG_GETARG_INTERVAL_P(2);
+  bool linear;
+  float maxdist;
+  Interval *maxt;
+  if (get_interp)
+  {
+    linear = PG_GETARG_BOOL(1);
+    maxdist = PG_GETARG_FLOAT8(2);
+    maxt = PG_GETARG_INTERVAL_P(3);
+  }
+  else
+  {
+    maxdist = PG_GETARG_FLOAT8(1);
+    maxt = PG_GETARG_INTERVAL_P(2);
+  }
   /* Set the interval to NULL if it is negative or zero */
   Interval intervalzero;
   memset(&intervalzero, 0, sizeof(Interval));
@@ -1087,7 +1098,7 @@ tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   /* If no gaps are given construt call the standard sequence constructor */
   if (maxdist <= 0.0 && maxt == NULL)
   {
-    seq = (TSequence *) DatumGetPointer(tsequence_constructor(fcinfo, LINEAR));
+    seq = (TSequence *) DatumGetPointer(tsequence_constructor(fcinfo, linear));
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     PG_RETURN_POINTER(result);
   }
@@ -1097,13 +1108,13 @@ tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
   /* Ensure that the array of instants is valid and determine the splits */
   int countsplits;
   int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
-    count, true, true, LINEAR, maxdist, maxt, &countsplits);
+    count, true, true, linear, maxdist, maxt, &countsplits);
   if (countsplits == 0)
   {
     /* There are no gaps  */
     pfree(splits);
     seq = tsequence_make1((const TInstant **) instants, count,
-      true, true, LINEAR, NORMALIZE);
+      true, true, linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
   }
   else
@@ -1119,7 +1130,7 @@ tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
         /* Finalize the current sequence and start a new one */
         assert(k > 0);
         sequences[l++] = tsequence_make1((const TInstant **) newinsts, k,
-          true, true, LINEAR, NORMALIZE);
+          true, true, linear, NORMALIZE);
         j++; k = 0;
       }
       /* Continue with the current sequence */
@@ -1128,12 +1139,35 @@ tsequenceset_constructor_gaps(PG_FUNCTION_ARGS)
     /* Construct last sequence */
     if (k > 0)
       sequences[l++] = tsequence_make1((const TInstant **) newinsts, k,
-          true, true, LINEAR, NORMALIZE);
+          true, true, linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) sequences, l, NORMALIZE);
     pfree(newinsts); pfree(sequences);
   }
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
+}
+
+
+PG_FUNCTION_INFO_V1(tstepseqset_constructor_gaps);
+/**
+ * Construct a temporal sequence set value with stepwise interpolation from
+ * the array of temporal instant values
+ */
+PGDLLEXPORT Datum
+tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
+{
+  return tsequenceset_constructor_gaps(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(tlinearseqset_constructor_gaps);
+/**
+ * Construct a temporal sequence set value with linear or stepwise
+ * interpolation from the array of temporal instant values
+ */
+PGDLLEXPORT Datum
+tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
+{
+  return tsequenceset_constructor_gaps(fcinfo, true);
 }
 
 /*****************************************************************************/

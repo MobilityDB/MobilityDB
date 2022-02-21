@@ -119,10 +119,10 @@ CREATE FUNCTION tnpoint_seqset(npoint, periodset, boolean DEFAULT true)
   AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], maxdist float DEFAULT 0.0,
-    maxt interval DEFAULT '0 minutes')
+CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear boolean DEFAULT true,
+    maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tsequenceset_constructor_gaps'
+  AS 'MODULE_PATHNAME', 'tlinearseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

@@ -509,6 +509,8 @@ extern Datum tinstantset_constructor(PG_FUNCTION_ARGS);
 extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
+extern Datum tstepseqset_constructor_gaps(PG_FUNCTION_ARGS);
+extern Datum tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS);
 
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
   Oid basetypid, bool linear);

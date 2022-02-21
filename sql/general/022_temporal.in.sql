@@ -307,12 +307,12 @@ CREATE FUNCTION ttext_seqset(ttext[])
 CREATE FUNCTION tint_seqset_gaps(tint[], maxdist float DEFAULT 0.0,
     maxt interval DEFAULT '0 minutes')
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'tsequenceset_constructor_gaps'
+  AS 'MODULE_PATHNAME', 'tstepseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_seqset_gaps(tfloat[], maxdist float DEFAULT 0.0,
-    maxt interval DEFAULT '0 minutes')
+CREATE FUNCTION tfloat_seqset_gaps(tfloat[], linear boolean DEFAULT true,
+    maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'tsequenceset_constructor_gaps'
+  AS 'MODULE_PATHNAME', 'tlinearseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
