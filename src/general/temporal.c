@@ -482,7 +482,9 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
     {
       double dist = -1;
       if (tnumber_base_type(basetypid))
-        dist = DatumGetFloat8(number_distance(value1, value2, basetypid, basetypid));
+        dist = (basetypid == INT4OID) ?
+          (double) DatumGetInt32(number_distance(value1, value2, basetypid, basetypid)) :
+          DatumGetFloat8(number_distance(value1, value2, basetypid, basetypid));
       else if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
         dist = DatumGetFloat8(point_distance(value1, value2));
       else if (basetypid == type_oid(T_NPOINT))
@@ -1082,6 +1084,7 @@ tsequenceset_constructor_gaps(FunctionCallInfo fcinfo, bool get_interp)
   }
   else
   {
+    linear = STEP;
     maxdist = PG_GETARG_FLOAT8(1);
     maxt = PG_GETARG_INTERVAL_P(2);
   }
@@ -1093,6 +1096,9 @@ tsequenceset_constructor_gaps(FunctionCallInfo fcinfo, bool get_interp)
   if (cmp <= 0)
     maxt = NULL;
 
+  /* Store fcinfo into a global variable */
+  /* Needed for the distance function for temporal geographic points */
+  store_fcinfo(fcinfo);
   TSequence *seq;
   TSequenceSet *result;
   /* If no gaps are given construt call the standard sequence constructor */

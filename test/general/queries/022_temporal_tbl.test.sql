@@ -79,6 +79,26 @@ SELECT COUNT(*) FROM tbl_tint_seq WHERE tfloat(seq) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- Constructor functions
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tintinst_test;
+CREATE TABLE tbl_tintinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tint_seq;
+WITH temp AS (
+  SELECT numSequences(tint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), 5.0, '5 minutes'::interval))
+  FROM tbl_tintinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_tintinst_test;
+
+DROP TABLE IF EXISTS tbl_tfloatinst_test;
+CREATE TABLE tbl_tfloatinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tfloat_seq;
+WITH temp AS (
+  SELECT numSequences(tfloat_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tfloatinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_tfloatinst_test;
+
+-------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------
 

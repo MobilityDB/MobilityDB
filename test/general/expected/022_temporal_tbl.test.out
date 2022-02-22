@@ -126,6 +126,38 @@ SELECT COUNT(*) FROM tbl_tint_seqset WHERE tfloat(ts) IS NOT NULL;
     99
 (1 row)
 
+DROP TABLE IF EXISTS tbl_tintinst_test;
+NOTICE:  table "tbl_tintinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tintinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tint_seq;
+SELECT 481
+WITH temp AS (
+  SELECT numSequences(tint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), 5.0, '5 minutes'::interval))
+  FROM tbl_tintinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   9
+(1 row)
+
+DROP TABLE tbl_tintinst_test;
+DROP TABLE
+DROP TABLE IF EXISTS tbl_tfloatinst_test;
+NOTICE:  table "tbl_tfloatinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tfloatinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tfloat_seq;
+SELECT 487
+WITH temp AS (
+  SELECT numSequences(tfloat_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tfloatinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   9
+(1 row)
+
+DROP TABLE tbl_tfloatinst_test;
+DROP TABLE
 SELECT DISTINCT tempSubtype(tbool_inst(inst)) FROM tbl_tbool_inst;
  tempsubtype 
 -------------
