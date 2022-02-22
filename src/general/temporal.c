@@ -411,6 +411,28 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
+ * Ensures that two temporal instant values have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ *
+ * @param[in] inst1, inst2 Temporal instants
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] subtype Subtype for which the function is called
+ */
+void
+ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
+  bool merge, int16 subtype)
+{
+  ensure_same_interpolation((Temporal *) inst1, (Temporal *) inst2);
+  ensure_increasing_timestamps(inst1, inst2, merge);
+  ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
+  if (subtype == SEQUENCE && inst1->basetypid == type_oid(T_NPOINT))
+    ensure_same_rid_tnpointinst(inst1, inst2);
+  return;
+}
+
+/**
  * Ensures that all temporal instant values of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
@@ -426,13 +448,7 @@ ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
   int16 subtype)
 {
   for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
-    ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    if (subtype == SEQUENCE && instants[0]->basetypid == type_oid(T_NPOINT))
-      ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
-  }
+    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, subtype);
   return;
 }
 
@@ -470,11 +486,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   int k = 0;
   for (int i = 1; i < count; i++)
   {
-    ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
-    ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    if (subtype == SEQUENCE && basetypid == type_oid(T_NPOINT))
-      ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
+    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, subtype);
     bool split = false;
     Datum value2 = tinstant_value(instants[i]);
     Datum geom2 = 0; /* Used only for temporal network points */

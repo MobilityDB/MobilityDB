@@ -247,7 +247,7 @@ tsequence_inst_n(const TSequence *seq, int index)
  * Ensure the validity of the arguments when creating a temporal value
  */
 static void
-tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear)
 {
   /* Test the validity of the instants */
@@ -260,6 +260,17 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
       tinstant_value(instants[count - 2]), instants[0]->basetypid))
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
+  return;
+}
+
+/**
+ * Ensure the validity of the arguments when creating a temporal value
+ */
+static void
+tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear)
+{
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
   ensure_valid_tinstarr(instants, count, MERGE_NO, SEQUENCE);
   return;
 }
@@ -273,16 +284,7 @@ int *
 tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear, double maxdist, Interval *maxt, int *countsplits)
 {
-  /* Test the validity of the instants */
-  assert(count > 0);
-  if (count == 1 && (!lower_inc || !upper_inc))
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-        errmsg("Instant sequence must have inclusive bounds")));
-  if (!linear && count > 1 && !upper_inc &&
-    datum_ne(tinstant_value(instants[count - 1]),
-      tinstant_value(instants[count - 2]), instants[0]->basetypid))
-    ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
-      errmsg("Invalid end value for temporal sequence")));
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
   return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
     SEQUENCE, maxdist, maxt, countsplits);
 }
