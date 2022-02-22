@@ -1101,16 +1101,18 @@ tsequenceset_constructor_gaps(FunctionCallInfo fcinfo, bool get_interp)
   store_fcinfo(fcinfo);
   TSequence *seq;
   TSequenceSet *result;
+  int count;
+  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+
   /* If no gaps are given construt call the standard sequence constructor */
   if (maxdist <= 0.0 && maxt == NULL)
   {
-    seq = (TSequence *) DatumGetPointer(tsequence_constructor(fcinfo, linear));
+    seq = tsequence_make((const TInstant **) instants, count, true, true,
+      linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     PG_RETURN_POINTER(result);
   }
 
-  int count;
-  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
   /* Ensure that the array of instants is valid and determine the splits */
   int countsplits;
   int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
