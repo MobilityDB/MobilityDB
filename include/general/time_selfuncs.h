@@ -44,10 +44,10 @@
 
 /*****************************************************************************/
 
-extern double period_hist_sel(VariableStatData *vardata,
+extern double period_sel_hist(VariableStatData *vardata,
   const Period *constval, CachedOp cachedOp);
-extern double period_hist_sel_scalar(PeriodBound *constbound,
-  PeriodBound *hist, int hist_nvalues, bool equal);
+extern double period_sel_scalar(const PeriodBound *constbound,
+  const PeriodBound *hist, int hist_nvalues, bool equal);
 
 extern int length_hist_bsearch(Datum *length_hist_values,
   int length_hist_nvalues, double value, bool equal);

@@ -368,7 +368,7 @@ temporal_sel_period(PlannerInfo *root, VariableStatData *vardata,
     cachedOp == LT_OP || cachedOp == LE_OP ||
     cachedOp == GT_OP || cachedOp == GE_OP)
   {
-    selec = period_hist_sel(vardata, period, cachedOp);
+    selec = period_sel_hist(vardata, period, cachedOp);
   }
   else /* Unknown operator */
   {

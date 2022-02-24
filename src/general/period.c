@@ -216,10 +216,9 @@ period_copy(const Period *p)
  * Returns the number of seconds of the period as a float8 value
  */
 float8
-period_to_secs(TimestampTz v1, TimestampTz v2)
+period_to_secs(TimestampTz upper, TimestampTz lower)
 {
-  float8 result = ((float8) v1 - (float8) v2) / USECS_PER_SEC;
-  return result;
+  return ((float8) upper - (float8) lower) / USECS_PER_SEC;
 }
 
 /**

@@ -556,7 +556,7 @@ tpoint_cachedop(Oid oper, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_tpoint_selectivity(CachedOp oper)
+tpoint_sel_default(CachedOp oper)
 {
   switch (oper)
   {
@@ -828,7 +828,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid,
                   &vardata, &other, &varonleft))
-    return default_tpoint_selectivity(cachedOp);
+    return tpoint_sel_default(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -836,7 +836,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return default_tpoint_selectivity(cachedOp);
+    return tpoint_sel_default(cachedOp);
   }
 
   /*
@@ -861,7 +861,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return default_tpoint_selectivity(cachedOp);
+      return tpoint_sel_default(cachedOp);
     }
   }
 
@@ -871,7 +871,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   found = tpoint_const_to_stbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)
-    return default_tpoint_selectivity(cachedOp);
+    return tpoint_sel_default(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
@@ -888,7 +888,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
      * comparisons <, <=, >, >= */
     if (cachedOp == LT_OP || cachedOp == LE_OP || cachedOp == GT_OP ||
       cachedOp == GE_OP)
-      selec *= default_tpoint_selectivity(cachedOp);
+      selec *= tpoint_sel_default(cachedOp);
     else
       selec *= geo_selectivity(&vardata, &constBox, cachedOp);
   }

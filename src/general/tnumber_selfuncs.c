@@ -742,7 +742,7 @@ tnumber_cachedop_rangeop(CachedOp cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_tnumber_selectivity(CachedOp operator)
+tnumber_sel_default(CachedOp operator)
 {
   switch (operator)
   {
@@ -787,7 +787,7 @@ default_tnumber_selectivity(CachedOp operator)
  * respectively.
  */
 static Selectivity
-tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
+tnumber_sel_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
   CachedOp cachedOp, Oid basetypid)
 {
   Period period;
@@ -862,7 +862,7 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
         value_oprid);
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= period_hist_sel(vardata, &period, cachedOp);
+      selec *= period_sel_hist(vardata, &period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
@@ -877,11 +877,11 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= period_hist_sel(vardata, &period, cachedOp);
+      selec *= period_sel_hist(vardata, &period, cachedOp);
   }
   else /* Unknown operator */
   {
-    selec = default_tnumber_selectivity(cachedOp);
+    selec = tnumber_sel_default(cachedOp);
   }
   if (range != NULL)
     pfree(range);
@@ -919,7 +919,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
         &varonleft))
-    return default_tnumber_selectivity(cachedOp);
+    return tnumber_sel_default(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -927,7 +927,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return default_tnumber_selectivity(cachedOp);
+    return tnumber_sel_default(cachedOp);
   }
 
   /*
@@ -952,7 +952,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return default_tnumber_selectivity(cachedOp);
+      return tnumber_sel_default(cachedOp);
     }
   }
 
@@ -962,7 +962,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   found = tnumber_const_to_tbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)
-    return default_tnumber_selectivity(cachedOp);
+    return tnumber_sel_default(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
@@ -971,7 +971,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   ensure_tnumber_base_type(basetypid);
 
   /* Compute the selectivity */
-  selec = tnumber_sel_internal_box(root, &vardata, &constBox, cachedOp, basetypid);
+  selec = tnumber_sel_box(root, &vardata, &constBox, cachedOp, basetypid);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);

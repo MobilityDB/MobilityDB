@@ -107,11 +107,10 @@ get_time_cachedop(Oid oper, CachedOp *cachedOp)
  * interpolation of portion of bounds which are less or equal to given bound.
  */
 static int
-period_rbound_bsearch(PeriodBound *value, PeriodBound *hist, int hist_length,
-  bool equal)
+period_rbound_bsearch(const PeriodBound *value, const PeriodBound *hist,
+  int hist_length, bool equal)
 {
-  int lower = -1,
-      upper = hist_length - 1;
+  int lower = -1, upper = hist_length - 1;
 
   while (lower < upper)
   {
@@ -130,7 +129,7 @@ period_rbound_bsearch(PeriodBound *value, PeriodBound *hist, int hist_length,
  * Measure distance between two period bounds.
  */
 static float8
-get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
+get_period_distance(const PeriodBound *bound1, const PeriodBound *bound2)
 {
   return period_to_secs(bound2->t, bound1->t);
 }
@@ -139,8 +138,8 @@ get_period_distance(PeriodBound *bound1, PeriodBound *bound2)
  * Get relative position of value in histogram bin in [0,1] period.
  */
 static float8
-get_period_position(PeriodBound *value, PeriodBound *hist1,
-  PeriodBound *hist2)
+get_period_position(const PeriodBound *value, const PeriodBound *hist1,
+  const PeriodBound *hist2)
 {
   float8 position, bin_width;
 
@@ -162,7 +161,7 @@ get_period_position(PeriodBound *value, PeriodBound *hist1,
  * is true) a given const in a histogram of period bounds.
  */
 double
-period_hist_sel_scalar(PeriodBound *constbound, PeriodBound *hist,
+period_sel_scalar(const PeriodBound *constbound, const PeriodBound *hist,
   int hist_nvalues, bool equal)
 {
   Selectivity selec;
@@ -421,7 +420,7 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
 * the fraction between upper and upper(upperbin).
 */
 double
-period_hist_sel_adjacent(PeriodBound *lower, PeriodBound *upper,
+period_sel_adjacent(PeriodBound *lower, PeriodBound *upper,
   PeriodBound *hist_lower, PeriodBound *hist_upper, int hist_nvalues)
 {
   Selectivity selec1 = 0, selec2 = 0;
@@ -464,7 +463,7 @@ period_hist_sel_adjacent(PeriodBound *lower, PeriodBound *upper,
  * finite.
  */
 static double
-period_hist_sel_contained(PeriodBound *lower, PeriodBound *upper,
+period_sel_contained(PeriodBound *lower, PeriodBound *upper,
   PeriodBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
   int length_hist_nvalues)
 {
@@ -566,7 +565,7 @@ period_hist_sel_contained(PeriodBound *lower, PeriodBound *upper,
  * contain the constant lower and upper bounds.
  */
 static double
-period_hist_sel_contains(PeriodBound *lower, PeriodBound *upper,
+period_sel_contains(PeriodBound *lower, PeriodBound *upper,
   PeriodBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
   int length_hist_nvalues)
 {
@@ -648,7 +647,7 @@ period_hist_sel_contains(PeriodBound *lower, PeriodBound *upper,
  * from the element constant, so just treat it the same as &&.
  */
 static double
-period_hist_sel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
+period_sel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
   PeriodBound *lower2, PeriodBound *upper2, int nhist)
 {
   /* If the periods do not overlap return 0.0 */
@@ -656,8 +655,8 @@ period_hist_sel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
     period_cmp_bounds(lower2, upper1) > 0)
     return 0.0;
 
-  float8 hist_selec = period_hist_sel_scalar(lower1, upper2, nhist, false);
-  hist_selec += (1.0 - period_hist_sel_scalar(upper1, lower2, nhist, true));
+  float8 hist_selec = period_sel_scalar(lower1, upper2, nhist, false);
+  hist_selec += (1.0 - period_sel_scalar(upper1, lower2, nhist, true));
   hist_selec = 1.0 - hist_selec;
   return hist_selec;
 }
@@ -668,7 +667,7 @@ period_hist_sel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
  * This estimate is for the portion of values that are not NULL.
  */
 double
-period_hist_sel(VariableStatData *vardata, const Period *constval,
+period_sel_hist(VariableStatData *vardata, const Period *constval,
   CachedOp cachedOp)
 {
   AttStatsSlot hslot, lslot;
@@ -677,11 +676,22 @@ period_hist_sel(VariableStatData *vardata, const Period *constval,
   double hist_selec;
   int nhist, i;
 
+  memset(&hslot, 0, sizeof(hslot));
+  memset(&lslot, 0, sizeof(lslot));
+  
+  /* Try to get histogram of periods of vardata1 */
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
       get_attstatsslot(&hslot, vardata->statsTuple,
-        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM,
-        InvalidOid, ATTSTATSSLOT_VALUES)))
+        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid,
+        ATTSTATSSLOT_VALUES)))
     return -1.0;
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot.nvalues < 2)
+  {
+    free_attstatsslot(&hslot);
+    return -1.0;
+  }
+
   /*
    * Convert histogram of periods into histograms of its lower and upper
    * bounds.
@@ -691,20 +701,19 @@ period_hist_sel(VariableStatData *vardata, const Period *constval,
   hist_upper = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
   for (i = 0; i < nhist; i++)
     period_deserialize(DatumGetPeriodP(hslot.values[i]),
-               &hist_lower[i], &hist_upper[i]);
+      &hist_lower[i], &hist_upper[i]);
 
   /* @> and @< also need a histogram of period lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
-          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM,
-          InvalidOid, ATTSTATSSLOT_VALUES)))
+          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
     {
       free_attstatsslot(&hslot);
       return -1.0;
     }
-
     /* check that it's a histogram, not just a dummy entry */
     if (lslot.nvalues < 2)
     {
@@ -713,8 +722,6 @@ period_hist_sel(VariableStatData *vardata, const Period *constval,
       return -1.0;
     }
   }
-  else
-    memset(&lslot, 0, sizeof(lslot));
 
   /* Extract the bounds of the constant value. */
   period_deserialize(constval, &const_lower, &const_upper);
@@ -734,54 +741,53 @@ period_hist_sel(VariableStatData *vardata, const Period *constval,
      * combination of parameters. This is because the b-tree stores the
      * values, not their BBoxes.
      */
-    hist_selec = period_hist_sel_scalar(&const_lower,
+    hist_selec = period_sel_scalar(&const_lower,
       hist_lower, nhist, false);
   else if (cachedOp == LE_OP)
-    hist_selec = period_hist_sel_scalar(&const_lower,
+    hist_selec = period_sel_scalar(&const_lower,
       hist_lower, nhist, true);
   else if (cachedOp == GT_OP)
-    hist_selec = 1 - period_hist_sel_scalar(&const_lower,
+    hist_selec = 1 - period_sel_scalar(&const_lower,
       hist_lower, nhist, false);
   else if (cachedOp == GE_OP)
-    hist_selec = 1 - period_hist_sel_scalar(&const_lower,
+    hist_selec = 1 - period_sel_scalar(&const_lower,
       hist_lower, nhist, true);
   else if (cachedOp == BEFORE_OP)
     /* var <<# const when upper(var) < lower(const)*/
-    hist_selec = period_hist_sel_scalar(&const_lower,
+    hist_selec = period_sel_scalar(&const_lower,
       hist_upper, nhist, false);
   else if (cachedOp == OVERBEFORE_OP)
     /* var &<# const when upper(var) <= upper(const) */
-    hist_selec = period_hist_sel_scalar(&const_upper,
+    hist_selec = period_sel_scalar(&const_upper,
       hist_upper, nhist, true);
   else if (cachedOp == AFTER_OP)
     /* var #>> const when lower(var) > upper(const) */
-    hist_selec = 1 - period_hist_sel_scalar(&const_upper,
+    hist_selec = 1 - period_sel_scalar(&const_upper,
       hist_lower, nhist, true);
   else if (cachedOp == OVERAFTER_OP)
     /* var #&> const when lower(var) >= lower(const)*/
-    hist_selec = 1 - period_hist_sel_scalar(&const_lower,
+    hist_selec = 1 - period_sel_scalar(&const_lower,
       hist_lower, nhist, false);
   else if (cachedOp == OVERLAPS_OP)
-    hist_selec = period_hist_sel_overlaps(&const_lower, &const_upper,
+    hist_selec = period_sel_overlaps(&const_lower, &const_upper,
       hist_lower, hist_upper, nhist);
   else if (cachedOp == CONTAINS_OP)
-    hist_selec = period_hist_sel_contains(&const_lower,
+    hist_selec = period_sel_contains(&const_lower,
       &const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
   else if (cachedOp == CONTAINED_OP)
-    hist_selec = period_hist_sel_contained(&const_lower,
+    hist_selec = period_sel_contained(&const_lower,
       &const_upper, hist_lower, nhist, lslot.values, lslot.nvalues);
   else if (cachedOp == ADJACENT_OP)
-    hist_selec = period_hist_sel_adjacent(&const_lower,
+    hist_selec = period_sel_adjacent(&const_lower,
       &const_upper, hist_lower, hist_upper,nhist);
   else
   {
-    elog(ERROR, "Unable to compute selectivity for unknown period operator");
+    elog(ERROR, "Unable to compute join selectivity for unknown period operator");
     hist_selec = -1.0;  /* keep compiler quiet */
   }
 
   pfree(hist_lower);
   pfree(hist_upper);
-
   free_attstatsslot(&lslot);
   free_attstatsslot(&hslot);
 
@@ -905,7 +911,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
      */
     if (HeapTupleIsValid(vardata.statsTuple))
     {
-      Form_pg_statistic stats = 
+      Form_pg_statistic stats =
         (Form_pg_statistic) GETSTRUCT(vardata.statsTuple);
       null_frac = stats->stanullfrac;
     }
@@ -938,7 +944,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
      * returning the default estimate, because this still takes into
      * account the fraction of NULL tuples, if we had statistics for them.
      */
-    hist_selec = period_hist_sel(&vardata, period, cachedOp);
+    hist_selec = period_sel_hist(&vardata, period, cachedOp);
     if (hist_selec < 0.0)
       hist_selec = period_sel_default(oper);
 
@@ -967,26 +973,268 @@ period_sel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8((float8) selec);
 }
 
+/*****************************************************************************
+ * Join selectivity
+ *****************************************************************************/
+
+/*
+ * Look up the fraction of values less than (or equal, if 'equal' argument
+ * is true) a histogram of period bounds in another histogram of period bounds.
+ *
+ * The intuition is that the first histogram can be considered as a
+ * distribution of const bound, and for each const we can call the function
+ * period_sel_scalar to compute its selectivity. By integrate them
+ * with respect to the distribution, we obtain the said fraction.
+ */
+static double
+period_joinsel_hist1(const PeriodBound *hist1, int hist1_nvalues,
+  const PeriodBound *hist2, int hist2_nvalues, bool equal)
+{
+  int i;
+  int idx1;
+  int idx2;
+  double cur_selec;
+  const PeriodBound *chosed_bound;
+  const PeriodBound *old_bound;
+  int cur_bin_idx;
+  double cur_bin_area;
+  double cur_bin_height;
+  double trapezoid_base1;
+  double trapezoid_base2;
+  double trapezoid_height;
+  double *area_values;
+  Selectivity selec;
+
+  idx1 = idx2 = 0;
+  cur_bin_idx = -1;
+  area_values = (double *) palloc(sizeof(double) * (hist1_nvalues - 1));
+  memset(area_values, 0, sizeof(double) * (hist1_nvalues - 1));
+  selec = 0;
+
+  /* Loop until finishing all period bounds in hist1.
+   *
+   * For each bin in hist1, we calculate its area_value through dividing
+   * the area under the selectivity curve within the bin by the length of
+   * the bin. The area_value represents the join selectivity contributed
+   * by this bin, regarding hist2. The average of all area_values
+   * represents the join selectivity of hist1 regarding hist2, as hist1 is
+   * an Equi-Depth histogram and all bins take up the same weight.
+   */
+  while (idx1 < hist1_nvalues)
+  {
+    /* loop until finishing traversing all period bounds in hist1 */
+    if (idx2 >= hist2_nvalues)
+    {
+      /* period bounds in hist2 have been finished */
+      if (cur_bin_idx < 0)
+        break;
+      else
+      {
+        area_values[cur_bin_idx] = (cur_bin_height == 0) ? 0 :
+          cur_bin_area / cur_bin_height;
+        cur_bin_area = 0;
+        cur_bin_height = 0;
+        cur_bin_idx++;
+        idx1++;
+      }
+    }
+    else
+    {
+      /* proceed with the smaller one between hist1[idx1] and hist2[idx2] */
+      if (period_cmp_bounds(&hist1[idx1], &hist2[idx2]) <= 0)
+      {
+        chosed_bound = &hist1[idx1];
+        cur_selec = 1 - period_sel_scalar(chosed_bound, hist2, hist2_nvalues, equal);
+        if (cur_bin_idx < 0)
+        {
+          /* first bin */
+          cur_bin_idx = 0;
+        }
+        else
+        {
+          /* finish a bin and move to a new one */
+          trapezoid_base2 = cur_selec;
+          trapezoid_height = get_period_distance(chosed_bound, old_bound);
+          cur_bin_area += (trapezoid_base1 + trapezoid_base2) * trapezoid_height / 2;
+          cur_bin_height += trapezoid_height;
+          area_values[cur_bin_idx] = (cur_bin_height == 0) ? 0 : cur_bin_area / cur_bin_height;
+          cur_bin_idx++;
+        }
+        cur_bin_area = 0;
+        cur_bin_height = 0;
+        trapezoid_base1 = cur_selec;
+        trapezoid_base2 = trapezoid_height = 0;
+        old_bound = chosed_bound;
+        idx1++;
+      }
+      else
+      {
+        chosed_bound = &hist2[idx2];
+        cur_selec = 1 - idx2 / (hist2_nvalues - 1.0);
+        if (cur_bin_idx < 0)
+        {
+          idx2++;
+          continue;
+        }
+        trapezoid_base2 = cur_selec;
+        trapezoid_height = get_period_distance(chosed_bound, old_bound);
+        cur_bin_area += (trapezoid_base1 + trapezoid_base2) * trapezoid_height / 2;
+        cur_bin_height += trapezoid_height;
+        trapezoid_base1 = cur_selec;
+        trapezoid_base2 = trapezoid_height = 0;
+        old_bound = chosed_bound;
+        idx2++;
+      }
+    }
+  }
+
+  for (i = 0; i < (hist1_nvalues - 1); i++)
+    selec += area_values[i];
+  pfree(area_values);
+  selec /= (hist1_nvalues - 1);
+  return selec;
+}
+
+static double
+period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
+  CachedOp cachedOp)
+{
+  AttStatsSlot hslot1, hslot2, lslot1, lslot2;
+  int nhist1, nhist2;
+  PeriodBound *hist1_lower, *hist1_upper, *hist2_lower, *hist2_upper;
+  int i;
+  double hist_join_selec;
+
+  memset(&hslot1, 0, sizeof(hslot1));
+  memset(&hslot2, 0, sizeof(hslot2));
+  memset(&lslot1, 0, sizeof(lslot1));  
+  memset(&lslot2, 0, sizeof(lslot2));  
+
+  /* Try to get histogram of periods of vardata1 */
+  if (!(HeapTupleIsValid(vardata1->statsTuple) &&
+      get_attstatsslot(&hslot1, vardata1->statsTuple,
+        STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
+        ATTSTATSSLOT_VALUES)))
+    return -1.0;
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot1.nvalues < 2)
+  {
+    free_attstatsslot(&hslot1);
+    return -1.0;
+  }
+
+  /* Try to get histogram of periods of vardata2 */
+  if (!(HeapTupleIsValid(vardata2->statsTuple) &&
+      get_attstatsslot(&hslot2, vardata2->statsTuple,
+        STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
+        ATTSTATSSLOT_VALUES)))
+  {
+    free_attstatsslot(&hslot1);
+    return -1.0;
+  }
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot2.nvalues < 2)
+  {
+    free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+    return -1.0;
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  {
+    /* Get histograms for vardata1 */
+    if (!(HeapTupleIsValid(vardata1->statsTuple) &&
+        get_attstatsslot(&lslot1, vardata1->statsTuple,
+          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      return -1.0;
+    }
+    /* check that it's a histogram, not just a dummy entry */
+    if (lslot1.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      free_attstatsslot(&lslot1);
+      return -1.0;
+    }
+    /* Get histograms for vardata2 */
+    if (!(HeapTupleIsValid(vardata2->statsTuple) &&
+        get_attstatsslot(&lslot2, vardata1->statsTuple,
+          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      free_attstatsslot(&lslot1);
+      return -1.0;
+    }
+    /* check that it's a histogram, not just a dummy entry */
+    if (lslot2.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      free_attstatsslot(&lslot1); free_attstatsslot(&lslot2);
+      return -1.0;
+    }
+  }
+
+  /*
+   * Convert histogram of periods into histograms of its lower and upper
+   * bounds for vardata1 and vardata2.
+   */
+  nhist1 = hslot1.nvalues;
+  hist1_lower = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
+  hist1_upper = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
+  for (i = 0; i < nhist1; i++)
+  {
+    period_deserialize(DatumGetPeriodP(hslot1.values[i]),
+      &hist1_lower[i], &hist1_upper[i]);
+  }
+  nhist2 = hslot2.nvalues;
+  hist2_lower = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
+  hist2_upper = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
+  for (i = 0; i < nhist2; i++)
+  {
+    period_deserialize(DatumGetPeriodP(hslot2.values[i]),
+      &hist2_lower[i], &hist2_upper[i]);
+  }
+
+  /*
+   * Calculate selectivity comparing the lower or upper bound of the
+   * the histograms.
+   */
+  if (cachedOp == OVERLAPS_OP)
+    hist_join_selec = 1
+      - period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false)
+      - period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
+  else if (cachedOp == BEFORE_OP)
+    hist_join_selec = 
+      period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false);
+  else if (cachedOp == AFTER_OP)
+    hist_join_selec = 
+      period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
+  else
+    elog(ERROR, "Unable to compute join selectivity for unknown period operator");
+    hist_join_selec = -1.0;  /* keep compiler quiet */
+
+  pfree(hist1_lower); pfree(hist1_upper);
+  pfree(hist2_lower); pfree(hist2_upper);
+  free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+  free_attstatsslot(&lslot1); free_attstatsslot(&lslot2);
+
+  return hist_join_selec;
+}
+
 /*****************************************************************************/
 
 float8
 period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo)
 {
-  VariableStatData vardata1;
-  VariableStatData vardata2;
-  bool join_is_reversed;
-  bool isdefault1;
-  bool isdefault2;
-  double nd1;
-  double nd2;
-  Oid opfuncoid;
-  AttStatsSlot hslot1;
-  AttStatsSlot hslot2;
-  Form_pg_statistic stats1 = NULL;
-  Form_pg_statistic stats2 = NULL;
-  bool have_hist1 = false;
-  bool have_hist2 = false;
+  VariableStatData vardata1, vardata2;
+  bool join_is_reversed, isdefault1, isdefault2;
+  double nd1, nd2;
+  Form_pg_statistic stats1 = NULL, stats2 = NULL;
+  bool have_hist1 = false, have_hist2 = false;
   float8 selec;
 
   /* Check length of args and punt on > 2 */
@@ -1003,30 +1251,11 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   nd1 = get_variable_numdistinct(&vardata1, &isdefault1);
   nd2 = get_variable_numdistinct(&vardata2, &isdefault2);
 
-  opfuncoid = get_opcode(oper);
-
-  memset(&hslot1, 0, sizeof(hslot1));
-  memset(&hslot2, 0, sizeof(hslot2));
-
   if (HeapTupleIsValid(vardata1.statsTuple))
-  {
-    /* note we allow use of nullfrac regardless of security check */
     stats1 = (Form_pg_statistic) GETSTRUCT(vardata1.statsTuple);
-    if (statistic_proc_security_check(&vardata1, opfuncoid))
-      have_hist1 = get_attstatsslot(&hslot1, vardata1.statsTuple,
-        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid,
-        ATTSTATSSLOT_VALUES);
-  }
 
   if (HeapTupleIsValid(vardata2.statsTuple))
-  {
-    /* note we allow use of nullfrac regardless of security check */
     stats2 = (Form_pg_statistic) GETSTRUCT(vardata2.statsTuple);
-    if (statistic_proc_security_check(&vardata2, opfuncoid))
-      have_hist2 = get_attstatsslot(&hslot2, vardata2.statsTuple,
-        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid,
-        ATTSTATSSLOT_VALUES);
-  }
 
   if (!have_hist1 || !have_hist2)
   {
@@ -1061,11 +1290,22 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
     return selec;
   }
 
-  // TODO estimate join selectivity
-  selec = DEFAULT_TEMP_JOINSEL;
+  /*
+   * Get enumeration value associated to the operator
+   */
+  CachedOp cachedOp;
+  bool found = get_time_cachedop(oper, &cachedOp);
+  /* In the case of unknown operator */
+  if (!found)
+  {
+    ReleaseVariableStats(vardata1);
+    ReleaseVariableStats(vardata2);
+    return period_sel_default(oper);
+  }
 
-  free_attstatsslot(&hslot1);
-  free_attstatsslot(&hslot2);
+  /* Estimate join selectivity */
+  selec = period_joinsel_hist(&vardata1, &vardata2, cachedOp);
+
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
   CLAMP_PROBABILITY(selec);
