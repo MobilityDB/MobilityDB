@@ -629,6 +629,20 @@ geodstbox_constructor_zt(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
+PG_FUNCTION_INFO_V1(stbox_to_period);
+/**
+ * Cast the spatiotemporal box as a period
+ */
+PGDLLEXPORT Datum
+stbox_to_period(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  if (!MOBDB_FLAGS_GET_T(box->flags))
+    elog(ERROR, "The box does not have time dimension");
+  Period *result = period_make(box->tmin, box->tmax, true, true);
+  PG_RETURN_POINTER(result);
+}
+
 /**
  * Cast the spatiotemporal box as a GBOX value for PostGIS
  */
@@ -640,21 +654,6 @@ stbox_gbox(const STBOX *box, GBOX *gbox)
     MOBDB_FLAGS_GET_GEODETIC(box->flags), box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax);
   return;
-}
-
-PG_FUNCTION_INFO_V1(stbox_to_period);
-/**
- * Cast the spatiotemporal box as a period
- */
-PGDLLEXPORT Datum
-stbox_to_period(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  if (!MOBDB_FLAGS_GET_T(box->flags))
-    elog(ERROR, "The box does not have time dimension");
-
-  Period *result = period_make(box->tmin, box->tmax, true, true);
-  PG_RETURN_POINTER(result);
 }
 
 PG_FUNCTION_INFO_V1(stbox_to_box2d);
@@ -708,6 +707,36 @@ stbox_to_box3d(PG_FUNCTION_ARGS)
   BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
   stbox_box3d(box, result);
   PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(stbox_to_geometry);
+/**
+ * Cast the spatiotemporal box as a GBOX value for PostGIS
+ */
+PGDLLEXPORT Datum
+stbox_to_geometry(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  if (!MOBDB_FLAGS_GET_X(box->flags))
+    elog(ERROR, "The box does not have XY(Z) dimensions");
+  Datum result;
+  if (MOBDB_FLAGS_GET_Z(box->flags))
+  {
+    BOX3D box3d;
+    stbox_box3d(box, &box3d);
+    result = DirectFunctionCall1(BOX3D_to_LWGEOM, STboxPGetDatum(&box3d));
+  }
+  else
+  {
+    GBOX box2d;
+    stbox_gbox(box, &box2d);
+    Datum geom = DirectFunctionCall1(BOX2D_to_LWGEOM, PointerGetDatum(&box2d));
+    GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+    gserialized_set_srid(g, box->srid);
+    result = PointerGetDatum(g);
+    PG_FREE_IF_COPY_P(DatumGetPointer(geom), g);
+  }
+  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************

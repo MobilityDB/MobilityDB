@@ -122,6 +122,21 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))
 /* Errors */
 SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box3d;
 
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(5,5,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(1,5,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(5,1,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(1,1,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(5,5,5,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(1,5,5,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(5,1,5,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(5,5,1,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(1,1,5,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(1,5,1,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(5,1,1,2000-01-05))'::geometry);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(1,1,1,2000-01-05))'::geometry);
+/* Errors */
+SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::geometry;
+
 -------------------------------------------------------------------------------
 
 SELECT (geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'::box2d)::stbox;
