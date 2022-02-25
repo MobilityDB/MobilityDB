@@ -101,29 +101,62 @@
 		<sect2 id="short_version">
 			<title>Versión corta</title>
 			<para>
-				Extraer el tar ball
-			</para>
-			<programlisting xml:space="preserve">
-tar xvfz MobilityDB-&last_release_version;.tar.gz
-cd MobilityDB-&last_release_version;
-</programlisting>
-			<para>
 				Para compilar asumiendo que tiene todas las dependencias en su ruta de búsqueda
 			</para>
 			<programlisting xml:space="preserve">
-mkdir build
-cd build
+git clone https://github.com/MobilityDB/MobilityDB
+mkdir MobilityDB/build
+cd MobilityDB/build
 cmake  ..
 make
 sudo make install
 </programlisting>
 			<para>
-				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos individual en la que desee usarlo. En éste ejemplo se usa la versión 2.5.5 de PostGIS.
+				Los comandos anteriores instalan la rama <varname>master</varname>. Si desea instalar otra rama, por ejemplo, <varname>develop</varname>, puede reemplazar el primer comando anterior de la siguiente manera:
+			</para>
+			<programlisting xml:space="preserve">
+git clone --branch develop https://github.com/MobilityDB/MobilityDB
+</programlisting>
+
+			<para>
+				También debe configurar lo siguiente en el archivo <varname>postgresql.conf</varname> según la versión de PostGIS que haya instalado (a continuación usamos PostGIS 3):
+			</para>
+			<programlisting xml:space="preserve">
+shared_preload_libraries = 'postgis-3'
+max_locks_per_transaction = 128
+</programlisting>
+			<para>
+				Puede reemplazar <varname>postgis-2.5</varname> arriba si desea usar PostGIS 2.5.
+			</para>
+
+			<para>
+				Si no carga previamente la biblioteca PostGIS, no podrá cargar la biblioteca MobilityDB y obtendrá un mensaje de error como el siguiente:
+			</para>
+			<programlisting xml:space="preserve">
+ERROR:  could not load library "/usr/local/pgsql/lib/libMobilityDB-1.0.so":
+  undefined symbol: ST_Distance
+</programlisting>
+
+			<para>
+				Observe que puede encontrar la ubicación del archivo <varname>postgresql.conf</varname> de la manera siguiente.
+			</para>
+			<programlisting xml:space="preserve">
+$ which postgres
+/usr/local/pgsql/bin/postgres
+$ ls /usr/local/pgsql/data/postgresql.conf
+/usr/local/pgsql/data/postgresql.conf
+</programlisting>
+			<para>
+				Como puede verse, los binarios de PostgreSQL están en el subdirectorio <varname>bin</varname> mientras que el archivo <varname>postgresql.conf</varname> está en el subdirectorio <varname>data</varname>.
+			</para>
+
+			<para>
+				Una vez que MobilityDB está instalado, debe habilitarse en cada base de datos en la que desee usarlo. En el siguiente ejemplo, usamos una base de datos llamada <varname>mobility</varname>.
 			</para>
 			<programlisting xml:space="preserve">
 createdb mobility
-psql mobility -c "CREATE EXTENSION PostGIS WITH VERSION'2.5.5'"
-psql mobility -c 'CREATE EXTENSION MobilityDB'
+psql mobility -c "CREATE EXTENSION PostGIS"
+psql mobility -c "CREATE EXTENSION MobilityDB"
 </programlisting>
 		</sect2>
 

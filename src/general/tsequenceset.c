@@ -130,12 +130,12 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 {
   /* Test the validity of the sequences */
   assert(count > 0);
-  ensure_valid_tsequencearr(sequences, count);
+  ensure_valid_tseqarr(sequences, count);
   /* Normalize the array of sequences */
   TSequence **normseqs = (TSequence **) sequences;
   int newcount = count;
   if (normalize && count > 1)
-    normseqs = tsequencearr_normalize(sequences, count, &newcount);
+    normseqs = tseqarr_normalize(sequences, count, &newcount);
 
   /* Get the bounding box size */
   size_t bboxsize = temporal_bbox_size(sequences[0]->basetypid);
@@ -1291,7 +1291,7 @@ tsequenceset_instants_array(const TSequenceSet *ts)
 {
   int count;
   const TInstant **instants = tsequenceset_instants(ts, &count);
-  count = tinstantarr_remove_duplicates(instants, ts->totalcount);
+  count = tinstarr_remove_duplicates(instants, ts->totalcount);
   ArrayType *result = temporalarr_to_array((const Temporal **)instants, count);
   pfree(instants);
   return result;

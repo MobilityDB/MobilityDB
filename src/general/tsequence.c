@@ -247,7 +247,7 @@ tsequence_inst_n(const TSequence *seq, int index)
  * Ensure the validity of the arguments when creating a temporal value
  */
 static void
-tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+tsequence_make_valid1(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear)
 {
   /* Test the validity of the instants */
@@ -260,8 +260,33 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
       tinstant_value(instants[count - 2]), instants[0]->basetypid))
     ereport(ERROR, (errcode(ERRCODE_RESTRICT_VIOLATION),
       errmsg("Invalid end value for temporal sequence")));
-  ensure_valid_tinstantarr(instants, count, MERGE_NO, SEQUENCE);
   return;
+}
+
+/**
+ * Ensure the validity of the arguments when creating a temporal value
+ */
+static void
+tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear)
+{
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
+  ensure_valid_tinstarr(instants, count, MERGE_NO, SEQUENCE);
+  return;
+}
+
+/**
+ * Ensure the validity of the arguments when creating a temporal value
+ * This function extends function tsequence_make_valid by spliting the
+ * sequences according the maximum distance or interval between instants.
+ */
+int *
+tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, double maxdist, Interval *maxt, int *countsplits)
+{
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
+    SEQUENCE, maxdist, maxt, countsplits);
 }
 
 /**
@@ -277,7 +302,7 @@ tsequence_make_valid(const TInstant **instants, int count, bool lower_inc,
  * pointers to a subset of the input instants
  */
 static TInstant **
-tinstantarr_normalize(const TInstant **instants, bool linear, int count,
+tinstarr_normalize(const TInstant **instants, bool linear, int count,
   int *newcount)
 {
   assert(count > 1);
@@ -331,7 +356,7 @@ tinstantarr_normalize(const TInstant **instants, bool linear, int count,
  * Creating a temporal value from its arguments
  * @pre The validity of the arguments has been tested before
  */
-static TSequence *
+TSequence *
 tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear, bool normalize)
 {
@@ -339,7 +364,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   TInstant **norminsts = (TInstant **) instants;
   int newcount = count;
   if (normalize && count > 1)
-    norminsts = tinstantarr_normalize(instants, linear, count, &newcount);
+    norminsts = tinstarr_normalize(instants, linear, count, &newcount);
 
   /* Precompute the trajectory, if any */
   size_t trajsize = 0;
@@ -429,8 +454,8 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
  * @param[in] normalize True when the resulting value should be normalized
  */
 TSequence *
-tsequence_make(const TInstant **instants, int count, bool lower_inc, bool upper_inc,
-  bool linear, bool normalize)
+tsequence_make(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, bool normalize)
 {
   tsequence_make_valid(instants, count, lower_inc, upper_inc, linear);
   return tsequence_make1(instants, count, lower_inc, upper_inc, linear,
@@ -561,7 +586,7 @@ tsequence_find_timestamp(const TSequence *seq, TimestampTz t)
  * @pre count and totalseqs are greater than 0
  */
 TSequence **
-tsequencearr2_to_tsequencearr(TSequence ***sequences, int *countseqs,
+tseqarr2_to_tseqarr(TSequence ***sequences, int *countseqs,
   int count, int totalseqs)
 {
   assert(count > 0);
@@ -698,7 +723,7 @@ tsequence_merge(const TSequence *seq1, const TSequence *seq2)
  * sequences
  */
 TSequence **
-tsequencearr_normalize(const TSequence **sequences, int count, int *newcount)
+tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
 {
   assert(count > 0);
   TSequence **result = palloc(sizeof(TSequence *) * count);
@@ -808,7 +833,7 @@ TSequence **
 tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
 {
   if (count > 1)
-    tsequencearr_sort((TSequence **) sequences, count);
+    tseqarr_sort((TSequence **) sequences, count);
   /* Test the validity of the composing sequences */
   const TSequence *seq1 = sequences[0];
   for (int i = 1; i < count; i++)
@@ -836,7 +861,7 @@ tsequence_merge_array1(const TSequence **sequences, int count, int *totalcount)
     }
     seq1 = seq2;
   }
-  return tsequencearr_normalize(sequences, count, totalcount);
+  return tseqarr_normalize(sequences, count, totalcount);
 }
 
 /**
@@ -2563,7 +2588,7 @@ tsequence_at_values1(const TSequence *seq, const Datum *values, int count,
     lower_inc = true;
   }
   if (k > 1)
-    tsequencearr_sort(result, k);
+    tseqarr_sort(result, k);
 
   pfree(values1);
   return k;
@@ -3047,7 +3072,7 @@ tnumberseq_restrict_ranges1(const TSequence *seq, RangeType **normranges,
     if (bboxtest)
       pfree(newranges);
     if (k > 1)
-      tsequencearr_sort(result, k);
+      tseqarr_sort(result, k);
     return k;
   }
   else

@@ -46,6 +46,16 @@ SELECT tnpoint_seqset(array_agg(t.seq ORDER BY startTimestamp(t.seq))) FROM tbl_
 SELECT MAX(getPosition(startValue(temp))) FROM test;
 
 -------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tnpointinst_test;
+CREATE TABLE tbl_tnpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tnpoint_seq;
+WITH temp AS (
+  SELECT numSequences(tnpoint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tnpointinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_tnpointinst_test;
+
+-------------------------------------------------------------------------------
 --  Transformation functions
 -------------------------------------------------------------------------------
 

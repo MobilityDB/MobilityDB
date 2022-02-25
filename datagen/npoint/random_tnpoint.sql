@@ -133,7 +133,7 @@ FROM generate_series(1,10) k;
  * @param[in] mincard, maxcard Inclusive bounds of the number of instants
  */
 CREATE OR REPLACE FUNCTION random_tnpoint_instset(lown integer, highn integer,
-  lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int
+  lowtime timestamptz, hightime timestamptz, maxminutes int, mincard int,
   maxcard int)
   RETURNS tnpoint AS $$
 DECLARE
@@ -148,7 +148,7 @@ BEGIN
     result[i] = tnpoint_inst(random_npoint(lown, highn), t);
     t = t + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpointi(result);
+  RETURN tnpoint_instset(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 
@@ -203,9 +203,9 @@ BEGIN
   -- Sequences with step interpolation and exclusive upper bound must have
   -- the same value in the last two instants
   IF card <> 1 AND NOT upper_inc AND NOT linear THEN
-    result[card] = tgeompoint_inst(getValue(result[card - 1]], tsarr[card]);
+    result[card] = tnpoint_inst(getValue(result[card - 1]), tsarr[card]);
   ELSE
-    result[card] = tgeompoint_inst(npoint(rid, random()), tsarr[card]);
+    result[card] = tnpoint_inst(npoint(rid, random()), tsarr[card]);
   END IF;
   RETURN tnpoint_seq(result, lower_inc, upper_inc, linear);
 END;
@@ -269,7 +269,7 @@ BEGIN
     instants = NULL;
     t1 = t1 + random_minutes(1, maxminutes);
   END LOOP;
-  RETURN tnpoints(result);
+  RETURN tnpoint_seqset(result);
 END;
 $$ LANGUAGE PLPGSQL STRICT;
 

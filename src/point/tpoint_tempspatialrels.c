@@ -323,7 +323,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
       result[i + countper] = tsequence_from_base_internal(datum_no, BOOLOID,
         p, STEP);
     }
-    tsequencearr_sort(result, newcount);
+    tseqarr_sort(result, newcount);
     pfree(ps);
   }
   pfree_array((void **) periods, countper);
@@ -379,7 +379,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
     totalcount += countseqs[i];
   }
   *count = totalcount;
-  return tsequencearr2_to_tsequencearr(sequences, countseqs,
+  return tseqarr2_to_tseqarr(sequences, countseqs,
     newcount, totalcount);
 }
 
@@ -436,7 +436,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
         &countseqs[i]);
     totalcount += countseqs[i];
   }
-  TSequence **allseqs = tsequencearr2_to_tsequencearr(sequences,
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences,
     countseqs, ts->count, totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }

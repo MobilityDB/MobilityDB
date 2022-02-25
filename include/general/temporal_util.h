@@ -129,15 +129,15 @@ extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
 extern void periodarr_sort(Period **periods, int count);
 extern void rangearr_sort(RangeType **ranges, int count);
-extern void tinstantarr_sort(TInstant **instants, int count);
-extern void tsequencearr_sort(TSequence **sequences, int count);
+extern void tinstarr_sort(TInstant **instants, int count);
+extern void tseqarr_sort(TSequence **sequences, int count);
 
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
   Oid basetypid);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
-extern int tinstantarr_remove_duplicates(const TInstant **instants, int count);
+extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
 
 /* Text functions */
 

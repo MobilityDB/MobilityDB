@@ -114,7 +114,7 @@ tinstant_distance(const TInstant *inst1, const TInstant *inst2)
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 static double
-tinstantarr_similarity1(double *dist, const TInstant **instants1, int count1,
+tinstarr_similarity1(double *dist, const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
 
@@ -180,7 +180,7 @@ tinstantarr_similarity1(double *dist, const TInstant **instants1, int count1,
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 double
-tinstantarr_similarity(const TInstant **instants1, int count1,
+tinstarr_similarity(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, SimFunc simfunc)
 {
   /* Allocate memory for two rows of the distance matrix */
@@ -189,7 +189,7 @@ tinstantarr_similarity(const TInstant **instants1, int count1,
   for (int i = 0; i < 2 * count2; i++)
     *(dist + i) = -1.0;
   /* Call the linear_space computation of the similarity distance */
-  double result = tinstantarr_similarity1(dist, instants1, count1, instants2,
+  double result = tinstarr_similarity1(dist, instants1, count1, instants2,
     count2, simfunc);
   /* Free memory */
   pfree(dist);
@@ -211,8 +211,8 @@ temporal_similarity_internal(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
   const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
   const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
   result = count1 > count2 ?
-    tinstantarr_similarity(instants1, count1, instants2, count2, simfunc) :
-    tinstantarr_similarity(instants2, count2, instants1, count1, simfunc);
+    tinstarr_similarity(instants1, count1, instants2, count2, simfunc) :
+    tinstarr_similarity(instants2, count2, instants1, count1, simfunc);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
@@ -319,7 +319,7 @@ path_print(Match *path, int count)
  * @param[out] count Number of elements of the similarity path
  */
 static Match *
-tinstantarr_similarity_path(double *dist, int count1, int count2, int *count)
+tinstarr_similarity_path(double *dist, int count1, int count2, int *count)
 {
   Match *result = palloc(sizeof(Match) * (count1 + count2));
   int i = count1 - 1;
@@ -365,7 +365,7 @@ tinstantarr_similarity_path(double *dist, int count1, int count2, int *count)
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 static void
-tinstantarr_similarity_matrix1(double *dist, const TInstant **instants1,
+tinstarr_similarity_matrix1(double *dist, const TInstant **instants1,
   int count1, const TInstant **instants2, int count2, SimFunc simfunc)
 {
   for (int i = 0; i < count1; i++)
@@ -430,7 +430,7 @@ tinstantarr_similarity_matrix1(double *dist, const TInstant **instants1,
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 Match *
-tinstantarr_similarity_matrix(const TInstant **instants1, int count1,
+tinstarr_similarity_matrix(const TInstant **instants1, int count1,
   const TInstant **instants2, int count2, int *count, SimFunc simfunc)
 {
   /* Allocate memory for dist */
@@ -439,10 +439,10 @@ tinstantarr_similarity_matrix(const TInstant **instants1, int count1,
   for (int i = 0; i < count1 * count2; i++)
     *(dist + i) = -1.0;
   /* Call the iterative computation of the similarity distance */
-  tinstantarr_similarity_matrix1(dist, instants1, count1, instants2, count2,
+  tinstarr_similarity_matrix1(dist, instants1, count1, instants2, count2,
     simfunc);
   /* Compute the path */
-  Match *result = tinstantarr_similarity_path(dist, count1, count2, count);
+  Match *result = tinstarr_similarity_path(dist, count1, count2, count);
   /* Free memory */
   pfree(dist);
   return result;
@@ -504,8 +504,8 @@ temporal_similarity_path_internal(Temporal *temp1, Temporal *temp2, int *count,
   const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
   const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
   Match *result = count1 > count2 ?
-    tinstantarr_similarity_matrix(instants1, count1, instants2, count2, count, simfunc) :
-    tinstantarr_similarity_matrix(instants2, count2, instants1, count1, count, simfunc);
+    tinstarr_similarity_matrix(instants1, count1, instants2, count2, count, simfunc) :
+    tinstarr_similarity_matrix(instants2, count2, instants1, count1, count, simfunc);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;

@@ -310,7 +310,7 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the array
  */
 static void
-tsequencearr_to_period_internal(const TSequence **sequences, int count,
+tseqarr_to_period_internal(const TSequence **sequences, int count,
   Period *period)
 {
   const Period *first = &sequences[0]->period;
@@ -350,7 +350,7 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
   /* Only external types have bounding box */ // TODO
   ensure_temporal_base_type(sequences[0]->basetypid);
   if (talpha_base_type(sequences[0]->basetypid))
-    tsequencearr_to_period_internal(sequences, count, (Period *) box);
+    tseqarr_to_period_internal(sequences, count, (Period *) box);
   else if (tnumber_base_type(sequences[0]->basetypid))
     tnumberseqarr_to_tbox_internal(sequences, count, (TBOX *) box);
   else if (tgeo_base_type(sequences[0]->basetypid))

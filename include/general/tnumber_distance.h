@@ -49,6 +49,8 @@ extern Datum distance_base_tnumber(PG_FUNCTION_ARGS);
 extern Datum distance_tnumber_base(PG_FUNCTION_ARGS);
 extern Datum distance_tnumber_tnumber(PG_FUNCTION_ARGS);
 
+extern Datum number_distance(Datum l, Datum r, Oid typel, Oid typer);
+
 /* Nearest approach distance */
 
 extern Datum NAD_base_tnumber(PG_FUNCTION_ARGS);

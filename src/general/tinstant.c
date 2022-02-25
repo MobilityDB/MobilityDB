@@ -218,13 +218,13 @@ Temporal *
 tinstant_merge_array(const TInstant **instants, int count)
 {
   assert(count > 1);
-  tinstantarr_sort((TInstant **) instants, count);
+  tinstarr_sort((TInstant **) instants, count);
   /* Ensure validity of the arguments */
-  ensure_valid_tinstantarr(instants, count, MERGE, INSTANT);
+  ensure_valid_tinstarr(instants, count, MERGE, INSTANT);
 
   const TInstant **newinstants = palloc(sizeof(TInstant *) * count);
   memcpy(newinstants, instants, sizeof(TInstant *) * count);
-  int newcount = tinstantarr_remove_duplicates(newinstants, count);
+  int newcount = tinstarr_remove_duplicates(newinstants, count);
   Temporal *result = (newcount == 1) ?
     (Temporal *) tinstant_copy(newinstants[0]) :
     (Temporal *) tinstantset_make1(newinstants, newcount);

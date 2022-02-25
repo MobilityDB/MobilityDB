@@ -59,6 +59,7 @@
 #include "general/temporal_boxops.h"
 #include "general/temporal_parser.h"
 #include "general/rangetypes_ext.h"
+#include "general/tnumber_distance.h"
 
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
@@ -319,7 +320,7 @@ ensure_seq_subtypes(int16 subtype)
  * Ensures that the elements of the array are of instant subtype
  */
 static void
-ensure_tinstantarr(TInstant **instants, int count)
+ensure_tinstarr(TInstant **instants, int count)
 {
   for (int i = 0; i < count; i++)
   {
@@ -410,6 +411,28 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
+ * Ensures that two temporal instant values have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ *
+ * @param[in] inst1, inst2 Temporal instants
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] subtype Subtype for which the function is called
+ */
+void
+ensure_valid_tinstarr1(const TInstant *inst1, const TInstant *inst2,
+  bool merge, int16 subtype)
+{
+  ensure_same_interpolation((Temporal *) inst1, (Temporal *) inst2);
+  ensure_increasing_timestamps(inst1, inst2, merge);
+  ensure_spatial_validity((Temporal *) inst1, (Temporal *) inst2);
+  if (subtype == SEQUENCE && inst1->basetypid == type_oid(T_NPOINT))
+    ensure_same_rid_tnpointinst(inst1, inst2);
+  return;
+}
+
+/**
  * Ensures that all temporal instant values of the array have increasing
  * timestamp (or may be equal if the merge parameter is true), and if they
  * are temporal points, have the same srid and the same dimensionality.
@@ -421,18 +444,86 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
  * @param[in] subtype Subtype for which the function is called
  */
 void
-ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge,
+ensure_valid_tinstarr(const TInstant **instants, int count, bool merge,
   int16 subtype)
 {
   for (int i = 1; i < count; i++)
-  {
-    ensure_same_interpolation((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    ensure_increasing_timestamps(instants[i - 1], instants[i], merge);
-    ensure_spatial_validity((Temporal *) instants[i - 1], (Temporal *) instants[i]);
-    if (subtype == SEQUENCE && instants[0]->basetypid == type_oid(T_NPOINT))
-      ensure_same_rid_tnpointinst(instants[i - 1], instants[i]);
-  }
+    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, subtype);
   return;
+}
+
+/**
+ * Ensures that all temporal instant values of the array have increasing
+ * timestamp (or may be equal if the merge parameter is true), and if they
+ * are temporal points, have the same srid and the same dimensionality.
+ * This function extends function ensure_valid_tinstarr by determining
+ * the splits that must be made according the maximum distance or interval
+ * between consecutive instants.
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] merge True if a merge operation, which implies that the two
+ *   consecutive instants may be equal
+ * @param[in] subtype Subtype for which the function is called
+ * @param[in] maxdist Maximum distance to split the temporal sequence
+ * @param[in] maxt Maximum time interval to split the temporal sequence
+ * @param[out] countsplits Number of splits
+ * @result Array of indices at which the temporal sequence is split
+ */
+int *
+ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
+  int16 subtype, double maxdist, Interval *maxt, int *countsplits)
+{
+  Oid basetypid = instants[0]->basetypid;
+  int *result = palloc(sizeof(int) * count);
+  Datum value1 = tinstant_value(instants[0]);
+  Datum geom1 = 0; /* Used only for temporal network points */
+  datum_func2 point_distance = NULL;
+  if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+    point_distance = get_pt_distance_fn(instants[0]->flags);
+  else if (basetypid == type_oid(T_NPOINT))
+    geom1 = npoint_as_geom_internal(DatumGetNpoint(value1));
+  int k = 0;
+  for (int i = 1; i < count; i++)
+  {
+    ensure_valid_tinstarr1(instants[i - 1], instants[i], merge, subtype);
+    bool split = false;
+    Datum value2 = tinstant_value(instants[i]);
+    Datum geom2 = 0; /* Used only for temporal network points */
+    if (maxdist > 0 && ! datum_eq(value1, value2, basetypid))
+    {
+      double dist = -1;
+      if (tnumber_base_type(basetypid))
+        dist = (basetypid == INT4OID) ?
+          (double) DatumGetInt32(number_distance(value1, value2, basetypid, basetypid)) :
+          DatumGetFloat8(number_distance(value1, value2, basetypid, basetypid));
+      else if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
+        dist = DatumGetFloat8(point_distance(value1, value2));
+      else if (basetypid == type_oid(T_NPOINT))
+      {
+        geom2 = npoint_as_geom_internal(DatumGetNpoint(value2));
+        dist = DatumGetFloat8(pt_distance2d(geom1, geom2));
+      }
+      if (dist > maxdist)
+        split = true;
+    }
+    /* If there is not already a split by distance */
+    if (maxt != NULL && ! split)
+    {
+      Datum duration = DirectFunctionCall2(timestamp_mi,
+        TimestampTzGetDatum(instants[i]->t), TimestampTzGetDatum(instants[i - 1]->t));
+      int cmp = DatumGetInt32(DirectFunctionCall2(interval_cmp, duration,
+        IntervalPGetDatum(maxt)));
+      if (cmp > 0)
+        split = true;
+    }
+    if (split)
+      result[k++] = i;
+    value1 = value2;
+    geom1 = geom2;
+  }
+  *countsplits = k;
+  return result;
 }
 
 /**
@@ -441,7 +532,7 @@ ensure_valid_tinstantarr(const TInstant **instants, int count, bool merge,
  * same dimensionality
  */
 void
-ensure_valid_tsequencearr(const TSequence **sequences, int count)
+ensure_valid_tseqarr(const TSequence **sequences, int count)
 {
   for (int i = 1; i < count; i++)
   {
@@ -896,7 +987,7 @@ tinstantset_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
-  ensure_tinstantarr(instants, count);
+  ensure_tinstarr(instants, count);
   Temporal *result = (Temporal *) tinstantset_make((const TInstant **) instants,
     count, MERGE_NO);
   pfree(instants);
@@ -918,7 +1009,7 @@ tsequence_constructor(FunctionCallInfo fcinfo, bool get_interp)
   ensure_non_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
-  ensure_tinstantarr(instants, count);
+  ensure_tinstarr(instants, count);
   Temporal *result = (Temporal *) tsequence_make((const TInstant **) instants,
     count, lower_inc, upper_inc, linear, NORMALIZE);
   pfree(instants);
@@ -983,6 +1074,124 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_POINTER(result);
 }
+
+/**
+ * Construct a temporal sequence set value from the array of temporal
+ * instant values that are split in various sequences if two consecutive
+ * instants have a spatial or temporal gap defined by the arguments
+ */
+PGDLLEXPORT Datum
+tsequenceset_constructor_gaps(FunctionCallInfo fcinfo, bool get_interp)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_non_empty_array(array);
+  bool linear;
+  float maxdist;
+  Interval *maxt;
+  if (get_interp)
+  {
+    linear = PG_GETARG_BOOL(1);
+    maxdist = PG_GETARG_FLOAT8(2);
+    maxt = PG_GETARG_INTERVAL_P(3);
+  }
+  else
+  {
+    linear = STEP;
+    maxdist = PG_GETARG_FLOAT8(1);
+    maxt = PG_GETARG_INTERVAL_P(2);
+  }
+  /* Set the interval to NULL if it is negative or zero */
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = call_function2(interval_cmp, PointerGetDatum(maxt),
+    PointerGetDatum(&intervalzero));
+  if (cmp <= 0)
+    maxt = NULL;
+  /* Store fcinfo into a global variable */
+  /* Needed for the distance function for temporal geographic points */
+  store_fcinfo(fcinfo);
+  /* Extract the array of instants */
+  int count;
+  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+
+  TSequence *seq;
+  TSequenceSet *result;
+
+  /* If no gaps are given construt call the standard sequence constructor */
+  if (maxdist <= 0.0 && maxt == NULL)
+  {
+    seq = tsequence_make((const TInstant **) instants, count, true, true,
+      linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    PG_RETURN_POINTER(result);
+  }
+
+  /* Ensure that the array of instants is valid and determine the splits */
+  int countsplits;
+  int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
+    count, true, true, linear, maxdist, maxt, &countsplits);
+  if (countsplits == 0)
+  {
+    /* There are no gaps  */
+    pfree(splits);
+    seq = tsequence_make1((const TInstant **) instants, count,
+      true, true, linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+  }
+  else
+  {
+    /* Split according to gaps  */
+    TInstant **newinsts = palloc(sizeof(TInstant *) * count);
+    TSequence **sequences = palloc(sizeof(TSequence *) * (countsplits + 1));
+    int j = 0, k = 0, l = 0;
+    for (int i = 0; i < count; i++)
+    {
+      if (splits[j] == i)
+      {
+        /* Finalize the current sequence and start a new one */
+        assert(k > 0);
+        sequences[l++] = tsequence_make1((const TInstant **) newinsts, k,
+          true, true, linear, NORMALIZE);
+        j++; k = 0;
+      }
+      /* Continue with the current sequence */
+      newinsts[k++] = instants[i];
+    }
+    /* Construct last sequence */
+    if (k > 0)
+      sequences[l++] = tsequence_make1((const TInstant **) newinsts, k,
+          true, true, linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) sequences, l, NORMALIZE);
+    pfree(newinsts); pfree(sequences);
+  }
+  PG_FREE_IF_COPY(array, 0);
+  PG_RETURN_POINTER(result);
+}
+
+
+PG_FUNCTION_INFO_V1(tstepseqset_constructor_gaps);
+/**
+ * Construct a temporal sequence set value with stepwise interpolation from
+ * the array of temporal instant values
+ */
+PGDLLEXPORT Datum
+tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
+{
+  return tsequenceset_constructor_gaps(fcinfo, false);
+}
+
+PG_FUNCTION_INFO_V1(tlinearseqset_constructor_gaps);
+/**
+ * Construct a temporal sequence set value with linear or stepwise
+ * interpolation from the array of temporal instant values
+ */
+PGDLLEXPORT Datum
+tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
+{
+  return tsequenceset_constructor_gaps(fcinfo, true);
+}
+
+/*****************************************************************************/
 
 /**
  * Transform a temporal value into a constant value with the same time frame

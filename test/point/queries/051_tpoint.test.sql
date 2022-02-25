@@ -431,6 +431,25 @@ SELECT asewkt(tgeogpoint_seqset(ST_Point(1,1), periodset '{[2012-01-01, 2012-01-
 SELECT asewkt(tgeompoint_seqset(NULL, periodset '{[2012-01-01, 2012-01-03]}'));
 SELECT asewkt(tgeompoint_seqset(NULL, periodset '{[2012-01-01, 2012-01-03]}'));
 
+
+-------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tgeompointinst_test;
+CREATE TABLE tbl_tgeompointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeompoint_seq;
+WITH temp AS (
+  SELECT numSequences(tgeompoint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tgeompointinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_tgeompointinst_test;
+
+DROP TABLE IF EXISTS tbl_tgeogpointinst_test;
+CREATE TABLE tbl_tgeogpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tgeogpoint_seq;
+WITH temp AS (
+  SELECT numSequences(tgeogpoint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tgeogpointinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+DROP TABLE tbl_tgeogpointinst_test;
+
 -------------------------------------------------------------------------------
 
 SELECT asewkt(tgeompoint_instset(ARRAY[

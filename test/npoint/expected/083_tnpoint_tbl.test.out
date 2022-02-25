@@ -28,6 +28,22 @@ SELECT MAX(getPosition(startValue(temp))) FROM test;
  0.966244
 (1 row)
 
+DROP TABLE IF EXISTS tbl_tnpointinst_test;
+NOTICE:  table "tbl_tnpointinst_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tnpointinst_test AS SELECT k, unnest(instants(seq)) AS inst FROM tbl_tnpoint_seq;
+SELECT 496
+WITH temp AS (
+  SELECT numSequences(tnpoint_seqset_gaps(array_agg(inst ORDER BY getTime(inst)), true, 5.0, '5 minutes'::interval))
+  FROM tbl_tnpointinst_test GROUP BY k )
+SELECT MAX(numSequences) FROM temp;
+ max 
+-----
+   9
+(1 row)
+
+DROP TABLE tbl_tnpointinst_test;
+DROP TABLE
 SELECT DISTINCT tempSubtype(tnpoint_inst(inst)) FROM tbl_tnpoint_inst;
  tempsubtype 
 -------------

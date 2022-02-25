@@ -467,9 +467,11 @@ extern void ensure_same_interpolation(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_increasing_timestamps(const TInstant *inst1,
   const TInstant *inst2, bool strict);
-extern void ensure_valid_tinstantarr(const TInstant **instants, int count,
+extern void ensure_valid_tinstarr(const TInstant **instants, int count,
   bool merge, int16 subtype);
-extern void ensure_valid_tsequencearr(const TSequence **sequences, int count);
+extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
+  bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
+extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
 extern void ensure_positive_datum(Datum size, Oid type);
 extern void ensure_valid_duration(const Interval *duration);
@@ -507,6 +509,8 @@ extern Datum tinstantset_constructor(PG_FUNCTION_ARGS);
 extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
 extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
+extern Datum tstepseqset_constructor_gaps(PG_FUNCTION_ARGS);
+extern Datum tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS);
 
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
   Oid basetypid, bool linear);
