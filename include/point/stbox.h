@@ -112,6 +112,8 @@ extern Datum geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 /* Casting */
 
 extern Datum stbox_to_period(PG_FUNCTION_ARGS);
+extern Datum stbox_to_geometry(PG_FUNCTION_ARGS);
+extern Datum stbox_to_geography(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
 
