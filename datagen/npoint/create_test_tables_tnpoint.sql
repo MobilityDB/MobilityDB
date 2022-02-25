@@ -79,32 +79,32 @@ FROM generate_series(1, size) k;
 -- Temporal Network Types
 ------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS tbl_tnpointinst;
-CREATE TABLE tbl_tnpointinst AS
-SELECT k, random_tnpointinst(0, size, '2001-01-01', '2001-12-31') AS inst
+DROP TABLE IF EXISTS tbl_tnpoint_inst;
+CREATE TABLE tbl_tnpoint_inst AS
+SELECT k, random_tnpoint_inst(0, size, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tnpointi;
-CREATE TABLE tbl_tnpointi AS
-SELECT k, random_tnpointi(0, size, '2001-01-01', '2001-12-31', 10, 10) AS ti
+DROP TABLE IF EXISTS tbl_tnpoint_instset;
+CREATE TABLE tbl_tnpoint_instset AS
+SELECT k, random_tnpoint_instset(0, size, '2001-01-01', '2001-12-31', 10, 1, 10) AS ti
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tnpointseq;
-CREATE TABLE tbl_tnpointseq AS
-SELECT k, random_tnpointseq(0, size, '2001-01-01', '2001-12-31', 10, 10) AS seq
+DROP TABLE IF EXISTS tbl_tnpoint_seq;
+CREATE TABLE tbl_tnpoint_seq AS
+SELECT k, random_tnpoint_seq(0, size, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
 FROM generate_series(1, size) k;
 
-DROP TABLE IF EXISTS tbl_tnpoints;
-CREATE TABLE tbl_tnpoints AS
-SELECT k, random_tnpoints(0, size, '2001-01-01', '2001-12-31', 10, 10, 10) AS ts
+DROP TABLE IF EXISTS tbl_tnpoint_seqset;
+CREATE TABLE tbl_tnpoint_seqset AS
+SELECT k, random_tnpoint_seqset(0, size, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ts
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tnpoint;
 CREATE TABLE tbl_tnpoint(k, temp) AS
-(SELECT k, inst FROM tbl_tnpointinst LIMIT size / 4) UNION ALL
-(SELECT k + size / 4, ti FROM tbl_tnpointi LIMIT size / 4) UNION ALL
-(SELECT k + size / 2, seq FROM tbl_tnpointseq LIMIT size / 4) UNION ALL
-(SELECT k + size / 4 * 3, ts FROM tbl_tnpoints LIMIT size / 4);
+(SELECT k, inst FROM tbl_tnpoint_inst LIMIT size / 4) UNION ALL
+(SELECT k + size / 4, ti FROM tbl_tnpoint_instset LIMIT size / 4) UNION ALL
+(SELECT k + size / 2, seq FROM tbl_tnpoint_seq LIMIT size / 4) UNION ALL
+(SELECT k + size / 4 * 3, ts FROM tbl_tnpoint_seqset LIMIT size / 4);
 
 -------------------------------------------------------------------------------
 RETURN 'The End';
@@ -115,10 +115,10 @@ $$ LANGUAGE 'plpgsql';
 /*
 SELECT * FROM tbl_npoint LIMIT 3;
 SELECT * FROM tbl_nsegment LIMIT 3;
-SELECT * FROM tbl_tnpointinst LIMIT 3;
-SELECT * FROM tbl_tnpointi LIMIT 3;
-SELECT * FROM tbl_tnpointseq LIMIT 3;
-SELECT * FROM tbl_tnpoints LIMIT 3;
+SELECT * FROM tbl_tnpoint_inst LIMIT 3;
+SELECT * FROM tbl_tnpoint_instset LIMIT 3;
+SELECT * FROM tbl_tnpoint_seq LIMIT 3;
+SELECT * FROM tbl_tnpoint_seqset LIMIT 3;
 SELECT * FROM tbl_tnpoint LIMIT 3;
 SELECT * FROM tbl_tnpoint LIMIT 3 OFFSET 25;
 SELECT * FROM tbl_tnpoint LIMIT 3 OFFSET 50;
