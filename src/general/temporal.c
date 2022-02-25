@@ -1095,22 +1095,25 @@ tsequenceset_constructor_gaps(FunctionCallInfo fcinfo, bool get_interp)
     PointerGetDatum(&intervalzero));
   if (cmp <= 0)
     maxt = NULL;
-
   /* Store fcinfo into a global variable */
   /* Needed for the distance function for temporal geographic points */
   store_fcinfo(fcinfo);
+  /* Extract the array of instants */
+  int count;
+  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
+
   TSequence *seq;
   TSequenceSet *result;
+
   /* If no gaps are given construt call the standard sequence constructor */
   if (maxdist <= 0.0 && maxt == NULL)
   {
-    seq = (TSequence *) DatumGetPointer(tsequence_constructor(fcinfo, linear));
+    seq = tsequence_make((const TInstant **) instants, count, true, true,
+      linear, NORMALIZE);
     result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
     PG_RETURN_POINTER(result);
   }
 
-  int count;
-  TInstant **instants = (TInstant **) temporalarr_extract(array, &count);
   /* Ensure that the array of instants is valid and determine the splits */
   int countsplits;
   int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
