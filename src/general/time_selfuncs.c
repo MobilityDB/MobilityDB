@@ -58,13 +58,23 @@
 /*****************************************************************************/
 
 /*
- * Returns a default selectivity estimate for given operator, when we don't
- * have statistics or cannot use them for some reason.
+ * Returns a default selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
  */
 static double
 period_sel_default(Oid oper)
 {
   return 0.01;
+}
+
+/*
+ * Returns a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+static double
+period_joinsel_default(Oid oper)
+{
+  return 0.001;
 }
 
 /* Get the enum associated to the operator from different cases */
@@ -1237,16 +1247,34 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
    * Calculate selectivity comparing the lower or upper bound of the
    * the histograms.
    */
-  if (cachedOp == OVERLAPS_OP)
-    selec = 1
-      - period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false)
-      - period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
+  if (cachedOp == LT_OP)
+    selec = period_joinsel_default(InvalidOid);
+  else if (cachedOp == LE_OP)
+    selec = period_joinsel_default(InvalidOid);
+  else if (cachedOp == GT_OP)
+    selec = period_joinsel_default(InvalidOid);
+  else if (cachedOp == GE_OP)
+    selec = period_joinsel_default(InvalidOid);
   else if (cachedOp == BEFORE_OP)
     selec =
       period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false);
+  else if (cachedOp == OVERBEFORE_OP)
+    selec = period_joinsel_default(InvalidOid);
   else if (cachedOp == AFTER_OP)
     selec =
       period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
+  else if (cachedOp == OVERAFTER_OP)
+    selec = period_joinsel_default(InvalidOid);
+  else if (cachedOp == OVERLAPS_OP)
+    selec = 1
+      - period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false)
+      - period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
+  else if (cachedOp == CONTAINS_OP)
+    selec = period_joinsel_default(InvalidOid);
+  else if (cachedOp == CONTAINED_OP)
+    selec = period_joinsel_default(InvalidOid);
+  else if (cachedOp == ADJACENT_OP)
+    selec = period_joinsel_default(InvalidOid);
   else
   {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");
@@ -1292,7 +1320,7 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   {
     ReleaseVariableStats(vardata1);
     ReleaseVariableStats(vardata2);
-    return period_sel_default(oper);
+    return period_joinsel_default(oper);
   }
 
   /* Estimate join selectivity */
