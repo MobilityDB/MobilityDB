@@ -336,8 +336,8 @@ default_temp_sel(CachedOp oper)
  * respectively.
  */
 Selectivity
-temporal_sel_period(PlannerInfo *root, VariableStatData *vardata,
-  Period *period, CachedOp cachedOp)
+temporal_sel_period(VariableStatData *vardata, Period *period,
+  CachedOp cachedOp)
 {
   double selec;
 
@@ -453,7 +453,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     return default_temp_sel(cachedOp);
 
   /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_period(root, &vardata, &constperiod, cachedOp);
+  selec = temporal_sel_period(&vardata, &constperiod, cachedOp);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);

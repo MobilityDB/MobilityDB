@@ -903,7 +903,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     ensure_valid_tempsubtype_all(subtype);
 
     /* Compute the selectivity */
-    selec *= temporal_sel_period(root, &vardata, &constperiod, cachedOp);
+    selec *= temporal_sel_period(&vardata, &constperiod, cachedOp);
   }
 
   ReleaseVariableStats(vardata);

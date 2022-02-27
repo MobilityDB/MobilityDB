@@ -2867,7 +2867,7 @@ static double
 tpointseq_length_2d(const TSequence *seq)
 {
   double result = 0;
-  Datum start = tinstant_value(tsequence_inst_n(seq , 0));
+  Datum start = tinstant_value(tsequence_inst_n(seq, 0));
   const POINT2D *p1 = datum_get_point2d_p(start);
   for (int i = 1; i < seq->count; i++)
   {
@@ -2890,7 +2890,7 @@ static double
 tpointseq_length_3d(const TSequence *seq)
 {
   double result = 0;
-  Datum start = tinstant_value(tsequence_inst_n(seq , 0));
+  Datum start = tinstant_value(tsequence_inst_n(seq, 0));
   const POINT3DZ *p1 = datum_get_point3dz_p(start);
   for (int i = 1; i < seq->count; i++)
   {
@@ -3647,7 +3647,7 @@ get_bearing_fn(int16 flags)
  */
 static bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
+  Datum point, Oid basetypid __attribute__((unused)), Datum *value, TimestampTz *t)
 {
   Datum dstart = tinstant_value(start);
   Datum dend = tinstant_value(end);

@@ -678,7 +678,7 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
 
   memset(&hslot, 0, sizeof(hslot));
   memset(&lslot, 0, sizeof(lslot));
-  
+
   /* Try to get histogram of periods of vardata1 */
   if (!(HeapTupleIsValid(vardata->statsTuple) &&
       get_attstatsslot(&hslot, vardata->statsTuple,
@@ -1022,7 +1022,7 @@ period_joinsel_hist1(const PeriodBound *hist1, int hist1_nvalues,
    */
   while (idx1 < hist1_nvalues)
   {
-    /* loop until finishing traversing all period bounds in hist1 */
+    /* Loop until finishing traversing all period bounds in hist1 */
     if (idx2 >= hist2_nvalues)
     {
       /* period bounds in hist2 have been finished */
@@ -1040,7 +1040,7 @@ period_joinsel_hist1(const PeriodBound *hist1, int hist1_nvalues,
     }
     else
     {
-      /* proceed with the smaller one between hist1[idx1] and hist2[idx2] */
+      /* Proceed with the smaller one between hist1[idx1] and hist2[idx2] */
       if (period_cmp_bounds(&hist1[idx1], &hist2[idx2]) <= 0)
       {
         chosed_bound = &hist1[idx1];
@@ -1052,7 +1052,7 @@ period_joinsel_hist1(const PeriodBound *hist1, int hist1_nvalues,
         }
         else
         {
-          /* finish a bin and move to a new one */
+          /* Finish a bin and move to a new one */
           trapezoid_base2 = cur_selec;
           trapezoid_height = get_period_distance(chosed_bound, old_bound);
           cur_bin_area += (trapezoid_base1 + trapezoid_base2) * trapezoid_height / 2;
@@ -1100,43 +1100,78 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   CachedOp cachedOp)
 {
   AttStatsSlot hslot1, hslot2, lslot1, lslot2;
+  Form_pg_statistic stats1 = NULL, stats2 = NULL;
   int nhist1, nhist2;
   PeriodBound *hist1_lower, *hist1_upper, *hist2_lower, *hist2_upper;
   int i;
-  double hist_join_selec;
+  double nd1, nd2, selec;
+  bool have_hist1 = false, have_hist2 = false, isdefault1, isdefault2;
 
   memset(&hslot1, 0, sizeof(hslot1));
   memset(&hslot2, 0, sizeof(hslot2));
-  memset(&lslot1, 0, sizeof(lslot1));  
-  memset(&lslot2, 0, sizeof(lslot2));  
+  memset(&lslot1, 0, sizeof(lslot1));
+  memset(&lslot2, 0, sizeof(lslot2));
 
-  /* Try to get histogram of periods of vardata1 */
-  if (!(HeapTupleIsValid(vardata1->statsTuple) &&
-      get_attstatsslot(&hslot1, vardata1->statsTuple,
-        STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
-        ATTSTATSSLOT_VALUES)))
-    return -1.0;
-  /* Check that it's a histogram, not just a dummy entry */
-  if (hslot1.nvalues < 2)
+  /* Try to get histogram of periods of vardata1 and vardata2 */
+  if (HeapTupleIsValid(vardata1->statsTuple))
   {
-    free_attstatsslot(&hslot1);
-    return -1.0;
+    stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
+    have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
+      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+    /* Check that it's a histogram, not just a dummy entry */
+    if (hslot1.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1);
+      return -1.0;
+    }
+  }
+  if (HeapTupleIsValid(vardata2->statsTuple))
+  {
+    stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
+    have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
+      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+    /* Check that it's a histogram, not just a dummy entry */
+    if (hslot2.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      return -1.0;
+    }
   }
 
-  /* Try to get histogram of periods of vardata2 */
-  if (!(HeapTupleIsValid(vardata2->statsTuple) &&
-      get_attstatsslot(&hslot2, vardata2->statsTuple,
-        STATISTIC_KIND_BOUNDS_HISTOGRAM, InvalidOid,
-        ATTSTATSSLOT_VALUES)))
+  nd1 = get_variable_numdistinct(vardata1, &isdefault1);
+  nd2 = get_variable_numdistinct(vardata2, &isdefault2);
+
+  if (!have_hist1 || !have_hist2)
   {
-    free_attstatsslot(&hslot1);
-    return -1.0;
-  }
-  /* Check that it's a histogram, not just a dummy entry */
-  if (hslot2.nvalues < 2)
-  {
-    free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-    return -1.0;
+    /*
+     * We do not have histograms for both sides.  Estimate the join
+     * selectivity as MIN(1/nd1,1/nd2)*(1-nullfrac1)*(1-nullfrac2). This
+     * is plausible if we assume that the join operator is strict and the
+     * non-null values are about equally distributed: a given non-null
+     * tuple of rel1 will join to either zero or N2*(1-nullfrac2)/nd2 rows
+     * of rel2, so total join rows are at most
+     * N1*(1-nullfrac1)*N2*(1-nullfrac2)/nd2 giving a join selectivity of
+     * not more than (1-nullfrac1)*(1-nullfrac2)/nd2. By the same logic it
+     * is not more than (1-nullfrac1)*(1-nullfrac2)/nd1, so the expression
+     * with MIN() is an upper bound.  Using the MIN() means we estimate
+     * from the point of view of the relation with smaller nd (since the
+     * larger nd is determining the MIN).  It is reasonable to assume that
+     * most tuples in this rel will have join partners, so the bound is
+     * probably reasonably tight and should be taken as-is.
+     *
+     * XXX Can we be smarter if we have an histogram for just one side? It
+     * seems that if we assume equal distribution for the other side, we
+     * end up with the same answer anyway.
+     */
+    double nullfrac1 = stats1 ? stats1->stanullfrac : 0.0;
+    double nullfrac2 = stats2 ? stats2->stanullfrac : 0.0;
+
+    selec = (1.0 - nullfrac1) * (1.0 - nullfrac2);
+    if (nd1 > nd2)
+      selec /= nd1;
+    else
+      selec /= nd2;
+    return selec;
   }
 
   /* @> and @< also need a histogram of period lengths */
@@ -1203,25 +1238,27 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
    * the histograms.
    */
   if (cachedOp == OVERLAPS_OP)
-    hist_join_selec = 1
+    selec = 1
       - period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false)
       - period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
   else if (cachedOp == BEFORE_OP)
-    hist_join_selec = 
+    selec =
       period_joinsel_hist1(hist1_upper, nhist1, hist2_lower, nhist2, false);
   else if (cachedOp == AFTER_OP)
-    hist_join_selec = 
+    selec =
       period_joinsel_hist1(hist2_upper, nhist2, hist1_lower, nhist1, false);
   else
+  {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");
-    hist_join_selec = -1.0;  /* keep compiler quiet */
+    selec = -1.0;  /* keep compiler quiet */
+  }
 
   pfree(hist1_lower); pfree(hist1_upper);
   pfree(hist2_lower); pfree(hist2_upper);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   free_attstatsslot(&lslot1); free_attstatsslot(&lslot2);
 
-  return hist_join_selec;
+  return selec;
 }
 
 /*****************************************************************************/
@@ -1231,10 +1268,7 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
-  bool join_is_reversed, isdefault1, isdefault2;
-  double nd1, nd2;
-  Form_pg_statistic stats1 = NULL, stats2 = NULL;
-  bool have_hist1 = false, have_hist2 = false;
+  bool join_is_reversed;
   float8 selec;
 
   /* Check length of args and punt on > 2 */
@@ -1247,48 +1281,6 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
     &join_is_reversed);
-
-  nd1 = get_variable_numdistinct(&vardata1, &isdefault1);
-  nd2 = get_variable_numdistinct(&vardata2, &isdefault2);
-
-  if (HeapTupleIsValid(vardata1.statsTuple))
-    stats1 = (Form_pg_statistic) GETSTRUCT(vardata1.statsTuple);
-
-  if (HeapTupleIsValid(vardata2.statsTuple))
-    stats2 = (Form_pg_statistic) GETSTRUCT(vardata2.statsTuple);
-
-  if (!have_hist1 || !have_hist2)
-  {
-    /*
-     * We do not have histograms for both sides.  Estimate the join
-     * selectivity as MIN(1/nd1,1/nd2)*(1-nullfrac1)*(1-nullfrac2). This
-     * is plausible if we assume that the join operator is strict and the
-     * non-null values are about equally distributed: a given non-null
-     * tuple of rel1 will join to either zero or N2*(1-nullfrac2)/nd2 rows
-     * of rel2, so total join rows are at most
-     * N1*(1-nullfrac1)*N2*(1-nullfrac2)/nd2 giving a join selectivity of
-     * not more than (1-nullfrac1)*(1-nullfrac2)/nd2. By the same logic it
-     * is not more than (1-nullfrac1)*(1-nullfrac2)/nd1, so the expression
-     * with MIN() is an upper bound.  Using the MIN() means we estimate
-     * from the point of view of the relation with smaller nd (since the
-     * larger nd is determining the MIN).  It is reasonable to assume that
-     * most tuples in this rel will have join partners, so the bound is
-     * probably reasonably tight and should be taken as-is.
-     *
-     * XXX Can we be smarter if we have an histogram for just one side? It
-     * seems that if we assume equal distribution for the other side, we
-     * end up with the same answer anyway.
-     */
-    double nullfrac1 = stats1 ? stats1->stanullfrac : 0.0;
-    double nullfrac2 = stats2 ? stats2->stanullfrac : 0.0;
-
-    selec = (1.0 - nullfrac1) * (1.0 - nullfrac2);
-    if (nd1 > nd2)
-      selec /= nd1;
-    else
-      selec /= nd2;
-    return selec;
-  }
 
   /*
    * Get enumeration value associated to the operator
@@ -1318,7 +1310,7 @@ PG_FUNCTION_INFO_V1(period_joinsel);
 *
 * The selectivity is the ratio of the number of
 * rows we think will be returned divided the maximum number of rows the join
-* could possibly return (the full combinatoric join), that is 
+* could possibly return (the full combinatoric join), that is
 *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
 *
 * This function is inspired from function eqjoinsel in file selfuncs.c

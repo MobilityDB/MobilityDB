@@ -65,11 +65,10 @@
 /**
  * Output a geometry in Well-Known Text (WKT) format.
  *
- * The Oid argument is not used but is needed since the second argument of
- * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum)
+ * @note The parameter type is not needed for temporal points
  */
 static char *
-wkt_out(Oid type, Datum value)
+wkt_out(Oid type __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -86,11 +85,10 @@ wkt_out(Oid type, Datum value)
  * Output a geometry in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID.
  *
- * The Oid argument is not used but is needed since the second argument of
- * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum)
+ * @note The parameter type is not needed for temporal points
  */
 char *
-ewkt_out(Oid type, Datum value)
+ewkt_out(Oid type __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);

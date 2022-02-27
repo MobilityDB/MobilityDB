@@ -406,7 +406,7 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_has_not_Z(temp->flags);
-  bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL ,
+  bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL,
     (varfunc) &geom_ever_contains, 2, INVERT_NO, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);

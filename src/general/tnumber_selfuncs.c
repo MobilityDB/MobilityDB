@@ -787,8 +787,8 @@ tnumber_sel_default(CachedOp operator)
  * respectively.
  */
 static Selectivity
-tnumber_sel_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
-  CachedOp cachedOp, Oid basetypid)
+tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
+  Oid basetypid)
 {
   Period period;
   RangeType *range = NULL;
@@ -964,14 +964,15 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   if (!found)
     return tnumber_sel_default(cachedOp);
 
-  assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
+  assert(MOBDB_FLAGS_GET_X(constBox.flags) ||
+    MOBDB_FLAGS_GET_T(constBox.flags));
 
   /* Get the base type of the temporal column */
   basetypid = base_oid_from_temporal(vardata.atttype);
   ensure_tnumber_base_type(basetypid);
 
   /* Compute the selectivity */
-  selec = tnumber_sel_box(root, &vardata, &constBox, cachedOp, basetypid);
+  selec = tnumber_sel_box(&vardata, &constBox, cachedOp, basetypid);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);

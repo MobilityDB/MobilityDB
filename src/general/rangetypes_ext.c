@@ -274,7 +274,7 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
  */
 Datum
 range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
-  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
   TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(range));
   RangeBound lower_bound, upper_bound;
@@ -291,7 +291,7 @@ range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
  */
 Datum
 range_func_elem(FunctionCallInfo fcinfo,
-  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
   Datum val = PG_GETARG_DATUM(1);
@@ -303,7 +303,7 @@ range_func_elem(FunctionCallInfo fcinfo,
  */
 PGDLLEXPORT Datum
 elem_func_range(FunctionCallInfo fcinfo,
-  bool (*func)(TypeCacheEntry *, RangeBound , RangeBound , Datum))
+  bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
   Datum val = PG_GETARG_DATUM(0);
   RangeType *range = PG_GETARG_RANGE_P(1);
@@ -348,8 +348,9 @@ intrange_canonical(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+range_left_elem_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
 {
   if (!upper_bound.infinite)
   {
@@ -367,8 +368,9 @@ range_left_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
  * (internal function)
  */
 bool
-range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+range_overleft_elem_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
 {
   if (!upper_bound.infinite)
   {
@@ -385,7 +387,7 @@ range_overleft_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
  */
 bool
 range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+  RangeBound upper_bound __attribute__((unused)), Datum val)
 {
   if (!lower_bound.infinite)
   {
@@ -404,7 +406,7 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
  */
 bool
 range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+  RangeBound upper_bound __attribute__((unused)), Datum val)
 {
   if (!lower_bound.infinite)
   {
@@ -497,8 +499,9 @@ range_adjacent_elem(PG_FUNCTION_ARGS)
  * (internal function)
  */
 bool
-elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+elem_overleft_range_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
 {
   if (!upper_bound.infinite)
   {
@@ -515,7 +518,7 @@ elem_overleft_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
  */
 bool
 elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound, Datum val)
+  RangeBound upper_bound __attribute__((unused)), Datum val)
 {
   if (!lower_bound.infinite)
   {

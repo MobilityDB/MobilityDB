@@ -1849,7 +1849,7 @@ static Temporal *
 temporal_shift_tscale_internal(Temporal *temp, bool shift, bool tscale,
   Interval *start, Interval *duration)
 {
-  assert(start != NULL || duration != NULL);
+  assert((!shift || start != NULL) && (!tscale || duration != NULL));
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)

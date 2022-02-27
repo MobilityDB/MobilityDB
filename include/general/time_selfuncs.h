@@ -63,7 +63,7 @@ extern float8 period_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
 extern float8 period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo);
-  
+
 /*****************************************************************************/
 
 #endif

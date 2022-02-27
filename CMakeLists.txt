@@ -59,6 +59,7 @@ if(NOT HAS_FFSL)
 endif()
 
 add_definitions(-Wall -Wextra -std=gnu1x -Wno-unused-parameter)
+# add_definitions(-Wall -Wextra -std=gnu1x -Wunused-parameter)
 if(CMAKE_COMPILER_IS_GNUCC)
   if(WITH_COVERAGE)
     message(STATUS "Generating code coverage")
@@ -81,7 +82,7 @@ endif()
 # Verify PostgreSQL Version
 #-------------------------------------
 
-set(PG_MIN_MAJOR_VERSION "10")
+set(PG_MIN_MAJOR_VERSION "11")
 set(PG_MAX_MAJOR_VERSION "14")
 
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
