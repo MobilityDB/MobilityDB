@@ -128,7 +128,7 @@ tnumber_supportfn(PG_FUNCTION_ARGS)
     oproid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
       req->selectivity = tnumber_joinsel_internal(req->root, oproid, req->args,
-        req->jointype);
+        req->jointype, req->sjinfo);
     else
       req->selectivity = tnumber_sel_internal(req->root, oproid, req->args,
         req->varRelid);

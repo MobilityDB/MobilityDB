@@ -373,7 +373,7 @@ GetSRSCacheBySRID(FunctionCallInfo fcinfo, int32_t srid, bool short_crs)
  */
 // static
 int32_t
-getSRIDbySRS(FunctionCallInfo fcinfo, const char *srs)
+getSRIDbySRS(FunctionCallInfo fcinfo __attribute__((unused)), const char *srs)
 {
 	static const int16_t max_query_size = 512;
 	char query[512];

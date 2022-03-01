@@ -295,7 +295,7 @@ temporal_cachedop(Oid oper, CachedOp *cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_temp_sel(CachedOp oper)
+temporal_sel_default(CachedOp oper)
 {
   switch (oper)
   {
@@ -326,6 +326,18 @@ default_temp_sel(CachedOp oper)
       return 0.001;
   }
 }
+
+/**
+ * Returns a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+static double
+temporal_joinsel_default(Oid oper __attribute__((unused)))
+{
+  // TODO take care of the operator
+  return 0.001;
+}
+
 
 /**
  * Returns an estimate of the selectivity of the search period and the
@@ -372,7 +384,7 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
   }
   else /* Unknown operator */
   {
-    selec = default_temp_sel(cachedOp);
+    selec = temporal_sel_default(cachedOp);
   }
   return selec;
 }
@@ -407,7 +419,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid,
     &vardata, &other, &varonleft))
-    return default_temp_sel(cachedOp);
+    return temporal_sel_default(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -415,7 +427,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return default_temp_sel(cachedOp);
+    return temporal_sel_default(cachedOp);
   }
 
   /*
@@ -440,7 +452,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return default_temp_sel(cachedOp);
+      return temporal_sel_default(cachedOp);
     }
   }
 
@@ -450,7 +462,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   found = temporal_const_to_period(other, &constperiod);
   /* In the case of unknown constant */
   if (!found)
-    return default_temp_sel(cachedOp);
+    return temporal_sel_default(cachedOp);
 
   /* Compute the selectivity of the temporal column */
   selec = temporal_sel_period(&vardata, &constperiod, cachedOp);
@@ -479,11 +491,65 @@ temporal_sel(PG_FUNCTION_ARGS)
  * Estimate the join selectivity
  *****************************************************************************/
 
+/**
+ * Returns an estimate of the selectivity of the search period and the
+ * operator for columns of temporal values. For the traditional comparison
+ * operators (<, <=, ...), we follow the approach for range types in
+ * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
+ * while the selectivity functions for = and <> are eqsel and neqsel,
+ * respectively.
+ */
 double
 temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype)
+  JoinType jointype, SpecialJoinInfo *sjinfo)
 {
-  return DEFAULT_TEMP_JOINSEL;
+  VariableStatData vardata1, vardata2;
+  bool join_is_reversed;
+  float8 selec;
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    return DEFAULT_TEMP_JOINSEL;
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    return DEFAULT_TEMP_JOINSEL;
+
+  get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
+    &join_is_reversed);
+
+  /*
+   * Get enumeration value associated to the operator
+   */
+  CachedOp cachedOp;
+  bool found = temporal_cachedop(oper, &cachedOp);
+  /* In the case of unknown operator */
+  if (!found)
+  {
+    ReleaseVariableStats(vardata1);
+    ReleaseVariableStats(vardata2);
+    return temporal_joinsel_default(oper);
+  }
+
+  /*
+   * There is no ~= operator for time types and thus it is necessary to
+   * take care of this operator here.
+   */
+  if (cachedOp == SAME_OP)
+  {
+    // TODO
+    selec = temporal_joinsel_default(cachedOp);
+  }
+  else
+  {
+    /* Estimate join selectivity */
+    selec = period_joinsel_hist(&vardata1, &vardata2, cachedOp);
+  }
+
+  ReleaseVariableStats(vardata1);
+  ReleaseVariableStats(vardata2);
+  CLAMP_PROBABILITY(selec);
+  return (float8) selec;
 }
 
 PG_FUNCTION_INFO_V1(temporal_joinsel);
@@ -498,7 +564,7 @@ temporal_joinsel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-
+  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
@@ -507,7 +573,7 @@ temporal_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(temporal_joinsel_internal(root, oper, args, jointype));
+  PG_RETURN_FLOAT8(temporal_joinsel_internal(root, oper, args, jointype, sjinfo));
 }
 
 /*****************************************************************************/

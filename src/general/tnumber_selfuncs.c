@@ -678,22 +678,22 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
  * Returns the enum value associated to the operator
  */
 static bool
-tnumber_cachedop(Oid operator, CachedOp *cachedOp)
+tnumber_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operator == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
+    if (oper == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -776,6 +776,17 @@ tnumber_sel_default(CachedOp operator)
       /* all operators should be handled above, but just in case */
       return 0.001;
   }
+}
+
+/**
+ * Returns a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+static double
+tnumber_joinsel_default(Oid oper __attribute__((unused)))
+{
+  // TODO take care of the operator
+  return 0.001;
 }
 
 /**
@@ -996,11 +1007,50 @@ tnumber_sel(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Estimate the join selectivity value of the operators for temporal numbers
+ * (internal function)
+ */
 float8
 tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype)
+  JoinType jointype, SpecialJoinInfo *sjinfo)
 {
-  return DEFAULT_TEMP_JOINSEL;
+  VariableStatData vardata1, vardata2;
+  bool join_is_reversed;
+  float8 selec;
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    return DEFAULT_TEMP_JOINSEL;
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    return DEFAULT_TEMP_JOINSEL;
+
+  get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
+    &join_is_reversed);
+
+  /*
+   * Get enumeration value associated to the operator
+   */
+  CachedOp cachedOp;
+  bool found = tnumber_cachedop(oper, &cachedOp);
+  /* In the case of unknown operator */
+  if (!found)
+  {
+    ReleaseVariableStats(vardata1);
+    ReleaseVariableStats(vardata2);
+    return tnumber_joinsel_default(oper);
+  }
+
+  /* TODO Estimate join selectivity */
+  // selec = tnumber_joinsel_hist(&vardata1, &vardata2, cachedOp);
+  selec = tnumber_joinsel_default(oper);
+
+  ReleaseVariableStats(vardata1);
+  ReleaseVariableStats(vardata2);
+  CLAMP_PROBABILITY(selec);
+  return (float8) selec;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
@@ -1014,7 +1064,7 @@ tnumber_joinsel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-
+  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
@@ -1023,7 +1073,7 @@ tnumber_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype));
+  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype, sjinfo));
 }
 
 /*****************************************************************************/

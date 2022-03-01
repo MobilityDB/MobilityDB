@@ -48,6 +48,8 @@ extern double period_sel_hist(VariableStatData *vardata,
   const Period *constval, CachedOp cachedOp);
 extern double period_sel_scalar(const PeriodBound *constbound,
   const PeriodBound *hist, int hist_nvalues, bool equal);
+extern double period_joinsel_hist(VariableStatData *vardata1,
+  VariableStatData *vardata2, CachedOp cachedOp);
 
 extern int length_hist_bsearch(Datum *length_hist_values,
   int length_hist_nvalues, double value, bool equal);

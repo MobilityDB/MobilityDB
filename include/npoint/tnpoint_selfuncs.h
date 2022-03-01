@@ -36,21 +36,19 @@
 #define __TNPOINT_SELFUNCS_H__
 
 #include <postgres.h>
-#include <catalog/pg_type.h>
 #include <fmgr.h>
+#include <catalog/pg_type.h>
+#include <utils/selfuncs.h>
 
 /*****************************************************************************/
 
-extern Datum tnpoint_overlaps_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_overlaps_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_contains_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_contains_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_same_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_same_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_adjacent_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_adjacent_joinsel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_position_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_position_joinsel(PG_FUNCTION_ARGS);
+extern Datum tnpoint_sel(PG_FUNCTION_ARGS);
+extern Datum tnpoint_joinsel(PG_FUNCTION_ARGS);
+
+extern float8 tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args,
+  int varRelid);
+extern float8 tnpoint_joinsel_internal(PlannerInfo *root, Oid oper,
+  List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
 
 /*****************************************************************************/
 

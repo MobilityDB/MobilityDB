@@ -10,6 +10,18 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_ttext_gist_idx;
 NOTICE:  index "tbl_ttext_gist_idx" does not exist, skipping
 DROP INDEX
+DROP INDEX IF EXISTS tbl_tbool_spgist_idx;
+NOTICE:  index "tbl_tbool_spgist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tint_spgist_idx;
+NOTICE:  index "tbl_tint_spgist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tfloat_spgist_idx;
+NOTICE:  index "tbl_tfloat_spgist_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_ttext_spgist_idx;
+NOTICE:  index "tbl_ttext_spgist_idx" does not exist, skipping
+DROP INDEX
 DROP TABLE IF EXISTS test_boundboxops;
 NOTICE:  table "test_boundboxops" does not exist, skipping
 DROP TABLE
@@ -18,7 +30,8 @@ CREATE TABLE test_boundboxops(
   leftarg TEXT,
   rightarg TEXT,
   noidx BIGINT,
-  gistidx BIGINT
+  gistidx BIGINT,
+  spgistidx BIGINT
 );
 CREATE TABLE
 INSERT INTO test_boundboxops(op, leftarg, rightarg, noidx)
@@ -1639,18 +1652,956 @@ UPDATE test_boundboxops
 SET gistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
 UPDATE 1
-DROP INDEX IF EXISTS tbl_tbool_gist_idx;
+DROP INDEX tbl_tbool_gist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tint_gist_idx;
+DROP INDEX tbl_tint_gist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_tfloat_gist_idx;
+DROP INDEX tbl_tfloat_gist_idx;
 DROP INDEX
-DROP INDEX IF EXISTS tbl_ttext_gist_idx;
+DROP INDEX tbl_ttext_gist_idx;
+DROP INDEX
+CREATE INDEX tbl_tbool_spgist_idx ON tbl_tbool USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tint_spgist_idx ON tbl_tint USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_tfloat_spgist_idx ON tbl_tfloat USING SPGIST(temp);
+CREATE INDEX
+CREATE INDEX tbl_ttext_spgist_idx ON tbl_ttext USING SPGIST(temp);
+CREATE INDEX
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tbool WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tint WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tfloat WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_ttext WHERE t && temp )
+WHERE op = '&&' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tbool WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tint WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tfloat WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_ttext WHERE ts && temp )
+WHERE op = '&&' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tbool WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tint WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tfloat WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_ttext WHERE p && temp )
+WHERE op = '&&' AND leftarg = 'period' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tbool WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tint WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tfloat WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps && temp )
+WHERE op = '&&' AND leftarg = 'periodset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_int WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'intrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp && f )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tint' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp && i )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp && f )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp && f )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'floatrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp && b )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestamptz WHERE temp && t )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestampset WHERE temp && ts )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_period WHERE temp && p )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_periodset WHERE temp && ps )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp && t2.temp )
+WHERE op = '&&' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tbool WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tint WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tfloat WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_ttext WHERE t @> temp )
+WHERE op = '@>' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tbool WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tint WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tfloat WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_ttext WHERE ts @> temp )
+WHERE op = '@>' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tbool WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tint WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tfloat WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_ttext WHERE p @> temp )
+WHERE op = '@>' AND leftarg = 'period' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tbool WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tint WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tfloat WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps @> temp )
+WHERE op = '@>' AND leftarg = 'periodset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_int WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'intrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp @> f )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tint' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp @> i )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp @> f )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp @> f )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'floatrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp @> b )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestamptz WHERE temp @> t )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestampset WHERE temp @> ts )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_period WHERE temp @> p )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_periodset WHERE temp @> ps )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp @> t2.temp )
+WHERE op = '@>' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tbool WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tint WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tfloat WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_ttext WHERE t <@ temp )
+WHERE op = '<@' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tbool WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tint WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tfloat WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_ttext WHERE ts <@ temp )
+WHERE op = '<@' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tbool WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tint WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tfloat WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_ttext WHERE p <@ temp )
+WHERE op = '<@' AND leftarg = 'period' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tbool WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tint WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tfloat WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps <@ temp )
+WHERE op = '<@' AND leftarg = 'periodset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_int WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'intrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp <@ f )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tint' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp <@ i )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp <@ f )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp <@ f )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'floatrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp <@ b )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestamptz WHERE temp <@ t )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestampset WHERE temp <@ ts )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_period WHERE temp <@ p )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_periodset WHERE temp <@ ps )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp <@ t2.temp )
+WHERE op = '<@' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tbool WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tint WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tfloat WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_ttext WHERE t -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tbool WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tint WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tfloat WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_ttext WHERE ts -|- temp )
+WHERE op = '-|-' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tbool WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tint WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tfloat WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_ttext WHERE p -|- temp )
+WHERE op = '-|-' AND leftarg = 'period' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tbool WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tint WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tfloat WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps -|- temp )
+WHERE op = '-|-' AND leftarg = 'periodset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_int WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'intrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp -|- f )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tint' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp -|- i )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp -|- f )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp -|- f )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'floatrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp -|- b )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestamptz WHERE temp -|- t )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestampset WHERE temp -|- ts )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_period WHERE temp -|- p )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_periodset WHERE temp -|- ps )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp -|- t2.temp )
+WHERE op = '-|-' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tbool WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tint WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_tfloat WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestamptz, tbl_ttext WHERE t ~= temp )
+WHERE op = '~=' AND leftarg = 'timestamptz' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tbool WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tint WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_tfloat WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_timestampset, tbl_ttext WHERE ts ~= temp )
+WHERE op = '~=' AND leftarg = 'timestampset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tbool WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tint WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_tfloat WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_period, tbl_ttext WHERE p ~= temp )
+WHERE op = '~=' AND leftarg = 'period' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tbool WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tint WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_tfloat WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_periodset, tbl_ttext WHERE ps ~= temp )
+WHERE op = '~=' AND leftarg = 'periodset' AND rightarg = 'ttext';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tbool t1, tbl_tbool t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tbool' AND rightarg = 'tbool';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_int WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_intrange WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'intrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_float WHERE temp ~= f )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint, tbl_tbox WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tint t1, tbl_tfloat t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tint' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_int WHERE temp ~= i )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'int';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_float WHERE temp ~= f )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'float';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_floatrange WHERE temp ~= f )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'floatrange';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat, tbl_tbox WHERE temp ~= b )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tbox';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tint t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tint';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_tfloat t1, tbl_tfloat t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'tfloat' AND rightarg = 'tfloat';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestamptz WHERE temp ~= t )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestamptz';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_timestampset WHERE temp ~= ts )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'timestampset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_period WHERE temp ~= p )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'period';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext, tbl_periodset WHERE temp ~= ps )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'periodset';
+UPDATE 1
+UPDATE test_boundboxops
+SET spgistidx = ( SELECT count(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ~= t2.temp )
+WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
+UPDATE 1
+DROP INDEX tbl_tbool_spgist_idx;
+DROP INDEX
+DROP INDEX tbl_tint_spgist_idx;
+DROP INDEX
+DROP INDEX tbl_tfloat_spgist_idx;
+DROP INDEX
+DROP INDEX tbl_ttext_spgist_idx;
 DROP INDEX
 SELECT * FROM test_boundboxops
-WHERE noidx <> gistidx
+WHERE noidx <> gistidx OR noidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
- op | leftarg | rightarg | noidx | gistidx 
-----+---------+----------+-------+---------
+ op | leftarg | rightarg | noidx | gistidx | spgistidx 
+----+---------+----------+-------+---------+-----------
 (0 rows)
 
+DROP TABLE test_boundboxops;
+DROP TABLE

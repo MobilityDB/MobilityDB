@@ -62,8 +62,9 @@
  * don't have statistics or cannot use them for some reason.
  */
 static double
-period_sel_default(Oid oper)
+period_sel_default(Oid oper __attribute__((unused)))
 {
+  // TODO take care of the operator
   return 0.01;
 }
 
@@ -72,8 +73,9 @@ period_sel_default(Oid oper)
  * don't have statistics or cannot use them for some reason.
  */
 static double
-period_joinsel_default(Oid oper)
+period_joinsel_default(Oid oper __attribute__((unused)))
 {
+  // TODO take care of the operator
   return 0.001;
 }
 
@@ -81,7 +83,7 @@ period_joinsel_default(Oid oper)
  * Get the enum associated to the operator from different cases
  */
 static bool
-get_time_cachedop(Oid oper, CachedOp *cachedOp)
+time_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
@@ -100,7 +102,7 @@ get_time_cachedop(Oid oper, CachedOp *cachedOp)
         oper == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
         oper == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
         oper == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
-        {
+      {
         *cachedOp = (CachedOp) i;
         return true;
       }
@@ -939,7 +941,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 
     /* Get enumeration value associated to the operator */
     CachedOp cachedOp;
-    bool found = get_time_cachedop(oper, &cachedOp);
+    bool found = time_cachedop(oper, &cachedOp);
     /* In the case of unknown operator */
     if (!found)
     {
@@ -1142,7 +1144,7 @@ period_joinsel_adjacent(PeriodBound *lower1, PeriodBound *upper1,
  *
  * This estimate is for the portion of values that are not NULL.
  */
-static double
+double
 period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   CachedOp cachedOp)
 {
@@ -1343,6 +1345,9 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 
 /*****************************************************************************/
 
+/**
+ * Join selectivity for periods (internal function)
+ */
 float8
 period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo)
@@ -1366,7 +1371,7 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
    * Get enumeration value associated to the operator
    */
   CachedOp cachedOp;
-  bool found = get_time_cachedop(oper, &cachedOp);
+  bool found = time_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
   if (!found)
   {
@@ -1386,15 +1391,15 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
 PG_FUNCTION_INFO_V1(period_joinsel);
 /**
-* Join selectivity for periods.
-*
-* The selectivity is the ratio of the number of
-* rows we think will be returned divided the maximum number of rows the join
-* could possibly return (the full combinatoric join), that is
-*   joinsel = estimated_nrows / (totalrows1 * totalrows2)
-*
-* This function is inspired from function eqjoinsel in file selfuncs.c
-*/
+ * Join selectivity for periods.
+ *
+ * The selectivity is the ratio of the number of
+ * rows we think will be returned divided the maximum number of rows the join
+ * could possibly return (the full combinatoric join), that is
+ *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
+ *
+ * This function is inspired from function eqjoinsel in file selfuncs.c
+ */
 Datum period_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);

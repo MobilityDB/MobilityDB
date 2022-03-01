@@ -744,7 +744,7 @@ period_cmp(PG_FUNCTION_ARGS)
 bool
 period_lt_internal(const Period *p1, const Period *p2)
 {
-  int  cmp = period_cmp_internal(p1, p2);
+  int cmp = period_cmp_internal(p1, p2);
   return (cmp < 0);
 }
 

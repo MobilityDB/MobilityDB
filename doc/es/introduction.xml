@@ -225,9 +225,9 @@ CREATE EXTENSION mobilitydb CASCADE;
 			<itemizedlist>
 				<listitem><para>Compilador GNU C (<filename>gcc</filename>). Se pueden usar algunos otros compiladores ANSI C, pero pueden causar problemas al compilar algunas dependencias como PostGIS.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
-				<listitem><para>PostgreSQL versión 10 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Tenga en cuenta que para usar índices SP-GiST para MobilityDB, necesita al menos la versión 11 de PostgreSQL.</para></listitem>
-				<listitem><para>PostGIS versión 2.5. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>. Actualmente, la versión 3.0 o superior de PostGIS <emphasis role="bold">no es compatible</emphasis>, esto está previsto para futuras versiones de MobilityDB.</para></listitem>
-				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/"> https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
+				<listitem><para>PostgreSQL versión 11 o superior. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
+				<listitem><para>PostGIS versión 2.5 o superior. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
+				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 			</itemizedlist>
 			<para>
 				Tenga en cuenta que PostGIS tiene sus propias dependencias, como Proj4, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Para obtener una matriz de compatibilidad completa de PostgreSQL/PostGIS y una matriz de compatibilidad de PostGIS/GEOS, consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink>.

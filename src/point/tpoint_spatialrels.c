@@ -279,7 +279,8 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  */
 static Datum
 spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*func)(Datum, ...), int numparam, bool invert, bool geomcoll)
+  Datum (*func)(Datum, ...), int numparam, bool invert, 
+  bool geomcoll __attribute__((unused)))
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);

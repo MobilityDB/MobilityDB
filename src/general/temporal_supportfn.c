@@ -62,12 +62,14 @@
 #include "general/temporal_selfuncs.h"
 #include "general/tnumber_selfuncs.h"
 #include "point/tpoint_selfuncs.h"
+#include "npoint/tnpoint_selfuncs.h"
 
 typedef enum
 {
   TEMPORALTYPE,
   TNUMBERTYPE,
   TPOINTTYPE,
+  TNPOINTTYPE,
 } TemporalFamily;
 
 enum TEMPORAL_FUNCTION_IDX
@@ -305,13 +307,16 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
     {
       if (typefamily == TEMPORALTYPE)
         req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
-          req->jointype);
+          req->jointype, req->sjinfo);
       else if (typefamily == TNUMBERTYPE)
         req->selectivity = tnumber_joinsel_internal(req->root, oproid, req->args,
-          req->jointype);
-      else /* typefamily == TPOINTTYPE */
+          req->jointype, req->sjinfo);
+      else if (typefamily == TPOINTTYPE)
         req->selectivity = tpoint_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
+          req->jointype, req->sjinfo, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
+      else /* typefamily == TPOINTTYPE */
+        req->selectivity = tnpoint_joinsel_internal(req->root, oproid, req->args,
+          req->jointype, req->sjinfo);
     }
     else
     {
@@ -321,8 +326,11 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
       else if (typefamily == TNUMBERTYPE)
         req->selectivity = tnumber_sel_internal(req->root, oproid, req->args,
           req->varRelid);
-      else /* typefamily == TPOINTTYPE */
+      else if (typefamily == TPOINTTYPE)
         req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
+          req->varRelid);
+      else /* typefamily == TNPOINTTYPE */
+        req->selectivity = tnpoint_sel_internal(req->root, oproid, req->args,
           req->varRelid);
     }
     PG_RETURN_POINTER(req);
@@ -552,6 +560,16 @@ PGDLLEXPORT Datum
 tpoint_supportfn(PG_FUNCTION_ARGS)
 {
   return temporal_supportfn_internal(fcinfo, TPOINTTYPE);
+}
+
+PG_FUNCTION_INFO_V1(tnpoint_supportfn);
+/**
+ * Support function for temporal number types
+ */
+PGDLLEXPORT Datum
+tnpoint_supportfn(PG_FUNCTION_ARGS)
+{
+  return temporal_supportfn_internal(fcinfo, TNPOINTTYPE);
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */

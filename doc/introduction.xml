@@ -225,8 +225,8 @@ CREATE EXTENSION mobilitydb CASCADE;
 			<itemizedlist>
 				<listitem><para>GNU C compiler (<filename>gcc</filename>). Some other ANSI C compilers can be used but may cause problems compiling some dependencies such as PostGIS.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</para></listitem>
-				<listitem><para>PostgreSQL version 10 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>. Notice that for using SP-GiST indexes for MobilityDB you need at least PostgreSQL version 11.</para></listitem>
-				<listitem><para>PostGIS version 2.5. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>. PostGIS version 3.0 or higher is currently <emphasis role="bold">not supported</emphasis>, this is planned for future releases of MobilityDB.</para></listitem>
+				<listitem><para>PostgreSQL version 11 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
+				<listitem><para>PostGIS version 2.5 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 				<listitem><para>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</para></listitem>
 			</itemizedlist>
 			<para>
