@@ -115,7 +115,7 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * (geodetic version).
  */
 double
-lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
   long double *fraction)
 {
   double min_dist = FLT_MAX;
@@ -167,7 +167,8 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
+  Datum point, Oid basetypid __attribute__((unused)), Datum *value, 
+  TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
   Datum value1 = tinstant_value(start);
@@ -370,8 +371,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
     /* The distance output parameter is not used here */
@@ -630,7 +630,7 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   /* The trajectory is a line */
   LWLINE *lwline = geopoint_lwline(value1, value2);
   if (MOBDB_FLAGS_GET_GEODETIC(inst1->flags))
-    dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
+    dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, &fraction);
   else
     dist = MOBDB_FLAGS_GET_Z(inst1->flags) ?
       lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction) :

@@ -325,9 +325,9 @@ period_gist_penalty(PG_FUNCTION_ARGS)
 
   /* Calculate extension of original period by calling period_to_secs */
   float8 diff = 0.0;
-  if (period_cmp_bounds(&new_lower, &orig_lower) < 0)
+  if (period_bound_cmp(&new_lower, &orig_lower) < 0)
     diff += period_to_secs(orig->lower, new->lower);
-  if (period_cmp_bounds(&new_upper, &orig_upper) > 0)
+  if (period_bound_cmp(&new_upper, &orig_upper) > 0)
     diff += period_to_secs(new->upper, orig->upper);
   *penalty = (float4) diff;
 
@@ -496,7 +496,7 @@ periodbounds_cmp_lower(const void *a, const void *b)
 {
   PeriodBounds *i1 = (PeriodBounds *) a;
   PeriodBounds *i2 = (PeriodBounds *) b;
-  return period_cmp_bounds(&i1->lower, &i2->lower);
+  return period_bound_cmp(&i1->lower, &i2->lower);
 }
 
 /**
@@ -507,7 +507,7 @@ periodbounds_cmp_upper(const void *a, const void *b)
 {
   PeriodBounds *i1 = (PeriodBounds *) a;
   PeriodBounds *i2 = (PeriodBounds *) b;
-  return period_cmp_bounds(&i1->upper, &i2->upper);
+  return period_bound_cmp(&i1->upper, &i2->upper);
 }
 
 /**
@@ -637,9 +637,9 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
      * Find next lower bound of right group.
      */
     while (i1 < nentries &&
-        period_cmp_bounds(right_lower, &by_lower[i1].lower) == 0)
+        period_bound_cmp(right_lower, &by_lower[i1].lower) == 0)
     {
-      if (period_cmp_bounds(&by_lower[i1].upper, left_upper) > 0)
+      if (period_bound_cmp(&by_lower[i1].upper, left_upper) > 0)
         left_upper = &by_lower[i1].upper;
       i1++;
     }
@@ -652,7 +652,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
      * group.
      */
     while (i2 < nentries &&
-         period_cmp_bounds(&by_upper[i2].upper, left_upper) <= 0)
+         period_bound_cmp(&by_upper[i2].upper, left_upper) <= 0)
       i2++;
 
     /*
@@ -674,10 +674,10 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     /*
      * Find next upper bound of left group.
      */
-    while (i2 >= 0 && period_cmp_bounds(left_upper,
+    while (i2 >= 0 && period_bound_cmp(left_upper,
       &by_upper[i2].upper) == 0)
     {
-      if (period_cmp_bounds(&by_upper[i2].lower,
+      if (period_bound_cmp(&by_upper[i2].lower,
           right_lower) < 0)
         right_lower = &by_upper[i2].lower;
       i2--;
@@ -691,7 +691,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
      * group.
      */
     while (i1 >= 0 &&
-      period_cmp_bounds(&by_lower[i1].lower, right_lower) >= 0)
+      period_bound_cmp(&by_lower[i1].lower, right_lower) >= 0)
       i1--;
 
     /*
@@ -743,10 +743,10 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
     Period *period = DatumGetPeriodP(entryvec->vector[i].key);
     period_deserialize(period, &lower, &upper);
 
-    if (period_cmp_bounds(&upper, &context.left_upper) <= 0)
+    if (period_bound_cmp(&upper, &context.left_upper) <= 0)
     {
       /* Fits in the left group */
-      if (period_cmp_bounds(&lower, &context.right_lower) >= 0)
+      if (period_bound_cmp(&lower, &context.right_lower) >= 0)
       {
         /* Fits also in the right group, so "common entry" */
         common_entries[common_entries_count].index = i;
@@ -772,7 +772,7 @@ period_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
        * entry didn't fit in the left group, it better fit in the right
        * group.
        */
-      assert(period_cmp_bounds(&lower, &context.right_lower) >= 0);
+      assert(period_bound_cmp(&lower, &context.right_lower) >= 0);
       PLACE_RIGHT(period, i);
     }
   }

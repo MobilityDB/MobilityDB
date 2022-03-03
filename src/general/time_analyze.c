@@ -54,8 +54,8 @@
 #include "general/temporal.h"
 #include "general/tempcache.h"
 
-static void timetype_compute_stats(CachedType type, VacAttrStats *stats,
-  AnalyzeAttrFetchFunc fetchfunc, int samplerows);
+static void timetype_compute_stats(VacAttrStats *stats,
+  AnalyzeAttrFetchFunc fetchfunc, int samplerows, CachedType type);
 static void period_compute_stats(VacAttrStats *stats,
   AnalyzeAttrFetchFunc fetchfunc, int samplerows, double totalrows);
 static void timestampset_compute_stats(VacAttrStats *stats,
@@ -237,8 +237,8 @@ period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] samplerows Number of sample rows
  */
 static void
-timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
-  AnalyzeAttrFetchFunc fetchfunc, int samplerows)
+timetype_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
+  int samplerows, CachedType timetype)
 {
   int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
   float8 *lengths;
@@ -340,9 +340,9 @@ timetype_compute_stats(CachedType timetype, VacAttrStats *stats,
  */
 static void
 period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
-  timetype_compute_stats(T_PERIOD, stats, fetchfunc, samplerows);
+  timetype_compute_stats(stats, fetchfunc, samplerows, T_PERIOD);
   return;
 }
 
@@ -376,9 +376,9 @@ period_analyze(PG_FUNCTION_ARGS)
  */
 static void
 timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
-  timetype_compute_stats(T_TIMESTAMPSET, stats, fetchfunc, samplerows);
+  timetype_compute_stats(stats, fetchfunc, samplerows, T_TIMESTAMPSET);
   return;
 }
 
@@ -412,9 +412,9 @@ timestampset_analyze(PG_FUNCTION_ARGS)
  */
 static void
 periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
-  timetype_compute_stats(T_PERIODSET, stats, fetchfunc, samplerows);
+  timetype_compute_stats(stats, fetchfunc, samplerows, T_PERIODSET);
   return;
 }
 

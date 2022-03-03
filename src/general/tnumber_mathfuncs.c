@@ -69,7 +69,7 @@ datum_degrees(Datum value)
 }
 
 /**
- * Find the single timestamptz at which the multiplication of two temporal
+ * Find the single timestamptz at which the operation of two temporal
  * number segments is at a local minimum/maximum. The function supposes that
  * the instants are synchronized, that is, start1->t = start2->t and
  * end1->t = end2->t. The function only return an intersection at the middle,
@@ -79,10 +79,8 @@ datum_degrees(Datum value)
  */
 static bool
 tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  assert(linear1); assert(linear2);
   double x1 = datum_double(tinstant_value(start1), start1->basetypid);
   double x2 = datum_double(tinstant_value(end1), start1->basetypid);
   double x3 = datum_double(tinstant_value(start2), start2->basetypid);
@@ -109,16 +107,21 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   return true;
 }
 
+/**
+ * Find the single timestamptz at which the operation of two temporal
+ * number segments is at a local minimum/maximum. 
+ *
+ @note This function is called only when both sequences are linear.
+ */
 static bool
 tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  char op, Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, char op, Datum *value,
+  TimestampTz *t)
 {
-  if (! tnumber_arithop_tp_at_timestamp1(start1, end1, linear1,
-    start2, end2, linear2, t))
+  if (! tnumber_arithop_tp_at_timestamp1(start1, end1, start2, end2, t))
     return false;
-  Datum value1 = tsegment_value_at_timestamp(start1, end1, linear1, *t);
-  Datum value2 = tsegment_value_at_timestamp(start2, end2, linear2, *t);
+  Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
+  Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
     datum_mult(value1, value2, start1->basetypid, start2->basetypid) :
@@ -126,22 +129,32 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
   return true;
 }
 
+/**
+ * Find the single timestamptz at which the multiplication of two temporal
+ * number segments is at a local minimum/maximum. 
+ *
+ @note This function is called only when both sequences are linear.
+ */
 static bool
 tnumber_mult_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  return tnumber_arithop_tp_at_timestamp(start1, end1, linear1, start2, end2,
-    linear2, '*', value, t);
+  return tnumber_arithop_tp_at_timestamp(start1, end1, start2, end2, '*',
+    value, t);
 }
 
+/**
+ * Find the single timestamptz at which the division of two temporal
+ * number segments is at a local minimum/maximum. 
+ *
+ @note This function is called only when both sequences are linear.
+ */
 static bool
 tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  return tnumber_arithop_tp_at_timestamp(start1, end1, linear1, start2, end2,
-    linear2, '/', value, t);
+  return tnumber_arithop_tp_at_timestamp(start1, end1, start2, end2, '/',
+    value, t);
 }
 
 /*****************************************************************************
@@ -253,8 +266,8 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  bool (*tpfunc)(const TInstant *, const TInstant *, bool,
-    const TInstant *, const TInstant *, bool, Datum *, TimestampTz *))
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *, 
+    const TInstant *, Datum *, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);

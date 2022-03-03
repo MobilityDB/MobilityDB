@@ -120,7 +120,7 @@ period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
  * but one is an upper bound and the other a lower bound.
  */
 int
-period_cmp_bounds(const PeriodBound *b1, const PeriodBound *b2)
+period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2)
 {
   int32 result;
 
@@ -159,7 +159,7 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 {
   PeriodBound *b1 = (PeriodBound *) a1;
   PeriodBound *b2 = (PeriodBound *) a2;
-  return period_cmp_bounds(b1, b2);
+  return period_bound_cmp(b1, b2);
 }
 
 /**

@@ -155,19 +155,16 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
  * This function is passed to the lifting infrastructure when computing the
  * temporal distance.
  * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] linear1 True if the first segment has linear interpolation
  * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] linear2 True if the second segment has linear interpolation
  * @param[out] value Value
  * @param[out] t Timestamp
  */
 static bool
 tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  if (! tsegment_intersection(start1, end1, linear1, start2, end2,
-    linear2, NULL, NULL, t))
+  if (! tsegment_intersection(start1, end1, LINEAR, start2, end2, LINEAR,
+      NULL, NULL, t))
     return false;
   *value = (Datum) 0;
   return true;

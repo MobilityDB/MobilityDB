@@ -65,9 +65,9 @@ typedef struct
   bool discont;              /**< True if the function has instantaneous discontinuities */
   bool (*tpfunc_base)(const TInstant *, const TInstant *, Datum, Oid,
     Datum *, TimestampTz *); /**< Turning point function for temporal and base types*/
-  bool (*tpfunc)(const TInstant *, const TInstant *, bool, const TInstant *,
-     const TInstant *, bool, Datum *,
-     TimestampTz *);         /**< Turning point function for two temporal types */
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
+    const TInstant *, Datum *,
+    TimestampTz *);          /**< Turning point function for two temporal types */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/

@@ -293,7 +293,7 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  * @param[in] stats Structure storing statistics information
  * @param[in] fetchfunc Fetch function
  * @param[in] samplerows Number of sample rows
- * @param[in] valuestats True when statistics are collected for the value
+ * @param[in] tnumber True when statistics are collected for temporal numbers
  * dimension, that is, it is true for temporal numbers. Otherwise, statistics
  * are collected only for the temporal dimension, that is, in the case of
  * temporal boolean and temporal text.
@@ -301,24 +301,19 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
  */
 static void
 temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, bool valuestats)
+  int samplerows, bool tnumber)
 {
-  int null_cnt = 0,
-      non_null_cnt = 0,
-      slot_idx = 0;
-  float8 *value_lengths,
-       *time_lengths;
-  RangeBound *value_lowers,
-       *value_uppers;
-  PeriodBound *time_lowers,
-       *time_uppers;
+  int null_cnt = 0, non_null_cnt = 0, slot_idx = 0;
+  float8 *value_lengths, *time_lengths;
+  RangeBound *value_lowers, *value_uppers;
+  PeriodBound *time_lowers, *time_uppers;
   double total_width = 0;
-  Oid   rangetypid = 0; /* make compiler quiet */
+  Oid rangetypid = 0; /* make compiler quiet */
   TypeCacheEntry *typcache;
 
   temporal_extra_data = (TemporalAnalyzeExtraData *)stats->extra_data;
 
-  if (valuestats)
+  if (tnumber)
   {
     /* Ensure function is called for temporal numbers */
     ensure_tnumber_base_type(temporal_extra_data->value_type_id);
@@ -340,11 +335,9 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   {
     Datum value;
     bool isnull, isempty;
-    RangeBound range_lower,
-        range_upper;
+    RangeBound range_lower, range_upper;
     Period period;
-    PeriodBound period_lower,
-        period_upper;
+    PeriodBound period_lower, period_upper;
     Temporal *temp;
 
     /* Give backend a chance of interrupting us */
@@ -364,7 +357,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     temp = DatumGetTemporalP(value);
 
     /* Remember bounds and length for further usage in histograms */
-    if (valuestats)
+    if (tnumber)
     {
       RangeType *range = tnumber_value_range_internal(temp);
       range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
@@ -399,14 +392,14 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Estimate that non-null values are unique */
     stats->stadistinct = (float4) (-1.0 * (1.0 - stats->stanullfrac));
 
-    if (valuestats)
+    if (tnumber)
     {
       range_compute_stats(stats, non_null_cnt, &slot_idx, value_lowers,
         value_uppers, value_lengths, typcache, rangetypid);
     }
 
-    period_compute_stats1(stats, non_null_cnt, &slot_idx,
-      time_lowers, time_uppers, time_lengths);
+    period_compute_stats1(stats, non_null_cnt, &slot_idx, time_lowers,
+      time_uppers, time_lengths);
   }
   else if (null_cnt > 0)
   {
@@ -417,7 +410,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     stats->stadistinct = 0.0;  /* "unknown" */
   }
 
-  if (valuestats)
+  if (tnumber)
   {
     pfree(value_lowers); pfree(value_uppers); pfree(value_lengths);
   }
@@ -513,7 +506,7 @@ temporal_extra_info(VacAttrStats *stats)
  */
 void
 temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
   return temp_compute_stats(stats, fetchfunc, samplerows, false);
 }
@@ -523,7 +516,7 @@ temporal_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
  */
 void
 tnumber_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows)
+  int samplerows, double totalrows __attribute__((unused)))
 {
   return temp_compute_stats(stats, fetchfunc, samplerows, true);
 }

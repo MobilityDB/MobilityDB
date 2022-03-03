@@ -3981,10 +3981,10 @@ minus_period_period_internal1(Period **result, const Period *p1,
   period_deserialize(p1, &lower1, &upper1);
   period_deserialize(p2, &lower2, &upper2);
 
-  int cmp_l1l2 = period_cmp_bounds(&lower1, &lower2);
-  int cmp_l1u2 = period_cmp_bounds(&lower1, &upper2);
-  int cmp_u1l2 = period_cmp_bounds(&upper1, &lower2);
-  int cmp_u1u2 = period_cmp_bounds(&upper1, &upper2);
+  int cmp_l1l2 = period_bound_cmp(&lower1, &lower2);
+  int cmp_l1u2 = period_bound_cmp(&lower1, &upper2);
+  int cmp_u1l2 = period_bound_cmp(&upper1, &lower2);
+  int cmp_u1u2 = period_bound_cmp(&upper1, &upper2);
 
   /* Result is empty
    * p1         |----|

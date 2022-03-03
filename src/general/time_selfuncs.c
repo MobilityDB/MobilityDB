@@ -112,25 +112,23 @@ time_cachedop(Oid oper, CachedOp *cachedOp)
 
 /**
  * Binary search on an array of period bounds. Returns greatest index of period
- * bound in array which is less(less or equal) than given period bound. If all
- * period bounds in array are greater or equal(greater) than given period bound,
- * return -1. When "equal" flag is set conditions in brackets are used.
+ * bound in array which is less (less or equal) than given period bound. If all
+ * period bounds in array are greater or equal (greater) than given period bound,
+ * return -1. When "equal" flag is set, the conditions in parenthesis are used.
  *
  * This function is used in scalar operator selectivity estimation. Another
  * goal of this function is to find a histogram bin where to stop
  * interpolation of portion of bounds which are less or equal to given bound.
  */
 static int
-period_rbound_bsearch(const PeriodBound *value, const PeriodBound *hist,
-  int hist_length, bool equal)
+period_bound_bsearch(const PeriodBound *value, const PeriodBound *hist,
+  int hist_nvalues, bool equal)
 {
-  int lower = -1, upper = hist_length - 1;
-
+  int lower = -1, upper = hist_nvalues - 1;
   while (lower < upper)
   {
     int middle = (lower + upper + 1) / 2;
-    int cmp = period_cmp_bounds(&hist[middle], value);
-
+    int cmp = period_bound_cmp(&hist[middle], value);
     if (cmp < 0 || (equal && cmp == 0))
       lower = middle;
     else
@@ -143,7 +141,7 @@ period_rbound_bsearch(const PeriodBound *value, const PeriodBound *hist,
  * Measure distance between two period bounds
  */
 static float8
-get_period_distance(const PeriodBound *bound1, const PeriodBound *bound2)
+period_distance(const PeriodBound *bound1, const PeriodBound *bound2)
 {
   return period_to_secs(bound2->t, bound1->t);
 }
@@ -152,18 +150,15 @@ get_period_distance(const PeriodBound *bound1, const PeriodBound *bound2)
  * Get relative position of value in histogram bin in [0,1] period
  */
 static float8
-get_period_position(const PeriodBound *value, const PeriodBound *hist1,
+period_position(const PeriodBound *value, const PeriodBound *hist1,
   const PeriodBound *hist2)
 {
-  float8 position, bin_width;
-
   /* Calculate relative position using distance function. */
-  bin_width = get_period_distance(hist1, hist2);
+  float8 bin_width = period_distance(hist1, hist2);
   if (bin_width <= 0.0)
     return 0.5;      /* zero width bin */
 
-  position = get_period_distance(hist1, value) / bin_width;
-
+  float8 position = period_distance(hist1, value) / bin_width;
   /* Relative position must be in [0,1] period */
   position = Max(position, 0.0);
   position = Min(position, 1.0);
@@ -182,8 +177,7 @@ int
 length_hist_bsearch(Datum *length_hist_values, int length_hist_nvalues,
   double value, bool equal)
 {
-  int lower = -1,
-      upper = length_hist_nvalues - 1;
+  int lower = -1, upper = length_hist_nvalues - 1;
   while (lower < upper)
   {
     int middle = (lower + upper + 1) / 2;
@@ -272,20 +266,20 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
    * The average of a function between A and B can be calculated by the
    * formula:
    *
-   *      B
-   *    1    /
+   *          B
+   *    1     /
    * -------  | P(x)dx
-   *  B - A  /
-   *      A
+   *  B - A   /
+   *          A
    *
    * The geometrical interpretation of the integral is the area under the
    * graph of P(x). P(x) is defined by the length histogram. We calculate
    * the area in a piecewise fashion, iterating through the length histogram
    * bins. Each bin is a trapezoid:
    *
-   *     P(x2)
-   *      /|
-   *     / |
+   *       P(x2)
+   *        /|
+   *       / |
    * P(x1)/  |
    *     |   |
    *     |   |
@@ -318,10 +312,9 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
   }
   else
   {
-    /* interpolate length1's position in the bin */
-    pos = get_len_position(length1,
-                 DatumGetFloat8(length_hist_values[i]),
-                 DatumGetFloat8(length_hist_values[i + 1]));
+    /* Interpolate length1's position in the bin */
+    pos = get_len_position(length1, DatumGetFloat8(length_hist_values[i]),
+      DatumGetFloat8(length_hist_values[i + 1]));
   }
   PB = (((double) i) + pos) / (double) (length_hist_nvalues - 1);
   B = length1;
@@ -342,9 +335,9 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
   area = 0.0;
   for (; i < length_hist_nvalues - 1; i++)
   {
-    double    bin_upper = DatumGetFloat8(length_hist_values[i + 1]);
+    double bin_upper = DatumGetFloat8(length_hist_values[i + 1]);
 
-    /* check if we've reached the last bin */
+    /* Check if we've reached the last bin */
     if (!(bin_upper < length2 || (equal && bin_upper <= length2)))
       break;
 
@@ -369,12 +362,13 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
   A = B;
   PA = PB;
 
-  B = length2;        /* last bin ends at the query upper bound */
+  B = length2;        /* last bin ends at the constant upper bound */
   if (i >= length_hist_nvalues - 1)
     pos = 0.0;
   else
   {
-    if (DatumGetFloat8(length_hist_values[i]) == DatumGetFloat8(length_hist_values[i + 1]))
+    if (DatumGetFloat8(length_hist_values[i]) == 
+        DatumGetFloat8(length_hist_values[i + 1]))
       pos = 0.0;
     else
       pos = get_len_position(length2, DatumGetFloat8(length_hist_values[i]),
@@ -386,7 +380,7 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
     area += 0.5 * (PB + PA) * (B - A);
 
   /*
-   * Ok, we have calculated the area, ie. the integral. Divide by width to
+   * Ok, we have calculated the area, i.e. the integral. Divide by width to
    * get the requested average.
    *
    * Avoid NaN arising from infinite / infinite. This happens at least if
@@ -409,22 +403,20 @@ calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
  */
 double
 period_sel_scalar(const PeriodBound *constbound, const PeriodBound *hist,
-  int hist_nvalues, bool equal)
+  int nhist, bool equal)
 {
-  Selectivity selec;
-  int index;
-
   /*
    * Find the histogram bin the given constant falls into. Estimate
    * selectivity as the number of preceding whole bins.
    */
-  index = period_rbound_bsearch(constbound, hist, hist_nvalues, equal);
-  selec = (Selectivity) (Max(index, 0)) / (Selectivity) (hist_nvalues - 1);
+  int index = period_bound_bsearch(constbound, hist, nhist, equal);
+  Selectivity selec = (Selectivity) (Max(index, 0)) /
+    (Selectivity) (nhist - 1);
 
   /* Adjust using linear interpolation within the bin */
-  if (index >= 0 && index < hist_nvalues - 1)
-    selec += get_period_position(constbound, &hist[index], &hist[index + 1]) /
-      (Selectivity) (hist_nvalues - 1);
+  if (index >= 0 && index < nhist - 1)
+    selec += period_position(constbound, &hist[index], &hist[index + 1]) /
+      (Selectivity) (nhist - 1);
 
   return selec;
 }
@@ -448,17 +440,27 @@ period_sel_overlaps(PeriodBound *const_lower, PeriodBound *const_upper,
   PeriodBound *hist_lower, PeriodBound *hist_upper, int nhist)
 {
   /* If the periods do not overlap return 0.0 */
-  if (period_cmp_bounds(const_lower, &hist_upper[nhist - 1]) > 0 ||
-      period_cmp_bounds(&hist_lower[0], const_upper) > 0)
+  if (period_bound_cmp(const_lower, &hist_upper[nhist - 1]) > 0 ||
+      period_bound_cmp(&hist_lower[0], const_upper) > 0)
     return 0.0;
 
-  /* 
-   * 1 - ( P(A <<# B) + P(A #>> B) ) = 
-   * 1 - ( P(A <<# B) + ( 1 - P(A <<# B) ) )
+  /*
+   * Sel = 1.0 - ( Sel(A <<# B) + Sel(A #>> B) )
+   * Since  
+   * A << B when upper(A) < lower(B) and
+   * A >> B when lower(A) > upper(B) then
+   * Sel = 1.0 - ( Sel(upper(A) < lower(B)) + Sel(lower(A) > upper(B)) )
+   * Sel = 1.0 - ( Sel(upper(A) < lower(B)) + ( 1 - Sel(lower(A) <= upper(B)) ) )
    */
+  //EZ
+  // double selec = period_sel_scalar(const_upper, hist_lower, nhist, false);
+  // selec += (1.0 - period_sel_scalar(const_lower, hist_upper, nhist, true));
+  // selec = 1.0 - selec;
+
   double selec = period_sel_scalar(const_lower, hist_upper, nhist, false);
   selec += (1.0 - period_sel_scalar(const_upper, hist_lower, nhist, true));
   selec = 1.0 - selec;
+  // elog(WARNING, "Overlaps selectivity: %lf", selec);
   return selec;
 }
 
@@ -471,49 +473,48 @@ period_sel_adjacent(PeriodBound *const_lower, PeriodBound *const_upper,
   PeriodBound *hist_lower, PeriodBound *hist_upper, int hist_nvalues)
 {
   /* If the periods do not overlap return 0.0 */
-  if (period_cmp_bounds(const_lower, &hist_upper[hist_nvalues - 1]) > 0 ||
-      period_cmp_bounds(&hist_lower[0], const_upper) > 0)
+  if (period_bound_cmp(const_lower, &hist_upper[hist_nvalues - 1]) > 0 ||
+      period_bound_cmp(&hist_lower[0], const_upper) > 0)
     return 0.0;
 
   /*
-   * Find the histogram bin the given constant falls into. Estimate
-   * selectivity as the number of preceding whole bins.
+   * Find the histogram bins the lower and upper bounds of the constant falls into. 
    */
-  int index1 = period_rbound_bsearch(const_lower, hist_upper, hist_nvalues, true);
-  int index2 = period_rbound_bsearch(const_upper, hist_lower, hist_nvalues, true);
+  int index1 = period_bound_bsearch(const_lower, hist_upper, hist_nvalues, true);
+  int index2 = period_bound_bsearch(const_upper, hist_lower, hist_nvalues, true);
   Selectivity selec1 = 0, selec2 = 0;
   if (index1 != 0 && index1 < hist_nvalues - 1)
   {
     /*
      * const_lower falls inside a bin of hist_upper. The number of elements in
-     * the whole bin is 1/hist_nvalues. We further refine it by substracting
-     * the fraction of the bin that occures after the lower.
+     * the whole bin is 1/hist_nvalues. We further refine it by multiplying
+     * the fraction of the bin that occures before the lower.
      */
-    selec1 = (Selectivity) 1 / (Selectivity) (hist_nvalues - 1);
-    selec1 *= get_period_position(const_lower, &hist_upper[index1],
+    selec1 = period_position(const_lower, &hist_upper[index1],
       &hist_upper[index1 + 1]) / (Selectivity) (hist_nvalues - 1);
   }
   if (index2 != 0 && index2 < hist_nvalues - 1)
   {
-    selec2 = (Selectivity) 1 / (Selectivity) (hist_nvalues - 1);
-    selec2 *= 1- get_period_position(const_upper, &hist_lower[index2],
-      &hist_lower[index2 + 1]) / (Selectivity) (hist_nvalues - 1);
+    /*
+     * const_upper falls inside a bin of hist_lower. The number of elements in
+     * the whole bin is 1/hist_nvalues. We further refine it by multiplying
+     * the fraction of the bin that occures after the upper.
+     */
+    selec2 = (1.0 - period_position(const_upper, &hist_lower[index2],
+      &hist_lower[index2 + 1])) / (Selectivity) (hist_nvalues - 1);
   }
 
   return selec1 + selec2;
 }
 
 /**
- * Calculate selectivity of "var <@ const" operator, ie. estimate the fraction
+ * Calculate selectivity of "var <@ const" operator, i.e., estimate the fraction
  * of periods that fall within the constant lower and upper bounds. This uses
  * the histograms of period lower bounds and period lengths, on the assumption
  * that the period lengths are independent of the lower bounds.
- *
- * The caller has already checked that constant lower and upper bounds are
- * finite.
  */
 static double
-period_sel_contained(PeriodBound *lower, PeriodBound *upper,
+period_sel_contained(PeriodBound *const_lower, PeriodBound *const_upper,
   PeriodBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
   int length_hist_nvalues)
 {
@@ -524,19 +525,19 @@ period_sel_contained(PeriodBound *lower, PeriodBound *upper,
   /*
    * Begin by finding the bin containing the upper bound, in the lower bound
    * histogram. Any period with a lower bound > constant upper bound can't
-   * match, ie. there are no matches in bins greater than upper_index.
+   * match, i.e. there are no matches in bins greater than upper_index.
    */
-  upper->inclusive = !upper->inclusive;
-  upper->lower = true;
-  upper_index = period_rbound_bsearch(upper, hist_lower, hist_nvalues, false);
+  const_upper->inclusive = !const_upper->inclusive;
+  const_upper->lower = true;
+  upper_index = period_bound_bsearch(const_upper, hist_lower, hist_nvalues, false);
 
   /*
-   * Calculate upper_bin_width, ie. the fraction of the (upper_index,
-   * upper_index + 1) bin which is greater than upper bound of query period
+   * Calculate upper_bin_width, i.e. the fraction of the (upper_index,
+   * upper_index + 1) bin which is greater than constant upper bound
    * using linear interpolation of distance function.
    */
   if (upper_index >= 0 && upper_index < hist_nvalues - 1)
-    upper_bin_width = get_period_position(upper, &hist_lower[upper_index],
+    upper_bin_width = period_position(const_upper, &hist_lower[upper_index],
       &hist_lower[upper_index + 1]);
   else
     upper_bin_width = 0.0;
@@ -560,31 +561,31 @@ period_sel_contained(PeriodBound *lower, PeriodBound *upper,
     bool final_bin = false;
 
     /*
-     * dist -- distance from upper bound of query period to lower bound of
+     * dist -- distance from constant upper bound to the lower bound of
      * the current bin in the lower bound histogram. Or to the lower bound
      * of the constant period, if this is the final bin, containing the
      * constant lower bound.
      */
-    if (period_cmp_bounds(&hist_lower[i], lower) < 0)
+    if (period_bound_cmp(&hist_lower[i], const_lower) < 0)
     {
-      dist = get_period_distance(lower, upper);
+      dist = period_distance(const_lower, const_upper);
 
       /*
        * Subtract from bin_width the portion of this bin that we want to
        * ignore.
        */
-      bin_width -= get_period_position(lower, &hist_lower[i],
+      bin_width -= period_position(const_lower, &hist_lower[i],
         &hist_lower[i + 1]);
       if (bin_width < 0.0)
         bin_width = 0.0;
       final_bin = true;
     }
     else
-      dist = get_period_distance(&hist_lower[i], upper);
+      dist = period_distance(&hist_lower[i], const_upper);
 
     /*
      * Estimate the fraction of tuples in this bin that are narrow enough
-     * to not exceed the distance to the upper bound of the query period.
+     * to not exceed the distance to the constant upper bound.
      */
     length_hist_frac = calc_length_hist_frac(length_hist_values,
       length_hist_nvalues, prev_dist, dist, true);
@@ -606,16 +607,13 @@ period_sel_contained(PeriodBound *lower, PeriodBound *upper,
 }
 
 /**
- * Calculate selectivity of "var @> const" operator, ie. estimate the fraction
+ * Calculate selectivity of "var @> const" operator, i.e., estimate the fraction
  * of periods that contain the constant lower and upper bounds. This uses
  * the histograms of period lower bounds and period lengths, on the assumption
  * that the period lengths are independent of the lower bounds.
- *
- * Note, this is "var @> const", i.e., estimate the fraction of periods that
- * contain the constant lower and upper bounds.
  */
 static double
-period_sel_contains(PeriodBound *lower, PeriodBound *upper,
+period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
   PeriodBound *hist_lower, int hist_nvalues, Datum *length_hist_values,
   int length_hist_nvalues)
 {
@@ -623,33 +621,33 @@ period_sel_contains(PeriodBound *lower, PeriodBound *upper,
   double bin_width, lower_bin_width, sum_frac;
   float8 prev_dist;
 
-  /* Find the bin containing the lower bound of query period. */
-  lower_index = period_rbound_bsearch(lower, hist_lower, hist_nvalues, true);
+  /* Find the bin containing the constant lower bound. */
+  lower_index = period_bound_bsearch(const_lower, hist_lower, hist_nvalues, true);
 
   /*
    * Calculate lower_bin_width, i.e., the fraction of the (lower_index,
-   * lower_index + 1) bin which is greater than lower bound of query period
+   * lower_index + 1) bin which is greater than the constant lower bound
    * using linear interpolation of distance function.
    */
   if (lower_index >= 0 && lower_index < hist_nvalues - 1)
-    lower_bin_width = get_period_position(lower, &hist_lower[lower_index],
+    lower_bin_width = period_position(const_lower, &hist_lower[lower_index],
       &hist_lower[lower_index + 1]);
   else
     lower_bin_width = 0.0;
 
   /*
-   * Loop through all the lower bound bins, smaller than the query lower
+   * Loop through all the lower bound bins, smaller than the constant lower
    * bound. In the loop, dist and prev_dist are the distance of the
    * "current" bin's lower and upper bounds from the constant upper bound.
-   * We begin from query lower bound, and walk afterwards, so the first bin's
-   * upper bound is the query lower bound, and its distance to the query
-   * upper bound is the length of the query period.
+   * We begin from constant lower bound, and walk afterwards, so the first bin's
+   * upper bound is the constant lower bound, and its distance to the constant
+   * upper bound is the length of the constant period.
    *
    * bin_width represents the width of the current bin. Normally it is 1.0,
    * meaning a full width bin, except for the first bin, which is only
    * counted up to the constant lower bound.
    */
-  prev_dist = get_period_distance(lower, upper);
+  prev_dist = period_distance(const_lower, const_upper);
   sum_frac = 0.0;
   bin_width = lower_bin_width;
   for (i = lower_index; i >= 0; i--)
@@ -658,15 +656,15 @@ period_sel_contains(PeriodBound *lower, PeriodBound *upper,
     double length_hist_frac;
 
     /*
-     * dist -- distance from upper bound of query period to current value
-     * of lower bound histogram or lower bound of query period (if we've
+     * dist -- distance from constant upper bound to the current value
+     * of lower bound histogram or constant lower bound (if we've
      * reach it).
      */
-    dist = get_period_distance(&hist_lower[i], upper);
+    dist = period_distance(&hist_lower[i], const_upper);
 
     /*
      * Get average fraction of length histogram which covers intervals
-     * longer than (or equal to) distance to upper bound of query period.
+     * longer than (or equal to) distance to the constant upper bound.
      */
     length_hist_frac = 1.0 - calc_length_hist_frac(length_hist_values,
       length_hist_nvalues, prev_dist, dist, false);
@@ -772,9 +770,9 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
   else if (cachedOp == LE_OP)
     selec = period_sel_scalar(&const_lower, hist_lower, nhist, true);
   else if (cachedOp == GT_OP)
-    selec = 1 - period_sel_scalar(&const_lower, hist_lower, nhist, false);
+    selec = 1.0 - period_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == GE_OP)
-    selec = 1 - period_sel_scalar(&const_lower, hist_lower, nhist, true);
+    selec = 1.0 - period_sel_scalar(&const_lower, hist_lower, nhist, true);
   else if (cachedOp == BEFORE_OP)
     /* var <<# const when upper(var) < lower(const)*/
     selec = period_sel_scalar(&const_lower, hist_upper, nhist, false);
@@ -783,10 +781,10 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
     selec = period_sel_scalar(&const_upper, hist_upper, nhist, true);
   else if (cachedOp == AFTER_OP)
     /* var #>> const when lower(var) > upper(const) */
-    selec = 1 - period_sel_scalar(&const_upper, hist_lower, nhist, true);
+    selec = 1.0 - period_sel_scalar(&const_upper, hist_lower, nhist, true);
   else if (cachedOp == OVERAFTER_OP)
     /* var #&> const when lower(var) >= lower(const)*/
-    selec = 1 - period_sel_scalar(&const_lower, hist_lower, nhist, false);
+    selec = 1.0 - period_sel_scalar(&const_lower, hist_lower, nhist, false);
   else if (cachedOp == OVERLAPS_OP)
     selec = period_sel_overlaps(&const_lower, &const_upper, hist_lower,
       hist_upper, nhist);
@@ -990,153 +988,51 @@ period_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Look up the fraction of values less than (or equal, if 'equal' argument
- * is true) a histogram of period bounds in another histogram of period bounds.
+ * Look up the fraction of values in the first histogram that is less than (or
+ * equal, if 'equal' argument is true) in the second histogram of period bounds
  *
- * The intuition is that the first histogram can be considered as a
- * distribution of const bound, and for each const we can call the function
- * period_sel_scalar to compute its selectivity. By integrate them
- * with respect to the distribution, we obtain the said fraction.
+ * We need to add the average selectivity of every bin, given by
+ *    (val1 + val2) / 2 + (val2 + val3) / 2 +  ... + (val_i-1 + val_i) / 2
+ * which is equal to
+ *    val1 / 2 + val2 + val3 + val4 + ... + val_i-1 + val_i / 2
+ * The first and last terms above are computed out of the loop. The rest is
+ * computed in the loop.
  */
-static double
-period_joinsel_scalar(const PeriodBound *hist1, int nvalues1,
-  const PeriodBound *hist2, int nvalues2, bool equal)
+double
+period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
+  const PeriodBound *hist2, int nhist2, bool equal)
 {
-  Selectivity selec;
-  const PeriodBound *chosed_bound, *old_bound;
-  double cur_selec = 0, cur_bin_area, cur_bin_height, trapezoid_base1,
-    trapezoid_base2, trapezoid_height, *area_values;
-  int idx1 = 0, idx2 = 0, cur_bin_idx = -1, i;
-
-  area_values = (double *) palloc(sizeof(double) * (nvalues1 - 1));
-  memset(area_values, 0, sizeof(double) * (nvalues1 - 1));
-
-  /* Loop until finishing all period bounds in hist1.
-   *
-   * For each bin in hist1, we calculate its area_value through dividing
-   * the area under the selectivity curve within the bin by the length of
-   * the bin. The area_value represents the join selectivity contributed
-   * by this bin, regarding hist2. The average of all area_values
-   * represents the join selectivity of hist1 regarding hist2, as hist1 is
-   * an equi-depth histogram and all bins take up the same weight.
-   */
-  while (idx1 < nvalues1)
-  {
-    /* Loop until finishing traversing all period bounds in hist1 */
-    if (idx2 >= nvalues2)
-    {
-      /* Period bounds in hist2 have been finished */
-      if (cur_bin_idx < 0)
-        break;
-      else
-      {
-        area_values[cur_bin_idx] = (cur_bin_height == 0) ? 0 :
-          cur_bin_area / cur_bin_height;
-        cur_bin_area = cur_bin_height = 0;
-        cur_bin_idx++;
-        idx1++;
-      }
-    }
-    else
-    {
-      /* Proceed with the smaller one between hist1[idx1] and hist2[idx2] */
-      if (period_cmp_bounds(&hist1[idx1], &hist2[idx2]) <= 0)
-      {
-        chosed_bound = &hist1[idx1];
-        cur_selec = 1 - period_sel_scalar(chosed_bound, hist2, nvalues2, equal);
-        if (cur_bin_idx < 0)
-          /* First bin */
-          cur_bin_idx = 0;
-        else
-        {
-          /* Finish a bin and move to a new one */
-          trapezoid_base2 = cur_selec;
-          trapezoid_height = get_period_distance(chosed_bound, old_bound);
-          cur_bin_area += (trapezoid_base1 + trapezoid_base2) * 
-            trapezoid_height / 2;
-          cur_bin_height += trapezoid_height;
-          area_values[cur_bin_idx] = (cur_bin_height == 0) ? 0 :
-            cur_bin_area / cur_bin_height;
-          cur_bin_idx++;
-        }
-        cur_bin_area = cur_bin_height = 0;
-        trapezoid_base1 = cur_selec;
-        trapezoid_base2 = trapezoid_height = 0;
-        old_bound = chosed_bound;
-        idx1++;
-      }
-      else
-      {
-        chosed_bound = &hist2[idx2];
-        cur_selec = 1 - idx2 / (nvalues2 - 1.0);
-        if (cur_bin_idx < 0)
-        {
-          idx2++;
-          continue;
-        }
-        trapezoid_base2 = cur_selec;
-        trapezoid_height = get_period_distance(chosed_bound, old_bound);
-        cur_bin_area += (trapezoid_base1 + trapezoid_base2) * 
-          trapezoid_height / 2;
-        cur_bin_height += trapezoid_height;
-        trapezoid_base1 = cur_selec;
-        trapezoid_base2 = trapezoid_height = 0;
-        old_bound = chosed_bound;
-        idx2++;
-      }
-    }
-  }
-
-  for (i = 0; i < (nvalues1 - 1); i++)
-    selec += area_values[i];
-  pfree(area_values);
-  selec /= (nvalues1 - 1);
-  return selec;
-}
-
-/*
- * Calculate join selectivity of "var1 && var2" operator, i.e., estimate the
- * fraction of periods of the first histogram that overlap the periods in the
- * second histogram. This uses the histograms of period upper and lower bounds.
- *
- * Note that A && B <=> NOT (A <<# B OR A #>> B).
- *
- * Since A <<# B and A #>> B are mutually exclusive events we can
- * sum their probabilities to find probability of (A <<# B OR A #>> B).
- */
-static double
-period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
-  int nhist1, PeriodBound *lower2, PeriodBound *upper2, int nhist2)
-{
-  /* If the histograms do not overlap return 0.0 */
-  if (period_cmp_bounds(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      period_cmp_bounds(&lower2[0], &upper1[nhist2 - 1]) > 0)
-    return 0.0;
-
-  /* 
-   * 1 - ( P(A <<# B) + P(A #>> B) ) = 
-   * 1 - ( P(A <<# B) + ( 1 - P(A <<# B) ) )
-   */
-  double selec = period_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
-  selec += (1.0 - period_joinsel_scalar(upper2, nhist2, lower1, nhist1, false));
-  selec = 1.0 - selec;
-  return selec;
+  Selectivity selec = (Selectivity)
+    (period_sel_scalar(&hist1[0], hist2, nhist2, equal) / 2);
+  for (int i = 1; i < nhist1 - 1; ++i)
+    selec += (Selectivity) 
+      period_sel_scalar(&hist1[i], hist2, nhist2, equal);
+  selec += (Selectivity)
+    (period_sel_scalar(&hist1[nhist1 - 1], hist2, nhist2, equal) / 2);
+  return selec / (nhist1 - 1);
 }
 
 /**
- * Look up the fraction of values between lower(lowerbin) and lower, plus
- * the fraction between upper and upper(upperbin).
+ * Look up the fraction of values in the first histogram that is less than (or
+ * equal, if 'equal' argument is true) in the second histogram of period bounds
+ *
+ * We need to add the average selectivity of every bin, given by
+ *    (val1 + val2) / 2 + (val2 + val3) / 2 +  ... + (val_i-1 + val_i) / 2
+ * which is equal to
+ *    val1 / 2 + val2 + val3 + val4 + ... + val_i-1 + val_i / 2
+ * The first and last terms above are computed out of the loop. The rest is
+ * computed in the loop.
  */
-static double
-period_joinsel_adjacent(PeriodBound *lower1, PeriodBound *upper1,
+double
+period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
   int nhist1, PeriodBound *lower2, PeriodBound *upper2, int nhist2)
 {
-  /* If the histograms do not overlap return 0.0 */
-  if (period_cmp_bounds(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      period_cmp_bounds(&lower2[0], &upper1[nhist2 - 1]) > 0)
-    return 0.0;
+  double selec = 1.0 - 
+    period_joinsel_scalar(upper1, nhist1, lower2, nhist2, false) -
+    period_joinsel_scalar(upper2, nhist2, lower1, nhist1, false);
+  // elog(WARNING, "Overlaps join selectivity patch: %lf", selec);
 
-  return period_joinsel_default(InvalidOid);
+  return selec;
 }
 
 /**
@@ -1150,7 +1046,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
 {
   AttStatsSlot hslot1, hslot2, lslot1, lslot2;
   Form_pg_statistic stats1 = NULL, stats2 = NULL;
-  int nvalues1, nvalues2;
+  int nhist1, nhist2;
   PeriodBound *lower1, *upper1, *lower2, *upper2;
   int i;
   double nd1, nd2, selec;
@@ -1265,18 +1161,18 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
    * Convert histogram of periods into histograms of its lower and upper
    * bounds for vardata1 and vardata2.
    */
-  nvalues1 = hslot1.nvalues;
-  lower1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nvalues1);
-  upper1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nvalues1);
-  for (i = 0; i < nvalues1; i++)
+  nhist1 = hslot1.nvalues;
+  lower1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
+  upper1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
+  for (i = 0; i < nhist1; i++)
   {
-    period_deserialize(DatumGetPeriodP(hslot1.values[i]), 
+    period_deserialize(DatumGetPeriodP(hslot1.values[i]),
       &lower1[i], &upper1[i]);
   }
-  nvalues2 = hslot2.nvalues;
-  lower2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nvalues2);
-  upper2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nvalues2);
-  for (i = 0; i < nvalues2; i++)
+  nhist2 = hslot2.nvalues;
+  lower2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
+  upper2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
+  for (i = 0; i < nhist2; i++)
   {
     period_deserialize(DatumGetPeriodP(hslot2.values[i]),
       &lower2[i], &upper2[i]);
@@ -1303,33 +1199,33 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
    * above.
    */
   if (cachedOp == LT_OP)
-    selec = period_joinsel_scalar(lower1, nvalues1, lower2, nvalues2, false);
+    selec = period_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
   else if (cachedOp == LE_OP)
-    selec = period_joinsel_scalar(lower1, nvalues1, lower2, nvalues2, true);
+    selec = period_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
   else if (cachedOp == GT_OP)
-    selec = 1 - period_joinsel_scalar(lower1, nvalues1, lower2, nvalues2, true);
+    selec = 1.0 - period_joinsel_scalar(lower1, nhist1, lower2, nhist2, true);
   else if (cachedOp == GE_OP)
-    selec = 1 - period_joinsel_scalar(lower1, nvalues1, lower2, nvalues2, false);
+    selec = 1.0 - period_joinsel_scalar(lower1, nhist1, lower2, nhist2, false);
   else if (cachedOp == BEFORE_OP)
     /* var1 <<# var2 when upper(var1) < lower(var2)*/
-    selec = period_joinsel_scalar(upper1, nvalues1, lower2, nvalues2, false);
+    selec = period_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
   else if (cachedOp == OVERBEFORE_OP)
     /* var1 &<# var2 when upper(var1) <= upper(var2) */
-    selec = period_joinsel_scalar(upper1, nvalues1, upper2, nvalues2, true);
+    selec = period_joinsel_scalar(upper1, nhist1, upper2, nhist2, true);
   else if (cachedOp == AFTER_OP)
     /* var1 #>> var2 when lower(var1) > upper(var2) */
-    selec = 1 - period_joinsel_scalar(upper2, nvalues2, lower1, nvalues1, true);
+    selec = 1.0 - period_joinsel_scalar(upper2, nhist2, lower1, nhist1, true);
   else if (cachedOp == OVERAFTER_OP)
     /* var1 #&> var2 when lower(var1) >= lower(var2) */
-    selec = 1 - period_joinsel_scalar(lower2, nvalues2, lower1, nvalues1, false);
+    selec = 1.0 - period_joinsel_scalar(lower2, nhist2, lower1, nhist1, false);
   else if (cachedOp == OVERLAPS_OP)
-    selec = period_joinsel_overlaps(lower1, upper1, nvalues1, lower2, upper2, nvalues2);
+    selec = period_joinsel_overlaps(lower1, upper1, nhist1, lower2, upper2, nhist2);
   else if (cachedOp == CONTAINS_OP)
     selec = period_joinsel_default(InvalidOid);
   else if (cachedOp == CONTAINED_OP)
     selec = period_joinsel_default(InvalidOid);
   else if (cachedOp == ADJACENT_OP)
-    selec = period_joinsel_adjacent(lower1, upper1, nvalues1, lower2, upper2, nvalues2);
+    selec = period_joinsel_default(InvalidOid);
   else
   {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");

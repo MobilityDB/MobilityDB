@@ -107,7 +107,7 @@ extern bool period_gt_internal(const Period *p1, const Period *p2);
 
 extern void period_deserialize(const Period *p, PeriodBound *lower,
   PeriodBound *upper);
-extern int period_cmp_bounds(const PeriodBound *lower, const PeriodBound *upper);
+extern int period_bound_cmp(const PeriodBound *lower, const PeriodBound *upper);
 extern Period *period_make(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
 extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,

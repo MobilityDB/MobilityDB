@@ -408,7 +408,7 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
     Datum intervalue;
     TimestampTz intertime;
     if (lfinfo->tpfunc_base != NULL && linear &&
-      !datum_eq(value1, value2, seq->basetypid) &&
+      ! datum_eq(value1, value2, seq->basetypid) &&
       lfinfo->tpfunc_base(inst1, inst2, value, lfinfo->argtypid[1],
         &intervalue, &intertime))
     {
@@ -673,7 +673,7 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
 static void
 lfinfo_invert(LiftedFunctionInfo *lfinfo)
 {
-  lfinfo->invert = !lfinfo->invert;
+  lfinfo->invert = ! lfinfo->invert;
   Oid temp = lfinfo->argtypid[0];
   lfinfo->argtypid[0] = lfinfo->argtypid[1];
   lfinfo->argtypid[1] = temp;
@@ -995,8 +995,6 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
   int count = (seq1->count - i + seq2->count - j) * 2;
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count);
-  bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
-  bool linear2 = MOBDB_FLAGS_GET_LINEAR(seq2->flags);
   Datum value;
   while (i < seq1->count && j < seq2->count &&
     (inst1->t <= inter->upper || inst2->t <= inter->upper))
@@ -1025,7 +1023,7 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
     Datum value1, value2;
     TimestampTz tptime;
     if (lfinfo->tpfunc != NULL && k > 0 &&
-      lfinfo->tpfunc(prev1, inst1, linear1, prev2, inst2, linear2, &value, &tptime))
+      lfinfo->tpfunc(prev1, inst1, prev2, inst2, &value, &tptime))
     {
       instants[k++] = tinstant_make(value, tptime, lfinfo->restypid);
     }

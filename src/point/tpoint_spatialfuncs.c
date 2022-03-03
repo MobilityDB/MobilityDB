@@ -3705,19 +3705,17 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] value Value
  * @param[out] t Timestamp
- * @pre The segments are not both constants and at least one is linear
+ * @pre The segments are not both constants and are both linear
  * @note This function is currently not available for two temporal geographic
  * points
  */
 static bool
 tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
-  const TInstant *end1, bool linear1, const TInstant *start2,
-  const TInstant *end2, bool linear2, Datum *value, TimestampTz *t)
+  const TInstant *end1, const TInstant *start2,
+  const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  assert(linear1 && linear2);
   assert(!MOBDB_FLAGS_GET_GEODETIC(start1->flags));
   const POINT2D *sp1 = datum_get_point2d_p(tinstant_value(start1));
   const POINT2D *ep1 = datum_get_point2d_p(tinstant_value(end1));
