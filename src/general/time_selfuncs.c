@@ -367,7 +367,7 @@ calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
     pos = 0.0;
   else
   {
-    if (DatumGetFloat8(hist_length[i]) == 
+    if (DatumGetFloat8(hist_length[i]) ==
         DatumGetFloat8(hist_length[i + 1]))
       pos = 0.0;
     else
@@ -446,7 +446,7 @@ period_sel_overlaps(PeriodBound *const_lower, PeriodBound *const_upper,
 
   /*
    * Sel = 1.0 - ( Sel(A <<# B) + Sel(A #>> B) )
-   * Since  
+   * Since
    * A << B when upper(A) < lower(B) and
    * A >> B when lower(A) > upper(B) then
    * Sel = 1.0 - ( Sel(upper(A) < lower(B)) + Sel(lower(A) > upper(B)) )
@@ -478,7 +478,7 @@ period_sel_adjacent(PeriodBound *const_lower, PeriodBound *const_upper,
     return 0.0;
 
   /*
-   * Find the histogram bins the lower and upper bounds of the constant falls into. 
+   * Find the histogram bins the lower and upper bounds of the constant falls into.
    */
   int index1 = period_bound_bsearch(const_lower, hist_upper, hist_nvalues, true);
   int index2 = period_bound_bsearch(const_upper, hist_lower, hist_nvalues, true);
@@ -789,13 +789,13 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
     selec = period_sel_overlaps(&const_lower, &const_upper, hist_lower,
       hist_upper, nhist);
   else if (cachedOp == CONTAINS_OP)
-    selec = period_sel_contains(&const_lower, &const_upper, hist_lower, 
+    selec = period_sel_contains(&const_lower, &const_upper, hist_lower,
       nhist, lslot.values, lslot.nvalues);
   else if (cachedOp == CONTAINED_OP)
-    selec = period_sel_contained(&const_lower, &const_upper, hist_lower, 
+    selec = period_sel_contained(&const_lower, &const_upper, hist_lower,
       nhist, lslot.values, lslot.nvalues);
   else if (cachedOp == ADJACENT_OP)
-    selec = period_sel_adjacent(&const_lower, &const_upper, hist_lower, 
+    selec = period_sel_adjacent(&const_lower, &const_upper, hist_lower,
       hist_upper, nhist);
   else
   {
@@ -1005,7 +1005,7 @@ period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
   Selectivity selec = (Selectivity)
     (period_sel_scalar(&hist1[0], hist2, nhist2, equal) / 2);
   for (int i = 1; i < nhist1 - 1; ++i)
-    selec += (Selectivity) 
+    selec += (Selectivity)
       period_sel_scalar(&hist1[i], hist2, nhist2, equal);
   selec += (Selectivity)
     (period_sel_scalar(&hist1[nhist1 - 1], hist2, nhist2, equal) / 2);
@@ -1029,7 +1029,7 @@ period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
   selec += (1.0 - period_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
   selec = 1.0 - selec;
 
-  // double selec = 1 - period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false) - 
+  // double selec = 1 - period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false) -
     // period_joinsel_scalar(lower2, nhist2, upper1, nhist1, false);
 
   return selec;
@@ -1051,13 +1051,13 @@ period_joinsel_contains(PeriodBound *lower1, PeriodBound *upper1,
 
   Selectivity selec = 0;
   for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) period_sel_contains(&lower1[i], &upper1[i], 
+    selec += (Selectivity) period_sel_contains(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
   return selec / (nhist1 - 1);
 }
 
 /**
- * Look up the fraction of values in the first histogram that is 
+ * Look up the fraction of values in the first histogram that is
  * contained in a value in the second histogram
  */
 double
@@ -1072,13 +1072,13 @@ period_joinsel_contained(PeriodBound *lower1, PeriodBound *upper1,
 
   Selectivity selec = 0;
   for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) period_sel_contained(&lower1[i], &upper1[i], 
+    selec += (Selectivity) period_sel_contained(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
   return selec / (nhist1 - 1);
 }
 
 /**
- * Look up the fraction of values in the first histogram that is 
+ * Look up the fraction of values in the first histogram that is
  * adjacent to a value in the second histogram
  */
 double
@@ -1092,7 +1092,7 @@ period_joinsel_adjacent(PeriodBound *lower1, PeriodBound *upper1,
 
   Selectivity selec = 0;
   for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) period_sel_adjacent(&lower1[i], &upper1[i], 
+    selec += (Selectivity) period_sel_adjacent(&lower1[i], &upper1[i],
       lower2, upper2, nhist2);
   return selec / (nhist1 - 1);
 }
@@ -1285,7 +1285,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   free_attstatsslot(&lslot);
-  elog(WARNING, "Join selectivity: %lf", selec);
+  // elog(WARNING, "Join selectivity: %lf", selec);
 
   return selec;
 }
