@@ -95,10 +95,8 @@ void
 period_compute_stats1(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   PeriodBound *lowers, PeriodBound *uppers, float8 *lengths)
 {
-  int num_hist,
-    num_bins = stats->attr->attstattarget;
-  Datum *bound_hist_values;
-  Datum *length_hist_values;
+  int num_hist, num_bins = stats->attr->attstattarget;
+  Datum *bound_hist_values, *length_hist_values;
   MemoryContext old_cxt;
 
   /* Must copy the target values into anl_context */

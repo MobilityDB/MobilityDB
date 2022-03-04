@@ -144,11 +144,9 @@ range_compute_stats(VacAttrStats *stats, int non_null_cnt, int *slot_idx,
   RangeBound *lowers, RangeBound *uppers, float8 *lengths,
   TypeCacheEntry *typcache, Oid rangetypid)
 {
-  int num_hist,
-    num_bins = stats->attr->attstattarget;
+  int num_hist, num_bins = stats->attr->attstattarget;
   float4 *emptyfrac;
-  Datum *bound_hist_values;
-  Datum *length_hist_values;
+  Datum *bound_hist_values, *length_hist_values;
   MemoryContext old_cxt;
 
   /* Must copy the target values into anl_context */

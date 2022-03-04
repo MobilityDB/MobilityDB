@@ -244,17 +244,13 @@ get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
  * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
-calc_hist_selectivity_contained(TypeCacheEntry *typcache,
-                RangeBound *lower, RangeBound *upper,
-                RangeBound *hist_lower, int hist_nvalues,
-                Datum *length_hist_values, int length_hist_nvalues)
+calc_hist_selectivity_contained(TypeCacheEntry *typcache, RangeBound *lower,
+  RangeBound *upper, RangeBound *hist_lower, int hist_nvalues,
+  Datum *length_hist_values, int length_hist_nvalues)
 {
-  int      i,
-        upper_index;
-  float8    prev_dist;
-  double    bin_width;
-  double    upper_bin_width;
-  double    sum_frac;
+  int i, upper_index;
+  float8 prev_dist;
+  double bin_width, upper_bin_width, sum_frac;
 
   /*
    * Begin by finding the bin containing the upper bound, in the lower bound
@@ -263,8 +259,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
    */
   upper->inclusive = !upper->inclusive;
   upper->lower = true;
-  upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues,
-                 false);
+  upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues, false);
 
   /*
    * Calculate upper_bin_width, ie. the fraction of the (upper_index,
@@ -273,8 +268,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
    */
   if (upper_index >= 0 && upper_index < hist_nvalues - 1)
     upper_bin_width = get_position(typcache, upper,
-                     &hist_lower[upper_index],
-                     &hist_lower[upper_index + 1]);
+      &hist_lower[upper_index], &hist_lower[upper_index + 1]);
   else
     upper_bin_width = 0.0;
 
@@ -293,9 +287,9 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
   sum_frac = 0.0;
   for (i = upper_index; i >= 0; i--)
   {
-    double    dist;
-    double    length_hist_frac;
-    bool    final_bin = false;
+    double dist;
+    double length_hist_frac;
+    bool final_bin = false;
 
     /*
      * dist -- distance from upper bound of query range to lower bound of
@@ -312,7 +306,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
        * ignore.
        */
       bin_width -= get_position(typcache, lower, &hist_lower[i],
-                    &hist_lower[i + 1]);
+        &hist_lower[i + 1]);
       if (bin_width < 0.0)
         bin_width = 0.0;
       final_bin = true;
@@ -325,8 +319,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
      * to not exceed the distance to the upper bound of the query range.
      */
     length_hist_frac = calc_length_hist_frac(length_hist_values,
-                         length_hist_nvalues,
-                         prev_dist, dist, true);
+      length_hist_nvalues, prev_dist, dist, true);
 
     /*
      * Add the fraction of tuples in this bin, with a suitable length, to
