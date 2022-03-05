@@ -353,7 +353,22 @@ tinstarr_normalize(const TInstant **instants, bool linear, int count,
 }
 
 /**
- * Creating a temporal value from its arguments
+ * Construct a temporal sequence value from the array of temporal
+ * instant values
+ *
+ * For example, the memory structure of a temporal sequence value with
+ * two instants is as follows:
+ * @code
+ * ---------------------------------------------------------
+ * ( TSequence )_X | ( bbox )_X | offset_0 | offset_1 | ...
+ * ---------------------------------------------------------
+ * -------------------------------------
+ * ( TInstant_0 )_X | ( TInstant_1 )_X |
+ * -------------------------------------
+ * @endcode
+ * where the `X` are unused bytes added for double padding, `offset_0` and
+ * `offset_1` are offsets for the corresponding instants
+ *
  * @pre The validity of the arguments has been tested before
  */
 TSequence *
@@ -366,10 +381,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   if (normalize && count > 1)
     norminsts = tinstarr_normalize(instants, linear, count, &newcount);
 
-  /* Precompute the trajectory, if any */
-  size_t trajsize = 0;
-  bool isgeo = tgeo_base_type(instants[0]->basetypid);
-
   /* Get the bounding box size */
   size_t bboxsize = double_pad(temporal_bbox_size(instants[0]->basetypid));
 
@@ -377,12 +388,10 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   /* Bounding box size */
   size_t memsize = bboxsize;
   /* Size of composing instants */
-  for (int i = 0; i < count; i++)
-    memsize += double_pad(VARSIZE(instants[i]));
-  /* Trajectory size */
-  memsize += trajsize;
+  for (int i = 0; i < newcount; i++)
+    memsize += double_pad(VARSIZE(norminsts[i]));
   /* Size of the struct and the offset array */
-  memsize += double_pad(sizeof(TSequence)) + count * sizeof(size_t);
+  memsize += double_pad(sizeof(TSequence)) + newcount * sizeof(size_t);
   /* Create the temporal sequence */
   TSequence *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
@@ -397,7 +406,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (isgeo)
+  if (tgeo_base_type(instants[0]->basetypid))
   {
     MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags,
@@ -420,7 +429,7 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   size_t pos = 0;
   for (int i = 0; i < newcount; i++)
   {
-    memcpy(((char *)result) + pdata + pos, norminsts[i],
+    memcpy(((char *) result) + pdata + pos, norminsts[i],
       VARSIZE(norminsts[i]));
     (tsequence_offsets_ptr(result))[i] = pos;
     pos += double_pad(VARSIZE(norminsts[i]));
@@ -433,19 +442,6 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
 /**
  * Construct a temporal sequence value from the array of temporal
  * instant values
- *
- * For example, the memory structure of a temporal sequence value with
- * two instants and without precomputed trajectory is as follows:
- * @code
- * ---------------------------------------------------------
- * ( TSequence )_X | ( bbox )_X | offset_0 | offset_1 | ...
- * ---------------------------------------------------------
- * -------------------------------------
- * ( TInstant_0 )_X | ( TInstant_1 )_X |
- * -------------------------------------
- * @endcode
- * where the `X` are unused bytes added for double padding, `offset_0` and
- * `offset_1` are offsets for the corresponding instants
  *
  * @param[in] instants Array of instants
  * @param[in] count Number of elements in the array

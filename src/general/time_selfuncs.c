@@ -42,6 +42,7 @@
 #include <math.h>
 #include <port.h>
 #include <access/htup_details.h>
+#include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
 #include <utils/timestamp.h>
@@ -460,7 +461,6 @@ period_sel_overlaps(PeriodBound *const_lower, PeriodBound *const_upper,
   double selec = period_sel_scalar(const_lower, hist_upper, nhist, false);
   selec += (1.0 - period_sel_scalar(const_upper, hist_lower, nhist, true));
   selec = 1.0 - selec;
-  // elog(WARNING, "Overlaps selectivity: %lf", selec);
   return selec;
 }
 
@@ -806,6 +806,7 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
   pfree(hist_lower); pfree(hist_upper);
   free_attstatsslot(&lslot); free_attstatsslot(&hslot);
 
+  // elog(WARNING, "Selectivity: %lf", selec);
   return selec;
 }
 
@@ -1285,8 +1286,8 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   free_attstatsslot(&lslot);
-  // elog(WARNING, "Join selectivity: %lf", selec);
 
+  // elog(WARNING, "Join selectivity: %lf", selec);
   return selec;
 }
 
@@ -1356,6 +1357,117 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
   SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
   float8 selec = period_joinsel_internal(root, oper, args, jointype, sjinfo);
   PG_RETURN_FLOAT8((float8) selec);
+}
+
+/**
+ * Utility function to read the calculated selectivity for a given
+ * table/column, operator, and search period.
+ * Used for debugging the selectivity code.
+ */
+PG_FUNCTION_INFO_V1(_mobdb_period_sel);
+Datum _mobdb_period_sel(PG_FUNCTION_ARGS)
+{
+  Oid table_oid = PG_GETARG_OID(0);
+  text *att_text = PG_GETARG_TEXT_P(1);
+  Oid oper_oid = PG_GETARG_OID(2);
+  Period *p = PG_GETARG_PERIOD_P(3);
+  float8 selectivity = 0;
+  // ND_STATS *nd_stats;
+
+  /* Test input parameters */
+  char *table_name = get_rel_name(table_oid);
+  if (table_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("OID %u does not refer to a table", table_oid)));
+  const char *att_name = text_to_cstring(att_text);
+  AttrNumber att_num;
+  /* We know the name? Look up the num */
+  if (att_text)
+  {
+    /* Get the attribute number */
+    att_num = get_attnum(table_oid, att_name);
+    if (! att_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att_name);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  /* Retrieve the stats object */
+
+  // return pg_get_nd_stats(table_oid, att_num, mode, only_parent);
+
+  // nd_stats = pg_get_nd_stats_by_name(table_oid, table_name, mode, false);
+  // if ( ! nd_stats )
+    // elog(ERROR, "stats for \"%s.%s\" do not exist", get_rel_name(table_oid), text_to_cstring(table_name));
+
+  /* Do the estimation */
+  // selectivity = estimate_selectivity(&gbox, nd_stats, mode);
+  // selectivity = period_sel_default(InvalidOid);
+
+  elog(WARNING, "table_oid: %u, att_name: %s, oper_oid: %u, period: %s",
+    table_oid, att_name, oper_oid, period_to_string(p));
+
+  // pfree(nd_stats);
+  PG_RETURN_FLOAT8(selectivity);
+}
+
+/**
+ * Utility function to read the calculated selectivity for a given
+ * couple of table/column, and operator.
+ * Used for debugging the selectivity code.
+ */
+
+PG_FUNCTION_INFO_V1(_mobdb_period_joinsel);
+Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS)
+{
+  Oid table1_oid = PG_GETARG_OID(0);
+  text *att1_text = PG_GETARG_TEXT_P(1);
+  Oid table2_oid = PG_GETARG_OID(2);
+  text *att2_text = PG_GETARG_TEXT_P(3);
+  Oid oper_oid = PG_GETARG_OID(4);
+  float8 selectivity = 0;
+
+  /* Test input parameters */
+  char *table1_name = get_rel_name(table1_oid);
+  if (table1_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("OID %u does not refer to a table", table1_oid)));
+  const char *att1_name = text_to_cstring(att1_text);
+  AttrNumber att1_num;
+  /* We know the name? Look up the num */
+  if (att1_text)
+  {
+    /* Get the attribute number */
+    att1_num = get_attnum(table1_oid, att1_name);
+    if (! att1_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att1_name);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  char *table2_name = get_rel_name(table2_oid);
+  if (table2_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("OID %u does not refer to a table", table2_oid)));
+  const char *att2_name = text_to_cstring(att2_text);
+  AttrNumber att2_num;
+  /* We know the name? Look up the num */
+  if (att2_text)
+  {
+    /* Get the attribute number */
+    att2_num = get_attnum(table2_oid, att2_name);
+    if (! att2_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att2_name);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  /* TODO */
+
+  elog(WARNING, "table1_oid: %u, att1_name: %s, table2_oid: %u, att2_name: %s, oper_oid: %u",
+    table1_oid, att1_name, table2_oid, att2_name, oper_oid);
+
+  PG_RETURN_FLOAT8(selectivity);
 }
 
 /*****************************************************************************/
