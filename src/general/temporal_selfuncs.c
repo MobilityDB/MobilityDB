@@ -405,12 +405,9 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   CachedOp cachedOp;
   Period constperiod;
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  bool found = temporal_cachedop(oper, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  /* Get enumeration value associated to the operator */
+  if (! temporal_cachedop(oper, &cachedOp))
+    /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
@@ -456,12 +453,9 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     }
   }
 
-  /*
-   * Transform the constant into a Period
-   */
-  found = temporal_const_to_period(other, &constperiod);
-  /* In the case of unknown constant */
-  if (!found)
+  /* Transform the constant into a Period */
+  if (! temporal_const_to_period(other, &constperiod))
+    /* In the case of unknown constant */
     return temporal_sel_default(cachedOp);
 
   /* Compute the selectivity of the temporal column */
@@ -518,13 +512,10 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
     &join_is_reversed);
 
-  /*
-   * Get enumeration value associated to the operator
-   */
+  /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  bool found = temporal_cachedop(oper, &cachedOp);
   /* In the case of unknown operator */
-  if (!found)
+  if (! temporal_cachedop(oper, &cachedOp))
   {
     ReleaseVariableStats(vardata1);
     ReleaseVariableStats(vardata2);

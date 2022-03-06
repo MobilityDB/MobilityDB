@@ -909,12 +909,9 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   TBOX constBox;
   Oid basetypid;
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  bool found = tnumber_cachedop(operator, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  /* Get enumeration value associated to the operator */
+  if (! tnumber_cachedop(operator, &cachedOp))
+    /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
@@ -960,12 +957,9 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
     }
   }
 
-  /*
-   * Transform the constant into a TBOX
-   */
-  found = tnumber_const_to_tbox(other, &constBox);
-  /* In the case of unknown constant */
-  if (!found)
+  /* Transform the constant into a TBOX */
+  if (! tnumber_const_to_tbox(other, &constBox))
+    /* In the case of unknown constant */
     return tnumber_sel_default(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) ||
@@ -1027,10 +1021,9 @@ tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
    * Get enumeration value associated to the operator
    */
   CachedOp cachedOp;
-  bool found = tnumber_cachedop(oper, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  if (! tnumber_cachedop(oper, &cachedOp))
   {
+    /* In the case of unknown operator */
     ReleaseVariableStats(vardata1);
     ReleaseVariableStats(vardata2);
     return tnumber_joinsel_default(oper);

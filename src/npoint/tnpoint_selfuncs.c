@@ -113,12 +113,9 @@ tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   STBOX constBox;
   Period constperiod;
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  bool found = tnpoint_cachedop(oper, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  /* Get enumeration value associated to the operator */
+  if (! tnpoint_cachedop(oper, &cachedOp))
+    /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
@@ -164,12 +161,9 @@ tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     }
   }
 
-  /*
-   * Transform the constant into an STBOX
-   */
-  found = tnpoint_const_to_stbox(other, &constBox);
-  /* In the case of unknown constant */
-  if (!found)
+  /* Transform the constant into an STBOX */
+  if (! tnpoint_const_to_stbox(other, &constBox))
+    /* In the case of unknown constant */
     return tpoint_sel_default(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
@@ -256,10 +250,9 @@ tnpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
    * Get enumeration value associated to the operator
    */
   CachedOp cachedOp;
-  bool found = tnpoint_cachedop(oper, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  if (! tnpoint_cachedop(oper, &cachedOp))
   {
+    /* In the case of unknown operator */
     ReleaseVariableStats(vardata1);
     ReleaseVariableStats(vardata2);
     return tpoint_joinsel_default(oper);

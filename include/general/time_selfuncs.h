@@ -57,9 +57,12 @@ extern double get_len_position(double value, double hist1, double hist2);
 extern double calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
   double length1, double length2, bool equal);
 
-extern Datum period_analyze(PG_FUNCTION_ARGS);
-extern Datum timestampset_analyze(PG_FUNCTION_ARGS);
-extern Datum periodset_analyze(PG_FUNCTION_ARGS);
+extern Datum period_sel(PG_FUNCTION_ARGS);
+extern Datum period_joinsel(PG_FUNCTION_ARGS);
+// #ifdef DEBUG_BUILD
+extern Datum _mobdb_period_sel(PG_FUNCTION_ARGS);
+extern Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS);
+// #endif
 
 extern float8 period_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);

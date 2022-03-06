@@ -43,6 +43,7 @@
 #include <port.h>
 #include <access/htup_details.h>
 #include <utils/builtins.h>
+#include "utils/syscache.h"
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
 #include <utils/timestamp.h>
@@ -683,64 +684,27 @@ period_sel_contains(PeriodBound *const_lower, PeriodBound *const_upper,
 /**
  * Calculate period operator selectivity using histograms of period bounds.
  *
- * This estimate is for the portion of values that are not NULL.
+ * @note Used by the selectivity functions and the debugging functions.
  */
-double
-period_sel_hist(VariableStatData *vardata, const Period *constval,
-  CachedOp cachedOp)
+static double
+period_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
+  const Period *constval, CachedOp cachedOp)
 {
-  AttStatsSlot hslot, lslot;
   PeriodBound *hist_lower, *hist_upper;
   PeriodBound const_lower, const_upper;
   double selec;
   int nhist, i;
 
-  memset(&hslot, 0, sizeof(hslot));
-  memset(&lslot, 0, sizeof(lslot));
-
-  /* Try to get histogram of periods of vardata1 */
-  if (!(HeapTupleIsValid(vardata->statsTuple) &&
-      get_attstatsslot(&hslot, vardata->statsTuple,
-        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid,
-        ATTSTATSSLOT_VALUES)))
-    return -1.0;
-  /* Check that it's a histogram, not just a dummy entry */
-  if (hslot.nvalues < 2)
-  {
-    free_attstatsslot(&hslot);
-    return -1.0;
-  }
-
   /*
    * Convert histogram of periods into histograms of its lower and upper
    * bounds.
    */
-  nhist = hslot.nvalues;
+  nhist = hslot->nvalues;
   hist_lower = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
   hist_upper = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist);
   for (i = 0; i < nhist; i++)
-    period_deserialize(DatumGetPeriodP(hslot.values[i]),
+    period_deserialize(DatumGetPeriodP(hslot->values[i]),
       &hist_lower[i], &hist_upper[i]);
-
-  /* @> and @< also need a histogram of period lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
-  {
-    if (!(HeapTupleIsValid(vardata->statsTuple) &&
-        get_attstatsslot(&lslot, vardata->statsTuple,
-          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
-          ATTSTATSSLOT_VALUES)))
-    {
-      free_attstatsslot(&hslot);
-      return -1.0;
-    }
-    /* check that it's a histogram, not just a dummy entry */
-    if (lslot.nvalues < 2)
-    {
-      free_attstatsslot(&lslot);
-      free_attstatsslot(&hslot);
-      return -1.0;
-    }
-  }
 
   /* Extract the bounds of the constant value. */
   period_deserialize(constval, &const_lower, &const_upper);
@@ -790,10 +754,10 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
       hist_upper, nhist);
   else if (cachedOp == CONTAINS_OP)
     selec = period_sel_contains(&const_lower, &const_upper, hist_lower,
-      nhist, lslot.values, lslot.nvalues);
+      nhist, lslot->values, lslot->nvalues);
   else if (cachedOp == CONTAINED_OP)
     selec = period_sel_contained(&const_lower, &const_upper, hist_lower,
-      nhist, lslot.values, lslot.nvalues);
+      nhist, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
     selec = period_sel_adjacent(&const_lower, &const_upper, hist_lower,
       hist_upper, nhist);
@@ -804,7 +768,64 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
   }
 
   pfree(hist_lower); pfree(hist_upper);
-  free_attstatsslot(&lslot); free_attstatsslot(&hslot);
+
+  return selec;
+}
+
+/**
+ * Calculate period operator selectivity using histograms of period bounds.
+ *
+ * This estimate is for the portion of values that are not NULL.
+ */
+double
+period_sel_hist(VariableStatData *vardata, const Period *constval,
+  CachedOp cachedOp)
+{
+  AttStatsSlot hslot, lslot;
+  double selec;
+
+  memset(&hslot, 0, sizeof(hslot));
+
+  /* Try to get histogram of period bounds of vardata */
+  if (!(HeapTupleIsValid(vardata->statsTuple) &&
+      get_attstatsslot(&hslot, vardata->statsTuple,
+        STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid,
+        ATTSTATSSLOT_VALUES)))
+    return -1.0;
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot.nvalues < 2)
+  {
+    free_attstatsslot(&hslot);
+    return -1.0;
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  {
+    memset(&lslot, 0, sizeof(lslot));
+
+    if (!(HeapTupleIsValid(vardata->statsTuple) &&
+        get_attstatsslot(&lslot, vardata->statsTuple,
+          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
+    {
+      free_attstatsslot(&hslot);
+      return -1.0;
+    }
+    /* check that it's a histogram, not just a dummy entry */
+    if (lslot.nvalues < 2)
+    {
+      free_attstatsslot(&lslot);
+      free_attstatsslot(&hslot);
+      return -1.0;
+    }
+  }
+
+  selec = period_sel_hist1(&hslot, &lslot, constval, cachedOp);
+
+  free_attstatsslot(&hslot);
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+    free_attstatsslot(&lslot);
 
   // elog(WARNING, "Selectivity: %lf", selec);
   return selec;
@@ -940,17 +961,16 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 
     /* Get enumeration value associated to the operator */
     CachedOp cachedOp;
-    bool found = time_cachedop(oper, &cachedOp);
-    /* In the case of unknown operator */
-    if (!found)
+    if (! time_cachedop(oper, &cachedOp))
     {
+      /* Unknown operator */
       ReleaseVariableStats(vardata);
       return period_sel_default(oper);
     }
 
     /*
      * Calculate selectivity using bound histograms. If that fails for
-     * some reason, e.g no histogram in pg_statistic, use the default
+     * some reason, e.g. no histogram in pg_statistic, use the default
      * constant estimate. This is still somewhat better than just
      * returning the default estimate, because this still takes into
      * account the fraction of NULL tuples, if we had statistics for them.
@@ -961,7 +981,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 
     selec = hist_selec;
 
-    /* all period operators are strict */
+    /* All period operators are strict */
     selec *= (1.0 - null_frac);
   }
   ReleaseVariableStats(vardata);
@@ -983,6 +1003,103 @@ period_sel(PG_FUNCTION_ARGS)
   float8 selec = period_sel_internal(root, oper, args, varRelid);
   PG_RETURN_FLOAT8((float8) selec);
 }
+
+// #ifdef DEBUG_BUILD
+PG_FUNCTION_INFO_V1(_mobdb_period_sel);
+/**
+ * Utility function to read the calculated selectivity for a given
+ * table/column, operator, and search period.
+ * Used for debugging the selectivity code.
+ */
+PGDLLEXPORT Datum
+_mobdb_period_sel(PG_FUNCTION_ARGS)
+{
+  Oid table_oid = PG_GETARG_OID(0);
+  text *att_text = PG_GETARG_TEXT_P(1);
+  Oid oper = PG_GETARG_OID(2);
+  Period *p = PG_GETARG_PERIOD_P(3);
+  float8 selec = 0;
+
+  /* Test input parameters */
+  char *table_name = get_rel_name(table_oid);
+  if (table_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("Oid %u does not refer to a table", table_oid)));
+  const char *att_name = text_to_cstring(att_text);
+  AttrNumber att_num;
+  /* We know the name? Look up the num */
+  if (att_text)
+  {
+    /* Get the attribute number */
+    att_num = get_attnum(table_oid, att_name);
+    if (! att_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att_name);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! time_cachedop(oper, &cachedOp))
+  {
+    /* Unknown operator */
+    return period_sel_default(oper);
+  }
+
+  /* Retrieve the stats object */
+  HeapTuple stats_tuple = NULL;
+  AttStatsSlot hslot, lslot;
+
+  stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table_oid),
+    Int16GetDatum(att_num), BoolGetDatum(false));
+  if (! stats_tuple)
+    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table_oid) ?
+      get_rel_name(table_oid) : "NULL");
+
+  int stats_kind = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
+  if (! get_attstatsslot(&hslot, stats_tuple, stats_kind, InvalidOid,
+      ATTSTATSSLOT_VALUES))
+    elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot.nvalues < 2)
+  {
+    free_attstatsslot(&hslot);
+    elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  {
+    AttStatsSlot lslot;
+    memset(&lslot, 0, sizeof(lslot));
+
+   stats_kind = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
+   if (!(HeapTupleIsValid(stats_tuple) &&
+        get_attstatsslot(&lslot, stats_tuple, stats_kind, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
+    {
+      free_attstatsslot(&hslot);
+      elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+    }
+    /* check that it's a histogram, not just a dummy entry */
+    if (lslot.nvalues < 2)
+    {
+      free_attstatsslot(&lslot);
+      free_attstatsslot(&hslot);
+      elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+    }
+  }
+
+  selec = period_sel_hist1(&hslot, &lslot, p, cachedOp);
+
+  ReleaseSysCache(stats_tuple);
+  free_attstatsslot(&hslot);
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+    free_attstatsslot(&lslot);
+
+  PG_RETURN_FLOAT8(selec);
+}
+// #endif
 
 /*****************************************************************************
  * Join selectivity
@@ -1100,130 +1217,34 @@ period_joinsel_adjacent(PeriodBound *lower1, PeriodBound *upper1,
 
 /**
  * Calculate period operator selectivity using histograms of period bounds.
- *
- * This estimate is for the portion of values that are not NULL.
  */
-double
-period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
-  CachedOp cachedOp)
+static double
+period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
+  AttStatsSlot *lslot, CachedOp cachedOp)
 {
-  AttStatsSlot hslot1, hslot2, lslot;
-  Form_pg_statistic stats1 = NULL, stats2 = NULL;
   int nhist1, nhist2;
   PeriodBound *lower1, *upper1, *lower2, *upper2;
   int i;
-  double nd1, nd2, selec;
-  bool have_hist1 = false, have_hist2 = false, isdefault1, isdefault2;
-
-  memset(&hslot1, 0, sizeof(hslot1));
-  memset(&hslot2, 0, sizeof(hslot2));
-  /* There is only one lslot, see explanation below */
-  memset(&lslot, 0, sizeof(lslot));
-
-  /* Try to get histogram of periods of vardata1 and vardata2 */
-  if (HeapTupleIsValid(vardata1->statsTuple))
-  {
-    stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
-    have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
-      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
-    /* Check that it's a histogram, not just a dummy entry */
-    if (hslot1.nvalues < 2)
-    {
-      free_attstatsslot(&hslot1);
-      return -1.0;
-    }
-  }
-  if (HeapTupleIsValid(vardata2->statsTuple))
-  {
-    stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
-    have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
-      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
-    /* Check that it's a histogram, not just a dummy entry */
-    if (hslot2.nvalues < 2)
-    {
-      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-      return -1.0;
-    }
-  }
-
-  nd1 = get_variable_numdistinct(vardata1, &isdefault1);
-  nd2 = get_variable_numdistinct(vardata2, &isdefault2);
-
-  if (!have_hist1 || !have_hist2)
-  {
-    /*
-     * We do not have histograms for both sides.  Estimate the join
-     * selectivity as MIN(1/nd1,1/nd2)*(1-nullfrac1)*(1-nullfrac2). This
-     * is plausible if we assume that the join operator is strict and the
-     * non-null values are about equally distributed: a given non-null
-     * tuple of rel1 will join to either zero or N2*(1-nullfrac2)/nd2 rows
-     * of rel2, so total join rows are at most
-     * N1*(1-nullfrac1)*N2*(1-nullfrac2)/nd2 giving a join selectivity of
-     * not more than (1-nullfrac1)*(1-nullfrac2)/nd2. By the same logic it
-     * is not more than (1-nullfrac1)*(1-nullfrac2)/nd1, so the expression
-     * with MIN() is an upper bound.  Using the MIN() means we estimate
-     * from the point of view of the relation with smaller nd (since the
-     * larger nd is determining the MIN).  It is reasonable to assume that
-     * most tuples in this rel will have join partners, so the bound is
-     * probably reasonably tight and should be taken as-is.
-     *
-     * XXX Can we be smarter if we have an histogram for just one side? It
-     * seems that if we assume equal distribution for the other side, we
-     * end up with the same answer anyway.
-     */
-    double nullfrac1 = stats1 ? stats1->stanullfrac : 0.0;
-    double nullfrac2 = stats2 ? stats2->stanullfrac : 0.0;
-
-    selec = (1.0 - nullfrac1) * (1.0 - nullfrac2);
-    if (nd1 > nd2)
-      selec /= nd1;
-    else
-      selec /= nd2;
-    return selec;
-  }
-
-  /* @> and @< also need a histogram of period lengths */
-  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
-  {
-    /* We only get histograms for vardata2 since for computing the join
-     * selectivity we loop over values of the first histogram and
-     * assume the values is constant call the restriction selectivity
-     * over the second histogram */
-    if (!(HeapTupleIsValid(vardata2->statsTuple) &&
-        get_attstatsslot(&lslot, vardata1->statsTuple,
-          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
-          ATTSTATSSLOT_VALUES)))
-    {
-      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-      return -1.0;
-    }
-    /* check that it's a histogram, not just a dummy entry */
-    if (lslot.nvalues < 2)
-    {
-      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-      free_attstatsslot(&lslot);
-      return -1.0;
-    }
-  }
+  double selec;
 
   /*
    * Convert histogram of periods into histograms of its lower and upper
    * bounds for vardata1 and vardata2.
    */
-  nhist1 = hslot1.nvalues;
+  nhist1 = hslot1->nvalues;
   lower1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
   upper1 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist1);
   for (i = 0; i < nhist1; i++)
   {
-    period_deserialize(DatumGetPeriodP(hslot1.values[i]),
+    period_deserialize(DatumGetPeriodP(hslot1->values[i]),
       &lower1[i], &upper1[i]);
   }
-  nhist2 = hslot2.nvalues;
+  nhist2 = hslot2->nvalues;
   lower2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
   upper2 = (PeriodBound *) palloc(sizeof(PeriodBound) * nhist2);
   for (i = 0; i < nhist2; i++)
   {
-    period_deserialize(DatumGetPeriodP(hslot2.values[i]),
+    period_deserialize(DatumGetPeriodP(hslot2->values[i]),
       &lower2[i], &upper2[i]);
   }
 
@@ -1271,10 +1292,10 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
     selec = period_joinsel_overlaps(lower1, upper1, nhist1, lower2, upper2, nhist2);
   else if (cachedOp == CONTAINS_OP)
     selec = period_joinsel_contains(lower1, upper1, nhist1, lower2, upper2,
-      nhist2, lslot.values, lslot.nvalues);
+      nhist2, lslot->values, lslot->nvalues);
   else if (cachedOp == CONTAINED_OP)
     selec = period_joinsel_contained(lower1, upper1, nhist1, lower2, upper2,
-      nhist2, lslot.values, lslot.nvalues);
+      nhist2, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
     selec = period_joinsel_adjacent(lower1, upper1, nhist1, lower2, upper2, nhist2);
   else
@@ -1284,8 +1305,122 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
   }
 
   pfree(lower1); pfree(upper1); pfree(lower2); pfree(upper2);
+
+  return selec;
+}
+
+
+/**
+ * Calculate period operator selectivity using histograms of period bounds.
+ *
+ * This estimate is for the portion of values that are not NULL.
+ */
+double
+period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
+  CachedOp cachedOp)
+{
+  /* There is only one lslot, see explanation below */
+  AttStatsSlot hslot1, hslot2, lslot;
+  Form_pg_statistic stats1 = NULL, stats2 = NULL;
+  double selec;
+  bool have_hist1 = false, have_hist2 = false;
+
+  memset(&hslot1, 0, sizeof(hslot1));
+  memset(&hslot2, 0, sizeof(hslot2));
+
+  /* Try to get histogram of periods of vardata1 and vardata2 */
+  if (HeapTupleIsValid(vardata1->statsTuple))
+  {
+    stats1 = (Form_pg_statistic) GETSTRUCT(vardata1->statsTuple);
+    have_hist1 = get_attstatsslot(&hslot1, vardata1->statsTuple,
+      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+    /* Check that it's a histogram, not just a dummy entry */
+    if (hslot1.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1);
+      return -1.0;
+    }
+  }
+  if (HeapTupleIsValid(vardata2->statsTuple))
+  {
+    stats2 = (Form_pg_statistic) GETSTRUCT(vardata2->statsTuple);
+    have_hist2 = get_attstatsslot(&hslot2, vardata2->statsTuple,
+      STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM, InvalidOid, ATTSTATSSLOT_VALUES);
+    /* Check that it's a histogram, not just a dummy entry */
+    if (hslot2.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      return -1.0;
+    }
+  }
+
+  if (!have_hist1 || !have_hist2)
+  {
+    /*
+     * We do not have histograms for both sides.  Estimate the join
+     * selectivity as MIN(1/nd1,1/nd2)*(1-nullfrac1)*(1-nullfrac2). This
+     * is plausible if we assume that the join operator is strict and the
+     * non-null values are about equally distributed: a given non-null
+     * tuple of rel1 will join to either zero or N2*(1-nullfrac2)/nd2 rows
+     * of rel2, so total join rows are at most
+     * N1*(1-nullfrac1)*N2*(1-nullfrac2)/nd2 giving a join selectivity of
+     * not more than (1-nullfrac1)*(1-nullfrac2)/nd2. By the same logic it
+     * is not more than (1-nullfrac1)*(1-nullfrac2)/nd1, so the expression
+     * with MIN() is an upper bound.  Using the MIN() means we estimate
+     * from the point of view of the relation with smaller nd (since the
+     * larger nd is determining the MIN).  It is reasonable to assume that
+     * most tuples in this rel will have join partners, so the bound is
+     * probably reasonably tight and should be taken as-is.
+     *
+     * XXX Can we be smarter if we have an histogram for just one side? It
+     * seems that if we assume equal distribution for the other side, we
+     * end up with the same answer anyway.
+     */
+    bool isdefault1, isdefault2;
+    double nd1 = get_variable_numdistinct(vardata1, &isdefault1);
+    double nd2 = get_variable_numdistinct(vardata2, &isdefault2);
+    double nullfrac1 = stats1 ? stats1->stanullfrac : 0.0;
+    double nullfrac2 = stats2 ? stats2->stanullfrac : 0.0;
+
+    selec = (1.0 - nullfrac1) * (1.0 - nullfrac2);
+    if (nd1 > nd2)
+      selec /= nd1;
+    else
+      selec /= nd2;
+    return selec;
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  {
+    /* We only get histograms for vardata2 since for computing the join
+     * selectivity we loop over values of the first histogram assuming
+     * they are constant and call the restriction selectivity over the
+     * second histogram */
+    memset(&lslot, 0, sizeof(lslot));
+
+    if (!(HeapTupleIsValid(vardata2->statsTuple) &&
+        get_attstatsslot(&lslot, vardata1->statsTuple,
+          STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      return -1.0;
+    }
+    /* check that it's a histogram, not just a dummy entry */
+    if (lslot.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      free_attstatsslot(&lslot);
+      return -1.0;
+    }
+  }
+
+  selec = period_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
+
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
-  free_attstatsslot(&lslot);
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+    free_attstatsslot(&lslot);
 
   // elog(WARNING, "Join selectivity: %lf", selec);
   return selec;
@@ -1319,10 +1454,9 @@ period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
    * Get enumeration value associated to the operator
    */
   CachedOp cachedOp;
-  bool found = time_cachedop(oper, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  if (! time_cachedop(oper, &cachedOp))
   {
+    /* Unknown operator */
     ReleaseVariableStats(vardata1);
     ReleaseVariableStats(vardata2);
     return period_joinsel_default(oper);
@@ -1359,79 +1493,28 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8((float8) selec);
 }
 
-/**
- * Utility function to read the calculated selectivity for a given
- * table/column, operator, and search period.
- * Used for debugging the selectivity code.
- */
-PG_FUNCTION_INFO_V1(_mobdb_period_sel);
-Datum _mobdb_period_sel(PG_FUNCTION_ARGS)
-{
-  Oid table_oid = PG_GETARG_OID(0);
-  text *att_text = PG_GETARG_TEXT_P(1);
-  Oid oper_oid = PG_GETARG_OID(2);
-  Period *p = PG_GETARG_PERIOD_P(3);
-  float8 selectivity = 0;
-  // ND_STATS *nd_stats;
-
-  /* Test input parameters */
-  char *table_name = get_rel_name(table_oid);
-  if (table_name == NULL)
-    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
-      errmsg("OID %u does not refer to a table", table_oid)));
-  const char *att_name = text_to_cstring(att_text);
-  AttrNumber att_num;
-  /* We know the name? Look up the num */
-  if (att_text)
-  {
-    /* Get the attribute number */
-    att_num = get_attnum(table_oid, att_name);
-    if (! att_num)
-      elog(ERROR, "attribute \"%s\" does not exist", att_name);
-  }
-  else
-    elog(ERROR, "attribute name is null");
-
-  /* Retrieve the stats object */
-
-  // return pg_get_nd_stats(table_oid, att_num, mode, only_parent);
-
-  // nd_stats = pg_get_nd_stats_by_name(table_oid, table_name, mode, false);
-  // if ( ! nd_stats )
-    // elog(ERROR, "stats for \"%s.%s\" do not exist", get_rel_name(table_oid), text_to_cstring(table_name));
-
-  /* Do the estimation */
-  // selectivity = estimate_selectivity(&gbox, nd_stats, mode);
-  // selectivity = period_sel_default(InvalidOid);
-
-  elog(WARNING, "table_oid: %u, att_name: %s, oper_oid: %u, period: %s",
-    table_oid, att_name, oper_oid, period_to_string(p));
-
-  // pfree(nd_stats);
-  PG_RETURN_FLOAT8(selectivity);
-}
-
+// #ifdef DEBUG_BUILD
+PG_FUNCTION_INFO_V1(_mobdb_period_joinsel);
 /**
  * Utility function to read the calculated selectivity for a given
  * couple of table/column, and operator.
  * Used for debugging the selectivity code.
  */
-
-PG_FUNCTION_INFO_V1(_mobdb_period_joinsel);
-Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+_mobdb_period_joinsel(PG_FUNCTION_ARGS)
 {
   Oid table1_oid = PG_GETARG_OID(0);
   text *att1_text = PG_GETARG_TEXT_P(1);
   Oid table2_oid = PG_GETARG_OID(2);
   text *att2_text = PG_GETARG_TEXT_P(3);
-  Oid oper_oid = PG_GETARG_OID(4);
-  float8 selectivity = 0;
+  Oid oper = PG_GETARG_OID(4);
+  float8 selec = 0;
 
   /* Test input parameters */
   char *table1_name = get_rel_name(table1_oid);
   if (table1_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
-      errmsg("OID %u does not refer to a table", table1_oid)));
+      errmsg("Oid %u does not refer to a table", table1_oid)));
   const char *att1_name = text_to_cstring(att1_text);
   AttrNumber att1_num;
   /* We know the name? Look up the num */
@@ -1448,7 +1531,7 @@ Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   char *table2_name = get_rel_name(table2_oid);
   if (table2_name == NULL)
     ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
-      errmsg("OID %u does not refer to a table", table2_oid)));
+      errmsg("Oid %u does not refer to a table", table2_oid)));
   const char *att2_name = text_to_cstring(att2_text);
   AttrNumber att2_num;
   /* We know the name? Look up the num */
@@ -1462,12 +1545,87 @@ Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   else
     elog(ERROR, "attribute name is null");
 
-  /* TODO */
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! time_cachedop(oper, &cachedOp))
+    /* In case of unknown operator */
+    return period_sel_default(oper);
 
-  elog(WARNING, "table1_oid: %u, att1_name: %s, table2_oid: %u, att2_name: %s, oper_oid: %u",
-    table1_oid, att1_name, table2_oid, att2_name, oper_oid);
+  /* Retrieve the stats objects */
+  HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
+  AttStatsSlot hslot1, hslot2, lslot;
+  int stats_kind = STATISTIC_KIND_PERIOD_BOUNDS_HISTOGRAM;
+  memset(&hslot1, 0, sizeof(hslot1));
+  memset(&hslot2, 0, sizeof(hslot2));
 
-  PG_RETURN_FLOAT8(selectivity);
+  /* First table */
+  stats1_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table1_oid),
+    Int16GetDatum(att1_num), BoolGetDatum(false));
+  if (! stats1_tuple)
+    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table1_oid) ?
+      get_rel_name(table1_oid) : "NULL");
+
+  if (! get_attstatsslot(&hslot1, stats1_tuple, stats_kind, InvalidOid,
+      ATTSTATSSLOT_VALUES))
+    elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot1.nvalues < 2)
+  {
+    free_attstatsslot(&hslot1);
+    elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+  }
+  /* Second table */
+  stats2_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table2_oid),
+    Int16GetDatum(att2_num), BoolGetDatum(false));
+  if (! stats2_tuple)
+    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table2_oid) ?
+      get_rel_name(table2_oid) : "NULL");
+
+  if (! get_attstatsslot(&hslot2, stats2_tuple, stats_kind, InvalidOid,
+      ATTSTATSSLOT_VALUES))
+    elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot2.nvalues < 2)
+  {
+    free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+    elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+  {
+    /* We only get histograms for the second table since for computing the
+     * join selectivity we loop over values of the first histogram assuming
+     * they are constant and call the restriction selectivity over the
+     * second histogram */
+    stats_kind = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
+    memset(&lslot, 0, sizeof(lslot));
+
+    if (! get_attstatsslot(&lslot, stats2_tuple, stats_kind, InvalidOid,
+        ATTSTATSSLOT_VALUES))
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+    }
+    /* Check that it's a histogram, not just a dummy entry */
+    if (lslot.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      free_attstatsslot(&lslot);
+      elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+    }
+  }
+
+  /* Compute selectivity */
+  selec = period_joinsel_hist1(&hslot1, &hslot2, &lslot, cachedOp);
+
+  ReleaseSysCache(stats1_tuple); ReleaseSysCache(stats2_tuple);
+  free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+  if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+    free_attstatsslot(&lslot);
+
+  PG_RETURN_FLOAT8(selec);
 }
+// #endif
 
 /*****************************************************************************/
