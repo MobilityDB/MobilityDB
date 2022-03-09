@@ -160,6 +160,17 @@ CREATE OR REPLACE FUNCTION _mobdb_period_joinsel(regclass, text, regclass, text,
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Given a table, column, and tstzrange returns the estimate of what proportion
+-- of the table would be returned by a query using the given operator.
+CREATE FUNCTION _mobdb_tstzrange_sel(tbl regclass, att_name text, oper regoper, r tstzrange)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION _mobdb_range_joinsel(regclass, text, regclass, text, oper regoper)
+  RETURNS float
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 
 /******************************************************************************

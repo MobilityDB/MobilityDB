@@ -43,6 +43,7 @@
 #include <port.h>
 #include <access/htup_details.h>
 #include <utils/builtins.h>
+#include <utils/float.h> /* for get_float8_infinity needed for range types */
 #include "utils/syscache.h"
 #include <utils/lsyscache.h>
 #include <catalog/pg_statistic.h>
@@ -438,8 +439,8 @@ period_sel_scalar(const PeriodBound *constbound, const PeriodBound *hist,
  * constant, so just treat it the same as &&.
  */
 static double
-period_sel_overlaps(PeriodBound *const_lower, PeriodBound *const_upper,
-  PeriodBound *hist_lower, PeriodBound *hist_upper, int nhist)
+period_sel_overlaps(const PeriodBound *const_lower, const PeriodBound *const_upper,
+  const PeriodBound *hist_lower, const PeriodBound *hist_upper, int nhist)
 {
   /* If the periods do not overlap return 0.0 */
   if (period_bound_cmp(const_lower, &hist_upper[nhist - 1]) > 0 ||
@@ -844,6 +845,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   bool varonleft;
   Selectivity selec;
   const Period *period = NULL;
+  Period p;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -890,28 +892,22 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   }
 
   /*
-   * OK, there's a Var and a Const we're dealing with here.  We need the
-   * Const to be of same period type as the column, else we can't do anything
-   * useful. (Such cases will likely fail at runtime, but here we'd rather
-   * just return a default estimate.)
-   *
-   * If the operator is "period @> element", the constant should be of the
-   * element type of the period column. Convert it to a period that includes
-   * only that single point, so that we don't need special handling for that
-   * in what follows.
+   * OK, there's a Var and a Const we're dealing with here. If the constant
+   * is not of the period type, it should be converted to a period.
    */
   Oid timetypid = ((Const *) other)->consttype;
   ensure_time_type_oid(timetypid);
   if (timetypid == TIMESTAMPTZOID)
   {
-    /* The right argument is a constant TIMESTAMPTZ. We convert it into
+    /* The right argument is a TimestampTz constant. We convert it into
      * a singleton period */
     TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    period = period_make(t, t, true, true);
+    period_set(t, t, true, true, &p);
+    period = &p;
   }
   else if (timetypid == type_oid(T_TIMESTAMPSET))
   {
-    /* The right argument is a constant TIMESTAMPSET. We convert it into
+    /* The right argument is a TimestampSet constant. We convert it into
      * a period, which is its bounding box. */
     period =  timestampset_bbox_ptr(
       DatumGetTimestampSetP(((Const *) other)->constvalue));
@@ -921,9 +917,9 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     /* Just copy the value */
     period = DatumGetPeriodP(((Const *) other)->constvalue);
   }
-  else if (timetypid == type_oid(T_PERIODSET))
+  else /* timetypid == type_oid(T_PERIODSET) */
   {
-    /* The right argument is a constant PERIODSET. We convert it into
+    /* The right argument is a PeriodSet constant. We convert it into
      * a period, which is its bounding box. */
     period =  periodset_bbox_ptr(
       DatumGetPeriodSetP(((Const *) other)->constvalue));
@@ -1018,7 +1014,7 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
   text *att_text = PG_GETARG_TEXT_P(1);
   Oid oper = PG_GETARG_OID(2);
   Period *p = PG_GETARG_PERIOD_P(3);
-  float8 selec = 0;
+  float8 selec = 0.0;
 
   /* Test input parameters */
   char *table_name = get_rel_name(table_oid);
@@ -1041,10 +1037,8 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
   if (! time_cachedop(oper, &cachedOp))
-  {
-    /* Unknown operator */
-    return period_sel_default(oper);
-  }
+    /* In case of unknown operator */
+    elog(ERROR, "Unknown period operator %d", oper);
 
   /* Retrieve the stats object */
   HeapTuple stats_tuple = NULL;
@@ -1099,6 +1093,711 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
 
   PG_RETURN_FLOAT8(selec);
 }
+
+/*****************************************************************************/
+
+/*
+ * Returns a default selectivity estimate for given operator, when we don't
+ * have statistics or cannot use them for some reason.
+ * @note Function copied from rangetypes_selfuncs.c since it is not exported
+ */
+double
+default_range_selectivity(Oid operator)
+{
+	switch (operator)
+	{
+		case OID_RANGE_OVERLAP_OP:
+			return 0.01;
+
+		case OID_RANGE_CONTAINS_OP:
+		case OID_RANGE_CONTAINED_OP:
+			return 0.005;
+
+		case OID_RANGE_CONTAINS_ELEM_OP:
+		case OID_RANGE_ELEM_CONTAINED_OP:
+
+			/*
+			 * "range @> elem" is more or less identical to a scalar
+			 * inequality "A >= b AND A <= c".
+			 */
+			return DEFAULT_RANGE_INEQ_SEL;
+
+		case OID_RANGE_LESS_OP:
+		case OID_RANGE_LESS_EQUAL_OP:
+		case OID_RANGE_GREATER_OP:
+		case OID_RANGE_GREATER_EQUAL_OP:
+		case OID_RANGE_LEFT_OP:
+		case OID_RANGE_RIGHT_OP:
+		case OID_RANGE_OVERLAPS_LEFT_OP:
+		case OID_RANGE_OVERLAPS_RIGHT_OP:
+			/* these are similar to regular scalar inequalities */
+			return DEFAULT_INEQ_SEL;
+
+		default:
+			/* all range operators should be handled above, but just in case */
+			return 0.01;
+	}
+}
+
+/*
+ * Binary search on an array of range bounds. Returns greatest index of range
+ * bound in array which is less(less or equal) than given range bound. If all
+ * range bounds in array are greater or equal(greater) than given range bound,
+ * return -1. When "equal" flag is set conditions in brackets are used.
+ *
+ * This function is used in scalar operator selectivity estimation. Another
+ * goal of this function is to find a histogram bin where to stop
+ * interpolation of portion of bounds which are less than or equal to given bound.
+ */
+static int
+rbound_bsearch(TypeCacheEntry *typcache, const RangeBound *value, const RangeBound *hist,
+			   int hist_length, bool equal)
+{
+	int			lower = -1,
+				upper = hist_length - 1,
+				cmp,
+				middle;
+
+	while (lower < upper)
+	{
+		middle = (lower + upper + 1) / 2;
+		cmp = range_cmp_bounds(typcache, &hist[middle], value);
+
+		if (cmp < 0 || (equal && cmp == 0))
+			lower = middle;
+		else
+			upper = middle - 1;
+	}
+	return lower;
+}
+
+/*
+ * Get relative position of value in histogram bin in [0,1] range.
+ */
+static float8
+get_position(TypeCacheEntry *typcache, const RangeBound *value, const RangeBound *hist1,
+			 const RangeBound *hist2)
+{
+	bool		has_subdiff = OidIsValid(typcache->rng_subdiff_finfo.fn_oid);
+	float8		position;
+
+	if (!hist1->infinite && !hist2->infinite)
+	{
+		float8		bin_width;
+
+		/*
+		 * Both bounds are finite. Assuming the subtype's comparison function
+		 * works sanely, the value must be finite, too, because it lies
+		 * somewhere between the bounds.  If it doesn't, arbitrarily return
+		 * 0.5.
+		 */
+		if (value->infinite)
+			return 0.5;
+
+		/* Can't interpolate without subdiff function */
+		if (!has_subdiff)
+			return 0.5;
+
+		/* Calculate relative position using subdiff function. */
+		bin_width = DatumGetFloat8(FunctionCall2Coll(&typcache->rng_subdiff_finfo,
+													 typcache->rng_collation,
+													 hist2->val,
+													 hist1->val));
+		if (isnan(bin_width) || bin_width <= 0.0)
+			return 0.5;			/* punt for NaN or zero-width bin */
+
+		position = DatumGetFloat8(FunctionCall2Coll(&typcache->rng_subdiff_finfo,
+													typcache->rng_collation,
+													value->val,
+													hist1->val))
+			/ bin_width;
+
+		if (isnan(position))
+			return 0.5;			/* punt for NaN from subdiff, Inf/Inf, etc */
+
+		/* Relative position must be in [0,1] range */
+		position = Max(position, 0.0);
+		position = Min(position, 1.0);
+		return position;
+	}
+	else if (hist1->infinite && !hist2->infinite)
+	{
+		/*
+		 * Lower bin boundary is -infinite, upper is finite. If the value is
+		 * -infinite, return 0.0 to indicate it's equal to the lower bound.
+		 * Otherwise return 1.0 to indicate it's infinitely far from the lower
+		 * bound.
+		 */
+		return ((value->infinite && value->lower) ? 0.0 : 1.0);
+	}
+	else if (!hist1->infinite && hist2->infinite)
+	{
+		/* same as above, but in reverse */
+		return ((value->infinite && !value->lower) ? 1.0 : 0.0);
+	}
+	else
+	{
+		/*
+		 * If both bin boundaries are infinite, they should be equal to each
+		 * other, and the value should also be infinite and equal to both
+		 * bounds. (But don't Assert that, to avoid crashing if a user creates
+		 * a datatype with a broken comparison function).
+		 *
+		 * Assume the value to lie in the middle of the infinite bounds.
+		 */
+		return 0.5;
+	}
+}
+
+/*
+ * Look up the fraction of values less than (or equal, if 'equal' argument
+ * is true) a given const in a histogram of range bounds.
+ */
+static double
+calc_hist_selectivity_scalar(TypeCacheEntry *typcache, const RangeBound *constbound,
+							 const RangeBound *hist, int hist_nvalues, bool equal)
+{
+	Selectivity selec;
+	int			index;
+
+	/*
+	 * Find the histogram bin the given constant falls into. Estimate
+	 * selectivity as the number of preceding whole bins.
+	 */
+	index = rbound_bsearch(typcache, constbound, hist, hist_nvalues, equal);
+	selec = (Selectivity) (Max(index, 0)) / (Selectivity) (hist_nvalues - 1);
+
+	/* Adjust using linear interpolation within the bin */
+	if (index >= 0 && index < hist_nvalues - 1)
+		selec += get_position(typcache, constbound, &hist[index],
+							  &hist[index + 1]) / (Selectivity) (hist_nvalues - 1);
+
+	return selec;
+}
+
+/*
+ * Measure distance between two range bounds.
+ */
+static float8
+get_distance(TypeCacheEntry *typcache, const RangeBound *bound1, const RangeBound *bound2)
+{
+	bool		has_subdiff = OidIsValid(typcache->rng_subdiff_finfo.fn_oid);
+
+	if (!bound1->infinite && !bound2->infinite)
+	{
+		/*
+		 * Neither bound is infinite, use subdiff function or return default
+		 * value of 1.0 if no subdiff is available.
+		 */
+		if (has_subdiff)
+		{
+			float8		res;
+
+			res = DatumGetFloat8(FunctionCall2Coll(&typcache->rng_subdiff_finfo,
+												   typcache->rng_collation,
+												   bound2->val,
+												   bound1->val));
+			/* Reject possible NaN result, also negative result */
+			if (isnan(res) || res < 0.0)
+				return 1.0;
+			else
+				return res;
+		}
+		else
+			return 1.0;
+	}
+	else if (bound1->infinite && bound2->infinite)
+	{
+		/* Both bounds are infinite */
+		if (bound1->lower == bound2->lower)
+			return 0.0;
+		else
+			return get_float8_infinity();
+	}
+	else
+	{
+		/* One bound is infinite, the other is not */
+		return get_float8_infinity();
+	}
+}
+
+/*
+ * Calculate selectivity of "var @> const" operator, ie. estimate the fraction
+ * of ranges that contain the constant lower and upper bounds. This uses
+ * the histograms of range lower bounds and range lengths, on the assumption
+ * that the range lengths are independent of the lower bounds.
+ */
+static double
+calc_hist_selectivity_contains(TypeCacheEntry *typcache,
+							   const RangeBound *lower, const RangeBound *upper,
+							   const RangeBound *hist_lower, int hist_nvalues,
+							   Datum *length_hist_values, int length_hist_nvalues)
+{
+	int			i,
+				lower_index;
+	double		bin_width,
+				lower_bin_width;
+	double		sum_frac;
+	float8		prev_dist;
+
+	/* Find the bin containing the lower bound of query range. */
+	lower_index = rbound_bsearch(typcache, lower, hist_lower, hist_nvalues,
+								 true);
+
+	/*
+	 * If the lower bound value is below the histogram's lower limit, there
+	 * are no matches.
+	 */
+	if (lower_index < 0)
+		return 0.0;
+
+	/*
+	 * If the lower bound value is at or beyond the histogram's upper limit,
+	 * start our loop at the last actual bin, as though the upper bound were
+	 * within that bin; get_position will clamp its result to 1.0 anyway.
+	 * (This corresponds to assuming that the data population above the
+	 * histogram's upper limit is empty, exactly like what we just assumed for
+	 * the lower limit.)
+	 */
+	lower_index = Min(lower_index, hist_nvalues - 2);
+
+	/*
+	 * Calculate lower_bin_width, ie. the fraction of the of (lower_index,
+	 * lower_index + 1) bin which is greater than lower bound of query range
+	 * using linear interpolation of subdiff function.
+	 */
+	lower_bin_width = get_position(typcache, lower, &hist_lower[lower_index],
+								   &hist_lower[lower_index + 1]);
+
+	/*
+	 * Loop through all the lower bound bins, smaller than the query lower
+	 * bound. In the loop, dist and prev_dist are the distance of the
+	 * "current" bin's lower and upper bounds from the constant upper bound.
+	 * We begin from query lower bound, and walk backwards, so the first bin's
+	 * upper bound is the query lower bound, and its distance to the query
+	 * upper bound is the length of the query range.
+	 *
+	 * bin_width represents the width of the current bin. Normally it is 1.0,
+	 * meaning a full width bin, except for the first bin, which is only
+	 * counted up to the constant lower bound.
+	 */
+	prev_dist = get_distance(typcache, lower, upper);
+	sum_frac = 0.0;
+	bin_width = lower_bin_width;
+	for (i = lower_index; i >= 0; i--)
+	{
+		float8		dist;
+		double		length_hist_frac;
+
+		/*
+		 * dist -- distance from upper bound of query range to current value
+		 * of lower bound histogram or lower bound of query range (if we've
+		 * reach it).
+		 */
+		dist = get_distance(typcache, &hist_lower[i], upper);
+
+		/*
+		 * Get average fraction of length histogram which covers intervals
+		 * longer than (or equal to) distance to upper bound of query range.
+		 */
+		length_hist_frac =
+			1.0 - calc_length_hist_frac(length_hist_values,
+										length_hist_nvalues,
+										prev_dist, dist, false);
+
+		sum_frac += length_hist_frac * bin_width / (double) (hist_nvalues - 1);
+
+		bin_width = 1.0;
+		prev_dist = dist;
+	}
+
+	return sum_frac;
+}
+
+/*
+ * Calculate selectivity of "var <@ const" operator, ie. estimate the fraction
+ * of ranges that fall within the constant lower and upper bounds. This uses
+ * the histograms of range lower bounds and range lengths, on the assumption
+ * that the range lengths are independent of the lower bounds.
+ *
+ * The caller has already checked that constant lower and upper bounds are
+ * finite.
+ */
+static double
+calc_hist_selectivity_contained(TypeCacheEntry *typcache,
+								const RangeBound *lower, RangeBound *upper,
+								const RangeBound *hist_lower, int hist_nvalues,
+								Datum *length_hist_values, int length_hist_nvalues)
+{
+	int			i,
+				upper_index;
+	float8		prev_dist;
+	double		bin_width;
+	double		upper_bin_width;
+	double		sum_frac;
+
+	/*
+	 * Begin by finding the bin containing the upper bound, in the lower bound
+	 * histogram. Any range with a lower bound > constant upper bound can't
+	 * match, ie. there are no matches in bins greater than upper_index.
+	 */
+	upper->inclusive = !upper->inclusive;
+	upper->lower = true;
+	upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues,
+								 false);
+
+	/*
+	 * If the upper bound value is below the histogram's lower limit, there
+	 * are no matches.
+	 */
+	if (upper_index < 0)
+		return 0.0;
+
+	/*
+	 * If the upper bound value is at or beyond the histogram's upper limit,
+	 * start our loop at the last actual bin, as though the upper bound were
+	 * within that bin; get_position will clamp its result to 1.0 anyway.
+	 * (This corresponds to assuming that the data population above the
+	 * histogram's upper limit is empty, exactly like what we just assumed for
+	 * the lower limit.)
+	 */
+	upper_index = Min(upper_index, hist_nvalues - 2);
+
+	/*
+	 * Calculate upper_bin_width, ie. the fraction of the (upper_index,
+	 * upper_index + 1) bin which is greater than upper bound of query range
+	 * using linear interpolation of subdiff function.
+	 */
+	upper_bin_width = get_position(typcache, upper,
+								   &hist_lower[upper_index],
+								   &hist_lower[upper_index + 1]);
+
+	/*
+	 * In the loop, dist and prev_dist are the distance of the "current" bin's
+	 * lower and upper bounds from the constant upper bound.
+	 *
+	 * bin_width represents the width of the current bin. Normally it is 1.0,
+	 * meaning a full width bin, but can be less in the corner cases: start
+	 * and end of the loop. We start with bin_width = upper_bin_width, because
+	 * we begin at the bin containing the upper bound.
+	 */
+	prev_dist = 0.0;
+	bin_width = upper_bin_width;
+
+	sum_frac = 0.0;
+	for (i = upper_index; i >= 0; i--)
+	{
+		double		dist;
+		double		length_hist_frac;
+		bool		final_bin = false;
+
+		/*
+		 * dist -- distance from upper bound of query range to lower bound of
+		 * the current bin in the lower bound histogram. Or to the lower bound
+		 * of the constant range, if this is the final bin, containing the
+		 * constant lower bound.
+		 */
+		if (range_cmp_bounds(typcache, &hist_lower[i], lower) < 0)
+		{
+			dist = get_distance(typcache, lower, upper);
+
+			/*
+			 * Subtract from bin_width the portion of this bin that we want to
+			 * ignore.
+			 */
+			bin_width -= get_position(typcache, lower, &hist_lower[i],
+									  &hist_lower[i + 1]);
+			if (bin_width < 0.0)
+				bin_width = 0.0;
+			final_bin = true;
+		}
+		else
+			dist = get_distance(typcache, &hist_lower[i], upper);
+
+		/*
+		 * Estimate the fraction of tuples in this bin that are narrow enough
+		 * to not exceed the distance to the upper bound of the query range.
+		 */
+		length_hist_frac = calc_length_hist_frac(length_hist_values,
+												 length_hist_nvalues,
+												 prev_dist, dist, true);
+
+		/*
+		 * Add the fraction of tuples in this bin, with a suitable length, to
+		 * the total.
+		 */
+		sum_frac += length_hist_frac * bin_width / (double) (hist_nvalues - 1);
+
+		if (final_bin)
+			break;
+
+		bin_width = 1.0;
+		prev_dist = dist;
+	}
+
+	return sum_frac;
+}
+
+/*
+ * Calculate range operator selectivity using histograms of range bounds.
+ *
+ * This estimate is for the portion of values that are not empty and not
+ * NULL.
+ * @note This function is derived from calc_hist_selectivity
+ */
+static double
+calc_hist_selectivity1(TypeCacheEntry *typcache, AttStatsSlot *hslot,
+  AttStatsSlot *lslot, const RangeType *constval, Oid operator)
+{
+  int      nhist;
+  RangeBound *hist_lower;
+  RangeBound *hist_upper;
+  int      i;
+  RangeBound  const_lower;
+  RangeBound  const_upper;
+  bool    empty;
+  double    hist_selec;
+
+  /*
+   * Convert histogram of ranges into histograms of its lower and upper
+   * bounds.
+   */
+  nhist = hslot->nvalues;
+  hist_lower = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
+  hist_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist);
+  for (i = 0; i < nhist; i++)
+  {
+    range_deserialize(typcache, DatumGetRangeTypeP(hslot->values[i]),
+              &hist_lower[i], &hist_upper[i], &empty);
+    /* The histogram should not contain any empty ranges */
+    if (empty)
+      elog(ERROR, "bounds histogram contains an empty range");
+  }
+
+  /* Extract the bounds of the constant value. */
+  range_deserialize(typcache, constval, &const_lower, &const_upper, &empty);
+  assert(!empty);
+
+  /*
+   * Calculate selectivity comparing the lower or upper bound of the
+   * constant with the histogram of lower or upper bounds.
+   */
+  switch (operator)
+  {
+    case OID_RANGE_LESS_OP:
+
+      /*
+       * The regular b-tree comparison operators (<, <=, >, >=) compare
+       * the lower bounds first, and the upper bounds for values with
+       * equal lower bounds. Estimate that by comparing the lower bounds
+       * only. This gives a fairly accurate estimate assuming there
+       * aren't many rows with a lower bound equal to the constant's
+       * lower bound.
+       */
+      hist_selec =
+        calc_hist_selectivity_scalar(typcache, &const_lower,
+                       hist_lower, nhist, false);
+      break;
+
+    case OID_RANGE_LESS_EQUAL_OP:
+      hist_selec =
+        calc_hist_selectivity_scalar(typcache, &const_lower,
+                       hist_lower, nhist, true);
+      break;
+
+    case OID_RANGE_GREATER_OP:
+      hist_selec =
+        1 - calc_hist_selectivity_scalar(typcache, &const_lower,
+                         hist_lower, nhist, false);
+      break;
+
+    case OID_RANGE_GREATER_EQUAL_OP:
+      hist_selec =
+        1 - calc_hist_selectivity_scalar(typcache, &const_lower,
+                         hist_lower, nhist, true);
+      break;
+
+    case OID_RANGE_LEFT_OP:
+      /* var << const when upper(var) < lower(const) */
+      hist_selec =
+        calc_hist_selectivity_scalar(typcache, &const_lower,
+                       hist_upper, nhist, false);
+      break;
+
+    case OID_RANGE_RIGHT_OP:
+      /* var >> const when lower(var) > upper(const) */
+      hist_selec =
+        1 - calc_hist_selectivity_scalar(typcache, &const_upper,
+                         hist_lower, nhist, true);
+      break;
+
+    case OID_RANGE_OVERLAPS_RIGHT_OP:
+      /* compare lower bounds */
+      hist_selec =
+        1 - calc_hist_selectivity_scalar(typcache, &const_lower,
+                         hist_lower, nhist, false);
+      break;
+
+    case OID_RANGE_OVERLAPS_LEFT_OP:
+      /* compare upper bounds */
+      hist_selec =
+        calc_hist_selectivity_scalar(typcache, &const_upper,
+                       hist_upper, nhist, true);
+      break;
+
+    case OID_RANGE_OVERLAP_OP:
+    case OID_RANGE_CONTAINS_ELEM_OP:
+
+      /*
+       * A && B <=> NOT (A << B OR A >> B).
+       *
+       * Since A << B and A >> B are mutually exclusive events we can
+       * sum their probabilities to find probability of (A << B OR A >>
+       * B).
+       *
+       * "range @> elem" is equivalent to "range && [elem,elem]". The
+       * caller already constructed the singular range from the element
+       * constant, so just treat it the same as &&.
+       */
+      hist_selec =
+        calc_hist_selectivity_scalar(typcache, &const_lower, hist_upper,
+                       nhist, false);
+      hist_selec +=
+        (1.0 - calc_hist_selectivity_scalar(typcache, &const_upper, hist_lower,
+                          nhist, true));
+      hist_selec = 1.0 - hist_selec;
+      break;
+
+    case OID_RANGE_CONTAINS_OP:
+      hist_selec =
+        calc_hist_selectivity_contains(typcache, &const_lower,
+                         &const_upper, hist_lower, nhist,
+                         lslot->values, lslot->nvalues);
+      break;
+
+    case OID_RANGE_CONTAINED_OP:
+      if (const_lower.infinite)
+      {
+        /*
+         * Lower bound no longer matters. Just estimate the fraction
+         * with an upper bound <= const upper bound
+         */
+        hist_selec =
+          calc_hist_selectivity_scalar(typcache, &const_upper,
+                         hist_upper, nhist, true);
+      }
+      else if (const_upper.infinite)
+      {
+        hist_selec =
+          1.0 - calc_hist_selectivity_scalar(typcache, &const_lower,
+                             hist_lower, nhist, false);
+      }
+      else
+      {
+        hist_selec =
+          calc_hist_selectivity_contained(typcache, &const_lower,
+                          &const_upper, hist_lower, nhist,
+                          lslot->values, lslot->nvalues);
+      }
+      break;
+
+    default:
+      elog(ERROR, "unknown range operator %u", operator);
+      hist_selec = -1.0;  /* keep compiler quiet */
+      break;
+  }
+
+  return hist_selec;
+}
+
+PG_FUNCTION_INFO_V1(_mobdb_tstzrange_sel);
+/**
+ * Utility function to read the calculated selectivity for a given
+ * table/column, operator, and search range.
+ * Used for debugging the selectivity code.
+ */
+PGDLLEXPORT Datum
+_mobdb_tstzrange_sel(PG_FUNCTION_ARGS)
+{
+  Oid table_oid = PG_GETARG_OID(0);
+  text *att_text = PG_GETARG_TEXT_P(1);
+  Oid oper = PG_GETARG_OID(2);
+  RangeType *r = PG_GETARG_RANGE_P(3);
+  float8 selec = 0.0;
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r));
+
+  /* Test input parameters */
+  char *table_name = get_rel_name(table_oid);
+  if (table_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("Oid %u does not refer to a table", table_oid)));
+  const char *att_name = text_to_cstring(att_text);
+  AttrNumber att_num;
+  /* We know the name? Look up the num */
+  if (att_text)
+  {
+    /* Get the attribute number */
+    att_num = get_attnum(table_oid, att_name);
+    if (! att_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att_name);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  /* Retrieve the stats object */
+  HeapTuple stats_tuple = NULL;
+  AttStatsSlot hslot, lslot;
+
+  stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table_oid),
+    Int16GetDatum(att_num), BoolGetDatum(false));
+  if (! stats_tuple)
+    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table_oid) ?
+      get_rel_name(table_oid) : "NULL");
+
+  int stats_kind = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+  if (! get_attstatsslot(&hslot, stats_tuple, stats_kind, InvalidOid,
+      ATTSTATSSLOT_VALUES))
+    elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot.nvalues < 2)
+  {
+    free_attstatsslot(&hslot);
+    elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (oper == OID_RANGE_CONTAINS_OP || oper == OID_RANGE_CONTAINED_OP)
+  {
+    AttStatsSlot lslot;
+    memset(&lslot, 0, sizeof(lslot));
+
+   stats_kind = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
+   if (!(HeapTupleIsValid(stats_tuple) &&
+        get_attstatsslot(&lslot, stats_tuple, stats_kind, InvalidOid,
+          ATTSTATSSLOT_VALUES)))
+    {
+      free_attstatsslot(&hslot);
+      elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+    }
+    /* check that it's a histogram, not just a dummy entry */
+    if (lslot.nvalues < 2)
+    {
+      free_attstatsslot(&lslot);
+      free_attstatsslot(&hslot);
+      elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+    }
+  }
+
+  selec = calc_hist_selectivity1(typcache, &hslot, &lslot, r, oper);
+  // selec = default_range_selectivity(oper);
+
+  ReleaseSysCache(stats_tuple);
+  free_attstatsslot(&hslot);
+  if (oper == OID_RANGE_CONTAINS_OP || oper == OID_RANGE_CONTAINED_OP)
+    free_attstatsslot(&lslot);
+
+  PG_RETURN_FLOAT8(selec);
+}
 // #endif
 
 /*****************************************************************************
@@ -1106,18 +1805,19 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Look up the fraction of values in the first histogram that is less than (or
- * equal, if 'equal' argument is true) in the second histogram of period bounds
+ * Given two histograms of period bounds, look up the fraction of values in
+ * the first histogram that is less than (or equal, if 'equal' argument is
+ * true) the values in the second histogram.
  *
  * We need to add the average selectivity of every bin, given by
- *    (val1 + val2) / 2 + (val2 + val3) / 2 +  ... + (val_i-1 + val_i) / 2
+ *    (val1 + val2) / 2 + (val2 + val3) / 2 +  ... + (val_n-1 + val_n) / 2
  * which is equal to
- *    val1 / 2 + val2 + val3 + val4 + ... + val_i-1 + val_i / 2
+ *    val1 / 2 + val2 + val3 + val4 + ... + val_n-1 + val_n / 2
  * The first and last terms above are computed out of the loop. The rest is
  * computed in the loop.
  */
 double
-period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
+period_joinsel_scalar_old(const PeriodBound *hist1, int nhist1,
   const PeriodBound *hist2, int nhist2, bool equal)
 {
   Selectivity selec = (Selectivity)
@@ -1130,6 +1830,305 @@ period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
   return selec / (nhist1 - 1);
 }
 
+/**
+ * Set the last argument to the intersection of the two time values
+ *
+ * @note This function equivalent is to intersection_period_period_internal
+ * but does not do memory allocation
+ */
+bool
+inter_period_period(const Period *p1, const Period *p2, Period *result)
+{
+  /* Bounding box test */
+  if (!overlaps_period_period_internal(p1, p2))
+    return false;
+
+  TimestampTz lower = Max(p1->lower, p2->lower);
+  TimestampTz upper = Min(p1->upper, p2->upper);
+  bool lower_inc = p1->lower == p2->lower ? p1->lower_inc && p2->lower_inc :
+    ( lower == p1->lower ? p1->lower_inc : p2->lower_inc );
+  bool upper_inc = p1->upper == p2->upper ? p1->upper_inc && p2->upper_inc :
+    ( upper == p1->upper ? p1->upper_inc : p2->upper_inc );
+  period_set(lower, upper, lower_inc, upper_inc, result);
+  return true;
+}
+
+/**
+ * Given two histogram of period bounds, estimate the fraction of values in the
+ * first histogram that that are less (or equal, if 'equal' argument is true)
+ * than a value in the second histogram.
+ * 
+ * We compute this by iterating over each period p1 of the first histogram
+ * assuming it is constant and compute the restriction selectivity of p1 
+ * over the second histogram using the function period_sel_overlaps. More
+ * precisely, for each period p1 of the first histogram we compute the
+ * restriction selectivity of the lower and upper bound of p1, say v1 and v2,
+ * and then average then by (v1 + v2) / 2. We add these terms for each period
+ * p1 and at the end we multiply the result by the density of the bins in the
+ * first histogram, which is given by 1 / (nhist1 - 1).
+ *
+ * However, to improve the estimation we need to split the periods of the first
+ * histogram that overlap more than one bin of the second histogram to take
+ * into account the different densities of the histograms. Consider a bin p1
+ * in the first histogram with length l1 that overlaps two bins p2 and p3 of
+ * the second histogram
+ *
+ *                   p1
+ *             |---x-------|
+ * |-----------x---|-------x-------|
+ *        p2           p3
+ *
+ * where 1/3 of p1 overlaps p2 and 2/3 of p1 overlaps p3. If p is the
+ * intersection of p1 and p2, ratio is the length of p divided by the
+ * length of p1, and v1 and v2 are respectively the restriction selectivities
+ * of the lower and the upper bound of p, we multiply (v1 + v2) / 2 by ratio
+ * to obtain the join selectivity value for p and then do the same for the
+ * the other fragment of p1 which is the intersection of p1 and p3.
+ *
+ * Notice that the algorithm below does a synchronized sequential scan of both
+ * histograms.
+ */
+double
+period_joinsel_scalar_ez(const PeriodBound *hist1, int nhist1,
+  const PeriodBound *hist2, int nhist2, bool equal)
+{
+  /* If the histograms do not overlap return 0.0 */
+  if (period_bound_cmp(&hist1[0], &hist2[nhist2 - 1]) > 0 ||
+      period_bound_cmp(&hist2[0], &hist1[nhist1 - 1]) > 0)
+    return 0.0;
+
+  bool first = true;
+  Selectivity selec = 0.0;
+  int i = 1, j = 1;
+  while (i < nhist1 && j < nhist2)
+  {
+    double lower_sel, upper_sel;
+    /*
+     * Compute the intersection (lower, upper) of the two bins b1 and b2 where
+     *     lower = Max(b1.lower, b2.lower) and
+     *     upper = Min(b1.upper, b2.uppwer)
+     * There is an intersection if lower.t < upper.t
+     */
+    const PeriodBound *lower = hist1[i - 1].t > hist2[j - 1].t ? 
+      &hist1[i - 1] : &hist2[j - 1];
+    const PeriodBound *upper = hist1[i].t < hist2[j].t ?
+      &hist1[i] : &hist2[j];
+    /* If there is not intersection we take the full bin of the first histogram */
+    double ratio;
+    if (lower->t >= upper->t)
+    {
+      lower = &hist1[i - 1];
+      upper = &hist1[i];
+      ratio = 1.0;
+    }
+    else
+      ratio = period_to_secs(upper->t, lower->t) /
+        period_to_secs(hist1[i].t, hist1[i - 1].t);
+    /* Avoid to compute twice the selectivity of the upper bound
+     * of one bin which is the lower bound of the next bin */
+    if (first)
+    {
+      lower_sel = period_sel_scalar(lower, hist2, nhist2, equal);
+      first = false;
+    }
+    else
+      lower_sel = upper_sel;
+    upper_sel = period_sel_scalar(upper, hist2, nhist2, equal);
+    selec += (lower_sel + upper_sel) * ratio / 2;
+    /* Advance in the synchronized sequential scan */
+    int cmp = timestamptz_cmp_internal(hist1[i].t, hist2[j].t);
+    if (cmp == 0)
+    {
+      i++; j++;
+    }
+    else if (cmp < 0)
+      i++;
+    else
+      j++;
+  }
+  elog(WARNING, "EZ version");
+  return selec / (nhist1 - 1);
+}
+
+/*
+ * Given two histograms of period bounds, estimate the fraction of values in
+ * the first histogram that are less (or equal, if 'equal' argument is true)
+ * than a value in the second histogram. The join selectivity estimation
+ * for all period operators is expressed using this function. 
+ *
+ * The general idea is to iteratively decompose (var op var) into a summation
+ * of (var op const) using the period bounds present in both histograms as 
+ * const. Then, (var op const) is calculated using the function
+ * period_sel_scalar, which estimates the restriction selectivity.
+ *
+ * To increase the estimation accuracy, we use the values of both histograms
+ * with a synchronized sequential scan of them. This amounts to do a cross
+ * product of the two histograms. In the following explanation, Var1 and Var2
+ * are two variables whose distributions are given by hist1 and hist2,
+ * respectively.
+ *
+ * In order to estimate:
+ * P(Var1 < Var2)
+ *
+ * We need to compute for each bin in the cross product of the histograms
+ * P(Var1 < Var2 | Var2 is in bin) * P(Var2 is in bin)
+ *
+ * The second probability is the difference between the selectivity of the
+ * upper and lower bounds of the bin, which can be directly computed by
+ * calling period_sel_scalar.
+ *
+ * The first probability, however, cannot be directly computed because we do
+ * not have a concrete value for Var2. Instead, we can under and over estimate
+ * it by respectively setting the value of Var2 to the lower and upper bound
+ * of the bin, then compute the average.
+ *
+ * P(Var1 < lower bound of bin) <=
+ * P(Var1 < Var2 | Var2 is in bin) <=
+ * P(Var1 < upper bound of bin)
+ */
+double
+period_joinsel_scalar_ms(const PeriodBound *hist1, int nhist1,
+  const PeriodBound *hist2, int nhist2, bool equal)
+{
+  int i;
+  double sel_under_estimation,
+        sel_over_estimation,
+        selec,
+        lower_sel1,
+        lower_sel2,
+        upper_sel1,
+        upper_sel2;
+  PeriodBound *sync;
+
+  /*
+   * Histograms will never be empty. In fact, a histogram will never have
+   * less than 2 values (1 bin)
+   */
+  Assert(nhist1 + nhist2 > 1);
+
+  /* Merge both histograms in one sorted array */
+  sync = (PeriodBound *) palloc(sizeof(PeriodBound) * (nhist1 + nhist2));
+  memcpy(sync, hist1, sizeof(PeriodBound) * nhist1);
+  memcpy(sync + nhist1, hist2, sizeof(PeriodBound) * nhist2);
+  qsort(sync, (size_t) (nhist1 + nhist2), sizeof(PeriodBound),
+        period_bound_qsort_cmp);
+
+  /*
+   * Do the estimation
+   *
+   * Four selectivity values are estimated using
+   * period_sel_scalar, for the lower and upper bound of the
+   * current bin, using both hist1 and hist2.
+   */
+  sel_under_estimation = 0;
+  sel_over_estimation = 0;
+  lower_sel1 = period_sel_scalar(&sync[0], hist1, nhist1, equal);
+  lower_sel2 = period_sel_scalar(&sync[0], hist2, nhist2, equal);
+  for (i = 1; i < nhist1 + nhist2; i++)
+  {
+    upper_sel1 = period_sel_scalar(&sync[i], hist1, nhist1, equal);
+    upper_sel2 = period_sel_scalar(&sync[i], hist2, nhist2, equal);
+
+    /* Do the under and over estimation */
+    sel_under_estimation += lower_sel1 * (upper_sel2 - lower_sel2);
+    sel_over_estimation += upper_sel1 * (upper_sel2 - lower_sel2);
+
+    /* Prepare for the next iteration */
+    lower_sel1 = upper_sel1;
+    lower_sel2 = upper_sel2;
+  }
+
+  /*
+   * Estimate selectivity as the middle value between the under-estimation
+   * and the over-estimation
+   */
+  selec = (sel_under_estimation + sel_over_estimation) / 2;
+
+  pfree(sync);
+  elog(WARNING, "MS version");
+  return selec;
+}
+
+double
+period_joinsel_scalar_ms_ez(const PeriodBound *hist1, int nhist1,
+  const PeriodBound *hist2, int nhist2, bool equal)
+{
+  double under_estimation,
+        over_estimation,
+        selec,
+        lower_sel,
+        upper_sel;
+  const PeriodBound *lower, *upper;
+
+  /* Take the lower bound of the first bin in the first histogram */
+  lower = &hist1[0];
+  /*
+   * Estimate using the function period_sel_scalar the selectivity values
+   * for the lower bound of the current bin using both hist1 and hist2.
+   */
+  lower_sel = period_sel_scalar(lower, hist2, nhist2, equal);
+  under_estimation = over_estimation = 0;
+  int i = 1, j = 1;
+  while (i < nhist1 && j < nhist2)
+  {
+    /* If the first bin is to the left of the second bin */
+    if (period_bound_cmp(&hist1[i], &hist2[j - 1]) < 0)
+      upper = &hist1[i];
+    /* If the lower bounds of the two bins are equal */
+    else if (period_bound_cmp(&hist1[i - 1], &hist2[j - 1]) < 0)
+      /* Take the minimum of the two upper bounds */
+      upper = (period_bound_cmp(&hist1[i], &hist2[j]) < 0) ?
+        &hist1[i] : &hist2[j];
+    else
+      /* Take the lower bound of the second bin */
+      upper = &hist2[j - 1];
+
+    /*
+     * Estimate using the function period_sel_scalar the selectivity values
+     * for the upper bound of the current bin using both hist1 and hist2.
+     */
+    upper_sel = period_sel_scalar(upper, hist2, nhist2, equal);
+
+    /* Do the under and over estimation */
+    under_estimation += lower_sel * (upper_sel - lower_sel);
+    over_estimation += upper_sel * (upper_sel - lower_sel);
+
+    /* Prepare for the next iteration */
+    lower = upper;
+    lower_sel = upper_sel;
+
+    /* Advance in the synchronized sequential scan */
+    int cmp = period_bound_cmp(&hist1[i], &hist2[j]);
+    if (cmp == 0)
+    {
+      i++; j++;
+    }
+    else if (cmp < 0)
+      i++;
+    else
+      j++;
+  }
+
+  /*
+   * Estimate selectivity as the middle value between the under-estimation
+   * and the over-estimation
+   */
+  selec = (under_estimation + over_estimation) / 2;
+
+  elog(WARNING, "MS EZ version");
+  return selec;
+}
+
+double
+period_joinsel_scalar(const PeriodBound *hist1, int nhist1,
+  const PeriodBound *hist2, int nhist2, bool equal)
+{
+  return period_joinsel_scalar_old(hist1, nhist1, hist2, nhist2, equal);
+  // return period_joinsel_scalar_ms(hist1, nhist1, hist2, nhist2, equal);
+  return period_joinsel_scalar_ms_ez(hist1, nhist1, hist2, nhist2, equal);
+  // return period_joinsel_scalar_ez(hist1, nhist1, hist2, nhist2, equal);
+}
+  
 /**
  * Look up the fraction of values in the first histogram that overlap a value
  * in the second histogram
@@ -1147,8 +2146,13 @@ period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
   selec += (1.0 - period_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
   selec = 1.0 - selec;
 
-  // double selec = 1 - period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false) -
-    // period_joinsel_scalar(lower2, nhist2, upper1, nhist1, false);
+  // double selec1 = period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
+  // double selec2 = period_joinsel_scalar(lower2, nhist2, upper1, nhist1, false);
+  // double selec = 1 - selec1 - selec2;
+
+  // double selec = 1;
+  // selec -= period_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
+  // selec -= period_joinsel_scalar(upper2, nhist2, lower1, nhist1, false);
 
   return selec;
 }
@@ -1167,7 +2171,7 @@ period_joinsel_contains(PeriodBound *lower1, PeriodBound *upper1,
       period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  Selectivity selec = 0;
+  Selectivity selec = 0.0;
   for (int i = 0; i < nhist1 - 1; ++i)
     selec += (Selectivity) period_sel_contains(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
@@ -1188,7 +2192,7 @@ period_joinsel_contained(PeriodBound *lower1, PeriodBound *upper1,
       period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  Selectivity selec = 0;
+  Selectivity selec = 0.0;
   for (int i = 0; i < nhist1 - 1; ++i)
     selec += (Selectivity) period_sel_contained(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
@@ -1208,7 +2212,7 @@ period_joinsel_adjacent(PeriodBound *lower1, PeriodBound *upper1,
       period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
     return 0.0;
 
-  Selectivity selec = 0;
+  Selectivity selec = 0.0;
   for (int i = 0; i < nhist1 - 1; ++i)
     selec += (Selectivity) period_sel_adjacent(&lower1[i], &upper1[i],
       lower2, upper2, nhist2);
@@ -1508,7 +2512,7 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   Oid table2_oid = PG_GETARG_OID(2);
   text *att2_text = PG_GETARG_TEXT_P(3);
   Oid oper = PG_GETARG_OID(4);
-  float8 selec = 0;
+  float8 selec = 0.0;
 
   /* Test input parameters */
   char *table1_name = get_rel_name(table1_oid);
@@ -1549,7 +2553,7 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   CachedOp cachedOp;
   if (! time_cachedop(oper, &cachedOp))
     /* In case of unknown operator */
-    return period_sel_default(oper);
+    elog(ERROR, "Unknown period operator %d", oper);
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
@@ -1622,6 +2626,525 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   ReleaseSysCache(stats1_tuple); ReleaseSysCache(stats2_tuple);
   free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
+    free_attstatsslot(&lslot);
+
+  PG_RETURN_FLOAT8(selec);
+}
+
+/*
+ * Comparison function for sorting RangeBounds.
+ */
+static int
+range_bound_qsort_cmp(const void *a1, const void *a2, void *arg)
+{
+  RangeBound *b1 = (RangeBound *) a1;
+  RangeBound *b2 = (RangeBound *) a2;
+  TypeCacheEntry *typcache = (TypeCacheEntry *) arg;
+
+  return range_cmp_bounds(typcache, b1, b2);
+}
+
+/*
+ * calc_join_hist_lt_selectivity -- calculate join cardinality for multirange
+ * operators using histogram data
+ *
+ * This function estimates the fraction of values in the cross product of
+ * the two histograms where the first is less than the second. The join
+ * selectivity estimation for all multirange operations is expressed using this
+ * function. The general idea is to iteratively decompose (var op var) into
+ * a summation of (var op const) using the multirange bounds present in both
+ * histograms as const. The (var op const) is then calculated using
+ * calc_hist_selectivity_scalar, which is the function used for selectivity
+ * estimation (non-joins).
+ *
+ * Since using more statistics increases the estimation accuracy, we want to
+ * use all the values of the two histograms. Therefore, as a first step, we
+ * merge the values in both histograms into one ordered array (called sync).
+ *
+ * In the following explanation, Var1 and Var2 are two variables whose
+ * distributions are given by hist1 and hist2, respectively.
+ *
+ * In order to estimate:
+ * P(Var1 < Var2)
+ *
+ * We need to compute for each bin in the sync array
+ * P(Var1 < Var2 | Var2 is in bin) * P(Var2 is in bin)
+ *
+ * The second probability is the difference between the selectivity of the
+ * upper and lower bounds of the ith sync bin, which can be directly computed
+ * by calling calc_hist_selectivity_scalar.
+ *
+ * The first probability, however, cannot be directly computed because we don't
+ * have a concrete value for Var2. Instead, we can under and over estimate it
+ * by respectively setting the value of Var2 to the lower and upper bound of
+ * one bin in the sync array, then compute the average.
+ *
+ * P(Var1 < lower bound of bin) <=
+ * P(Var1 < Var2 | Var2 is in bin) <=
+ * P(Var1 < upper bound of bin)
+ */
+static double
+calc_join_hist_lt_selectivity(TypeCacheEntry *typcache,
+                const RangeBound *hist1, int nhist1,
+                const RangeBound *hist2, int nhist2)
+{
+  int      i;
+  double    selectivity_under_estimation,
+        selectivity_over_estimation,
+        selectivity,
+        lower_sel1,
+        lower_sel2,
+        upper_sel1,
+        upper_sel2;
+  RangeBound *sync;
+
+  /*
+   * Histograms will never be empty. In fact, a histogram will never have
+   * less than 2 values (1 bin)
+   */
+  Assert(nhist1 + nhist2 > 1);
+
+  /* Merge both histograms in one sorted array */
+  sync = (RangeBound *) palloc(sizeof(RangeBound) * (nhist1 + nhist2));
+  memcpy(sync, hist1, sizeof(RangeBound) * nhist1);
+  memcpy(sync + nhist1, hist2, sizeof(RangeBound) * nhist2);
+  qsort_arg(sync, nhist1 + nhist2, sizeof(RangeBound),
+        range_bound_qsort_cmp, typcache);
+
+  /*
+   * Do the estimation
+   *
+   * Four selectivity values are estimated using
+   * calc_hist_selectivity_scalar, for the lower and upper bound of the
+   * current bin, using both hist1 and hist2.
+   */
+  selectivity_under_estimation = 0;
+  selectivity_over_estimation = 0;
+  lower_sel1 = calc_hist_selectivity_scalar(typcache,
+                        &sync[0], hist1, nhist1, false);
+  lower_sel2 = calc_hist_selectivity_scalar(typcache,
+                        &sync[0], hist2, nhist2, false);
+  for (i = 1; i < nhist1 + nhist2; i++)
+  {
+    upper_sel1 = calc_hist_selectivity_scalar(typcache,
+                          &sync[i], hist1, nhist1, false);
+    upper_sel2 = calc_hist_selectivity_scalar(typcache,
+                          &sync[i], hist2, nhist2, false);
+
+    /* Do the under and over estimation */
+    selectivity_under_estimation += lower_sel1 * (upper_sel2 - lower_sel2);
+    selectivity_over_estimation += upper_sel1 * (upper_sel2 - lower_sel2);
+
+    /* Prepare for the next iteration */
+    lower_sel1 = upper_sel1;
+    lower_sel2 = upper_sel2;
+  }
+
+  /*
+   * Estimate selectivity as the middle value between the under-estimation
+   * and the over-estimation
+   */
+  selectivity = (selectivity_under_estimation + selectivity_over_estimation) / 2;
+
+  pfree(sync);
+
+  return selectivity;
+}
+
+static double
+range_joinsel_hist1(TypeCacheEntry *typcache, AttStatsSlot *hslot1,
+  AttStatsSlot *hslot2, AttStatsSlot *lslot, Oid oper)
+{
+  Selectivity selec;
+  double    empty_frac1 = 0.0,
+        empty_frac2 = 0.0,
+        null_frac1 = 0.0,
+        null_frac2 = 0.0;
+  int      nhist1,
+        nhist2;
+  RangeBound *hist1_lower,
+         *hist1_upper,
+         *hist2_lower,
+         *hist2_upper;
+  bool    empty;
+  int      i;
+
+  /*
+   * Convert histograms of ranges into histograms of their lower and
+   * upper bounds for the first variable.
+   */
+  nhist1 = hslot1->nvalues;
+  hist1_lower = (RangeBound *) palloc(sizeof(RangeBound) * nhist1);
+  hist1_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist1);
+  for (i = 0; i < nhist1; i++)
+  {
+    range_deserialize(typcache, DatumGetRangeTypeP(hslot1->values[i]),
+              &hist1_lower[i], &hist1_upper[i], &empty);
+    /* The histogram should not contain any empty ranges */
+    if (empty)
+      elog(ERROR, "bounds histogram contains an empty range");
+  }
+
+  /*
+   * Convert histograms of ranges into histograms of their lower and
+   * upper bounds for the second variable.
+   */
+  nhist2 = hslot2->nvalues;
+  hist2_lower = (RangeBound *) palloc(sizeof(RangeBound) * nhist2);
+  hist2_upper = (RangeBound *) palloc(sizeof(RangeBound) * nhist2);
+  for (i = 0; i < nhist2; i++)
+  {
+    range_deserialize(typcache, DatumGetRangeTypeP(hslot2->values[i]),
+              &hist2_lower[i], &hist2_upper[i], &empty);
+    /* The histogram should not contain any empty ranges */
+    if (empty)
+      elog(ERROR, "bounds histogram contains an empty range");
+  }
+
+  switch (oper)
+  {
+    case OID_RANGE_OVERLAP_OP:
+
+      /*
+       * Selectivity of A && B = Selectivity of NOT( A << B || A >>
+       * B ) = 1 - Selectivity of (A.upper < B.lower) - Selectivity
+       * of (B.upper < A.lower)
+       */
+      selec = 1;
+      selec -= calc_join_hist_lt_selectivity(typcache, hist1_upper, nhist1, hist2_lower, nhist2);
+      selec -= calc_join_hist_lt_selectivity(typcache, hist2_upper, nhist2, hist1_lower, nhist1);
+      break;
+
+    case OID_RANGE_LESS_EQUAL_OP:
+
+      /*
+       * A <= B
+       *
+       * Start by comparing lower bounds and if they are equal
+       * compare upper bounds
+       *
+       * Negation of OID_RANGE_GREATER_OP.
+       *
+       * Overestimate by comparing only the lower bounds. Higher
+       * accuracy would require us to subtract P(lower1 = lower2) *
+       * P(upper1 > upper2)
+       */
+      selec = 1 - calc_join_hist_lt_selectivity(typcache, hist2_lower, nhist2, hist1_lower, nhist1);
+      break;
+
+    case OID_RANGE_LESS_OP:
+
+      /*
+       * A < B
+       *
+       * Start by comparing lower bounds and if they are equal
+       * compare upper bounds
+       *
+       * Underestimate by comparing only the lower bounds. Higher
+       * accuracy would require us to add P(lower1 = lower2) *
+       * P(upper1 < upper2)
+       */
+      selec = calc_join_hist_lt_selectivity(typcache, hist1_lower, nhist1, hist2_lower, nhist2);
+      break;
+
+    case OID_RANGE_GREATER_EQUAL_OP:
+
+      /*
+       * A >= B
+       *
+       * Start by comparing lower bounds and if they are equal
+       * compare upper bounds
+       *
+       * Negation of OID_RANGE_LESS_OP.
+       *
+       * Overestimate by comparing only the lower bounds. Higher
+       * accuracy would require us to add P(lower1 = lower2) *
+       * P(upper1 < upper2)
+       */
+      selec = 1 - calc_join_hist_lt_selectivity(typcache, hist1_lower, nhist1, hist2_lower, nhist2);
+      break;
+
+    case OID_RANGE_GREATER_OP:
+
+      /*
+       * A > B == B < A
+       *
+       * Start by comparing lower bounds and if they are equal
+       * compare upper bounds
+       *
+       * Underestimate by comparing only the lower bounds. Higher
+       * accuracy would require us to add P(lower1 = lower2) *
+       * P(upper1 > upper2)
+       */
+      selec = calc_join_hist_lt_selectivity(typcache, hist2_lower, nhist2, hist1_lower, nhist1);
+      break;
+
+    case OID_RANGE_LEFT_OP:
+      /* var1 << var2 when upper(var1) < lower(var2) */
+      selec = calc_join_hist_lt_selectivity(typcache, hist1_upper, nhist1, hist2_lower, nhist2);
+      break;
+
+    case OID_RANGE_RIGHT_OP:
+      /* var1 >> var2 when upper(var2) < lower(var1) */
+      selec = calc_join_hist_lt_selectivity(typcache, hist2_upper, nhist2, hist1_lower, nhist1);
+      break;
+
+    case OID_RANGE_OVERLAPS_LEFT_OP:
+      /* var1 &< var2 when upper(var1) < upper(var2) */
+      selec = calc_join_hist_lt_selectivity(typcache, hist1_upper, nhist1, hist2_upper, nhist2);
+      break;
+
+    case OID_RANGE_OVERLAPS_RIGHT_OP:
+      /* var1 &> var2 when lower(var2) < lower(var1) */
+      selec = calc_join_hist_lt_selectivity(typcache, hist2_lower, nhist2, hist1_lower, nhist1);
+      break;
+
+    case OID_RANGE_CONTAINED_OP:
+
+      /*
+       * var1 <@ var2 is equivalent to lower(var2) <= lower(var1)
+       * and upper(var1) <= upper(var2)
+       *
+       * After negating both sides we get not( lower(var1) <
+       * lower(var2) ) and not( upper(var2) < upper(var1) ),
+       * respectively. Assuming independence, multiply both
+       * selectivities.
+       */
+      selec = 1 - calc_join_hist_lt_selectivity(typcache, hist1_lower, nhist1, hist2_lower, nhist2);
+      selec *= 1 - calc_join_hist_lt_selectivity(typcache, hist2_upper, nhist2, hist1_upper, nhist1);
+      break;
+
+    case OID_RANGE_CONTAINS_OP:
+
+      /*
+       * var1 @> var2 is equivalent to lower(var1) <= lower(var2)
+       * and upper(var2) <= upper(var1)
+       *
+       * After negating both sides we get not( lower(var2) <
+       * lower(var1) ) and not( upper(var1) < upper(var2) ),
+       * respectively. Assuming independence, multiply both
+       * selectivities.
+       */
+      selec = 1 - calc_join_hist_lt_selectivity(typcache, hist2_lower, nhist2, hist1_lower, nhist1);
+      selec *= 1 - calc_join_hist_lt_selectivity(typcache, hist1_upper, nhist1, hist2_upper, nhist2);
+      break;
+
+    case OID_RANGE_CONTAINS_ELEM_OP:
+    case OID_RANGE_ELEM_CONTAINED_OP:
+
+      /*
+       * just punt for now, estimation would require extraction of
+       * histograms for the anyelement
+       */
+    default:
+      break;
+  }
+
+
+  /* the calculated selectivity only applies to non-empty ranges */
+  selec *= (1 - empty_frac1) * (1 - empty_frac2);
+
+  /*
+   * Depending on the operator, empty ranges might match different
+   * fractions of the result.
+   */
+  switch (oper)
+  {
+    case OID_RANGE_LESS_OP:
+
+      /*
+       * empty range < non-empty range
+       */
+      selec += empty_frac1 * (1 - empty_frac2);
+      break;
+
+    case OID_RANGE_GREATER_OP:
+
+      /*
+       * non-empty range > empty range
+       */
+      selec += (1 - empty_frac1) * empty_frac2;
+      break;
+
+    case OID_RANGE_CONTAINED_OP:
+
+      /*
+       * empty range <@ any range
+       */
+    case OID_RANGE_LESS_EQUAL_OP:
+
+      /*
+       * empty range <= any range
+       */
+      selec += empty_frac1;
+      break;
+
+    case OID_RANGE_CONTAINS_OP:
+
+      /*
+       * any range @> empty range
+       */
+    case OID_RANGE_GREATER_EQUAL_OP:
+
+      /*
+       * any range >= empty range
+       */
+      selec += empty_frac2;
+      break;
+
+    case OID_RANGE_CONTAINS_ELEM_OP:
+    case OID_RANGE_ELEM_CONTAINED_OP:
+    case OID_RANGE_OVERLAP_OP:
+    case OID_RANGE_OVERLAPS_LEFT_OP:
+    case OID_RANGE_OVERLAPS_RIGHT_OP:
+    case OID_RANGE_LEFT_OP:
+    case OID_RANGE_RIGHT_OP:
+    default:
+
+      /*
+       * these operators always return false when an empty range is
+       * involved
+       */
+      break;
+
+  }
+
+  /* all range operators are strict */
+  selec *= (1 - null_frac1) * (1 - null_frac2);
+
+  return selec;
+}
+
+PG_FUNCTION_INFO_V1(_mobdb_range_joinsel);
+/**
+ * Utility function to read the calculated selectivity for a given
+ * couple of table/column, and operator.
+ * Used for debugging the selectivity code.
+ */
+PGDLLEXPORT Datum
+_mobdb_range_joinsel(PG_FUNCTION_ARGS)
+{
+  Oid table1_oid = PG_GETARG_OID(0);
+  text *att1_text = PG_GETARG_TEXT_P(1);
+  Oid table2_oid = PG_GETARG_OID(2);
+  text *att2_text = PG_GETARG_TEXT_P(3);
+  Oid oper = PG_GETARG_OID(4);
+  float8 selec = 0.0;
+  Oid att1_oid, att2_oid;
+  
+  /* Test input parameters */
+  char *table1_name = get_rel_name(table1_oid);
+  if (table1_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("Oid %u does not refer to a table", table1_oid)));
+  const char *att1_name = text_to_cstring(att1_text);
+  AttrNumber att1_num;
+  /* We know the name? Look up the num */
+  if (att1_text)
+  {
+    /* Get the attribute number */
+    att1_num = get_attnum(table1_oid, att1_name);
+    if (! att1_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att1_name);
+    att1_oid = get_atttype(table1_oid, att1_num);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  char *table2_name = get_rel_name(table2_oid);
+  if (table2_name == NULL)
+    ereport(ERROR, (errcode(ERRCODE_UNDEFINED_TABLE),
+      errmsg("Oid %u does not refer to a table", table2_oid)));
+  const char *att2_name = text_to_cstring(att2_text);
+  AttrNumber att2_num;
+  /* We know the name? Look up the num */
+  if (att2_text)
+  {
+    /* Get the attribute number */
+    att2_num = get_attnum(table2_oid, att2_name);
+    if (! att2_num)
+      elog(ERROR, "attribute \"%s\" does not exist", att2_name);
+    att2_oid = get_atttype(table2_oid, att2_num);
+  }
+  else
+    elog(ERROR, "attribute name is null");
+
+  if (att1_oid != att2_oid)
+    elog(ERROR, "The range attributes must be of the same type");
+
+  /* Retrieve the stats objects */
+  HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;
+  AttStatsSlot hslot1, hslot2, lslot;
+  int stats_kind = STATISTIC_KIND_BOUNDS_HISTOGRAM;
+  memset(&hslot1, 0, sizeof(hslot1));
+  memset(&hslot2, 0, sizeof(hslot2));
+
+  /* First table */
+  stats1_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table1_oid),
+    Int16GetDatum(att1_num), BoolGetDatum(false));
+  if (! stats1_tuple)
+    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table1_oid) ?
+      get_rel_name(table1_oid) : "NULL");
+
+  if (! get_attstatsslot(&hslot1, stats1_tuple, stats_kind, InvalidOid,
+      ATTSTATSSLOT_VALUES))
+    elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot1.nvalues < 2)
+  {
+    free_attstatsslot(&hslot1);
+    elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+  }
+  /* Second table */
+  stats2_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table2_oid),
+    Int16GetDatum(att2_num), BoolGetDatum(false));
+  if (! stats2_tuple)
+    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table2_oid) ?
+      get_rel_name(table2_oid) : "NULL");
+
+  if (! get_attstatsslot(&hslot2, stats2_tuple, stats_kind, InvalidOid,
+      ATTSTATSSLOT_VALUES))
+    elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+  /* Check that it's a histogram, not just a dummy entry */
+  if (hslot2.nvalues < 2)
+  {
+    free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+    elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+  }
+
+  /* @> and @< also need a histogram of period lengths */
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
+  {
+    /* We only get histograms for the second table since for computing the
+     * join selectivity we loop over values of the first histogram assuming
+     * they are constant and call the restriction selectivity over the
+     * second histogram */
+    stats_kind = STATISTIC_KIND_RANGE_LENGTH_HISTOGRAM;
+    memset(&lslot, 0, sizeof(lslot));
+
+    if (! get_attstatsslot(&lslot, stats2_tuple, stats_kind, InvalidOid,
+        ATTSTATSSLOT_VALUES))
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      elog(ERROR, "no slot of kind %d in stats tuple", stats_kind);
+    }
+    /* Check that it's a histogram, not just a dummy entry */
+    if (lslot.nvalues < 2)
+    {
+      free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+      free_attstatsslot(&lslot);
+      elog(ERROR, "Invalid slot of kind %d in stats tuple", stats_kind);
+    }
+  }
+
+  TypeCacheEntry *typcache = range_get_typcache(fcinfo, att1_oid);
+  
+  /* Compute selectivity */
+  selec = range_joinsel_hist1(typcache, &hslot1, &hslot2, &lslot, oper);
+
+  ReleaseSysCache(stats1_tuple); ReleaseSysCache(stats2_tuple);
+  free_attstatsslot(&hslot1); free_attstatsslot(&hslot2);
+  if (oper == CONTAINS_OP || oper == CONTAINED_OP)
     free_attstatsslot(&lslot);
 
   PG_RETURN_FLOAT8(selec);
