@@ -3487,6 +3487,29 @@ intersection_period_timestampset(PG_FUNCTION_ARGS)
 }
 
 /**
+ * Set the last argument to the intersection of the two time values
+ *
+ * @note This function equivalent is to intersection_period_period_internal
+ * but does not do memory allocation
+ */
+bool
+inter_period_period(const Period *p1, const Period *p2, Period *result)
+{
+  /* Bounding box test */
+  if (!overlaps_period_period_internal(p1, p2))
+    return false;
+
+  TimestampTz lower = Max(p1->lower, p2->lower);
+  TimestampTz upper = Min(p1->upper, p2->upper);
+  bool lower_inc = p1->lower == p2->lower ? p1->lower_inc && p2->lower_inc :
+    ( lower == p1->lower ? p1->lower_inc : p2->lower_inc );
+  bool upper_inc = p1->upper == p2->upper ? p1->upper_inc && p2->upper_inc :
+    ( upper == p1->upper ? p1->upper_inc : p2->upper_inc );
+  period_set(lower, upper, lower_inc, upper_inc, result);
+  return true;
+}
+
+/**
  * Returns the intersection of the two time values (internal function)
  */
 Period *

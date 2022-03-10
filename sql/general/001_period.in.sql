@@ -148,30 +148,19 @@ CREATE FUNCTION period_joinsel(internal, oid, internal, smallint, internal)
 
 -- Given a table, column, and period returns the estimate of what proportion
 -- of the table would be returned by a query using the given operator.
-CREATE FUNCTION _mobdb_period_sel(tbl regclass, att_name text, oper regoper, p period)
+CREATE FUNCTION _mobdb_period_sel(tbl regclass, col text, oper regoper,
+    p period)
   RETURNS float
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- Given two tables and columns, returns estimate of the proportion of rows a
 -- given join operator will return relative to the number of rows an
 -- unconstrained table join would return
-CREATE OR REPLACE FUNCTION _mobdb_period_joinsel(regclass, text, regclass, text, oper regoper)
+CREATE OR REPLACE FUNCTION _mobdb_period_joinsel(tbl1 regclass, col1 text,
+    tbl2 regclass, col2 text, oper regoper)
   RETURNS float
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- Given a table, column, and tstzrange returns the estimate of what proportion
--- of the table would be returned by a query using the given operator.
-CREATE FUNCTION _mobdb_tstzrange_sel(tbl regclass, att_name text, oper regoper, r tstzrange)
-  RETURNS float
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OR REPLACE FUNCTION _mobdb_range_joinsel(regclass, text, regclass, text, oper regoper)
-  RETURNS float
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 
 /******************************************************************************
  * Operators
