@@ -2925,9 +2925,9 @@ union_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  Period *p1 = period_make(t, t, true, true);
-  PeriodSet *result = union_period_period_internal(p, p1);
-  pfree(p1);
+  Period p1;
+  period_set(t, t, true, true, &p1);
+  PeriodSet *result = union_period_period_internal(p, &p1);
   PG_RETURN_POINTER(result);
 }
 
@@ -2940,9 +2940,9 @@ union_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  Period *p = period_make(t, t, true, true);
-  PeriodSet *result = union_period_periodset_internal(p, ps);
-  pfree(p);
+  Period p;
+  period_set(t, t, true, true, &p);
+  PeriodSet *result = union_period_periodset_internal(&p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
 }
@@ -3064,9 +3064,9 @@ union_period_timestamp(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period *p1 = period_make(t, t, true, true);
-  PeriodSet *result = union_period_period_internal(p, p1);
-  pfree(p1);
+  Period p1;
+  period_set(t, t, true, true, &p1);
+  PeriodSet *result = union_period_period_internal(p, &p1);
   PG_RETURN_POINTER(result);
 }
 
@@ -3137,9 +3137,9 @@ union_periodset_timestamp(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period *p = period_make(t, t, true, true);
-  PeriodSet *result = union_period_periodset_internal(p, ps);
-  pfree(p);
+  Period p;
+  period_set(t, t, true, true, &p);
+  PeriodSet *result = union_period_periodset_internal(&p, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
@@ -4308,9 +4308,7 @@ minus_periodset_timestampset_internal(const PeriodSet *ps,
     return NULL;
   }
   PeriodSet *result = periodset_make((const Period **)periods, k, NORMALIZE_NO);
-  for (int l = 0; l < i; l++)
-    pfree(periods[l]);
-  pfree(periods);
+  pfree_array((void **) periods, i);
   return result;
 }
 

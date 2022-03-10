@@ -1239,18 +1239,14 @@ geom_as_nsegment_internal(Datum geom)
   {
     if (points[i]->rid != rid)
     {
-      for (int j = 0; j < k; j++)
-        pfree(points[j]);
-      pfree(points);
+      pfree_array((void **) points, k);
       return NULL;
     }
     minPos = Min(minPos, points[i]->pos);
     maxPos = Max(maxPos, points[i]->pos);
   }
   nsegment *result = nsegment_make(rid, minPos, maxPos);
-  for (int i = 0; i < k; i++)
-    pfree(points[i]);
-  pfree(points);
+  pfree_array((void **) points, k);
   return result;
 }
 

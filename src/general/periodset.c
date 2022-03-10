@@ -166,8 +166,8 @@ periodset_make_free(Period **periods, int count, bool normalize)
     pfree(periods);
     return NULL;
   }
-  PeriodSet *result = periodset_make((const Period **) periods,
-    count, normalize);
+  PeriodSet *result = periodset_make((const Period **) periods, count,
+    normalize);
   pfree_array((void **) periods, count);
   return result;
 }

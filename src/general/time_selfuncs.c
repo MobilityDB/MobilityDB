@@ -67,7 +67,7 @@ static double
 period_sel_default(Oid oper __attribute__((unused)))
 {
   // TODO take care of the operator
-  return 0.01;
+  return DEFAULT_TEMP_SEL;
 }
 
 /**
@@ -78,7 +78,7 @@ static double
 period_joinsel_default(Oid oper __attribute__((unused)))
 {
   // TODO take care of the operator
-  return 0.001;
+  return DEFAULT_TEMP_JOINSEL;
 }
 
 /**
@@ -118,9 +118,9 @@ time_cachedop(Oid oper, CachedOp *cachedOp)
  * period bounds in array are greater or equal (greater) than given period bound,
  * return -1. When "equal" flag is set, the conditions in parenthesis are used.
  *
- * This function is used in scalar operator selectivity estimation. Another
- * goal of this function is to find a histogram bin where to stop
- * interpolation of portion of bounds which are less or equal to given bound.
+ * This function is used for scalar operator selectivity estimation. Another
+ * goal of this function is to find a histogram bin where to stop interpolation
+ * of portion of bounds which are less or equal to given bound.
  */
 static int
 period_bound_bsearch(const PeriodBound *value, const PeriodBound *hist,
@@ -400,7 +400,7 @@ calc_length_hist_frac(Datum *hist_length, int hist_length_nvalues,
 /*****************************************************************************/
 
 /**
- * Look up the fraction of values less than (or equal, if 'equal' argument
+ * Estimate the fraction of values less than (or equal to, if 'equal' argument
  * is true) a given const in a histogram of period bounds.
  */
 double
@@ -463,49 +463,6 @@ period_sel_overlaps(const PeriodBound *const_lower, const PeriodBound *const_upp
   selec += (1.0 - period_sel_scalar(const_upper, hist_lower, nhist, true));
   selec = 1.0 - selec;
   return selec;
-}
-
-/**
- * Look up the fraction of values between lower(lowerbin) and lower, plus
- * the fraction between upper and upper(upperbin).
- */
-static double
-period_sel_adjacent(PeriodBound *const_lower, PeriodBound *const_upper,
-  PeriodBound *hist_lower, PeriodBound *hist_upper, int hist_nvalues)
-{
-  /* If the periods do not overlap return 0.0 */
-  if (period_bound_cmp(const_lower, &hist_upper[hist_nvalues - 1]) > 0 ||
-      period_bound_cmp(&hist_lower[0], const_upper) > 0)
-    return 0.0;
-
-  /*
-   * Find the histogram bins the lower and upper bounds of the constant falls into.
-   */
-  int index1 = period_bound_bsearch(const_lower, hist_upper, hist_nvalues, true);
-  int index2 = period_bound_bsearch(const_upper, hist_lower, hist_nvalues, true);
-  Selectivity selec1 = 0, selec2 = 0;
-  if (index1 != 0 && index1 < hist_nvalues - 1)
-  {
-    /*
-     * const_lower falls inside a bin of hist_upper. The number of elements in
-     * the whole bin is 1/hist_nvalues. We further refine it by multiplying
-     * the fraction of the bin that occures before the lower.
-     */
-    selec1 = period_position(const_lower, &hist_upper[index1],
-      &hist_upper[index1 + 1]) / (Selectivity) (hist_nvalues - 1);
-  }
-  if (index2 != 0 && index2 < hist_nvalues - 1)
-  {
-    /*
-     * const_upper falls inside a bin of hist_lower. The number of elements in
-     * the whole bin is 1/hist_nvalues. We further refine it by multiplying
-     * the fraction of the bin that occures after the upper.
-     */
-    selec2 = (1.0 - period_position(const_upper, &hist_lower[index2],
-      &hist_lower[index2 + 1])) / (Selectivity) (hist_nvalues - 1);
-  }
-
-  return selec1 + selec2;
 }
 
 /**
@@ -759,8 +716,10 @@ period_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
     selec = period_sel_contained(&const_lower, &const_upper, hist_lower,
       nhist, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
-    selec = period_sel_adjacent(&const_lower, &const_upper, hist_lower,
-      hist_upper, nhist);
+    // TODO Analyze whether a similar approach as PostgreSQL selectivity
+    // estimation for equality can be used. There, they estimate 1/n if 
+    // the value is not in the MCV
+    selec = DEFAULT_TEMP_SEL;
   else
   {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");
@@ -999,7 +958,6 @@ period_sel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8((float8) selec);
 }
 
-// #ifdef DEBUG_BUILD
 PG_FUNCTION_INFO_V1(_mobdb_period_sel);
 /**
  * Utility function to read the calculated selectivity for a given
@@ -1130,7 +1088,7 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
  * P(Var1 < Var2 | Var2 is in bin) <=
  * P(Var1 < upper bound of bin)
  *
- * We need to add the average selectivity of every bin, given by
+ * Therefore, we need to add the average selectivity of every bin, given by
  *    (val1 + val2) / 2 + (val2 + val3) / 2 +  ... + (val_n-1 + val_n) / 2
  * which is equal to
  *    val1 / 2 + val2 + val3 + val4 + ... + val_n-1 + val_n / 2
@@ -1167,14 +1125,6 @@ period_joinsel_overlaps(PeriodBound *lower1, PeriodBound *upper1,
   double selec = period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
   selec += (1.0 - period_joinsel_scalar(upper1, nhist1, lower2, nhist2, true));
   selec = 1.0 - selec;
-
-  // double selec1 = period_joinsel_scalar(lower1, nhist1, upper2, nhist2, false);
-  // double selec2 = period_joinsel_scalar(lower2, nhist2, upper1, nhist1, false);
-  // double selec = 1 - selec1 - selec2;
-
-  // double selec = 1;
-  // selec -= period_joinsel_scalar(upper1, nhist1, lower2, nhist2, false);
-  // selec -= period_joinsel_scalar(upper2, nhist2, lower1, nhist1, false);
 
   return selec;
 }
@@ -1218,26 +1168,6 @@ period_joinsel_contained(PeriodBound *lower1, PeriodBound *upper1,
   for (int i = 0; i < nhist1 - 1; ++i)
     selec += (Selectivity) period_sel_contained(&lower1[i], &upper1[i],
       lower2, nhist2, length, length_nvalues);
-  return selec / (nhist1 - 1);
-}
-
-/**
- * Look up the fraction of values in the first histogram that is
- * adjacent to a value in the second histogram
- */
-double
-period_joinsel_adjacent(PeriodBound *lower1, PeriodBound *upper1,
-  int nhist1, PeriodBound *lower2, PeriodBound *upper2, int nhist2)
-{
-  /* If the periods do not overlap return 0.0 */
-  if (period_bound_cmp(&lower1[0], &upper2[nhist2 - 1]) > 0 ||
-      period_bound_cmp(&lower2[0], &upper1[nhist1 - 1]) > 0)
-    return 0.0;
-
-  Selectivity selec = 0.0;
-  for (int i = 0; i < nhist1 - 1; ++i)
-    selec += (Selectivity) period_sel_adjacent(&lower1[i], &upper1[i],
-      lower2, upper2, nhist2);
   return selec / (nhist1 - 1);
 }
 
@@ -1323,7 +1253,8 @@ period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
     selec = period_joinsel_contained(lower1, upper1, nhist1, lower2, upper2,
       nhist2, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
-    selec = period_joinsel_adjacent(lower1, upper1, nhist1, lower2, upper2, nhist2);
+    // TO DO
+    selec = DEFAULT_TEMP_JOINSEL;
   else
   {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");
@@ -1334,7 +1265,6 @@ period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
 
   return selec;
 }
-
 
 /**
  * Calculate period operator selectivity using histograms of period bounds.
@@ -1519,7 +1449,6 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8((float8) selec);
 }
 
-// #ifdef DEBUG_BUILD
 PG_FUNCTION_INFO_V1(_mobdb_period_joinsel);
 /**
  * Utility function to read the calculated selectivity for a given
