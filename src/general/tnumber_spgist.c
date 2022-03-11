@@ -102,6 +102,7 @@
 #include <utils/builtins.h>
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+#include <access/spgist_private.h>
 #include <utils/float.h>
 #endif
 
@@ -109,13 +110,6 @@
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_gist.h"
-
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-/* To avoid including "access/spgist_private.h" since it conflicts with the
- * EPSILON constant defined there and also in MobilityDB */
-extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
-  int norderbys);
-#endif
 
 /*****************************************************************************/
 

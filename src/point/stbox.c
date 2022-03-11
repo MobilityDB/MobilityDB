@@ -88,55 +88,26 @@ stbox_set(bool hasx, bool hasz, bool hast, bool geodetic, int32 srid,
   MOBDB_FLAGS_SET_GEODETIC(box->flags, geodetic);
   box->srid = srid;
 
-  /* Process X min/max */
   if (hasx)
   {
-    double tmp;
-    if (xmin > xmax)
-    {
-      tmp = xmin;
-      xmin = xmax;
-      xmax = tmp;
-    }
-    box->xmin = xmin;
-    box->xmax = xmax;
-
+    /* Process X min/max */
+    box->xmin = Min(xmin, xmax);
+    box->xmax = Max(xmin, xmax);
     /* Process Y min/max */
-    if (ymin > ymax)
-    {
-      tmp = ymin;
-      ymin = ymax;
-      ymax = tmp;
-    }
-    box->ymin = ymin;
-    box->ymax = ymax;
-
+    box->ymin = Min(ymin, ymax);
+    box->ymax = Max(ymin, ymax);
     if (hasz || geodetic)
     {
       /* Process Z min/max */
-      if (zmin > zmax)
-      {
-        tmp = zmin;
-        zmin = zmax;
-        zmax = tmp;
-      }
-      box->zmin = zmin;
-      box->zmax = zmax;
+      box->zmin = Min(zmin, zmax);
+      box->zmax = Max(zmin, zmax);
     }
   }
-
   if (hast)
   {
-    TimestampTz ttmp;
     /* Process T min/max */
-    if (tmin > tmax)
-    {
-      ttmp = tmin;
-      tmin = tmax;
-      tmax = ttmp;
-    }
-    box->tmin = tmin;
-    box->tmax = tmax;
+    box->tmin = Min(tmin, tmax);
+    box->tmax = Max(tmin, tmax);
   }
   return;
 }
@@ -205,8 +176,8 @@ stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
  * Set the values of a GBOX
  */
 static void
-gbox_set(GBOX *box, bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
-  double ymin, double ymax, double zmin, double zmax)
+gbox_set(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
+  double ymin, double ymax, double zmin, double zmax, GBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(GBOX));
@@ -234,7 +205,7 @@ ensure_has_X_stbox(const STBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The box must have XY dimension")));
+      errmsg("The box must have XY(Z) dimension")));
   return;
 }
 
@@ -637,8 +608,7 @@ PGDLLEXPORT Datum
 stbox_to_period(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  if (!MOBDB_FLAGS_GET_T(box->flags))
-    elog(ERROR, "The box does not have time dimension");
+  ensure_has_T_stbox(box);
   Period *result = period_make(box->tmin, box->tmax, true, true);
   PG_RETURN_POINTER(result);
 }
@@ -650,9 +620,9 @@ void
 stbox_gbox(const STBOX *box, GBOX *gbox)
 {
   assert(MOBDB_FLAGS_GET_X(box->flags));
-  gbox_set(gbox, MOBDB_FLAGS_GET_Z(box->flags), false,
+  gbox_set(MOBDB_FLAGS_GET_Z(box->flags), false,
     MOBDB_FLAGS_GET_GEODETIC(box->flags), box->xmin, box->xmax,
-    box->ymin, box->ymax, box->zmin, box->zmax);
+    box->ymin, box->ymax, box->zmin, box->zmax, gbox);
   return;
 }
 
@@ -664,8 +634,7 @@ PGDLLEXPORT Datum
 stbox_to_box2d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  if (!MOBDB_FLAGS_GET_X(box->flags))
-    elog(ERROR, "The box does not have XY(Z) dimensions");
+  ensure_has_X_stbox(box);
   GBOX *result = (GBOX *) palloc0(sizeof(GBOX));
   stbox_gbox(box, result);
   PG_RETURN_POINTER(result);
@@ -677,9 +646,7 @@ stbox_to_box2d(PG_FUNCTION_ARGS)
 void
 stbox_box3d(const STBOX *box, BOX3D *box3d)
 {
-  if (!MOBDB_FLAGS_GET_X(box->flags))
-    elog(ERROR, "The box does not have XY(Z) dimensions");
-
+  ensure_has_X_stbox(box);
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box3d, 0, sizeof(BOX3D));
   /* Initialize existing dimensions */
@@ -704,6 +671,7 @@ PGDLLEXPORT Datum
 stbox_to_box3d(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
+  ensure_has_X_stbox(box);
   BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
   stbox_box3d(box, result);
   PG_RETURN_POINTER(result);
@@ -717,8 +685,7 @@ PGDLLEXPORT Datum
 stbox_to_geometry(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
-  if (!MOBDB_FLAGS_GET_X(box->flags))
-    elog(ERROR, "The box does not have XY(Z) dimensions");
+  ensure_has_X_stbox(box);
   Datum result;
   if (MOBDB_FLAGS_GET_Z(box->flags))
   {
@@ -2226,7 +2193,7 @@ stbox_cmp(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  int  cmp = stbox_cmp_internal(box1, box2);
+  int cmp = stbox_cmp_internal(box1, box2);
   PG_RETURN_INT32(cmp);
 }
 
@@ -2239,7 +2206,7 @@ stbox_lt(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  int  cmp = stbox_cmp_internal(box1, box2);
+  int cmp = stbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp < 0);
 }
 
@@ -2253,7 +2220,7 @@ stbox_le(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  int  cmp = stbox_cmp_internal(box1, box2);
+  int cmp = stbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp <= 0);
 }
 
@@ -2267,7 +2234,7 @@ stbox_ge(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  int  cmp = stbox_cmp_internal(box1, box2);
+  int cmp = stbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp >= 0);
 }
 
@@ -2280,7 +2247,7 @@ stbox_gt(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  int  cmp = stbox_cmp_internal(box1, box2);
+  int cmp = stbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp > 0);
 }
 

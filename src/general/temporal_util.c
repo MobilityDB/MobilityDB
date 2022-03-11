@@ -977,6 +977,8 @@ stringarr_to_string(char **strings, int count, int outlen,
 
 /**
  * Extract a C array from a PostgreSQL array containing datums
+ * If array elements are pass-by-ref data type, the returned Datums will
+ * be pointers into the array object.
  */
 Datum *
 datumarr_extract(ArrayType *array, int *count)
@@ -1034,6 +1036,7 @@ temporalarr_extract(ArrayType *array, int *count)
 
 /**
  * Convert a C array of datums into a PostgreSQL array
+ * Note that the values will be copied into the object even if pass-by-ref type.
  */
 ArrayType *
 datumarr_to_array(Datum *values, int count, Oid type)

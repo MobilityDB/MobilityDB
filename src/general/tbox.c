@@ -81,25 +81,15 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
   MOBDB_FLAGS_SET_T(box->flags, hast);
   if (hasx)
   {
-    if (xmin > xmax)
-    {
-      double tmp = xmin;
-      xmin = xmax;
-      xmax = tmp;
-    }
-    box->xmin = xmin;
-    box->xmax = xmax;
+    /* Process X min/max */
+    box->xmin = Min(xmin, xmax);
+    box->xmax = Max(xmin, xmax);
   }
   if (hast)
   {
-    if (tmin > tmax)
-    {
-      TimestampTz ttmp = tmin;
-      tmin = tmax;
-      tmax = ttmp;
-    }
-    box->tmin = tmin;
-    box->tmax = tmax;
+    /* Process T min/max */
+    box->tmin = Min(tmin, tmax);
+    box->tmax = Max(tmin, tmax);
   }
   return;
 }
@@ -1538,7 +1528,7 @@ tbox_cmp(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int  cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp_internal(box1, box2);
   PG_RETURN_INT32(cmp);
 }
 
@@ -1551,7 +1541,7 @@ tbox_lt(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int  cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp < 0);
 }
 
@@ -1565,7 +1555,7 @@ tbox_le(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int  cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp <= 0);
 }
 
@@ -1579,7 +1569,7 @@ tbox_ge(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int  cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp >= 0);
 }
 
@@ -1592,7 +1582,7 @@ tbox_gt(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int  cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp_internal(box1, box2);
   PG_RETURN_BOOL(cmp > 0);
 }
 

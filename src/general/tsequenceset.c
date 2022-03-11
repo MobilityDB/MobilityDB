@@ -1629,7 +1629,7 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
     result = tsequenceset_restrict_periodset(ts, ps, REST_AT);
     pfree(ps);
   }
-  pfree(atresult); pfree(ps1);  pfree(ps2);
+  pfree(atresult); pfree(ps1); pfree(ps2);
   return result;
 }
 

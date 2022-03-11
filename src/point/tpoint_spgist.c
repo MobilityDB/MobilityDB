@@ -28,14 +28,14 @@
  *****************************************************************************/
 
 /**
- * @file tnumber_spgist.c
+ * @file tpoint_spgist.c
  * SP-GiST implementation of 8-dimensional oct-tree over temporal points
  *
  * This module provides SP-GiST implementation for boxes using an oct-tree
- * analogy in 8-dimensional space.  SP-GiST doesn't allow indexing of
- * overlapping objects.  We are making 4D objects never-overlapping in
+ * analogy in 8-dimensional space. SP-GiST doesn't allow indexing of
+ * overlapping objects. We are making 4D objects never-overlapping in
  * 8D space.  This technique has some benefits compared to traditional
- * R-Tree which is implemented as GiST.  The performance tests reveal
+ * R-Tree which is implemented as GiST. The performance tests reveal
  * that this technique especially beneficial with too much overlapping
  * objects, so called "spaghetti data".
  *
@@ -101,6 +101,7 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
+#include <access/spgist_private.h>
 #endif
 
 #include "general/period.h"
@@ -113,13 +114,6 @@
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_distance.h"
 #include "point/tpoint_gist.h"
-
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-/* To avoid including "access/spgist_private.h" since it conflicts with the
- * EPSILON constant defined there and also in MobilityDB */
-extern double *spg_key_orderbys_distances(Datum key, bool isLeaf, ScanKey orderbys,
-  int norderbys);
-#endif
 
 /*****************************************************************************/
 
@@ -569,14 +563,12 @@ PGDLLEXPORT Datum
 stbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-
   Oid stbox_oid = type_oid(T_STBOX);
   cfg->prefixType = stbox_oid;  /* A type represented by its bounding box */
   cfg->labelType = VOIDOID;     /* We don't need node labels. */
   cfg->leafType = stbox_oid;
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
-
   PG_RETURN_VOID();
 }
 

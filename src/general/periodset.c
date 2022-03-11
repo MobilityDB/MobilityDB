@@ -332,10 +332,8 @@ periodset_constructor(PG_FUNCTION_ARGS)
   int count;
   Period **periods = periodarr_extract(array, &count);
   PeriodSet *result = periodset_make((const Period **) periods, count, NORMALIZE);
-
   pfree(periods);
   PG_FREE_IF_COPY(array, 0);
-
   PG_RETURN_POINTER(result);
 }
 
