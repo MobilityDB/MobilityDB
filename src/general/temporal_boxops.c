@@ -288,7 +288,7 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
   else if (instants[0]->basetypid == type_oid(T_GEOMETRY))
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_GEOGRAPHY))
-    tgeogpointinstarr_stbox(instants, count, linear, (STBOX *) box);
+    tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
     tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
   else

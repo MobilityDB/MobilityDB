@@ -48,6 +48,8 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 
+#include <liblwgeom.h>
+
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/temporaltypes.h"
@@ -58,6 +60,9 @@
 #include "point/stbox.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
+
+extern void ll2cart(const POINT2D *g, POINT3D *p);
+extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox);
 
 /*****************************************************************************
  * Functions computing the bounding box at the creation of a temporal point
@@ -99,28 +104,71 @@ tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
 }
 
 /**
+ * Compute the GBOX bounding box of an array of temporal point instants
+ *
+ * @param[in] instants Array of temporal instants
+ * @param[in] count Number of elements in the input array
+ * @param[in] linear True when the interpolation is linear
+ * @param[out] box Resulting bounding box
+ */
+static void
+tpointinstarr_gbox(const TInstant **instants, int count, GBOX *box)
+{
+  assert(box);
+  assert(count > 0);
+  const POINT2D *p;
+  POINT3D A1, A2;
+  GBOX edge_gbox;
+  gbox_init(&edge_gbox);
+  edge_gbox.flags = box->flags;
+
+  /* Initialization with the first instant */
+  p = datum_get_point2d_p(tinstant_value(instants[0]));
+  ll2cart(p, &A1);
+  box->xmin = box->xmax = A1.x;
+  box->ymin = box->ymax = A1.y;
+  box->zmin = box->zmax = A1.z;
+  for (int i = 1; i < count; i++)
+  {
+    p = datum_get_point2d_p(tinstant_value(instants[i]));
+    ll2cart(p, &A2);
+    edge_calculate_gbox(&A1, &A2, &edge_gbox);
+    /* Expand the box where necessary */
+    gbox_merge(&edge_gbox, box);
+    A1 = A2;
+  }
+  return;
+}
+
+/**
  * Set the spatiotemporal box from the array of temporal geography point values
- * with linear interpolation
+ *
+ * @note This function is called by the constructor of a temporal point
+ * sequence when the points are geodetic to compute the bounding box.
+ * Since the composing points have been already validated in the constructor
+ * there is no verification of the input in this function, in particular
+ * for geographies it is supposed that the composing points are geodetic
  *
  * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
- * @note Temporal instant values do not have a precomputed bounding box
+ * @note In the current PostGIS version the difference when computing the
+ * gbox for a MultiPoint and a Linestring is around 2e-7
  */
 void
-tgeogpointinstarr_stbox(const TInstant **instants, int count, bool linear,
-  STBOX *box)
+tgeogpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
 {
   GBOX gbox;
-  tpointinstarr_gbox(instants, count, linear, &gbox);
-  /* We are sure that the trajectory is not empty */
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-  geo_stbox(gs, box);
-  box->tmin = instants[0]->t;
-  box->tmax = instants[count - 1]->t;
-  MOBDB_FLAGS_SET_T(box->flags, true);
-  MOBDB_FLAGS_SET_GEODETIC(box->flags, true);
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
+  gbox_init(&gbox);
+  FLAGS_SET_Z(gbox.flags, 1);
+  FLAGS_SET_M(gbox.flags, 0);
+  FLAGS_SET_GEODETIC(gbox.flags, 1);
+  tpointinstarr_gbox(instants, count, &gbox);
+  bool hasz = MOBDB_FLAGS_GET_Z(instants[0]->flags);
+  int32 srid = tpointinst_srid(instants[0]);
+  stbox_set(true, hasz, true, true, srid, gbox.xmin, gbox.xmax,
+    gbox.ymin, gbox.ymax, gbox.zmin, gbox.zmax,
+    instants[0]->t, instants[count - 1]->t, box);
   return;
 }
 

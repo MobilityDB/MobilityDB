@@ -50,7 +50,6 @@
 /* Buffer size for input and output of STBOX */
 #define MAXSTBOXLEN    256
 
-
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 
 /*****************************************************************************
