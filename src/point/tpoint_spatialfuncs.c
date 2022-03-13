@@ -1609,11 +1609,10 @@ tpointinstset_trajectory(const TInstantSet *ti)
 }
 
 /**
- * Compute the trajectory of an array of instants
+ * Compute GBOX of an array of instants
  *
- * @note This function is called by the constructor of a temporal point sequence
- * when the trajectory must be precomputed or when the points are geodetic
- * and returns a geometry/geography.
+ * @note This function is called by the constructor of a temporal point
+ * sequence when the points are geodetic to compute the bounding box.
  * Since the composing points have been already validated in the constructor
  * there is no verification of the input in this function, in particular
  * for geographies it is supposed that the composing points are geodetic
@@ -1621,10 +1620,11 @@ tpointinstset_trajectory(const TInstantSet *ti)
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
  * @param[in] linear True when the interpolation is linear
+ * @param[out] box Resulting bounding box
  */
 Datum
-tpointinstarr_make_trajectory(const TInstant **instants, int count,
-  bool linear)
+tpointinstarr_gbox(const TInstant **instants, int count,
+  bool linear, GBOX *gbox)
 {
   /* Instantaneous sequence */
   if (count == 1)

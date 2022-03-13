@@ -111,7 +111,8 @@ void
 tgeogpointinstarr_stbox(const TInstant **instants, int count, bool linear,
   STBOX *box)
 {
-  Datum traj = tpointinstarr_make_trajectory(instants, count, linear);
+  GBOX gbox;
+  tpointinstarr_gbox(instants, count, linear, &gbox);
   /* We are sure that the trajectory is not empty */
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
   geo_stbox(gs, box);
@@ -120,7 +121,6 @@ tgeogpointinstarr_stbox(const TInstant **instants, int count, bool linear,
   MOBDB_FLAGS_SET_T(box->flags, true);
   MOBDB_FLAGS_SET_GEODETIC(box->flags, true);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(traj));
-  pfree(DatumGetPointer(traj));
   return;
 }
 
