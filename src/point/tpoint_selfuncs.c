@@ -482,7 +482,7 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
  * Period, and PeriodSet are transformed into an STBOX
  */
 bool
-tpoint_const_to_stbox(Node *other, STBOX *box)
+tpoint_const_stbox(Node *other, STBOX *box)
 {
   Oid consttype = ((Const *) other)->consttype;
 
@@ -916,7 +916,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   /*
    * Transform the constant into an STBOX
    */
-  found = tpoint_const_to_stbox(other, &constBox);
+  found = tpoint_const_stbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)
     return tpoint_sel_default(cachedOp);

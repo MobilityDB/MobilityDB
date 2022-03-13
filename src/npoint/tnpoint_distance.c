@@ -65,7 +65,7 @@ distance_geo_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   Temporal *result = distance_tpoint_geo_internal((const Temporal *) geomtemp,
     PointerGetDatum(gs));
   pfree(geomtemp);
@@ -84,8 +84,8 @@ distance_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum geom = npoint_as_geom_internal(np);
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Datum geom = npoint_geom(np);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   Temporal *result = distance_tpoint_geo_internal((const Temporal *) geomtemp,
     geom);
   pfree(DatumGetPointer(geom));
@@ -111,7 +111,7 @@ distance_tnpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   Temporal *result = distance_tpoint_geo_internal(geomtemp,
     PointerGetDatum(gs));
   pfree(geomtemp);
@@ -130,8 +130,8 @@ distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  Datum geom = npoint_as_geom_internal(np);
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Datum geom = npoint_geom(np);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   Temporal *result = distance_tpoint_geo_internal(geomtemp, geom);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 0);
@@ -152,8 +152,8 @@ distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
     &sync1, &sync2))
     return NULL;
 
-  Temporal *geomsync1 = tnpoint_as_tgeompoint_internal(sync1);
-  Temporal *geomsync2 = tnpoint_as_tgeompoint_internal(sync2);
+  Temporal *geomsync1 = tnpoint_to_tgeompoint_internal(sync1);
+  Temporal *geomsync2 = tnpoint_to_tgeompoint_internal(sync2);
   Temporal *result = distance_tpoint_tpoint_internal(geomsync1, geomsync2);
   pfree(sync1); pfree(sync2);
   pfree(geomsync1); pfree(geomsync2);
@@ -199,9 +199,9 @@ NAI_geo_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+  /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors */
   Temporal *result = temporal_restrict_timestamp_internal(temp,
     geomresult->t, REST_AT);
@@ -221,11 +221,11 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+  /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors */
   Temporal *result = temporal_restrict_timestamp_internal(temp,
     geomresult->t, REST_AT);
@@ -253,9 +253,9 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+  /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors */
   Temporal *result = temporal_restrict_timestamp_internal(temp,
     geomresult->t, REST_AT);
@@ -275,11 +275,11 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  /* We do not do call the function tgeompointinst_as_tnpointinst to avoid
+  /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors */
   Temporal *result = temporal_restrict_timestamp_internal(temp,
     geomresult->t, REST_AT);
@@ -362,7 +362,7 @@ NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
   Datum result = geom_distance2d(traj, PointerGetDatum(gs));
@@ -408,7 +408,7 @@ NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
   Datum result = geom_distance2d(traj, PointerGetDatum(gs));
@@ -482,7 +482,7 @@ shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
   Datum result = call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
@@ -528,7 +528,7 @@ shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
   Datum result = call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
@@ -561,8 +561,8 @@ shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomsync1 = tnpoint_as_tgeompoint_internal(sync1);
-  Temporal *geomsync2 = tnpoint_as_tgeompoint_internal(sync2);
+  Temporal *geomsync1 = tnpoint_to_tgeompoint_internal(sync1);
+  Temporal *geomsync2 = tnpoint_to_tgeompoint_internal(sync2);
   Datum result;
   bool found = shortestline_tpoint_tpoint_internal(geomsync1, geomsync2, &result);
   pfree(geomsync1); pfree(geomsync2);

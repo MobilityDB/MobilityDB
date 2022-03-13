@@ -228,7 +228,7 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   /* Returns an error if the geometry is not found, is null, or is empty */
-  npoint_to_stbox_internal(np, &box1);
+  npoint_stbox(np, &box1);
   temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
@@ -250,7 +250,7 @@ posop_tnpoint_npoint(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   /* Returns an error if the geometry is not found, is null, or is empty */
-  npoint_to_stbox_internal(np, &box2);
+  npoint_stbox(np, &box2);
   temporal_bbox(temp, &box1);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);

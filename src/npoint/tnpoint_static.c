@@ -1058,7 +1058,7 @@ npoint_srid(PG_FUNCTION_ARGS)
  * Transforms the network point into a geometry
  */
 Datum
-npoint_as_geom_internal(const npoint *np)
+npoint_geom(const npoint *np)
 {
   Datum line = route_geom(np->rid);
   Datum result = call_function2(LWGEOM_line_interpolate_point, line, Float8GetDatum(np->pos));
@@ -1066,15 +1066,15 @@ npoint_as_geom_internal(const npoint *np)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(npoint_as_geom);
+PG_FUNCTION_INFO_V1(npoint_to_geom);
 /**
  * Transforms the network point into a geometry
  */
 PGDLLEXPORT Datum
-npoint_as_geom(PG_FUNCTION_ARGS)
+npoint_to_geom(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
-  Datum result = npoint_as_geom_internal(np);
+  Datum result = npoint_geom(np);
   PG_RETURN_DATUM(result);
 }
 
@@ -1082,7 +1082,7 @@ npoint_as_geom(PG_FUNCTION_ARGS)
  * Transforms the geometry into a network point
  */
 npoint *
-geom_as_npoint_internal(Datum geom)
+geom_to_npoint_internal(Datum geom)
 {
   char *geomstr = ewkt_out(ANYOID, geom);
   char sql[512];
@@ -1116,12 +1116,12 @@ geom_as_npoint_internal(Datum geom)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(geom_as_npoint);
+PG_FUNCTION_INFO_V1(geom_to_npoint);
 /**
  * Transforms the geometry into a network point
  */
 PGDLLEXPORT Datum
-geom_as_npoint(PG_FUNCTION_ARGS)
+geom_to_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   /* Ensure validity of operation */
@@ -1131,7 +1131,7 @@ geom_as_npoint(PG_FUNCTION_ARGS)
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_geom, srid_ways);
 
-  npoint *result = geom_as_npoint_internal(PointerGetDatum(gs));
+  npoint *result = geom_to_npoint_internal(PointerGetDatum(gs));
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -1168,7 +1168,7 @@ nsegment_srid(PG_FUNCTION_ARGS)
  * Transforms the network segment into a geometry
  */
 Datum
-nsegment_as_geom_internal(const nsegment *ns)
+nsegment_geom(const nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
   Datum result;
@@ -1182,15 +1182,15 @@ nsegment_as_geom_internal(const nsegment *ns)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(nsegment_as_geom);
+PG_FUNCTION_INFO_V1(nsegment_to_geom);
 /**
  * Transforms the network segment into a geometry
  */
 PGDLLEXPORT Datum
-nsegment_as_geom(PG_FUNCTION_ARGS)
+nsegment_to_geom(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
-  Datum result = nsegment_as_geom_internal(ns);
+  Datum result = nsegment_geom(ns);
   PG_RETURN_DATUM(result);
 }
 
@@ -1198,7 +1198,7 @@ nsegment_as_geom(PG_FUNCTION_ARGS)
  * Transforms the geometry into a network segment
  */
 nsegment *
-geom_as_nsegment_internal(Datum geom)
+geom_to_nsegment_internal(Datum geom)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   int geomtype = gserialized_get_type(gs);
@@ -1209,7 +1209,7 @@ geom_as_nsegment_internal(Datum geom)
   if (geomtype == POINTTYPE)
   {
     points = palloc0(sizeof(npoint *));
-    np = geom_as_npoint_internal(geom);
+    np = geom_to_npoint_internal(geom);
     if (np != NULL)
       points[k++] = np;
   }
@@ -1221,7 +1221,7 @@ geom_as_nsegment_internal(Datum geom)
     {
       /* The composing points are from 1 to numcount */
       Datum point = call_function2(LWGEOM_pointn_linestring, geom, Int32GetDatum(i + 1));
-      np = geom_as_npoint_internal(point);
+      np = geom_to_npoint_internal(point);
       if (np != NULL)
         points[k++] = np;
       /* Cannot pfree(DatumGetPointer(point)); */
@@ -1250,19 +1250,19 @@ geom_as_nsegment_internal(Datum geom)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(geom_as_nsegment);
+PG_FUNCTION_INFO_V1(geom_to_nsegment);
 /**
  * Transforms the geometry into a network segment
  */
 PGDLLEXPORT Datum
-geom_as_nsegment(PG_FUNCTION_ARGS)
+geom_to_nsegment(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(gs);
   if (gserialized_get_type(gs) != POINTTYPE && gserialized_get_type(gs) != LINETYPE)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Only point or line geometries accepted")));
-  nsegment *result = geom_as_nsegment_internal(PointerGetDatum(gs));
+  nsegment *result = geom_to_nsegment_internal(PointerGetDatum(gs));
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

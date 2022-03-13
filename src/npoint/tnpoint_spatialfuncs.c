@@ -260,7 +260,7 @@ Datum
 tnpointinst_geom(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
-  return npoint_as_geom_internal(np);
+  return npoint_geom(np);
 }
 
 /**
@@ -299,7 +299,7 @@ tnpointseq_geom(const TSequence *seq)
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
     nsegment *segment = tnpointseq_linear_positions(seq);
-    result = nsegment_as_geom_internal(segment);
+    result = nsegment_geom(segment);
     pfree(segment);
   }
   else
@@ -377,7 +377,7 @@ tnpointseqsegm_trajectory(const TInstant *inst1, const TInstant *inst2)
   assert(np1->rid == np2->rid);
 
   if (np1->pos == np2->pos)
-    return npoint_as_geom_internal(np1);
+    return npoint_geom(np1);
 
   Datum line = route_geom(np1->rid);
   if ((np1->pos == 0 && np2->pos == 1) ||
@@ -427,8 +427,8 @@ npoint_same_internal(const npoint *np1, const npoint *np2)
   /* Same route identifier */
   if (np1->rid == np2->rid)
     return fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
-  Datum point1 = npoint_as_geom_internal(np1);
-  Datum point2 = npoint_as_geom_internal(np2);
+  Datum point1 = npoint_geom(np1);
+  Datum point2 = npoint_geom(np2);
   bool result = datum_eq(point1, point2, type_oid(T_GEOMETRY));
   pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
   return result;
@@ -759,7 +759,7 @@ PGDLLEXPORT Datum
 tnpoint_twcentroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *tgeom = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *tgeom = tnpoint_to_tgeompoint_internal(temp);
   Datum result = tpoint_twcentroid_internal(tgeom);
   pfree(tgeom);
   PG_FREE_IF_COPY(temp, 0);
@@ -983,13 +983,13 @@ tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
   }
   ensure_has_not_Z_gs(gs);
 
-  Temporal *geomtemp = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
   Temporal *geomresult = tpoint_restrict_geometry_internal(geomtemp,
     PointerGetDatum(gs), atfunc);
   Temporal *result = NULL;
   if (geomresult != NULL)
   {
-    /* We do not do call the function tgeompoint_as_tnpoint to avoid
+    /* We do not do call the function tgeompoint_to_tnpoint to avoid
      * roundoff errors */
     PeriodSet *ps = temporal_get_time_internal(geomresult);
     result = temporal_restrict_periodset_internal(temp, ps, REST_AT);

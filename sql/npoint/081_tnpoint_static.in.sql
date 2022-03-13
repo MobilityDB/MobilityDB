@@ -178,12 +178,12 @@ CREATE FUNCTION round(nsegment, int DEFAULT 0)
 
 CREATE FUNCTION geometry(npoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'npoint_as_geom'
+  AS 'MODULE_PATHNAME', 'npoint_to_geom'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION npoint(geometry)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'geom_as_npoint'
+  AS 'MODULE_PATHNAME', 'geom_to_npoint'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE CAST (npoint AS geometry) WITH FUNCTION geometry(npoint);
@@ -191,11 +191,11 @@ CREATE CAST (geometry AS npoint) WITH FUNCTION npoint(geometry);
 
 CREATE FUNCTION geometry(nsegment)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'nsegment_as_geom'
+  AS 'MODULE_PATHNAME', 'nsegment_to_geom'
   LANGUAGE C IMMUTABLE STRICT;
 CREATE FUNCTION nsegment(geometry)
   RETURNS nsegment
-  AS 'MODULE_PATHNAME', 'geom_as_nsegment'
+  AS 'MODULE_PATHNAME', 'geom_to_nsegment'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE CAST (nsegment AS geometry) WITH FUNCTION geometry(nsegment);

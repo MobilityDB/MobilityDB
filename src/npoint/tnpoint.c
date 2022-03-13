@@ -72,10 +72,10 @@ tnpoint_in(PG_FUNCTION_ARGS)
  * Cast a temporal network point as a temporal geometric point
  */
 TInstant *
-tnpointinst_as_tgeompointinst(const TInstant *inst)
+tnpointinst_to_tgeompointinst(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
-  Datum geom = npoint_as_geom_internal(np);
+  Datum geom = npoint_geom(np);
   TInstant *result = tinstant_make(geom, inst->t, type_oid(T_GEOMETRY));
   pfree(DatumGetPointer(geom));
   return result;
@@ -85,13 +85,13 @@ tnpointinst_as_tgeompointinst(const TInstant *inst)
  * Cast a temporal network point as a temporal geometric point
  */
 TInstantSet *
-tnpointinstset_as_tgeompointi(const TInstantSet *ti)
+tnpointinstset_to_tgeompointi(const TInstantSet *ti)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    instants[i] = tnpointinst_as_tgeompointinst(inst);
+    instants[i] = tnpointinst_to_tgeompointinst(inst);
   }
   TInstantSet *result = tinstantset_make_free(instants, ti->count, MERGE_NO);
   return result;
@@ -101,7 +101,7 @@ tnpointinstset_as_tgeompointi(const TInstantSet *ti)
  * Cast a temporal network point as a temporal geometric point
  */
 TSequence *
-tnpointseq_as_tgeompointseq(const TSequence *seq)
+tnpointseq_to_tgeompointseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   npoint *np = DatumGetNpoint(tinstant_value(tsequence_inst_n(seq, 0)));
@@ -133,13 +133,13 @@ tnpointseq_as_tgeompointseq(const TSequence *seq)
  * Cast a temporal network point as a temporal geometric point
  */
 TSequenceSet *
-tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts)
+tnpointseqset_to_tgeompointseqset(const TSequenceSet *ts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    sequences[i] = tnpointseq_as_tgeompointseq(seq);
+    sequences[i] = tnpointseq_to_tgeompointseq(seq);
   }
   TSequenceSet *result = tsequenceset_make_free(sequences, ts->count, false);
   return result;
@@ -150,30 +150,30 @@ tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts)
  * (dispatch function)
  */
 Temporal *
-tnpoint_as_tgeompoint_internal(const Temporal *temp)
+tnpoint_to_tgeompoint_internal(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *)tnpointinst_as_tgeompointinst((TInstant *) temp);
+    result = (Temporal *)tnpointinst_to_tgeompointinst((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tnpointinstset_as_tgeompointi((TInstantSet *) temp);
+    result = (Temporal *)tnpointinstset_to_tgeompointi((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tnpointseq_as_tgeompointseq((TSequence *) temp);
+    result = (Temporal *)tnpointseq_to_tgeompointseq((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tnpointseqset_as_tgeompointseqset((TSequenceSet *) temp);
+    result = (Temporal *)tnpointseqset_to_tgeompointseqset((TSequenceSet *) temp);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_as_tgeompoint);
+PG_FUNCTION_INFO_V1(tnpoint_to_tgeompoint);
 /**
  * Cast a temporal network point as a temporal geometric point
  */
 PGDLLEXPORT Datum
-tnpoint_as_tgeompoint(PG_FUNCTION_ARGS)
+tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_as_tgeompoint_internal(temp);
+  Temporal *result = tnpoint_to_tgeompoint_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -184,10 +184,10 @@ tnpoint_as_tgeompoint(PG_FUNCTION_ARGS)
  * Cast a temporal geometric point as a temporal network point
  */
 TInstant *
-tgeompointinst_as_tnpointinst(const TInstant *inst)
+tgeompointinst_to_tnpointinst(const TInstant *inst)
 {
   Datum geom = tinstant_value(inst);
-  npoint *np = geom_as_npoint_internal(geom);
+  npoint *np = geom_to_npoint_internal(geom);
   if (np == NULL)
     return NULL;
   TInstant *result = tinstant_make(PointerGetDatum(np), inst->t,
@@ -200,13 +200,13 @@ tgeompointinst_as_tnpointinst(const TInstant *inst)
  * Cast a temporal geometric point as a temporal network point
  */
 TInstantSet *
-tgeompointinstset_as_tnpointinstset(const TInstantSet *ti)
+tgeompointinstset_to_tnpointinstset(const TInstantSet *ti)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    TInstant *inst1 = tgeompointinst_as_tnpointinst(inst);
+    TInstant *inst1 = tgeompointinst_to_tnpointinst(inst);
     if (inst1 == NULL)
     {
       pfree_array((void **) instants, i);
@@ -222,13 +222,13 @@ tgeompointinstset_as_tnpointinstset(const TInstantSet *ti)
  * Cast a temporal geometric point as a temporal network point
  */
 TSequence *
-tgeompointseq_as_tnpointseq(const TSequence *seq)
+tgeompointseq_to_tnpointseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    TInstant *inst1 = tgeompointinst_as_tnpointinst(inst);
+    TInstant *inst1 = tgeompointinst_to_tnpointinst(inst);
     if (inst1 == NULL)
     {
       for (int j = 0; j < i; j++)
@@ -248,13 +248,13 @@ tgeompointseq_as_tnpointseq(const TSequence *seq)
  * Cast a temporal geometric point as a temporal network point
  */
 TSequenceSet *
-tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts)
+tgeompointseqset_to_tnpointseqset(const TSequenceSet *ts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    TSequence *seq1 = tgeompointseq_as_tnpointseq(seq);
+    TSequence *seq1 = tgeompointseq_to_tnpointseq(seq);
     if (seq1 == NULL)
     {
       for (int j = 0; j < i; j++)
@@ -273,33 +273,33 @@ tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts)
  * (dispatch function)
  */
 Temporal *
-tgeompoint_as_tnpoint_internal(Temporal *temp)
+tgeompoint_to_tnpoint_internal(Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *)tgeompointinst_as_tnpointinst((TInstant *) temp);
+    result = (Temporal *)tgeompointinst_to_tnpointinst((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tgeompointinstset_as_tnpointinstset((TInstantSet *) temp);
+    result = (Temporal *)tgeompointinstset_to_tnpointinstset((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tgeompointseq_as_tnpointseq((TSequence *) temp);
+    result = (Temporal *)tgeompointseq_to_tnpointseq((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tgeompointseqset_as_tnpointseqset((TSequenceSet *) temp);
+    result = (Temporal *)tgeompointseqset_to_tnpointseqset((TSequenceSet *) temp);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tgeompoint_as_tnpoint);
+PG_FUNCTION_INFO_V1(tgeompoint_to_tnpoint);
 /**
  * Cast a temporal geometric point as a temporal network point
  */
 PGDLLEXPORT Datum
-tgeompoint_as_tnpoint(PG_FUNCTION_ARGS)
+tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int32_t srid_tpoint = tpoint_srid_internal(temp);
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_tpoint, srid_ways);
-  Temporal *result = tgeompoint_as_tnpoint_internal(temp);
+  Temporal *result = tgeompoint_to_tnpoint_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();

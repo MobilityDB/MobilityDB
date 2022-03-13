@@ -86,7 +86,7 @@ tpointinst_stbox(const TInstant *inst, STBOX *box)
  * @note Temporal instant values do not have a precomputed bounding box
  */
 void
-tpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
+tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
 {
   tpointinst_stbox(instants[0], box);
   for (int i = 1; i < count; i++)

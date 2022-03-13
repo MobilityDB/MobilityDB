@@ -80,7 +80,7 @@ tnpoint_cachedop(Oid oper, CachedOp *cachedOp)
  * Period, and PeriodSet are transformed into an STBOX
  */
 bool
-tnpoint_const_to_stbox(Node *other, STBOX *box)
+tnpoint_const_stbox(Node *other, STBOX *box)
 {
   Oid consttype = ((Const *) other)->consttype;
 
@@ -162,7 +162,7 @@ tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   }
 
   /* Transform the constant into an STBOX */
-  if (! tnpoint_const_to_stbox(other, &constBox))
+  if (! tnpoint_const_stbox(other, &constBox))
     /* In the case of unknown constant */
     return tpoint_sel_default(cachedOp);
 
@@ -216,7 +216,7 @@ tnpoint_sel(PG_FUNCTION_ARGS)
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
   float8 selec = tnpoint_sel_internal(root, oper, args, varRelid);
-  PG_RETURN_FLOAT8((float8) selec);  
+  PG_RETURN_FLOAT8((float8) selec);
 }
 
 /*****************************************************************************

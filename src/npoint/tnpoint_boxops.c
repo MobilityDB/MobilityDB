@@ -63,9 +63,9 @@
  * @param[in] np Network point
  */
 bool
-npoint_to_stbox_internal(const npoint *np, STBOX *box)
+npoint_stbox(const npoint *np, STBOX *box)
 {
-  Datum geom = npoint_as_geom_internal(DatumGetNpoint(np));
+  Datum geom = npoint_geom(DatumGetNpoint(np));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
@@ -82,7 +82,7 @@ npoint_to_stbox_internal(const npoint *np, STBOX *box)
 void
 tnpointinst_make_stbox(const TInstant *inst, STBOX *box)
 {
-  npoint_to_stbox_internal(DatumGetNpoint(tinstant_value(inst)), box);
+  npoint_stbox(DatumGetNpoint(tinstant_value(inst)), box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -96,7 +96,7 @@ tnpointinst_make_stbox(const TInstant *inst, STBOX *box)
  * @param[in] count Number of elements in the array
  */
 void
-tnpointinstarr_step_to_stbox(const TInstant **instants, int count, STBOX *box)
+tnpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
 {
   tnpointinst_make_stbox(instants[0], box);
   for (int i = 1; i < count; i++)
@@ -116,7 +116,7 @@ tnpointinstarr_step_to_stbox(const TInstant **instants, int count, STBOX *box)
  * @param[in] count Number of elements in the array
  */
 void
-tnpointinstarr_linear_to_stbox(const TInstant **instants, int count,
+tnpointinstarr_linear_stbox(const TInstant **instants, int count,
   STBOX *box)
 {
   npoint *np = DatumGetNpoint(tinstant_value(instants[0]));
@@ -147,13 +147,32 @@ tnpointinstarr_linear_to_stbox(const TInstant **instants, int count,
 
 /**
  * Set the spatiotemporal box from the array of temporal network point values
+ * (dispatch function)
+ *
+ * @param[out] box Spatiotemporal box
+ * @param[in] instants Temporal instant values
+ * @param[in] count Number of elements in the array
+ */
+void
+tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
+  STBOX *box)
+{
+  if (linear)
+    tnpointinstarr_linear_stbox(instants, count, box);
+  else
+    tnpointinstarr_stbox(instants, count, box);
+  return;
+}
+
+/**
+ * Set the spatiotemporal box from the array of temporal network point values
  *
  * @param[out] box Spatiotemporal box
  * @param[in] sequences Temporal network point values
  * @param[in] count Number of elements in the array
  */
 void
-tnpointseqarr_to_stbox(const TSequence **sequences, int count, STBOX *box)
+tnpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
 {
   tsequence_bbox(sequences[0], box);
   for (int i = 1; i < count; i++)
@@ -173,7 +192,7 @@ npoint_to_stbox(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  npoint_to_stbox_internal(np, result);
+  npoint_stbox(np, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -183,9 +202,9 @@ npoint_to_stbox(PG_FUNCTION_ARGS)
  * Returns the bounding box of the network segment value
  */
 bool
-nsegment_to_stbox_internal(STBOX *box, const nsegment *ns)
+nsegment_stbox(STBOX *box, const nsegment *ns)
 {
-  Datum geom = nsegment_as_geom_internal(DatumGetNsegment(ns));
+  Datum geom = nsegment_geom(DatumGetNsegment(ns));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
@@ -202,7 +221,7 @@ nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  nsegment_to_stbox_internal(result, ns);
+  nsegment_stbox(result, ns);
   PG_RETURN_POINTER(result);
 }
 
@@ -214,7 +233,7 @@ nsegment_to_stbox(PG_FUNCTION_ARGS)
 static bool
 npoint_timestamp_stbox(const npoint *np, TimestampTz t, STBOX *box)
 {
-  npoint_to_stbox_internal(np, box);
+  npoint_stbox(np, box);
   box->tmin = box->tmax = t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   return true;
@@ -242,7 +261,7 @@ npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 static bool
 npoint_period_stbox(const npoint *np, const Period *p, STBOX *box)
 {
-  npoint_to_stbox_internal(np, box);
+  npoint_stbox(np, box);
   box->tmin = p->lower;
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
@@ -298,7 +317,7 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
   STBOX box1, box2;
   /* Returns an error if the geometry is not found, is null, or is empty */
-  npoint_to_stbox_internal(np, &box1);
+  npoint_stbox(np, &box1);
   temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
@@ -321,7 +340,7 @@ boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
   STBOX box1, box2;
   temporal_bbox(temp, &box1);
   /* Returns an error if the geometry is not found, is null, or is empty */
-  npoint_to_stbox_internal(np, &box2);
+  npoint_stbox(np, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);

@@ -482,7 +482,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
     point_distance = get_pt_distance_fn(instants[0]->flags);
   else if (basetypid == type_oid(T_NPOINT))
-    geom1 = npoint_as_geom_internal(DatumGetNpoint(value1));
+    geom1 = npoint_geom(DatumGetNpoint(value1));
   int k = 0;
   for (int i = 1; i < count; i++)
   {
@@ -501,7 +501,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
         dist = DatumGetFloat8(point_distance(value1, value2));
       else if (basetypid == type_oid(T_NPOINT))
       {
-        geom2 = npoint_as_geom_internal(DatumGetNpoint(value2));
+        geom2 = npoint_geom(DatumGetNpoint(value2));
         dist = DatumGetFloat8(pt_distance2d(geom1, geom2));
       }
       if (dist > maxdist)
@@ -2844,7 +2844,7 @@ temporal_bbox_ev_al_eq(const Temporal *temp, Datum value, bool ever)
       geo_stbox((GSERIALIZED *) DatumGetPointer(value), &box2);
     else if (temp->basetypid == type_oid(T_NPOINT))
     {
-      Datum geom = npoint_as_geom_internal(DatumGetNpoint(value));
+      Datum geom = npoint_geom(DatumGetNpoint(value));
       geo_stbox((GSERIALIZED *) DatumGetPointer(geom), &box2);
       pfree(DatumGetPointer(geom));
     }
