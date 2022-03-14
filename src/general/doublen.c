@@ -61,7 +61,7 @@ PG_FUNCTION_INFO_V1(double2_in);
  * Input function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
-double2_in(PG_FUNCTION_ARGS)
+double2_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double2 is an internal type")));
@@ -170,7 +170,7 @@ PG_FUNCTION_INFO_V1(double3_in);
  * Input function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
-double3_in(PG_FUNCTION_ARGS)
+double3_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double3 is an internal type")));
@@ -285,7 +285,7 @@ PG_FUNCTION_INFO_V1(double4_in);
  * Input function for double4 values (stub only)
  */
 PGDLLEXPORT Datum
-double4_in(PG_FUNCTION_ARGS)
+double4_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double4 is an internal type")));
@@ -383,7 +383,7 @@ PG_FUNCTION_INFO_V1(tdouble2_in);
  * Input function for the temporal double2 type (stub only)
  */
 PGDLLEXPORT Datum
-tdouble2_in(PG_FUNCTION_ARGS)
+tdouble2_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type tdouble2 is an internal type")));
@@ -395,7 +395,7 @@ PG_FUNCTION_INFO_V1(tdouble3_in);
  * Input function for the temporal double3 type (stub only)
  */
 PGDLLEXPORT Datum
-tdouble3_in(PG_FUNCTION_ARGS)
+tdouble3_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type tdouble3 is an internal type")));
@@ -407,7 +407,7 @@ PG_FUNCTION_INFO_V1(tdouble4_in);
  * Input function for the temporal double4 type (stub only)
  */
 PGDLLEXPORT Datum
-tdouble4_in(PG_FUNCTION_ARGS)
+tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type tdouble4 is an internal type")));

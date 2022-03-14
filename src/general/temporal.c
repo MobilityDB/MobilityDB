@@ -790,7 +790,7 @@ PG_FUNCTION_INFO_V1(mobilitydb_version);
  * Version of the MobilityDB extension
  */
 PGDLLEXPORT Datum
-mobilitydb_version(PG_FUNCTION_ARGS)
+mobilitydb_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   char *ver = MOBILITYDB_VERSION_STR;
   text *result = cstring_to_text(ver);
@@ -802,7 +802,7 @@ PG_FUNCTION_INFO_V1(mobilitydb_full_version);
  * Versions of the MobilityDB extension and its dependencies
  */
 PGDLLEXPORT Datum
-mobilitydb_full_version(PG_FUNCTION_ARGS)
+mobilitydb_full_version(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   char ver[128];
   text *result;
