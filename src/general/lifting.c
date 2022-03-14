@@ -1049,7 +1049,6 @@ tfunc_tsequence_tsequence_lineareq(const TSequence *seq1, const TSequence *seq2,
     instants[k - 1] = tinstant_make(value, instants[k - 1]->t, lfinfo->restypid);
     /* We cannot DATUM_FREE(value, lfinfo->restypid); */
   }
-  pfree(inter);
   pfree_array((void **) tofree, l);
   result[0] = tsequence_make_free(instants, k, inter->lower_inc,
     inter->upper_inc, lfinfo->reslinear, NORMALIZE);
@@ -1149,7 +1148,6 @@ tfunc_tsequence_tsequence_linearstep(const TSequence *seq1,
     pfree(instants[0]);
     DATUM_FREE(startresult, lfinfo->restypid);
   }
-  pfree(inter);
   pfree_array((void **) tofree, l);
   return k;
 }
@@ -1333,7 +1331,6 @@ tfunc_tsequence_tsequence_discont(const TSequence *seq1, const TSequence *seq2,
     pfree(instants[0]);
     DATUM_FREE(startresult, lfinfo->restypid);
   }
-  pfree(inter);
   pfree_array((void **) tofree, l);
   return k;
 }
@@ -1350,33 +1347,32 @@ tfunc_tsequence_tsequence_dispatch(const TSequence *seq1,
   const TSequence *seq2, LiftedFunctionInfo *lfinfo, TSequence **result)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  Period *inter = intersection_period_period_internal(&seq1->period,
-    &seq2->period);
-  if (inter == NULL)
+  Period inter;
+  if (! inter_period_period(&seq1->period, &seq2->period, &inter))
     return 0;
 
   /* If the two sequences intersect at an instant */
-  if (inter->lower == inter->upper)
+  if (inter.lower == inter.upper)
   {
     Datum value1, value2;
-    tsequence_value_at_timestamp(seq1, inter->lower, &value1);
-    tsequence_value_at_timestamp(seq2, inter->lower, &value2);
+    tsequence_value_at_timestamp(seq1, inter.lower, &value1);
+    tsequence_value_at_timestamp(seq2, inter.lower, &value2);
     Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
-    TInstant *inst = tinstant_make(resvalue, inter->lower, lfinfo->restypid);
+    TInstant *inst = tinstant_make(resvalue, inter.lower, lfinfo->restypid);
     result[0] = tinstant_to_tsequence(inst, lfinfo->reslinear);
     DATUM_FREE(value1, seq1->basetypid);
     DATUM_FREE(value2, seq2->basetypid);
     DATUM_FREE(resvalue, lfinfo->restypid);
-    pfree(inst); pfree(inter);
+    pfree(inst);
     return 1;
   }
 
   if (lfinfo->discont)
-    return tfunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, inter, result);
+    return tfunc_tsequence_tsequence_discont(seq1, seq2, lfinfo, &inter, result);
   if (MOBDB_FLAGS_GET_LINEAR(seq1->flags) == MOBDB_FLAGS_GET_LINEAR(seq2->flags))
-    return tfunc_tsequence_tsequence_lineareq(seq1, seq2, lfinfo, inter, result);
+    return tfunc_tsequence_tsequence_lineareq(seq1, seq2, lfinfo, &inter, result);
   else
-    return tfunc_tsequence_tsequence_linearstep(seq1, seq2, lfinfo, inter, result);
+    return tfunc_tsequence_tsequence_linearstep(seq1, seq2, lfinfo, &inter, result);
 }
 
 /**
@@ -1993,7 +1989,6 @@ efunc_tsequence_tsequence_discont(const TSequence *seq1,
       return 1;
     }
   }
-  pfree(inter);
   pfree_array((void **) tofree, l);
   return 0;
 }

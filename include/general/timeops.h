@@ -327,6 +327,7 @@ extern Datum intersection_periodset_periodset(PG_FUNCTION_ARGS);
 extern TimestampSet *intersection_timestampset_timestampset_internal(const TimestampSet *ts1, const TimestampSet *ts2);
 extern TimestampSet *intersection_timestampset_period_internal(const TimestampSet *ts, const Period *p);
 extern Period *intersection_period_period_internal(const Period *p1, const Period *p2);
+extern bool inter_period_period(const Period *p1, const Period *p2, Period *result);
 extern PeriodSet *intersection_period_periodset_internal(const Period *p, const PeriodSet *ps);
 extern PeriodSet *intersection_periodset_periodset_internal(const PeriodSet *ps1, const PeriodSet *ps2);
 

@@ -280,14 +280,12 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2;
-  Period *inter;
+  Period p1, p2, inter;
   if (hast)
   {
     period_set(box1->tmin, box1->tmax, true, true, &p1);
     period_set(box2->tmin, box2->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
   }
 
@@ -309,8 +307,7 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
     result = box1->tmin - box2->tmax;
 
   pfree(range1); pfree(range2);
-  if (hast)
-    pfree(inter);
+
   return result;
 }
 
@@ -339,20 +336,18 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2;
-  Period *inter;
+  Period p1, p2, inter;
   if (hast)
   {
     temporal_period(temp, &p1);
     period_set(box->tmin, box->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
   Temporal *temp1 = hast ?
-    temporal_restrict_period_internal(temp, inter, REST_AT) : (Temporal *) temp;
+    temporal_restrict_period_internal(temp, &inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBOX box1;
   temporal_bbox(temp1, &box1);
@@ -364,9 +359,8 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
     fabs(box->xmin - box1.xmax) : fabs(box1.xmin - box->xmax);
 
   if (hast)
-  {
-    pfree(inter); pfree(temp1);
-  }
+    pfree(temp1);
+
   return result;
 }
 

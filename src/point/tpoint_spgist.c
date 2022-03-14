@@ -464,17 +464,14 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
       return DBL_MAX;
   bool hast = MOBDB_FLAGS_GET_T(query->flags) &&
      MOBDB_FLAGS_GET_T(cube_box->left.flags);
-  Period p1, p2;
-  Period *inter = NULL;
+  Period p1, p2, inter;
   /* Project the boxes to their common timespan */
   if (hast)
   {
     period_set(query->tmin, query->tmax, true, true, &p1);
     period_set(cube_box->left.tmin, cube_box->right.tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
-    pfree(inter);
   }
 
   double dx, dy, dz;

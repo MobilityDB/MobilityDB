@@ -908,9 +908,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TSequence **sync1, TSequence **sync2, bool crossings)
 {
   /* Test whether the bounding period of the two temporal values overlap */
-  Period *inter = intersection_period_period_internal(&seq1->period,
-    &seq2->period);
-  if (inter == NULL)
+  Period inter;
+  if (! inter_period_period(&seq1->period, &seq2->period, &inter))
     return false;
 
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(seq1->flags);
@@ -918,13 +917,13 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TInstant *inst1, *inst2;
 
   /* If the two sequences intersect at an instant */
-  if (inter->lower == inter->upper)
+  if (inter.lower == inter.upper)
   {
-    inst1 = tsequence_at_timestamp(seq1, inter->lower);
-    inst2 = tsequence_at_timestamp(seq2, inter->lower);
+    inst1 = tsequence_at_timestamp(seq1, inter.lower);
+    inst2 = tsequence_at_timestamp(seq2, inter.lower);
     *sync1 = tinstant_to_tsequence(inst1, linear1);
     *sync2 = tinstant_to_tsequence(inst2, linear2);
-    pfree(inst1); pfree(inst2); pfree(inter);
+    pfree(inst1); pfree(inst2);
     return true;
   }
 
@@ -940,14 +939,14 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   inst1 = (TInstant *) tsequence_inst_n(seq1, 0);
   inst2 = (TInstant *) tsequence_inst_n(seq2, 0);
   int i = 0, j = 0, k = 0, l = 0;
-  if (inst1->t < inter->lower)
+  if (inst1->t < inter.lower)
   {
-    i = tsequence_find_timestamp(seq1, inter->lower) + 1;
+    i = tsequence_find_timestamp(seq1, inter.lower) + 1;
     inst1 = (TInstant *) tsequence_inst_n(seq1, i);
   }
-  else if (inst2->t < inter->lower)
+  else if (inst2->t < inter.lower)
   {
-    j = tsequence_find_timestamp(seq2, inter->lower) + 1;
+    j = tsequence_find_timestamp(seq2, inter.lower) + 1;
     inst2 = (TInstant *) tsequence_inst_n(seq2, j);
   }
   int count = (seq1->count - i + seq2->count - j) * 2;
@@ -955,7 +954,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   TInstant **instants2 = palloc(sizeof(TInstant *) * count);
   TInstant **tofree = palloc(sizeof(TInstant *) * count * 2);
   while (i < seq1->count && j < seq2->count &&
-    (inst1->t <= inter->upper || inst2->t <= inter->upper))
+    (inst1->t <= inter.upper || inst2->t <= inter.upper))
   {
     int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
     if (cmp == 0)
@@ -998,7 +997,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   /* We are sure that k != 0 due to the period intersection test above */
   /* The last two values of sequences with step interpolation and
      exclusive upper bound must be equal */
-  if (! inter->upper_inc && k > 1 && ! linear1 &&
+  if (! inter.upper_inc && k > 1 && ! linear1 &&
       datum_ne(tinstant_value(instants1[k - 2]),
       tinstant_value(instants1[k - 1]), seq1->basetypid))
   {
@@ -1006,7 +1005,7 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       instants1[k - 1]->t, instants1[k - 1]->basetypid);
     tofree[l++] = instants1[k - 1];
   }
-  if (! inter->upper_inc && k > 1 && ! linear2 &&
+  if (! inter.upper_inc && k > 1 && ! linear2 &&
       datum_ne(tinstant_value(instants2[k - 2]),
       tinstant_value(instants2[k - 1]), seq2->basetypid))
   {
@@ -1014,13 +1013,13 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
       instants2[k - 1]->t, instants2[k - 1]->basetypid);
     tofree[l++] = instants2[k - 1];
   }
-  *sync1 = tsequence_make((const TInstant **) instants1, k, inter->lower_inc,
-    inter->upper_inc, linear1, NORMALIZE_NO);
-  *sync2 = tsequence_make((const TInstant **) instants2, k, inter->lower_inc,
-    inter->upper_inc, linear2, NORMALIZE_NO);
+  *sync1 = tsequence_make((const TInstant **) instants1, k, inter.lower_inc,
+    inter.upper_inc, linear1, NORMALIZE_NO);
+  *sync2 = tsequence_make((const TInstant **) instants2, k, inter.lower_inc,
+    inter.upper_inc, linear2, NORMALIZE_NO);
 
   pfree_array((void **) tofree, l);
-  pfree(instants1); pfree(instants2); pfree(inter);
+  pfree(instants1); pfree(instants2);
 
   return true;
 }
@@ -3649,7 +3648,8 @@ TSequence *
 tsequence_at_period(const TSequence *seq, const Period *p)
 {
   /* Bounding box test */
-  if (!overlaps_period_period_internal(&seq->period, p))
+  Period inter;
+  if (! inter_period_period(&seq->period, p, &inter))
     return NULL;
 
   /* Instantaneous sequence */
@@ -3657,20 +3657,19 @@ tsequence_at_period(const TSequence *seq, const Period *p)
     return tsequence_copy(seq);
 
   /* General case */
-  Period *inter = intersection_period_period_internal(&seq->period, p);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   TSequence *result;
   /* Intersecting period is instantaneous */
-  if (inter->lower == inter->upper)
+  if (inter.lower == inter.upper)
   {
-    TInstant *inst = tsequence_at_timestamp(seq, inter->lower);
+    TInstant *inst = tsequence_at_timestamp(seq, inter.lower);
     result = tinstant_to_tsequence(inst, linear);
-    pfree(inst); pfree(inter);
+    pfree(inst);
     return result;
   }
 
   const TInstant *inst1, *inst2;
-  int n = tsequence_find_timestamp(seq, inter->lower);
+  int n = tsequence_find_timestamp(seq, inter.lower);
   /* If the lower bound of the intersecting period is exclusive */
   if (n == -1)
     n = 0;
@@ -3678,36 +3677,35 @@ tsequence_at_period(const TSequence *seq, const Period *p)
   /* Compute the value at the beginning of the intersecting period */
   inst1 = tsequence_inst_n(seq, n);
   inst2 = tsequence_inst_n(seq, n + 1);
-  instants[0] = tsegment_at_timestamp(inst1, inst2, linear, inter->lower);
+  instants[0] = tsegment_at_timestamp(inst1, inst2, linear, inter.lower);
   int k = 1;
   for (int i = n + 2; i < seq->count; i++)
   {
     /* If the end of the intersecting period is between inst1 and inst2 */
-    if (inst1->t <= inter->upper && inter->upper <= inst2->t)
+    if (inst1->t <= inter.upper && inter.upper <= inst2->t)
       break;
 
     inst1 = inst2;
     inst2 = tsequence_inst_n(seq, i);
     /* If the intersecting period contains inst1 */
-    if (inter->lower <= inst1->t && inst1->t <= inter->upper)
+    if (inter.lower <= inst1->t && inst1->t <= inter.upper)
       instants[k++] = (TInstant *) inst1;
   }
   /* The last two values of sequences with step interpolation and
    * exclusive upper bound must be equal */
-  if (linear || inter->upper_inc)
-    instants[k++] = tsegment_at_timestamp(inst1, inst2, linear,
-      inter->upper);
+  if (linear || inter.upper_inc)
+    instants[k++] = tsegment_at_timestamp(inst1, inst2, linear, inter.upper);
   else
   {
     Datum value = tinstant_value(instants[k - 1]);
-    instants[k++] = tinstant_make(value, inter->upper, seq->basetypid);
+    instants[k++] = tinstant_make(value, inter.upper, seq->basetypid);
   }
   /* Since by definition the sequence is normalized it is not necessary to
    * normalize the projection of the sequence to the period */
   result = tsequence_make((const TInstant **) instants, k,
-    inter->lower_inc, inter->upper_inc, linear, NORMALIZE_NO);
+    inter.lower_inc, inter.upper_inc, linear, NORMALIZE_NO);
 
-  pfree(instants[0]); pfree(instants[k - 1]); pfree(instants); pfree(inter);
+  pfree(instants[0]); pfree(instants[k - 1]); pfree(instants);
 
   return result;
 }

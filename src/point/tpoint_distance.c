@@ -1018,16 +1018,13 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) &&
     MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2;
-  Period *inter = NULL;
+  Period p1, p2, inter;
   if (hast)
   {
     period_set(box1->tmin, box1->tmax, true, true, &p1);
     period_set(box2->tmin, box2->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
-    pfree(inter);
   }
 
   /* Select the distance function to be applied */
@@ -1084,14 +1081,12 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   ensure_same_srid_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2;
-  Period *inter;
+  Period p1, p2, inter;
   if (hast)
   {
     temporal_period(temp, &p1);
     period_set(box->tmin, box->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
   }
 
@@ -1106,7 +1101,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   Datum geo1 = call_function2(LWGEOM_set_srid, geo,
     Int32GetDatum(box->srid));
   Temporal *temp1 = hast ?
-    temporal_restrict_period_internal(temp, inter, REST_AT) :
+    temporal_restrict_period_internal(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
   Datum traj = tpoint_trajectory_internal(temp1);
@@ -1115,9 +1110,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   pfree(DatumGetPointer(traj));
   pfree(DatumGetPointer(geo)); pfree(DatumGetPointer(geo1));
   if (hast)
-  {
-    pfree(inter); pfree(temp1);
-  }
+    pfree(temp1);
   return result;
 }
 

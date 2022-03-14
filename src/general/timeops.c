@@ -3487,10 +3487,10 @@ intersection_period_timestampset(PG_FUNCTION_ARGS)
 }
 
 /**
- * Set the last argument to the intersection of the two time values
+ * Set the last argument to the intersection of the two periods
  *
  * @note This function equivalent is to intersection_period_period_internal
- * but does not do memory allocation
+ * but avoids memory allocation
  */
 bool
 inter_period_period(const Period *p1, const Period *p2, Period *result)
@@ -3653,21 +3653,20 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
   /* Bounding box test */
   const Period *p1 = periodset_bbox_ptr(ps1);
   const Period *p2 = periodset_bbox_ptr(ps2);
-  if (!overlaps_period_period_internal(p1, p2))
+  Period p;
+  if (! inter_period_period(p1, p2, &p))
     return NULL;
 
-  Period *inter = intersection_period_period_internal(p1, p2);
   int loc1, loc2;
-  periodset_find_timestamp(ps1, inter->lower, &loc1);
-  periodset_find_timestamp(ps2, inter->lower, &loc2);
-  pfree(inter);
+  periodset_find_timestamp(ps1, p.lower, &loc1);
+  periodset_find_timestamp(ps2, p.lower, &loc2);
   Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count - loc1 - loc2));
   int i = loc1, j = loc2, k = 0;
   while (i < ps1->count && j < ps2->count)
   {
     p1 = periodset_per_n(ps1, i);
     p2 = periodset_per_n(ps2, j);
-    inter = intersection_period_period_internal(p1, p2);
+    Period *inter = intersection_period_period_internal(p1, p2);
     if (inter != NULL)
       periods[k++] = inter;
     int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
