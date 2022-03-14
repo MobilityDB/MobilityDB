@@ -406,7 +406,7 @@ PG_FUNCTION_INFO_V1(fill_opcache);
  * operator cache and store it as a table in the catalog
  */
 PGDLLEXPORT Datum
-fill_opcache(PG_FUNCTION_ARGS)
+fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   Oid catalog = RelnameGetRelid("mobilitydb_opcache");
 #if POSTGRESQL_VERSION_NUMBER < 130000

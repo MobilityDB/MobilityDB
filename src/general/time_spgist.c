@@ -103,16 +103,16 @@ getQuadrant(const Period *centroid, const Period *tst)
   period_deserialize(centroid, &centroidLower, &centroidUpper);
   period_deserialize(tst, &lower, &upper);
 
-  if (period_cmp_bounds(&lower, &centroidLower) >= 0)
+  if (period_bound_cmp(&lower, &centroidLower) >= 0)
   {
-    if (period_cmp_bounds(&upper, &centroidUpper) >= 0)
+    if (period_bound_cmp(&upper, &centroidUpper) >= 0)
       return 1;
     else
       return 2;
   }
   else
   {
-    if (period_cmp_bounds(&upper, &centroidUpper) >= 0)
+    if (period_bound_cmp(&upper, &centroidUpper) >= 0)
       return 4;
     else
       return 3;
@@ -251,7 +251,7 @@ adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
 
   assert(arg->lower != centroid->lower);
 
-  cmp = period_cmp_bounds(arg, centroid);
+  cmp = period_bound_cmp(arg, centroid);
 
   if (centroid->lower)
   {
@@ -357,7 +357,7 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
     prevcmp = adjacent_cmp_bounds(arg, prev);
 
     /* and which direction did we actually go? */
-    cmp = period_cmp_bounds(centroid, prev);
+    cmp = period_bound_cmp(centroid, prev);
 
     /* if the two don't agree, there's nothing to see here */
     if ((prevcmp < 0 && cmp >= 0) || (prevcmp > 0 && cmp < 0))
@@ -609,7 +609,7 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
        * will have an even smaller lower bound, and thus can't
        * match.
        */
-      if (period_cmp_bounds(&centroidLower, minLower) <= 0)
+      if (period_bound_cmp(&centroidLower, minLower) <= 0)
         which &= (1 << 1) | (1 << 2);
     }
     if (maxLower)
@@ -625,7 +625,7 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
        */
       int cmp;
 
-      cmp = period_cmp_bounds(&centroidLower, maxLower);
+      cmp = period_bound_cmp(&centroidLower, maxLower);
       if (cmp > 0 || (!inclusive && cmp == 0))
         which &= (1 << 3) | (1 << 4);
     }
@@ -637,7 +637,7 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
        * will have an even smaller upper bound, and thus can't
        * match.
        */
-      if (period_cmp_bounds(&centroidUpper, minUpper) <= 0)
+      if (period_bound_cmp(&centroidUpper, minUpper) <= 0)
         which &= (1 << 1) | (1 << 4);
     }
     if (maxUpper)
@@ -653,7 +653,7 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
        */
       int      cmp;
 
-      cmp = period_cmp_bounds(&centroidUpper, maxUpper);
+      cmp = period_bound_cmp(&centroidUpper, maxUpper);
       if (cmp > 0 || (!inclusive && cmp == 0))
         which &= (1 << 2) | (1 << 3);
     }

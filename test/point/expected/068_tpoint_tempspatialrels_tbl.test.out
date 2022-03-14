@@ -257,13 +257,6 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
    152
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
- count 
--------
-   150
-(1 row)
-
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdwithin(g, seq, 10) IS NOT NULL;
  count 
@@ -278,14 +271,14 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   9900
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
  count 
 -------
@@ -313,13 +306,6 @@ SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
- count 
--------
-     0
-(1 row)
-
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdwithin(g, seq, 10) ?= true <> dwithin(g, seq, 10);
  count 
@@ -334,14 +320,14 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
  count 
 -------

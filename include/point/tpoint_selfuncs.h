@@ -96,11 +96,15 @@
 extern Datum tpoint_sel(PG_FUNCTION_ARGS);
 extern Datum tpoint_joinsel(PG_FUNCTION_ARGS);
 
-extern bool tpoint_cachedop(Oid operator, CachedOp *cachedOp);
+extern double tpoint_sel_default(CachedOp oper);
+extern double tpoint_joinsel_default(CachedOp oper);
+
+extern float8 geo_selectivity(VariableStatData *vardata, const STBOX *box,
+  CachedOp op);
 extern float8 tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
 extern float8 tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, int mode);
+  JoinType jointype, SpecialJoinInfo *sjinfo, int mode);
 
 /*****************************************************************************/
 

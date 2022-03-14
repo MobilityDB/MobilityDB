@@ -162,10 +162,6 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
--- Geography
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
-
 -- Step interpolation
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdwithin(g, seq, 10) IS NOT NULL;
@@ -173,9 +169,9 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tdwithin(g, ts, 10) IS NOT NULL;
 
 -- Mixed 2D/3D
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) IS NOT NULL;
 
 -------------------------------------------------------------------------------
@@ -188,10 +184,6 @@ SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point
 SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
 
--- Geography
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
-  WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
-
 -- Step interpolation
 SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tdwithin(g, seq, 10) ?= true <> dwithin(g, seq, 10);
@@ -199,9 +191,9 @@ SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tdwithin(g, ts, 10) ?= true <> dwithin(g, ts, 10);
 
 -- Mixed 2D/3D
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint3D t2
+SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
   WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint t2
+SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint t2
   WHERE tdwithin(t1.temp, t2.temp, 10) ?= true <> dwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------

@@ -960,10 +960,9 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows)
 {
   int notnull_cnt = 0;      /* # not null rows in the sample */
-  int null_cnt = 0;        /* # null rows in the sample */
-  double total_width = 0;      /* # of bytes used by sample */
-
-  int slot_idx = 2;        /* Starting slot for storing temporal statistics */
+  int null_cnt = 0;         /* # null rows in the sample */
+  int slot_idx = 2;         /* Starting slot for storing temporal statistics */
+  double total_width = 0;   /* # of bytes used by sample */
 
   PeriodBound *time_lowers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
   PeriodBound *time_uppers = (PeriodBound *) palloc(sizeof(PeriodBound) * sample_rows);
@@ -978,10 +977,8 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     Datum value;
     Temporal *temp;
     Period period;
-    PeriodBound period_lower,
-        period_upper;
-    bool is_null;
-    bool is_copy;
+    PeriodBound period_lower, period_upper;
+    bool is_null, is_copy;
 
     value = fetchfunc(stats, i, &is_null);
 

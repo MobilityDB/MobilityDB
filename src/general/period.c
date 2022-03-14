@@ -120,7 +120,7 @@ period_deserialize(const Period *p, PeriodBound *lower, PeriodBound *upper)
  * but one is an upper bound and the other a lower bound.
  */
 int
-period_cmp_bounds(const PeriodBound *b1, const PeriodBound *b2)
+period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2)
 {
   int32 result;
 
@@ -159,7 +159,7 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 {
   PeriodBound *b1 = (PeriodBound *) a1;
   PeriodBound *b2 = (PeriodBound *) a2;
-  return period_cmp_bounds(b1, b2);
+  return period_bound_cmp(b1, b2);
 }
 
 /**
@@ -216,10 +216,9 @@ period_copy(const Period *p)
  * Returns the number of seconds of the period as a float8 value
  */
 float8
-period_to_secs(TimestampTz v1, TimestampTz v2)
+period_to_secs(TimestampTz upper, TimestampTz lower)
 {
-  float8 result = ((float8) v1 - (float8) v2) / USECS_PER_SEC;
-  return result;
+  return ((float8) upper - (float8) lower) / USECS_PER_SEC;
 }
 
 /**
@@ -745,7 +744,7 @@ period_cmp(PG_FUNCTION_ARGS)
 bool
 period_lt_internal(const Period *p1, const Period *p2)
 {
-  int  cmp = period_cmp_internal(p1, p2);
+  int cmp = period_cmp_internal(p1, p2);
   return (cmp < 0);
 }
 

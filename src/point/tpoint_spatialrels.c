@@ -279,7 +279,8 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  */
 static Datum
 spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*func)(Datum, ...), int numparam, bool invert, bool geomcoll)
+  Datum (*func)(Datum, ...), int numparam, bool invert, 
+  bool geomcoll __attribute__((unused)))
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);
@@ -406,7 +407,7 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_has_not_Z(temp->flags);
-  bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL ,
+  bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL,
     (varfunc) &geom_ever_contains, 2, INVERT_NO, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);

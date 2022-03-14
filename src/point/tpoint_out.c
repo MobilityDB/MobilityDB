@@ -65,11 +65,10 @@
 /**
  * Output a geometry in Well-Known Text (WKT) format.
  *
- * The Oid argument is not used but is needed since the second argument of
- * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum)
+ * @note The parameter type is not needed for temporal points
  */
 static char *
-wkt_out(Oid type, Datum value)
+wkt_out(Oid type __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -86,11 +85,10 @@ wkt_out(Oid type, Datum value)
  * Output a geometry in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID.
  *
- * The Oid argument is not used but is needed since the second argument of
- * the functions temporal*_to_string is of type char *(*value_out)(Oid, Datum)
+ * @note The parameter type is not needed for temporal points
  */
 char *
-ewkt_out(Oid type, Datum value)
+ewkt_out(Oid type __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -782,7 +780,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
  * Output in WKB or EWKB format
  *
  * The format of the MobilityDB binary format builds upon the one of PostGIS.
- * In particular, many of the flags defined in liblwgeom.h such as  WKB_NDR vs
+ * In particular, many of the flags defined in liblwgeom.h such as WKB_NDR vs
  * WKB_XDR (for little- vs big-endian), WKB_EXTENDED (for the SRID), etc.
  * In addition, we need additional flags such as MOBDB_WKB_LINEAR_INTERP for
  * linear interporation, etc.
@@ -971,8 +969,7 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 static bool
 tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
-  /* We can only add an SRID if the geometry has one, and the
-     WKB form is extended */
+  /* Add an SRID if the WKB form is extended and if the geometry has one */
   if ((variant & WKB_EXTENDED) && tpoint_srid_internal(temp) != SRID_UNKNOWN)
     return true;
 
@@ -985,7 +982,7 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
-tpointinstarr_to_wkb_size(int npoints, bool hasz, uint8_t variant)
+tpointinstarr_to_wkb_size(int npoints, bool hasz)
 {
   int dims = hasz ? 3 : 2;
   /* size of the TInstant array */
@@ -1006,8 +1003,7 @@ tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
   if (tpoint_wkb_needs_srid((Temporal *) inst, variant))
     size += WKB_INT_SIZE;
   /* TInstant */
-  size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags),
-    variant);
+  size += tpointinstarr_to_wkb_size(1, MOBDB_FLAGS_GET_Z(inst->flags));
   return size;
 }
 
@@ -1026,8 +1022,7 @@ tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
   /* Include the number of instants */
   size += WKB_INT_SIZE;
   /* Include the TInstant array */
-  size += tpointinstarr_to_wkb_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags),
-    variant);
+  size += tpointinstarr_to_wkb_size(ti->count, MOBDB_FLAGS_GET_Z(ti->flags));
   return size;
 }
 
@@ -1046,8 +1041,7 @@ tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
   /* Include the number of instants and the period bounds flag */
   size += WKB_INT_SIZE + WKB_BYTE_SIZE;
   /* Include the TInstant array */
-  size += tpointinstarr_to_wkb_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags),
-    variant);
+  size += tpointinstarr_to_wkb_size(seq->count, MOBDB_FLAGS_GET_Z(seq->flags));
   return size;
 }
 
@@ -1068,8 +1062,7 @@ tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
   /* For each sequence include the number of instants and the period bounds flag */
   size += ts->count * (WKB_INT_SIZE + WKB_BYTE_SIZE);
   /* Include all the TInstant of all the sequences */
-  size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags),
-    variant);
+  size += tpointinstarr_to_wkb_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags));
   return size;
 }
 

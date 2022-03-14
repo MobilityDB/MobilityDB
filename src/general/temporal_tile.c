@@ -417,10 +417,9 @@ Datum range_bucket(PG_FUNCTION_ARGS)
  *
  * @param[in] t Start timestamp of the bucket
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
- * @param[in] torigin Origin of the buckets
  */
 static Period *
-period_bucket_get(TimestampTz t, int64 tunits, TimestampTz torigin)
+period_bucket_get(TimestampTz t, int64 tunits)
 {
   TimestampTz lower = t;
   TimestampTz upper = lower + tunits;
@@ -528,8 +527,7 @@ period_bucket_list(PG_FUNCTION_ARGS)
   /* Store bucket time */
   tuple_arr[0] = Int32GetDatum(state->i);
   /* Generate bucket */
-  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->t, state->tunits,
-    state->torigin));
+  tuple_arr[1] = PointerGetDatum(period_bucket_get(state->t, state->tunits));
   /* Advance state */
   period_bucket_state_next(state);
   /* Form tuple and return */
@@ -552,7 +550,7 @@ Datum period_bucket(PG_FUNCTION_ARGS)
   int64 tunits = get_interval_units(duration);
   TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
   TimestampTz time_bucket = timestamptz_bucket_internal(t, tunits, torigin);
-  Period *result = period_bucket_get(time_bucket, tunits, torigin);
+  Period *result = period_bucket_get(time_bucket, tunits);
   PG_RETURN_POINTER(result);
 }
 
@@ -631,14 +629,14 @@ tinstant_time_split(const TInstant *inst, int64 tunits, TimestampTz torigin,
  * Split a temporal value into an array of fragments according to time buckets.
  *
  * @param[in] ti Temporal value
- * @param[in] start,end Start and end timestamps of the buckets
+ * @param[in] start Start timestamp of the buckets
  * @param[in] tunits Size of the time buckets in PostgreSQL time units
  * @param[in] count Number of buckets
  * @param[out] buckets Start timestamp of the buckets containing a fragment
  * @param[out] newcount Number of values in the output array
  */
 static TInstantSet **
-tinstantset_time_split(const TInstantSet *ti, TimestampTz start, TimestampTz end,
+tinstantset_time_split(const TInstantSet *ti, TimestampTz start,
   int64 tunits, int count, TimestampTz **buckets, int *newcount)
 {
   TInstantSet **result = palloc(sizeof(TInstantSet *) * count);
@@ -928,7 +926,7 @@ temporal_time_split_internal(Temporal *temp, TimestampTz start, TimestampTz end,
       tunits, torigin, buckets, newcount);
   else if (temp->subtype == INSTANTSET)
     fragments = (Temporal **) tinstantset_time_split((const TInstantSet *) temp,
-      start, end, tunits, count, buckets, newcount);
+      start, tunits, count, buckets, newcount);
   else if (temp->subtype == SEQUENCE)
     fragments = (Temporal **) tsequence_time_split((const TSequence *) temp,
       start, end, tunits, count, buckets, newcount);

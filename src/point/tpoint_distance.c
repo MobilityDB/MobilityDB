@@ -115,7 +115,7 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * (geodetic version).
  */
 double
-lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
   long double *fraction)
 {
   double min_dist = FLT_MAX;
@@ -167,7 +167,8 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
+  Datum point, Oid basetypid __attribute__((unused)), Datum *value, 
+  TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
   Datum value1 = tinstant_value(start);
@@ -370,8 +371,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
   if (MOBDB_FLAGS_GET_GEODETIC(start1->flags))
     /* The distance output parameter is not used here */
@@ -630,7 +630,7 @@ NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   /* The trajectory is a line */
   LWLINE *lwline = geopoint_lwline(value1, value2);
   if (MOBDB_FLAGS_GET_GEODETIC(inst1->flags))
-    dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
+    dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, &fraction);
   else
     dist = MOBDB_FLAGS_GET_Z(inst1->flags) ?
       lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction) :
@@ -1018,16 +1018,13 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) &&
     MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2;
-  Period *inter = NULL;
+  Period p1, p2, inter;
   if (hast)
   {
     period_set(box1->tmin, box1->tmax, true, true, &p1);
     period_set(box2->tmin, box2->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
-    pfree(inter);
   }
 
   /* Select the distance function to be applied */
@@ -1084,14 +1081,12 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   ensure_same_srid_tpoint_stbox(temp, box);
   /* Project the temporal point to the timespan of the box */
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2;
-  Period *inter;
+  Period p1, p2, inter;
   if (hast)
   {
     temporal_period(temp, &p1);
     period_set(box->tmin, box->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
   }
 
@@ -1106,7 +1101,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   Datum geo1 = call_function2(LWGEOM_set_srid, geo,
     Int32GetDatum(box->srid));
   Temporal *temp1 = hast ?
-    temporal_restrict_period_internal(temp, inter, REST_AT) :
+    temporal_restrict_period_internal(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
   Datum traj = tpoint_trajectory_internal(temp1);
@@ -1115,9 +1110,7 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   pfree(DatumGetPointer(traj));
   pfree(DatumGetPointer(geo)); pfree(DatumGetPointer(geo1));
   if (hast)
-  {
-    pfree(inter); pfree(temp1);
-  }
+    pfree(temp1);
   return result;
 }
 

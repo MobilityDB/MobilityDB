@@ -225,7 +225,7 @@ tinstant_make_bbox(const TInstant *inst, void *box)
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberinstarr_to_tbox(const TInstant **instants, int count, TBOX *box)
+tnumberinstarr_tbox(const TInstant **instants, int count, TBOX *box)
 {
   tinstant_make_bbox(instants[0], box);
   for (int i = 1; i < count; i++)
@@ -254,11 +254,11 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
     period_set(instants[0]->t, instants[count - 1]->t, true, true,
       (Period *) box);
   else if (tnumber_base_type(instants[0]->basetypid))
-    tnumberinstarr_to_tbox(instants, count, (TBOX *) box);
+    tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (tgeo_base_type(instants[0]->basetypid))
-    tpointinstarr_stbox(instants, count, (STBOX *) box);
+    tgeompointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
-    tnpointinstarr_step_to_stbox(instants, count, (STBOX *) box);
+    tnpointinstarr_stbox(instants, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
@@ -284,18 +284,13 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
     period_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
       (Period *) box);
   else if (tnumber_base_type(instants[0]->basetypid))
-    tnumberinstarr_to_tbox(instants, count, (TBOX *) box);
+    tnumberinstarr_tbox(instants, count, (TBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_GEOMETRY))
-    tpointinstarr_stbox(instants, count, (STBOX *) box);
+    tgeompointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_GEOGRAPHY))
-    tgeogpointinstarr_stbox(instants, count, linear, (STBOX *) box);
+    tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
   else if (instants[0]->basetypid == type_oid(T_NPOINT))
-  {
-    if (linear)
-      tnpointinstarr_linear_to_stbox(instants, count, (STBOX *) box);
-    else
-      tnpointinstarr_step_to_stbox(instants, count, (STBOX *) box);
-  }
+    tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       instants[0]->basetypid);
@@ -356,7 +351,7 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
   else if (tgeo_base_type(sequences[0]->basetypid))
     tpointseqarr_stbox(sequences, count, (STBOX *) box);
   else if (sequences[0]->basetypid == type_oid(T_NPOINT))
-    tnpointseqarr_to_stbox(sequences, count, (STBOX *) box);
+    tnpointseqarr_stbox(sequences, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       sequences[0]->basetypid);

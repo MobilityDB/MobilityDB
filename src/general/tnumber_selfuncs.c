@@ -244,17 +244,13 @@ get_distance(TypeCacheEntry *typcache, RangeBound *bound1, RangeBound *bound2)
  * @note Function copied from rangetypes_selfuncs.c since it is not exported.
  */
 static double
-calc_hist_selectivity_contained(TypeCacheEntry *typcache,
-                RangeBound *lower, RangeBound *upper,
-                RangeBound *hist_lower, int hist_nvalues,
-                Datum *length_hist_values, int length_hist_nvalues)
+calc_hist_selectivity_contained(TypeCacheEntry *typcache, RangeBound *lower,
+  RangeBound *upper, RangeBound *hist_lower, int hist_nvalues,
+  Datum *length_hist_values, int length_hist_nvalues)
 {
-  int      i,
-        upper_index;
-  float8    prev_dist;
-  double    bin_width;
-  double    upper_bin_width;
-  double    sum_frac;
+  int i, upper_index;
+  float8 prev_dist;
+  double bin_width, upper_bin_width, sum_frac;
 
   /*
    * Begin by finding the bin containing the upper bound, in the lower bound
@@ -263,8 +259,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
    */
   upper->inclusive = !upper->inclusive;
   upper->lower = true;
-  upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues,
-                 false);
+  upper_index = rbound_bsearch(typcache, upper, hist_lower, hist_nvalues, false);
 
   /*
    * Calculate upper_bin_width, ie. the fraction of the (upper_index,
@@ -273,8 +268,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
    */
   if (upper_index >= 0 && upper_index < hist_nvalues - 1)
     upper_bin_width = get_position(typcache, upper,
-                     &hist_lower[upper_index],
-                     &hist_lower[upper_index + 1]);
+      &hist_lower[upper_index], &hist_lower[upper_index + 1]);
   else
     upper_bin_width = 0.0;
 
@@ -293,9 +287,9 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
   sum_frac = 0.0;
   for (i = upper_index; i >= 0; i--)
   {
-    double    dist;
-    double    length_hist_frac;
-    bool    final_bin = false;
+    double dist;
+    double length_hist_frac;
+    bool final_bin = false;
 
     /*
      * dist -- distance from upper bound of query range to lower bound of
@@ -312,7 +306,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
        * ignore.
        */
       bin_width -= get_position(typcache, lower, &hist_lower[i],
-                    &hist_lower[i + 1]);
+        &hist_lower[i + 1]);
       if (bin_width < 0.0)
         bin_width = 0.0;
       final_bin = true;
@@ -325,8 +319,7 @@ calc_hist_selectivity_contained(TypeCacheEntry *typcache,
      * to not exceed the distance to the upper bound of the query range.
      */
     length_hist_frac = calc_length_hist_frac(length_hist_values,
-                         length_hist_nvalues,
-                         prev_dist, dist, true);
+      length_hist_nvalues, prev_dist, dist, true);
 
     /*
      * Add the fraction of tuples in this bin, with a suitable length, to
@@ -678,22 +671,22 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
  * Returns the enum value associated to the operator
  */
 static bool
-tnumber_cachedop(Oid operator, CachedOp *cachedOp)
+tnumber_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++)
   {
-    if (operator == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
-      operator == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
+    if (oper == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -742,7 +735,7 @@ tnumber_cachedop_rangeop(CachedOp cachedOp)
  * have statistics or cannot use them for some reason.
  */
 static double
-default_tnumber_selectivity(CachedOp operator)
+tnumber_sel_default(CachedOp operator)
 {
   switch (operator)
   {
@@ -779,6 +772,17 @@ default_tnumber_selectivity(CachedOp operator)
 }
 
 /**
+ * Returns a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+static double
+tnumber_joinsel_default(Oid oper __attribute__((unused)))
+{
+  // TODO take care of the operator
+  return 0.001;
+}
+
+/**
  * Returns an estimate of the selectivity of the temporal search box and the
  * operator for columns of temporal numbers. For the traditional comparison
  * operators (<, <=, ...) we follow the approach for range types in
@@ -787,8 +791,8 @@ default_tnumber_selectivity(CachedOp operator)
  * respectively.
  */
 static Selectivity
-tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box,
-  CachedOp cachedOp, Oid basetypid)
+tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
+  Oid basetypid)
 {
   Period period;
   RangeType *range = NULL;
@@ -862,7 +866,7 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
         value_oprid);
     /* Selectivity for the time dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= period_hist_sel(vardata, &period, cachedOp);
+      selec *= period_sel_hist(vardata, &period, cachedOp);
   }
   else if (cachedOp == LEFT_OP || cachedOp == RIGHT_OP ||
     cachedOp == OVERLEFT_OP || cachedOp == OVERRIGHT_OP)
@@ -877,11 +881,11 @@ tnumber_sel_internal_box(PlannerInfo *root, VariableStatData *vardata, TBOX *box
   {
     /* Selectivity for the value dimension */
     if (MOBDB_FLAGS_GET_T(box->flags))
-      selec *= period_hist_sel(vardata, &period, cachedOp);
+      selec *= period_sel_hist(vardata, &period, cachedOp);
   }
   else /* Unknown operator */
   {
-    selec = default_tnumber_selectivity(cachedOp);
+    selec = tnumber_sel_default(cachedOp);
   }
   if (range != NULL)
     pfree(range);
@@ -905,12 +909,9 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   TBOX constBox;
   Oid basetypid;
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  bool found = tnumber_cachedop(operator, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  /* Get enumeration value associated to the operator */
+  if (! tnumber_cachedop(operator, &cachedOp))
+    /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
@@ -919,7 +920,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
         &varonleft))
-    return default_tnumber_selectivity(cachedOp);
+    return tnumber_sel_default(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -927,7 +928,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return default_tnumber_selectivity(cachedOp);
+    return tnumber_sel_default(cachedOp);
   }
 
   /*
@@ -952,26 +953,24 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return default_tnumber_selectivity(cachedOp);
+      return tnumber_sel_default(cachedOp);
     }
   }
 
-  /*
-   * Transform the constant into a TBOX
-   */
-  found = tnumber_const_to_tbox(other, &constBox);
-  /* In the case of unknown constant */
-  if (!found)
-    return default_tnumber_selectivity(cachedOp);
+  /* Transform the constant into a TBOX */
+  if (! tnumber_const_to_tbox(other, &constBox))
+    /* In the case of unknown constant */
+    return tnumber_sel_default(cachedOp);
 
-  assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
+  assert(MOBDB_FLAGS_GET_X(constBox.flags) ||
+    MOBDB_FLAGS_GET_T(constBox.flags));
 
   /* Get the base type of the temporal column */
   basetypid = base_oid_from_temporal(vardata.atttype);
   ensure_tnumber_base_type(basetypid);
 
   /* Compute the selectivity */
-  selec = tnumber_sel_internal_box(root, &vardata, &constBox, cachedOp, basetypid);
+  selec = tnumber_sel_box(&vardata, &constBox, cachedOp, basetypid);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
@@ -995,11 +994,49 @@ tnumber_sel(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+/**
+ * Estimate the join selectivity value of the operators for temporal numbers
+ * (internal function)
+ */
 float8
 tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype)
+  JoinType jointype, SpecialJoinInfo *sjinfo)
 {
-  return DEFAULT_TEMP_JOINSEL;
+  VariableStatData vardata1, vardata2;
+  bool join_is_reversed;
+  float8 selec;
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    return DEFAULT_TEMP_JOINSEL;
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    return DEFAULT_TEMP_JOINSEL;
+
+  get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
+    &join_is_reversed);
+
+  /*
+   * Get enumeration value associated to the operator
+   */
+  CachedOp cachedOp;
+  if (! tnumber_cachedop(oper, &cachedOp))
+  {
+    /* In the case of unknown operator */
+    ReleaseVariableStats(vardata1);
+    ReleaseVariableStats(vardata2);
+    return tnumber_joinsel_default(oper);
+  }
+
+  /* TODO Estimate join selectivity */
+  // selec = tnumber_joinsel_hist(&vardata1, &vardata2, cachedOp);
+  selec = tnumber_joinsel_default(oper);
+
+  ReleaseVariableStats(vardata1);
+  ReleaseVariableStats(vardata2);
+  CLAMP_PROBABILITY(selec);
+  return (float8) selec;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
@@ -1013,7 +1050,7 @@ tnumber_joinsel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-
+  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
@@ -1022,7 +1059,7 @@ tnumber_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype));
+  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype, sjinfo));
 }
 
 /*****************************************************************************/

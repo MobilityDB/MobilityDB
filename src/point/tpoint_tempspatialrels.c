@@ -1005,7 +1005,6 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
  * @param[in] lower,upper Timestamps associated to the segment
  * @param[in] dist Distance
  * @param[in] hasz True for 3D segments
- * @param[in] func Distance function (2D or 3D)
  * @param[out] t1,t2 Resulting timestamps
  * @result Number of timestamps in the result, between 0 and 2. In the case
  * of a single result both t1 and t2 are set to the unique timestamp
@@ -1013,7 +1012,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
 static int
 tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
   TimestampTz lower, TimestampTz upper, double dist, bool hasz,
-  datum_func3 func, TimestampTz *t1, TimestampTz *t2)
+  TimestampTz *t1, TimestampTz *t2)
 {
   /* To reduce problems related to floating point arithmetic, lower and upper
    * are shifted, respectively, to 0 and 1 before computing the solutions
@@ -1213,7 +1212,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
        * function is true */
       TimestampTz t1, t2;
       int solutions = tdwithin_tpointsegm_point(sv, ev, point,
-        lower, upper, dist_d, hasz, func, &t1, &t2);
+        lower, upper, dist_d, hasz, &t1, &t2);
 
       /* <  F  > */
       bool upper_inc1 = linear && upper_inc;
@@ -1539,13 +1538,10 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist,
 {
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  datum_func3 func;
-  if (MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-    func = &geog_dwithin;
-  else
-  /* 3D only if both arguments are 3D */
-    func = MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs)) ?
-      &geom_dwithin3d : &geom_dwithin2d;
+  datum_func3 func = 
+    /* 3D only if both arguments are 3D */
+    MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs)) ?
+    &geom_dwithin3d : &geom_dwithin2d;
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -1565,10 +1561,10 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist,
       PointerGetDatum(gs), &lfinfo);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tdwithin_tpointseq_point((TSequence *) temp,
-        PointerGetDatum(gs), dist, func);
+      PointerGetDatum(gs), dist, func);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tdwithin_tpointseqset_point((TSequenceSet *) temp,
-        PointerGetDatum(gs), dist, func);
+      PointerGetDatum(gs), dist, func);
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {

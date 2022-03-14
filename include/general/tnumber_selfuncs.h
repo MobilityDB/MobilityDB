@@ -49,7 +49,7 @@ extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
 extern float8 tnumber_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
 extern float8 tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype);
+  JoinType jointype, SpecialJoinInfo *sjinfo);
 
 /*****************************************************************************/
 

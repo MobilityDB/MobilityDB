@@ -116,15 +116,15 @@ extern Datum route_geom(int64 rid);
 extern int64 rid_from_geom(Datum geom);
 
 extern int npoint_srid_internal(const npoint *np);
-extern Datum npoint_as_geom(PG_FUNCTION_ARGS);
-extern Datum geom_as_npoint(PG_FUNCTION_ARGS);
-extern Datum nsegment_as_geom(PG_FUNCTION_ARGS);
-extern Datum geom_as_nsegment(PG_FUNCTION_ARGS);
+extern Datum npoint_to_geom(PG_FUNCTION_ARGS);
+extern Datum geom_to_npoint(PG_FUNCTION_ARGS);
+extern Datum nsegment_to_geom(PG_FUNCTION_ARGS);
+extern Datum geom_to_nsegment(PG_FUNCTION_ARGS);
 
-extern Datum npoint_as_geom_internal(const npoint *np);
-extern Datum nsegment_as_geom_internal(const nsegment *ns);
-extern npoint *geom_as_npoint_internal(Datum geom);
-extern nsegment *geom_as_nsegment_internal(Datum line);
+extern Datum npoint_geom(const npoint *np);
+extern Datum nsegment_geom(const nsegment *ns);
+extern npoint *geom_to_npoint_internal(Datum geom);
+extern nsegment *geom_to_nsegment_internal(Datum line);
 
 extern Datum npointarr_to_geom_internal(npoint **points, int count);
 extern Datum nsegmentarr_to_geom_internal(nsegment **segments, int count);

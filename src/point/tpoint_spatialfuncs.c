@@ -1609,51 +1609,6 @@ tpointinstset_trajectory(const TInstantSet *ti)
 }
 
 /**
- * Compute the trajectory of an array of instants
- *
- * @note This function is called by the constructor of a temporal point sequence
- * when the trajectory must be precomputed or when the points are geodetic
- * and returns a geometry/geography.
- * Since the composing points have been already validated in the constructor
- * there is no verification of the input in this function, in particular
- * for geographies it is supposed that the composing points are geodetic
- *
- * @param[in] instants Array of temporal instants
- * @param[in] count Number of elements in the input array
- * @param[in] linear True when the interpolation is linear
- */
-Datum
-tpointinstarr_make_trajectory(const TInstant **instants, int count,
-  bool linear)
-{
-  /* Instantaneous sequence */
-  if (count == 1)
-    return tinstant_value_copy(instants[0]);
-
-  LWPOINT **points = palloc(sizeof(LWPOINT *) * count);
-  /* Remove two consecutive points if they are equal */
-  Datum value = tinstant_value(instants[0]);
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
-  points[0] = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-  int k = 1;
-  for (int i = 1; i < count; i++)
-  {
-    value = tinstant_value(instants[i]);
-    gs = (GSERIALIZED *) DatumGetPointer(value);
-    LWPOINT *lwpoint = lwgeom_as_lwpoint(lwgeom_from_gserialized(gs));
-    if (! lwpoint_same(lwpoint, points[k - 1]))
-      points[k++] = lwpoint;
-  }
-  LWGEOM *lwgeom = lwpointarr_make_trajectory((LWGEOM **) points, k, linear);
-  Datum result = PointerGetDatum(geo_serialize(lwgeom));
-  pfree(lwgeom);
-  for (int i = 0; i < k; i++)
-    lwpoint_free(points[i]);
-  pfree(points);
-  return result;
-}
-
-/**
  * Returns the trajectory of a temporal sequence point
  *
  * @param[in] seq Temporal sequence
@@ -2867,7 +2822,7 @@ static double
 tpointseq_length_2d(const TSequence *seq)
 {
   double result = 0;
-  Datum start = tinstant_value(tsequence_inst_n(seq , 0));
+  Datum start = tinstant_value(tsequence_inst_n(seq, 0));
   const POINT2D *p1 = datum_get_point2d_p(start);
   for (int i = 1; i < seq->count; i++)
   {
@@ -2890,7 +2845,7 @@ static double
 tpointseq_length_3d(const TSequence *seq)
 {
   double result = 0;
-  Datum start = tinstant_value(tsequence_inst_n(seq , 0));
+  Datum start = tinstant_value(tsequence_inst_n(seq, 0));
   const POINT3DZ *p1 = datum_get_point3dz_p(start);
   for (int i = 1; i < seq->count; i++)
   {
@@ -3647,7 +3602,7 @@ get_bearing_fn(int16 flags)
  */
 static bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid, Datum *value, TimestampTz *t)
+  Datum point, Oid basetypid __attribute__((unused)), Datum *value, TimestampTz *t)
 {
   Datum dstart = tinstant_value(start);
   Datum dend = tinstant_value(end);
@@ -3705,19 +3660,17 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] value Value
  * @param[out] t Timestamp
- * @pre The segments are not both constants and at least one is linear
+ * @pre The segments are not both constants and are both linear
  * @note This function is currently not available for two temporal geographic
  * points
  */
 static bool
 tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
-  const TInstant *end1, bool linear1, const TInstant *start2,
-  const TInstant *end2, bool linear2, Datum *value, TimestampTz *t)
+  const TInstant *end1, const TInstant *start2,
+  const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  assert(linear1 && linear2);
   assert(!MOBDB_FLAGS_GET_GEODETIC(start1->flags));
   const POINT2D *sp1 = datum_get_point2d_p(tinstant_value(start1));
   const POINT2D *ep1 = datum_get_point2d_p(tinstant_value(end1));

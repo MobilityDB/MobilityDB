@@ -131,11 +131,11 @@ CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear boolean DEFAULT true,
 
 CREATE FUNCTION tgeompoint(tnpoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tnpoint_as_tgeompoint'
+  AS 'MODULE_PATHNAME', 'tnpoint_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint(tgeompoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tgeompoint_as_tnpoint'
+  AS 'MODULE_PATHNAME', 'tgeompoint_to_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(tnpoint)
   RETURNS period

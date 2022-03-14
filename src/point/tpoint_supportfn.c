@@ -223,7 +223,7 @@ tpoint_supportfn(PG_FUNCTION_ARGS)
       req->selectivity = tpoint_joinsel_internal(req->root, oproid, req->args,
         req->jointype, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
     else
-      req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
+      req->selectivity = tnpoint_sel_internal(req->root, oproid, req->args,
         req->varRelid);
     PG_RETURN_POINTER(req);
   }

@@ -117,7 +117,6 @@ tsequenceset_seq_n(const TSequenceSet *ts, int index)
  * @endcode
  * where the `_X` are unused bytes added for double padding, `offset_0` and
  * `offset_1` are offsets for the corresponding sequences.
- * Temporal sequence set values do not have precomputed trajectory.
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -195,7 +194,6 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
     (tsequenceset_offsets_ptr(result))[i] = pos;
     pos += double_pad(VARSIZE(normseqs[i]));
   }
-
   if (normalize && count > 1)
     pfree_array((void **) normseqs, newcount);
   return result;
@@ -1631,7 +1629,7 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
     result = tsequenceset_restrict_periodset(ts, ps, REST_AT);
     pfree(ps);
   }
-  pfree(atresult); pfree(ps1);  pfree(ps2);
+  pfree(atresult); pfree(ps1); pfree(ps2);
   return result;
 }
 

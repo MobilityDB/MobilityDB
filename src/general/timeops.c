@@ -2925,9 +2925,9 @@ union_timestamp_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  Period *p1 = period_make(t, t, true, true);
-  PeriodSet *result = union_period_period_internal(p, p1);
-  pfree(p1);
+  Period p1;
+  period_set(t, t, true, true, &p1);
+  PeriodSet *result = union_period_period_internal(p, &p1);
   PG_RETURN_POINTER(result);
 }
 
@@ -2940,9 +2940,9 @@ union_timestamp_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  Period *p = period_make(t, t, true, true);
-  PeriodSet *result = union_period_periodset_internal(p, ps);
-  pfree(p);
+  Period p;
+  period_set(t, t, true, true, &p);
+  PeriodSet *result = union_period_periodset_internal(&p, ps);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
 }
@@ -3064,9 +3064,9 @@ union_period_timestamp(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period *p1 = period_make(t, t, true, true);
-  PeriodSet *result = union_period_period_internal(p, p1);
-  pfree(p1);
+  Period p1;
+  period_set(t, t, true, true, &p1);
+  PeriodSet *result = union_period_period_internal(p, &p1);
   PG_RETURN_POINTER(result);
 }
 
@@ -3137,9 +3137,9 @@ union_periodset_timestamp(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period *p = period_make(t, t, true, true);
-  PeriodSet *result = union_period_periodset_internal(p, ps);
-  pfree(p);
+  Period p;
+  period_set(t, t, true, true, &p);
+  PeriodSet *result = union_period_periodset_internal(&p, ps);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
@@ -3487,6 +3487,29 @@ intersection_period_timestampset(PG_FUNCTION_ARGS)
 }
 
 /**
+ * Set the last argument to the intersection of the two periods
+ *
+ * @note This function equivalent is to intersection_period_period_internal
+ * but avoids memory allocation
+ */
+bool
+inter_period_period(const Period *p1, const Period *p2, Period *result)
+{
+  /* Bounding box test */
+  if (!overlaps_period_period_internal(p1, p2))
+    return false;
+
+  TimestampTz lower = Max(p1->lower, p2->lower);
+  TimestampTz upper = Min(p1->upper, p2->upper);
+  bool lower_inc = p1->lower == p2->lower ? p1->lower_inc && p2->lower_inc :
+    ( lower == p1->lower ? p1->lower_inc : p2->lower_inc );
+  bool upper_inc = p1->upper == p2->upper ? p1->upper_inc && p2->upper_inc :
+    ( upper == p1->upper ? p1->upper_inc : p2->upper_inc );
+  period_set(lower, upper, lower_inc, upper_inc, result);
+  return true;
+}
+
+/**
  * Returns the intersection of the two time values (internal function)
  */
 Period *
@@ -3630,21 +3653,20 @@ intersection_periodset_periodset_internal(const PeriodSet *ps1,
   /* Bounding box test */
   const Period *p1 = periodset_bbox_ptr(ps1);
   const Period *p2 = periodset_bbox_ptr(ps2);
-  if (!overlaps_period_period_internal(p1, p2))
+  Period p;
+  if (! inter_period_period(p1, p2, &p))
     return NULL;
 
-  Period *inter = intersection_period_period_internal(p1, p2);
   int loc1, loc2;
-  periodset_find_timestamp(ps1, inter->lower, &loc1);
-  periodset_find_timestamp(ps2, inter->lower, &loc2);
-  pfree(inter);
+  periodset_find_timestamp(ps1, p.lower, &loc1);
+  periodset_find_timestamp(ps2, p.lower, &loc2);
   Period **periods = palloc(sizeof(Period *) * (ps1->count + ps2->count - loc1 - loc2));
   int i = loc1, j = loc2, k = 0;
   while (i < ps1->count && j < ps2->count)
   {
     p1 = periodset_per_n(ps1, i);
     p2 = periodset_per_n(ps2, j);
-    inter = intersection_period_period_internal(p1, p2);
+    Period *inter = intersection_period_period_internal(p1, p2);
     if (inter != NULL)
       periods[k++] = inter;
     int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
@@ -3981,10 +4003,10 @@ minus_period_period_internal1(Period **result, const Period *p1,
   period_deserialize(p1, &lower1, &upper1);
   period_deserialize(p2, &lower2, &upper2);
 
-  int cmp_l1l2 = period_cmp_bounds(&lower1, &lower2);
-  int cmp_l1u2 = period_cmp_bounds(&lower1, &upper2);
-  int cmp_u1l2 = period_cmp_bounds(&upper1, &lower2);
-  int cmp_u1u2 = period_cmp_bounds(&upper1, &upper2);
+  int cmp_l1l2 = period_bound_cmp(&lower1, &lower2);
+  int cmp_l1u2 = period_bound_cmp(&lower1, &upper2);
+  int cmp_u1l2 = period_bound_cmp(&upper1, &lower2);
+  int cmp_u1u2 = period_bound_cmp(&upper1, &upper2);
 
   /* Result is empty
    * p1         |----|
@@ -4285,9 +4307,7 @@ minus_periodset_timestampset_internal(const PeriodSet *ps,
     return NULL;
   }
   PeriodSet *result = periodset_make((const Period **)periods, k, NORMALIZE_NO);
-  for (int l = 0; l < i; l++)
-    pfree(periods[l]);
-  pfree(periods);
+  pfree_array((void **) periods, i);
   return result;
 }
 

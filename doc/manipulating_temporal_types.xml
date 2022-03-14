@@ -74,6 +74,10 @@
 		</listitem>
 
 		<listitem>
+			<para><varname>geompoint</varname> represents the type <varname>geometry</varname> restricted to a point.</para>
+		</listitem>
+
+		<listitem>
 			<para><varname>point</varname> represents the types <varname>geometry</varname> or <varname>geography</varname> restricted to a point.</para>
 		</listitem>
 

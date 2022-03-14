@@ -155,19 +155,16 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
  * This function is passed to the lifting infrastructure when computing the
  * temporal distance.
  * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] linear1 True if the first segment has linear interpolation
  * @param[in] start2,end2 Temporal instants defining the second segment
- * @param[in] linear2 True if the second segment has linear interpolation
  * @param[out] value Value
  * @param[out] t Timestamp
  */
 static bool
 tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
-  bool linear1, const TInstant *start2, const TInstant *end2, bool linear2,
-  Datum *value, TimestampTz *t)
+  const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
-  if (! tsegment_intersection(start1, end1, linear1, start2, end2,
-    linear2, NULL, NULL, t))
+  if (! tsegment_intersection(start1, end1, LINEAR, start2, end2, LINEAR,
+      NULL, NULL, t))
     return false;
   *value = (Datum) 0;
   return true;
@@ -283,14 +280,12 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
   /* Project the boxes to their common timespan */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2;
-  Period *inter;
+  Period p1, p2, inter;
   if (hast)
   {
     period_set(box1->tmin, box1->tmax, true, true, &p1);
     period_set(box2->tmin, box2->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
   }
 
@@ -312,8 +307,7 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
     result = box1->tmin - box2->tmax;
 
   pfree(range1); pfree(range2);
-  if (hast)
-    pfree(inter);
+
   return result;
 }
 
@@ -342,20 +336,18 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);
   bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  Period p1, p2;
-  Period *inter;
+  Period p1, p2, inter;
   if (hast)
   {
     temporal_period(temp, &p1);
     period_set(box->tmin, box->tmax, true, true, &p2);
-    inter = intersection_period_period_internal(&p1, &p2);
-    if (!inter)
+    if (! inter_period_period(&p1, &p2, &inter))
       return DBL_MAX;
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
   Temporal *temp1 = hast ?
-    temporal_restrict_period_internal(temp, inter, REST_AT) : (Temporal *) temp;
+    temporal_restrict_period_internal(temp, &inter, REST_AT) : (Temporal *) temp;
   /* Test if the bounding boxes overlap */
   TBOX box1;
   temporal_bbox(temp1, &box1);
@@ -367,9 +359,8 @@ NAD_tnumber_tbox_internal(const Temporal *temp, TBOX *box)
     fabs(box->xmin - box1.xmax) : fabs(box1.xmin - box->xmax);
 
   if (hast)
-  {
-    pfree(inter); pfree(temp1);
-  }
+    pfree(temp1);
+
   return result;
 }
 

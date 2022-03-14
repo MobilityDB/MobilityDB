@@ -902,10 +902,10 @@ SELECT tdisjoint(tgeompoint '[Point(0 3)@2012-01-01, Point(3 0)@2012-01-05)',
 
 				<listitem id="tdwithin">
 					<indexterm><primary><varname>tdwithin</varname></primary></indexterm>
-					<para>Está a distancia de temporal &Z_support; &geography_support;</para>
-					<para><varname>tdwithin({point,tpoint},{point,tpoint},float): tbool</varname></para>
-					<para><varname>tdwithin({point,tpoint},{point,tpoint},float,atValue boolean): tbool</varname></para>
-					<para>La función solo admite 3D o geografías para dos puntos temporales</para>
+					<para>Está a distancia de temporal &Z_support;</para>
+					<para><varname>tdwithin({geompoint,tgeompoint},{geompoint,tgeompoint},float): tbool</varname></para>
+					<para><varname>tdwithin({geompoint,tgeompoint},{geompoint,tgeompoint},float,atValue boolean): tbool</varname></para>
+					<para>La función solo admite 3D para dos puntos temporales</para>
 					<programlisting xml:space="preserve">
 SELECT tdwithin(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   tgeompoint '[Point(0 0)@2012-01-01, Point(3 0)@2012-01-04)', 1);

@@ -482,7 +482,7 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
  * Period, and PeriodSet are transformed into an STBOX
  */
 bool
-tpoint_const_to_stbox(Node *other, STBOX *box)
+tpoint_const_stbox(Node *other, STBOX *box)
 {
   Oid consttype = ((Const *) other)->consttype;
 
@@ -527,7 +527,7 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 /**
  * Get the enum value associated to the operator
  */
-bool
+static bool
 tpoint_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
@@ -552,11 +552,55 @@ tpoint_cachedop(Oid oper, CachedOp *cachedOp)
 }
 
 /**
- * Returns a default selectivity estimate for given operator, when we don't
- * have statistics or cannot use them for some reason.
+ * Returns a default restriction selectivity estimate for a given operator,
+ * when we don't have statistics or cannot use them for some reason.
  */
-static double
-default_tpoint_selectivity(CachedOp oper)
+double
+tpoint_sel_default(CachedOp oper)
+{
+  switch (oper)
+  {
+    case OVERLAPS_OP:
+      return 0.005;
+
+    case CONTAINS_OP:
+    case CONTAINED_OP:
+      return 0.002;
+
+    case SAME_OP:
+      return 0.001;
+
+    case LEFT_OP:
+    case RIGHT_OP:
+    case OVERLEFT_OP:
+    case OVERRIGHT_OP:
+    case ABOVE_OP:
+    case BELOW_OP:
+    case OVERABOVE_OP:
+    case OVERBELOW_OP:
+    case FRONT_OP:
+    case BACK_OP:
+    case OVERFRONT_OP:
+    case OVERBACK_OP:
+    case AFTER_OP:
+    case BEFORE_OP:
+    case OVERAFTER_OP:
+    case OVERBEFORE_OP:
+      /* these are similar to regular scalar inequalities */
+      return DEFAULT_INEQ_SEL;
+
+    default:
+      /* all operators should be handled above, but just in case */
+      return 0.001;
+  }
+}
+
+/**
+ * Returns a default join selectivity estimate for a given operator,
+ * when we don't have statistics or cannot use them for some reason.
+ */
+double
+tpoint_joinsel_default(CachedOp oper)
 {
   switch (oper)
   {
@@ -608,7 +652,7 @@ default_tpoint_selectivity(CachedOp oper)
  * This function generalizes PostGIS function estimate_selectivity in file
  * gserialized_estimate.c
  */
-static float8
+float8
 geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 {
   ND_STATS *nd_stats;
@@ -803,6 +847,10 @@ geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
 
 /*****************************************************************************/
 
+/**
+ * Estimate the restriction selectivity of the operators for temporal points
+ * (internal function)
+ */
 float8
 tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 {
@@ -826,9 +874,9 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    * If expression is not (variable op something) or (something op
    * variable), then punt and return a default estimate.
    */
-  if (!get_restriction_variable(root, args, varRelid,
-                  &vardata, &other, &varonleft))
-    return default_tpoint_selectivity(cachedOp);
+  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
+      &varonleft))
+    return tpoint_sel_default(cachedOp);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -836,7 +884,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return default_tpoint_selectivity(cachedOp);
+    return tpoint_sel_default(cachedOp);
   }
 
   /*
@@ -861,17 +909,17 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return default_tpoint_selectivity(cachedOp);
+      return tpoint_sel_default(cachedOp);
     }
   }
 
   /*
    * Transform the constant into an STBOX
    */
-  found = tpoint_const_to_stbox(other, &constBox);
+  found = tpoint_const_stbox(other, &constBox);
   /* In the case of unknown constant */
   if (!found)
-    return default_tpoint_selectivity(cachedOp);
+    return tpoint_sel_default(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
 
@@ -888,7 +936,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
      * comparisons <, <=, >, >= */
     if (cachedOp == LT_OP || cachedOp == LE_OP || cachedOp == GT_OP ||
       cachedOp == GE_OP)
-      selec *= default_tpoint_selectivity(cachedOp);
+      selec *= tpoint_sel_default(cachedOp);
     else
       selec *= geo_selectivity(&vardata, &constBox, cachedOp);
   }
@@ -903,7 +951,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     ensure_valid_tempsubtype_all(subtype);
 
     /* Compute the selectivity */
-    selec *= temporal_sel_period(root, &vardata, &constperiod, cachedOp);
+    selec *= temporal_sel_period(&vardata, &constperiod, cachedOp);
   }
 
   ReleaseVariableStats(vardata);
@@ -913,7 +961,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 
 PG_FUNCTION_INFO_V1(tpoint_sel);
 /**
- * Estimate the restriction selectivity value of the operators for temporal points
+ * Estimate the restriction selectivity of the operators for temporal points
  */
 PGDLLEXPORT Datum
 tpoint_sel(PG_FUNCTION_ARGS)
@@ -1175,7 +1223,7 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
 
 double
 tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, int mode)
+  JoinType jointype, SpecialJoinInfo *sjinfo, int mode)
 {
   float8 selectivity;
   Oid relid1, relid2;
@@ -1207,7 +1255,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
     return DEFAULT_ND_JOINSEL;
 
   selectivity = geo_join_selectivity(stats1, stats2) *
-    temporal_joinsel_internal(root, oper, args, jointype);
+    temporal_joinsel_internal(root, oper, args, jointype, sjinfo);
   pfree(stats1);
   pfree(stats2);
   return selectivity;
@@ -1229,6 +1277,7 @@ tpoint_joinsel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
   int mode = Int32GetDatum(0) /* ND mode TO GENERALIZE */;
 
   /* Check length of args and punt on > 2 */
@@ -1239,7 +1288,7 @@ tpoint_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(tpoint_joinsel_internal(root, oper, args, jointype, mode));
+  PG_RETURN_FLOAT8(tpoint_joinsel_internal(root, oper, args, jointype, sjinfo, mode));
 }
 
 /*****************************************************************************/

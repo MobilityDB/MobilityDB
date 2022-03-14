@@ -83,20 +83,20 @@ extern Datum tnpoint_in(PG_FUNCTION_ARGS);
 
 extern Datum tnpoint_make_tnpointseq(PG_FUNCTION_ARGS);
 
-extern Datum tnpoint_as_tgeompoint(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_as_tnpoint(PG_FUNCTION_ARGS);
+extern Datum tnpoint_to_tgeompoint(PG_FUNCTION_ARGS);
+extern Datum tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 
-extern TInstant *tnpointinst_as_tgeompointinst(const TInstant *inst);
-extern TInstantSet *tnpointinstset_as_tgeompointi(const TInstantSet *ti);
-extern TSequence *tnpointseq_as_tgeompointseq(const TSequence *seq);
-extern TSequenceSet *tnpointseqset_as_tgeompointseqset(const TSequenceSet *ts);
-extern Temporal *tnpoint_as_tgeompoint_internal(const Temporal *temp);
-extern Temporal *tgeompoint_as_tnpoint_internal(Temporal *temp);
+extern TInstant *tnpointinst_to_tgeompointinst(const TInstant *inst);
+extern TInstantSet *tnpointinstset_to_tgeompointi(const TInstantSet *ti);
+extern TSequence *tnpointseq_to_tgeompointseq(const TSequence *seq);
+extern TSequenceSet *tnpointseqset_to_tgeompointseqset(const TSequenceSet *ts);
+extern Temporal *tnpoint_to_tgeompoint_internal(const Temporal *temp);
+extern Temporal *tgeompoint_to_tnpoint_internal(Temporal *temp);
 
-extern TInstant *tgeompointinst_as_tnpointinst(const TInstant *inst);
-extern TInstantSet *tgeompointinstset_as_tnpointinstset(const TInstantSet *ti);
-extern TSequence *tgeompointseq_as_tnpointseq(const TSequence *seq);
-extern TSequenceSet *tgeompointseqset_as_tnpointseqset(const TSequenceSet *ts);
+extern TInstant *tgeompointinst_to_tnpointinst(const TInstant *inst);
+extern TInstantSet *tgeompointinstset_to_tnpointinstset(const TInstantSet *ti);
+extern TSequence *tgeompointseq_to_tnpointseq(const TSequence *seq);
+extern TSequenceSet *tgeompointseqset_to_tnpointseqset(const TSequenceSet *ts);
 
 extern Datum tnpoint_positions(PG_FUNCTION_ARGS);
 extern Datum tnpoint_route(PG_FUNCTION_ARGS);
