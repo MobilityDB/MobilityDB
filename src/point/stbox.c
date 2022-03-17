@@ -50,6 +50,9 @@
 /* Buffer size for input and output of STBOX */
 #define MAXSTBOXLEN    256
 
+/* Forward declaration */
+bool inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result);
+/* PostGIS prototype */
 extern void ll2cart(const POINT2D *g, POINT3D *p);
 
 /*****************************************************************************
@@ -1493,29 +1496,29 @@ adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 {
   bool hasx, hasz, hast, geodetic;
   topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic);
-  STBOX *inter = stbox_intersection_internal(box1, box2);
-  if (inter == NULL)
+  STBOX inter;
+  if (! inter_stbox_stbox(box1, box2, &inter))
     return false;
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
   if (!hasx && hast)
-    return inter->tmin == inter->tmax;
+    return (inter.tmin == inter.tmax);
   else if (hasx && !hast)
   {
     if (hasz || geodetic)
-      return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
-           inter->zmin == inter->zmax;
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
+           inter.zmin == inter.zmax);
     else
-      return inter->xmin == inter->xmax || inter->ymin == inter->ymax;
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax);
   }
   else
   {
     if (hasz || geodetic)
-      return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
-           inter->zmin == inter->zmax || inter->tmin == inter->tmax;
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
+           inter.zmin == inter.zmax || inter.tmin == inter.tmax);
     else
-      return inter->xmin == inter->xmax || inter->ymin == inter->ymax ||
-           inter->tmin == inter->tmax;
+      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
+           inter.tmin == inter.tmax);
   }
 }
 
@@ -1953,7 +1956,7 @@ overafter_stbox_stbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 STBOX *
-stbox_union_internal(const STBOX *box1, const STBOX *box2, bool strict)
+union_stbox_stbox_internal(const STBOX *box1, const STBOX *box2, bool strict)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_dimensionality(box1->flags, box2->flags);
@@ -1965,28 +1968,30 @@ stbox_union_internal(const STBOX *box1, const STBOX *box2, bool strict)
 
   STBOX *result = stbox_copy(box1);
   stbox_expand(result, box2);
-  return(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(stbox_union);
+PG_FUNCTION_INFO_V1(union_stbox_stbox);
 /**
  * Returns the union of the spatiotemporal boxes
  */
 PGDLLEXPORT Datum
-stbox_union(PG_FUNCTION_ARGS)
+union_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  STBOX *result = stbox_union_internal(box1, box2, true);
+  STBOX *result = union_stbox_stbox_internal(box1, box2, true);
   PG_RETURN_POINTER(result);
 }
 
 /**
- * Returns the intersection of the spatiotemporal boxes
- * (internal function)
+ * Returns the intersection of the spatiotemporal boxes in the third argument
+ *
+ * @note This function equivalent is to intersection_stbox_stbox_internal
+ * but avoids memory allocation
  */
-STBOX *
-stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
+bool
+inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
@@ -2002,7 +2007,7 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
       box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
     ((hasz || geodetic) && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
     (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-    return(NULL);
+    return NULL;
 
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   TimestampTz tmin = 0, tmax = 0;
@@ -2023,20 +2028,49 @@ stbox_intersection_internal(const STBOX *box1, const STBOX *box2)
     tmin = Max(box1->tmin, box2->tmin);
     tmax = Min(box1->tmax, box2->tmax);
   }
-  return stbox_make(hasx, hasz, hast, geodetic, box1->srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
+  stbox_set(hasx, hasz, hast, geodetic, box1->srid, xmin, xmax, ymin,
+    ymax, zmin, zmax, tmin, tmax, result);
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(stbox_intersection);
+/**
+ * Returns the intersection of the spatiotemporal boxes
+ * (internal function)
+ */
+STBOX *
+intersection_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+{
+  ensure_same_geodetic(box1->flags, box2->flags);
+  ensure_same_srid_stbox(box1, box2);
+
+  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
+  /* If there is no common dimension */
+  if ((! hasx && ! hast) ||
+    /* If they do no intersect in one common dimension */
+    (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
+      box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
+    ((hasz || geodetic) && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
+    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+    return NULL;
+  
+  STBOX *result = palloc(sizeof(STBOX));
+  inter_stbox_stbox(box1, box2, result);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(intersection_stbox_stbox);
 /**
  * Returns the intersection of the spatiotemporal boxes
  */
 PGDLLEXPORT Datum
-stbox_intersection(PG_FUNCTION_ARGS)
+intersection_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  STBOX *result = stbox_intersection_internal(box1, box2);
+  STBOX *result = intersection_stbox_stbox_internal(box1, box2);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

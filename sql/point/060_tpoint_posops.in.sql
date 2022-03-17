@@ -58,23 +58,23 @@ CREATE OPERATOR <<# (
   LEFTARG = timestamptz, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = timestamptz, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = timestamptz, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = timestamptz, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -101,23 +101,23 @@ CREATE OPERATOR <<# (
   LEFTARG = timestamptz, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = timestamptz, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = timestamptz, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = timestamptz, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -146,23 +146,23 @@ CREATE OPERATOR <<# (
   LEFTARG = timestampset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = timestampset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = timestampset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = timestampset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -189,23 +189,23 @@ CREATE OPERATOR <<# (
   LEFTARG = timestampset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = timestampset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = timestampset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = timestampset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -234,23 +234,23 @@ CREATE OPERATOR <<# (
   LEFTARG = period, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = period, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = period, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = period, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -277,23 +277,23 @@ CREATE OPERATOR <<# (
   LEFTARG = period, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = period, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = period, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = period, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -322,23 +322,23 @@ CREATE OPERATOR <<# (
   LEFTARG = periodset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = periodset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = periodset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = periodset, RIGHTARG = tgeompoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -365,23 +365,23 @@ CREATE OPERATOR <<# (
   LEFTARG = periodset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = periodset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = periodset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = periodset, RIGHTARG = tgeogpoint,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************
@@ -730,23 +730,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeompoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeompoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeompoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeompoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -773,23 +773,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeompoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeompoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeompoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeompoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -816,23 +816,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeompoint, RIGHTARG = period,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeompoint, RIGHTARG = period,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeompoint, RIGHTARG = period,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeompoint, RIGHTARG = period,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -859,23 +859,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeompoint, RIGHTARG = periodset,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeompoint, RIGHTARG = periodset,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeompoint, RIGHTARG = periodset,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeompoint, RIGHTARG = periodset,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -1338,23 +1338,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeogpoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeogpoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeogpoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeogpoint, RIGHTARG = timestamptz,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -1381,23 +1381,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeogpoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeogpoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeogpoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeogpoint, RIGHTARG = timestampset,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -1424,23 +1424,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeogpoint, RIGHTARG = period,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeogpoint, RIGHTARG = period,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeogpoint, RIGHTARG = period,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeogpoint, RIGHTARG = period,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/
@@ -1467,23 +1467,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tgeogpoint, RIGHTARG = periodset,
   PROCEDURE = temporal_before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tgeogpoint, RIGHTARG = periodset,
   PROCEDURE = temporal_overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tgeogpoint, RIGHTARG = periodset,
   PROCEDURE = temporal_after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tgeogpoint, RIGHTARG = periodset,
   PROCEDURE = temporal_overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tpoint_sel, JOIN = tpoint_joinsel
 );
 
 /*****************************************************************************/

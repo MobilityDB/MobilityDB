@@ -40,6 +40,7 @@
 #include <utils/selfuncs.h>
 
 #include "temporal.h"
+#include "tempcache.h"
 
 /*****************************************************************************/
 
@@ -48,8 +49,10 @@ extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
 
 extern float8 tnumber_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
-extern float8 tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo);
+extern bool tnumber_cachedop(Oid oper, CachedOp *cachedOp);
+extern double tnumber_joinsel_default(Oid oper);
+extern bool tnumber_joinsel_components(CachedOp cachedOp, Oid oprleft,
+  Oid oprright, bool *value, bool *time);
 
 /*****************************************************************************/
 

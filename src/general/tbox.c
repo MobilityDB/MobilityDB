@@ -51,6 +51,9 @@
 /** Buffer size for input and output of TBOX values */
 #define MAXTBOXLEN    128
 
+/* Forward declaration */
+bool inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result);
+
 /*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
@@ -489,9 +492,9 @@ PGDLLEXPORT Datum
 range_to_tbox(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return null on empty range */
+  /* Return null on empty or unbounded range */
   char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
+  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
     PG_RETURN_NULL();
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   range_tbox(range, result);
@@ -708,9 +711,9 @@ PGDLLEXPORT Datum
 range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return null on empty range */
+  /* Return null on empty or unbounded range */
   char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
+  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
     PG_RETURN_NULL();
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   double xmin, xmax;
@@ -728,9 +731,9 @@ PGDLLEXPORT Datum
 range_period_to_tbox(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return null on empty range */
+  /* Return null on empty or unbounded range */
   char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
+  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
     PG_RETURN_NULL();
   Period *p = PG_GETARG_PERIOD_P(1);
   ensure_tnumber_range_type(range->rangetypid);
@@ -1088,19 +1091,18 @@ adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
-  TBOX *inter = tbox_intersection_internal(box1, box2);
-  if (inter == NULL)
+  TBOX inter;
+  if (! inter_tbox_tbox(box1, box2, &inter))
     return false;
   /* Boxes are adjacent if they share n dimensions and their intersection is
    * at most of n-1 dimensions */
   bool result;
   if (!hasx && hast)
-    result = inter->tmin == inter->tmax;
+    result = (inter.tmin == inter.tmax);
   else if (hasx && !hast)
-    result = inter->xmin == inter->xmax;
+    result = (inter.xmin == inter.xmax);
   else
-    result = inter->xmin == inter->xmax || inter->tmin == inter->tmax;
-  pfree(inter);
+    result = (inter.xmin == inter.xmax || inter.tmin == inter.tmax);
   return result;
 }
 
@@ -1321,7 +1323,7 @@ overafter_tbox_tbox(PG_FUNCTION_ARGS)
  * (internal function)
  */
 TBOX *
-tbox_union_internal(const TBOX *box1, const TBOX *box2)
+union_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
   ensure_same_dimensionality_tbox(box1, box2);
   /* The union of boxes that do not intersect cannot be represented by a box */
@@ -1343,28 +1345,30 @@ tbox_union_internal(const TBOX *box1, const TBOX *box2)
     tmax = Max(box1->tmax, box2->tmax);
   }
   TBOX *result = tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
-  return(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_union);
+PG_FUNCTION_INFO_V1(union_tbox_tbox);
 /**
  * Returns the union of the temporal boxes
  */
 PGDLLEXPORT Datum
-tbox_union(PG_FUNCTION_ARGS)
+union_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = tbox_union_internal(box1, box2);
+  TBOX *result = union_tbox_tbox_internal(box1, box2);
   PG_RETURN_POINTER(result);
 }
 
 /**
  * Returns the intersection of the temporal boxes
- * (internal function)
+ *
+ * @note This function equivalent is to intersection_tbox_tbox_internal
+ * but avoids memory allocation
  */
-TBOX *
-tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
+bool
+inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
 {
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
@@ -1373,7 +1377,7 @@ tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
     /* If they do no intersect in one common dimension */
     (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
     (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-    return(NULL);
+    return false;
 
   double xmin = 0, xmax = 0;
   TimestampTz tmin = 0, tmax = 0;
@@ -1387,20 +1391,41 @@ tbox_intersection_internal(const TBOX *box1, const TBOX *box2)
     tmin = Max(box1->tmin, box2->tmin);
     tmax = Min(box1->tmax, box2->tmax);
   }
-  TBOX *result = tbox_make(hasx, hast, xmin, xmax, tmin, tmax);
-  return(result);
+  tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(tbox_intersection);
+/**
+ * Returns the intersection of the temporal boxes
+ * (internal function)
+ */
+TBOX *
+intersection_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+{
+  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  /* If there is no common dimension */
+  if ((! hasx && ! hast) ||
+    /* If they do no intersect in one common dimension */
+    (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
+    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+    return NULL;
+
+  TBOX *result = palloc(sizeof(TBOX));
+  inter_tbox_tbox(box1, box2, result);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(intersection_tbox_tbox);
 /**
  * Returns the intersection of the temporal boxes
  */
 PGDLLEXPORT Datum
-tbox_intersection(PG_FUNCTION_ARGS)
+intersection_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = tbox_intersection_internal(box1, box2);
+  TBOX *result = intersection_tbox_tbox_internal(box1, box2);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

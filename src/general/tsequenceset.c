@@ -367,7 +367,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
  */
 bool
 synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
-  TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
+  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
@@ -420,7 +420,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
  */
 bool
 synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
-  TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
+  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
@@ -583,7 +583,7 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
  */
 bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-  TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
+  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   return synchronize_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
 }
@@ -2116,8 +2116,8 @@ tsequenceset_intersects_timestamp(const TSequenceSet *ts, TimestampTz t)
 {
   int loc;
   if (tsequenceset_find_timestamp(ts, t, &loc))
-    return false;
-  return true;
+    return true;
+  return false;
 }
 
 /**

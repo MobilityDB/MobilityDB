@@ -34,12 +34,15 @@
 
 #include "point/tpoint_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <parser/parsetree.h>
 #include <utils/syscache.h>
-
+/* MobilityDB */
 #include "general/period.h"
+#include "general/timeops.h"
+#include "general/time_selfuncs.h"
 #include "general/temporal_selfuncs.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
@@ -478,8 +481,7 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
 /**
  * Transform the constant into an STBOX
  *
- * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
- * Period, and PeriodSet are transformed into an STBOX
+ * @note This function is also used for temporal network points
  */
 bool
 tpoint_const_stbox(Node *other, STBOX *box)
@@ -489,6 +491,14 @@ tpoint_const_stbox(Node *other, STBOX *box)
   if (tgeo_base_type(consttype))
     geo_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
+  else if (consttype == type_oid(T_TIMESTAMPTZ))
+    timestamp_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_TIMESTAMPSET))
+    timestampset_stbox_slice(((Const *) other)->constvalue, box);
+  else if (consttype == type_oid(T_PERIOD))
+    period_stbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_PERIODSET))
+    periodset_stbox_slice(((Const *) other)->constvalue, box);
   else if (consttype == type_oid(T_STBOX))
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
   else if (tspatial_type(consttype))
@@ -496,6 +506,49 @@ tpoint_const_stbox(Node *other, STBOX *box)
   else
     return false;
   return true;
+}
+
+/**
+ * Get the enum value associated to the operator
+ */
+bool
+tpoint_cachedop(Oid oper, CachedOp *cachedOp)
+{
+  for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
+  {
+    if (oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
+        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
+
+        oper == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
+        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
+      {
+        *cachedOp = (CachedOp) i;
+        return true;
+      }
+  }
+  return false;
 }
 
 /**
@@ -522,33 +575,6 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
     nd_box->max[d] = (float4) box->zmax;
   }
   return;
-}
-
-/**
- * Get the enum value associated to the operator
- */
-static bool
-tpoint_cachedop(Oid oper, CachedOp *cachedOp)
-{
-  for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
-  {
-    if (oper == oper_oid((CachedOp) i, T_STBOX, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
-      {
-        *cachedOp = (CachedOp) i;
-        return true;
-      }
-  }
-  return false;
 }
 
 /**
@@ -658,7 +684,7 @@ geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   ND_STATS *nd_stats;
   AttStatsSlot sslot;
   int d; /* counter */
-  float8 selectivity;
+  float8 selec;
   ND_BOX nd_box;
   ND_IBOX nd_ibox, search_ibox;
   int at[ND_DIMS];
@@ -836,13 +862,12 @@ geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
   while (nd_increment(&search_ibox, (int) ndims, at));
 
   /* Scale by the number of features in our histogram to get the proportion */
-  selectivity = total_count / nd_stats->histogram_features;
+  selec = total_count / nd_stats->histogram_features;
 
   /* Prevent rounding overflows */
-  if (selectivity > 1.0) selectivity = 1.0;
-  else if (selectivity < 0.0) selectivity = 0.0;
+  CLAMP_PROBABILITY(selec);
 
-  return selectivity;
+  return selec;
 }
 
 /*****************************************************************************/
@@ -865,9 +890,8 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   /*
    * Get enumeration value associated to the operator
    */
-  bool found = tpoint_cachedop(oper, &cachedOp);
-  /* In the case of unknown operator */
-  if (!found)
+  if (! tpoint_cachedop(oper, &cachedOp))
+    /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
@@ -916,9 +940,8 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   /*
    * Transform the constant into an STBOX
    */
-  found = tpoint_const_stbox(other, &constBox);
-  /* In the case of unknown constant */
-  if (!found)
+  if (! tpoint_const_stbox(other, &constBox))
+    /* In the case of unknown constant */
     return tpoint_sel_default(cachedOp);
 
   assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
@@ -1221,44 +1244,124 @@ geo_join_selectivity(const ND_STATS *s1, const ND_STATS *s2)
   return selectivity;
 }
 
-double
+/**
+ * Depending on the operator and the arguments, determine wheter the space,
+ * the time, or both components are taken into account for computing the
+ * join selectivity
+ */
+static bool
+tpoint_joinsel_components(CachedOp cachedOp, Oid oprleft, Oid oprright,
+  bool *space, bool *time)
+{
+  /* Get the argument which may not be a temporal point */
+  Oid arg = tspatial_type(oprleft) ? oprright : oprleft;
+
+  /* Determine the components */
+  if (tspatial_base_type(arg) ||
+    cachedOp == LEFT_OP || cachedOp == OVERLEFT_OP ||
+    cachedOp == RIGHT_OP || cachedOp == OVERRIGHT_OP ||
+    cachedOp == BELOW_OP || cachedOp == OVERBELOW_OP ||
+    cachedOp == ABOVE_OP || cachedOp == OVERABOVE_OP ||
+    cachedOp == FRONT_OP || cachedOp == OVERFRONT_OP ||
+    cachedOp == BACK_OP || cachedOp == OVERBACK_OP)
+  {
+    *space = true;
+    *time = false;
+  }
+  else if (time_type(arg) ||
+    cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
+    cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP)
+  {
+    *space = false;
+    *time = true;
+  }
+  else if (tspatial_type(arg) && (cachedOp == OVERLAPS_OP ||
+    cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP ||
+    cachedOp == SAME_OP || cachedOp == ADJACENT_OP))
+  {
+    *space = true;
+    *time = true;
+  }
+  else
+  {
+    /* By default only the time component is taken into account */
+    *space = false;
+    *time = true;
+  }
+  return true;
+}
+
+float8
 tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo, int mode)
 {
-  float8 selectivity;
-  Oid relid1, relid2;
-  ND_STATS *stats1, *stats2;
   Node *arg1 = (Node *) linitial(args);
   Node *arg2 = (Node *) lsecond(args);
   Var *var1 = (Var *) arg1;
   Var *var2 = (Var *) arg2;
 
   /* We only do column joins right now, no functional joins */
-  /* TODO: handle g1 && ST_Expand(g2) */
+  /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
-  {
     return DEFAULT_TEMP_JOINSEL;
+
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! tpoint_cachedop(oper, &cachedOp))
+    /* In the case of unknown operator */
+    return DEFAULT_TEMP_JOINSEL;
+
+  /*
+   * Determine whether the space and/or the time components are
+   * taken into account for the selectivity estimation
+   */
+  Oid oprleft = var1->vartype;
+  Oid oprright = var2->vartype;
+  bool space, time;
+  if (! tpoint_joinsel_components(cachedOp, oprleft, oprright,
+    &space, &time))
+    /* In the case of unknown arguments */
+    return DEFAULT_TEMP_JOINSEL;
+
+  float8 selec = 1.0;
+  if (space)
+  {
+    /* What are the Oids of our tables/relations? */
+    Oid relid1 = rt_fetch(var1->varno, root->parse->rtable)->relid;
+    Oid relid2 = rt_fetch(var2->varno, root->parse->rtable)->relid;
+
+    /* Pull the stats from the stats system. */
+    ND_STATS *stats1 = pg_get_nd_stats(relid1, var1->varattno, mode, false);
+    ND_STATS *stats2 = pg_get_nd_stats(relid2, var2->varattno, mode, false);
+
+    /* If we can't get stats, we have to stop here! */
+    if (!stats1 || !stats2)
+      selec *= DEFAULT_ND_JOINSEL;
+    else
+      selec *= geo_join_selectivity(stats1, stats2);
+    if (stats1)
+      pfree(stats1);
+    if (stats2)
+      pfree(stats2);
   }
-
-  /* What are the Oids of our tables/relations? */
-  relid1 = rt_fetch(var1->varno, root->parse->rtable)->relid;
-  relid2 = rt_fetch(var2->varno, root->parse->rtable)->relid;
-
-  /* Pull the stats from the stats system. */
-  stats1 = pg_get_nd_stats(relid1, var1->varattno, mode, false);
-  stats2 = pg_get_nd_stats(relid2, var2->varattno, mode, false);
-
-  /* If we can't get stats, we have to stop here! */
-  if (!stats1)
-    return DEFAULT_ND_JOINSEL;
-  else if (!stats2)
-    return DEFAULT_ND_JOINSEL;
-
-  selectivity = geo_join_selectivity(stats1, stats2) *
-    temporal_joinsel_internal(root, oper, args, jointype, sjinfo);
-  pfree(stats1);
-  pfree(stats2);
-  return selectivity;
+  if (time)
+  {
+    /*
+     * Return default selectivity for the time dimension for the following cases
+     * - There is no ~= operator for time types
+     * - The support functions for the ever spatial relationships add a
+     *   bounding box test with the && operator, but we need to exclude
+     *   the dwithin operator since it takes 3 arguments and thus the
+     *   PostgreSQL function get_join_variables cannot be invoked.
+     */
+    if (cachedOp == SAME_OP ||
+      (cachedOp == OVERLAPS_OP && list_length(args) != 2))
+      selec *= period_joinsel_default(cachedOp);
+    else
+      /* Estimate join selectivity */
+      selec *= period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
+  }
+  return selec;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_joinsel);
@@ -1288,7 +1391,8 @@ tpoint_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  PG_RETURN_FLOAT8(tpoint_joinsel_internal(root, oper, args, jointype, sjinfo, mode));
+  float8 selec = tpoint_joinsel_internal(root, oper, args, jointype, sjinfo, mode);
+  PG_RETURN_FLOAT8(selec);
 }
 
 /*****************************************************************************/

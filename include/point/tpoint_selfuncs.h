@@ -35,10 +35,11 @@
 #ifndef __TPOINT_SELFUNCS_H__
 #define __TPOINT_SELFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_statistic.h>
 #include <utils/selfuncs.h>
-
+/* MobilityDB */
 #include "general/tempcache.h"
 #include "tpoint.h"
 #include "tpoint_analyze.h"
@@ -98,6 +99,8 @@ extern Datum tpoint_joinsel(PG_FUNCTION_ARGS);
 
 extern double tpoint_sel_default(CachedOp oper);
 extern double tpoint_joinsel_default(CachedOp oper);
+extern bool tpoint_cachedop(Oid oper, CachedOp *cachedOp);
+extern bool tpoint_const_stbox(Node *other, STBOX *box);
 
 extern float8 geo_selectivity(VariableStatData *vardata, const STBOX *box,
   CachedOp op);

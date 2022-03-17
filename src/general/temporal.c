@@ -696,7 +696,7 @@ temporal_copy(const Temporal *temp)
  */
 bool
 intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  TIntersection mode, Temporal **inter1, Temporal **inter2)
+  SyncMode mode, Temporal **inter1, Temporal **inter2)
 {
   bool result = false;
   ensure_valid_tempsubtype(temp1->subtype);

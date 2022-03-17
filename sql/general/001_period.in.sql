@@ -211,25 +211,25 @@ CREATE OPERATOR < (
   PROCEDURE = period_lt,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 CREATE OPERATOR <= (
   PROCEDURE = period_le,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = period_ge,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 CREATE OPERATOR > (
   PROCEDURE = period_gt,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 
 CREATE OPERATOR CLASS period_ops

@@ -49,51 +49,32 @@
  * Get the enum value associated to the operator
  * TODO Adapt to temporal network points
  */
-static bool
+bool
 tnpoint_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
   {
-    if (oper == oper_oid((CachedOp) i, T_STBOX, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
+    if (oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_NPOINT, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_STBOX, T_TNPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_GEOMETRY) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_NPOINT) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_STBOX) ||
+        oper == oper_oid((CachedOp) i, T_TNPOINT, T_TNPOINT))
       {
         *cachedOp = (CachedOp) i;
         return true;
       }
   }
   return false;
-}
-
-/**
- * Transform the constant into an STBOX
- *
- * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
- * Period, and PeriodSet are transformed into an STBOX
- */
-bool
-tnpoint_const_stbox(Node *other, STBOX *box)
-{
-  Oid consttype = ((Const *) other)->consttype;
-
-  if (tgeo_base_type(consttype))
-    geo_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
-      box);
-  else if (consttype == type_oid(T_STBOX))
-    memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
-  else if (tspatial_type(consttype))
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
-  else
-    return false;
-  return true;
 }
 
 /*****************************************************************************/
@@ -162,7 +143,7 @@ tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   }
 
   /* Transform the constant into an STBOX */
-  if (! tnpoint_const_stbox(other, &constBox))
+  if (! tpoint_const_stbox(other, &constBox))
     /* In the case of unknown constant */
     return tpoint_sel_default(cachedOp);
 
@@ -281,7 +262,7 @@ tnpoint_joinsel(PG_FUNCTION_ARGS)
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
   SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
   float8 selec = tnpoint_joinsel_internal(root, oper, args, jointype, sjinfo);
-  PG_RETURN_FLOAT8((float8) selec);
+  PG_RETURN_FLOAT8(selec);
 }
 
 /*****************************************************************************/

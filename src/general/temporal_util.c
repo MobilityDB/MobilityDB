@@ -1035,8 +1035,8 @@ temporalarr_extract(ArrayType *array, int *count)
 /*****************************************************************************/
 
 /**
- * Convert a C array of datums into a PostgreSQL array
- * Note that the values will be copied into the object even if pass-by-ref type.
+ * Convert a C array of datums into a PostgreSQL array.
+ * Note that the values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
 datumarr_to_array(Datum *values, int count, Oid type)

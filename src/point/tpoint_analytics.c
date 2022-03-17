@@ -2008,10 +2008,9 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
 
     /* Read and round point */
     datum_point4d(value, &p);
-    /* make compiler quiet by also initializing prev_p */
-    double x = prev_p.x = p.x;
-    double y = prev_p.y = p.y;
-    double z = prev_p.z = hasz ? p.z : 0;
+    double x = p.x;
+    double y = p.y;
+    double z = hasz ? p.z : 0;
     if (grid->xsize > 0)
       x = rint((p.x - grid->ipx) / grid->xsize) * grid->xsize + grid->ipx;
     if (grid->ysize > 0)
@@ -2055,10 +2054,6 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 
     /* Read and round point */
     datum_point4d(value, &p);
-    /* make compiler quiet by also initializing prev_p */
-    // double x = prev_p.x = p.x;
-    // double y = prev_p.y = p.y;
-    // double z = prev_p.z = hasz ? p.z : 0;
     double x = p.x;
     double y = p.y;
     double z = hasz ? p.z : 0;

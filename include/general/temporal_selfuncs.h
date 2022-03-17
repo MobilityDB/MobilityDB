@@ -82,8 +82,13 @@ extern Datum temporal_joinsel(PG_FUNCTION_ARGS);
 
 extern float8 temporal_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
+
 extern double temporal_joinsel_internal(PlannerInfo *root, Oid oper,
-  List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
+  List *args, JoinType jointype, SpecialJoinInfo *sjinfo,
+  TemporalFamily tempfamily);
+
+extern double temporal_joinsel_generic(FunctionCallInfo fcinfo, 
+  TemporalFamily tempfamily);
 
 /*****************************************************************************/
 

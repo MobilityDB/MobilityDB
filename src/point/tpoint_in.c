@@ -482,7 +482,7 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
         errmsg("Invalid 'interpolations' value in MFJSON string")));
   }
 
-  return(result);
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(tpoint_from_mfjson);

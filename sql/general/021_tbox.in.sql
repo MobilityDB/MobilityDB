@@ -388,11 +388,11 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION tbox_union(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_union'
+  AS 'MODULE_PATHNAME', 'union_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_intersection(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_intersection'
+  AS 'MODULE_PATHNAME', 'intersection_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (

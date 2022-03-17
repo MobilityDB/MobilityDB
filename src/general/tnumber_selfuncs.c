@@ -34,6 +34,7 @@
 
 #include "general/tnumber_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #include <access/htup_details.h>
@@ -44,8 +45,9 @@
 #endif
 #include <utils/selfuncs.h>
 #include "general/temporal_boxops.h"
-
+/* MobilityDB */
 #include "general/period.h"
+#include "general/timeops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
@@ -647,17 +649,24 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
 
 /**
  * Transform the constant into a temporal box
- *
- * @note Due to implicit casting constants of type Int4, Float8, TimestampTz,
- * TimestampSet, Period, and PeriodSet are transformed into a TBox
  */
 static bool
 tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
   Oid consttype = ((Const *) other)->consttype;
 
-  if (tnumber_range_type(consttype))
+  if (tnumber_base_type(consttype))
+    number_tbox(((Const *) other)->constvalue, consttype, box);
+  else if (tnumber_range_type(consttype))
     range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_TIMESTAMPTZ))
+    timestamp_tbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_TIMESTAMPSET))
+    timestampset_tbox_slice(((Const *) other)->constvalue, box);
+  else if (consttype == type_oid(T_PERIOD))
+    period_tbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_PERIODSET))
+    periodset_tbox_slice(((Const *) other)->constvalue, box);
   else if (consttype == type_oid(T_TBOX))
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
   else if (tnumber_type(consttype))
@@ -670,19 +679,44 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 /**
  * Returns the enum value associated to the operator
  */
-static bool
+bool
 tnumber_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++)
   {
-    if (oper == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+    if (/* Time types */
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TFLOAT) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TFLOAT) ||
+        /* Range types */
+        oper == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
+        /* Tbox type */
         oper == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
+        oper == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        /* Tint type */
+        oper == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
+        oper == oper_oid((CachedOp) i, T_TINT, T_FLOAT8) ||
         oper == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
         oper == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
         oper == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
         oper == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
-        oper == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
-        oper == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        /* Tfloat type */
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
+        oper == oper_oid((CachedOp) i, T_TFLOAT, T_FLOAT8) ||
         oper == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
         oper == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
         oper == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
@@ -699,7 +733,7 @@ tnumber_cachedop(Oid oper, CachedOp *cachedOp)
  * Returns the range operator associated to the enum value
  */
 static Oid
-tnumber_cachedop_rangeop(CachedOp cachedOp)
+tnumber_rangeop(CachedOp cachedOp)
 {
   Oid op = InvalidOid;
   if (cachedOp == LT_OP)
@@ -775,7 +809,7 @@ tnumber_sel_default(CachedOp operator)
  * Returns a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-static double
+double
 tnumber_joinsel_default(Oid oper __attribute__((unused)))
 {
   // TODO take care of the operator
@@ -807,7 +841,7 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
     /* Fetch the range operator corresponding to the cachedOp */
-    value_oprid = tnumber_cachedop_rangeop(cachedOp);
+    value_oprid = tnumber_rangeop(cachedOp);
     /* If the corresponding range operator is not found */
     if (value_oprid != InvalidOid)
     {
@@ -899,7 +933,7 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
  * (internal function)
  */
 float8
-tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
+tnumber_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -910,7 +944,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   Oid basetypid;
 
   /* Get enumeration value associated to the operator */
-  if (! tnumber_cachedop(operator, &cachedOp))
+  if (! tnumber_cachedop(oper, &cachedOp))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -919,7 +953,7 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
    * variable), then punt and return a default estimate.
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
-        &varonleft))
+      &varonleft))
     return tnumber_sel_default(cachedOp);
 
   /*
@@ -948,8 +982,8 @@ tnumber_sel_internal(PlannerInfo *root, Oid operator, List *args, int varRelid)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    operator = get_commutator(operator);
-    if (!operator)
+    oper = get_commutator(oper);
+    if (!oper)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
@@ -988,55 +1022,53 @@ tnumber_sel(PG_FUNCTION_ARGS)
   Oid operator = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selectivity = tnumber_sel_internal(root, operator, args, varRelid);
-  PG_RETURN_FLOAT8(selectivity);
+  float8 selec = tnumber_sel_internal(root, operator, args, varRelid);
+  PG_RETURN_FLOAT8(selec);
 }
 
 /*****************************************************************************/
 
 /**
- * Estimate the join selectivity value of the operators for temporal numbers
- * (internal function)
+ * Depending on the operator and the arguments, determine wheter the value,
+ * the time, or both components are taken into account for computing the
+ * join selectivity
  */
-float8
-tnumber_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo)
+bool
+tnumber_joinsel_components(CachedOp cachedOp, Oid oprleft, Oid oprright,
+  bool *value, bool *time)
 {
-  VariableStatData vardata1, vardata2;
-  bool join_is_reversed;
-  float8 selec;
+  /* Get the argument which may not a temporal number */
+  Oid arg = tnumber_type(oprleft) ? oprright : oprleft;
 
-  /* Check length of args and punt on > 2 */
-  if (list_length(args) != 2)
-    return DEFAULT_TEMP_JOINSEL;
-
-  /* Only respond to an inner join/unknown context join */
-  if (jointype != JOIN_INNER)
-    return DEFAULT_TEMP_JOINSEL;
-
-  get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
-    &join_is_reversed);
-
-  /*
-   * Get enumeration value associated to the operator
-   */
-  CachedOp cachedOp;
-  if (! tnumber_cachedop(oper, &cachedOp))
+  /* Determine the components */
+  if (tnumber_base_type(arg) || tnumber_range_type(arg) ||
+    cachedOp == LEFT_OP || cachedOp == OVERLEFT_OP ||
+    cachedOp == RIGHT_OP || cachedOp == OVERRIGHT_OP)
   {
-    /* In the case of unknown operator */
-    ReleaseVariableStats(vardata1);
-    ReleaseVariableStats(vardata2);
-    return tnumber_joinsel_default(oper);
+    *value = true;
+    *time = false;
   }
-
-  /* TODO Estimate join selectivity */
-  // selec = tnumber_joinsel_hist(&vardata1, &vardata2, cachedOp);
-  selec = tnumber_joinsel_default(oper);
-
-  ReleaseVariableStats(vardata1);
-  ReleaseVariableStats(vardata2);
-  CLAMP_PROBABILITY(selec);
-  return (float8) selec;
+  else if (time_type(arg) ||
+    cachedOp == BEFORE_OP || cachedOp == OVERBEFORE_OP ||
+    cachedOp == AFTER_OP || cachedOp == OVERAFTER_OP)
+  {
+    *value = false;
+    *time = true;
+  }
+  else if (tnumber_type(arg) && (cachedOp == OVERLAPS_OP ||
+    cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP ||
+    cachedOp == SAME_OP || cachedOp == ADJACENT_OP))
+  {
+    *value = true;
+    *time = true;
+  }
+  else
+  {
+    /* By default only the time component is taken into account */
+    *value = false;
+    *time = true;
+  }
+  return true;
 }
 
 PG_FUNCTION_INFO_V1(tnumber_joinsel);
@@ -1046,20 +1078,7 @@ PG_FUNCTION_INFO_V1(tnumber_joinsel);
 PGDLLEXPORT Datum
 tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
-  /* Check length of args and punt on > 2 */
-  if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
-
-  /* Only respond to an inner join/unknown context join */
-  if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
-
-  PG_RETURN_FLOAT8(tnumber_joinsel_internal(root, oper, args, jointype, sjinfo));
+  return temporal_joinsel_generic(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/

@@ -44,6 +44,7 @@
 
 /*****************************************************************************/
 
+extern void time_const_to_period(Node *other, Period *period);
 extern double period_sel_hist(VariableStatData *vardata,
   const Period *constval, CachedOp cachedOp);
 extern double period_sel_scalar(const PeriodBound *constbound,
@@ -59,15 +60,16 @@ extern double calc_length_hist_frac(Datum *length_hist_values, int length_hist_n
 
 extern Datum period_sel(PG_FUNCTION_ARGS);
 extern Datum period_joinsel(PG_FUNCTION_ARGS);
-// #ifdef DEBUG_BUILD
 extern Datum _mobdb_period_sel(PG_FUNCTION_ARGS);
 extern Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS);
-// #endif
+
+extern float8 period_sel_default(CachedOp cachedOp);
+extern float8 period_joinsel_default(CachedOp cachedOp);
 
 extern float8 period_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
-extern float8 period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo);
+extern float8 period_joinsel_internal(PlannerInfo *root, CachedOp cachedOp,
+  List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
 
 /*****************************************************************************/
 

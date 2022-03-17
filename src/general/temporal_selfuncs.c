@@ -39,9 +39,6 @@
  * - Ever/always comparison operators: `?=`, `%=`, `?<>`, `%<>`, `?<, `%<`,
  * ... These still need to be defined. TODO
  *
- * Due to implicit casting, a condition such as `tbool <<# timestamptz` will be
- * transformed into `tbool <<# period`. This allows to reduce the number of
- * cases for the operator definitions, indexes, selectivity, etc.
  */
 
 #include "general/temporal_selfuncs.h"
@@ -65,17 +62,19 @@
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
-#include "general/temporal_boxops.h"
-#include "general/timetypes.h"
-
 /* MobilityDB */
+#include "general/timetypes.h"
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_selfuncs.h"
 #include "general/rangetypes_ext.h"
+#include "general/temporal_boxops.h"
+#include "general/timeops.h"
 #include "general/temporal_analyze.h"
+#include "general/tnumber_selfuncs.h"
 #include "point/tpoint.h"
+#include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************
  * This function is exported only after PostgreSQL version 12
@@ -246,18 +245,14 @@ var_eq_const(VariableStatData *vardata, Oid oper,
  *****************************************************************************/
 
 /**
- * Transform the constant into a period.
- *
- * @note Due to implicit casting constants of type TimestampTz, TimestampSet,
- * and PeriodSet are transformed into a Period
+ * Transform the constant into a period
  */
 static bool
 temporal_const_to_period(Node *other, Period *period)
 {
   Oid consttype = ((Const *) other)->consttype;
-
-  if (consttype == type_oid(T_PERIOD))
-    memcpy(period, DatumGetPeriodP(((Const *) other)->constvalue), sizeof(Period));
+  if (time_type(consttype))
+    time_const_to_period(other, period);
   else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
     temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
@@ -272,15 +267,23 @@ static bool
 temporal_cachedop(Oid oper, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-    if (oper == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TBOX, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOX) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+    if (oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
         oper == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPSET) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
+        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPSET) ||
         oper == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TBOX, T_TTEXT) ||
-        oper == oper_oid((CachedOp) i, T_TTEXT, T_TBOX) ||
+        oper == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
         oper == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
@@ -402,20 +405,20 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   Node *other;
   bool varonleft;
   Selectivity selec;
-  CachedOp cachedOp;
-  Period constperiod;
+  Period period;
 
   /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
   if (! temporal_cachedop(oper, &cachedOp))
-    /* In the case of unknown operator */
+    /* Unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
    * If expression is not (variable op something) or (something op
    * variable), then punt and return a default estimate.
    */
-  if (!get_restriction_variable(root, args, varRelid,
-    &vardata, &other, &varonleft))
+  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
+      &varonleft))
     return temporal_sel_default(cachedOp);
 
   /*
@@ -454,12 +457,12 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   }
 
   /* Transform the constant into a Period */
-  if (! temporal_const_to_period(other, &constperiod))
+  if (! temporal_const_to_period(other, &period))
     /* In the case of unknown constant */
     return temporal_sel_default(cachedOp);
 
   /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_period(&vardata, &constperiod, cachedOp);
+  selec = temporal_sel_period(&vardata, &period, cachedOp);
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
@@ -478,7 +481,8 @@ temporal_sel(PG_FUNCTION_ARGS)
   Oid oper = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  PG_RETURN_FLOAT8(temporal_sel_internal(root, oper, args, varRelid));
+  float8 selec = temporal_sel_internal(root, oper, args, varRelid);
+  PG_RETURN_FLOAT8(selec);
 }
 
 /*****************************************************************************
@@ -486,61 +490,109 @@ temporal_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns an estimate of the selectivity of the search period and the
- * operator for columns of temporal values. For the traditional comparison
- * operators (<, <=, ...), we follow the approach for range types in
- * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
- * while the selectivity functions for = and <> are eqsel and neqsel,
- * respectively.
+ * Returns an estimate of the join selectivity for columns of temporal values.
+ * For the traditional comparison operators (<, <=, ...), we follow the
+ * approach for range types in PostgreSQL, this function  computes the
+ * selectivity for <, <=, >, and >=, while the selectivity functions for
+ * = and <> are eqsel and neqsel, respectively.
  */
-double
+float8
 temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo)
+  JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo,
+  TemporalFamily tempfamily)
 {
-  VariableStatData vardata1, vardata2;
-  bool join_is_reversed;
-  float8 selec;
+  Node *arg1 = (Node *) linitial(args);
+  Node *arg2 = (Node *) lsecond(args);
+  Var *var1 = (Var *) arg1;
+  Var *var2 = (Var *) arg2;
 
-  /* Check length of args and punt on > 2 */
-  if (list_length(args) != 2)
+  /* We only do column joins right now, no functional joins */
+  /* TODO: handle t1 <op> expandX(t2) */
+  if (!IsA(arg1, Var) || !IsA(arg2, Var))
     return DEFAULT_TEMP_JOINSEL;
-
-  /* Only respond to an inner join/unknown context join */
-  if (jointype != JOIN_INNER)
-    return DEFAULT_TEMP_JOINSEL;
-
-  get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
-    &join_is_reversed);
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  /* In the case of unknown operator */
-  if (! temporal_cachedop(oper, &cachedOp))
+  bool found;
+  if (tempfamily == TEMPORALTYPE)
+    found = temporal_cachedop(oper, &cachedOp);
+  else /* tempfamily == TNUMBERTYPE */
+    found = tnumber_cachedop(oper, &cachedOp);
+  if (! found)
+    /* In the case of unknown operator */
+    return DEFAULT_TEMP_JOINSEL;
+
+  /*
+   * Determine whether the value and/or the time components are
+   * taken into account for the selectivity estimation
+   */
+  bool value, time;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
+  if (tempfamily == TEMPORALTYPE)
   {
-    ReleaseVariableStats(vardata1);
-    ReleaseVariableStats(vardata2);
-    return temporal_joinsel_default(oper);
+    value = false;
+    time = true;
+  }
+  else /* tempfamily == TNUMBERTYPE */
+  {
+    Oid oprleft = var1->vartype;
+    Oid oprright = var2->vartype;
+    if (! tnumber_joinsel_components(cachedOp, oprleft, oprright,
+      &value, &time))
+      /* In the case of unknown arguments */
+      return temporal_joinsel_default(cachedOp);
   }
 
   /*
-   * There is no ~= operator for time types and thus it is necessary to
-   * take care of this operator here.
+   * Since currently there is no join selectivity estimation for range types
+   * in PostgreSQL, for temporal numbers we multiply the default value compute the join selectivity
+   * for the temporal part
    */
-  if (cachedOp == SAME_OP)
+  float8 selec = 1.0;
+  if (value)
   {
-    // TODO
-    selec = temporal_joinsel_default(cachedOp);
+    selec *= DEFAULT_TEMP_JOINSEL;
   }
-  else
+  if (time)
   {
-    /* Estimate join selectivity */
-    selec = period_joinsel_hist(&vardata1, &vardata2, cachedOp);
+    /*
+     * There is no ~= operator for time types and thus it is necessary to
+     * take care of this operator here.
+     */
+    if (cachedOp == SAME_OP)
+      // TODO
+      selec *= period_joinsel_default(cachedOp);
+    else
+      /* Estimate join selectivity */
+      selec *= period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
   }
 
-  ReleaseVariableStats(vardata1);
-  ReleaseVariableStats(vardata2);
   CLAMP_PROBABILITY(selec);
   return (float8) selec;
+}
+
+/*
+ * Estimate the join selectivity value of the operators for temporal
+ * alphanumeric types and temporal number types.
+ */
+float8
+temporal_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
+  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
+
+  return temporal_joinsel_internal(root, oper, args, jointype, sjinfo, tempfamily);
 }
 
 PG_FUNCTION_INFO_V1(temporal_joinsel);
@@ -551,20 +603,7 @@ PG_FUNCTION_INFO_V1(temporal_joinsel);
 PGDLLEXPORT Datum
 temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
-  /* Check length of args and punt on > 2 */
-  if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
-
-  /* Only respond to an inner join/unknown context join */
-  if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
-
-  PG_RETURN_FLOAT8(temporal_joinsel_internal(root, oper, args, jointype, sjinfo));
+  return temporal_joinsel_generic(fcinfo, TEMPORALTYPE);
 }
 
 /*****************************************************************************/

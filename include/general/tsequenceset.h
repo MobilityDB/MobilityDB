@@ -69,10 +69,10 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **ts,
 /* Synchronize functions */
 
 extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts,
-  const TSequence *seq, TIntersection mode,
+  const TSequence *seq, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, TIntersection mode,
+  const TSequenceSet *ts2, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
 /* Intersection functions */
@@ -86,7 +86,7 @@ extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
 extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti,
   const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2);
 extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
-  const TSequenceSet *ts, TIntersection mode,
+  const TSequenceSet *ts, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
 /* Input/output functions */

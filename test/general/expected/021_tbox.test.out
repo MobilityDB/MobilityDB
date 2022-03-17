@@ -170,6 +170,18 @@ SELECT floatrange 'empty'::tbox;
  
 (1 row)
 
+SELECT floatrange '(,1]'::tbox;
+ tbox 
+------
+ 
+(1 row)
+
+SELECT floatrange '[1,)'::tbox;
+ tbox 
+------
+ 
+(1 row)
+
 SELECT floatrange '[1,2]'::tbox;
       tbox       
 -----------------

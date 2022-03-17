@@ -540,3 +540,13 @@ SELECT tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.
 SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}' -|- tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
 
 -------------------------------------------------------------------------------
+-- Selectivity tests
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tnpoint WHERE temp && geometry 'SRID=5676;Linestring(0 0,50 50)';
+SELECT COUNT(*) FROM tbl_tnpoint WHERE geometry 'SRID=5676;Linestring(0 0,50 50)' && temp;
+SELECT COUNT(*) FROM tbl_tnpoint WHERE geometry 'SRID=5676;Linestring(0 0,50 50)' &< temp;
+SELECT COUNT(*) FROM tbl_tnpoint WHERE temp && stbox 'SRID=5676;STBOX((0,0),(50,50))';
+SELECT COUNT(*) FROM tbl_tnpoint WHERE temp && tnpoint '[Npoint(1,0.1)@2001-06-01, Npoint(1,0.9)@2001-07-01]';
+
+-------------------------------------------------------------------------------

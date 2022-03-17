@@ -119,7 +119,16 @@ typedef enum
 {
   SYNCHRONIZE_NOCROSS,
   SYNCHRONIZE_CROSS,
-} TIntersection;
+} SyncMode;
+
+/** Enumeration for the families of temporal types */
+typedef enum
+{
+  TEMPORALTYPE,
+  TNUMBERTYPE,
+  TPOINTTYPE,
+  TNPOINTTYPE,
+} TemporalFamily;
 
 /*****************************************************************************
  * Concrete subtype of temporal types
@@ -484,8 +493,7 @@ extern void temporal_bbox(const Temporal *temp, void *box);
 extern void temporal_bbox_slice(Datum tempdatum, void *box);
 extern Temporal *temporal_copy(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
-  const Temporal *temp2, TIntersection mode,
-  Temporal **inter1, Temporal **inter2);
+  const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
 
 /* Version functions */
 

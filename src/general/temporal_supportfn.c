@@ -64,14 +64,6 @@
 #include "point/tpoint_selfuncs.h"
 #include "npoint/tnpoint_selfuncs.h"
 
-typedef enum
-{
-  TEMPORALTYPE,
-  TNUMBERTYPE,
-  TPOINTTYPE,
-  TNPOINTTYPE,
-} TemporalFamily;
-
 enum TEMPORAL_FUNCTION_IDX
 {
   /* intersects<Time> functions */
@@ -288,7 +280,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
  * The function must also have an entry above in the IndexableFunctions array
  * so that we know what index search strategy we want to apply.
  */
-Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefamily)
+Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
@@ -305,31 +297,31 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
     oproid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
     {
-      if (typefamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE)
         req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo);
-      else if (typefamily == TNUMBERTYPE)
-        req->selectivity = tnumber_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo);
-      else if (typefamily == TPOINTTYPE)
+          req->jointype, req->sjinfo, TEMPORALTYPE);
+      else if (tempfamily == TNUMBERTYPE)
+        req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
+          req->jointype, req->sjinfo, TNUMBERTYPE);
+      else if (tempfamily == TPOINTTYPE)
         req->selectivity = tpoint_joinsel_internal(req->root, oproid, req->args,
           req->jointype, req->sjinfo, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
-      else /* typefamily == TPOINTTYPE */
+      else /* tempfamily == TPOINTTYPE */
         req->selectivity = tnpoint_joinsel_internal(req->root, oproid, req->args,
           req->jointype, req->sjinfo);
     }
     else
     {
-      if (typefamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE)
         req->selectivity = temporal_sel_internal(req->root, oproid, req->args,
           req->varRelid);
-      else if (typefamily == TNUMBERTYPE)
+      else if (tempfamily == TNUMBERTYPE)
         req->selectivity = tnumber_sel_internal(req->root, oproid, req->args,
           req->varRelid);
-      else if (typefamily == TPOINTTYPE)
+      else if (tempfamily == TPOINTTYPE)
         req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
           req->varRelid);
-      else /* typefamily == TNPOINTTYPE */
+      else /* tempfamily == TNPOINTTYPE */
         req->selectivity = tnpoint_sel_internal(req->root, oproid, req->args,
           req->varRelid);
     }
@@ -374,12 +366,14 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
       IndexableFunction idxfn = {NULL, 0, 0, 0};
       Oid opfamilyoid = req->opfamily; /* Operator family of the index */
       const IndexableFunction *funcarr;
-      if (typefamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE)
         funcarr = TemporalIndexableFunctions;
-      else if (typefamily == TNUMBERTYPE)
+      else if (tempfamily == TNUMBERTYPE)
         funcarr = TNumberIndexableFunctions;
-      else /* typefamily == TPOINTTYPE */
+      else if (tempfamily == TPOINTTYPE)
         funcarr = TPointIndexableFunctions;
+      else /* tempfamily == TNPOINTTYPE */
+        elog(ERROR, "support function called from temporal network points");
       if (! func_needs_index(funcoid, funcarr, &idxfn))
       {
         if (isfunc)

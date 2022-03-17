@@ -35,15 +35,22 @@
 #ifndef __TNPOINT_SELFUNCS_H__
 #define __TNPOINT_SELFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 #include <utils/selfuncs.h>
+/* MobilityDB */
+#include "general/tempcache.h"
 
 /*****************************************************************************/
 
 extern Datum tnpoint_sel(PG_FUNCTION_ARGS);
 extern Datum tnpoint_joinsel(PG_FUNCTION_ARGS);
+
+extern double tnpoint_sel_default(CachedOp oper);
+extern double tnpoint_joinsel_default(CachedOp oper);
+extern bool tnpoint_cachedop(Oid oper, CachedOp *cachedOp);
 
 extern float8 tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args,
   int varRelid);
