@@ -334,7 +334,7 @@ temporal_sel_default(CachedOp oper)
  * Returns a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-static double
+float8
 temporal_joinsel_default(Oid oper __attribute__((unused)))
 {
   // TODO take care of the operator
@@ -354,7 +354,7 @@ Selectivity
 temporal_sel_period(VariableStatData *vardata, Period *period,
   CachedOp cachedOp)
 {
-  double selec;
+  float8 selec;
 
   /*
    * There is no ~= operator for time types and thus it is necessary to
@@ -399,7 +399,8 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
  * bounding box is a period, that is, tbool and ttext (internal function)
  */
 float8
-temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
+temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
+  TemporalFamily tempfamily)
 {
   VariableStatData vardata;
   Node *other;
@@ -409,8 +410,14 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! temporal_cachedop(oper, &cachedOp))
-    /* Unknown operator */
+  bool found;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
+  if (tempfamily == TEMPORALTYPE)
+    found = temporal_cachedop(oper, &cachedOp);
+  else /* tempfamily == TNUMBERTYPE */
+    found = tnumber_cachedop(oper, &cachedOp);
+  if (! found)
+    /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
   /*
@@ -419,7 +426,12 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
       &varonleft))
-    return temporal_sel_default(cachedOp);
+  {
+    if (tempfamily == TEMPORALTYPE)
+      return temporal_sel_default(cachedOp);
+    else /* tempfamily == TNUMBERTYPE */
+      return tnumber_sel_default(cachedOp);
+  }
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -469,6 +481,28 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   return selec;
 }
 
+/*
+ * Estimate the restriction selectivity value of the operators for the
+ * various families of temporal types.
+ */
+float8
+temporal_sel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+
+  float8 result;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+         tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
+    result = temporal_sel_internal(root, oper, args, varRelid, tempfamily);
+  else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
+    result = tpoint_sel_internal(root, oper, args, varRelid, tempfamily);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(temporal_sel);
 /**
  * Estimate the selectivity value of the operators for temporal types whose
@@ -477,12 +511,7 @@ PG_FUNCTION_INFO_V1(temporal_sel);
 PGDLLEXPORT Datum
 temporal_sel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selec = temporal_sel_internal(root, oper, args, varRelid);
-  PG_RETURN_FLOAT8(selec);
+  return temporal_sel_generic(fcinfo, TEMPORALTYPE);
 }
 
 /*****************************************************************************
@@ -540,7 +569,7 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
     if (! tnumber_joinsel_components(cachedOp, oprleft, oprright,
       &value, &time))
       /* In the case of unknown arguments */
-      return temporal_joinsel_default(cachedOp);
+      return tnumber_joinsel_default(cachedOp);
   }
 
   /*
@@ -592,7 +621,19 @@ temporal_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  return temporal_joinsel_internal(root, oper, args, jointype, sjinfo, tempfamily);
+  float8 result;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+         tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
+    result = temporal_joinsel_internal(root, oper, args, jointype, sjinfo,
+      tempfamily);
+  else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
+  {
+    int mode = Int32GetDatum(0) /* ND mode TO GENERALIZE */;
+    result = tpoint_joinsel_internal(root, oper, args, jointype, sjinfo,
+      mode, tempfamily);
+  }
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(temporal_joinsel);

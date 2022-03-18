@@ -47,10 +47,10 @@
 extern Datum tnumber_sel(PG_FUNCTION_ARGS);
 extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
 
-extern float8 tnumber_sel_internal(PlannerInfo *root, Oid oper, List *args,
-  int varRelid);
 extern bool tnumber_cachedop(Oid oper, CachedOp *cachedOp);
-extern double tnumber_joinsel_default(Oid oper);
+extern float8 tnumber_sel_default(CachedOp operator);
+
+extern float8 tnumber_joinsel_default(CachedOp cachedOp);
 extern bool tnumber_joinsel_components(CachedOp cachedOp, Oid oprleft,
   Oid oprright, bool *value, bool *time);
 

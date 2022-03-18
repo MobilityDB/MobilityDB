@@ -48,14 +48,7 @@
 extern Datum tnpoint_sel(PG_FUNCTION_ARGS);
 extern Datum tnpoint_joinsel(PG_FUNCTION_ARGS);
 
-extern double tnpoint_sel_default(CachedOp oper);
-extern double tnpoint_joinsel_default(CachedOp oper);
 extern bool tnpoint_cachedop(Oid oper, CachedOp *cachedOp);
-
-extern float8 tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args,
-  int varRelid);
-extern float8 tnpoint_joinsel_internal(PlannerInfo *root, Oid oper,
-  List *args, JoinType jointype, SpecialJoinInfo *sjinfo);
 
 /*****************************************************************************/
 

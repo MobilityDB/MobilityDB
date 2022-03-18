@@ -1364,9 +1364,6 @@ union_tbox_tbox(PG_FUNCTION_ARGS)
 
 /**
  * Returns the intersection of the temporal boxes
- *
- * @note This function equivalent is to intersection_tbox_tbox_internal
- * but avoids memory allocation
  */
 bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -1396,27 +1393,6 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
   return true;
 }
 
-/**
- * Returns the intersection of the temporal boxes
- * (internal function)
- */
-TBOX *
-intersection_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
-{
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  /* If there is no common dimension */
-  if ((! hasx && ! hast) ||
-    /* If they do no intersect in one common dimension */
-    (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
-    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-    return NULL;
-
-  TBOX *result = palloc(sizeof(TBOX));
-  inter_tbox_tbox(box1, box2, result);
-  return result;
-}
-
 PG_FUNCTION_INFO_V1(intersection_tbox_tbox);
 /**
  * Returns the intersection of the temporal boxes
@@ -1426,9 +1402,12 @@ intersection_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = intersection_tbox_tbox_internal(box1, box2);
-  if (result == NULL)
+  TBOX *result = palloc(sizeof(TBOX));
+  if (! inter_tbox_tbox(box1, box2, result))
+  {
+    pfree(result);
     PG_RETURN_NULL();
+  }
   PG_RETURN_POINTER(result);
 }
 

@@ -1987,9 +1987,6 @@ union_stbox_stbox(PG_FUNCTION_ARGS)
 
 /**
  * Returns the intersection of the spatiotemporal boxes in the third argument
- *
- * @note This function equivalent is to intersection_stbox_stbox_internal
- * but avoids memory allocation
  */
 bool
 inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
@@ -2034,34 +2031,6 @@ inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
   return true;
 }
 
-/**
- * Returns the intersection of the spatiotemporal boxes
- * (internal function)
- */
-STBOX *
-intersection_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
-{
-  ensure_same_geodetic(box1->flags, box2->flags);
-  ensure_same_srid_stbox(box1, box2);
-
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  bool hasz = MOBDB_FLAGS_GET_Z(box1->flags) && MOBDB_FLAGS_GET_Z(box2->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box1->flags) && MOBDB_FLAGS_GET_GEODETIC(box2->flags);
-  /* If there is no common dimension */
-  if ((! hasx && ! hast) ||
-    /* If they do no intersect in one common dimension */
-    (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax ||
-      box1->ymin > box2->ymax || box2->ymin > box1->ymax)) ||
-    ((hasz || geodetic) && (box1->zmin > box2->zmax || box2->zmin > box1->zmax)) ||
-    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-    return NULL;
-  
-  STBOX *result = palloc(sizeof(STBOX));
-  inter_stbox_stbox(box1, box2, result);
-  return result;
-}
-
 PG_FUNCTION_INFO_V1(intersection_stbox_stbox);
 /**
  * Returns the intersection of the spatiotemporal boxes
@@ -2071,9 +2040,12 @@ intersection_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  STBOX *result = intersection_stbox_stbox_internal(box1, box2);
-  if (result == NULL)
+  STBOX *result = palloc(sizeof(STBOX));
+  if (! inter_stbox_stbox(box1, box2, result))
+  {
+    pfree(result);
     PG_RETURN_NULL();
+  }
   PG_RETURN_POINTER(result);
 }
 

@@ -768,7 +768,7 @@ tnumber_rangeop(CachedOp cachedOp)
  * Returns a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
-static double
+float8
 tnumber_sel_default(CachedOp operator)
 {
   switch (operator)
@@ -803,17 +803,6 @@ tnumber_sel_default(CachedOp operator)
       /* all operators should be handled above, but just in case */
       return 0.001;
   }
-}
-
-/**
- * Returns a default join selectivity estimate for given operator, when we
- * don't have statistics or cannot use them for some reason.
- */
-double
-tnumber_joinsel_default(Oid oper __attribute__((unused)))
-{
-  // TODO take care of the operator
-  return 0.001;
 }
 
 /**
@@ -1018,15 +1007,21 @@ PG_FUNCTION_INFO_V1(tnumber_sel);
 PGDLLEXPORT Datum
 tnumber_sel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid operator = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selec = tnumber_sel_internal(root, operator, args, varRelid);
-  PG_RETURN_FLOAT8(selec);
+  return temporal_sel_generic(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/
+
+/**
+ * Returns a default join selectivity estimate for given operator, when we
+ * don't have statistics or cannot use them for some reason.
+ */
+float8
+tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
+{
+  // TODO take care of the operator
+  return 0.001;
+}
 
 /**
  * Depending on the operator and the arguments, determine wheter the value,

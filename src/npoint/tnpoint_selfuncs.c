@@ -34,12 +34,7 @@
 
 #include "npoint/tnpoint_selfuncs.h"
 
-/* PostgreSQL */
-#include <assert.h>
-#include <utils/syscache.h>
 /* MobilityDB */
-#include "general/period.h"
-#include "general/temporal_util.h"
 #include "general/temporal_selfuncs.h"
 #include "point/tpoint_selfuncs.h"
 
@@ -76,112 +71,9 @@ tnpoint_cachedop(Oid oper, CachedOp *cachedOp)
   return false;
 }
 
-/*****************************************************************************/
-
-/**
- * Estimate the restriction selectivity of the operators for temporal network points
- * (internal function)
- */
-float8
-tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
-{
-  VariableStatData vardata;
-  Node *other;
-  bool varonleft;
-  Selectivity selec;
-  CachedOp cachedOp;
-  STBOX constBox;
-  Period constperiod;
-
-  /* Get enumeration value associated to the operator */
-  if (! tnpoint_cachedop(oper, &cachedOp))
-    /* In the case of unknown operator */
-    return DEFAULT_TEMP_SEL;
-
-  /*
-   * If expression is not (variable op something) or (something op
-   * variable), then punt and return a default estimate.
-   */
-  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
-      &varonleft))
-    return tpoint_sel_default(cachedOp);
-
-  /*
-   * Can't do anything useful if the something is not a constant, either.
-   */
-  if (!IsA(other, Const))
-  {
-    ReleaseVariableStats(vardata);
-    return tpoint_sel_default(cachedOp);
-  }
-
-  /*
-   * All the period operators are strict, so we can cope with a NULL constant
-   * right away.
-   */
-  if (((Const *) other)->constisnull)
-  {
-    ReleaseVariableStats(vardata);
-    return 0.0;
-  }
-
-  /*
-   * If var is on the right, commute the operator, so that we can assume the
-   * var is on the left in what follows.
-   */
-  if (!varonleft)
-  {
-    /* we have other Op var, commute to make var Op other */
-    oper = get_commutator(oper);
-    if (!oper)
-    {
-      /* Use default selectivity (should we raise an error instead?) */
-      ReleaseVariableStats(vardata);
-      return tpoint_sel_default(cachedOp);
-    }
-  }
-
-  /* Transform the constant into an STBOX */
-  if (! tpoint_const_stbox(other, &constBox))
-    /* In the case of unknown constant */
-    return tpoint_sel_default(cachedOp);
-
-  assert(MOBDB_FLAGS_GET_X(constBox.flags) || MOBDB_FLAGS_GET_T(constBox.flags));
-
-  /* Enable the multiplication of the selectivity of the spatial and time
-   * dimensions since either may be missing */
-  selec = 1.0;
-
-  /*
-   * Estimate selectivity for the spatial dimension
-   */
-  if (MOBDB_FLAGS_GET_X(constBox.flags))
-  {
-    /* PostGIS does not provide selectivity for the traditional
-     * comparisons <, <=, >, >= */
-    if (cachedOp == LT_OP || cachedOp == LE_OP || cachedOp == GT_OP ||
-      cachedOp == GE_OP)
-      selec *= tpoint_sel_default(cachedOp);
-    else
-      selec *= geo_selectivity(&vardata, &constBox, cachedOp);
-  }
-  /*
-   * Estimate selectivity for the time dimension
-   */
-  if (MOBDB_FLAGS_GET_T(constBox.flags))
-  {
-    /* Transform the STBOX into a Period */
-    period_set(constBox.tmin, constBox.tmax, true, true, &constperiod);
-    int16 subtype = TYPMOD_GET_SUBTYPE(vardata.atttypmod);
-    ensure_valid_tempsubtype_all(subtype);
-    /* Compute the selectivity */
-    selec *= temporal_sel_period(&vardata, &constperiod, cachedOp);
-  }
-
-  ReleaseVariableStats(vardata);
-  CLAMP_PROBABILITY(selec);
-  return selec;
-}
+/*****************************************************************************
+ * Restriction selectivity
+ *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(tnpoint_sel);
 /**
@@ -190,7 +82,7 @@ PG_FUNCTION_INFO_V1(tnpoint_sel);
 PGDLLEXPORT Datum
 tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  return tpoint_sel_generic(fcinfo, TNPOINTTYPE);
+  return temporal_sel_generic(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************
@@ -204,7 +96,7 @@ PG_FUNCTION_INFO_V1(tnpoint_joinsel);
 PGDLLEXPORT Datum
 tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return tpoint_joinsel_generic(fcinfo, TNPOINTTYPE);
+  return temporal_joinsel_generic(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************/

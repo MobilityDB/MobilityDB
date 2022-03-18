@@ -308,12 +308,9 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
     }
     else
     {
-      if (tempfamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
         req->selectivity = temporal_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
-      else if (tempfamily == TNUMBERTYPE)
-        req->selectivity = tnumber_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
+          req->varRelid, tempfamily);
       else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
         req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
           req->varRelid, tempfamily);
