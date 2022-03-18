@@ -69,10 +69,11 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
@@ -436,8 +437,8 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
         &countseqs[i]);
     totalcount += countseqs[i];
   }
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences,
-    countseqs, ts->count, totalcount);
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ts->count,
+    totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
@@ -988,8 +989,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
-    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func,
-      &sequences[k]);
+    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1304,8 +1304,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tdwithin_tpointseq_point1(seq, point, dist, func,
-      &sequences[k]);
+    k += tdwithin_tpointseq_point1(seq, point, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }

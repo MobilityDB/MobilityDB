@@ -56,7 +56,6 @@
 #include <utils/lsyscache.h>
 #include <utils/numeric.h>
 #include <utils/syscache.h>
-
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/temporal_selfuncs.h"
@@ -287,6 +286,8 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
   Oid leftoid, rightoid, oproid;
 
   /* Return estimated selectivity */
+   assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+    tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
@@ -297,18 +298,13 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
     oproid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
     {
-      if (tempfamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
         req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo, TEMPORALTYPE);
-      else if (tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo, TNUMBERTYPE);
-      else if (tempfamily == TPOINTTYPE)
+          req->jointype, req->sjinfo, tempfamily);
+      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
         req->selectivity = tpoint_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
-      else /* tempfamily == TPOINTTYPE */
-        req->selectivity = tnpoint_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo);
+          req->jointype, req->sjinfo, Int32GetDatum(0), /* ND mode TO GENERALIZE */
+          tempfamily);
     }
     else
     {
@@ -318,12 +314,9 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
       else if (tempfamily == TNUMBERTYPE)
         req->selectivity = tnumber_sel_internal(req->root, oproid, req->args,
           req->varRelid);
-      else if (tempfamily == TPOINTTYPE)
+      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
         req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
-      else /* tempfamily == TNPOINTTYPE */
-        req->selectivity = tnpoint_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
+          req->varRelid, tempfamily);
     }
     PG_RETURN_POINTER(req);
   }

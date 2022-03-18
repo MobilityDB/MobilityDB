@@ -32,14 +32,16 @@
  * Functions for spatial and spatiotemporal tiles.
  */
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
 #include <funcapi.h>
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "point/tpoint_tile.h"
 #include "general/period.h"
 #include "general/timeops.h"

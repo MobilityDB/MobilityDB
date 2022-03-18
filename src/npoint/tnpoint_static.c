@@ -37,16 +37,17 @@
 
 #include "npoint/tnpoint_static.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <executor/spi.h>
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
-
 #include "point/tpoint_out.h"
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint.h"

@@ -36,16 +36,16 @@
 
 #include "general/tnumber_gist.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
 #include <access/gist.h>
 #include <utils/builtins.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-
+/* MobilityDB */
 #include "general/rangetypes_ext.h"
 #include "general/period.h"
 #include "general/timeops.h"

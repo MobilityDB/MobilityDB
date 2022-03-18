@@ -97,15 +97,15 @@
 
 #include "general/tnumber_spgist.h"
 
+/* PostgreSQL */
 #include <access/spgist.h>
-#include <utils/timestamp.h>
 #include <utils/builtins.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <access/spgist_private.h>
 #include <utils/float.h>
+#include <access/spgist_private.h>
 #endif
-
+#include <utils/timestamp.h>
+/* MobilityDB */
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"

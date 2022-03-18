@@ -36,8 +36,9 @@
 
 #include "point/tpoint_aggfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

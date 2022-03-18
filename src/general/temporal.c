@@ -34,6 +34,7 @@
 
 #include "general/temporal.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
@@ -50,7 +51,7 @@
 #include <utils/lsyscache.h>
 #include <utils/rel.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
@@ -60,7 +61,6 @@
 #include "general/temporal_parser.h"
 #include "general/rangetypes_ext.h"
 #include "general/tnumber_distance.h"
-
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_spatialfuncs.h"

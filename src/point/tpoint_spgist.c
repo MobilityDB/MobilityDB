@@ -94,16 +94,16 @@
 
 #include "point/tpoint_spgist.h"
 
+/* PostgreSQL */
 #include <float.h>
 #include <access/spgist.h>
-#include <utils/timestamp.h>
 #include <utils/builtins.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
 #include <access/spgist_private.h>
+#include <utils/float.h>
 #endif
-
+#include <utils/timestamp.h>
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"

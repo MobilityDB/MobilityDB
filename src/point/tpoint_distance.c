@@ -34,6 +34,7 @@
 
 #include "point/tpoint_distance.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
@@ -42,13 +43,13 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <lwgeodetic_tree.h>
 #include <measures.h>
 #include <measures3d.h>
 #endif
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"

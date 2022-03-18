@@ -35,12 +35,13 @@
 
 #include "general/tinstant.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>  /* for get_typlenbyval */
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timetypes.h"
 #include "general/timestampset.h"
 #include "general/period.h"
@@ -51,7 +52,6 @@
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/rangetypes_ext.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 

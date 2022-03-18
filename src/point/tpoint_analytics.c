@@ -34,6 +34,7 @@
 
 #include "point/tpoint_analytics.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <funcapi.h>
@@ -42,16 +43,16 @@
 #include <access/htup_details.h>
 #endif
 #include <utils/builtins.h>
-#include <utils/timestamp.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-
+#include <utils/timestamp.h>
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom_internal.h>
 #include <lwgeodetic_tree.h>
 #endif
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
@@ -60,7 +61,6 @@
 #include "general/temporal_util.h"
 #include "general/lifting.h"
 #include "general/tnumber_mathfuncs.h"
-
 #include "point/postgis.h"
 #include "point/geography_funcs.h"
 #include "point/tpoint.h"

@@ -149,9 +149,10 @@
 
 #include "general/lifting.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"

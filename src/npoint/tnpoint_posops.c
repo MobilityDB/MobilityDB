@@ -45,7 +45,9 @@
 
 #include "npoint/tnpoint_posops.h"
 
+/* PostGIS */
 #include <liblwgeom.h>
+/* MobilityDB */
 #include "point/postgis.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_posops.h"

@@ -34,12 +34,13 @@
 
 #include "general/tsequenceset.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/lsyscache.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -49,7 +50,6 @@
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
 #include "general/rangetypes_ext.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 

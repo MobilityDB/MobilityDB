@@ -38,8 +38,9 @@
 
 #include "npoint/tnpoint_tempspatialrels.h"
 
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

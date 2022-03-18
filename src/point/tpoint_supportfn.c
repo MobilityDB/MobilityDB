@@ -34,7 +34,6 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 
-#include "general/temporal_supportfn.h"
 #include "point/tpoint_supportfn.h"
 
 /* PostgreSQL */
@@ -56,9 +55,9 @@
 #include <utils/lsyscache.h>
 #include <utils/numeric.h>
 #include <utils/syscache.h>
-
 /* MobilityDB */
 #include "general/tempcache.h"
+#include "general/temporal_supportfn.h"
 #include "point/tpoint_selfuncs.h"
 
 enum TPOINT_FUNCTION_IDX

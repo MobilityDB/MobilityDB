@@ -41,8 +41,9 @@
 
 #include "npoint/tnpoint_boxops.h"
 
+/* PostgreSQL */
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "point/stbox.h"
@@ -161,25 +162,6 @@ tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
     tnpointinstarr_linear_stbox(instants, count, box);
   else
     tnpointinstarr_stbox(instants, count, box);
-  return;
-}
-
-/**
- * Set the spatiotemporal box from the array of temporal network point values
- *
- * @param[out] box Spatiotemporal box
- * @param[in] sequences Temporal network point values
- * @param[in] count Number of elements in the array
- */
-void
-tnpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
-{
-  tsequence_bbox(sequences[0], box);
-  for (int i = 1; i < count; i++)
-  {
-    const STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-    stbox_expand(box, box1);
-  }
   return;
 }
 

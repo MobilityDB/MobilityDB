@@ -34,16 +34,16 @@
 
 #include "general/tnumber_distance.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
 #include <utils/builtins.h>
-#include <utils/timestamp.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-
+#include <utils/timestamp.h>
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/rangetypes_ext.h"

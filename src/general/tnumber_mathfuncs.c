@@ -34,10 +34,11 @@
 
 #include "general/tnumber_mathfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"

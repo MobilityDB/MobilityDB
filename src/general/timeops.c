@@ -34,9 +34,10 @@
 
 #include "general/timeops.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timestampset.h"

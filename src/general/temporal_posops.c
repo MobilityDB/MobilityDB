@@ -38,8 +38,9 @@
 
 #include "general/temporal_posops.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
+/* MobilityDB */
 #include "general/timeops.h"
 #include "general/temporal.h"
 #include "general/temporal_boxops.h"

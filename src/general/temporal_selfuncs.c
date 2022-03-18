@@ -514,6 +514,7 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
   bool found;
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
   if (tempfamily == TEMPORALTYPE)
     found = temporal_cachedop(oper, &cachedOp);
   else /* tempfamily == TNUMBERTYPE */
@@ -527,7 +528,6 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
    * taken into account for the selectivity estimation
    */
   bool value, time;
-  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
   if (tempfamily == TEMPORALTYPE)
   {
     value = false;

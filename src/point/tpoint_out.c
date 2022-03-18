@@ -34,14 +34,15 @@
 
 #include "point/tpoint_out.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <utils/builtins.h>
-
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom_internal.h>
 #endif
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

@@ -34,21 +34,21 @@
 
 #include "point/tpoint_spatialfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #define M_PI 3.14159265358979323846
 #define RADIANS_PER_DEGREE 0.0174532925199432957692
 #else
 #include <utils/float.h>
 #endif
-
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
 #endif
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
@@ -56,7 +56,6 @@
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
-
 #include "point/postgis.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
@@ -2052,8 +2051,8 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
   lwmpoint_free(lwmpoint);
 
-  return tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, linear, NORMALIZE_NO);
 }
 
 /**

@@ -34,10 +34,11 @@
 
 #include "point/stbox.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"

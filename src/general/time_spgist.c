@@ -39,10 +39,11 @@
 
 #include "general/time_spgist.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/spgist.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timetypes.h"
 #include "general/timestampset.h"
 #include "general/period.h"

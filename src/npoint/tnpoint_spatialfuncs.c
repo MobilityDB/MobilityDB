@@ -34,9 +34,10 @@
 
 #include "npoint/tnpoint_spatialfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
-
+/* MobilityDB */
 #include "general/periodset.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
@@ -713,11 +714,6 @@ tnpointseqset_speed(const TSequenceSet *ts)
     if (seq1 != NULL)
       sequences[k++] = seq1;
   }
-  if (k == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
   /* The resulting sequence set has stepwise interpolation */
   TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
   return result;
@@ -902,12 +898,6 @@ tnpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * (seq->count - 1));
   int count = tnpointseq_azimuth2(seq, sequences);
-  if (count == 0)
-  {
-    pfree(sequences);
-    return NULL;
-  }
-
   /* Resulting sequence set has stepwise interpolation */
   TSequenceSet *result = tsequenceset_make_free(sequences, count, true);
   return result;
@@ -927,9 +917,6 @@ tnpointseqset_azimuth(const TSequenceSet *ts)
     int countstep = tnpointseq_azimuth2(seq, &sequences[k]);
     k += countstep;
   }
-  if (k == 0)
-    return NULL;
-
   /* Resulting sequence set has stepwise interpolation */
   TSequenceSet *result = tsequenceset_make_free(sequences, k, STEP);
   return result;

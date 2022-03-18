@@ -54,12 +54,13 @@
 
 #include "point/tpoint_analyze.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <access/htup_details.h>
 #include <executor/spi.h>
 #include <utils/lsyscache.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/time_analyze.h"
 #include "general/temporal.h"

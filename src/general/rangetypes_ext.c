@@ -36,10 +36,11 @@
 
 #include "general/rangetypes_ext.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

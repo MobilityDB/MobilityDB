@@ -34,6 +34,7 @@
 
 #include "general/temporal_aggfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #include <string.h>
@@ -41,7 +42,7 @@
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/skiplist.h"
 #include "general/period.h"
 #include "general/timeops.h"

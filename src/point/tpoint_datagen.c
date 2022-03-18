@@ -37,22 +37,23 @@
 
 #include "point/tpoint_datagen.h"
 
+/* PostgreSQL */
 #include <access/htup_details.h>
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */
 #include <utils/builtins.h>
-#include <utils/lsyscache.h>
-#include <utils/timestamp.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #else
 /* Radians per degree, a.k.a. PI / 180 */
 #define RADIANS_PER_DEGREE 0.0174532925199432957692
 #endif
-
+#include <utils/lsyscache.h>
+#include <utils/timestamp.h>
+/* GSL */
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

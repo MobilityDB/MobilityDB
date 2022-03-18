@@ -35,8 +35,9 @@
 
 #include "general/temporal_gist.h"
 
+/* PostgreSQL */
 #include <access/gist.h>
-
+/* MobilityDB */
 #include "general/timetypes.h"
 #include "general/temporal.h"
 #include "general/tempcache.h"

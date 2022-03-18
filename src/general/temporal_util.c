@@ -34,6 +34,7 @@
 
 #include "general/temporal_util.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <catalog/pg_collation.h>
 #include <fmgr.h>
@@ -41,15 +42,13 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/doublen.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************

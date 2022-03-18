@@ -44,10 +44,11 @@
  */
 #include "general/time_analyze.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <catalog/pg_operator.h>
 #include <commands/vacuum.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"

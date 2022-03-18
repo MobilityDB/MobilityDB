@@ -44,18 +44,18 @@
 
 #include "point/tpoint_boxops.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-
 #include "point/tpoint.h"
 #include "point/stbox.h"
 #include "point/tpoint_boxops.h"

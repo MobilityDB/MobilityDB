@@ -45,10 +45,11 @@
 
 #include "general/temporal_boxops.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -348,10 +349,8 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
     tseqarr_to_period_internal(sequences, count, (Period *) box);
   else if (tnumber_base_type(sequences[0]->basetypid))
     tnumberseqarr_to_tbox_internal(sequences, count, (TBOX *) box);
-  else if (tgeo_base_type(sequences[0]->basetypid))
+  else if (tspatial_base_type(sequences[0]->basetypid))
     tpointseqarr_stbox(sequences, count, (STBOX *) box);
-  else if (sequences[0]->basetypid == type_oid(T_NPOINT))
-    tnpointseqarr_stbox(sequences, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       sequences[0]->basetypid);

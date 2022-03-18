@@ -43,11 +43,13 @@
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/time_selfuncs.h"
+#include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
 #include "point/tpoint_analyze.h"
 #include "point/tpoint_boxops.h"
+#include "npoint/tnpoint_selfuncs.h"
 
 /*****************************************************************************
  * PostGIS functions copied from the file gserialized_estimate.c since they
@@ -877,20 +879,25 @@ geo_selectivity(VariableStatData *vardata, const STBOX *box, CachedOp op)
  * (internal function)
  */
 float8
-tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
+tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
+  TemporalFamily tempfamily)
 {
   VariableStatData vardata;
   Node *other;
   bool varonleft;
   Selectivity selec;
-  CachedOp cachedOp;
   STBOX constBox;
   Period constperiod;
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  if (! tpoint_cachedop(oper, &cachedOp))
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  bool found;
+  assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TPOINTTYPE)
+    found = tpoint_cachedop(oper, &cachedOp);
+  else /* tempfamily == TNUMBERTYPE */
+    found = tnpoint_cachedop(oper, &cachedOp);
+  if (! found)
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -982,6 +989,22 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   return selec;
 }
 
+/*
+ * Estimate the restriction selectivity value of the operators for temporal
+ * point types and network point types.
+ */
+float8
+tpoint_sel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+{
+  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
+  Oid oper = PG_GETARG_OID(1);
+  List *args = (List *) PG_GETARG_POINTER(2);
+  int varRelid = PG_GETARG_INT32(3);
+  float8 selectivity = tpoint_sel_internal(root, oper, args, varRelid,
+    tempfamily);
+  return selectivity;
+}
+
 PG_FUNCTION_INFO_V1(tpoint_sel);
 /**
  * Estimate the restriction selectivity of the operators for temporal points
@@ -989,12 +1012,7 @@ PG_FUNCTION_INFO_V1(tpoint_sel);
 PGDLLEXPORT Datum
 tpoint_sel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selectivity = tpoint_sel_internal(root, oper, args, varRelid);
-  PG_RETURN_FLOAT8(selectivity);
+  return tpoint_sel_generic(fcinfo, TPOINTTYPE);
 }
 
 /*****************************************************************************
@@ -1291,9 +1309,14 @@ tpoint_joinsel_components(CachedOp cachedOp, Oid oprleft, Oid oprright,
   return true;
 }
 
+/**
+ * Estimate the restriction selectivity of the operators for temporal (network)
+ * points (internal function)
+ */
 float8
 tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo, int mode)
+  JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
+  TemporalFamily tempfamily)
 {
   Node *arg1 = (Node *) linitial(args);
   Node *arg2 = (Node *) lsecond(args);
@@ -1307,7 +1330,13 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! tpoint_cachedop(oper, &cachedOp))
+  bool found;
+  assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TPOINTTYPE)
+    found = tpoint_cachedop(oper, &cachedOp);
+  else /* tempfamily == TNPOINTTYPE */
+    found = tnpoint_cachedop(oper, &cachedOp);
+  if (! found)
     /* In the case of unknown operator */
     return DEFAULT_TEMP_JOINSEL;
 
@@ -1321,7 +1350,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   if (! tpoint_joinsel_components(cachedOp, oprleft, oprright,
     &space, &time))
     /* In the case of unknown arguments */
-    return DEFAULT_TEMP_JOINSEL;
+    return tpoint_joinsel_default(cachedOp);
 
   float8 selec = 1.0;
   if (space)
@@ -1336,7 +1365,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
     /* If we can't get stats, we have to stop here! */
     if (!stats1 || !stats2)
-      selec *= DEFAULT_ND_JOINSEL;
+      selec *= tpoint_joinsel_default(cachedOp);
     else
       selec *= geo_join_selectivity(stats1, stats2);
     if (stats1)
@@ -1364,17 +1393,12 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_joinsel);
-/**
- * Estimate the join selectivity value of the operators for temporal points.
- *
- * The selectivity is the ratio of the number of rows we think will be
- * returned divided the maximum number of rows the join could possibly
- * return (the full combinatoric join), that is,
- *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
+/*
+ * Estimate the join selectivity value of the operators for temporal
+ * alphanumeric types and temporal number types.
  */
-PGDLLEXPORT Datum
-tpoint_joinsel(PG_FUNCTION_ARGS)
+float8
+tpoint_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid oper = PG_GETARG_OID(1);
@@ -1391,8 +1415,24 @@ tpoint_joinsel(PG_FUNCTION_ARGS)
   if (jointype != JOIN_INNER)
     PG_RETURN_FLOAT8(DEFAULT_TEMP_JOINSEL);
 
-  float8 selec = tpoint_joinsel_internal(root, oper, args, jointype, sjinfo, mode);
+  float8 selec = tpoint_joinsel_internal(root, oper, args, jointype, sjinfo,
+    mode, tempfamily);
   PG_RETURN_FLOAT8(selec);
+}
+
+PG_FUNCTION_INFO_V1(tpoint_joinsel);
+/**
+ * Estimate the join selectivity value of the operators for temporal points.
+ *
+ * The selectivity is the ratio of the number of rows we think will be
+ * returned divided the maximum number of rows the join could possibly
+ * return (the full combinatoric join), that is,
+ *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
+ */
+PGDLLEXPORT Datum
+tpoint_joinsel(PG_FUNCTION_ARGS)
+{
+  return tpoint_joinsel_generic(fcinfo, TPOINTTYPE);
 }
 
 /*****************************************************************************/

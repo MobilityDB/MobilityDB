@@ -63,6 +63,7 @@
 
 #include "general/temporal_analyze.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -78,7 +79,7 @@
 #include <utils/fmgrprotos.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/time_analyze.h"
 #include "general/rangetypes_ext.h"

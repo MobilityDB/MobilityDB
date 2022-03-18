@@ -34,6 +34,7 @@
 
 #include "general/tsequence.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <access/hash.h>
@@ -41,7 +42,7 @@
 #include <utils/builtins.h>
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -52,11 +53,9 @@
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
 #include "general/rangetypes_ext.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_spatialfuncs.h"
-
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
@@ -472,7 +471,11 @@ TSequence *
 tsequence_make_free(TInstant **instants, int count, bool lower_inc,
    bool upper_inc, bool linear, bool normalize)
 {
-  assert (count > 0);
+  if (count == 0)
+  {
+    pfree(instants);
+    return NULL;
+  }
   TSequence *result = tsequence_make((const TInstant **) instants, count,
     lower_inc, upper_inc, linear, normalize);
   pfree_array((void **) instants, count);
@@ -881,7 +884,8 @@ tsequence_merge_array(const TSequence **sequences, int count)
   }
   else
     /* Normalization was done at function tsequence_merge_array1 */
-    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount, NORMALIZE_NO);
+    result = (Temporal *) tsequenceset_make_free(newseqs, totalcount,
+      NORMALIZE_NO);
   return result;
 }
 

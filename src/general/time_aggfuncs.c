@@ -34,11 +34,12 @@
 
 #include "general/time_aggfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/skiplist.h"
 #include "general/timestampset.h"
 #include "general/period.h"

@@ -105,9 +105,15 @@ extern bool tpoint_const_stbox(Node *other, STBOX *box);
 extern float8 geo_selectivity(VariableStatData *vardata, const STBOX *box,
   CachedOp op);
 extern float8 tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args,
-  int varRelid);
+  int varRelid, TemporalFamily tempfamily);
+extern float8 tpoint_sel_generic(FunctionCallInfo fcinfo,
+  TemporalFamily tempfamily);
+
 extern float8 tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo, int mode);
+  JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
+  TemporalFamily tempFamily);
+extern float8 tpoint_joinsel_generic(FunctionCallInfo fcinfo,
+  TemporalFamily tempfamily);
 
 /*****************************************************************************/
 

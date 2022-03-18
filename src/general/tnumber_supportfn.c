@@ -56,7 +56,6 @@
 #include <utils/lsyscache.h>
 #include <utils/numeric.h>
 #include <utils/syscache.h>
-
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/temporal_util.h"

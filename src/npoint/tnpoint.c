@@ -34,14 +34,14 @@
 
 #include "npoint/tnpoint.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_parser.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
-
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_parser.h"

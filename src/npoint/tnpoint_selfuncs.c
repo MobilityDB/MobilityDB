@@ -34,20 +34,19 @@
 
 #include "npoint/tnpoint_selfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/syscache.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/temporal_util.h"
 #include "general/temporal_selfuncs.h"
-
 #include "point/tpoint_selfuncs.h"
 
 /*****************************************************************************/
 
 /**
  * Get the enum value associated to the operator
- * TODO Adapt to temporal network points
  */
 bool
 tnpoint_cachedop(Oid oper, CachedOp *cachedOp)
@@ -175,7 +174,6 @@ tnpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
     period_set(constBox.tmin, constBox.tmax, true, true, &constperiod);
     int16 subtype = TYPMOD_GET_SUBTYPE(vardata.atttypmod);
     ensure_valid_tempsubtype_all(subtype);
-
     /* Compute the selectivity */
     selec *= temporal_sel_period(&vardata, &constperiod, cachedOp);
   }
@@ -192,62 +190,12 @@ PG_FUNCTION_INFO_V1(tnpoint_sel);
 PGDLLEXPORT Datum
 tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  int varRelid = PG_GETARG_INT32(3);
-  float8 selec = tnpoint_sel_internal(root, oper, args, varRelid);
-  PG_RETURN_FLOAT8((float8) selec);
+  return tpoint_sel_generic(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************
  * Join selectivity
  *****************************************************************************/
-
-/**
- * Estimate the join selectivity of the operators for temporal network points
- * (internal function)
- */
-float8
-tnpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo)
-{
-  VariableStatData vardata1, vardata2;
-  bool join_is_reversed;
-  float8 selec;
-
-  /* Check length of args and punt on > 2 */
-  if (list_length(args) != 2)
-    return DEFAULT_TEMP_JOINSEL;
-
-  /* Only respond to an inner join/unknown context join */
-  if (jointype != JOIN_INNER)
-    return DEFAULT_TEMP_JOINSEL;
-
-  get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
-    &join_is_reversed);
-
-  /*
-   * Get enumeration value associated to the operator
-   */
-  CachedOp cachedOp;
-  if (! tnpoint_cachedop(oper, &cachedOp))
-  {
-    /* In the case of unknown operator */
-    ReleaseVariableStats(vardata1);
-    ReleaseVariableStats(vardata2);
-    return tpoint_joinsel_default(oper);
-  }
-
-  /* Estimate join selectivity TODO */
-  // selec = tnpoint_joinsel_hist(&vardata1, &vardata2, cachedOp);
-  selec = tpoint_joinsel_default(oper);
-
-  ReleaseVariableStats(vardata1);
-  ReleaseVariableStats(vardata2);
-  CLAMP_PROBABILITY(selec);
-  return (float8) selec;
-}
 
 PG_FUNCTION_INFO_V1(tnpoint_joinsel);
 /**
@@ -256,13 +204,7 @@ PG_FUNCTION_INFO_V1(tnpoint_joinsel);
 PGDLLEXPORT Datum
 tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
-  List *args = (List *) PG_GETARG_POINTER(2);
-  JoinType jointype = (JoinType) PG_GETARG_INT16(3);
-  SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
-  float8 selec = tnpoint_joinsel_internal(root, oper, args, jointype, sjinfo);
-  PG_RETURN_FLOAT8(selec);
+  return tpoint_joinsel_generic(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************/
