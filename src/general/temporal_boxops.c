@@ -144,9 +144,9 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
   if (talpha_base_type(basetypid))
     period_shift_tscale((Period *) box, start, duration);
   else if (tnumber_base_type(basetypid))
-    tbox_shift_tscale((TBOX *) box, start, duration);
+    tbox_shift_tscale(start, duration, (TBOX *) box);
   else if (tspatial_base_type(basetypid))
-    stbox_shift_tscale((STBOX *) box, start, duration);
+    stbox_shift_tscale(start, duration, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
   return;
@@ -233,7 +233,7 @@ tnumberinstarr_tbox(const TInstant **instants, int count, TBOX *box)
   {
     TBOX box1;
     tinstant_make_bbox(instants[i], &box1);
-    tbox_expand(box, &box1);
+    tbox_expand(&box1, box);
   }
   return;
 }
@@ -331,7 +331,7 @@ tnumberseqarr_to_tbox_internal(const TSequence **sequences, int count,
   for (int i = 1; i < count; i++)
   {
     const TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-    tbox_expand(box, box1);
+    tbox_expand(box1, box);
   }
   return;
 }

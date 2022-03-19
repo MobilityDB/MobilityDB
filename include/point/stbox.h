@@ -82,9 +82,9 @@ extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic,
   int32 srid, double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
 extern STBOX *stbox_copy(const STBOX *box);
-extern void stbox_expand(STBOX *box1, const STBOX *box2);
-extern void stbox_shift_tscale(STBOX *box, const Interval *start,
-  const Interval *duration);
+extern void stbox_expand(const STBOX *box1, STBOX *box2);
+extern void stbox_shift_tscale(const Interval *start, const Interval *duration,
+  STBOX *box);
 
 /* Parameter tests */
 

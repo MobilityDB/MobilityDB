@@ -421,7 +421,15 @@ SELECT round(_mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::re
  0.000202
 (1 row)
 
+SELECT round(_mobdb_period_sel('tbl_period'::regclass, 'p', '@>(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
 /* Errors */
+SELECT round(_mobdb_period_sel(1184, 'p', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
+ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_period_sel('tbl_period'::regclass, 'X', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]');
 ERROR:  attribute "X" does not exist
 SELECT _mobdb_period_sel('tbl_period'::regclass, 'p', '&&(period,text)'::regoperator, period '[2001-06-01, 2001-07-01]');
@@ -430,8 +438,12 @@ LINE 1: ...CT _mobdb_period_sel('tbl_period'::regclass, 'p', '&&(period...
                                                              ^
 SELECT _mobdb_period_sel('tbl_period'::regclass, 'p', '<(text,text)'::regoperator, period '[2001-06-01, 2001-07-01]');
 ERROR:  Unknown period operator 664
+SELECT _mobdb_period_joinsel(1184, 'X', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator);
+ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'X', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator);
 ERROR:  attribute "X" does not exist
+SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 1184, 'p', '&&(period,period)'::regoperator);
+ERROR:  Oid 1184 does not refer to a table
 SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'X', '&&(period,period)'::regoperator);
 ERROR:  attribute "X" does not exist
 SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'p', '&&(period,text)'::regoperator);

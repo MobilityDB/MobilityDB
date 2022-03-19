@@ -40,7 +40,9 @@
 
 #include "npoint/tnpoint_spatialrels.h"
 
+/* MobilityDB */
 #include "general/lifting.h"
+#include "point/tpoint_spatialfuncs.h"
 #include "point/tpoint_spatialrels.h"
 #include "npoint/tnpoint.h"
 #include "npoint/tnpoint_static.h"
@@ -66,6 +68,48 @@ spatialrel_tnpoint_geom(const Temporal *temp, Datum geom,
   Datum result = invert ? func(geom, geom1) : func(geom1, geom);
   pfree(DatumGetPointer(geom1));
   return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Returns true if the temporal network points ever satisfy the spatial
+ * relationship
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Spatial relationship
+ */
+static Datum
+spatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  ensure_same_srid(tnpoint_srid_internal(temp1), tnpoint_srid_internal(temp2));
+  Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
+  /* Fill the lifted structure */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 0;
+  lfinfo.argoids = true;
+  lfinfo.argtypid[0] = tpoint1->basetypid;
+  lfinfo.argtypid[1] = tpoint2->basetypid;
+  lfinfo.restypid = BOOLOID;
+  lfinfo.reslinear = STEP;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(tpoint1->flags) ||
+    MOBDB_FLAGS_GET_LINEAR(tpoint2->flags);
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  int result = efunc_temporal_temporal(tpoint1, tpoint2, &lfinfo);
+  /* Finish */
+  pfree(tpoint1); pfree(tpoint2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result == 1 ? true : false);
 }
 
 /*****************************************************************************
@@ -197,6 +241,18 @@ disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(disjoint_tnpoint_tnpoint);
+/**
+ * Returns true if the temporal points are ever disjoint
+ */
+PGDLLEXPORT Datum
+disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return spatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_ne);
+}
+
 /*****************************************************************************
  * Temporal intersects
  *****************************************************************************/
@@ -263,6 +319,18 @@ intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(intersects_tnpoint_tnpoint);
+/**
+ * Returns true if the temporal points are ever disjoint
+ */
+PGDLLEXPORT Datum
+intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+{
+  return spatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_eq);
 }
 
 /*****************************************************************************

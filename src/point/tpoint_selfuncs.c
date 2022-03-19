@@ -943,8 +943,6 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
   {
     /* Transform the STBOX into a Period */
     period_set(box.tmin, box.tmax, true, true, &period);
-    int16 subtype = TYPMOD_GET_SUBTYPE(vardata.atttypmod);
-    ensure_valid_tempsubtype_all(subtype);
 
     /* Compute the selectivity */
     selec *= temporal_sel_period(&vardata, &period, cachedOp);
@@ -1319,7 +1317,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   /* We only do column joins right now, no functional joins */
   /* TODO: handle t1 <op> expandX(t2) */
-  if (! IsA(arg1, Var) || ! IsA(arg2, Var))
+  if (!IsA(arg1, Var) || !IsA(arg2, Var))
     return DEFAULT_TEMP_JOINSEL;
 
   /* Get enumeration value associated to the operator */

@@ -69,9 +69,9 @@ extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
 extern void tbox_set(bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax, TBOX *box);
 extern TBOX *tbox_copy(const TBOX *box);
-extern void tbox_expand(TBOX *box1, const TBOX *box2);
-extern void tbox_shift_tscale(TBOX *box, const Interval *start,
-  const Interval *duration);
+extern void tbox_expand(const TBOX *box1, TBOX *box2);
+extern void tbox_shift_tscale(const Interval *start, const Interval *duration,
+  TBOX *box);
 
 /* Parameter tests */
 

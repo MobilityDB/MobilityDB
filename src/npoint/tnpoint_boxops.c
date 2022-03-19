@@ -104,7 +104,7 @@ tnpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
   {
     STBOX box1;
     tnpointinst_make_stbox(instants[i], &box1);
-    stbox_expand(box, &box1);
+    stbox_expand(&box1, box);
   }
   return;
 }

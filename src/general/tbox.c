@@ -107,15 +107,21 @@ tbox_copy(const TBOX *box)
 }
 
 /**
- * Expand the first temporal box value with the second one
+ * Expand the second temporal box value with the first one
  */
 void
-tbox_expand(TBOX *box1, const TBOX *box2)
+tbox_expand(const TBOX *box1, TBOX *box2)
 {
-  box1->xmin = Min(box1->xmin, box2->xmin);
-  box1->xmax = Max(box1->xmax, box2->xmax);
-  box1->tmin = Min(box1->tmin, box2->tmin);
-  box1->tmax = Max(box1->tmax, box2->tmax);
+  if (MOBDB_FLAGS_GET_X(box2->flags))
+  {
+    box2->xmin = Min(box1->xmin, box2->xmin);
+    box2->xmax = Max(box1->xmax, box2->xmax);
+  }
+  if (MOBDB_FLAGS_GET_T(box2->flags))
+  {
+    box2->tmin = Min(box1->tmin, box2->tmin);
+    box2->tmax = Max(box1->tmax, box2->tmax);
+  }
   return;
 }
 
@@ -123,7 +129,7 @@ tbox_expand(TBOX *box1, const TBOX *box2)
  * Shift and/or scale the time span of the temporal box by the interval
  */
 void
-tbox_shift_tscale(TBOX *box, const Interval *start, const Interval *duration)
+tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
 {
   assert(start != NULL || duration != NULL);
   if (start != NULL)
@@ -1440,7 +1446,7 @@ tbox_extent_transfn(PG_FUNCTION_ARGS)
 
   /* Both boxes are not null */
   memcpy(result, box1, sizeof(TBOX));
-  tbox_expand(result, box2);
+  tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -1463,7 +1469,7 @@ tbox_extent_combinefn(PG_FUNCTION_ARGS)
   /* Both boxes are not null */
   ensure_same_dimensionality_tbox(box1, box2);
   TBOX *result = tbox_copy(box1);
-  tbox_expand(result, box2);
+  tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

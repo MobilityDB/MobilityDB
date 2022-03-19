@@ -98,7 +98,7 @@ tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
   {
     STBOX box1;
     tpointinst_stbox(instants[i], &box1);
-    stbox_expand(box, &box1);
+    stbox_expand(&box1, box);
   }
   return;
 }
@@ -186,7 +186,7 @@ tpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
   for (int i = 1; i < count; i++)
   {
     const STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-    stbox_expand(box, box1);
+    stbox_expand(box1, box);
   }
   return;
 }
@@ -227,7 +227,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     STBOX box;
     tpointinst_stbox(inst2, &box);
-    stbox_expand(&result[i], &box);
+    stbox_expand(&box, &result[i]);
     inst1 = inst2;
   }
   return seq->count - 1;

@@ -503,7 +503,6 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
       MOBDB_FLAGS_GET_T(box.flags));
     /* Get the base type of the temporal column */
     Oid basetypid = base_oid_from_temporal(vardata.atttype);
-    ensure_tnumber_base_type(basetypid);
     /* Compute the selectivity */
     selec = tnumber_sel_box(&vardata, &box, cachedOp, basetypid);
   }

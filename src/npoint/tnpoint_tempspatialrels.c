@@ -66,7 +66,7 @@ tinterrel_tnpoint_npoint_internal(Temporal *temp, npoint *np, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo_internal(geomtemp, gs, tinter,
@@ -135,7 +135,7 @@ tinterrel_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = tinterrel_tpoint_geo_internal(geomtemp, gs, tinter, restr,
     atvalue);
@@ -161,7 +161,7 @@ tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tinterrel_tnpoint_geo_internal(temp, gs, tinter, restr,
     atvalue);
   pfree(geomtemp);
@@ -190,7 +190,7 @@ tinterrel_tnpoint_geo(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tinterrel_tnpoint_geo_internal(temp, gs, tinter, restr,
     atvalue);
   pfree(geomtemp);
@@ -212,7 +212,7 @@ ttouches_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo_internal(geomtemp, gs, restr, atvalue);
   pfree(geomtemp);
@@ -228,7 +228,7 @@ ttouches_tnpoint_npoint_internal(Temporal *temp, npoint *np,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
   Temporal *result = ttouches_tpoint_geo_internal(geomtemp, gs, restr, atvalue);
@@ -260,7 +260,7 @@ tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tcontains_geo_tpoint_internal(gs, geomtemp, restr,
     atvalue);
   pfree(geomtemp);
@@ -493,7 +493,7 @@ tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(3);
     restr = true;
   }
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tdwithin_tpoint_geo_internal(geomtemp, gs, dist, restr, atvalue);
   pfree(geomtemp);
   PG_FREE_IF_COPY(gs, 0);
@@ -523,7 +523,7 @@ tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   }
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tdwithin_tpoint_geo_internal(geomtemp, gs, dist, restr, atvalue);
   pfree(gs);
   PG_FREE_IF_COPY(temp, 1);
@@ -552,7 +552,7 @@ tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(3);
     restr = true;
   }
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tdwithin_tpoint_geo_internal(geomtemp, gs, dist, restr, atvalue);
   pfree(geomtemp);
   PG_FREE_IF_COPY(temp, 0);
@@ -582,7 +582,7 @@ tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   }
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = tdwithin_tpoint_geo_internal(geomtemp, gs, dist, restr, atvalue);
   pfree(geomtemp);
   pfree(gs);
@@ -610,8 +610,8 @@ tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(3);
     restr = true;
   }
-  Temporal *geomsync1 = tnpoint_to_tgeompoint_internal(temp1);
-  Temporal *geomsync2 = tnpoint_to_tgeompoint_internal(temp2);
+  Temporal *geomsync1 = tnpoint_tgeompoint(temp1);
+  Temporal *geomsync2 = tnpoint_tgeompoint(temp2);
   Temporal *result = tdwithin_tpoint_tpoint_internal(geomsync1, geomsync2, dist,
     restr, atvalue);
   pfree(geomsync1); pfree(geomsync2);

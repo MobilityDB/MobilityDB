@@ -127,31 +127,31 @@ stbox_copy(const STBOX *box)
 }
 
 /**
- * Expand the first spatiotemporal box with the second one
+ * Expand the second spatiotemporal box with the first one
  *
  * @pre No tests are made concerning the srid, dimensionality, etc.
  * This should be ensured by the calling function.
  */
 void
-stbox_expand(STBOX *box1, const STBOX *box2)
+stbox_expand(const STBOX *box1, STBOX *box2)
 {
-  if (MOBDB_FLAGS_GET_X(box1->flags))
+  if (MOBDB_FLAGS_GET_X(box2->flags))
   {
-    box1->xmin = Min(box1->xmin, box2->xmin);
-    box1->xmax = Max(box1->xmax, box2->xmax);
-    box1->ymin = Min(box1->ymin, box2->ymin);
-    box1->ymax = Max(box1->ymax, box2->ymax);
-    if (MOBDB_FLAGS_GET_Z(box1->flags) ||
-      MOBDB_FLAGS_GET_GEODETIC(box1->flags))
+    box2->xmin = Min(box1->xmin, box2->xmin);
+    box2->xmax = Max(box1->xmax, box2->xmax);
+    box2->ymin = Min(box1->ymin, box2->ymin);
+    box2->ymax = Max(box1->ymax, box2->ymax);
+    if (MOBDB_FLAGS_GET_Z(box2->flags) ||
+      MOBDB_FLAGS_GET_GEODETIC(box2->flags))
     {
-      box1->zmin = Min(box1->zmin, box2->zmin);
-      box1->zmax = Max(box1->zmax, box2->zmax);
+      box2->zmin = Min(box1->zmin, box2->zmin);
+      box2->zmax = Max(box1->zmax, box2->zmax);
     }
   }
-  if (MOBDB_FLAGS_GET_T(box1->flags))
+  if (MOBDB_FLAGS_GET_T(box2->flags))
   {
-    box1->tmin = Min(box1->tmin, box2->tmin);
-    box1->tmax = Max(box1->tmax, box2->tmax);
+    box2->tmin = Min(box1->tmin, box2->tmin);
+    box2->tmax = Max(box1->tmax, box2->tmax);
   }
   return;
 }
@@ -160,7 +160,7 @@ stbox_expand(STBOX *box1, const STBOX *box2)
  * Shift and/or scale the time span of the spatiotemporal box by the interval
  */
 void
-stbox_shift_tscale(STBOX *box, const Interval *start, const Interval *duration)
+stbox_shift_tscale(const Interval *start, const Interval *duration, STBOX *box)
 {
   assert(start != NULL || duration != NULL);
   if (start != NULL)
@@ -1968,7 +1968,7 @@ union_stbox_stbox_internal(const STBOX *box1, const STBOX *box2, bool strict)
     elog(ERROR, "Result of box union would not be contiguous");
 
   STBOX *result = stbox_copy(box1);
-  stbox_expand(result, box2);
+  stbox_expand(box2, result);
   return result;
 }
 
@@ -2081,7 +2081,7 @@ stbox_extent_transfn(PG_FUNCTION_ARGS)
 
   /* Both boxes are not null */
   memcpy(result, box1, sizeof(STBOX));
-  stbox_expand(result, box2);
+  stbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 
@@ -2104,7 +2104,7 @@ stbox_extent_combinefn(PG_FUNCTION_ARGS)
   /* Both boxes are not null */
   ensure_same_dimensionality(box1->flags, box2->flags);
   STBOX *result = stbox_copy(box1);
-  stbox_expand(result, box2);
+  stbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

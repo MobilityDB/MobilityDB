@@ -90,8 +90,8 @@ extern TInstant *tnpointinst_to_tgeompointinst(const TInstant *inst);
 extern TInstantSet *tnpointinstset_to_tgeompointi(const TInstantSet *ti);
 extern TSequence *tnpointseq_to_tgeompointseq(const TSequence *seq);
 extern TSequenceSet *tnpointseqset_to_tgeompointseqset(const TSequenceSet *ts);
-extern Temporal *tnpoint_to_tgeompoint_internal(const Temporal *temp);
-extern Temporal *tgeompoint_to_tnpoint_internal(Temporal *temp);
+extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
+extern Temporal *tgeompoint_tnpoint(Temporal *temp);
 
 extern TInstant *tgeompointinst_to_tnpointinst(const TInstant *inst);
 extern TInstantSet *tgeompointinstset_to_tnpointinstset(const TInstantSet *ti);

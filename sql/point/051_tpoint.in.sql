@@ -587,7 +587,7 @@ CREATE FUNCTION shiftTscale(tgeogpoint, interval, interval)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Index Support Functions
+ * Index Support Function
  *****************************************************************************/
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000

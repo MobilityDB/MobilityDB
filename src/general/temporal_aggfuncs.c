@@ -1051,7 +1051,7 @@ tnumber_extent_transfn(PG_FUNCTION_ARGS)
 
   /* Both box and temporal are not null */
   temporal_bbox(temp, result);
-  tbox_expand(result, box);
+  tbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -1075,7 +1075,7 @@ tnumber_extent_combinefn(PG_FUNCTION_ARGS)
   /* Both boxes are not null */
   ensure_same_dimensionality_tbox(box1, box2);
   TBOX *result = tbox_copy(box1);
-  tbox_expand(result, box2);
+  tbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

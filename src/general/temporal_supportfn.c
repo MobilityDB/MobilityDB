@@ -121,6 +121,21 @@ static const int16 TPointStrategies[] =
   [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
+static const int16 TNPointStrategies[] =
+{
+  /* intersects<Time> functions */
+  [INTERSECTS_TIMESTAMP_IDX]     = RTOverlapStrategyNumber,
+  [INTERSECTS_TIMESTAMPSET_IDX]  = RTOverlapStrategyNumber,
+  [INTERSECTS_PERIOD_IDX]        = RTOverlapStrategyNumber,
+  [INTERSECTS_PERIODSET_IDX]     = RTOverlapStrategyNumber,
+  /* Ever spatial relationships */
+  [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [INTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
+};
+
 /*
 * Metadata currently scanned from start to back,
 * so most common functions first. Could be sorted
@@ -166,6 +181,20 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 
+static const IndexableFunction TNPointIndexableFunctions[] = {
+  /* intersects<Time> functions */
+  {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
+  {"intersectstimestampset", INTERSECTS_TIMESTAMPSET_IDX, 2, 0},
+  {"intersectsperiod", INTERSECTS_PERIOD_IDX, 2, 0},
+  {"intersectsperiodset", INTERSECTS_PERIODSET_IDX, 2, 0},
+  /* Ever spatial relationships */
+  {"contains", CONTAINS_IDX, 2, 0},
+  {"disjoint", DISJOINT_IDX, 2, 0},
+  {"intersects", INTERSECTS_IDX, 2, 0},
+  {"touches", TOUCHES_IDX, 2, 0},
+  {"dwithin", DWITHIN_IDX, 3, 3},
+  {NULL, 0, 0, 0}
+};
 static int16
 temporal_get_strategy_by_type(Oid type, uint16_t index)
 {
@@ -175,6 +204,8 @@ temporal_get_strategy_by_type(Oid type, uint16_t index)
     return TNumberStrategies[index];
   if (tgeo_type(type))
     return TPointStrategies[index];
+  if (type == type_oid(T_TNPOINT))
+    return TNPointStrategies[index];
   return InvalidStrategy;
 }
 
@@ -364,7 +395,7 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
       else if (tempfamily == TPOINTTYPE)
         funcarr = TPointIndexableFunctions;
       else /* tempfamily == TNPOINTTYPE */
-        elog(ERROR, "support function called from temporal network points");
+        funcarr = TNPointIndexableFunctions;
       if (! func_needs_index(funcoid, funcarr, &idxfn))
       {
         if (isfunc)

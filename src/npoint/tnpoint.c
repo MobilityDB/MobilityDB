@@ -150,7 +150,7 @@ tnpointseqset_to_tgeompointseqset(const TSequenceSet *ts)
  * (dispatch function)
  */
 Temporal *
-tnpoint_to_tgeompoint_internal(const Temporal *temp)
+tnpoint_tgeompoint(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -173,7 +173,7 @@ PGDLLEXPORT Datum
 tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *result = tnpoint_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -273,7 +273,7 @@ tgeompointseqset_to_tnpointseqset(const TSequenceSet *ts)
  * (dispatch function)
  */
 Temporal *
-tgeompoint_to_tnpoint_internal(Temporal *temp)
+tgeompoint_tnpoint(Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -299,7 +299,7 @@ tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
   int32_t srid_tpoint = tpoint_srid_internal(temp);
   int32_t srid_ways = get_srid_ways();
   ensure_same_srid(srid_tpoint, srid_ways);
-  Temporal *result = tgeompoint_to_tnpoint_internal(temp);
+  Temporal *result = tgeompoint_tnpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();

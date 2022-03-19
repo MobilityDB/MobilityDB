@@ -755,7 +755,7 @@ PGDLLEXPORT Datum
 tnpoint_twcentroid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *tgeom = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *tgeom = tnpoint_tgeompoint(temp);
   Datum result = tpoint_twcentroid_internal(tgeom);
   pfree(tgeom);
   PG_FREE_IF_COPY(temp, 0);
@@ -970,7 +970,7 @@ tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
   }
   ensure_has_not_Z_gs(gs);
 
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *geomresult = tpoint_restrict_geometry_internal(geomtemp,
     PointerGetDatum(gs), atfunc);
   Temporal *result = NULL;
