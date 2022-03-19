@@ -65,7 +65,7 @@ datum_or(Datum l, Datum r)
  * Generic functions
  *****************************************************************************/
 
-Temporal *
+static Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
   LiftedFunctionInfo lfinfo;

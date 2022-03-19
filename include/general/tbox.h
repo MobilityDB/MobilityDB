@@ -62,7 +62,7 @@ typedef struct
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
-/* Miscellaneous functions */
+/* General functions */
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
   TimestampTz tmin, TimestampTz tmax);
@@ -93,18 +93,13 @@ extern Datum tbox_constructor_t(PG_FUNCTION_ARGS);
 
 /* Casting */
 
-extern Datum tbox_to_floatrange(PG_FUNCTION_ARGS);
-extern Datum tbox_to_period(PG_FUNCTION_ARGS);
-
-/* Transform a type to a TBOX */
-
 extern Datum int_to_tbox(PG_FUNCTION_ARGS);
 extern Datum float_to_tbox(PG_FUNCTION_ARGS);
-extern Datum number_to_tbox(PG_FUNCTION_ARGS);
+extern Datum numeric_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_to_tbox(PG_FUNCTION_ARGS);
 extern Datum timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum timestampset_to_tbox(PG_FUNCTION_ARGS);
+extern Datum period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum periodset_to_tbox(PG_FUNCTION_ARGS);
 extern Datum int_timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum float_timestamp_to_tbox(PG_FUNCTION_ARGS);
@@ -114,10 +109,13 @@ extern Datum range_timestamp_to_tbox(PG_FUNCTION_ARGS);
 extern Datum range_period_to_tbox(PG_FUNCTION_ARGS);
 extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
 
+extern Datum tbox_to_floatrange(PG_FUNCTION_ARGS);
+extern Datum tbox_to_period(PG_FUNCTION_ARGS);
+
 extern void number_tbox(Datum value, Oid basetypid, TBOX *box);
-extern void range_tbox(const RangeType *r, TBOX *box);
 extern void int_tbox(int i, TBOX *box);
 extern void float_tbox(double d, TBOX *box);
+extern void range_tbox(const RangeType *r, TBOX *box);
 extern void timestamp_tbox(TimestampTz t, TBOX *box);
 extern void timestampset_tbox(const TimestampSet *ts, TBOX *box);
 extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
@@ -127,12 +125,14 @@ extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 /* Accessor functions */
 
+extern Datum tbox_hasx(PG_FUNCTION_ARGS);
+extern Datum tbox_hast(PG_FUNCTION_ARGS);
 extern Datum tbox_xmin(PG_FUNCTION_ARGS);
 extern Datum tbox_xmax(PG_FUNCTION_ARGS);
 extern Datum tbox_tmin(PG_FUNCTION_ARGS);
 extern Datum tbox_tmax(PG_FUNCTION_ARGS);
 
-/* Casting */
+/* Transformation functions */
 
 extern Datum tbox_expand_value(PG_FUNCTION_ARGS);
 extern Datum tbox_expand_temporal(PG_FUNCTION_ARGS);
@@ -152,7 +152,7 @@ extern bool overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 extern bool adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 
-/* Position functions */
+/* Relative position functions */
 
 extern Datum left_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum overleft_tbox_tbox(PG_FUNCTION_ARGS);

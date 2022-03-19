@@ -613,7 +613,6 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
-
 TSequenceSet *
 tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value,
   LiftedFunctionInfo *lfinfo)

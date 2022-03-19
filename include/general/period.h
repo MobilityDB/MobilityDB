@@ -44,6 +44,22 @@
 
 /*****************************************************************************/
 
+/* General functions */
+
+extern void period_deserialize(const Period *p, PeriodBound *lower,
+  PeriodBound *upper);
+extern int period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2);
+extern int period_bound_qsort_cmp(const void *a1, const void *a2);
+extern Period *period_make(TimestampTz lower, TimestampTz upper,
+  bool lower_inc, bool upper_inc);
+  extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
+  bool upper_inc, Period *p);
+extern Period *period_copy(const Period *p);
+extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
+extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
+extern Period *period_super_union(const Period *p1, const Period *p2);
+extern void period_expand(const Period *p2, Period *p1);
+
 /* Input/output functions */
 
 extern Datum period_in(PG_FUNCTION_ARGS);
@@ -51,29 +67,33 @@ extern Datum period_out(PG_FUNCTION_ARGS);
 extern Datum period_recv(PG_FUNCTION_ARGS);
 extern Datum period_send(PG_FUNCTION_ARGS);
 
-void period_write(const Period *p, StringInfo buf);
-Period *period_read(StringInfo buf);
-
-char *period_to_string(const Period *p);
+extern char *period_to_string(const Period *p);
+extern void period_write(const Period *p, StringInfo buf);
+extern Period *period_read(StringInfo buf);
 
 /* Constructors */
+
 extern Datum period_constructor2(PG_FUNCTION_ARGS);
 extern Datum period_constructor4(PG_FUNCTION_ARGS);
 
 /* Casting */
+
 extern Datum timestamp_to_period(PG_FUNCTION_ARGS);
 extern Datum period_to_tstzrange(PG_FUNCTION_ARGS);
 extern Datum tstzrange_to_period(PG_FUNCTION_ARGS);
 
-/* period -> timestamptz */
+/* Accessor functions */
+
 extern Datum period_lower(PG_FUNCTION_ARGS);
 extern Datum period_upper(PG_FUNCTION_ARGS);
-
-/* period -> bool */
 extern Datum period_lower_inc(PG_FUNCTION_ARGS);
 extern Datum period_upper_inc(PG_FUNCTION_ARGS);
+extern Datum period_duration(PG_FUNCTION_ARGS);
 
-/* period -> period */
+extern Interval *period_duration_internal(const Period *p);
+
+/* Modification functions */
+
 extern Datum period_shift(PG_FUNCTION_ARGS);
 
 extern Period *period_shift_internal(const Period *p,
@@ -81,11 +101,7 @@ extern Period *period_shift_internal(const Period *p,
 extern void period_shift_tscale(Period *result, const Interval *start,
   const Interval *duration);
 
-/* period -> interval */
-
-extern Datum period_duration(PG_FUNCTION_ARGS);
-
-/* Functions for defining B-tree index */
+/* Btree support */
 
 extern Datum period_eq(PG_FUNCTION_ARGS);
 extern Datum period_ne(PG_FUNCTION_ARGS);
@@ -103,23 +119,10 @@ extern bool period_le_internal(const Period *p1, const Period *p2);
 extern bool period_ge_internal(const Period *p1, const Period *p2);
 extern bool period_gt_internal(const Period *p1, const Period *p2);
 
-/* Assorted support functions */
+/* Btree support */
 
-extern void period_deserialize(const Period *p, PeriodBound *lower,
-  PeriodBound *upper);
-extern int period_bound_cmp(const PeriodBound *lower, const PeriodBound *upper);
-extern Period *period_make(TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc);
-extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
-  bool upper_inc, Period *p);
-extern Period *period_copy(const Period *p);
-extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
-extern Interval *period_duration_internal(const Period *p);
-extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
-extern Period *period_super_union(const Period *p1, const Period *p2);
-extern void period_expand(const Period *p2, Period *p1);
-
-extern int period_bound_qsort_cmp(const void *a1, const void *a2);
+extern Datum period_hash(PG_FUNCTION_ARGS);
+extern Datum period_hash_extended(PG_FUNCTION_ARGS);
 
 #endif
 

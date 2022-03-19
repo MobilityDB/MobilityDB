@@ -49,7 +49,7 @@
 #include "general/rangetypes_ext.h"
 
 /*****************************************************************************
- * Utility functions
+ * General functions
  *****************************************************************************/
 
  /**
@@ -522,7 +522,7 @@ tstzrange_to_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Generic functions
+ * Accessor functions
  *****************************************************************************/
 
 /* period -> timestamptz functions */
@@ -574,6 +574,33 @@ period_upper_inc(PG_FUNCTION_ARGS)
 }
 
 /**
+ * Returns the duration of the period (internal function)
+ */
+Interval *
+period_duration_internal(const Period *p)
+{
+  return DatumGetIntervalP(call_function2(timestamp_mi,
+    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
+}
+
+PG_FUNCTION_INFO_V1(period_duration);
+/**
+ * Returns the duration of the period
+ */
+PGDLLEXPORT Datum
+period_duration(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Datum result = call_function2(timestamp_mi,
+    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
  * Shift the period by the interval (internal function)
  */
 Period *
@@ -620,29 +647,6 @@ period_shift_tscale(Period *result, const Interval *start,
     DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
        TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
   return;
-}
-
-/**
- * Returns the duration of the period (internal function)
- */
-Interval *
-period_duration_internal(const Period *p)
-{
-  return DatumGetIntervalP(call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
-}
-
-PG_FUNCTION_INFO_V1(period_duration);
-/**
- * Returns the duration of the period
- */
-PGDLLEXPORT Datum
-period_duration(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
-  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************

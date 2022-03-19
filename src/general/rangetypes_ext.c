@@ -47,7 +47,7 @@
 #include "general/tnumber_mathfuncs.h"
 
 /*****************************************************************************
- * Generic range functions
+ * Generic functions
  *****************************************************************************/
 
 /**
@@ -144,11 +144,10 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
     rangetypid = type_oid(T_INTRANGE);
   else if (basetypid == FLOAT8OID)
     rangetypid = type_oid(T_FLOATRANGE);
-  else
+  else /* basetypid == TIMESTAMPTZOID */
     rangetypid = type_oid(T_TSTZRANGE);
 
   TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
-
   RangeBound lower;
   RangeBound upper;
   lower.val = from;
@@ -159,7 +158,6 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
   upper.infinite = false;
   upper.inclusive = upper_inc;
   upper.lower = false;
-
   return make_range(typcache, &lower, &upper, false);
 }
 
@@ -273,7 +271,7 @@ rangearr_normalize(RangeType **ranges, int count, int *newcount)
 /**
  * Returns true if the range value and the element satisfy the function
  */
-Datum
+static Datum
 range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
   bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
@@ -290,7 +288,7 @@ range_func_elem1(FunctionCallInfo fcinfo, RangeType *range, Datum val,
 /**
  * Returns true if the range value and the element satisfy the function
  */
-Datum
+static Datum
 range_func_elem(FunctionCallInfo fcinfo,
   bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
@@ -302,7 +300,7 @@ range_func_elem(FunctionCallInfo fcinfo,
 /**
  * Returns true if the element and the range value satisfy the function
  */
-PGDLLEXPORT Datum
+static Datum
 elem_func_range(FunctionCallInfo fcinfo,
   bool (*func)(TypeCacheEntry *, RangeBound, RangeBound, Datum))
 {
@@ -348,7 +346,7 @@ intrange_canonical(PG_FUNCTION_ARGS)
  * Returns true if the range value is strictly to the left of the value
  * (internal function)
  */
-bool
+static bool
 range_left_elem_internal(TypeCacheEntry *typcache,
   RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
   Datum val)
@@ -368,7 +366,7 @@ range_left_elem_internal(TypeCacheEntry *typcache,
  * Returns true if the range value does not extend to the right of the value
  * (internal function)
  */
-bool
+static bool
 range_overleft_elem_internal(TypeCacheEntry *typcache,
   RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
   Datum val)
@@ -386,7 +384,7 @@ range_overleft_elem_internal(TypeCacheEntry *typcache,
  * Returns true if the range value is strictly to the right of the value
  * (internal function)
  */
-bool
+static bool
 range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   RangeBound upper_bound __attribute__((unused)), Datum val)
 {
@@ -405,7 +403,7 @@ range_right_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
  * Returns true if the range value does not extend to the left of the value
  * (internal function)
  */
-bool
+static bool
 range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   RangeBound upper_bound __attribute__((unused)), Datum val)
 {
@@ -422,7 +420,7 @@ range_overright_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
  * Returns true if the range value and the value are adjacent
  * (internal function)
  */
-bool
+static bool
 range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   RangeBound upper_bound, Datum val)
 {
@@ -439,6 +437,41 @@ range_adjacent_elem_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
   isadj = bounds_adjacent(typcache, upper_bound, elembound);
   elembound.lower = false;
   return (isadj || bounds_adjacent(typcache, elembound, lower_bound));
+}
+
+/**
+ * Returns true if the value does not extend to the right of the range value
+ * (internal function)
+ */
+static bool
+elem_overleft_range_internal(TypeCacheEntry *typcache,
+  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
+  Datum val)
+{
+  if (!upper_bound.infinite)
+  {
+    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, val, upper_bound.val)) <= 0)
+      return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if the value does not extend to the left of the range value
+ * (internal function)
+ */
+static bool
+elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
+  RangeBound upper_bound __attribute__((unused)), Datum val)
+{
+  if (!lower_bound.infinite)
+  {
+    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
+      typcache->rng_collation, val, lower_bound.val)) >= 0)
+      return true;
+  }
+  return false;
 }
 
 /******************************************************************************/
@@ -491,43 +524,6 @@ PGDLLEXPORT Datum
 range_adjacent_elem(PG_FUNCTION_ARGS)
 {
   return range_func_elem(fcinfo, &range_adjacent_elem_internal);
-}
-
-/******************************************************************************/
-
-/**
- * Returns true if the value does not extend to the right of the range value
- * (internal function)
- */
-bool
-elem_overleft_range_internal(TypeCacheEntry *typcache,
-  RangeBound lower_bound __attribute__((unused)), RangeBound upper_bound,
-  Datum val)
-{
-  if (!upper_bound.infinite)
-  {
-    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-      typcache->rng_collation, val, upper_bound.val)) <= 0)
-      return true;
-  }
-  return false;
-}
-
-/**
- * Returns true if the value does not extend to the left of the range value
- * (internal function)
- */
-bool
-elem_overright_range_internal(TypeCacheEntry *typcache, RangeBound lower_bound,
-  RangeBound upper_bound __attribute__((unused)), Datum val)
-{
-  if (!lower_bound.infinite)
-  {
-    if (DatumGetInt32(FunctionCall2Coll(&typcache->rng_cmp_proc_finfo,
-      typcache->rng_collation, val, lower_bound.val)) >= 0)
-      return true;
-  }
-  return false;
 }
 
 /******************************************************************************/

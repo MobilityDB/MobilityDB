@@ -648,35 +648,6 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
  *****************************************************************************/
 
 /**
- * Transform the constant into a temporal box
- */
-static bool
-tnumber_const_to_tbox(const Node *other, TBOX *box)
-{
-  Oid consttype = ((Const *) other)->consttype;
-
-  if (tnumber_base_type(consttype))
-    number_tbox(((Const *) other)->constvalue, consttype, box);
-  else if (tnumber_range_type(consttype))
-    range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_TIMESTAMPTZ))
-    timestamp_tbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_TIMESTAMPSET))
-    timestampset_tbox_slice(((Const *) other)->constvalue, box);
-  else if (consttype == type_oid(T_PERIOD))
-    period_tbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_PERIODSET))
-    periodset_tbox_slice(((Const *) other)->constvalue, box);
-  else if (consttype == type_oid(T_TBOX))
-    memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
-  else if (tnumber_type(consttype))
-    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
-  else
-    return false;
-  return true;
-}
-
-/**
  * Returns the enum value associated to the operator
  */
 bool
@@ -727,6 +698,35 @@ tnumber_cachedop(Oid oper, CachedOp *cachedOp)
       }
   }
   return false;
+}
+
+/**
+ * Transform the constant into a temporal box
+ */
+bool
+tnumber_const_to_tbox(const Node *other, TBOX *box)
+{
+  Oid consttype = ((Const *) other)->consttype;
+
+  if (tnumber_base_type(consttype))
+    number_tbox(((Const *) other)->constvalue, consttype, box);
+  else if (tnumber_range_type(consttype))
+    range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_TIMESTAMPTZ))
+    timestamp_tbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_TIMESTAMPSET))
+    timestampset_tbox_slice(((Const *) other)->constvalue, box);
+  else if (consttype == type_oid(T_PERIOD))
+    period_tbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
+  else if (consttype == type_oid(T_PERIODSET))
+    periodset_tbox_slice(((Const *) other)->constvalue, box);
+  else if (consttype == type_oid(T_TBOX))
+    memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
+  else if (tnumber_type(consttype))
+    temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
+  else
+    return false;
+  return true;
 }
 
 /**
@@ -813,7 +813,7 @@ tnumber_sel_default(CachedOp operator)
  * while the selectivity functions for = and <> are eqsel and neqsel,
  * respectively.
  */
-static Selectivity
+Selectivity
 tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
   Oid basetypid)
 {
@@ -916,89 +916,6 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
 }
 
 /*****************************************************************************/
-
-/**
- * Estimate the selectivity value of the operators for temporal numbers
- * (internal function)
- */
-float8
-tnumber_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
-{
-  VariableStatData vardata;
-  Node *other;
-  bool varonleft;
-  Selectivity selec;
-  CachedOp cachedOp;
-  TBOX constBox;
-  Oid basetypid;
-
-  /* Get enumeration value associated to the operator */
-  if (! tnumber_cachedop(oper, &cachedOp))
-    /* In the case of unknown operator */
-    return DEFAULT_TEMP_SEL;
-
-  /*
-   * If expression is not (variable op something) or (something op
-   * variable), then punt and return a default estimate.
-   */
-  if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
-      &varonleft))
-    return tnumber_sel_default(cachedOp);
-
-  /*
-   * Can't do anything useful if the something is not a constant, either.
-   */
-  if (!IsA(other, Const))
-  {
-    ReleaseVariableStats(vardata);
-    return tnumber_sel_default(cachedOp);
-  }
-
-  /*
-   * All the tbox operators are strict, so we can cope with a NULL constant
-   * right away.
-   */
-  if (((Const *) other)->constisnull)
-  {
-    ReleaseVariableStats(vardata);
-    return 0.0;
-  }
-
-  /*
-   * If var is on the right, commute the operator, so that we can assume the
-   * var is on the left in what follows.
-   */
-  if (!varonleft)
-  {
-    /* we have other Op var, commute to make var Op other */
-    oper = get_commutator(oper);
-    if (!oper)
-    {
-      /* Use default selectivity (should we raise an error instead?) */
-      ReleaseVariableStats(vardata);
-      return tnumber_sel_default(cachedOp);
-    }
-  }
-
-  /* Transform the constant into a TBOX */
-  if (! tnumber_const_to_tbox(other, &constBox))
-    /* In the case of unknown constant */
-    return tnumber_sel_default(cachedOp);
-
-  assert(MOBDB_FLAGS_GET_X(constBox.flags) ||
-    MOBDB_FLAGS_GET_T(constBox.flags));
-
-  /* Get the base type of the temporal column */
-  basetypid = base_oid_from_temporal(vardata.atttype);
-  ensure_tnumber_base_type(basetypid);
-
-  /* Compute the selectivity */
-  selec = tnumber_sel_box(&vardata, &constBox, cachedOp, basetypid);
-
-  ReleaseVariableStats(vardata);
-  CLAMP_PROBABILITY(selec);
-  return selec;
-}
 
 PG_FUNCTION_INFO_V1(tnumber_sel);
 /**

@@ -52,11 +52,8 @@
 /** Buffer size for input and output of TBOX values */
 #define MAXTBOXLEN    128
 
-/* Forward declaration */
-bool inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result);
-
 /*****************************************************************************
- * Miscellaneous functions
+ * General functions
  *****************************************************************************/
 
 /**
@@ -139,6 +136,37 @@ tbox_shift_tscale(TBOX *box, const Interval *start, const Interval *duration)
     DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
        TimestampTzGetDatum(box->tmin), PointerGetDatum(duration)));
   return;
+}
+
+/**
+ * Returns the intersection of the temporal boxes
+ */
+static bool
+inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
+{
+  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  /* If there is no common dimension */
+  if ((! hasx && ! hast) ||
+    /* If they do no intersect in one common dimension */
+    (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
+    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
+    return false;
+
+  double xmin = 0, xmax = 0;
+  TimestampTz tmin = 0, tmax = 0;
+  if (hasx)
+  {
+    xmin = Max(box1->xmin, box2->xmin);
+    xmax = Min(box1->xmax, box2->xmax);
+  }
+  if (hast)
+  {
+    tmin = Max(box1->tmin, box2->tmin);
+    tmax = Min(box1->tmax, box2->tmax);
+  }
+  tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
+  return true;
 }
 
 /*****************************************************************************
@@ -262,7 +290,7 @@ tbox_out(PG_FUNCTION_ARGS)
 /**
  * Send function for TBOX (internal function)
  */
-void
+static void
 tbox_write(const TBOX *box, StringInfo buf)
 {
   pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
@@ -300,7 +328,7 @@ tbox_send(PG_FUNCTION_ARGS)
 /**
  * Receive function for TBOX (internal function)
  */
-TBOX *
+static TBOX *
 tbox_read(StringInfo buf)
 {
   TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
@@ -1323,7 +1351,7 @@ overafter_tbox_tbox(PG_FUNCTION_ARGS)
  * Returns the union of the temporal boxes
  * (internal function)
  */
-TBOX *
+static TBOX *
 union_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
   ensure_same_dimensionality_tbox(box1, box2);
@@ -1360,37 +1388,6 @@ union_tbox_tbox(PG_FUNCTION_ARGS)
   TBOX *box2 = PG_GETARG_TBOX_P(1);
   TBOX *result = union_tbox_tbox_internal(box1, box2);
   PG_RETURN_POINTER(result);
-}
-
-/**
- * Returns the intersection of the temporal boxes
- */
-bool
-inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
-{
-  bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  /* If there is no common dimension */
-  if ((! hasx && ! hast) ||
-    /* If they do no intersect in one common dimension */
-    (hasx && (box1->xmin > box2->xmax || box2->xmin > box1->xmax)) ||
-    (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax)))
-    return false;
-
-  double xmin = 0, xmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
-  if (hasx)
-  {
-    xmin = Max(box1->xmin, box2->xmin);
-    xmax = Min(box1->xmax, box2->xmax);
-  }
-  if (hast)
-  {
-    tmin = Max(box1->tmin, box2->tmin);
-    tmax = Min(box1->tmax, box2->tmax);
-  }
-  tbox_set(hasx, hast, xmin, xmax, tmin, tmax, result);
-  return true;
 }
 
 PG_FUNCTION_INFO_V1(intersection_tbox_tbox);

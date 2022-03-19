@@ -68,9 +68,10 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_selfuncs.h"
-#include "general/rangetypes_ext.h"
-#include "general/temporal_boxops.h"
 #include "general/timeops.h"
+#include "general/rangetypes_ext.h"
+#include "general/temporal_util.h"
+#include "general/temporal_boxops.h"
 #include "general/temporal_analyze.h"
 #include "general/tnumber_selfuncs.h"
 #include "point/tpoint.h"
@@ -420,7 +421,6 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
   Node *other;
   bool varonleft;
   Selectivity selec;
-  Period period;
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
@@ -447,7 +447,10 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return temporal_sel_default(cachedOp);
+    if (tempfamily == TEMPORALTYPE)
+      return temporal_sel_default(cachedOp);
+    else /* tempfamily == TNUMBERTYPE */
+      return tnumber_sel_default(cachedOp);
   }
 
   /*
@@ -472,17 +475,38 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return temporal_sel_default(cachedOp);
+      if (tempfamily == TEMPORALTYPE)
+        return temporal_sel_default(cachedOp);
+      else /* tempfamily == TNUMBERTYPE */
+        return tnumber_sel_default(cachedOp);
     }
   }
 
-  /* Transform the constant into a Period */
-  if (! temporal_const_to_period(other, &period))
-    /* In the case of unknown constant */
-    return temporal_sel_default(cachedOp);
+  /* Transform the constant into a bounding box and compute the selectivity */
+  if (tempfamily == TEMPORALTYPE)
+  {
+    Period period;
+    if (! temporal_const_to_period(other, &period))
+      /* In the case of unknown constant */
+      return temporal_sel_default(cachedOp);
+    /* Compute the selectivity */
+    selec = temporal_sel_period(&vardata, &period, cachedOp);
+  }
+  else /* tempfamily == TNUMBERTYPE */
+  {
+    TBOX box;
+    if (! tnumber_const_to_tbox(other, &box))
+      /* In the case of unknown constant */
+      return tnumber_sel_default(cachedOp);
 
-  /* Compute the selectivity of the temporal column */
-  selec = temporal_sel_period(&vardata, &period, cachedOp);
+    assert(MOBDB_FLAGS_GET_X(box.flags) ||
+      MOBDB_FLAGS_GET_T(box.flags));
+    /* Get the base type of the temporal column */
+    Oid basetypid = base_oid_from_temporal(vardata.atttype);
+    ensure_tnumber_base_type(basetypid);
+    /* Compute the selectivity */
+    selec = tnumber_sel_box(&vardata, &box, cachedOp, basetypid);
+  }
 
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);

@@ -437,7 +437,7 @@ PGDLLEXPORT Datum
 periodset_to_period(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
-  Period *result = (Period *) palloc(sizeof(Period));
+  Period *result = palloc(sizeof(Period));
   periodset_bbox_slice(psdatum, result);
   PG_RETURN_POINTER(result);
 }
@@ -746,6 +746,10 @@ periodset_timestamps(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+/*****************************************************************************
+ * Modifications functions
+ *****************************************************************************/
+
 /**
  * Shift the period set value by the interval (internal function)
  */
@@ -777,7 +781,7 @@ periodset_shift(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree index
+ * B-tree support
  *****************************************************************************/
 
 /**
@@ -876,7 +880,7 @@ periodset_eq(PG_FUNCTION_ARGS)
 bool
 periodset_ne_internal(const PeriodSet *ps1, const PeriodSet *ps2)
 {
-  return !periodset_eq_internal(ps1, ps2);
+  return ! periodset_eq_internal(ps1, ps2);
 }
 
 PG_FUNCTION_INFO_V1(periodset_ne);
