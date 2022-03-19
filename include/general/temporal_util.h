@@ -56,6 +56,7 @@ extern bool base_type_continuous(Oid basetypid);
 extern void ensure_base_type_continuous(Temporal *temp);
 extern bool base_type_byvalue(Oid basetypid);
 extern int16 base_type_length(Oid basetypid);
+extern bool talpha_type(Oid temptypid);
 extern bool talpha_base_type(Oid basetypid);
 extern bool tnumber_type(Oid temptypid);
 extern bool tnumber_base_type(Oid basetypid);
@@ -66,7 +67,7 @@ extern bool tspatial_type(Oid temptypid);
 extern bool tspatial_base_type(Oid basetypid);
 extern bool tgeo_base_type(Oid basetypid);
 extern void ensure_tgeo_base_type(Oid basetypid);
-extern bool type_has_precomputed_trajectory(Oid basetypid);
+extern bool tgeo_type(Oid temptypid);
 
 /* Oid functions */
 

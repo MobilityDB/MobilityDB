@@ -154,6 +154,19 @@ base_type_length(Oid basetypid)
   elog(ERROR, "unknown base_type_length function for base type: %d", basetypid);
 }
 
+
+/**
+ * Returns true if the Oid is a temporal alpha type (i.e., those whose bounding
+ * box is a period) supported by MobilityDB
+ */
+bool
+talpha_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TTEXT))
+    return true;
+  return false;
+}
+
 /**
  * Returns true if the Oid is a alpha base type (i.e., those whose bounding
  * box is a period) supported by MobilityDB
@@ -168,8 +181,6 @@ talpha_base_type(Oid basetypid)
 
 /**
  * Returns true if the Oid is a temporal number type
- *
- * @note Function used in particular in the indexes
  */
 bool
 tnumber_type(Oid temptypid)
@@ -277,6 +288,18 @@ ensure_tgeo_base_type(Oid basetypid)
     elog(ERROR, "unknown geospatial base type: %d", basetypid);
   return;
 }
+
+/**
+ * Returns true if the Oid is a temporal point type supported by MobilityDB
+ */
+bool
+tgeo_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOMPOINT))
+    return true;
+  return false;
+}
+
 
 /*****************************************************************************
  * Oid functions

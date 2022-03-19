@@ -395,6 +395,20 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
 /*****************************************************************************/
 
 /**
+ * Get enumeration value associated to the operator according to the family
+ */
+static bool
+temporal_cachedop_family(Oid oper, CachedOp *cachedOp, TemporalFamily tempfamily)
+{
+  /* Get enumeration value associated to the operator */
+  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
+  if (tempfamily == TEMPORALTYPE)
+    return temporal_cachedop(oper, cachedOp);
+  else /* tempfamily == TNUMBERTYPE */
+    return tnumber_cachedop(oper, cachedOp);
+}
+
+/**
  * Estimate the selectivity value of the operators for temporal types whose
  * bounding box is a period, that is, tbool and ttext (internal function)
  */
@@ -410,13 +424,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  bool found;
-  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
-  if (tempfamily == TEMPORALTYPE)
-    found = temporal_cachedop(oper, &cachedOp);
-  else /* tempfamily == TNUMBERTYPE */
-    found = tnumber_cachedop(oper, &cachedOp);
-  if (! found)
+  if (! temporal_cachedop_family(oper, &cachedOp, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -542,15 +550,9 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  bool found;
-  assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
-  if (tempfamily == TEMPORALTYPE)
-    found = temporal_cachedop(oper, &cachedOp);
-  else /* tempfamily == TNUMBERTYPE */
-    found = tnumber_cachedop(oper, &cachedOp);
-  if (! found)
+  if (! temporal_cachedop_family(oper, &cachedOp, tempfamily))
     /* In the case of unknown operator */
-    return DEFAULT_TEMP_JOINSEL;
+    return DEFAULT_TEMP_SEL;
 
   /*
    * Determine whether the value and/or the time components are

@@ -833,6 +833,20 @@ tpoint_sel_default(CachedOp oper)
 }
 
 /**
+ * Get enumeration value associated to the operator according to the family
+ */
+static bool
+tpoint_cachedop_family(Oid oper, CachedOp *cachedOp, TemporalFamily tempfamily)
+{
+  /* Get enumeration value associated to the operator */
+  assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
+  if (tempfamily == TPOINTTYPE)
+    return tpoint_cachedop(oper, cachedOp);
+  else /* tempfamily == TNPOINTTYPE */
+    return tnpoint_cachedop(oper, cachedOp);
+}
+
+/**
  * Estimate the restriction selectivity of the operators for temporal points
  * (internal function)
  */
@@ -849,13 +863,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  bool found;
-  assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
-  if (tempfamily == TPOINTTYPE)
-    found = tpoint_cachedop(oper, &cachedOp);
-  else /* tempfamily == TNUMBERTYPE */
-    found = tnpoint_cachedop(oper, &cachedOp);
-  if (! found)
+  if (! tpoint_cachedop_family(oper, &cachedOp, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -1316,15 +1324,9 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  bool found;
-  assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
-  if (tempfamily == TPOINTTYPE)
-    found = tpoint_cachedop(oper, &cachedOp);
-  else /* tempfamily == TNPOINTTYPE */
-    found = tnpoint_cachedop(oper, &cachedOp);
-  if (! found)
+  if (! tpoint_cachedop_family(oper, &cachedOp, tempfamily))
     /* In the case of unknown operator */
-    return DEFAULT_TEMP_JOINSEL;
+    return DEFAULT_TEMP_SEL;
 
   /*
    * Determine whether the space and/or the time components are

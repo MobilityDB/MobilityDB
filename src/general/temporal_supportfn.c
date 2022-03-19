@@ -58,6 +58,7 @@
 #include <utils/syscache.h>
 /* MobilityDB */
 #include "general/tempcache.h"
+#include "general/temporal_util.h"
 #include "general/temporal_selfuncs.h"
 #include "general/tnumber_selfuncs.h"
 #include "point/tpoint_selfuncs.h"
@@ -168,11 +169,11 @@ static const IndexableFunction TPointIndexableFunctions[] = {
 static int16
 temporal_get_strategy_by_type(Oid type, uint16_t index)
 {
-  if (type == type_oid(T_TBOOL) || type == type_oid(T_TTEXT))
+  if (talpha_type(type))
     return TemporalStrategies[index];
-  if (type == type_oid(T_TINT) || type == type_oid(T_TFLOAT))
+  if (tnumber_type(type))
     return TNumberStrategies[index];
-  if (type == type_oid(T_TGEOMPOINT) || type == type_oid(T_TGEOGPOINT))
+  if (tgeo_type(type))
     return TPointStrategies[index];
   return InvalidStrategy;
 }
@@ -273,7 +274,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
  * CREATE OR REPLACE FUNCTION ever_eq(tfloat, float)
  *   RETURNS boolean
  *   AS 'MODULE_PATHNAME','temporal_ever_eq'
- *   SUPPORT tnumber_supportfn
+ *   SUPPORT temporal_supportfn
  *   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  * @code
  * The function must also have an entry above in the IndexableFunctions array
