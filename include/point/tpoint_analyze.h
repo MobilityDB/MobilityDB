@@ -112,13 +112,11 @@ typedef struct ND_STATS_T
 } ND_STATS;
 
 extern int nd_box_init(ND_BOX *a);
-extern int nd_box_init_bounds(ND_BOX *a);
-extern int nd_box_merge(const ND_BOX *source, ND_BOX *target);
-extern void nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box);
-extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
 extern int nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox);
 extern int nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims);
 extern double nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims);
+extern int nd_increment(ND_IBOX *ibox, int ndims, int *counter);
+extern int nd_stats_value_index(const ND_STATS *stats, const int *indexes);
 
 extern void gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows, int mode);

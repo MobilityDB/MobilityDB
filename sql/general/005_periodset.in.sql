@@ -264,3 +264,21 @@ CREATE OPERATOR CLASS periodset_ops
     FUNCTION  1  periodset_cmp(periodset, periodset);
 
 /******************************************************************************/
+
+CREATE FUNCTION periodset_hash(periodset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'periodset_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION periodset_hash_extended(periodset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'periodset_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS periodset_hash_ops
+  DEFAULT FOR TYPE periodset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   periodset_hash(periodset),
+    FUNCTION    2   periodset_hash_extended(periodset, bigint);
+
+/******************************************************************************/

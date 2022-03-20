@@ -101,7 +101,7 @@ extern Period *period_shift_internal(const Period *p,
 extern void period_shift_tscale(Period *result, const Interval *start,
   const Interval *duration);
 
-/* Btree support */
+/* Comparison functions */
 
 extern Datum period_eq(PG_FUNCTION_ARGS);
 extern Datum period_ne(PG_FUNCTION_ARGS);
@@ -119,10 +119,13 @@ extern bool period_le_internal(const Period *p1, const Period *p2);
 extern bool period_ge_internal(const Period *p1, const Period *p2);
 extern bool period_gt_internal(const Period *p1, const Period *p2);
 
-/* Btree support */
+/* Hash functions */
 
 extern Datum period_hash(PG_FUNCTION_ARGS);
 extern Datum period_hash_extended(PG_FUNCTION_ARGS);
+
+extern uint32 period_hash_internal(const Period *p);
+extern uint64 period_hash_extended_internal(const Period *p, Datum seed);
 
 #endif
 

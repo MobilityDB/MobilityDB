@@ -160,11 +160,7 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
 extern LWLINE *geopoint_lwline(Datum value1, Datum value2);
 extern Datum geopoint_line(Datum value1, Datum value2);
 
-extern Datum tpointinstset_trajectory(const TInstantSet *ti);
-extern Datum tpointinstarr_make_trajectory(const TInstant **instants,
-  int count, bool linear);
 extern Datum tpointseq_trajectory(const TSequence *seq);
-extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);
 
 /* Functions for spatial reference systems */
@@ -179,7 +175,6 @@ extern int tpointseq_srid(const TSequence *seq);
 extern int tpointseqset_srid(const TSequenceSet *ts);
 extern int tpoint_srid_internal(const Temporal *t);
 
-extern Temporal *tpoint_set_srid_internal(Temporal *temp, int32 srid) ;
 extern TInstant *tpointinst_transform(const TInstant *inst, Datum srid);
 
 /* Cast functions */
@@ -198,8 +193,6 @@ extern Datum tpoint_get_x(PG_FUNCTION_ARGS);
 extern Datum tpoint_get_y(PG_FUNCTION_ARGS);
 extern Datum tpoint_get_z(PG_FUNCTION_ARGS);
 
-extern Temporal *tpoint_get_coord_internal(const Temporal *temp, char c);
-
 /* Length, speed, time-weighted centroid, temporal azimuth, and
  * temporal bearing functions */
 
@@ -209,13 +202,8 @@ extern Datum tpoint_speed(PG_FUNCTION_ARGS);
 extern Datum tpoint_twcentroid(PG_FUNCTION_ARGS);
 extern Datum tpoint_azimuth(PG_FUNCTION_ARGS);
 
-extern Datum tpointinstset_twcentroid(const TInstantSet *ti);
-extern Datum tpointseq_twcentroid(const TSequence *seq);
-extern Datum tpointseqset_twcentroid(const TSequenceSet *ts);
 extern Datum tpoint_twcentroid_internal(const Temporal *temp);
 
-extern Datum geom_bearing(Datum point1, Datum point2);
-extern Datum geog_bearing(Datum point1, Datum point2);
 extern Datum bearing_geo_geo(PG_FUNCTION_ARGS);
 extern Datum bearing_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum bearing_tpoint_geo(PG_FUNCTION_ARGS);

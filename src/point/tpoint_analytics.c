@@ -1030,7 +1030,7 @@ tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
  * Returns a negative or a positive value depending on whether the first number
  * is less than or greater than the second one
  */
-int
+static int
 int_cmp(const void *a, const void *b)
 {
   /* casting pointer types */
@@ -1048,7 +1048,7 @@ int_cmp(const void *a, const void *b)
  * @param[in] eps_dist Epsilon speed
  * @param[in] minpts Minimum number of points
  */
-TSequence *
+static TSequence *
 tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
 {
   static size_t stack_size = 256;
@@ -1124,7 +1124,7 @@ tfloatseq_simplify(const TSequence *seq, double eps_dist, uint32_t minpts)
  * @param[in] eps_dist Epsilon speed
  * @param[in] minpts Minimum number of points
  */
-TSequenceSet *
+static TSequenceSet *
 tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
 {
   const TSequence *seq;
@@ -1201,7 +1201,7 @@ tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
 /**
  * Returns the 2D distance between the points
  */
-double
+static double
 dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 {
   double dx = p2->x - p1->x;
@@ -1212,7 +1212,7 @@ dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 /**
  * Returns the 3D distance between the points
  */
-double
+static double
 dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 {
   double dx = p2->x - p1->x;
@@ -1224,7 +1224,7 @@ dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 /**
  * Returns the 4D distance between the points
  */
-double
+static double
 dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
 {
   double dx = p2->x - p1->x;
@@ -1243,7 +1243,7 @@ dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
  * @note Derived from the PostGIS function lw_dist2d_pt_seg in
  * file measures.c
  */
-double
+static double
 dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
 {
   POINT2D c;
@@ -1277,7 +1277,7 @@ dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
  * measures3d.c
  * @see http://geomalgorithms.com/a02-_lines.html
  */
-double
+static double
 dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 {
   POINT3DZ c;
@@ -1314,7 +1314,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
  * measures3d.c
  * @see http://geomalgorithms.com/a02-_lines.html
  */
-double
+static double
 dist4d_pt_seg(POINT4D *p, POINT4D *A, POINT4D *B)
 {
   POINT4D c;
@@ -1463,7 +1463,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
  * @param[in] eps_speed Epsilon speed
  * @param[in] minpts Minimum number of points
  */
-TSequence *
+static TSequence *
 tpointseq_simplify(const TSequence *seq, double eps_dist,
   double eps_speed, uint32_t minpts)
 {
@@ -1547,7 +1547,7 @@ tpointseq_simplify(const TSequence *seq, double eps_dist,
  * @param[in] eps_speed Epsilon speed
  * @param[in] minpts Minimum number of points
  */
-TSequenceSet *
+static TSequenceSet *
 tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   double eps_speed, uint32_t minpts)
 {
@@ -1573,7 +1573,7 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
-Temporal *
+static Temporal *
 tpoint_simplify_internal(Temporal *temp, double eps_dist,
   double eps_speed)
 {
@@ -1616,7 +1616,7 @@ tpoint_simplify(PG_FUNCTION_ARGS)
  * Returns a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
-TInstantSet *
+static TInstantSet *
 tpointinstset_remove_repeated_points(const TInstantSet *ti, double tolerance,
   int min_points)
 {
@@ -1679,7 +1679,7 @@ tpointinstset_remove_repeated_points(const TInstantSet *ti, double tolerance,
  * Returns a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
-TSequence *
+static TSequence *
 tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
   int min_points)
 {
@@ -1743,7 +1743,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
  * Returns a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
-TSequenceSet *
+static TSequenceSet *
 tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
   int min_points)
 {
@@ -1790,7 +1790,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
  * Returns a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
-Temporal *
+static Temporal *
 tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
   int min_points)
 {
@@ -1817,7 +1817,7 @@ tpoint_remove_repeated_points(const Temporal *temp, double tolerance,
 /**
  * Affine transform a temporal point (iterator function)
  */
-void
+static void
 tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
   const AFFINE *a, int srid, bool hasz)
 {
@@ -1855,7 +1855,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
 /**
  * Affine transform a temporal point.
  */
-TInstant *
+static TInstant *
 tpointinst_affine(const TInstant *inst, const AFFINE *a)
 {
   int srid = tpointinst_srid(inst);
@@ -1868,7 +1868,7 @@ tpointinst_affine(const TInstant *inst, const AFFINE *a)
 /**
  * Affine transform a temporal point.
  */
-TInstantSet *
+static TInstantSet *
 tpointinstset_affine(const TInstantSet *ti, const AFFINE *a)
 {
   int srid = tpointinstset_srid(ti);
@@ -1886,7 +1886,7 @@ tpointinstset_affine(const TInstantSet *ti, const AFFINE *a)
 /**
  * Affine transform a temporal point.
  */
-TSequence *
+static TSequence *
 tpointseq_affine(const TSequence *seq, const AFFINE *a)
 {
   int srid = tpointseq_srid(seq);
@@ -1908,7 +1908,7 @@ tpointseq_affine(const TSequence *seq, const AFFINE *a)
  * @param[in] ts Temporal point
  * @param[in] a Affine transformation
  */
-TSequenceSet *
+static TSequenceSet *
 tpointseqset_affine(const TSequenceSet *ts, const AFFINE *a)
 {
   /* Singleton sequence set */
@@ -1930,7 +1930,7 @@ tpointseqset_affine(const TSequenceSet *ts, const AFFINE *a)
 /**
  * Affine transform a temporal point.
  */
-Temporal *
+static Temporal *
 tpoint_affine(const Temporal *temp, const AFFINE *a)
 {
   Temporal *result;
@@ -1953,7 +1953,7 @@ tpoint_affine(const Temporal *temp, const AFFINE *a)
 /**
  * Stick a temporal point to the given grid specification.
  */
-TInstant *
+static TInstant *
 tpointinst_grid(const TInstant *inst, const gridspec *grid)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
@@ -1993,7 +1993,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
 /**
  * Stick a temporal point to the given grid specification.
  */
-TInstantSet *
+static TInstantSet *
 tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
@@ -2039,7 +2039,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
 /**
  * Stick a temporal point to the given grid specification.
  */
-TSequence *
+static TSequence *
 tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
@@ -2093,7 +2093,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
 /**
  * Stick a temporal point to the given grid specification.
  */
-TSequenceSet *
+static TSequenceSet *
 tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid, bool filter_pts)
 {
   /* Singleton sequence set */
@@ -2126,7 +2126,7 @@ tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid, bool filter_pts)
  * kept unmodified. Two consecutive instants falling on the same grid cell
  * are collapsed into one single instant.
  */
-Temporal *
+static Temporal *
 tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
 {
   Temporal *result;
@@ -2154,7 +2154,7 @@ tpoint_grid(const Temporal *temp, const gridspec *grid, bool filter_pts)
  * @param[in] buffer Buffer distance in tile coordinate space
  * @param[in] clip_geom True if temporal point should be clipped
  */
-Temporal *
+static Temporal *
 tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   uint32_t buffer, bool clip_geom)
 {
@@ -2218,7 +2218,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
  * @param[in] inst Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
-Datum
+static Datum
 tpointinst_decouple(const TInstant *inst, ArrayType **timesarr)
 {
   Datum epoch = Int32GetDatum((inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH);
@@ -2233,7 +2233,7 @@ tpointinst_decouple(const TInstant *inst, ArrayType **timesarr)
  * @param[in] ti Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
-Datum
+static Datum
 tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
 {
   /* Instantaneous sequence */
@@ -2271,7 +2271,7 @@ tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
  * @param[out] times Array of timestamps
  * @note The timestamps are returned in Unix epoch
  */
-LWGEOM *
+static LWGEOM *
 tpointseq_decouple1(const TSequence *seq, Datum *times)
 {
   /* General case */
@@ -2299,7 +2299,7 @@ tpointseq_decouple1(const TSequence *seq, Datum *times)
  * @param[in] seq Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
-Datum
+static Datum
 tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
 {
   Datum *times = palloc(sizeof(Datum) * seq->count);
@@ -2318,7 +2318,7 @@ tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
  * @param[in] ts Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
-Datum
+static Datum
 tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
 {
   /* Singleton sequence set */
@@ -2360,7 +2360,7 @@ tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
  * @param[in] temp Temporal point
  * @param[out] timesarr Array of timestamps encoded in Unix epoch
  */
-Datum
+static Datum
 tpoint_decouple(const Temporal *temp, ArrayType **timesarr)
 {
   Datum result;

@@ -962,4 +962,69 @@ periodset_gt(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(cmp > 0);
 }
 
+/*****************************************************************************
+ * Function for defining hash index
+ * The function reuses the approach for array types for combining the hash of
+ * the elements.
+ *****************************************************************************/
+
+/**
+ * Returns the 32-bit hash value of a period set
+ * (internal function)
+ */
+static uint32
+periodset_hash_internal(const PeriodSet *ps)
+{
+  uint32 result = 1;
+  for (int i = 0; i < ps->count; i++)
+  {
+    const Period *p = periodset_per_n(ps, i);
+    uint32 per_hash = period_hash_internal(p);
+    result = (result << 5) - result + per_hash;
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(periodset_hash);
+/**
+ * Returns the 32-bit hash value of a period set
+ */
+PGDLLEXPORT Datum
+periodset_hash(PG_FUNCTION_ARGS)
+{
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  uint32 result = periodset_hash_internal(ps);
+  PG_RETURN_UINT32(result);
+}
+
+/**
+ * Returns the 64-bit hash value of a period set using a seed
+ * (internal function)
+ */
+static uint64
+periodset_hash_extended_internal(const PeriodSet *ps, Datum seed)
+{
+  uint64 result = 1;
+  for (int i = 0; i < ps->count; i++)
+  {
+    const Period *p = periodset_per_n(ps, i);
+    uint64 per_hash = period_hash_extended_internal(p, seed);
+    result = (result << 5) - result + per_hash;
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(periodset_hash_extended);
+/**
+ * Returns the 64-bit hash value of a period set using a seed
+ */
+PGDLLEXPORT Datum
+periodset_hash_extended(PG_FUNCTION_ARGS)
+{
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Datum seed = PG_GETARG_DATUM(1);
+  uint64 result = periodset_hash_extended_internal(ps, seed);
+  PG_RETURN_UINT64(result);
+}
+
 /*****************************************************************************/

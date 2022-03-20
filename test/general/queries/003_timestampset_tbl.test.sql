@@ -49,7 +49,7 @@ SELECT timestampset(array_agg(DISTINCT t ORDER BY t)) FROM tbl_timestamptz WHERE
 -------------------------------------------------------------------------------
 -- Cast
 
-SELECT count(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
+SELECT COUNT(*) FROM tbl_timestamptz WHERE t::timestampset IS NOT NULL;
 
 -------------------------------------------------------------------------------
 -- Functions
@@ -65,12 +65,15 @@ SELECT timestamps(ts) FROM tbl_timestampset;
 
 SELECT shift(ts, '5 min') FROM tbl_timestampset;
 
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <> t2.ts;
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts < t2.ts;
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <= t2.ts;
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts > t2.ts;
-SELECT count(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.ts;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE timestampset_cmp(t1.ts, t2.ts) = -1;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts = t2.ts;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <> t2.ts;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts < t2.ts;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts <= t2.ts;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts > t2.ts;
+SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts >= t2.ts;
+
+SELECT MAX(timestampset_hash(ts)) FROM tbl_timestampset;
+SELECT MAX(timestampset_hash_extended(ts, 1)) FROM tbl_timestampset;
 
 -------------------------------------------------------------------------------

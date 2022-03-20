@@ -362,7 +362,7 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
 /**
  * Returns a temporal point from its MF-JSON representation
  */
-Temporal *
+static Temporal *
 tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
   Oid basetypid)
 {
@@ -665,7 +665,7 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
  * Returns a point from its WKB representation. A WKB point has just a set of doubles,
  * with the quantity depending on the dimension of the point.
  */
-Datum
+static Datum
 point_from_wkb_state(wkb_parse_state *s)
 {
   double x, y, z;
@@ -830,7 +830,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 /**
  * Returns a temporal point from its WKB representation
  */
-Temporal *
+static Temporal *
 tpoint_from_wkb_state(wkb_parse_state *s)
 {
   /* Fail when handed incorrect starting byte */
@@ -877,7 +877,9 @@ tpoint_from_wkb_state(wkb_parse_state *s)
   return NULL; /* make compiler quiet */
 }
 
-
+/**
+ * Returns a temporal point from its EWKB representation
+ */
 static Temporal *
 tpoint_from_ewkb_internal(uint8_t *wkb, int size)
 {

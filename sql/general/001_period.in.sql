@@ -144,7 +144,7 @@ CREATE FUNCTION period_joinsel(internal, oid, internal, smallint, internal)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Functions for debugging the selectivity code 
+-- Functions for debugging the selectivity code
 
 -- Given a table, column, and period returns the estimate of what proportion
 -- of the table would be returned by a query using the given operator.
@@ -248,16 +248,15 @@ CREATE FUNCTION period_hash(period)
   AS 'MODULE_PATHNAME', 'period_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-CREATE FUNCTION period_hash_extended(period)
-  RETURNS integer
+CREATE FUNCTION period_hash_extended(period, bigint)
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'period_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif //POSTGRESQL_VERSION_NUMBER >= 110000
 
 CREATE OPERATOR CLASS hash_period_ops
   DEFAULT FOR TYPE period USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   period_hash(period);
+    FUNCTION    1   period_hash(period),
+    FUNCTION    2   period_hash_extended(period, bigint);
 
 /******************************************************************************/

@@ -94,4 +94,10 @@ SELECT timestampset '{2000-01-01}' <= timestampset '{2000-01-01, 2000-01-02, 200
 SELECT timestampset '{2000-01-01}' > timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT timestampset '{2000-01-01}' >= timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
 
+SELECT timestampset_hash('{2000-01-01,2000-01-02}') = timestampset_hash('{2000-01-01,2000-01-02}');
+SELECT timestampset_hash('{2000-01-01,2000-01-02}') <> timestampset_hash('{2000-01-01,2000-01-02}');
+
+SELECT timestampset_hash_extended('{2000-01-01,2000-01-02}', 1) = timestampset_hash_extended('{2000-01-01,2000-01-02}', 1);
+SELECT timestampset_hash_extended('{2000-01-01,2000-01-02}', 1) <> timestampset_hash_extended('{2000-01-01,2000-01-02}', 1);
+
 -------------------------------------------------------------------------------

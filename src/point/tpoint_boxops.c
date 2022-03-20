@@ -239,7 +239,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
  *
  * @param[in] seq Temporal value
  */
-ArrayType *
+static ArrayType *
 tpointseq_stboxes(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -259,7 +259,7 @@ tpointseq_stboxes(const TSequence *seq)
  *
  * @param[in] ts Temporal value
  */
-ArrayType *
+static ArrayType *
 tpointseqset_stboxes(const TSequenceSet *ts)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));

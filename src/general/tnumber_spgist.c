@@ -93,8 +93,6 @@
  * that we don't yet have as infinity.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-
 #include "general/tnumber_spgist.h"
 
 /* PostgreSQL */
@@ -766,7 +764,5 @@ tnumber_spgist_compress(PG_FUNCTION_ARGS)
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_TBOX_P(result);
 }
-
-#endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */
 
 /*****************************************************************************/

@@ -1584,7 +1584,7 @@ geopoint_line(Datum value1, Datum value2)
  * @param[in] ti Temporal value
  * @note Notice that this function does not remove duplicate points
  */
-Datum
+static Datum
 tpointinstset_trajectory(const TInstantSet *ti)
 {
   /* Singleton instant set */
@@ -1653,7 +1653,7 @@ tpointseq_trajectory(const TSequence *seq)
  * @note The resulting trajectory must be freed by the calling function.
  * The function does not remove duplicates point/linestring components.
  */
-Datum
+static Datum
 tpointseqset_trajectory(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
@@ -1923,7 +1923,7 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
 /**
  * Set the SRID of a temporal point (dispatch function)
  */
-Temporal *
+static Temporal *
 tpoint_set_srid_internal(Temporal *temp, int32 srid)
 {
   Temporal *result;
@@ -2739,7 +2739,7 @@ point_get_z(Datum point)
 /**
  * Get the X coordinates of the temporal point (internal function)
  */
-Temporal *
+static Temporal *
 tpoint_get_coord_internal(const Temporal *temp, char c)
 {
   ensure_tgeo_base_type(temp->basetypid);
@@ -3148,7 +3148,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
  * Returns the time-weighed centroid of the temporal geometry point of
  * instant set type
  */
-Datum
+static Datum
 tpointinstset_twcentroid(const TInstantSet *ti)
 {
   int srid = tpointinstset_srid(ti);
@@ -3190,7 +3190,7 @@ tpointinstset_twcentroid(const TInstantSet *ti)
  * Returns the time-weighed centroid of the temporal geometry point of
  * sequence type
  */
-Datum
+static Datum
 tpointseq_twcentroid(const TSequence *seq)
 {
   int srid = tpointseq_srid(seq);
@@ -3236,7 +3236,7 @@ tpointseq_twcentroid(const TSequence *seq)
  * Returns the time-weighed centroid of the temporal geometry point of
  * sequence set type
  */
-Datum
+static Datum
 tpointseqset_twcentroid(const TSequenceSet *ts)
 {
   int srid = tpointseqset_srid(ts);
@@ -3507,7 +3507,7 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 /**
  * Computes the bearing between two geometric points
  */
-Datum
+static Datum
 geom_bearing(Datum point1, Datum point2)
 {
   const POINT2D *p1 = datum_get_point2d_p(point1);
@@ -3539,7 +3539,7 @@ geom_bearing(Datum point1, Datum point2)
  *   long = cos(lat1).sin(lat2) - sin(lat1).cos(lat2).cos(Δlong)
  *   θ    = atan2(lat, long)
  */
-Datum
+static Datum
 geog_bearing(Datum point1, Datum point2)
 {
   const POINT2D *p1 = datum_get_point2d_p(point1);

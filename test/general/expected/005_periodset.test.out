@@ -666,3 +666,27 @@ SELECT periodset '{[2000-01-01,2000-01-01]}' >= periodset '{(2000-01-01,2000-01-
  f
 (1 row)
 
+SELECT periodset_hash('{[2000-01-01,2000-01-02]}') = periodset_hash('{[2000-01-01,2000-01-02]}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT periodset_hash('{[2000-01-01,2000-01-02]}') <> periodset_hash('{[2000-01-02,2000-01-02]}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT periodset_hash_extended('{[2000-01-01,2000-01-02]}', 1) = periodset_hash_extended('{[2000-01-01,2000-01-02]}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT periodset_hash_extended('{[2000-01-01,2000-01-02]}', 1) <> periodset_hash_extended('{[2000-01-02,2000-01-02]}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+

@@ -42,7 +42,6 @@
 
 extern npoint *npoint_parse(char **str);
 extern nsegment *nsegment_parse(char **str);
-extern Temporal *tnpoint_parse(char **str, Oid basetype);
 
 /*****************************************************************************/
 

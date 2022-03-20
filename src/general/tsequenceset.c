@@ -1856,7 +1856,6 @@ tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
   return tinstant_copy(result);
 }
 
-
 /**
  * Restricts the temporal value to the (complement of the) timestamp set
  */
@@ -2220,7 +2219,7 @@ tnumberseqset_twavg(const TSequenceSet *ts)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree indexes
+ * Comparison functions
  *****************************************************************************/
 
 /**
@@ -2294,7 +2293,7 @@ tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
  *****************************************************************************/
 
 /**
- * Returns the hash value of the temporal value
+ * Returns the 32-bit hash value of the temporal value
  */
 uint32
 tsequenceset_hash(const TSequenceSet *ts)

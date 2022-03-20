@@ -59,7 +59,7 @@
 /**
  * Create a bit matrix
  */
-BitMatrix *
+static BitMatrix *
 bitmatrix_make(int *count, int numdims)
 {
   /* Calculate the needed number of bits and bytes */
@@ -84,7 +84,7 @@ bitmatrix_make(int *count, int numdims)
 /**
  * Get the value of the bit in the bit matrix
  */
-bool
+static bool
 bitmatrix_get(const BitMatrix *bm, int *coords)
 {
   int i, j;
@@ -773,7 +773,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
  * @param[in] x,y,z,t Minimum values of the tile
  * @param[in] state Grid information
  */
-void
+static void
 tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
   const STboxGridState *state)
 {
@@ -797,7 +797,7 @@ tile_get_coords(int *coords, double x, double y, double z, TimestampTz t,
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   const STboxGridState *state)
 {
@@ -826,7 +826,7 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -848,7 +848,7 @@ tpointinst_set_tiles(BitMatrix *bm, const TInstant *inst, bool hasz,
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -873,7 +873,7 @@ tpointinstset_set_tiles(BitMatrix *bm, const TInstantSet *ti, bool hasz,
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -901,7 +901,7 @@ tpointseq_set_tiles(BitMatrix *bm, const TSequence *seq, bool hasz,
  * @param[in] hast Whether the tile has T dimension
  * @param[in] state Grid definition
  */
-void
+static void
 tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
   bool hast, const STboxGridState *state)
 {
@@ -921,7 +921,7 @@ tpointseqset_set_tiles(BitMatrix *bm, const TSequenceSet *ts, bool hasz,
  * @param[in] temp Temporal point
  * @param[in] state Grid definition
  */
-void
+static void
 tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
   const STboxGridState *state)
 {

@@ -52,38 +52,8 @@
 #include "npoint/tnpoint_selfuncs.h"
 
 /*****************************************************************************
- * PostGIS functions copied from the file gserialized_estimate.c since they
- * are not exported
- *****************************************************************************/
-
-/**
- * Given a position in the n-d histogram (i,j,k,l) return the
- * position in the 1-d values array.
- */
-static int
-nd_stats_value_index(const ND_STATS *stats, const int *indexes)
-{
-  int d;
-  int accum = 1, vdx = 0;
-
-  /* Calculate the index into the 1-d values array that the (i,j,k,l)
-   * n-d histogram coordinate implies.
-   * index = x + y * sizex + z * sizex * sizey + m * sizex * sizey * sizez */
-  for (d = 0; d < (int) (stats->ndims); d++)
-  {
-    int size = (int) (stats->size[d]);
-    if (indexes[d] < 0 || indexes[d] >= size)
-      return -1;
-    vdx += indexes[d] * accum;
-    accum *= size;
-  }
-  return vdx;
-}
-
-/*****************************************************************************
  * Boolean functions for the operators
- * PostGIS provides nd_box_contains and nd_box_overlap which are copied in
- * tpoint_analyze.c
+ * PostGIS provides nd_box_intersects which is copied in tpoint_analyze.c
  *****************************************************************************/
 
 /**

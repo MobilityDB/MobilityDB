@@ -86,7 +86,7 @@ extern void timestampset_period(const TimestampSet *ts, Period *p);
 extern TimestampTz *timestampset_timestamps_internal(const TimestampSet *ts);
 extern TimestampSet *timestampset_shift_internal(const TimestampSet *ts, const Interval *interval);
 
-/* Functions for defining B-tree index */
+/* Comparison functions */
 
 extern Datum timestampset_cmp(PG_FUNCTION_ARGS);
 extern Datum timestampset_eq(PG_FUNCTION_ARGS);
@@ -99,6 +99,11 @@ extern Datum timestampset_gt(PG_FUNCTION_ARGS);
 extern int timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2);
 extern bool timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2);
 extern bool timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2);
+
+/* Comparison functions */
+
+extern Datum timestampset_hash(PG_FUNCTION_ARGS);
+extern Datum timestampset_hash_extended(PG_FUNCTION_ARGS);
 
 #endif
 

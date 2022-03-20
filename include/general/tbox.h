@@ -174,12 +174,8 @@ extern bool overafter_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
 
 /* Set functions */
 
-extern Datum tbox_union(PG_FUNCTION_ARGS);
-extern Datum tbox_intersection(PG_FUNCTION_ARGS);
-
-extern TBOX *tbox_union_internal(const TBOX *box1, const TBOX *box2);
-extern TBOX *tbox_minus_internal(const TBOX *box1, const TBOX *box2);
-extern TBOX *tbox_intersection_internal(const TBOX *box1, const TBOX *box2);
+extern Datum union_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum intersection_tbox_tbox(PG_FUNCTION_ARGS);
 
 /* Comparison functions */
 

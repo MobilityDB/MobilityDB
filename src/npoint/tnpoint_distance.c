@@ -144,7 +144,7 @@ distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 /**
  * Returns the temporal distance between the two temporal network points
  */
-Temporal *
+static Temporal *
 distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *sync1, *sync2;
@@ -187,7 +187,7 @@ distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Returns the nearest approach instant of the temporal network point and the
  * geometry (internal function)
  */
-Temporal *
+static Temporal *
 NAI_tnpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   GSERIALIZED *gs)
 {
@@ -249,7 +249,7 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach instant of the network point and the temporal
  * network point (internal function)
  */
-Temporal *
+static Temporal *
 NAI_tnpoint_npoint_internal(FunctionCallInfo fcinfo, Temporal *temp,
   npoint *np)
 {
@@ -340,7 +340,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance of the temporal network point and the
  * geometry
  */
-Datum
+static Datum
 NAD_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
   Datum traj = tnpoint_geom(temp);
@@ -397,7 +397,7 @@ NAD_tnpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance of the temporal network point and the
  * network point
  */
-Datum
+static Datum
 NAD_tnpoint_npoint_internal(Temporal *temp, npoint *np)
 {
   Datum geom = npoint_geom(np);

@@ -221,3 +221,21 @@ CREATE OPERATOR CLASS timestampset_ops
     FUNCTION  1  timestampset_cmp(timestampset, timestampset);
 
 /******************************************************************************/
+
+CREATE FUNCTION timestampset_hash(timestampset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'timestampset_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestampset_hash_extended(timestampset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'timestampset_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS period_hash_ops
+  DEFAULT FOR TYPE timestampset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   timestampset_hash(timestampset),
+    FUNCTION    2   timestampset_hash_extended(timestampset, bigint);
+
+/******************************************************************************/

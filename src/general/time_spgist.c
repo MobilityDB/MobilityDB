@@ -35,8 +35,6 @@
  * `rangetypes_spgist.c`.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-
 #include "general/time_spgist.h"
 
 /* PostgreSQL */
@@ -733,7 +731,7 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     if (temporal_type(in->scankeys[i].sk_subtype))
       /* All tests are lossy for temporal types */
       out->recheck = true;
-    
+
     res = period_index_consistent_leaf(key, &query, strategy);
 
     /* If any check is failed, we have found our answer. */
@@ -773,7 +771,5 @@ periodset_spgist_compress(PG_FUNCTION_ARGS)
   periodset_bbox_slice(psdatum, result);
   PG_RETURN_PERIOD_P(result);
 }
-
-#endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */
 
 /*****************************************************************************/

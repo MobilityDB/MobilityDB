@@ -183,7 +183,7 @@ npoint_to_stbox(PG_FUNCTION_ARGS)
 /**
  * Returns the bounding box of the network segment value
  */
-bool
+static bool
 nsegment_stbox(STBOX *box, const nsegment *ns)
 {
   Datum geom = nsegment_geom(DatumGetNsegment(ns));
@@ -290,7 +290,7 @@ tnpoint_to_stbox(PG_FUNCTION_ARGS)
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -312,7 +312,7 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {

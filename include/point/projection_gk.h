@@ -41,8 +41,8 @@
 
 /*****************************************************************************/
 
-extern Datum tgeompoint_transform_gk(PG_FUNCTION_ARGS);
 extern Datum geometry_transform_gk(PG_FUNCTION_ARGS);
+extern Datum tgeompoint_transform_gk(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

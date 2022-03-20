@@ -45,7 +45,7 @@
 
 /*****************************************************************************/
 
-/* Functions computing the bounding box when the temporal point is created */
+/* Functions computing the bounding box at the creation of a temporal point */
 
 extern void tpointinst_stbox(const TInstant *inst, STBOX *box);
 extern void tgeompointinstarr_stbox(const TInstant **inst, int count,
@@ -57,9 +57,6 @@ extern void tpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
 /* Boxes functions */
 
 extern Datum tpoint_stboxes(PG_FUNCTION_ARGS);
-
-extern ArrayType *tpointseq_stboxes(const TSequence *seq);
-extern ArrayType *tpointseqset_stboxes(const TSequenceSet *ts);
 
 /* Generic box functions */
 

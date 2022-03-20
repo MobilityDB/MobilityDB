@@ -1491,45 +1491,57 @@ SELECT shift(ps, '5 min') FROM tbl_periodset;
  {[2001-02-07 13:59:00+00, 2001-02-07 14:00:00+00], [2001-02-07 14:08:00+00, 2001-02-07 14:12:00+00), (2001-02-07 14:20:00+00, 2001-02-07 14:22:00+00), [2001-02-07 14:28:00+00, 2001-02-07 14:37:00+00]}
 (100 rows)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE periodset_cmp(t1.ps, t2.ps) = -1;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE periodset_cmp(t1.ps, t2.ps) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
  count 
 -------
     99
 (1 row)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <> t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <> t2.ps;
  count 
 -------
   9702
 (1 row)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps < t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps < t2.ps;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
  count 
 -------
   4950
+(1 row)
+
+SELECT MAX(periodset_hash(ps)) FROM tbl_periodset;
+    max     
+------------
+ 2099764345
+(1 row)
+
+SELECT MAX(periodset_hash_extended(ps, 1)) FROM tbl_periodset;
+         max         
+---------------------
+ 9020441736822412044
 (1 row)
 

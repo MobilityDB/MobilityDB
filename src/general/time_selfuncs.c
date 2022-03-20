@@ -1022,7 +1022,6 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
   /* @> and @< also need a histogram of period lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
-    AttStatsSlot lslot;
     memset(&lslot, 0, sizeof(lslot));
 
    stats_kind = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
@@ -1446,7 +1445,7 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
   if (! time_cachedop(oper, &cachedOp))
     /* Unknown operator */
     PG_RETURN_FLOAT8(period_joinsel_default(oper));
-    
+
   float8 selec = period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
 
   PG_RETURN_FLOAT8(selec);

@@ -106,7 +106,7 @@ extern Datum periodset_shift(PG_FUNCTION_ARGS);
 
 extern PeriodSet *periodset_shift_internal(const PeriodSet *ps, const Interval *interval);
 
-/* B-tree support */
+/* Comparison functions */
 
 extern Datum periodset_cmp(PG_FUNCTION_ARGS);
 extern Datum periodset_eq(PG_FUNCTION_ARGS);
@@ -119,6 +119,11 @@ extern Datum periodset_gt(PG_FUNCTION_ARGS);
 extern int periodset_cmp_internal(const PeriodSet *ps1, const PeriodSet *ps2);
 extern bool periodset_eq_internal(const PeriodSet *ps1, const PeriodSet *ps2);
 extern bool periodset_ne_internal(const PeriodSet *ps1, const PeriodSet *ps2);
+
+/* Hash functions */
+
+extern Datum periodset_hash(PG_FUNCTION_ARGS);
+extern Datum periodset_hash_extended(PG_FUNCTION_ARGS);
 
 #endif
 

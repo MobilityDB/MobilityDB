@@ -132,7 +132,7 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 /**
  * Returns the SRID of a temporal network point of sutbype instant
  */
-int
+static int
 tnpointinst_srid(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
@@ -189,7 +189,7 @@ tnpoint_srid(PG_FUNCTION_ARGS)
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
-npoint **
+static npoint **
 tnpointinstset_npoints(const TInstantSet *ti, int *count)
 {
   npoint **result = palloc(sizeof(npoint *) * ti->count);
@@ -209,7 +209,7 @@ tnpointinstset_npoints(const TInstantSet *ti, int *count)
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
-npoint **
+static npoint **
 tnpointseq_step_npoints(const TSequence *seq, int *count)
 {
   npoint **result = palloc(sizeof(npoint *) * seq->count);
@@ -229,7 +229,7 @@ tnpointseq_step_npoints(const TSequence *seq, int *count)
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
-npoint **
+static npoint **
 tnpointseqset_step_npoints(const TSequenceSet *ts, int *count)
 {
   npoint **result = palloc(sizeof(npoint *) * ts->totalcount);
@@ -257,7 +257,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ts, int *count)
  *
  * @param[in] inst Temporal network point
  */
-Datum
+static Datum
 tnpointinst_geom(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
@@ -269,7 +269,7 @@ tnpointinst_geom(const TInstant *inst)
  *
  * @param[in] ti Temporal network point
  */
-Datum
+static Datum
 tnpointinstset_geom(const TInstantSet *ti)
 {
   /* Instantaneous sequence */
@@ -279,7 +279,7 @@ tnpointinstset_geom(const TInstantSet *ti)
   int count;
   /* The following function does not remove duplicate values */
   npoint **points = tnpointinstset_npoints(ti, &count);
-  Datum result = npointarr_to_geom_internal(points, count);
+  Datum result = npointarr_geom(points, count);
   pfree(points);
   return result;
 }
@@ -289,7 +289,7 @@ tnpointinstset_geom(const TInstantSet *ti)
  *
  * @param[in] seq Temporal network point
  */
-Datum
+static Datum
 tnpointseq_geom(const TSequence *seq)
 {
   /* Instantaneous sequence */
@@ -308,7 +308,7 @@ tnpointseq_geom(const TSequence *seq)
     int count;
     /* The following function does not remove duplicate values */
     npoint **points = tnpointseq_step_npoints(seq, &count);
-    result = npointarr_to_geom_internal(points, count);
+    result = npointarr_geom(points, count);
     pfree(points);
   }
   return result;
@@ -319,7 +319,7 @@ tnpointseq_geom(const TSequence *seq)
  *
  * @param[in] ts Temporal network point
  */
-Datum
+static Datum
 tnpointseqset_geom(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
@@ -331,13 +331,13 @@ tnpointseqset_geom(const TSequenceSet *ts)
   if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
   {
     nsegment **segments = tnpointseqset_positions(ts, &count);
-    result = nsegmentarr_to_geom_internal(segments, count);
+    result = nsegmentarr_geom(segments, count);
     pfree_array((void **) segments, count);
   }
   else
   {
     npoint **points = tnpointseqset_step_npoints(ts, &count);
-    result = npointarr_to_geom_internal(points, count);
+    result = npointarr_geom(points, count);
     pfree(points);
   }
   return result;
@@ -370,7 +370,7 @@ tnpoint_geom(const Temporal *temp)
  *
  * @param[in] inst1, inst2 Temporal network point instants
  */
-Datum
+static Datum
 tnpointseqsegm_trajectory(const TInstant *inst1, const TInstant *inst2)
 {
   npoint *np1 = DatumGetNpoint(tinstant_value(inst1));

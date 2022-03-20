@@ -94,9 +94,6 @@ CREATE OPERATOR CLASS tbool_gist_ops
   FUNCTION  1  tbool_gist_consistent(internal, tbool, smallint, oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  tbool_gist_compress(internal),
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal);
@@ -190,12 +187,6 @@ CREATE FUNCTION tint_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#if POSTGRESQL_VERSION_NUMBER < 110000
-CREATE FUNCTION tnumber_gist_decompress(internal)
-  RETURNS internal
-AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif //POSTGRESQL_VERSION_NUMBER < 110000
 
 CREATE OPERATOR CLASS tint_gist_ops
   DEFAULT FOR TYPE tint USING gist AS
@@ -274,9 +265,6 @@ CREATE OPERATOR CLASS tint_gist_ops
   FUNCTION  1  tint_gist_consistent(internal, tint, smallint, oid, internal),
   FUNCTION  2  tbox_gist_union(internal, internal),
   FUNCTION  3  tint_gist_compress(internal),
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  FUNCTION  4  tnumber_gist_decompress(internal),
-#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
@@ -370,9 +358,6 @@ CREATE OPERATOR CLASS tfloat_gist_ops
   FUNCTION  1  tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
   FUNCTION  2  tbox_gist_union(internal, internal),
   FUNCTION  3  tfloat_gist_compress(internal),
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  FUNCTION  4  tnumber_gist_decompress(internal),
-#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
@@ -426,9 +411,6 @@ CREATE OPERATOR CLASS ttext_gist_ops
   FUNCTION  1  ttext_gist_consistent(internal, ttext, smallint, oid, internal),
   FUNCTION  2  period_gist_union(internal, internal),
   FUNCTION  3  ttext_gist_compress(internal),
-#if POSTGRESQL_VERSION_NUMBER < 110000
-  FUNCTION  4  period_gist_decompress(internal),
-#endif //POSTGRESQL_VERSION_NUMBER < 110000
   FUNCTION  5  period_gist_penalty(internal, internal, internal),
   FUNCTION  6  period_gist_picksplit(internal, internal),
   FUNCTION  7  period_gist_same(period, period, internal);

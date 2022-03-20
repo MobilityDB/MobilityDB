@@ -115,7 +115,7 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * Compute the projected point and the distance between the closest point
  * (geodetic version).
  */
-double
+static double
 lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
   long double *fraction)
 {
@@ -168,7 +168,7 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid __attribute__((unused)), Datum *value, 
+  Datum point, Oid basetypid __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
@@ -370,7 +370,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
-bool
+static bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
@@ -886,7 +886,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance between the temporal point and the
  * geometry (internal function)
  */
-Datum
+static Datum
 NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   GSERIALIZED *gs)
 {
@@ -941,7 +941,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance between the spatiotemporal box and
  * the geometry (internal function)
  */
-Datum
+static Datum
 NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   GSERIALIZED *gs)
 {
@@ -1072,7 +1072,7 @@ NAD_stbox_stbox(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance between the temporal point and the
  * spatio-temporal box (internal function)
  */
-double
+static double
 NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 {
   /* Test the validity of the arguments */
@@ -1189,7 +1189,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Returns the line connecting the nearest approach point between the
  * temporal instant point and the geometry (internal function)
  */
-Datum
+static Datum
 shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));

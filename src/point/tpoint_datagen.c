@@ -70,7 +70,7 @@ const gsl_rng_type *_rng_type;
 gsl_rng *_rng;
 
 /**
- *
+ * Initialize the Gnu Scientific Library
  */
 static void
 initialize_gsl()
@@ -111,7 +111,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 /**
  * Create a trip using the BerlinMOD data generator (internal function)
  */
-TSequence *
+static TSequence *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
   uint32_t noEdges, TimestampTz startTime, bool disturbData, int verbosity)
 {

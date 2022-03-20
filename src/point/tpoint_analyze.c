@@ -122,8 +122,8 @@
 static int
 cmp_int(const void *a, const void *b)
 {
-  int ia = *((const int*)a);
-  int ib = *((const int*)b);
+  int ia = *((const int *)a);
+  int ib = *((const int *)b);
 
   if (ia == ib)
     return 0;
@@ -146,7 +146,7 @@ nd_box_init(ND_BOX *a)
  * set the maxes to the smallest thing possible and
  * the mins to the largest.
  */
-int
+static int
 nd_box_init_bounds(ND_BOX *a)
 {
   int d;
@@ -174,7 +174,7 @@ total_double(const double *vals, int nvals)
 }
 
 /** Expand the bounds of target to include source */
-int
+static int
 nd_box_merge(const ND_BOX *source, ND_BOX *target)
 {
   int d;
@@ -280,7 +280,7 @@ nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
 }
 
 /** Set the values of an #ND_BOX from a GBOX */
-void
+static void
 nd_box_from_gbox(const GBOX *gbox, ND_BOX *nd_box)
 {
   int d = 0;
@@ -370,7 +370,7 @@ nd_box_expand(ND_BOX *nd_box, double expansion_factor)
  * Given a position in the n-d histogram (i,j,k) return the
  * position in the 1-d values array.
  */
-static int
+int
 nd_stats_value_index(const ND_STATS *stats, const int *indexes)
 {
   int accum = 1, vdx = 0;

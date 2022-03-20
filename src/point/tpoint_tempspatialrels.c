@@ -345,7 +345,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
  * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[out] count Number of elements in the output array
  */
-TSequence **
+static TSequence **
 tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
   bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
@@ -396,7 +396,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
-TSequenceSet *
+static TSequenceSet *
 tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
   bool tinter, Datum (*func)(Datum, Datum))
 {
@@ -556,15 +556,6 @@ tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
-
-/*****************************************************************************
- * Functions to compute the tdwithin relationship between a temporal sequence
- * and a geometry. The functions use the st_dwithin function from PostGIS
- * only for instantaneous sequences.
- * These functions are not available for geographies since it is based on the
- * function atGeometry.
- *****************************************************************************/
-
 
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
@@ -1537,7 +1528,7 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist,
 {
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  datum_func3 func = 
+  datum_func3 func =
     /* 3D only if both arguments are 3D */
     MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs)) ?
     &geom_dwithin3d : &geom_dwithin2d;
