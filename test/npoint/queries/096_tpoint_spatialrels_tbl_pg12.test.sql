@@ -46,7 +46,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE touches(geometry 'SRID=5676;Linestring(0 
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
 SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+-- SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tnpoint_gist_idx;
 
@@ -71,7 +71,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE touches(geometry 'SRID=5676;Linestring(0 
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, geometry 'SRID=5676;Linestring(0 0,15 15)', 5);
 SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
-SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
+-- SELECT COUNT(*) FROM tbl_tnpoint WHERE dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tnpoint_spgist_idx;
 
