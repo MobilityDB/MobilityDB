@@ -99,7 +99,6 @@ extern Datum tnpoint_route(PG_FUNCTION_ARGS);
 extern Datum tnpoint_routes(PG_FUNCTION_ARGS);
 
 extern int64 tnpointinst_route(const TInstant *inst);
-extern int64 tnpointseq_route(const TSequence *seq);
 
 extern nsegment *tnpointseq_linear_positions(const TSequence *seq);
 extern nsegment **tnpointseqset_positions(const TSequenceSet *ts, int *count);

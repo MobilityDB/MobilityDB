@@ -29,12 +29,13 @@
 
 /**
  * @file tnpoint_spatialrels.c
- * Spatial relationships for temporal network points.
+ * Ever spatial relationships for temporal network points.
  *
- * These relationships project the temporal dimension and return a Boolean.
- * They are thus defined with the "at any instant" semantics, that is, the
- * traditional spatial function is applied to the union of all values taken
- * by the temporal npoint. The following relationships are supported:
+ * These relationships compute the ever spatial relationship between the
+ * arguments and return a Boolean. These functions may be used for filtering
+ * purposes before applying the corresponding temporal spatial relationship.
+ *
+ * The following relationships are supported:
  * contains, disjoint, intersects, touches, and dwithin
  */
 
@@ -155,7 +156,7 @@ spatialrel3_tnpoint_tnpoint(const Temporal *temp1,const  Temporal *temp2,
 }
 
 /*****************************************************************************
- * Temporal contains
+ * Ever contains
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(contains_geo_tnpoint);
@@ -174,7 +175,7 @@ contains_geo_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal disjoint
+ * Ever disjoint
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(disjoint_geo_tnpoint);
@@ -254,7 +255,7 @@ disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal intersects
+ * Ever intersects
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(intersects_geo_tnpoint);
@@ -334,7 +335,7 @@ intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal dwithin
+ * Ever dwithin
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(dwithin_geo_tnpoint);
@@ -433,7 +434,7 @@ dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Temporal touches
+ * Ever touches
  *****************************************************************************/
 
 PG_FUNCTION_INFO_V1(touches_geo_tnpoint);

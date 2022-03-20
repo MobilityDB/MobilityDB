@@ -349,17 +349,6 @@ tnpointinst_route(const TInstant *inst)
 }
 
 /**
- * Return the route of the temporal network point
- */
-int64
-tnpointseq_route(const TSequence *seq)
-{
-  const TInstant *inst = tsequence_inst_n(seq, 0);
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
-  return np->rid;
-}
-
-/**
  * Return the network segments covered by the temporal network point
  */
 static nsegment **

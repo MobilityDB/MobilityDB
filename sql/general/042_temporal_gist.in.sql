@@ -32,13 +32,11 @@
  * R-tree GiST index for temporal types
  */
 
-CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
+/******************************************************************************/
+
+CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
+  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_union(internal, internal)
   RETURNS internal
@@ -56,6 +54,114 @@ CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tbox_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'period_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tbool_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tint_gist_consistent(internal, tint, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tint_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tfloat_gist_consistent(internal, tfloat, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tfloat_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'period_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ttext_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS tbox_gist_ops
+  DEFAULT FOR TYPE tbox USING gist AS
+  -- strictly left
+  OPERATOR  1    << (tbox, tbox),
+  OPERATOR  1    << (tbox, tint),
+  OPERATOR  1    << (tbox, tfloat),
+   -- overlaps or left
+  OPERATOR  2    &< (tbox, tbox),
+  OPERATOR  2    &< (tbox, tint),
+  OPERATOR  2    &< (tbox, tfloat),
+  -- overlaps
+  OPERATOR  3    && (tbox, tbox),
+  OPERATOR  3    && (tbox, tint),
+  OPERATOR  3    && (tbox, tfloat),
+  -- overlaps or right
+  OPERATOR  4    &> (tbox, tbox),
+  OPERATOR  4    &> (tbox, tint),
+  OPERATOR  4    &> (tbox, tfloat),
+  -- strictly right
+  OPERATOR  5    >> (tbox, tbox),
+  OPERATOR  5    >> (tbox, tint),
+  OPERATOR  5    >> (tbox, tfloat),
+    -- same
+  OPERATOR  6    ~= (tbox, tbox),
+  OPERATOR  6    ~= (tbox, tint),
+  OPERATOR  6    ~= (tbox, tfloat),
+  -- contains
+  OPERATOR  7    @> (tbox, tbox),
+  OPERATOR  7    @> (tbox, tint),
+  OPERATOR  7    @> (tbox, tfloat),
+  -- contained by
+  OPERATOR  8    <@ (tbox, tbox),
+  OPERATOR  8    <@ (tbox, tint),
+  OPERATOR  8    <@ (tbox, tfloat),
+  -- adjacent
+  OPERATOR  17    -|- (tbox, tbox),
+  OPERATOR  17    -|- (tbox, tint),
+  OPERATOR  17    -|- (tbox, tfloat),
+  -- overlaps or before
+  OPERATOR  28    &<# (tbox, tbox),
+  OPERATOR  28    &<# (tbox, tint),
+  OPERATOR  28    &<# (tbox, tfloat),
+  -- strictly before
+  OPERATOR  29    <<# (tbox, tbox),
+  OPERATOR  29    <<# (tbox, tint),
+  OPERATOR  29    <<# (tbox, tfloat),
+  -- strictly after
+  OPERATOR  30    #>> (tbox, tbox),
+  OPERATOR  30    #>> (tbox, tint),
+  OPERATOR  30    #>> (tbox, tfloat),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbox, tbox),
+  OPERATOR  31    #&> (tbox, tint),
+  OPERATOR  31    #&> (tbox, tfloat),
+  -- functions
+  FUNCTION  1  tbox_gist_consistent(internal, tbox, smallint, oid, internal),
+  FUNCTION  2  tbox_gist_union(internal, internal),
+  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6  tbox_gist_picksplit(internal, internal),
+  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+
+/******************************************************************************/
 
 CREATE OPERATOR CLASS tbool_gist_ops
   DEFAULT FOR TYPE tbool USING gist AS
@@ -100,94 +206,6 @@ CREATE OPERATOR CLASS tbool_gist_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbox_gist_distance'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR CLASS tbox_gist_ops
-  DEFAULT FOR TYPE tbox USING gist AS
-  STORAGE tbox,
-  -- strictly left
-  OPERATOR  1    << (tbox, tbox),
-  OPERATOR  1    << (tbox, tint),
-  OPERATOR  1    << (tbox, tfloat),
-   -- overlaps or left
-  OPERATOR  2    &< (tbox, tbox),
-  OPERATOR  2    &< (tbox, tint),
-  OPERATOR  2    &< (tbox, tfloat),
-  -- overlaps
-  OPERATOR  3    && (tbox, tbox),
-  OPERATOR  3    && (tbox, tint),
-  OPERATOR  3    && (tbox, tfloat),
-  -- overlaps or right
-  OPERATOR  4    &> (tbox, tbox),
-  OPERATOR  4    &> (tbox, tint),
-  OPERATOR  4    &> (tbox, tfloat),
-  -- strictly right
-  OPERATOR  5    >> (tbox, tbox),
-  OPERATOR  5    >> (tbox, tint),
-  OPERATOR  5    >> (tbox, tfloat),
-    -- same
-  OPERATOR  6    ~= (tbox, tbox),
-  OPERATOR  6    ~= (tbox, tint),
-  OPERATOR  6    ~= (tbox, tfloat),
-  -- contains
-  OPERATOR  7    @> (tbox, tbox),
-  OPERATOR  7    @> (tbox, tint),
-  OPERATOR  7    @> (tbox, tfloat),
-  -- contained by
-  OPERATOR  8    <@ (tbox, tbox),
-  OPERATOR  8    <@ (tbox, tint),
-  OPERATOR  8    <@ (tbox, tfloat),
-  -- adjacent
-  OPERATOR  17    -|- (tbox, tbox),
-  OPERATOR  17    -|- (tbox, tint),
-  OPERATOR  17    -|- (tbox, tfloat),
-  -- nearest approach distance
-  OPERATOR  25    |=| (tbox, tbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tbox, tint) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25    |=| (tbox, tfloat) FOR ORDER BY pg_catalog.float_ops,
-  -- overlaps or before
-  OPERATOR  28    &<# (tbox, tbox),
-  OPERATOR  28    &<# (tbox, tint),
-  OPERATOR  28    &<# (tbox, tfloat),
-  -- strictly before
-  OPERATOR  29    <<# (tbox, tbox),
-  OPERATOR  29    <<# (tbox, tint),
-  OPERATOR  29    <<# (tbox, tfloat),
-  -- strictly after
-  OPERATOR  30    #>> (tbox, tbox),
-  OPERATOR  30    #>> (tbox, tint),
-  OPERATOR  30    #>> (tbox, tfloat),
-  -- overlaps or after
-  OPERATOR  31    #&> (tbox, tbox),
-  OPERATOR  31    #&> (tbox, tint),
-  OPERATOR  31    #&> (tbox, tfloat),
-  -- functions
-  FUNCTION  1  tbox_gist_consistent(internal, tbox, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
-
-/******************************************************************************/
-
-CREATE FUNCTION tint_gist_consistent(internal, tint, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tint_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE OPERATOR CLASS tint_gist_ops
   DEFAULT FOR TYPE tint USING gist AS
   STORAGE tbox,
@@ -223,21 +241,25 @@ CREATE OPERATOR CLASS tint_gist_ops
   OPERATOR  5    >> (tint, tfloat),
     -- same
   OPERATOR  6    ~= (tint, intrange),
+  OPERATOR  6    ~= (tint, period),
   OPERATOR  6    ~= (tint, tbox),
   OPERATOR  6    ~= (tint, tint),
   OPERATOR  6    ~= (tint, tfloat),
   -- contains
   OPERATOR  7    @> (tint, intrange),
+  OPERATOR  7    @> (tint, period),
   OPERATOR  7    @> (tint, tbox),
   OPERATOR  7    @> (tint, tint),
   OPERATOR  7    @> (tint, tfloat),
   -- contained by
   OPERATOR  8    <@ (tint, intrange),
+  OPERATOR  8    <@ (tint, period),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
   OPERATOR  8    <@ (tint, tfloat),
   -- adjacent
   OPERATOR  17    -|- (tint, intrange),
+  OPERATOR  17    -|- (tint, period),
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   OPERATOR  17    -|- (tint, tfloat),
@@ -246,18 +268,22 @@ CREATE OPERATOR CLASS tint_gist_ops
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
+  OPERATOR  28    &<# (tint, period),
   OPERATOR  28    &<# (tint, tbox),
   OPERATOR  28    &<# (tint, tint),
   OPERATOR  28    &<# (tint, tfloat),
   -- strictly before
+  OPERATOR  29    <<# (tint, period),
   OPERATOR  29    <<# (tint, tbox),
   OPERATOR  29    <<# (tint, tint),
   OPERATOR  29    <<# (tint, tfloat),
   -- strictly after
+  OPERATOR  30    #>> (tint, period),
   OPERATOR  30    #>> (tint, tbox),
   OPERATOR  30    #>> (tint, tint),
   OPERATOR  30    #>> (tint, tfloat),
   -- overlaps or after
+  OPERATOR  31    #&> (tint, period),
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
   OPERATOR  31    #&> (tint, tfloat),
@@ -271,15 +297,6 @@ CREATE OPERATOR CLASS tint_gist_ops
   FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
 
 /******************************************************************************/
-
-CREATE FUNCTION tfloat_gist_consistent(internal, tfloat, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tfloat_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tfloat_gist_ops
   DEFAULT FOR TYPE tfloat USING gist AS
@@ -316,21 +333,25 @@ CREATE OPERATOR CLASS tfloat_gist_ops
   OPERATOR  5    >> (tfloat, tfloat),
     -- same
   OPERATOR  6    ~= (tfloat, floatrange),
+  OPERATOR  6    ~= (tfloat, period),
   OPERATOR  6    ~= (tfloat, tbox),
   OPERATOR  6    ~= (tfloat, tint),
   OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
   OPERATOR  7    @> (tfloat, floatrange),
+  OPERATOR  7    @> (tfloat, period),
   OPERATOR  7    @> (tfloat, tbox),
   OPERATOR  7    @> (tfloat, tint),
   OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
   OPERATOR  8    <@ (tfloat, floatrange),
+  OPERATOR  8    <@ (tfloat, period),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tint),
   OPERATOR  8    <@ (tfloat, tfloat),
   -- adjacent
   OPERATOR  17    -|- (tfloat, floatrange),
+  OPERATOR  17    -|- (tfloat, period),
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tint),
   OPERATOR  17    -|- (tfloat, tfloat),
@@ -339,18 +360,22 @@ CREATE OPERATOR CLASS tfloat_gist_ops
   OPERATOR  25    |=| (tfloat, tint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
+  OPERATOR  28    &<# (tfloat, period),
   OPERATOR  28    &<# (tfloat, tbox),
   OPERATOR  28    &<# (tfloat, tint),
   OPERATOR  28    &<# (tfloat, tfloat),
   -- strictly before
+  OPERATOR  29    <<# (tfloat, period),
   OPERATOR  29    <<# (tfloat, tbox),
   OPERATOR  29    <<# (tfloat, tint),
   OPERATOR  29    <<# (tfloat, tfloat),
   -- strictly after
+  OPERATOR  30    #>> (tfloat, period),
   OPERATOR  30    #>> (tfloat, tbox),
   OPERATOR  30    #>> (tfloat, tint),
   OPERATOR  30    #>> (tfloat, tfloat),
   -- overlaps or after
+  OPERATOR  31    #&> (tfloat, period),
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tint),
   OPERATOR  31    #&> (tfloat, tfloat),
@@ -364,15 +389,6 @@ CREATE OPERATOR CLASS tfloat_gist_ops
   FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
 
 /******************************************************************************/
-
-CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_gist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS ttext_gist_ops
   DEFAULT FOR TYPE ttext USING gist AS

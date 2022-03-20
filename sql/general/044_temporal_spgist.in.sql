@@ -32,11 +32,6 @@
  * Quad-tree SP-GiST index for temporal types
  */
 
-CREATE FUNCTION temporal_spgist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************/
 
 CREATE FUNCTION tbox_spgist_config(internal, internal)
@@ -66,45 +61,10 @@ CREATE FUNCTION tnumber_spgist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tbool_spgist_ops
-  DEFAULT FOR TYPE tbool USING spgist AS
-  -- overlaps
-  OPERATOR  3    && (tbool, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tbool, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tbool, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tbool, periodset),    -- index support for intersectsPeriodSet
-  OPERATOR  3    && (tbool, tbool),
-    -- same
-  OPERATOR  6    ~= (tbool, period),
-  OPERATOR  6    ~= (tbool, tbool),
-  -- contains
-  OPERATOR  7    @> (tbool, period),
-  OPERATOR  7    @> (tbool, tbool),
-  -- contained by
-  OPERATOR  8    <@ (tbool, period),
-  OPERATOR  8    <@ (tbool, tbool),
-  -- adjacent
-  OPERATOR  17    -|- (tbool, period),
-  OPERATOR  17    -|- (tbool, tbool),
-  -- overlaps or before
-  OPERATOR  28    &<# (tbool, period),
-  OPERATOR  28    &<# (tbool, tbool),
-  -- strictly before
-  OPERATOR  29    <<# (tbool, period),
-  OPERATOR  29    <<# (tbool, tbool),
-  -- strictly after
-  OPERATOR  30    #>> (tbool, period),
-  OPERATOR  30    #>> (tbool, tbool),
-  -- overlaps or after
-  OPERATOR  31    #&> (tbool, period),
-  OPERATOR  31    #&> (tbool, tbool),
-  -- functions
-  FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_spgist_choose(internal, internal),
-  FUNCTION  3  period_spgist_picksplit(internal, internal),
-  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
-  FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  temporal_spgist_compress(internal);
+CREATE FUNCTION temporal_spgist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
@@ -168,6 +128,48 @@ CREATE OPERATOR CLASS tbox_spgist_ops
   FUNCTION  3  tbox_spgist_picksplit(internal, internal),
   FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal);
+
+/******************************************************************************/
+
+CREATE OPERATOR CLASS tbool_spgist_ops
+  DEFAULT FOR TYPE tbool USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (tbool, timestamptz),  -- index support for intersectsTimestamp
+  OPERATOR  3    && (tbool, timestampset), -- index support for intersectsTimestampSet
+  OPERATOR  3    && (tbool, period),       -- index support for intersectsPeriod
+  OPERATOR  3    && (tbool, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (tbool, tbool),
+    -- same
+  OPERATOR  6    ~= (tbool, period),
+  OPERATOR  6    ~= (tbool, tbool),
+  -- contains
+  OPERATOR  7    @> (tbool, period),
+  OPERATOR  7    @> (tbool, tbool),
+  -- contained by
+  OPERATOR  8    <@ (tbool, period),
+  OPERATOR  8    <@ (tbool, tbool),
+  -- adjacent
+  OPERATOR  17    -|- (tbool, period),
+  OPERATOR  17    -|- (tbool, tbool),
+  -- overlaps or before
+  OPERATOR  28    &<# (tbool, period),
+  OPERATOR  28    &<# (tbool, tbool),
+  -- strictly before
+  OPERATOR  29    <<# (tbool, period),
+  OPERATOR  29    <<# (tbool, tbool),
+  -- strictly after
+  OPERATOR  30    #>> (tbool, period),
+  OPERATOR  30    #>> (tbool, tbool),
+  -- overlaps or after
+  OPERATOR  31    #&> (tbool, period),
+  OPERATOR  31    #&> (tbool, tbool),
+  -- functions
+  FUNCTION  1  period_spgist_config(internal, internal),
+  FUNCTION  2  period_spgist_choose(internal, internal),
+  FUNCTION  3  period_spgist_picksplit(internal, internal),
+  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/
 

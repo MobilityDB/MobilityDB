@@ -282,7 +282,8 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
       argoid == type_oid(T_GEOGRAPHY) ||
       argoid == type_oid(T_STBOX) ||
       argoid == type_oid(T_TGEOMPOINT) ||
-      argoid == type_oid(T_TGEOGPOINT))
+      argoid == type_oid(T_TGEOGPOINT) ||
+      argoid == type_oid(T_TNPOINT))
     funcname = "expandspatial";
   else
     elog(ERROR, "Unknown expand function for type %d", argoid);

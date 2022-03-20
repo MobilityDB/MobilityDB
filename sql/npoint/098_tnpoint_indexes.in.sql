@@ -32,6 +32,8 @@
  * R-tree GiST and SP-GiST indexes for temporal network points.
  */
 
+/******************************************************************************/
+
 CREATE FUNCTION tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
@@ -40,6 +42,12 @@ CREATE FUNCTION tnpoint_gist_compress(internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'tnpoint_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tnpoint_spgist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************/
 
 CREATE OPERATOR CLASS tnpoint_gist_ops
   DEFAULT FOR TYPE tnpoint USING gist AS
@@ -132,11 +140,6 @@ CREATE OPERATOR CLASS tnpoint_gist_ops
 --  FUNCTION  8 gist_tnpoint_distance(internal, tnpoint, smallint, oid, internal),
 
 /******************************************************************************/
-
-CREATE FUNCTION tnpoint_spgist_compress(internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tnpoint_spgist_ops
   DEFAULT FOR TYPE tnpoint USING spgist AS

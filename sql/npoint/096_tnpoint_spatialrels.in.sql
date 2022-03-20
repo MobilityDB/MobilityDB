@@ -84,6 +84,10 @@ CREATE FUNCTION disjoint(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'disjoint_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'disjoint_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * intersects
@@ -122,6 +126,15 @@ CREATE FUNCTION _intersects(tnpoint, geometry)
   AS 'MODULE_PATHNAME', 'intersects_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, geometry)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _intersects(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tnpoint, tnpoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;

@@ -419,7 +419,6 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
     inst1 = inst2; value1 = value2;
   }
   instants[k++] = tfunc_tinstant_base(inst1, value, lfinfo);
-
   result[0] = tsequence_make_free(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
   return 1;
