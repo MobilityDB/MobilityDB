@@ -270,10 +270,11 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  * Set the bounding box from the array of temporal instant values
  * (dispatch function)
  *
- * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc Period bounds
+ * @param[in] linear True when the interpolation is linear
+ * @param[out] box Bounding box
  */
 void
 tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,

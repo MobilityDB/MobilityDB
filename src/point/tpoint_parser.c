@@ -301,7 +301,7 @@ tpointinstset_parse(char **str, Oid basetype, int *tpoint_srid)
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
- * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] linear True when the interpolation is linear
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
@@ -358,7 +358,7 @@ tpointseq_parse(char **str, Oid basetype, bool linear, bool end, bool make, int 
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
- * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] linear True when the interpolation is linear
  * @param[in] tpoint_srid SRID of the temporal point
  */
 static TSequenceSet *

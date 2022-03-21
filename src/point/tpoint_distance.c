@@ -365,7 +365,6 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] value Value
  * @param[out] t Timestamp
  * @pre The segments are not both constants.

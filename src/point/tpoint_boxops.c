@@ -108,7 +108,6 @@ tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
  *
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
- * @param[in] linear True when the interpolation is linear
  * @param[out] box Resulting bounding box
  */
 static void

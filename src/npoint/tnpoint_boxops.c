@@ -150,9 +150,10 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
  * Set the spatiotemporal box from the array of temporal network point values
  * (dispatch function)
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[in] linear True when the interpolation is linear
+ * @param[out] box Spatiotemporal box
  */
 void
 tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,

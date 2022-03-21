@@ -500,7 +500,6 @@ disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] func PostGIS function to be used
  */
 static bool
 disjoint_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)

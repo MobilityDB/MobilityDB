@@ -508,7 +508,7 @@ tinstantset_parse(char **str, Oid basetype)
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
- * @param[in] linear Set to true when the sequence has linear interpolation
+ * @param[in] linear True when the interpolation is linear
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
@@ -564,7 +564,7 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
  *
  * @param[in] str Input string
  * @param[in] basetype Oid of the base type
- * @param[in] linear Set to true when the sequence set has linear interpolation
+ * @param[in] linear True when the interpolation is linear
  */
 static TSequenceSet *
 tsequenceset_parse(char **str, Oid basetype, bool linear)

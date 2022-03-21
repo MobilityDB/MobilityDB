@@ -470,9 +470,12 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
            rightoid == type_oid(T_GEOGRAPHY) ||
            rightoid == type_oid(T_STBOX) ||
            rightoid == type_oid(T_TGEOMPOINT) ||
-           rightoid == type_oid(T_TGEOGPOINT)))
-          exproid = type_oid(T_STBOX);
-
+           rightoid == type_oid(T_TGEOGPOINT) ||
+           rightoid == type_oid(T_TNPOINT)))
+        exproid = type_oid(T_STBOX);
+      else
+        PG_RETURN_POINTER((Node *) NULL);
+        
       idxoproid = get_opfamily_member(opfamilyoid, leftoid, exproid, strategy);
       if (idxoproid == InvalidOid)
         elog(ERROR, "no operator found for '%s': opfamily %u type %d",
