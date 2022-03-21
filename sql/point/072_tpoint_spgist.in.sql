@@ -153,11 +153,11 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  2    &< (tgeompoint, stbox),
   OPERATOR  2    &< (tgeompoint, tgeompoint),
   -- overlaps
-  OPERATOR  3    && (tgeompoint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tgeompoint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tgeompoint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tgeompoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeompoint, geometry),
+  OPERATOR  3    && (tgeompoint, timestamptz),
+  OPERATOR  3    && (tgeompoint, timestampset),
+  OPERATOR  3    && (tgeompoint, period),
+  OPERATOR  3    && (tgeompoint, periodset),
   OPERATOR  3    && (tgeompoint, stbox),
   OPERATOR  3    && (tgeompoint, tgeompoint),
   -- overlaps or right
@@ -216,10 +216,12 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  17    -|- (tgeompoint, periodset),
   OPERATOR  17    -|- (tgeompoint, stbox),
   OPERATOR  17    -|- (tgeompoint, tgeompoint),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
   OPERATOR  25    |=| (tgeompoint, geometry) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tgeompoint, timestamptz),
   OPERATOR  28    &<# (tgeompoint, timestampset),
@@ -277,11 +279,11 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
 CREATE OPERATOR CLASS tgeogpoint_spgist_ops
   DEFAULT FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
-  OPERATOR  3    && (tgeogpoint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tgeogpoint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tgeogpoint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tgeogpoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeogpoint, geography),
+  OPERATOR  3    && (tgeogpoint, timestamptz),
+  OPERATOR  3    && (tgeogpoint, timestampset),
+  OPERATOR  3    && (tgeogpoint, period),
+  OPERATOR  3    && (tgeogpoint, periodset),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
     -- same
@@ -316,10 +318,12 @@ CREATE OPERATOR CLASS tgeogpoint_spgist_ops
   OPERATOR  17    -|- (tgeogpoint, periodset),
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
-  -- distance
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
   OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tgeogpoint, timestamptz),
   OPERATOR  28    &<# (tgeogpoint, timestampset),

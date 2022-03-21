@@ -1912,14 +1912,14 @@ CREATE FUNCTION intersectsTimestamp(tint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestamp(tfloat, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestamp(ttext, timestamptz)
@@ -1941,14 +1941,14 @@ CREATE FUNCTION intersectsTimestampSet(tint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestampSet(tfloat, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsTimestampSet(ttext, timestampset)
@@ -1970,14 +1970,14 @@ CREATE FUNCTION intersectsPeriod(tint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriod(tfloat, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriod(ttext, period)
@@ -1999,14 +1999,14 @@ CREATE FUNCTION intersectsPeriodSet(tint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriodSet(tfloat, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  SUPPORT temporal_supportfn
+  SUPPORT tnumber_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersectsPeriodSet(ttext, periodset)

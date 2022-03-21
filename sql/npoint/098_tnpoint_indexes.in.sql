@@ -61,10 +61,10 @@ CREATE OPERATOR CLASS tnpoint_gist_ops
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
   -- overlaps
-  OPERATOR  3    && (tnpoint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tnpoint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tnpoint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tnpoint, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (tnpoint, timestamptz),
+  OPERATOR  3    && (tnpoint, timestampset),
+  OPERATOR  3    && (tnpoint, period),
+  OPERATOR  3    && (tnpoint, periodset),
   OPERATOR  3    && (tnpoint, geometry),
   OPERATOR  3    && (tnpoint, stbox),
   OPERATOR  3    && (tnpoint, tnpoint),
@@ -124,8 +124,8 @@ CREATE OPERATOR CLASS tnpoint_gist_ops
   OPERATOR  17    -|- (tnpoint, periodset),
   OPERATOR  17    -|- (tnpoint, stbox),
   OPERATOR  17    -|- (tnpoint, tnpoint),
-  -- distance
---  OPERATOR  25    <-> (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  -- nearest approach distance
+--  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tnpoint, timestamptz),
   OPERATOR  28    &<# (tnpoint, timestampset),
@@ -176,10 +176,10 @@ CREATE OPERATOR CLASS tnpoint_spgist_ops
   OPERATOR  2    &< (tnpoint, stbox),
   OPERATOR  2    &< (tnpoint, tnpoint),
   -- overlaps
-  OPERATOR  3    && (tnpoint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tnpoint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tnpoint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tnpoint, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (tnpoint, timestamptz),
+  OPERATOR  3    && (tnpoint, timestampset),
+  OPERATOR  3    && (tnpoint, period),
+  OPERATOR  3    && (tnpoint, periodset),
   OPERATOR  3    && (tnpoint, geometry),
   OPERATOR  3    && (tnpoint, stbox),
   OPERATOR  3    && (tnpoint, tnpoint),
@@ -239,8 +239,8 @@ CREATE OPERATOR CLASS tnpoint_spgist_ops
   OPERATOR  17    -|- (tnpoint, periodset),
   OPERATOR  17    -|- (tnpoint, stbox),
   OPERATOR  17    -|- (tnpoint, tnpoint),
-  -- distance
---  OPERATOR  25    <-> (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  -- nearest approach distance
+--  OPERATOR  25    |=| (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tnpoint, timestamptz),
   OPERATOR  28    &<# (tnpoint, timestampset),

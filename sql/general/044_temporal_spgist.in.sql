@@ -134,10 +134,10 @@ CREATE OPERATOR CLASS tbox_spgist_ops
 CREATE OPERATOR CLASS tbool_spgist_ops
   DEFAULT FOR TYPE tbool USING spgist AS
   -- overlaps
-  OPERATOR  3    && (tbool, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tbool, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tbool, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tbool, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (tbool, timestamptz),
+  OPERATOR  3    && (tbool, timestampset),
+  OPERATOR  3    && (tbool, period),
+  OPERATOR  3    && (tbool, periodset),
   OPERATOR  3    && (tbool, tbool),
     -- same
   OPERATOR  6    ~= (tbool, timestamptz),
@@ -212,12 +212,12 @@ CREATE OPERATOR CLASS tint_spgist_ops
   OPERATOR  2    &< (tint, tint),
   OPERATOR  2    &< (tint, tfloat),
   -- overlaps
-  OPERATOR  3    && (tint, int),          -- index support for ?=
+  OPERATOR  3    && (tint, int),
   OPERATOR  3    && (tint, intrange),
-  OPERATOR  3    && (tint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tint, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (tint, timestamptz),
+  OPERATOR  3    && (tint, timestampset),
+  OPERATOR  3    && (tint, period),
+  OPERATOR  3    && (tint, periodset),
   OPERATOR  3    && (tint, tbox),
   OPERATOR  3    && (tint, tint),
   OPERATOR  3    && (tint, tfloat),
@@ -336,12 +336,12 @@ CREATE OPERATOR CLASS tfloat_spgist_ops
   OPERATOR  2    &< (tfloat, tint),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
-  OPERATOR  3    && (tfloat, float),        -- index support for ?=
+  OPERATOR  3    && (tfloat, float),
   OPERATOR  3    && (tfloat, floatrange),
-  OPERATOR  3    && (tfloat, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tfloat, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tfloat, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tfloat, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (tfloat, timestamptz),
+  OPERATOR  3    && (tfloat, timestampset),
+  OPERATOR  3    && (tfloat, period),
+  OPERATOR  3    && (tfloat, periodset),
   OPERATOR  3    && (tfloat, tbox),
   OPERATOR  3    && (tfloat, tint),
   OPERATOR  3    && (tfloat, tfloat),
@@ -397,10 +397,12 @@ CREATE OPERATOR CLASS tfloat_spgist_ops
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tint),
   OPERATOR  17    -|- (tfloat, tfloat),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, timestamptz),
   OPERATOR  28    &<# (tfloat, timestampset),
@@ -446,10 +448,10 @@ CREATE OPERATOR CLASS tfloat_spgist_ops
 CREATE OPERATOR CLASS ttext_spgist_ops
   DEFAULT FOR TYPE ttext USING spgist AS
   -- overlaps
-  OPERATOR  3    && (ttext, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (ttext, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (ttext, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (ttext, periodset),    -- index support for intersectsPeriodSet
+  OPERATOR  3    && (ttext, timestamptz),
+  OPERATOR  3    && (ttext, timestampset),
+  OPERATOR  3    && (ttext, period),
+  OPERATOR  3    && (ttext, periodset),
   OPERATOR  3    && (ttext, ttext),
     -- same
   OPERATOR  6    ~= (ttext, timestamptz),

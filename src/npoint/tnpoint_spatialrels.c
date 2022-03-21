@@ -50,7 +50,7 @@
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Generic binary functions for tnpoint <rel> geo
+ * Generic binary functions for tnpoint <rel> (geo | npoint)
  *****************************************************************************/
 
 /**
