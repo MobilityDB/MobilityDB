@@ -610,7 +610,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
  * @param[out] tofree True when the resulting instant should be freed
  */
 static double
-NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
+NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   LWGEOM *lwgeom, Datum *closest, TimestampTz *t, bool *tofree)
 {
   Datum value1 = tinstant_value(inst1);
@@ -703,7 +703,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    dist = NAI_tpointseq_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
+    dist = NAI_tpointsegm_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
     if (dist < mindist)
     {
       if (*tofree)

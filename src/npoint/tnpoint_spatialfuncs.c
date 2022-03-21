@@ -770,7 +770,7 @@ tnpoint_twcentroid(PG_FUNCTION_ARGS)
  * Temporal azimuth of two temporal network point instants
  */
 static TInstant **
-tnpointseq_azimuth1(const TInstant *inst1, const TInstant *inst2,
+tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   int *count)
 {
   npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
@@ -831,7 +831,7 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    instants[i] = tnpointseq_azimuth1(inst1, inst2, &countinsts[i]);
+    instants[i] = tnpointsegm_azimuth1(inst1, inst2, &countinsts[i]);
     /* If constant segment */
     if (countinsts[i] == 0)
     {

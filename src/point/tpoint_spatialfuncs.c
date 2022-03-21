@@ -4628,7 +4628,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
-tpointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
+tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(inst1->flags);
@@ -4709,7 +4709,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     /* We are sure that the segment is not constant since the
      * sequence is simple */
-    if (tpointseq_timestamp_at_value1(inst1, inst2, value, t))
+    if (tpointsegm_timestamp_at_value1(inst1, inst2, value, t))
       return true;
     inst1 = inst2;
   }

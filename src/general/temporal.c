@@ -379,7 +379,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
   if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must be of the same interpolation")));
+      errmsg("The temporal values must have the same interpolation")));
   return;
 }
 
