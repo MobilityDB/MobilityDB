@@ -586,6 +586,7 @@ extern Datum temporal_timestamps(PG_FUNCTION_ARGS);
 
 extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
 extern RangeType *tnumber_value_range_internal(const Temporal *temp);
+extern TInstant *temporal_start_instant_internal(const Temporal *temp);
 extern const TInstant *temporal_min_instant(const Temporal *temp);
 extern Datum temporal_min_value_internal(const Temporal *temp);
 extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);

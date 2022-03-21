@@ -2498,14 +2498,12 @@ temporal_num_instants(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
-PG_FUNCTION_INFO_V1(temporal_start_instant);
 /**
- * Returns the start instant of the temporal value
+ * Returns the start instant of the temporal value (internal function)
  */
-PGDLLEXPORT Datum
-temporal_start_instant(PG_FUNCTION_ARGS)
+TInstant *
+temporal_start_instant_internal(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -2519,6 +2517,18 @@ temporal_start_instant(PG_FUNCTION_ARGS)
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_copy(tsequence_inst_n(seq, 0));
   }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_start_instant);
+/**
+ * Returns the start instant of the temporal value
+ */
+PGDLLEXPORT Datum
+temporal_start_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = temporal_start_instant_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
