@@ -783,22 +783,6 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* For temporal geometry points we can use the PostGIS functions
-   * ST_ClosestPoint or ST_3DClosestPoint for a faster implementation */
-  if (! MOBDB_FLAGS_GET_GEODETIC(temp->flags))
-  {
-    Datum traj = tpoint_trajectory_internal(temp);
-    Datum point = MOBDB_FLAGS_GET_Z(temp->flags) ?
-      call_function2(LWGEOM_closestpoint3d, traj, PointerGetDatum(gs)) :
-      call_function2(LWGEOM_closestpoint, traj, PointerGetDatum(gs));
-    Temporal *at_point = tpoint_restrict_geometry_internal(temp, point, REST_AT);
-    assert (at_point != NULL);
-    TInstant *result = temporal_start_instant_internal(temp);
-    pfree(DatumGetPointer(traj)); pfree(DatumGetPointer(point));
-    pfree(at_point);
-    return result;
-  }
-
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   datum_func2 func = get_distance_fn(temp->flags);
