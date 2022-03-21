@@ -78,17 +78,26 @@ CREATE OPERATOR CLASS tnpoint_gist_ops
   OPERATOR  5    >> (tnpoint, tnpoint),
     -- same
   OPERATOR  6    ~= (tnpoint, geometry),
+  OPERATOR  6    ~= (tnpoint, timestamptz),
+  OPERATOR  6    ~= (tnpoint, timestampset),
   OPERATOR  6    ~= (tnpoint, period),
+  OPERATOR  6    ~= (tnpoint, periodset),
   OPERATOR  6    ~= (tnpoint, stbox),
   OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, geometry),
+  OPERATOR  7    @> (tnpoint, timestamptz),
+  OPERATOR  7    @> (tnpoint, timestampset),
   OPERATOR  7    @> (tnpoint, period),
+  OPERATOR  7    @> (tnpoint, periodset),
   OPERATOR  7    @> (tnpoint, stbox),
   OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, geometry),
+  OPERATOR  8    <@ (tnpoint, timestamptz),
+  OPERATOR  8    <@ (tnpoint, timestampset),
   OPERATOR  8    <@ (tnpoint, period),
+  OPERATOR  8    <@ (tnpoint, periodset),
   OPERATOR  8    <@ (tnpoint, stbox),
   OPERATOR  8    <@ (tnpoint, tnpoint),
   -- overlaps or below
@@ -109,25 +118,40 @@ CREATE OPERATOR CLASS tnpoint_gist_ops
   OPERATOR  12    |&> (tnpoint, tnpoint),
   -- adjacent
   OPERATOR  17    -|- (tnpoint, geometry),
+  OPERATOR  17    -|- (tnpoint, timestamptz),
+  OPERATOR  17    -|- (tnpoint, timestampset),
   OPERATOR  17    -|- (tnpoint, period),
+  OPERATOR  17    -|- (tnpoint, periodset),
   OPERATOR  17    -|- (tnpoint, stbox),
   OPERATOR  17    -|- (tnpoint, tnpoint),
   -- distance
 --  OPERATOR  25    <-> (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, timestamptz),
+  OPERATOR  28    &<# (tnpoint, timestampset),
   OPERATOR  28    &<# (tnpoint, period),
+  OPERATOR  28    &<# (tnpoint, periodset),
   OPERATOR  28    &<# (tnpoint, stbox),
   OPERATOR  28    &<# (tnpoint, tnpoint),
   -- strictly before
+  OPERATOR  29    <<# (tnpoint, timestamptz),
+  OPERATOR  29    <<# (tnpoint, timestampset),
   OPERATOR  29    <<# (tnpoint, period),
+  OPERATOR  29    <<# (tnpoint, periodset),
   OPERATOR  29    <<# (tnpoint, stbox),
   OPERATOR  29    <<# (tnpoint, tnpoint),
   -- strictly after
+  OPERATOR  30    #>> (tnpoint, timestamptz),
+  OPERATOR  30    #>> (tnpoint, timestampset),
   OPERATOR  30    #>> (tnpoint, period),
+  OPERATOR  30    #>> (tnpoint, periodset),
   OPERATOR  30    #>> (tnpoint, stbox),
   OPERATOR  30    #>> (tnpoint, tnpoint),
   -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, timestamptz),
+  OPERATOR  31    #&> (tnpoint, timestampset),
   OPERATOR  31    #&> (tnpoint, period),
+  OPERATOR  31    #&> (tnpoint, periodset),
   OPERATOR  31    #&> (tnpoint, stbox),
   OPERATOR  31    #&> (tnpoint, tnpoint),
   -- functions
@@ -169,17 +193,26 @@ CREATE OPERATOR CLASS tnpoint_spgist_ops
   OPERATOR  5    >> (tnpoint, tnpoint),
     -- same
   OPERATOR  6    ~= (tnpoint, geometry),
+  OPERATOR  6    ~= (tnpoint, timestamptz),
+  OPERATOR  6    ~= (tnpoint, timestampset),
   OPERATOR  6    ~= (tnpoint, period),
+  OPERATOR  6    ~= (tnpoint, periodset),
   OPERATOR  6    ~= (tnpoint, stbox),
   OPERATOR  6    ~= (tnpoint, tnpoint),
   -- contains
   OPERATOR  7    @> (tnpoint, geometry),
+  OPERATOR  7    @> (tnpoint, timestamptz),
+  OPERATOR  7    @> (tnpoint, timestampset),
   OPERATOR  7    @> (tnpoint, period),
+  OPERATOR  7    @> (tnpoint, periodset),
   OPERATOR  7    @> (tnpoint, stbox),
   OPERATOR  7    @> (tnpoint, tnpoint),
   -- contained by
   OPERATOR  8    <@ (tnpoint, geometry),
+  OPERATOR  8    <@ (tnpoint, timestamptz),
+  OPERATOR  8    <@ (tnpoint, timestampset),
   OPERATOR  8    <@ (tnpoint, period),
+  OPERATOR  8    <@ (tnpoint, periodset),
   OPERATOR  8    <@ (tnpoint, stbox),
   OPERATOR  8    <@ (tnpoint, tnpoint),
   -- overlaps or below
@@ -198,25 +231,42 @@ CREATE OPERATOR CLASS tnpoint_spgist_ops
   OPERATOR  12    |&> (tnpoint, geometry),
   OPERATOR  12    |&> (tnpoint, stbox),
   OPERATOR  12    |&> (tnpoint, tnpoint),
-    -- adjacent
+  -- adjacent
   OPERATOR  17    -|- (tnpoint, geometry),
+  OPERATOR  17    -|- (tnpoint, timestamptz),
+  OPERATOR  17    -|- (tnpoint, timestampset),
   OPERATOR  17    -|- (tnpoint, period),
+  OPERATOR  17    -|- (tnpoint, periodset),
   OPERATOR  17    -|- (tnpoint, stbox),
   OPERATOR  17    -|- (tnpoint, tnpoint),
--- overlaps or before
+  -- distance
+--  OPERATOR  25    <-> (tnpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tnpoint, timestamptz),
+  OPERATOR  28    &<# (tnpoint, timestampset),
   OPERATOR  28    &<# (tnpoint, period),
+  OPERATOR  28    &<# (tnpoint, periodset),
   OPERATOR  28    &<# (tnpoint, stbox),
   OPERATOR  28    &<# (tnpoint, tnpoint),
   -- strictly before
+  OPERATOR  29    <<# (tnpoint, timestamptz),
+  OPERATOR  29    <<# (tnpoint, timestampset),
   OPERATOR  29    <<# (tnpoint, period),
+  OPERATOR  29    <<# (tnpoint, periodset),
   OPERATOR  29    <<# (tnpoint, stbox),
   OPERATOR  29    <<# (tnpoint, tnpoint),
   -- strictly after
+  OPERATOR  30    #>> (tnpoint, timestamptz),
+  OPERATOR  30    #>> (tnpoint, timestampset),
   OPERATOR  30    #>> (tnpoint, period),
+  OPERATOR  30    #>> (tnpoint, periodset),
   OPERATOR  30    #>> (tnpoint, stbox),
   OPERATOR  30    #>> (tnpoint, tnpoint),
   -- overlaps or after
+  OPERATOR  31    #&> (tnpoint, timestamptz),
+  OPERATOR  31    #&> (tnpoint, timestampset),
   OPERATOR  31    #&> (tnpoint, period),
+  OPERATOR  31    #&> (tnpoint, periodset),
   OPERATOR  31    #&> (tnpoint, stbox),
   OPERATOR  31    #&> (tnpoint, tnpoint),
   -- functions

@@ -69,7 +69,7 @@ SELECT numSequences(tcount(ts)) FROM tbl_tnpoint_seqset;
 SELECT numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset;
 SELECT numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset;
 SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
-SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+SELECT k%10, numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
 SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
 
 -------------------------------------------------------------------------------

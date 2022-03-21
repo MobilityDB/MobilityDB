@@ -637,7 +637,7 @@ WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_tnpoint_boundboxops
-WHERE noidx <> gistidx OR noidx <> spgistidx;
+WHERE noidx <> gistidx OR noidx <> spgistidx
 ORDER BY op, leftarg, rightarg;
 
 -------------------------------------------------------------------------------
