@@ -34,14 +34,13 @@
  * These functions are based on those in the file `rangetypes_spgist.c`.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-
 #include "general/temporal_spgist.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/timetypes.h"
 #include "general/tempcache.h"
 #include "general/period.h"
@@ -65,7 +64,5 @@ temporal_spgist_compress(PG_FUNCTION_ARGS)
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_PERIOD_P(result);
 }
-
-#endif
 
 /*****************************************************************************/

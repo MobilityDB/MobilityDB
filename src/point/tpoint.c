@@ -34,9 +34,10 @@
 
 #include "point/tpoint.h"
 
+/* PostgreSQL */
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -48,7 +49,7 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Miscellaneous functions
+ * General functions
  *****************************************************************************/
 
 #define PGC_ERRMSG_MAXLEN 2048

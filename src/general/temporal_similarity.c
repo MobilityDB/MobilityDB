@@ -35,6 +35,7 @@
 
 #include "general/temporal_similarity.h"
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
 #include <funcapi.h>
@@ -42,9 +43,9 @@
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #include <access/htup_details.h>
 #endif
-
+/* PostgreGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/tempcache.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"

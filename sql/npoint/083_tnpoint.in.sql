@@ -372,6 +372,17 @@ CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Index Support Functions
+ *****************************************************************************/
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION tnpoint_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'tnpoint_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
+/*****************************************************************************
  * Ever/Always Comparison Functions
  *****************************************************************************/
 
@@ -495,21 +506,33 @@ CREATE FUNCTION minusPeriodSet(tnpoint, periodset)
 CREATE FUNCTION intersectsTimestamp(tnpoint, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsTimestampSet(tnpoint, timestampset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsPeriod(tnpoint, period)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsPeriodSet(tnpoint, periodset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  SUPPORT tnpoint_supportfn
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

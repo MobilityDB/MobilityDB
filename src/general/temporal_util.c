@@ -34,6 +34,7 @@
 
 #include "general/temporal_util.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <catalog/pg_collation.h>
 #include <fmgr.h>
@@ -41,15 +42,13 @@
 #include <utils/lsyscache.h>
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/doublen.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
-
 #include "npoint/tnpoint_static.h"
 
 /*****************************************************************************
@@ -155,6 +154,19 @@ base_type_length(Oid basetypid)
   elog(ERROR, "unknown base_type_length function for base type: %d", basetypid);
 }
 
+
+/**
+ * Returns true if the Oid is a temporal alpha type (i.e., those whose bounding
+ * box is a period) supported by MobilityDB
+ */
+bool
+talpha_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TBOOL) || temptypid == type_oid(T_TTEXT))
+    return true;
+  return false;
+}
+
 /**
  * Returns true if the Oid is a alpha base type (i.e., those whose bounding
  * box is a period) supported by MobilityDB
@@ -169,8 +181,6 @@ talpha_base_type(Oid basetypid)
 
 /**
  * Returns true if the Oid is a temporal number type
- *
- * @note Function used in particular in the indexes
  */
 bool
 tnumber_type(Oid temptypid)
@@ -278,6 +288,18 @@ ensure_tgeo_base_type(Oid basetypid)
     elog(ERROR, "unknown geospatial base type: %d", basetypid);
   return;
 }
+
+/**
+ * Returns true if the Oid is a temporal point type supported by MobilityDB
+ */
+bool
+tgeo_type(Oid temptypid)
+{
+  if (temptypid == type_oid(T_TGEOMPOINT) || temptypid == type_oid(T_TGEOMPOINT))
+    return true;
+  return false;
+}
+
 
 /*****************************************************************************
  * Oid functions
@@ -1035,8 +1057,8 @@ temporalarr_extract(ArrayType *array, int *count)
 /*****************************************************************************/
 
 /**
- * Convert a C array of datums into a PostgreSQL array
- * Note that the values will be copied into the object even if pass-by-ref type.
+ * Convert a C array of datums into a PostgreSQL array.
+ * Note that the values will be copied into the object even if pass-by-ref type
  */
 ArrayType *
 datumarr_to_array(Datum *values, int count, Oid type)

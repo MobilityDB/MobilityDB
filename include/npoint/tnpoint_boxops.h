@@ -53,7 +53,6 @@ extern void tnpointinst_make_stbox(const TInstant *inst, STBOX *box);
 extern void tnpointinstarr_stbox(const TInstant **inst, int count, STBOX *box);
 extern void tnpointseq_make_stbox(const TInstant **inst, int count,
   bool linear, STBOX *box);
-extern void tnpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
 
 extern Datum overlaps_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
 extern Datum overlaps_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);

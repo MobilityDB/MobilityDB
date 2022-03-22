@@ -34,8 +34,9 @@
 
 #include "general/temporal_compops.h"
 
+/* PostgreSQL */
 #include <utils/lsyscache.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"

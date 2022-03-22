@@ -34,6 +34,7 @@
 
 #include "npoint/tnpoint_distance.h"
 
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/lifting.h"
@@ -65,7 +66,7 @@ distance_geo_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo_internal((const Temporal *) geomtemp,
     PointerGetDatum(gs));
   pfree(geomtemp);
@@ -85,7 +86,7 @@ distance_npoint_tnpoint(PG_FUNCTION_ARGS)
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_geom(np);
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo_internal((const Temporal *) geomtemp,
     geom);
   pfree(DatumGetPointer(geom));
@@ -111,7 +112,7 @@ distance_tnpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo_internal(geomtemp,
     PointerGetDatum(gs));
   pfree(geomtemp);
@@ -131,7 +132,7 @@ distance_tnpoint_npoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
   Datum geom = npoint_geom(np);
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo_internal(geomtemp, geom);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 0);
@@ -143,7 +144,7 @@ distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 /**
  * Returns the temporal distance between the two temporal network points
  */
-Temporal *
+static Temporal *
 distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *sync1, *sync2;
@@ -152,8 +153,8 @@ distance_tnpoint_tnpoint_internal(const Temporal *temp1, const Temporal *temp2)
     &sync1, &sync2))
     return NULL;
 
-  Temporal *geomsync1 = tnpoint_to_tgeompoint_internal(sync1);
-  Temporal *geomsync2 = tnpoint_to_tgeompoint_internal(sync2);
+  Temporal *geomsync1 = tnpoint_tgeompoint(sync1);
+  Temporal *geomsync2 = tnpoint_tgeompoint(sync2);
   Temporal *result = distance_tpoint_tpoint_internal(geomsync1, geomsync2);
   pfree(sync1); pfree(sync2);
   pfree(geomsync1); pfree(geomsync2);
@@ -186,11 +187,11 @@ distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Returns the nearest approach instant of the temporal network point and the
  * geometry (internal function)
  */
-Temporal *
+static Temporal *
 NAI_tnpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   GSERIALIZED *gs)
 {
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
   /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors */
@@ -248,13 +249,13 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach instant of the network point and the temporal
  * network point (internal function)
  */
-Temporal *
+static Temporal *
 NAI_tnpoint_npoint_internal(FunctionCallInfo fcinfo, Temporal *temp,
   npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *geomtemp = tnpoint_to_tgeompoint_internal(temp);
+  Temporal *geomtemp = tnpoint_tgeompoint(temp);
   TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
   /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors */
@@ -339,7 +340,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance of the temporal network point and the
  * geometry
  */
-Datum
+static Datum
 NAD_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
   Datum traj = tnpoint_geom(temp);
@@ -396,7 +397,7 @@ NAD_tnpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance of the temporal network point and the
  * network point
  */
-Datum
+static Datum
 NAD_tnpoint_npoint_internal(Temporal *temp, npoint *np)
 {
   Datum geom = npoint_geom(np);
@@ -583,8 +584,8 @@ shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomsync1 = tnpoint_to_tgeompoint_internal(sync1);
-  Temporal *geomsync2 = tnpoint_to_tgeompoint_internal(sync2);
+  Temporal *geomsync1 = tnpoint_tgeompoint(sync1);
+  Temporal *geomsync2 = tnpoint_tgeompoint(sync2);
   Datum result;
   bool found = shortestline_tpoint_tpoint_internal(geomsync1, geomsync2, &result);
   pfree(geomsync1); pfree(geomsync2);

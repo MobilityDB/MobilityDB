@@ -34,21 +34,21 @@
 
 #include "point/tpoint_spatialfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
 #if POSTGRESQL_VERSION_NUMBER < 120000
 #define M_PI 3.14159265358979323846
 #define RADIANS_PER_DEGREE 0.0174532925199432957692
 #else
 #include <utils/float.h>
 #endif
-
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
 #endif
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
@@ -56,7 +56,6 @@
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/tnumber_mathfuncs.h"
-
 #include "point/postgis.h"
 #include "point/stbox.h"
 #include "point/tpoint.h"
@@ -1585,7 +1584,7 @@ geopoint_line(Datum value1, Datum value2)
  * @param[in] ti Temporal value
  * @note Notice that this function does not remove duplicate points
  */
-Datum
+static Datum
 tpointinstset_trajectory(const TInstantSet *ti)
 {
   /* Singleton instant set */
@@ -1654,7 +1653,7 @@ tpointseq_trajectory(const TSequence *seq)
  * @note The resulting trajectory must be freed by the calling function.
  * The function does not remove duplicates point/linestring components.
  */
-Datum
+static Datum
 tpointseqset_trajectory(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
@@ -1924,7 +1923,7 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
 /**
  * Set the SRID of a temporal point (dispatch function)
  */
-Temporal *
+static Temporal *
 tpoint_set_srid_internal(Temporal *temp, int32 srid)
 {
   Temporal *result;
@@ -2052,8 +2051,8 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
   lwmpoint_free(lwmpoint);
 
-  return tsequence_make_free(instants, seq->count,
-    seq->period.lower_inc, seq->period.upper_inc, linear, NORMALIZE_NO);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, linear, NORMALIZE_NO);
 }
 
 /**
@@ -2740,7 +2739,7 @@ point_get_z(Datum point)
 /**
  * Get the X coordinates of the temporal point (internal function)
  */
-Temporal *
+static Temporal *
 tpoint_get_coord_internal(const Temporal *temp, char c)
 {
   ensure_tgeo_base_type(temp->basetypid);
@@ -3149,7 +3148,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
  * Returns the time-weighed centroid of the temporal geometry point of
  * instant set type
  */
-Datum
+static Datum
 tpointinstset_twcentroid(const TInstantSet *ti)
 {
   int srid = tpointinstset_srid(ti);
@@ -3191,7 +3190,7 @@ tpointinstset_twcentroid(const TInstantSet *ti)
  * Returns the time-weighed centroid of the temporal geometry point of
  * sequence type
  */
-Datum
+static Datum
 tpointseq_twcentroid(const TSequence *seq)
 {
   int srid = tpointseq_srid(seq);
@@ -3237,7 +3236,7 @@ tpointseq_twcentroid(const TSequence *seq)
  * Returns the time-weighed centroid of the temporal geometry point of
  * sequence set type
  */
-Datum
+static Datum
 tpointseqset_twcentroid(const TSequenceSet *ts)
 {
   int srid = tpointseqset_srid(ts);
@@ -3508,7 +3507,7 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 /**
  * Computes the bearing between two geometric points
  */
-Datum
+static Datum
 geom_bearing(Datum point1, Datum point2)
 {
   const POINT2D *p1 = datum_get_point2d_p(point1);
@@ -3540,7 +3539,7 @@ geom_bearing(Datum point1, Datum point2)
  *   long = cos(lat1).sin(lat2) - sin(lat1).cos(lat2).cos(Δlong)
  *   θ    = atan2(lat, long)
  */
-Datum
+static Datum
 geog_bearing(Datum point1, Datum point2)
 {
   const POINT2D *p1 = datum_get_point2d_p(point1);
@@ -4629,7 +4628,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
  * @note The resulting timestamp may be at an exclusive bound
  */
 static bool
-tpointseq_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
+tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
   bool hasz = MOBDB_FLAGS_GET_Z(inst1->flags);
@@ -4710,7 +4709,7 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
     const TInstant *inst2 = tsequence_inst_n(seq, i);
     /* We are sure that the segment is not constant since the
      * sequence is simple */
-    if (tpointseq_timestamp_at_value1(inst1, inst2, value, t))
+    if (tpointsegm_timestamp_at_value1(inst1, inst2, value, t))
       return true;
     inst1 = inst2;
   }

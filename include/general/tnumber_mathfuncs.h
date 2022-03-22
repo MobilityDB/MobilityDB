@@ -71,8 +71,6 @@ extern Datum div_base_temporal(PG_FUNCTION_ARGS);
 extern Datum div_temporal_base(PG_FUNCTION_ARGS);
 extern Datum div_temporal_temporal(PG_FUNCTION_ARGS);
 
-extern int int_cmp(const void *a, const void *b);
-
 /*****************************************************************************/
 
 #endif

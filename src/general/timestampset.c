@@ -34,10 +34,12 @@
 
 #include "general/timestampset.h"
 
+/* PostgreSQL */
+#include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
 #include "general/period.h"
@@ -703,6 +705,72 @@ timestampset_gt(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(cmp > 0);
+}
+
+/*****************************************************************************
+ * Function for defining hash index
+ * The function reuses the approach for array types for combining the hash of
+ * the elements.
+ *****************************************************************************/
+
+/**
+ * Returns the 32-bit hash value of a timestamp set
+ * (internal function)
+ */
+static uint32
+timestampset_hash_internal(const TimestampSet *ts)
+{
+  uint32 result = 1;
+  for (int i = 0; i < ts->count; i++)
+  {
+    TimestampTz t = timestampset_time_n(ts, i);
+    uint32 time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(t)));
+    result = (result << 5) - result + time_hash;
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(timestampset_hash);
+/**
+ * Returns the 32-bit hash value of a timestamp set
+ */
+PGDLLEXPORT Datum
+timestampset_hash(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  uint32 result = timestampset_hash_internal(ts);
+  PG_RETURN_UINT32(result);
+}
+
+/**
+ * Returns the 64-bit hash value of a timestamp set using a seed
+ * (internal function)
+ */
+static uint64
+timestampset_hash_extended_internal(const TimestampSet *ts, Datum seed)
+{
+  uint64 result = 1;
+  for (int i = 0; i < ts->count; i++)
+  {
+    TimestampTz t = timestampset_time_n(ts, i);
+    uint64 time_hash = DatumGetUInt64(call_function2(hashint8,
+      TimestampTzGetDatum(t), seed));
+    result = (result << 5) - result + time_hash;
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(timestampset_hash_extended);
+/**
+ * Returns the 64-bit hash value of a timestamp set using a seed
+ */
+PGDLLEXPORT Datum
+timestampset_hash_extended(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Datum seed = PG_GETARG_DATUM(1);
+  uint64 result = timestampset_hash_extended_internal(ts, seed);
+  PG_RETURN_UINT64(result);
 }
 
 /*****************************************************************************/

@@ -44,18 +44,18 @@
 
 #include "point/tpoint_boxops.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/periodset.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
-
 #include "point/tpoint.h"
 #include "point/stbox.h"
 #include "point/tpoint_boxops.h"
@@ -98,7 +98,7 @@ tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
   {
     STBOX box1;
     tpointinst_stbox(instants[i], &box1);
-    stbox_expand(box, &box1);
+    stbox_expand(&box1, box);
   }
   return;
 }
@@ -108,7 +108,6 @@ tgeompointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
  *
  * @param[in] instants Array of temporal instants
  * @param[in] count Number of elements in the input array
- * @param[in] linear True when the interpolation is linear
  * @param[out] box Resulting bounding box
  */
 static void
@@ -186,7 +185,7 @@ tpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
   for (int i = 1; i < count; i++)
   {
     const STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-    stbox_expand(box, box1);
+    stbox_expand(box1, box);
   }
   return;
 }
@@ -227,7 +226,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     STBOX box;
     tpointinst_stbox(inst2, &box);
-    stbox_expand(&result[i], &box);
+    stbox_expand(&box, &result[i]);
     inst1 = inst2;
   }
   return seq->count - 1;
@@ -239,7 +238,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
  *
  * @param[in] seq Temporal value
  */
-ArrayType *
+static ArrayType *
 tpointseq_stboxes(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -259,7 +258,7 @@ tpointseq_stboxes(const TSequence *seq)
  *
  * @param[in] ts Temporal value
  */
-ArrayType *
+static ArrayType *
 tpointseqset_stboxes(const TSequenceSet *ts)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));

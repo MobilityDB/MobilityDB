@@ -20,7 +20,9 @@
 #include "../postgis_config.h"
 
 /* Include for VARATT_EXTERNAL_GET_POINTER */
-#if POSTGIS_PGSQL_VERSION < 130
+// MobilityDB change
+// #if POSTGIS_PGSQL_VERSION < 130
+#if POSTGRESQL_VERSION_NUMBER < 130000
 #include "access/tuptoaster.h"
 #else
 #include "access/detoast.h"

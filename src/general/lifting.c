@@ -149,9 +149,10 @@
 
 #include "general/lifting.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
@@ -418,7 +419,6 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
     inst1 = inst2; value1 = value2;
   }
   instants[k++] = tfunc_tinstant_base(inst1, value, lfinfo);
-
   result[0] = tsequence_make_free(instants, k, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
   return 1;
@@ -612,7 +612,6 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
  * @param[in] value Base value
  * @param[in] lfinfo Information about the lifted function
  */
-
 TSequenceSet *
 tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value,
   LiftedFunctionInfo *lfinfo)

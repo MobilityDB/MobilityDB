@@ -78,7 +78,6 @@ extern TInstant *tfloatinst_to_tintinst(const TInstant *inst);
 
 /* Transformation functions */
 
-extern TInstantSet *tinstant_to_tinstantset(const TInstant *inst);
 extern TInstant *tinstantset_to_tinstant(const TInstantSet *ti);
 extern TInstant *tsequence_to_tinstant(const TSequence *seq);
 extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ts);

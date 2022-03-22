@@ -523,11 +523,11 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION stbox_union(stbox, stbox)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'stbox_union'
+  AS 'MODULE_PATHNAME', 'union_stbox_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_intersection(stbox, stbox)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'stbox_intersection'
+  AS 'MODULE_PATHNAME', 'intersection_stbox_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (

@@ -46,9 +46,9 @@
 
 /* General functions */
 
-extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
 extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
 extern void tsequenceset_bbox(const TSequenceSet *ts, void *box);
+extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
 extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count,
   bool normalize);
 extern TSequenceSet * tsequenceset_make_free(TSequence **sequences, int count,
@@ -69,10 +69,10 @@ extern TSequenceSet *tsequenceset_merge_array(const TSequenceSet **ts,
 /* Synchronize functions */
 
 extern bool synchronize_tsequenceset_tsequence(const TSequenceSet *ts,
-  const TSequence *seq, TIntersection mode,
+  const TSequence *seq, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 extern bool synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
-  const TSequenceSet *ts2, TIntersection mode,
+  const TSequenceSet *ts2, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
 /* Intersection functions */
@@ -86,7 +86,7 @@ extern bool intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
 extern bool intersection_tinstantset_tsequenceset(const TInstantSet *ti,
   const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2);
 extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
-  const TSequenceSet *ts, TIntersection mode,
+  const TSequenceSet *ts, SyncMode mode,
   TSequenceSet **inter1, TSequenceSet **inter2);
 
 /* Input/output functions */
@@ -104,10 +104,10 @@ extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 
 /* Constructor functions */
 
+extern Datum tsequenceset_from_base(PG_FUNCTION_ARGS);
+
 extern TSequenceSet *tsequenceset_from_base_internal(Datum value,
   Oid basetypid, const PeriodSet *ps, bool linear);
-
-extern Datum tsequenceset_from_base(PG_FUNCTION_ARGS);
 
 /* Transformation functions */
 
@@ -208,7 +208,7 @@ extern double tnumberseqset_twavg(const TSequenceSet *ts);
 extern bool tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2);
 extern int tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2);
 
-/* Function for defining hash index */
+/* Hash functions */
 
 extern uint32 tsequenceset_hash(const TSequenceSet *ts);
 

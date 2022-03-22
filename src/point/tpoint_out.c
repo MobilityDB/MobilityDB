@@ -34,14 +34,15 @@
 
 #include "point/tpoint_out.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <utils/builtins.h>
-
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <liblwgeom_internal.h>
 #endif
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -188,7 +189,7 @@ tpoint_as_ewkt(PG_FUNCTION_ARGS)
 /**
  * Output a geometry/geography array in Well-Known Text (WKT) format
  */
-Datum
+static Datum
 geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
@@ -242,7 +243,7 @@ geoarr_as_ewkt(PG_FUNCTION_ARGS)
  * Output a temporal point array in Well-Known Text (WKT) or
  * Extended Well-Known Text (EWKT) format
  */
-Datum
+static Datum
 tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);

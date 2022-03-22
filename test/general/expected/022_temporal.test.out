@@ -10457,7 +10457,7 @@ SELECT intersectsTimestamp(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', t
 SELECT intersectsTimestamp(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestamp(tint '1@2000-01-01', timestamptz '2000-01-01');
@@ -10481,7 +10481,7 @@ SELECT intersectsTimestamp(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', ti
 SELECT intersectsTimestamp(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestamp(tfloat '1.5@2000-01-01', timestamptz '2000-01-01');
@@ -10505,7 +10505,7 @@ SELECT intersectsTimestamp(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-
 SELECT intersectsTimestamp(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestamp(ttext 'AAA@2000-01-01', timestamptz '2000-01-01');
@@ -10529,7 +10529,7 @@ SELECT intersectsTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-0
 SELECT intersectsTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
  intersectstimestamp 
 ---------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestampSet(tbool 't@2000-01-01', timestampset '{2000-01-01}');
@@ -10553,7 +10553,7 @@ SELECT intersectsTimestampSet(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]'
 SELECT intersectsTimestampSet(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', timestampset '{2000-01-01}');
  intersectstimestampset 
 ------------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestampSet(tint '1@2000-01-01', timestampset '{2000-01-01}');
@@ -10577,7 +10577,7 @@ SELECT intersectsTimestampSet(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]',
 SELECT intersectsTimestampSet(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', timestampset '{2000-01-01}');
  intersectstimestampset 
 ------------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestampSet(tfloat '1.5@2000-01-01', timestampset '{2000-01-01}');
@@ -10601,7 +10601,7 @@ SELECT intersectsTimestampSet(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-
 SELECT intersectsTimestampSet(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', timestampset '{2000-01-01}');
  intersectstimestampset 
 ------------------------
- f
+ t
 (1 row)
 
 SELECT intersectsTimestampSet(ttext 'AAA@2000-01-01', timestampset '{2000-01-01}');
@@ -10625,7 +10625,7 @@ SELECT intersectsTimestampSet(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-0
 SELECT intersectsTimestampSet(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestampset '{2000-01-01}');
  intersectstimestampset 
 ------------------------
- f
+ t
 (1 row)
 
 SELECT intersectsPeriod(tbool 't@2000-01-01', period '[2000-01-01,2000-01-02]');

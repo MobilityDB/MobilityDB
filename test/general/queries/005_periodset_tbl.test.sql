@@ -61,12 +61,15 @@ SELECT timestamps(ps) FROM tbl_periodset;
 
 SELECT shift(ps, '5 min') FROM tbl_periodset;
 
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE periodset_cmp(t1.ps, t2.ps) = -1;
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <> t2.ps;
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps < t2.ps;
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
-SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE periodset_cmp(t1.ps, t2.ps) = -1;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps = t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <> t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps < t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <= t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps > t2.ps;
+SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps >= t2.ps;
+
+SELECT MAX(periodset_hash(ps)) FROM tbl_periodset;
+SELECT MAX(periodset_hash_extended(ps, 1)) FROM tbl_periodset;
 
 -------------------------------------------------------------------------------

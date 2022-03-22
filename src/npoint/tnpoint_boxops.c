@@ -41,8 +41,9 @@
 
 #include "npoint/tnpoint_boxops.h"
 
+/* PostgreSQL */
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "point/stbox.h"
@@ -103,7 +104,7 @@ tnpointinstarr_stbox(const TInstant **instants, int count, STBOX *box)
   {
     STBOX box1;
     tnpointinst_make_stbox(instants[i], &box1);
-    stbox_expand(box, &box1);
+    stbox_expand(&box1, box);
   }
   return;
 }
@@ -149,9 +150,10 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
  * Set the spatiotemporal box from the array of temporal network point values
  * (dispatch function)
  *
- * @param[out] box Spatiotemporal box
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array
+ * @param[in] linear True when the interpolation is linear
+ * @param[out] box Spatiotemporal box
  */
 void
 tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
@@ -161,25 +163,6 @@ tnpointseq_make_stbox(const TInstant **instants, int count, bool linear,
     tnpointinstarr_linear_stbox(instants, count, box);
   else
     tnpointinstarr_stbox(instants, count, box);
-  return;
-}
-
-/**
- * Set the spatiotemporal box from the array of temporal network point values
- *
- * @param[out] box Spatiotemporal box
- * @param[in] sequences Temporal network point values
- * @param[in] count Number of elements in the array
- */
-void
-tnpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
-{
-  tsequence_bbox(sequences[0], box);
-  for (int i = 1; i < count; i++)
-  {
-    const STBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-    stbox_expand(box, box1);
-  }
   return;
 }
 
@@ -201,7 +184,7 @@ npoint_to_stbox(PG_FUNCTION_ARGS)
 /**
  * Returns the bounding box of the network segment value
  */
-bool
+static bool
 nsegment_stbox(STBOX *box, const nsegment *ns)
 {
   Datum geom = nsegment_geom(DatumGetNsegment(ns));
@@ -308,7 +291,7 @@ tnpoint_to_stbox(PG_FUNCTION_ARGS)
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -330,7 +313,7 @@ boxop_npoint_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 boxop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {

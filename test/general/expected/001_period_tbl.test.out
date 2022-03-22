@@ -15,31 +15,31 @@ SELECT COUNT(*) FROM tbl_period t1, tbl_period_tmp t2 WHERE t1.k = t2.k AND t1.p
 
 DROP TABLE tbl_period_tmp;
 DROP TABLE
-SELECT max(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(period(t, t + i))) FROM tbl_timestamptz, tbl_interval;
    max    
 ----------
  01:39:00
 (1 row)
 
-SELECT max(duration(period(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(period(t, t + i, true, true))) FROM tbl_timestamptz, tbl_interval;
    max    
 ----------
  01:39:00
 (1 row)
 
-SELECT max(duration(period(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(period(t, t + i, true, false))) FROM tbl_timestamptz, tbl_interval;
    max    
 ----------
  01:39:00
 (1 row)
 
-SELECT max(duration(period(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(period(t, t + i, false, true))) FROM tbl_timestamptz, tbl_interval;
    max    
 ----------
  01:39:00
 (1 row)
 
-SELECT max(duration(period(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
+SELECT MAX(duration(period(t, t + i, false, false))) FROM tbl_timestamptz, tbl_interval;
    max    
 ----------
  01:39:00
@@ -990,39 +990,45 @@ SELECT shift(p, '5 min') FROM tbl_period;
  [2001-11-01 15:18:00+00, 2001-11-01 15:26:00+00)
 (100 rows)
 
-SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE period_cmp(t1.p, t2.p) = -1;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
  count 
 -------
   4950
 (1 row)
 
-SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
  count 
 -------
   4851
 (1 row)
 
-SELECT count(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
  count 
 -------
   4950
 (1 row)
 
-SELECT max(period_hash(p)) FROM tbl_period;
+SELECT MAX(period_hash(p)) FROM tbl_period;
     max     
 ------------
  2061847155
+(1 row)
+
+SELECT MAX(period_hash_extended(p, 1)) FROM tbl_period;
+         max         
+---------------------
+ 8610851091865939261
 (1 row)
 

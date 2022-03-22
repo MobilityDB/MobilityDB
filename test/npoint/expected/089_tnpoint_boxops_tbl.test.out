@@ -738,15 +738,12 @@ SET spgistidx = ( SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.t
 WHERE op = '-|-' and leftarg = 'tnpoint' and rightarg = 'tnpoint';
 UPDATE 1
 SELECT * FROM test_tnpoint_boundboxops
-WHERE noidx <> gistidx OR noidx <> spgistidx;
+WHERE noidx <> gistidx OR noidx <> spgistidx
+ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | noidx | gistidx | spgistidx 
 ----+---------+----------+-------+---------+-----------
 (0 rows)
 
-ORDER BY op, leftarg, rightarg;
-ERROR:  syntax error at or near "ORDER"
-LINE 1: ORDER BY op, leftarg, rightarg;
-        ^
 DROP INDEX test_tnpoint_spgist_idx;
 DROP INDEX
 DROP TABLE test_tnpoint_boundboxops;

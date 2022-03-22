@@ -37,22 +37,23 @@
 
 #include "point/tpoint_datagen.h"
 
+/* PostgreSQL */
 #include <access/htup_details.h>
 #include <access/tupdesc.h>    /* for * () */
 #include <executor/executor.h>  /* for GetAttributeByName() */
 #include <utils/builtins.h>
-#include <utils/lsyscache.h>
-#include <utils/timestamp.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #else
 /* Radians per degree, a.k.a. PI / 180 */
 #define RADIANS_PER_DEGREE 0.0174532925199432957692
 #endif
-
+#include <utils/lsyscache.h>
+#include <utils/timestamp.h>
+/* GSL */
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -69,7 +70,7 @@ const gsl_rng_type *_rng_type;
 gsl_rng *_rng;
 
 /**
- *
+ * Initialize the Gnu Scientific Library
  */
 static void
 initialize_gsl()
@@ -110,7 +111,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 /**
  * Create a trip using the BerlinMOD data generator (internal function)
  */
-TSequence *
+static TSequence *
 create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categories,
   uint32_t noEdges, TimestampTz startTime, bool disturbData, int verbosity)
 {

@@ -69,10 +69,11 @@
 
 #include "point/tpoint_tempspatialrels.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timeops.h"
@@ -344,7 +345,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
  * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[out] count Number of elements in the output array
  */
-TSequence **
+static TSequence **
 tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
   bool tinter, Datum (*func)(Datum, Datum), int *count)
 {
@@ -395,7 +396,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
-TSequenceSet *
+static TSequenceSet *
 tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
   bool tinter, Datum (*func)(Datum, Datum))
 {
@@ -436,8 +437,8 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
         &countseqs[i]);
     totalcount += countseqs[i];
   }
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences,
-    countseqs, ts->count, totalcount);
+  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs, ts->count,
+    totalcount);
   return tsequenceset_make_free(allseqs, totalcount, NORMALIZE);
 }
 
@@ -555,15 +556,6 @@ tinterrel_tpoint_geo(FunctionCallInfo fcinfo, bool tinter)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
-
-/*****************************************************************************
- * Functions to compute the tdwithin relationship between a temporal sequence
- * and a geometry. The functions use the st_dwithin function from PostGIS
- * only for instantaneous sequences.
- * These functions are not available for geographies since it is based on the
- * function atGeometry.
- *****************************************************************************/
-
 
 /*****************************************************************************
  * Functions to compute the tdwithin relationship between temporal sequences.
@@ -988,8 +980,7 @@ tdwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
   {
     const TSequence *seq1 = tsequenceset_seq_n(ts1, i);
     const TSequence *seq2 = tsequenceset_seq_n(ts2, i);
-    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func,
-      &sequences[k]);
+    k += tdwithin_tpointseq_tpointseq2(seq1, seq2, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1304,8 +1295,7 @@ tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tdwithin_tpointseq_point1(seq, point, dist, func,
-      &sequences[k]);
+    k += tdwithin_tpointseq_point1(seq, point, dist, func, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
@@ -1538,7 +1528,7 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist,
 {
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  datum_func3 func = 
+  datum_func3 func =
     /* 3D only if both arguments are 3D */
     MOBDB_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(GS_FLAGS(gs)) ?
     &geom_dwithin3d : &geom_dwithin2d;

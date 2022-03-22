@@ -40,11 +40,14 @@
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 
+/* PostgreSQL */
 #include "postgres.h"
 #include "utils/array.h"
 #include <utils/float.h>
 #include "utils/geo_decls.h"
 #include "utils/lsyscache.h"
+
+/*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(point_constructor);
 /**

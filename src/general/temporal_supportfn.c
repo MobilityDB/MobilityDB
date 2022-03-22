@@ -56,21 +56,13 @@
 #include <utils/lsyscache.h>
 #include <utils/numeric.h>
 #include <utils/syscache.h>
-
 /* MobilityDB */
 #include "general/tempcache.h"
+#include "general/temporal_util.h"
 #include "general/temporal_selfuncs.h"
 #include "general/tnumber_selfuncs.h"
 #include "point/tpoint_selfuncs.h"
 #include "npoint/tnpoint_selfuncs.h"
-
-typedef enum
-{
-  TEMPORALTYPE,
-  TNUMBERTYPE,
-  TPOINTTYPE,
-  TNPOINTTYPE,
-} TemporalFamily;
 
 enum TEMPORAL_FUNCTION_IDX
 {
@@ -129,6 +121,21 @@ static const int16 TPointStrategies[] =
   [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
 };
 
+static const int16 TNPointStrategies[] =
+{
+  /* intersects<Time> functions */
+  [INTERSECTS_TIMESTAMP_IDX]     = RTOverlapStrategyNumber,
+  [INTERSECTS_TIMESTAMPSET_IDX]  = RTOverlapStrategyNumber,
+  [INTERSECTS_PERIOD_IDX]        = RTOverlapStrategyNumber,
+  [INTERSECTS_PERIODSET_IDX]     = RTOverlapStrategyNumber,
+  /* Ever spatial relationships */
+  [CONTAINS_IDX]                 = RTOverlapStrategyNumber,
+  [DISJOINT_IDX]                 = RTOverlapStrategyNumber,
+  [INTERSECTS_IDX]               = RTOverlapStrategyNumber,
+  [TOUCHES_IDX]                  = RTOverlapStrategyNumber,
+  [DWITHIN_IDX]                  = RTOverlapStrategyNumber,
+};
+
 /*
 * Metadata currently scanned from start to back,
 * so most common functions first. Could be sorted
@@ -174,15 +181,31 @@ static const IndexableFunction TPointIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 
+static const IndexableFunction TNPointIndexableFunctions[] = {
+  /* intersects<Time> functions */
+  {"intersectstimestamp", INTERSECTS_TIMESTAMP_IDX, 2, 0},
+  {"intersectstimestampset", INTERSECTS_TIMESTAMPSET_IDX, 2, 0},
+  {"intersectsperiod", INTERSECTS_PERIOD_IDX, 2, 0},
+  {"intersectsperiodset", INTERSECTS_PERIODSET_IDX, 2, 0},
+  /* Ever spatial relationships */
+  {"contains", CONTAINS_IDX, 2, 0},
+  {"disjoint", DISJOINT_IDX, 2, 0},
+  {"intersects", INTERSECTS_IDX, 2, 0},
+  {"touches", TOUCHES_IDX, 2, 0},
+  {"dwithin", DWITHIN_IDX, 3, 3},
+  {NULL, 0, 0, 0}
+};
 static int16
 temporal_get_strategy_by_type(Oid type, uint16_t index)
 {
-  if (type == type_oid(T_TBOOL) || type == type_oid(T_TTEXT))
+  if (talpha_type(type))
     return TemporalStrategies[index];
-  if (type == type_oid(T_TINT) || type == type_oid(T_TFLOAT))
+  if (tnumber_type(type))
     return TNumberStrategies[index];
-  if (type == type_oid(T_TGEOMPOINT) || type == type_oid(T_TGEOGPOINT))
+  if (tgeo_type(type))
     return TPointStrategies[index];
+  if (type == type_oid(T_TNPOINT))
+    return TNPointStrategies[index];
   return InvalidStrategy;
 }
 
@@ -259,7 +282,8 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
       argoid == type_oid(T_GEOGRAPHY) ||
       argoid == type_oid(T_STBOX) ||
       argoid == type_oid(T_TGEOMPOINT) ||
-      argoid == type_oid(T_TGEOGPOINT))
+      argoid == type_oid(T_TGEOGPOINT) ||
+      argoid == type_oid(T_TNPOINT))
     funcname = "expandspatial";
   else
     elog(ERROR, "Unknown expand function for type %d", argoid);
@@ -282,19 +306,21 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
  * CREATE OR REPLACE FUNCTION ever_eq(tfloat, float)
  *   RETURNS boolean
  *   AS 'MODULE_PATHNAME','temporal_ever_eq'
- *   SUPPORT tnumber_supportfn
+ *   SUPPORT temporal_supportfn
  *   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  * @code
  * The function must also have an entry above in the IndexableFunctions array
  * so that we know what index search strategy we want to apply.
  */
-Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefamily)
+Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
   Oid leftoid, rightoid, oproid;
 
   /* Return estimated selectivity */
+   assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+    tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
@@ -305,33 +331,22 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
     oproid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
     {
-      if (typefamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
         req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo);
-      else if (typefamily == TNUMBERTYPE)
-        req->selectivity = tnumber_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo);
-      else if (typefamily == TPOINTTYPE)
+          req->jointype, req->sjinfo, tempfamily);
+      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
         req->selectivity = tpoint_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo, Int32GetDatum(0) /* ND mode TO GENERALIZE */);
-      else /* typefamily == TPOINTTYPE */
-        req->selectivity = tnpoint_joinsel_internal(req->root, oproid, req->args,
-          req->jointype, req->sjinfo);
+          req->jointype, req->sjinfo, Int32GetDatum(0), /* ND mode TO GENERALIZE */
+          tempfamily);
     }
     else
     {
-      if (typefamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
         req->selectivity = temporal_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
-      else if (typefamily == TNUMBERTYPE)
-        req->selectivity = tnumber_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
-      else if (typefamily == TPOINTTYPE)
+          req->varRelid, tempfamily);
+      else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
         req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
-      else /* typefamily == TNPOINTTYPE */
-        req->selectivity = tnpoint_sel_internal(req->root, oproid, req->args,
-          req->varRelid);
+          req->varRelid, tempfamily);
     }
     PG_RETURN_POINTER(req);
   }
@@ -374,12 +389,14 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
       IndexableFunction idxfn = {NULL, 0, 0, 0};
       Oid opfamilyoid = req->opfamily; /* Operator family of the index */
       const IndexableFunction *funcarr;
-      if (typefamily == TEMPORALTYPE)
+      if (tempfamily == TEMPORALTYPE)
         funcarr = TemporalIndexableFunctions;
-      else if (typefamily == TNUMBERTYPE)
+      else if (tempfamily == TNUMBERTYPE)
         funcarr = TNumberIndexableFunctions;
-      else /* typefamily == TPOINTTYPE */
+      else if (tempfamily == TPOINTTYPE)
         funcarr = TPointIndexableFunctions;
+      else /* tempfamily == TNPOINTTYPE */
+        funcarr = TNPointIndexableFunctions;
       if (! func_needs_index(funcoid, funcarr, &idxfn))
       {
         if (isfunc)
@@ -453,9 +470,12 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily typefa
            rightoid == type_oid(T_GEOGRAPHY) ||
            rightoid == type_oid(T_STBOX) ||
            rightoid == type_oid(T_TGEOMPOINT) ||
-           rightoid == type_oid(T_TGEOGPOINT)))
-          exproid = type_oid(T_STBOX);
-
+           rightoid == type_oid(T_TGEOGPOINT) ||
+           rightoid == type_oid(T_TNPOINT)))
+        exproid = type_oid(T_STBOX);
+      else
+        PG_RETURN_POINTER((Node *) NULL);
+        
       idxoproid = get_opfamily_member(opfamilyoid, leftoid, exproid, strategy);
       if (idxoproid == InvalidOid)
         elog(ERROR, "no operator found for '%s': opfamily %u type %d",

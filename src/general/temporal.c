@@ -34,6 +34,7 @@
 
 #include "general/temporal.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/heapam.h>
 #include <access/htup_details.h>
@@ -50,7 +51,7 @@
 #include <utils/lsyscache.h>
 #include <utils/rel.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
@@ -60,7 +61,6 @@
 #include "general/temporal_parser.h"
 #include "general/rangetypes_ext.h"
 #include "general/tnumber_distance.h"
-
 #include "point/tpoint_spatialfuncs.h"
 #include "npoint/tnpoint_static.h"
 #include "npoint/tnpoint_spatialfuncs.h"
@@ -379,7 +379,7 @@ ensure_same_interpolation(const Temporal *temp1, const Temporal *temp2)
 {
   if (MOBDB_FLAGS_GET_LINEAR(temp1->flags) != MOBDB_FLAGS_GET_LINEAR(temp2->flags))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must be of the same interpolation")));
+      errmsg("The temporal values must have the same interpolation")));
   return;
 }
 
@@ -696,7 +696,7 @@ temporal_copy(const Temporal *temp)
  */
 bool
 intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
-  TIntersection mode, Temporal **inter1, Temporal **inter2)
+  SyncMode mode, Temporal **inter1, Temporal **inter2)
 {
   bool result = false;
   ensure_valid_tempsubtype(temp1->subtype);
@@ -2498,14 +2498,12 @@ temporal_num_instants(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
-PG_FUNCTION_INFO_V1(temporal_start_instant);
 /**
- * Returns the start instant of the temporal value
+ * Returns the start instant of the temporal value (internal function)
  */
-PGDLLEXPORT Datum
-temporal_start_instant(PG_FUNCTION_ARGS)
+TInstant *
+temporal_start_instant_internal(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -2519,6 +2517,18 @@ temporal_start_instant(PG_FUNCTION_ARGS)
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_copy(tsequence_inst_n(seq, 0));
   }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(temporal_start_instant);
+/**
+ * Returns the start instant of the temporal value
+ */
+PGDLLEXPORT Datum
+temporal_start_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = temporal_start_instant_internal(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

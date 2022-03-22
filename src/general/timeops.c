@@ -34,9 +34,10 @@
 
 #include "general/timeops.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timestampset.h"
@@ -53,16 +54,28 @@ typedef enum
 /*****************************************************************************/
 
 /**
+ * Returns true if the Oid is a time type
+ */
+bool
+time_type(Oid timetypid)
+{
+  if (timetypid == type_oid(T_TIMESTAMPTZ) ||
+    timetypid == type_oid(T_TIMESTAMPSET) ||
+    timetypid == type_oid(T_PERIOD) ||
+    timetypid == type_oid(T_PERIODSET))
+    return true;
+  return false;
+}
+
+/**
  * Ensure that the Oid corresponds to a time type
  */
 void
-ensure_time_type_oid(Oid timetypid)
+ensure_time_type(Oid timetypid)
 {
-  if (timetypid != type_oid(T_TIMESTAMPTZ) &&
-    timetypid != type_oid(T_TIMESTAMPSET) &&
-    timetypid != type_oid(T_PERIOD) &&
-    timetypid != type_oid(T_PERIODSET))
+  if (! time_type(timetypid))
     elog(ERROR, "unknown time type: %d", timetypid);
+  return;
 }
 
 /**
@@ -3519,13 +3532,10 @@ intersection_period_period_internal(const Period *p1, const Period *p2)
   if (!overlaps_period_period_internal(p1, p2))
     return NULL;
 
-  TimestampTz lower = Max(p1->lower, p2->lower);
-  TimestampTz upper = Min(p1->upper, p2->upper);
-  bool lower_inc = p1->lower == p2->lower ? p1->lower_inc && p2->lower_inc :
-    ( lower == p1->lower ? p1->lower_inc : p2->lower_inc );
-  bool upper_inc = p1->upper == p2->upper ? p1->upper_inc && p2->upper_inc :
-    ( upper == p1->upper ? p1->upper_inc : p2->upper_inc );
-  return period_make(lower, upper, lower_inc, upper_inc);
+  Period *result = palloc0(sizeof(Period));
+  /* We are sure that there is an intersection */
+  inter_period_period(p1, p2, result);
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(intersection_period_period);

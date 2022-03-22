@@ -113,7 +113,7 @@ CREATE FUNCTION nsegment(bigint, double precision DEFAULT 0, double precision DE
 
 CREATE FUNCTION nsegment(npoint)
   RETURNS nsegment
-  AS 'MODULE_PATHNAME', 'nsegment_from_npoint'
+  AS 'MODULE_PATHNAME', 'npoint_to_nsegment'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (npoint AS nsegment) WITH FUNCTION nsegment(npoint);

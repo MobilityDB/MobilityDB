@@ -101,9 +101,9 @@
 #define MOBDB_WKB_SRIDFLAG         0x40
 #define MOBDB_WKB_LINEAR_INTERP    0x80
 
-/*****************************************************************************
- * Miscellaneous functions defined in TemporalPoint.c
- *****************************************************************************/
+/*****************************************************************************/
+
+/* General functions */
 
 extern void temporalgeom_init();
 extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
@@ -129,16 +129,16 @@ extern Datum tpoint_to_stbox(PG_FUNCTION_ARGS);
 extern Datum geo_expand_spatial(PG_FUNCTION_ARGS);
 extern Datum tpoint_expand_spatial(PG_FUNCTION_ARGS);
 
-/* Alias for the tpoint_trajectory function */
-
-extern Datum tpoint_values(PG_FUNCTION_ARGS);
-
 /* Temporal comparisons */
 
 extern Datum teq_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum teq_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum tne_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum tne_tpoint_geo(PG_FUNCTION_ARGS);
+
+/* Alias for the tpoint_trajectory function */
+
+extern Datum tpoint_values(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

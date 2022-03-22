@@ -34,12 +34,13 @@
 
 #include "general/tsequenceset.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <libpq/pqformat.h>
 #include <utils/lsyscache.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -49,7 +50,6 @@
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
 #include "general/rangetypes_ext.h"
-
 #include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
 
@@ -367,7 +367,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
  */
 bool
 synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
-  TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
+  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
@@ -420,7 +420,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
  */
 bool
 synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
-  TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
+  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
@@ -583,7 +583,7 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
  */
 bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
-  TIntersection mode, TSequenceSet **inter1, TSequenceSet **inter2)
+  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
 {
   return synchronize_tsequenceset_tsequence(ts, seq, mode, inter2, inter1);
 }
@@ -1856,7 +1856,6 @@ tsequenceset_inst_at_timestamp_excl(const TSequenceSet *ts, TimestampTz t)
   return tinstant_copy(result);
 }
 
-
 /**
  * Restricts the temporal value to the (complement of the) timestamp set
  */
@@ -2116,8 +2115,8 @@ tsequenceset_intersects_timestamp(const TSequenceSet *ts, TimestampTz t)
 {
   int loc;
   if (tsequenceset_find_timestamp(ts, t, &loc))
-    return false;
-  return true;
+    return true;
+  return false;
 }
 
 /**
@@ -2220,7 +2219,7 @@ tnumberseqset_twavg(const TSequenceSet *ts)
 }
 
 /*****************************************************************************
- * Functions for defining B-tree indexes
+ * Comparison functions
  *****************************************************************************/
 
 /**
@@ -2294,7 +2293,7 @@ tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
  *****************************************************************************/
 
 /**
- * Returns the hash value of the temporal value
+ * Returns the 32-bit hash value of the temporal value
  */
 uint32
 tsequenceset_hash(const TSequenceSet *ts)

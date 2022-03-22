@@ -34,10 +34,11 @@
 
 #include "general/tnumber_mathfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <math.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
@@ -109,7 +110,7 @@ tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
 
 /**
  * Find the single timestamptz at which the operation of two temporal
- * number segments is at a local minimum/maximum. 
+ * number segments is at a local minimum/maximum.
  *
  @note This function is called only when both sequences are linear.
  */
@@ -131,7 +132,7 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 
 /**
  * Find the single timestamptz at which the multiplication of two temporal
- * number segments is at a local minimum/maximum. 
+ * number segments is at a local minimum/maximum.
  *
  @note This function is called only when both sequences are linear.
  */
@@ -145,7 +146,7 @@ tnumber_mult_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 
 /**
  * Find the single timestamptz at which the division of two temporal
- * number segments is at a local minimum/maximum. 
+ * number segments is at a local minimum/maximum.
  *
  @note This function is called only when both sequences are linear.
  */
@@ -173,7 +174,7 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[in] invert True when the base value is the first argument
  * of the function
  */
-Temporal *
+static Temporal *
 arithop_tnumber_base1(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
   Temporal *temp, Datum value, Oid basetypid, bool invert)
@@ -222,7 +223,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
  */
-Datum
+static Datum
 arithop_base_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
 {
@@ -242,7 +243,7 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
  */
-Datum
+static Datum
 arithop_tnumber_base(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
 {
@@ -266,7 +267,7 @@ arithop_tnumber_base(FunctionCallInfo fcinfo,
 static Datum
 arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *, 
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);

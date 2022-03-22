@@ -83,6 +83,8 @@ SELECT tbox 'TBOX((, 2000-01-01), (, 2000-01-02))'::period;
 SELECT 1::tbox;
 SELECT 1.5::tbox;
 SELECT floatrange 'empty'::tbox;
+SELECT floatrange '(,1]'::tbox;
+SELECT floatrange '[1,)'::tbox;
 SELECT floatrange '[1,2]'::tbox;
 
 SELECT tbox(floatrange 'empty', timestamptz '2000-01-01');

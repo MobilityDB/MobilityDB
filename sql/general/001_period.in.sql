@@ -144,7 +144,7 @@ CREATE FUNCTION period_joinsel(internal, oid, internal, smallint, internal)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Functions for debugging the selectivity code 
+-- Functions for debugging the selectivity code
 
 -- Given a table, column, and period returns the estimate of what proportion
 -- of the table would be returned by a query using the given operator.
@@ -211,25 +211,25 @@ CREATE OPERATOR < (
   PROCEDURE = period_lt,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = period_sel, JOIN = scalarltjoinsel
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 CREATE OPERATOR <= (
   PROCEDURE = period_le,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = period_sel, JOIN = @JOIN_LE@
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 CREATE OPERATOR >= (
   PROCEDURE = period_ge,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = period_sel, JOIN = @JOIN_GE@
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 CREATE OPERATOR > (
   PROCEDURE = period_gt,
   LEFTARG = period, RIGHTARG = period,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = period_sel, JOIN = scalargtjoinsel
+  RESTRICT = period_sel, JOIN = period_joinsel
 );
 
 CREATE OPERATOR CLASS period_ops
@@ -248,16 +248,15 @@ CREATE FUNCTION period_hash(period)
   AS 'MODULE_PATHNAME', 'period_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-CREATE FUNCTION period_hash_extended(period)
-  RETURNS integer
+CREATE FUNCTION period_hash_extended(period, bigint)
+  RETURNS bigint
   AS 'MODULE_PATHNAME', 'period_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-#endif //POSTGRESQL_VERSION_NUMBER >= 110000
 
 CREATE OPERATOR CLASS hash_period_ops
   DEFAULT FOR TYPE period USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   period_hash(period);
+    FUNCTION    1   period_hash(period),
+    FUNCTION    2   period_hash_extended(period, bigint);
 
 /******************************************************************************/

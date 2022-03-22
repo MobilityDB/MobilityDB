@@ -34,7 +34,9 @@
 
 #include "npoint/tnpoint_indexes.h"
 
+/* PostgreSQL */
 #include <access/gist.h>
+/* MobilityDB */
 #include "point/tpoint.h"
 #include "npoint/tnpoint.h"
 

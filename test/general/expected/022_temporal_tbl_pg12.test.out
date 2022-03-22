@@ -45,7 +45,7 @@ SELECT COUNT(*) FROM tbl_ttext_big WHERE temp %= 'AAA';
 SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestamp(temp, '2001-06-01');
  count 
 -------
-     0
+     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestamp(temp, '2001-06-01');
@@ -69,25 +69,25 @@ SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestamp(temp, '2001-06-01')
 SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   216
+     4
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   214
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   191
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   203
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');
@@ -181,7 +181,7 @@ SELECT COUNT(*) FROM tbl_tfloat_big WHERE temp %= 1.5;
 SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestamp(temp, '2001-06-01');
  count 
 -------
-     0
+     3
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestamp(temp, '2001-06-01');
@@ -205,25 +205,25 @@ SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestamp(temp, '2001-06-01')
 SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   216
+     4
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tint_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   214
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tfloat_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   191
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_ttext_big WHERE intersectsTimestampSet(temp, '{2001-06-01, 2001-07-01}');
  count 
 -------
-   203
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tbool_big WHERE intersectsPeriod(temp, '[2001-06-01, 2001-07-01]');

@@ -82,9 +82,9 @@ extern void stbox_set(bool hasx, bool hasz, bool hast, bool geodetic,
   int32 srid, double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, TimestampTz tmin, TimestampTz tmax, STBOX *box);
 extern STBOX *stbox_copy(const STBOX *box);
-extern void stbox_expand(STBOX *box1, const STBOX *box2);
-extern void stbox_shift_tscale(STBOX *box, const Interval *start,
-  const Interval *duration);
+extern void stbox_expand(const STBOX *box1, STBOX *box2);
+extern void stbox_shift_tscale(const Interval *start, const Interval *duration,
+  STBOX *box);
 
 /* Parameter tests */
 
@@ -112,10 +112,9 @@ extern Datum geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 /* Casting */
 
 extern Datum stbox_to_period(PG_FUNCTION_ARGS);
-extern Datum stbox_to_geometry(PG_FUNCTION_ARGS);
-extern Datum stbox_to_geography(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
 extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
+extern Datum stbox_to_geometry(PG_FUNCTION_ARGS);
 
 extern void stbox_gbox(const STBOX *box, GBOX * gbox);
 extern void stbox_box3d(const STBOX *box, BOX3D *box3d);
@@ -222,12 +221,8 @@ extern bool overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
 
 /* Set operators */
 
-extern Datum stbox_union(PG_FUNCTION_ARGS);
-extern Datum stbox_intersection(PG_FUNCTION_ARGS);
-
-extern STBOX *stbox_union_internal(const STBOX *box1, const STBOX *box2,
-  bool strict);
-extern STBOX *stbox_intersection_internal(const STBOX *box1, const STBOX *box2);
+extern Datum union_stbox_stbox(PG_FUNCTION_ARGS);
+extern Datum intersection_stbox_stbox(PG_FUNCTION_ARGS);
 
 /* Extent aggregation */
 

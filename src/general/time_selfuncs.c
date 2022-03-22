@@ -48,7 +48,6 @@
 #include <catalog/pg_statistic.h>
 #include <utils/timestamp.h>
 #include <math.h>
-
 /* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
@@ -63,8 +62,8 @@
  * Returns a default selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-static double
-period_sel_default(Oid oper __attribute__((unused)))
+float8
+period_sel_default(CachedOp cachedOp __attribute__((unused)))
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_SEL;
@@ -74,8 +73,8 @@ period_sel_default(Oid oper __attribute__((unused)))
  * Returns a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
-static double
-period_joinsel_default(Oid oper __attribute__((unused)))
+float8
+period_joinsel_default(CachedOp cachedOp __attribute__((unused)))
 {
   // TODO take care of the operator
   return DEFAULT_TEMP_JOINSEL;
@@ -717,9 +716,9 @@ period_sel_hist1(AttStatsSlot *hslot, AttStatsSlot *lslot,
       nhist, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
     // TODO Analyze whether a similar approach as PostgreSQL selectivity
-    // estimation for equality can be used. There, they estimate 1/n if 
+    // estimation for equality can be used. There, they estimate 1/n if
     // the value is not in the MCV
-    selec = DEFAULT_TEMP_SEL;
+    selec = period_sel_default(InvalidOid);
   else
   {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");
@@ -793,6 +792,47 @@ period_sel_hist(VariableStatData *vardata, const Period *constval,
 /*****************************************************************************/
 
 /**
+ * Transform the constant into a period
+ */
+void
+time_const_to_period(Node *other, Period *period)
+{
+  Oid timetypid = ((Const *) other)->consttype;
+  const Period *p;
+  ensure_time_type(timetypid);
+  if (timetypid == TIMESTAMPTZOID)
+  {
+    /* The right argument is a TimestampTz constant. We convert it into
+     * a singleton period */
+    TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
+    period_set(t, t, true, true, period);
+  }
+  else if (timetypid == type_oid(T_TIMESTAMPSET))
+  {
+    /* The right argument is a TimestampSet constant. We convert it into
+     * a period, which is its bounding box. */
+    p = timestampset_bbox_ptr(
+      DatumGetTimestampSetP(((Const *) other)->constvalue));
+    memcpy(period, p, sizeof(Period));
+  }
+  else if (timetypid == type_oid(T_PERIOD))
+  {
+    /* Just copy the value */
+    p = DatumGetPeriodP(((Const *) other)->constvalue);
+    memcpy(period, p, sizeof(Period));
+  }
+  else /* timetypid == type_oid(T_PERIODSET) */
+  {
+    /* The right argument is a PeriodSet constant. We convert it into
+     * a period, which is its bounding box. */
+    p = periodset_bbox_ptr(
+      DatumGetPeriodSetP(((Const *) other)->constvalue));
+    memcpy(period, p, sizeof(Period));
+  }
+  return;
+}
+
+/**
  * Restriction selectivity for period operators (internal function)
  */
 float8
@@ -802,8 +842,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   Node *other;
   bool varonleft;
   Selectivity selec;
-  const Period *period = NULL;
-  Period p;
+  Period period;
 
   /*
    * If expression is not (variable op something) or (something op
@@ -853,91 +892,53 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    * OK, there's a Var and a Const we're dealing with here. If the constant
    * is not of the period type, it should be converted to a period.
    */
-  Oid timetypid = ((Const *) other)->consttype;
-  ensure_time_type_oid(timetypid);
-  if (timetypid == TIMESTAMPTZOID)
+  time_const_to_period(other, &period);
+
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! time_cachedop(oper, &cachedOp))
+    /* Unknown operator */
+    return period_sel_default(oper);
+
+  /*
+   * Estimate using statistics. Note that period_sel_internal need not handle
+   * PERIOD_ELEM_CONTAINED_OP.
+   */
+  float4 null_frac;
+
+  /* First look up the fraction of NULLs periods from pg_statistic. */
+  if (HeapTupleIsValid(vardata.statsTuple))
   {
-    /* The right argument is a TimestampTz constant. We convert it into
-     * a singleton period */
-    TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
-    period_set(t, t, true, true, &p);
-    period = &p;
+    Form_pg_statistic stats =
+      (Form_pg_statistic) GETSTRUCT(vardata.statsTuple);
+    null_frac = stats->stanullfrac;
   }
-  else if (timetypid == type_oid(T_TIMESTAMPSET))
+  else
   {
-    /* The right argument is a TimestampSet constant. We convert it into
-     * a period, which is its bounding box. */
-    period =  timestampset_bbox_ptr(
-      DatumGetTimestampSetP(((Const *) other)->constvalue));
-  }
-  else if (timetypid == type_oid(T_PERIOD))
-  {
-    /* Just copy the value */
-    period = DatumGetPeriodP(((Const *) other)->constvalue);
-  }
-  else /* timetypid == type_oid(T_PERIODSET) */
-  {
-    /* The right argument is a PeriodSet constant. We convert it into
-     * a period, which is its bounding box. */
-    period =  periodset_bbox_ptr(
-      DatumGetPeriodSetP(((Const *) other)->constvalue));
+    /*
+     * No stats are available. Follow through the calculations below
+     * anyway, assuming no NULLs periods. This still allows us
+     * to give a better-than-nothing estimate.
+     */
+    null_frac = 0.0;
   }
 
   /*
-   * If we got a valid constant on one side of the operator, proceed to
-   * estimate using statistics. Otherwise punt and return a default constant
-   * estimate. Note that period_sel_internal need not handle
-   * PERIOD_ELEM_CONTAINED_OP.
+   * Calculate selectivity using bound histograms. If that fails for
+   * some reason, e.g. no histogram in pg_statistic, use the default
+   * constant estimate. This is still somewhat better than just
+   * returning the default estimate, because this still takes into
+   * account the fraction of NULL tuples, if we had statistics for them.
    */
-  if (!period)
-    selec = period_sel_default(oper);
-  else
-  {
-    double hist_selec;
-    float4 null_frac;
+  float8 hist_selec = period_sel_hist(&vardata, &period, cachedOp);
+  if (hist_selec < 0.0)
+    hist_selec = period_sel_default(oper);
 
-    /* First look up the fraction of NULLs periods from pg_statistic. */
-    if (HeapTupleIsValid(vardata.statsTuple))
-    {
-      Form_pg_statistic stats =
-        (Form_pg_statistic) GETSTRUCT(vardata.statsTuple);
-      null_frac = stats->stanullfrac;
-    }
-    else
-    {
-      /*
-       * No stats are available. Follow through the calculations below
-       * anyway, assuming no NULLs periods. This still allows us
-       * to give a better-than-nothing estimate.
-       */
-      null_frac = 0.0;
-    }
+  selec = hist_selec;
 
-    /* Get enumeration value associated to the operator */
-    CachedOp cachedOp;
-    if (! time_cachedop(oper, &cachedOp))
-    {
-      /* Unknown operator */
-      ReleaseVariableStats(vardata);
-      return period_sel_default(oper);
-    }
+  /* All period operators are strict */
+  selec *= (1.0 - null_frac);
 
-    /*
-     * Calculate selectivity using bound histograms. If that fails for
-     * some reason, e.g. no histogram in pg_statistic, use the default
-     * constant estimate. This is still somewhat better than just
-     * returning the default estimate, because this still takes into
-     * account the fraction of NULL tuples, if we had statistics for them.
-     */
-    hist_selec = period_sel_hist(&vardata, period, cachedOp);
-    if (hist_selec < 0.0)
-      hist_selec = period_sel_default(oper);
-
-    selec = hist_selec;
-
-    /* All period operators are strict */
-    selec *= (1.0 - null_frac);
-  }
   ReleaseVariableStats(vardata);
   CLAMP_PROBABILITY(selec);
   return selec;
@@ -1021,7 +1022,6 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
   /* @> and @< also need a histogram of period lengths */
   if (cachedOp == CONTAINS_OP || cachedOp == CONTAINED_OP)
   {
-    AttStatsSlot lslot;
     memset(&lslot, 0, sizeof(lslot));
 
    stats_kind = STATISTIC_KIND_PERIOD_LENGTH_HISTOGRAM;
@@ -1059,14 +1059,14 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
  * Given two histograms of period bounds, estimate the fraction of values in
  * the first histogram that are less than (or equal to, if 'equal' argument
  * is true) a value in the second histogram. The join selectivity estimation
- * for all period operators is expressed using this function. 
+ * for all period operators is expressed using this function.
  *
  * The general idea is to iteratively decompose (var op var) into a summation
- * of (var op const) using the period bounds present in first histogram as 
+ * of (var op const) using the period bounds present in first histogram as
  * const. Then, (var op const) is calculated using the function
  * period_sel_scalar, which estimates the restriction selectivity.
  *
- * Consider two variables Var1 and Var2 whose distributions are given by 
+ * Consider two variables Var1 and Var2 whose distributions are given by
  * hist1 and hist2, respectively. To estimate:
  *
  * P(Var1 < Var2)
@@ -1254,7 +1254,7 @@ period_joinsel_hist1(AttStatsSlot *hslot1, AttStatsSlot *hslot2,
       nhist2, lslot->values, lslot->nvalues);
   else if (cachedOp == ADJACENT_OP)
     // TO DO
-    selec = DEFAULT_TEMP_JOINSEL;
+    selec = period_joinsel_default(InvalidOid);
   else
   {
     elog(ERROR, "Unable to compute join selectivity for unknown period operator");
@@ -1388,43 +1388,21 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  * Join selectivity for periods (internal function)
  */
 float8
-period_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
-  JoinType jointype, SpecialJoinInfo *sjinfo)
+period_joinsel_internal(PlannerInfo *root, CachedOp cachedOp, List *args,
+  JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
   bool join_is_reversed;
-  float8 selec;
-
-  /* Check length of args and punt on > 2 */
-  if (list_length(args) != 2)
-    return DEFAULT_TEMP_JOINSEL;
-
-  /* Only respond to an inner join/unknown context join */
-  if (jointype != JOIN_INNER)
-    return DEFAULT_TEMP_JOINSEL;
-
   get_join_variables(root, args, sjinfo, &vardata1, &vardata2,
     &join_is_reversed);
 
-  /*
-   * Get enumeration value associated to the operator
-   */
-  CachedOp cachedOp;
-  if (! time_cachedop(oper, &cachedOp))
-  {
-    /* Unknown operator */
-    ReleaseVariableStats(vardata1);
-    ReleaseVariableStats(vardata2);
-    return period_joinsel_default(oper);
-  }
-
   /* Estimate join selectivity */
-  selec = period_joinsel_hist(&vardata1, &vardata2, cachedOp);
+  float8 selec = period_joinsel_hist(&vardata1, &vardata2, cachedOp);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
   CLAMP_PROBABILITY(selec);
-  return (float8) selec;
+  return selec;
 }
 
 PG_FUNCTION_INFO_V1(period_joinsel);
@@ -1445,8 +1423,32 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
   SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
-  float8 selec = period_joinsel_internal(root, oper, args, jointype, sjinfo);
-  PG_RETURN_FLOAT8((float8) selec);
+
+  /* Check length of args and punt on > 2 */
+  if (list_length(args) != 2)
+    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+
+  /* Only respond to an inner join/unknown context join */
+  if (jointype != JOIN_INNER)
+    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+
+  Node *arg1 = (Node *) linitial(args);
+  Node *arg2 = (Node *) lsecond(args);
+
+  /* We only do column joins right now, no functional joins */
+  /* TODO: handle t1 <op> expandX(t2) */
+  if (!IsA(arg1, Var) || !IsA(arg2, Var))
+    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+
+  /* Get enumeration value associated to the operator */
+  CachedOp cachedOp;
+  if (! time_cachedop(oper, &cachedOp))
+    /* Unknown operator */
+    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+
+  float8 selec = period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
+
+  PG_RETURN_FLOAT8(selec);
 }
 
 PG_FUNCTION_INFO_V1(_mobdb_period_joinsel);
@@ -1517,8 +1519,7 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   stats1_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table1_oid),
     Int16GetDatum(att1_num), BoolGetDatum(false));
   if (! stats1_tuple)
-    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table1_oid) ?
-      get_rel_name(table1_oid) : "NULL");
+    elog(ERROR, "stats for \"%s\" do not exist", table1_name);
 
   if (! get_attstatsslot(&hslot1, stats1_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))
@@ -1533,8 +1534,7 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   stats2_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table2_oid),
     Int16GetDatum(att2_num), BoolGetDatum(false));
   if (! stats2_tuple)
-    elog(ERROR, "stats for \"%s\" do not exist", get_rel_name(table2_oid) ?
-      get_rel_name(table2_oid) : "NULL");
+    elog(ERROR, "stats for \"%s\" do not exist", table2_name);
 
   if (! get_attstatsslot(&hslot2, stats2_tuple, stats_kind, InvalidOid,
       ATTSTATSSLOT_VALUES))

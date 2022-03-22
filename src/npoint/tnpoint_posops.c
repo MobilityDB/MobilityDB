@@ -45,7 +45,9 @@
 
 #include "npoint/tnpoint_posops.h"
 
+/* PostGIS */
 #include <liblwgeom.h>
+/* MobilityDB */
 #include "point/postgis.h"
 #include "point/tpoint_boxops.h"
 #include "point/tpoint_posops.h"
@@ -65,7 +67,7 @@
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_geom_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -93,7 +95,7 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_tnpoint_geom(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -121,7 +123,7 @@ posop_tnpoint_geom(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_stbox_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -144,7 +146,7 @@ posop_stbox_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -170,7 +172,7 @@ tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_tnpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -193,7 +195,7 @@ posop_tnpoint_stbox(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -219,7 +221,7 @@ tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_npoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -241,7 +243,7 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_tnpoint_npoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
@@ -263,7 +265,7 @@ posop_tnpoint_npoint(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
-Datum
+static Datum
 posop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {

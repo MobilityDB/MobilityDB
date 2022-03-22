@@ -70,6 +70,7 @@ CREATE OPERATOR CLASS stbox_spgist_ops
   -- overlaps
   OPERATOR  3    && (stbox, stbox),
   OPERATOR  3    && (stbox, tgeompoint),
+  OPERATOR  3    && (stbox, tgeogpoint),
   -- overlaps or right
   OPERATOR  4    &> (stbox, stbox),
   OPERATOR  4    &> (stbox, tgeompoint),
@@ -79,12 +80,15 @@ CREATE OPERATOR CLASS stbox_spgist_ops
     -- same
   OPERATOR  6    ~= (stbox, stbox),
   OPERATOR  6    ~= (stbox, tgeompoint),
+  OPERATOR  6    ~= (stbox, tgeogpoint),
   -- contains
   OPERATOR  7    @> (stbox, stbox),
   OPERATOR  7    @> (stbox, tgeompoint),
+  OPERATOR  7    @> (stbox, tgeogpoint),
   -- contained by
   OPERATOR  8    <@ (stbox, stbox),
   OPERATOR  8    <@ (stbox, tgeompoint),
+  OPERATOR  8    <@ (stbox, tgeogpoint),
   -- overlaps or below
   OPERATOR  9    &<| (stbox, stbox),
   OPERATOR  9    &<| (stbox, tgeompoint),
@@ -100,18 +104,23 @@ CREATE OPERATOR CLASS stbox_spgist_ops
   -- adjacent
   OPERATOR  17    -|- (stbox, stbox),
   OPERATOR  17    -|- (stbox, tgeompoint),
+  OPERATOR  17    -|- (stbox, tgeogpoint),
   -- overlaps or before
   OPERATOR  28    &<# (stbox, stbox),
   OPERATOR  28    &<# (stbox, tgeompoint),
+  OPERATOR  28    &<# (stbox, tgeogpoint),
   -- strictly before
   OPERATOR  29    <<# (stbox, stbox),
   OPERATOR  29    <<# (stbox, tgeompoint),
+  OPERATOR  29    <<# (stbox, tgeogpoint),
   -- strictly after
   OPERATOR  30    #>> (stbox, stbox),
   OPERATOR  30    #>> (stbox, tgeompoint),
+  OPERATOR  30    #>> (stbox, tgeogpoint),
   -- overlaps or after
   OPERATOR  31    #&> (stbox, stbox),
   OPERATOR  31    #&> (stbox, tgeompoint),
+  OPERATOR  31    #&> (stbox, tgeogpoint),
   -- overlaps or front
   OPERATOR  32    &</ (stbox, stbox),
   OPERATOR  32    &</ (stbox, tgeompoint),
@@ -144,11 +153,11 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  2    &< (tgeompoint, stbox),
   OPERATOR  2    &< (tgeompoint, tgeompoint),
   -- overlaps
-  OPERATOR  3    && (tgeompoint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tgeompoint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tgeompoint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tgeompoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeompoint, geometry),
+  OPERATOR  3    && (tgeompoint, timestamptz),
+  OPERATOR  3    && (tgeompoint, timestampset),
+  OPERATOR  3    && (tgeompoint, period),
+  OPERATOR  3    && (tgeompoint, periodset),
   OPERATOR  3    && (tgeompoint, stbox),
   OPERATOR  3    && (tgeompoint, tgeompoint),
   -- overlaps or right
@@ -161,14 +170,26 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  5    >> (tgeompoint, tgeompoint),
     -- same
   OPERATOR  6    ~= (tgeompoint, geometry),
+  OPERATOR  6    ~= (tgeompoint, timestamptz),
+  OPERATOR  6    ~= (tgeompoint, timestampset),
+  OPERATOR  6    ~= (tgeompoint, period),
+  OPERATOR  6    ~= (tgeompoint, periodset),
   OPERATOR  6    ~= (tgeompoint, stbox),
   OPERATOR  6    ~= (tgeompoint, tgeompoint),
   -- contains
   OPERATOR  7    @> (tgeompoint, geometry),
+  OPERATOR  7    @> (tgeompoint, timestamptz),
+  OPERATOR  7    @> (tgeompoint, timestampset),
+  OPERATOR  7    @> (tgeompoint, period),
+  OPERATOR  7    @> (tgeompoint, periodset),
   OPERATOR  7    @> (tgeompoint, stbox),
   OPERATOR  7    @> (tgeompoint, tgeompoint),
   -- contained by
   OPERATOR  8    <@ (tgeompoint, geometry),
+  OPERATOR  8    <@ (tgeompoint, timestamptz),
+  OPERATOR  8    <@ (tgeompoint, timestampset),
+  OPERATOR  8    <@ (tgeompoint, period),
+  OPERATOR  8    <@ (tgeompoint, periodset),
   OPERATOR  8    <@ (tgeompoint, stbox),
   OPERATOR  8    <@ (tgeompoint, tgeompoint),
   -- overlaps or below
@@ -189,6 +210,10 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  12    |&> (tgeompoint, tgeompoint),
   -- adjacent
   OPERATOR  17    -|- (tgeompoint, geometry),
+  OPERATOR  17    -|- (tgeompoint, timestamptz),
+  OPERATOR  17    -|- (tgeompoint, timestampset),
+  OPERATOR  17    -|- (tgeompoint, period),
+  OPERATOR  17    -|- (tgeompoint, periodset),
   OPERATOR  17    -|- (tgeompoint, stbox),
   OPERATOR  17    -|- (tgeompoint, tgeompoint),
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -198,15 +223,31 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  25    |=| (tgeompoint, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
+  OPERATOR  28    &<# (tgeompoint, timestamptz),
+  OPERATOR  28    &<# (tgeompoint, timestampset),
+  OPERATOR  28    &<# (tgeompoint, period),
+  OPERATOR  28    &<# (tgeompoint, periodset),
   OPERATOR  28    &<# (tgeompoint, stbox),
   OPERATOR  28    &<# (tgeompoint, tgeompoint),
   -- strictly before
+  OPERATOR  29    <<# (tgeompoint, timestamptz),
+  OPERATOR  29    <<# (tgeompoint, timestampset),
+  OPERATOR  29    <<# (tgeompoint, period),
+  OPERATOR  29    <<# (tgeompoint, periodset),
   OPERATOR  29    <<# (tgeompoint, stbox),
   OPERATOR  29    <<# (tgeompoint, tgeompoint),
   -- strictly after
+  OPERATOR  30    #>> (tgeompoint, timestamptz),
+  OPERATOR  30    #>> (tgeompoint, timestampset),
+  OPERATOR  30    #>> (tgeompoint, period),
+  OPERATOR  30    #>> (tgeompoint, periodset),
   OPERATOR  30    #>> (tgeompoint, stbox),
   OPERATOR  30    #>> (tgeompoint, tgeompoint),
   -- overlaps or after
+  OPERATOR  31    #&> (tgeompoint, timestamptz),
+  OPERATOR  31    #&> (tgeompoint, timestampset),
+  OPERATOR  31    #&> (tgeompoint, period),
+  OPERATOR  31    #&> (tgeompoint, periodset),
   OPERATOR  31    #&> (tgeompoint, stbox),
   OPERATOR  31    #&> (tgeompoint, tgeompoint),
   -- overlaps or front
@@ -238,27 +279,43 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
 CREATE OPERATOR CLASS tgeogpoint_spgist_ops
   DEFAULT FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
-  OPERATOR  3    && (tgeogpoint, timestamptz),  -- index support for intersectsTimestamp
-  OPERATOR  3    && (tgeogpoint, timestampset), -- index support for intersectsTimestampSet
-  OPERATOR  3    && (tgeogpoint, period),       -- index support for intersectsPeriod
-  OPERATOR  3    && (tgeogpoint, periodset),    -- index support for intersectsPeriodSet
   OPERATOR  3    && (tgeogpoint, geography),
+  OPERATOR  3    && (tgeogpoint, timestamptz),
+  OPERATOR  3    && (tgeogpoint, timestampset),
+  OPERATOR  3    && (tgeogpoint, period),
+  OPERATOR  3    && (tgeogpoint, periodset),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
     -- same
   OPERATOR  6    ~= (tgeogpoint, geography),
+  OPERATOR  6    ~= (tgeogpoint, timestamptz),
+  OPERATOR  6    ~= (tgeogpoint, timestampset),
+  OPERATOR  6    ~= (tgeogpoint, period),
+  OPERATOR  6    ~= (tgeogpoint, periodset),
   OPERATOR  6    ~= (tgeogpoint, stbox),
   OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
   -- contains
   OPERATOR  7    @> (tgeogpoint, geography),
+  OPERATOR  7    @> (tgeogpoint, timestamptz),
+  OPERATOR  7    @> (tgeogpoint, timestampset),
+  OPERATOR  7    @> (tgeogpoint, period),
+  OPERATOR  7    @> (tgeogpoint, periodset),
   OPERATOR  7    @> (tgeogpoint, stbox),
   OPERATOR  7    @> (tgeogpoint, tgeogpoint),
   -- contained by
   OPERATOR  8    <@ (tgeogpoint, geography),
+  OPERATOR  8    <@ (tgeogpoint, timestamptz),
+  OPERATOR  8    <@ (tgeogpoint, timestampset),
+  OPERATOR  8    <@ (tgeogpoint, period),
+  OPERATOR  8    <@ (tgeogpoint, periodset),
   OPERATOR  8    <@ (tgeogpoint, stbox),
   OPERATOR  8    <@ (tgeogpoint, tgeogpoint),
   -- adjacent
   OPERATOR  17    -|- (tgeogpoint, geography),
+  OPERATOR  17    -|- (tgeogpoint, timestamptz),
+  OPERATOR  17    -|- (tgeogpoint, timestampset),
+  OPERATOR  17    -|- (tgeogpoint, period),
+  OPERATOR  17    -|- (tgeogpoint, periodset),
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -268,15 +325,31 @@ CREATE OPERATOR CLASS tgeogpoint_spgist_ops
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
+  OPERATOR  28    &<# (tgeogpoint, timestamptz),
+  OPERATOR  28    &<# (tgeogpoint, timestampset),
+  OPERATOR  28    &<# (tgeogpoint, period),
+  OPERATOR  28    &<# (tgeogpoint, periodset),
   OPERATOR  28    &<# (tgeogpoint, stbox),
   OPERATOR  28    &<# (tgeogpoint, tgeogpoint),
   -- strictly before
+  OPERATOR  29    <<# (tgeogpoint, timestamptz),
+  OPERATOR  29    <<# (tgeogpoint, timestampset),
+  OPERATOR  29    <<# (tgeogpoint, period),
+  OPERATOR  29    <<# (tgeogpoint, periodset),
   OPERATOR  29    <<# (tgeogpoint, stbox),
   OPERATOR  29    <<# (tgeogpoint, tgeogpoint),
   -- strictly after
+  OPERATOR  30    #>> (tgeogpoint, timestamptz),
+  OPERATOR  30    #>> (tgeogpoint, timestampset),
+  OPERATOR  30    #>> (tgeogpoint, period),
+  OPERATOR  30    #>> (tgeogpoint, periodset),
   OPERATOR  30    #>> (tgeogpoint, stbox),
   OPERATOR  30    #>> (tgeogpoint, tgeogpoint),
   -- overlaps or after
+  OPERATOR  31    #&> (tgeogpoint, timestamptz),
+  OPERATOR  31    #&> (tgeogpoint, timestampset),
+  OPERATOR  31    #&> (tgeogpoint, period),
+  OPERATOR  31    #&> (tgeogpoint, periodset),
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions

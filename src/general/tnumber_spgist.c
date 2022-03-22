@@ -93,19 +93,17 @@
  * that we don't yet have as infinity.
  */
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-
 #include "general/tnumber_spgist.h"
 
+/* PostgreSQL */
 #include <access/spgist.h>
-#include <utils/timestamp.h>
 #include <utils/builtins.h>
-
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <access/spgist_private.h>
 #include <utils/float.h>
+#include <access/spgist_private.h>
 #endif
-
+#include <utils/timestamp.h>
+/* MobilityDB */
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
@@ -766,7 +764,5 @@ tnumber_spgist_compress(PG_FUNCTION_ARGS)
   temporal_bbox_slice(tempdatum, result);
   PG_RETURN_TBOX_P(result);
 }
-
-#endif /* POSTGRESQL_VERSION_NUMBER >= 110000 */
 
 /*****************************************************************************/

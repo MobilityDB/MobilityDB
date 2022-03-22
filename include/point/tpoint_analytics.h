@@ -57,9 +57,6 @@ extern Datum point_to_geo_measure(PG_FUNCTION_ARGS);
 extern Datum tfloat_simplify(PG_FUNCTION_ARGS);
 extern Datum tpoint_simplify(PG_FUNCTION_ARGS);
 
-extern Temporal *tpoint_simplify_internal(Temporal *temp, double eps_dist,
-  double eps_speed);
-
 /* Transform the temporal point to Mapbox Vector Tile format */
 
 extern Datum AsMVT(PG_FUNCTION_ARGS);

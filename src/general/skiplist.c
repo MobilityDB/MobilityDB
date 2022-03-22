@@ -34,13 +34,15 @@
 
 #include "general/skiplist.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <executor/spi.h>
-#include <gsl/gsl_rng.h>
 #include <libpq/pqformat.h>
 #include <utils/memutils.h>
 #include <utils/timestamp.h>
-
+/* GSL */
+#include <gsl/gsl_rng.h>
+/* MobilityDB */
 #include "general/skiplist.h"
 #include "general/timestampset.h"
 #include "general/period.h"

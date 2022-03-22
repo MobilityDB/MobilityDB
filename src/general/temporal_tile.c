@@ -34,6 +34,7 @@
  * https://docs.timescale.com/latest/api#time_bucket
  */
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <assert.h>
 #include <float.h>
@@ -43,7 +44,7 @@
 #endif
 #include <utils/builtins.h>
 #include <utils/datetime.h>
-
+/* MobilityDB */
 #include "general/temporal_tile.h"
 #include "general/tempcache.h"
 #include "general/period.h"

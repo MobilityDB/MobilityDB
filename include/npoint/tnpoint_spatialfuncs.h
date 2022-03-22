@@ -61,15 +61,8 @@ extern int tnpoint_srid_internal(const Temporal *temp);
 
 extern Datum tnpoint_trajectory(PG_FUNCTION_ARGS);
 
-extern Datum tnpointseqsegm_trajectory(const TInstant *inst1,
-  const TInstant *inst2);
-extern Datum tnpointseq_trajectory(const TSequence *seq);
-extern Datum tnpointseqset_trajectory(const TSequenceSet *ts);
+extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
 
-extern Datum tnpointinst_geom(const TInstant *inst);
-extern Datum tnpointinstset_geom(const TInstantSet *ti);
-extern Datum tnpointseq_geom(const TSequence *seq);
-extern Datum tnpointseqset_geom(const TSequenceSet *ts);
 extern Datum tnpoint_geom(const Temporal *temp);
 
 extern Datum tnpoint_length(PG_FUNCTION_ARGS);

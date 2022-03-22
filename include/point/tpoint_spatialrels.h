@@ -45,15 +45,15 @@
 extern Datum geom_contains(Datum geom1, Datum geom2);
 extern Datum geom_disjoint2d(Datum geom1, Datum geom2);
 extern Datum geom_disjoint3d(Datum geom1, Datum geom2);
+extern Datum geog_disjoint(Datum geog1, Datum geog2);
 extern Datum geom_intersects2d(Datum geom1, Datum geom2);
 extern Datum geom_intersects3d(Datum geom1, Datum geom2);
+extern Datum geog_intersects(Datum geog1, Datum geog2);
 extern Datum geom_touches(Datum geom1, Datum geom2);
 extern Datum geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
 extern Datum geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
-extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
-
-extern Datum geog_intersects(Datum geog1, Datum geog2);
 extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
+extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
 
 /*****************************************************************************/
 

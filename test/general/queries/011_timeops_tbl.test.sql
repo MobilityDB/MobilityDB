@@ -28,7 +28,8 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests of operators that do not involved indexes for time types.
+-- Tests of operators that do not involved indexes for time types and
+-- selectivity tests.
 -- File timeops.c
 -------------------------------------------------------------------------------
 
@@ -115,5 +116,40 @@ SELECT count(*) FROM tbl_periodset, tbl_timestamptz WHERE ps * t IS NOT NULL;
 SELECT count(*) FROM tbl_periodset, tbl_timestampset WHERE ps * ts IS NOT NULL;
 SELECT count(*) FROM tbl_periodset, tbl_period WHERE ps * p IS NOT NULL;
 SELECT count(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps * t2.ps IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Selectivity tests
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p < t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <= t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p > t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p >= t2.p;
+
+CREATE TABLE tbl_period_temp AS SELECT k, shift(p, '1 year') AS p FROM tbl_period;
+SELECT COUNT(*) FROM tbl_period_temp WHERE p && period '[2001-06-01, 2001-07-01]';
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_temp t2 WHERE t1.p && t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_temp t2 WHERE t1.p @> t2.p;
+SELECT COUNT(*) FROM tbl_period t1, tbl_period_temp t2 WHERE t1.p <@ t2.p;
+
+SELECT round(_mobdb_period_sel('tbl_period'::regclass, 'p', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
+SELECT round(_mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator)::numeric, 6);
+SELECT round(_mobdb_period_sel('tbl_period'::regclass, 'p', '@>(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
+/* Errors */
+SELECT round(_mobdb_period_sel(1184, 'p', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]')::numeric, 6);
+SELECT _mobdb_period_sel('tbl_period'::regclass, 'X', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]');
+SELECT _mobdb_period_sel('tbl_period'::regclass, 'p', '&&(period,text)'::regoperator, period '[2001-06-01, 2001-07-01]');
+SELECT _mobdb_period_sel('tbl_period'::regclass, 'p', '<(text,text)'::regoperator, period '[2001-06-01, 2001-07-01]');
+
+SELECT _mobdb_period_joinsel(1184, 'X', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator);
+SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'X', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator);
+SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 1184, 'p', '&&(period,period)'::regoperator);
+SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'X', '&&(period,period)'::regoperator);
+SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'p', '&&(period,text)'::regoperator);
+SELECT _mobdb_period_joinsel('tbl_period'::regclass, 'p', 'tbl_period'::regclass, 'p', '<(text,text)'::regoperator);
+
+SELECT _mobdb_period_sel('tbl_period_temp'::regclass, 'p', '&&(period,period)'::regoperator, period '[2001-06-01, 2001-07-01]');
+SELECT _mobdb_period_joinsel('tbl_period_temp'::regclass, 'X', 'tbl_period'::regclass, 'p', '&&(period,period)'::regoperator);
+DROP TABLE tbl_period_temp;
 
 -------------------------------------------------------------------------------

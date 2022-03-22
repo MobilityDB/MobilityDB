@@ -36,8 +36,9 @@
 
 #include "point/tpoint_aggfuncs.h"
 
+/* PostgreSQL */
 #include <assert.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -54,7 +55,7 @@
 /**
  * Check the validity of the temporal point values for aggregation
  */
-void
+static void
 geoaggstate_check(const SkipList *state, int32_t srid, bool hasz)
 {
   if(! state)
@@ -242,7 +243,7 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
   ensure_same_dimensionality(temp->flags, box->flags);
   ensure_same_geodetic(temp->flags, box->flags);
   temporal_bbox(temp, result);
-  stbox_expand(result, box);
+  stbox_expand(box, result);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -268,7 +269,7 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
   ensure_same_dimensionality(box1->flags, box2->flags);
   ensure_same_geodetic(box1->flags, box2->flags);
   STBOX *result = stbox_copy(box1);
-  stbox_expand(result, box2);
+  stbox_expand(box2, result);
   PG_RETURN_POINTER(result);
 }
 

@@ -34,6 +34,7 @@
 
 #include "point/tpoint_distance.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <float.h>
 #include <math.h>
@@ -42,13 +43,13 @@
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 #include <utils/float.h>
 #endif
-
+/* PostGIS */
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <lwgeodetic_tree.h>
 #include <measures.h>
 #include <measures3d.h>
 #endif
-
+/* MobilityDB */
 #include "general/period.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
@@ -114,7 +115,7 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * Compute the projected point and the distance between the closest point
  * (geodetic version).
  */
-double
+static double
 lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
   long double *fraction)
 {
@@ -167,7 +168,7 @@ lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid __attribute__((unused)), Datum *value, 
+  Datum point, Oid basetypid __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
@@ -364,12 +365,11 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  *
  * @param[in] start1,end1 Instants defining the first segment
  * @param[in] start2,end2 Instants defining the second segment
- * @param[in] linear1,linear2 State whether the interpolation is linear
  * @param[out] value Value
  * @param[out] t Timestamp
  * @pre The segments are not both constants.
  */
-bool
+static bool
 tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, Datum *value, TimestampTz *t)
 {
@@ -610,7 +610,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
  * @param[out] tofree True when the resulting instant should be freed
  */
 static double
-NAI_tpointseq_linear_geo1(const TInstant *inst1, const TInstant *inst2,
+NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   LWGEOM *lwgeom, Datum *closest, TimestampTz *t, bool *tofree)
 {
   Datum value1 = tinstant_value(inst1);
@@ -703,7 +703,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    dist = NAI_tpointseq_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
+    dist = NAI_tpointsegm_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
     if (dist < mindist)
     {
       if (*tofree)
@@ -885,7 +885,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance between the temporal point and the
  * geometry (internal function)
  */
-Datum
+static Datum
 NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   GSERIALIZED *gs)
 {
@@ -940,7 +940,7 @@ NAD_tpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance between the spatiotemporal box and
  * the geometry (internal function)
  */
-Datum
+static Datum
 NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
   GSERIALIZED *gs)
 {
@@ -1071,7 +1071,7 @@ NAD_stbox_stbox(PG_FUNCTION_ARGS)
  * Returns the nearest approach distance between the temporal point and the
  * spatio-temporal box (internal function)
  */
-double
+static double
 NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
 {
   /* Test the validity of the arguments */
@@ -1188,7 +1188,7 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Returns the line connecting the nearest approach point between the
  * temporal instant point and the geometry (internal function)
  */
-Datum
+static Datum
 shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));

@@ -45,6 +45,7 @@
  * contains
  *****************************************************************************/
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _contains(geometry, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'contains_geo_tnpoint'
@@ -53,6 +54,15 @@ CREATE FUNCTION contains(geometry, tnpoint)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.@>) $2 AND @extschema@._contains($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION contains(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'contains_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************
  * disjoint
@@ -74,34 +84,20 @@ CREATE FUNCTION disjoint(tnpoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'disjoint_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION disjoint(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'disjoint_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * intersects
  *****************************************************************************/
-
-CREATE FUNCTION _intersects(geometry, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_geo_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(geometry, tnpoint)
-  RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _intersects(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'intersects_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(npoint, tnpoint)
-  RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _intersects(tnpoint, geometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tnpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION intersects(tnpoint, geometry)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
@@ -115,33 +111,62 @@ CREATE FUNCTION intersects(tnpoint, npoint)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
+CREATE FUNCTION _intersects(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_geo_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(geometry, tnpoint)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _intersects(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tnpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tnpoint, geometry)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _intersects(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tnpoint_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._intersects($1,$2)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION intersects(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tnpoint_geo'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION intersects(tnpoint, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'intersects_tnpoint_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
 /*****************************************************************************
  * touches
  *****************************************************************************/
-
-CREATE FUNCTION _touches(geometry, tnpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_geo_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION touches(geometry, tnpoint)
-  RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _touches(npoint, tnpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'touches_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(npoint, tnpoint)
-  RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _touches(tnpoint, geometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_tnpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION touches(tnpoint, geometry)
   RETURNS boolean
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
@@ -155,18 +180,42 @@ CREATE FUNCTION touches(tnpoint, npoint)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
+CREATE FUNCTION _touches(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'touches_geo_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION touches(geometry, tnpoint)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _touches(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'touches_tnpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION touches(tnpoint, geometry)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) $2 AND @extschema@._touches($1,$2)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION touches(geometry, tnpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'touches_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION touches(tnpoint, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'touches_tnpoint_geo'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
+
 /*****************************************************************************
  * dwithin
  *****************************************************************************/
-
-CREATE FUNCTION _dwithin(geometry, tnpoint, dist float8)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_geo_tnpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)
-  RETURNS boolean
-  AS 'SELECT @extschema@.ST_Expand($1,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
@@ -175,15 +224,6 @@ CREATE FUNCTION _dwithin(npoint, tnpoint, dist float8)
 CREATE FUNCTION dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
   AS 'SELECT @extschema@.expandSpatial($1::stbox,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
-  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _dwithin(tnpoint, geometry, dist float8)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_geo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION dwithin(tnpoint, geometry, dist float8)
-  RETURNS boolean
-  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.ST_Expand($2,$3) AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
@@ -195,9 +235,47 @@ CREATE FUNCTION dwithin(tnpoint, npoint, dist float8)
   AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.expandSpatial($2::stbox,$3) AND @extschema@._dwithin($1, $2, $3)'
   LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
 
+#if POSTGRESQL_VERSION_NUMBER < 120000
+CREATE FUNCTION _dwithin(tnpoint, geometry, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tnpoint, geometry, dist float8)
+  RETURNS boolean
+  AS 'SELECT $1 OPERATOR(@extschema@.&&) @extschema@.ST_Expand($2,$3) AND @extschema@._dwithin($1, $2, $3)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION _dwithin(geometry, tnpoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_geo_tnpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)
+  RETURNS boolean
+  AS 'SELECT @extschema@.ST_Expand($1,$3) OPERATOR(@extschema@.&&) $2 AND @extschema@._dwithin($1, $2, $3)'
+  LANGUAGE 'sql' IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION dwithin(tnpoint, tnpoint, dist float8)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'dwithin_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER < 120000
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_geo_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tnpoint, geometry, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_geo'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION dwithin(tnpoint, tnpoint, dist float8)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_tnpoint'
+  SUPPORT tnpoint_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
 /*****************************************************************************/

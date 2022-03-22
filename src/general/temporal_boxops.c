@@ -45,10 +45,11 @@
 
 #include "general/temporal_boxops.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
-
+/* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -143,9 +144,9 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
   if (talpha_base_type(basetypid))
     period_shift_tscale((Period *) box, start, duration);
   else if (tnumber_base_type(basetypid))
-    tbox_shift_tscale((TBOX *) box, start, duration);
+    tbox_shift_tscale(start, duration, (TBOX *) box);
   else if (tspatial_base_type(basetypid))
-    stbox_shift_tscale((STBOX *) box, start, duration);
+    stbox_shift_tscale(start, duration, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
   return;
@@ -232,7 +233,7 @@ tnumberinstarr_tbox(const TInstant **instants, int count, TBOX *box)
   {
     TBOX box1;
     tinstant_make_bbox(instants[i], &box1);
-    tbox_expand(box, &box1);
+    tbox_expand(&box1, box);
   }
   return;
 }
@@ -269,10 +270,11 @@ tinstantset_make_bbox(const TInstant **instants, int count, void *box)
  * Set the bounding box from the array of temporal instant values
  * (dispatch function)
  *
- * @param[in] box Box
  * @param[in] instants Temporal instants
  * @param[in] count Number of elements in the array
  * @param[in] lower_inc,upper_inc Period bounds
+ * @param[in] linear True when the interpolation is linear
+ * @param[out] box Bounding box
  */
 void
 tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
@@ -330,7 +332,7 @@ tnumberseqarr_to_tbox_internal(const TSequence **sequences, int count,
   for (int i = 1; i < count; i++)
   {
     const TBOX *box1 = tsequence_bbox_ptr(sequences[i]);
-    tbox_expand(box, box1);
+    tbox_expand(box1, box);
   }
   return;
 }
@@ -348,10 +350,8 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
     tseqarr_to_period_internal(sequences, count, (Period *) box);
   else if (tnumber_base_type(sequences[0]->basetypid))
     tnumberseqarr_to_tbox_internal(sequences, count, (TBOX *) box);
-  else if (tgeo_base_type(sequences[0]->basetypid))
+  else if (tspatial_base_type(sequences[0]->basetypid))
     tpointseqarr_stbox(sequences, count, (STBOX *) box);
-  else if (sequences[0]->basetypid == type_oid(T_NPOINT))
-    tnpointseqarr_stbox(sequences, count, (STBOX *) box);
   else
     elog(ERROR, "unknown bounding box function for base type: %d",
       sequences[0]->basetypid);

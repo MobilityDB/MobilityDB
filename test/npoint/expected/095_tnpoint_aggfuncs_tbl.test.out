@@ -243,10 +243,21 @@ SELECT k%10, numSequences(tcount(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDE
         9 |           41
 (10 rows)
 
-SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
-ERROR:  syntax error at or near ")"
-LINE 1: SELECT k%10, numSequences(wcount(ts, '1 hour'))) FROM tbl_tn...
-                                                       ^
+SELECT k%10, numSequences(wcount(ts, '1 hour')) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
+ ?column? | numsequences 
+----------+--------------
+        0 |           59
+        1 |           33
+        2 |           55
+        3 |           45
+        4 |           58
+        5 |           35
+        6 |           46
+        7 |           58
+        8 |           67
+        9 |           47
+(10 rows)
+
 SELECT k%10, numSequences(tcentroid(ts)) FROM tbl_tnpoint_seqset GROUP BY k%10 ORDER BY k%10;
  ?column? | numsequences 
 ----------+--------------

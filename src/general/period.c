@@ -35,11 +35,12 @@
 
 #include "general/period.h"
 
+/* PostgreSQL */
 #include <assert.h>
 #include <access/hash.h>
 #include <libpq/pqformat.h>
 #include <utils/builtins.h>
-
+/* MobilityDB */
 #include "general/periodset.h"
 #include "general/timeops.h"
 #include "general/temporal.h"
@@ -48,7 +49,7 @@
 #include "general/rangetypes_ext.h"
 
 /*****************************************************************************
- * Utility functions
+ * General functions
  *****************************************************************************/
 
  /**
@@ -521,7 +522,7 @@ tstzrange_to_period(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Generic functions
+ * Accessor functions
  *****************************************************************************/
 
 /* period -> timestamptz functions */
@@ -573,6 +574,33 @@ period_upper_inc(PG_FUNCTION_ARGS)
 }
 
 /**
+ * Returns the duration of the period (internal function)
+ */
+Interval *
+period_duration_internal(const Period *p)
+{
+  return DatumGetIntervalP(call_function2(timestamp_mi,
+    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
+}
+
+PG_FUNCTION_INFO_V1(period_duration);
+/**
+ * Returns the duration of the period
+ */
+PGDLLEXPORT Datum
+period_duration(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Datum result = call_function2(timestamp_mi,
+    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
+/**
  * Shift the period by the interval (internal function)
  */
 Period *
@@ -619,29 +647,6 @@ period_shift_tscale(Period *result, const Interval *start,
     DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
        TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
   return;
-}
-
-/**
- * Returns the duration of the period (internal function)
- */
-Interval *
-period_duration_internal(const Period *p)
-{
-  return DatumGetIntervalP(call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower)));
-}
-
-PG_FUNCTION_INFO_V1(period_duration);
-/**
- * Returns the duration of the period
- */
-PGDLLEXPORT Datum
-period_duration(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(p->upper), TimestampTzGetDatum(p->lower));
-  PG_RETURN_DATUM(result);
 }
 
 /*****************************************************************************
@@ -833,16 +838,17 @@ period_gt(PG_FUNCTION_ARGS)
  * Hash support
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_hash);
-
-PGDLLEXPORT Datum
-period_hash(PG_FUNCTION_ARGS)
+/**
+ * Returns the 32-bit hash value of a period.
+ * (internal funtion)
+ */
+uint32
+period_hash_internal(const Period *p)
 {
-  Period     *p = PG_GETARG_PERIOD_P(0);
-  uint32    result;
-  char    flags = '\0';
-  uint32    lower_hash;
-  uint32    upper_hash;
+  uint32 result;
+  char flags = '\0';
+  uint32 lower_hash;
+  uint32 upper_hash;
 
   /* Create flags from the lower_inc and upper_inc values */
   if (p->lower_inc)
@@ -860,26 +866,31 @@ period_hash(PG_FUNCTION_ARGS)
   result = (result << 1) | (result >> 31);
   result ^= upper_hash;
 
+  return result;
+}
+PG_FUNCTION_INFO_V1(period_hash);
+/**
+ * Returns the 32-bit hash value of a period.
+ */
+PGDLLEXPORT Datum
+period_hash(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  uint32 result = period_hash_internal(p);
   PG_RETURN_UINT32(result);
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 110000
-/*
- * Returns 64-bit value by hashing a value to a 64-bit value, with a seed.
- * Otherwise, similar to period_hash.
+/**
+ * Returns the 64-bit hash value of a period obtained with a seed.
+ * (internal funtion)
  */
-
-PG_FUNCTION_INFO_V1(period_hash_extended);
-
-PGDLLEXPORT Datum
-period_hash_extended(PG_FUNCTION_ARGS)
+uint64
+period_hash_extended_internal(const Period *p, Datum seed)
 {
-  Period     *p = PG_GETARG_PERIOD_P(0);
-  Datum    seed = PG_GETARG_DATUM(1);
-  uint64    result;
-  char    flags = '\0';
-  uint64    lower_hash;
-  uint64    upper_hash;
+  uint64 result;
+  char flags = '\0';
+  uint64 lower_hash;
+  uint64 upper_hash;
 
   /* Create flags from the lower_inc and upper_inc values */
   if (p->lower_inc)
@@ -900,8 +911,20 @@ period_hash_extended(PG_FUNCTION_ARGS)
   result = ROTATE_HIGH_AND_LOW_32BITS(result);
   result ^= upper_hash;
 
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(period_hash_extended);
+/**
+ * Returns the 64-bit hash value of a period obtained with a seed.
+ */
+PGDLLEXPORT Datum
+period_hash_extended(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Datum seed = PG_GETARG_DATUM(1);
+  uint64 result = period_hash_extended_internal(p, seed);
   PG_RETURN_UINT64(result);
 }
-#endif
 
 /*****************************************************************************/

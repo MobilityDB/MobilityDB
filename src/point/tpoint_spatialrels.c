@@ -46,7 +46,9 @@
 
 #include "point/tpoint_spatialrels.h"
 
+/* PostgreSQL */
 #include <assert.h>
+/* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -197,7 +199,7 @@ geog_dwithin(Datum geog1, Datum geog2, Datum dist)
  * Select the appropriate disjoint function for a MobilityDB type and a
  * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
  */
-datum_func2
+static datum_func2
 get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
 {
   datum_func2 result;
@@ -214,7 +216,7 @@ get_disjoint_fn_gs(int16 flags1, uint8_t flags2)
  * Select the appropriate intersect function for a MobilityDB type and a
  * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
  */
-datum_func2
+static datum_func2
 get_intersects_fn_gs(int16 flags1, uint8_t flags2)
 {
   datum_func2 result;
@@ -248,7 +250,7 @@ get_dwithin_fn(int16 flags1, int16 flags2)
  * Select the appropriate dwithin function for a MobilityDB type and a
  * GSERIALIZED. We need two parameters to cope with mixed 2D/3D arguments
  */
-datum_func3
+static datum_func3
 get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
 {
   datum_func3 result;
@@ -279,7 +281,7 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  */
 static Datum
 spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
-  Datum (*func)(Datum, ...), int numparam, bool invert, 
+  Datum (*func)(Datum, ...), int numparam, bool invert,
   bool geomcoll __attribute__((unused)))
 {
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
@@ -498,7 +500,6 @@ disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] func PostGIS function to be used
  */
 static bool
 disjoint_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
