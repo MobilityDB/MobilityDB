@@ -34,6 +34,8 @@
 
 #include "npoint/tnpoint_distance.h"
 
+/* PostgreSQL */
+#include <assert.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -66,10 +68,10 @@ distance_geo_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo_internal((const Temporal *) geomtemp,
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *result = distance_tpoint_geo_internal((const Temporal *) tempgeom,
     PointerGetDatum(gs));
-  pfree(geomtemp);
+  pfree(tempgeom);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -86,11 +88,11 @@ distance_npoint_tnpoint(PG_FUNCTION_ARGS)
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_geom(np);
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo_internal((const Temporal *) geomtemp,
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *result = distance_tpoint_geo_internal((const Temporal *) tempgeom,
     geom);
   pfree(DatumGetPointer(geom));
-  pfree(geomtemp);
+  pfree(tempgeom);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -112,10 +114,10 @@ distance_tnpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
 
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo_internal(geomtemp,
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *result = distance_tpoint_geo_internal(tempgeom,
     PointerGetDatum(gs));
-  pfree(geomtemp);
+  pfree(tempgeom);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);
@@ -132,8 +134,8 @@ distance_tnpoint_npoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
   Datum geom = npoint_geom(np);
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo_internal(geomtemp, geom);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *result = distance_tpoint_geo_internal(tempgeom, geom);
   pfree(DatumGetPointer(geom));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -180,24 +182,26 @@ distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Nearest approach instant
+ * Nearest approach instant (NAI)
  *****************************************************************************/
 
 /**
  * Returns the nearest approach instant of the temporal network point and the
  * geometry (internal function)
  */
-static Temporal *
+static TInstant *
 NAI_tnpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   GSERIALIZED *gs)
 {
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
-   * roundoff errors */
-  Temporal *result = temporal_restrict_timestamp_internal(temp,
-    geomresult->t, REST_AT);
-  pfree(geomtemp); pfree(geomresult);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  TInstant *resultgeom = NAI_tpoint_geo_internal(fcinfo, tempgeom, gs);
+  /* We do not call the function tgeompointinst_to_tnpointinst to avoid
+   * roundoff errors. The closest point may be at an exclusive bound. */
+  Datum value;
+  bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
+  assert(found);
+  TInstant *result = tinstant_make(value, resultgeom->t, temp->basetypid);
+  pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   return result;
 }
 
@@ -216,7 +220,7 @@ NAI_geo_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = NAI_tnpoint_geo_internal(fcinfo, temp, gs);
+  TInstant *result = NAI_tnpoint_geo_internal(fcinfo, temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -237,7 +241,7 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   }
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = NAI_tnpoint_geo_internal(fcinfo, temp, gs);
+  TInstant *result = NAI_tnpoint_geo_internal(fcinfo, temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);
@@ -249,19 +253,21 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
  * Returns the nearest approach instant of the network point and the temporal
  * network point (internal function)
  */
-static Temporal *
+static TInstant *
 NAI_tnpoint_npoint_internal(FunctionCallInfo fcinfo, Temporal *temp,
   npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  TInstant *geomresult = NAI_tpoint_geo_internal(fcinfo, geomtemp, gs);
-  /* We do not do call the function tgeompointinst_to_tnpointinst to avoid
-   * roundoff errors */
-  Temporal *result = temporal_restrict_timestamp_internal(temp,
-    geomresult->t, REST_AT);
-  pfree(geomtemp); pfree(geomresult);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  TInstant *resultgeom = NAI_tpoint_geo_internal(fcinfo, tempgeom, gs);
+  /* We do not call the function tgeompointinst_to_tnpointinst to avoid
+   * roundoff errors. The closest point may be at an exclusive bound. */
+  Datum value;
+  bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
+  assert(found);
+  TInstant *result = tinstant_make(value, resultgeom->t, temp->basetypid);
+  pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
   return result;
@@ -277,7 +283,7 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = NAI_tnpoint_npoint_internal(fcinfo, temp, np);
+  TInstant *result = NAI_tnpoint_npoint_internal(fcinfo, temp, np);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -292,7 +298,7 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  Temporal *result = NAI_tnpoint_npoint_internal(fcinfo, temp, np);
+  TInstant *result = NAI_tnpoint_npoint_internal(fcinfo, temp, np);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -308,22 +314,17 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = NULL;
   Temporal *dist = distance_tnpoint_tnpoint_internal(temp1, temp2);
+  TInstant *result = NULL;
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant((const Temporal *) dist);
-    result = (TInstant *) temporal_restrict_timestamp_internal(temp1, min->t, REST_AT);
-    pfree(dist);
-    if (result == NULL)
-    {
-      if (temp1->subtype == SEQUENCE)
-        result = tinstant_copy(tsequence_inst_at_timestamp_excl(
-          (TSequence *) temp1, min->t));
-      else /* temp->subtype == SEQUENCESET */
-        result = tinstant_copy(tsequenceset_inst_at_timestamp_excl(
-          (TSequenceSet *) temp1, min->t));
-    }
+    /* The closest point may be at an exclusive bound. */
+    Datum value;
+    bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
+    assert(found);
+    result = tinstant_make(value, min->t, temp1->basetypid);
+    pfree(dist); pfree(DatumGetPointer(value));
   }
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -333,7 +334,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Nearest approach distance
+ * Nearest approach distance (NAD)
  *****************************************************************************/
 
 /**

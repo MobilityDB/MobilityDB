@@ -146,7 +146,7 @@ lw_dist_sphere_line_geo(const LWGEOM *lw1, const LWGEOM *lw2,
 
   /* Compute distance from beginning of the segment to closest point */
   long double seglength = sphere_distance(&(e.start), &(e.end));
-  long double length = sphere_distance(&(e.start), &closest1);
+  long double length = sphere_distance(&(e.start), &proj);
   *fraction = length / seglength;
 
   return result;
@@ -498,7 +498,7 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Nearest approach instant
+ * Nearest approach instant (NAI)
  *****************************************************************************/
 
 /**
@@ -629,7 +629,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* The trajectory is a line */
-  LWLINE *lwline = geopoint_lwline(value1, value2);
+  LWLINE *lwline = lwline_make(value1, value2);
   if (MOBDB_FLAGS_GET_GEODETIC(inst1->flags))
     dist = lw_dist_sphere_line_geo((LWGEOM *) lwline, lwgeom, &fraction);
   else
@@ -717,7 +717,12 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 {
   TimestampTz t;
   NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &t);
-  TInstant *result = tsequence_at_timestamp(seq, t);
+  /* The closest point may be at an exclusive bound */
+  Datum value;
+  bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
+  assert(found);
+  TInstant *result = tinstant_make(value, t, seq->basetypid);
+  pfree(DatumGetPointer(value));
   return result;
 }
 
@@ -728,7 +733,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 static TInstant *
 NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
-  TimestampTz t = 0, t1; /* make compiler quiet */
+  TimestampTz t, t1;
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
@@ -742,7 +747,12 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
     if (mindist == 0.0)
       break;
   }
-  TInstant *result = (TInstant *) tsequenceset_restrict_timestamp(ts, t, REST_AT);
+  /* The closest point may be at an exclusive bound. */
+  Datum value;
+  bool found = tsequenceset_value_at_timestamp_inc(ts, t, &value);
+  assert(found);
+  TInstant *result = tinstant_make(value, t, ts->basetypid);
+  pfree(DatumGetPointer(value));
   return result;
 }
 
@@ -825,25 +835,19 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
-  TInstant *result = NULL;
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
+  TInstant *result = NULL;
   Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
-    result = (TInstant *) temporal_restrict_timestamp_internal(temp1,
-      min->t, REST_AT);
-    pfree(dist);
-    if (result == NULL)
-    {
-      if (temp1->subtype == SEQUENCE)
-        result = tinstant_copy(tsequence_inst_at_timestamp_excl(
-          (TSequence *) temp1, min->t));
-      else /* temp->subtype == SEQUENCESET */
-        result = tinstant_copy(tsequenceset_inst_at_timestamp_excl(
-          (TSequenceSet *) temp1, min->t));
-    }
+    /* The closest point may be at an exclusive bound. */
+    Datum value;
+    bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
+    assert(found);
+    result = tinstant_make(value, min->t, temp1->basetypid);
+    pfree(dist); pfree(DatumGetPointer(value));
   }
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
@@ -853,7 +857,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Nearest approach distance
+ * Nearest approach distance (NAD)
  *****************************************************************************/
 
 /**
@@ -1236,7 +1240,7 @@ shortestline_tpoint_tpoint_internal(const Temporal *temp1,
   bool found1 = temporal_value_at_timestamp_inc(temp1, inst->t, &value1);
   bool found2 = temporal_value_at_timestamp_inc(temp2, inst->t, &value2);
   assert (found1 && found2);
-  *line = geopoint_line(value1, value2);
+  *line = line_make(value1, value2);
   return true;
 }
 

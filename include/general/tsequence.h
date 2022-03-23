@@ -187,8 +187,6 @@ extern bool tsequence_value_at_timestamp(const TSequence *seq, TimestampTz t,
   Datum *result);
 extern bool tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,
   Datum *result);
-extern const TInstant *tsequence_inst_at_timestamp_excl(const TSequence *seq,
-  TimestampTz t);
 
 extern TInstant *tsegment_at_timestamp(const TInstant *inst1,
   const TInstant *inst2, bool linear, TimestampTz t);

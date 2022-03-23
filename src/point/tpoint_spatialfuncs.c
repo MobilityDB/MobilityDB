@@ -1545,7 +1545,7 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
  * @param[in] value1,value2 Points
  */
 LWLINE *
-geopoint_lwline(Datum value1, Datum value2)
+lwline_make(Datum value1, Datum value2)
 {
   GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(value1);
   GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(value2);
@@ -1559,6 +1559,27 @@ geopoint_lwline(Datum value1, Datum value2)
   return result;
 }
 
+// LWLINE *
+// lwline_make(Datum value1, Datum value2)
+// {
+  // /* Obtain the flags and the SRID from the first value */
+  // GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
+  // int srid = gserialized_get_srid(gs);
+  // int hasz = FLAGS_GET_Z(GS_FLAGS(gs));
+  // int isgeodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
+  // /* We are sure that there is no M value */
+  // POINTARRAY *pa = ptarray_construct_empty(hasz, 0, 2);
+  // POINT4D pt;
+  // datum_point4d(value1, &pt);
+  // ptarray_append_point(pa, &pt, LW_TRUE);
+  // datum_point4d(value2, &pt);
+  // ptarray_append_point(pa, &pt, LW_TRUE);
+  // LWLINE *result = lwline_construct(srid, NULL, pa);
+  // FLAGS_SET_Z(result->flags, hasz);
+  // FLAGS_SET_GEODETIC(result->flags, isgeodetic);
+  // return result;
+// }
+
 /**
  * Compute the trajectory from two points
  *
@@ -1568,9 +1589,9 @@ geopoint_lwline(Datum value1, Datum value2)
  * the temporal spatial relationships, etc.
  */
 Datum
-geopoint_line(Datum value1, Datum value2)
+line_make(Datum value1, Datum value2)
 {
-  LWGEOM *traj = (LWGEOM *) geopoint_lwline(value1, value2);
+  LWGEOM *traj = (LWGEOM *) lwline_make(value1, value2);
   GSERIALIZED *result = geo_serialize(traj);
   lwgeom_free(traj);
   return PointerGetDatum(result);

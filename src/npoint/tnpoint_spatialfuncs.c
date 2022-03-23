@@ -970,20 +970,20 @@ tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
   }
   ensure_has_not_Z_gs(gs);
 
-  Temporal *geomtemp = tnpoint_tgeompoint(temp);
-  Temporal *geomresult = tpoint_restrict_geometry_internal(geomtemp,
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *resultgeom = tpoint_restrict_geometry_internal(tempgeom,
     PointerGetDatum(gs), atfunc);
   Temporal *result = NULL;
-  if (geomresult != NULL)
+  if (resultgeom != NULL)
   {
-    /* We do not do call the function tgeompoint_to_tnpoint to avoid
+    /* We do not call the function tgeompoint_to_tnpoint to avoid
      * roundoff errors */
-    PeriodSet *ps = temporal_get_time_internal(geomresult);
+    PeriodSet *ps = temporal_get_time_internal(resultgeom);
     result = temporal_restrict_periodset_internal(temp, ps, REST_AT);
-    pfree(geomresult);
+    pfree(resultgeom);
     pfree(ps);
   }
-  pfree(geomtemp);
+  pfree(tempgeom);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result == NULL)

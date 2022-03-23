@@ -157,8 +157,8 @@ extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   bool linear);
-extern LWLINE *geopoint_lwline(Datum value1, Datum value2);
-extern Datum geopoint_line(Datum value1, Datum value2);
+extern LWLINE *lwline_make(Datum value1, Datum value2);
+extern Datum line_make(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);
