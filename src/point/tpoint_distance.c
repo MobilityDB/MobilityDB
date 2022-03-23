@@ -70,9 +70,10 @@
  * from measures.c
  */
 static double
-lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+lw_dist2d_line_geo(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   long double *fraction)
 {
+  assert(lw1->type == LINETYPE);
   DISTPTS thedl;
   thedl.mode = mode;
   thedl.distance= FLT_MAX;
@@ -94,10 +95,11 @@ lw_dist2d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * from measures3d.c
  */
 static double
-lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+lw_dist3d_line_geo(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   long double *fraction)
 {
   assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
+  assert(lw1->type == LINETYPE);
   DISTPTS3D thedl;
   thedl.mode = mode;
   thedl.distance= FLT_MAX;
@@ -116,9 +118,10 @@ lw_dist3d_point_dist(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  * (geodetic version).
  */
 static double
-lw_dist_sphere_point_dist(const LWGEOM *lw1, const LWGEOM *lw2,
+lw_dist_sphere_line_geo(const LWGEOM *lw1, const LWGEOM *lw2,
   long double *fraction)
 {
+  assert(lw1->type == LINETYPE);
   double min_dist = FLT_MAX;
   double max_dist = FLT_MAX;
   GEOGRAPHIC_POINT closest1, closest2, proj;
@@ -611,18 +614,16 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
  */
 static double
 NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
-  LWGEOM *lwgeom, Datum *closest, TimestampTz *t, bool *tofree)
+  LWGEOM *lwgeom, TimestampTz *t)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  *tofree = false;
   double dist;
   long double fraction;
 
   /* Constant segment */
   if (datum_point_eq(value1, value2))
   {
-    *closest = value1;
     *t = inst1->t;
     return 0.0;
   }
@@ -630,31 +631,26 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
   /* The trajectory is a line */
   LWLINE *lwline = geopoint_lwline(value1, value2);
   if (MOBDB_FLAGS_GET_GEODETIC(inst1->flags))
-    dist = lw_dist_sphere_point_dist((LWGEOM *) lwline, lwgeom, &fraction);
+    dist = lw_dist_sphere_line_geo((LWGEOM *) lwline, lwgeom, &fraction);
   else
     dist = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-      lw_dist3d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction) :
-      lw_dist2d_point_dist((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
+      lw_dist3d_line_geo((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction) :
+      lw_dist2d_line_geo((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
   lwline_free(lwline);
 
   if (fabsl(fraction) < MOBDB_EPSILON)
   {
-    *closest = value1;
     *t = inst1->t;
     return 0.0;
   }
   if (fabsl(fraction - 1.0) < MOBDB_EPSILON)
   {
-    *closest = value2;
     *t = inst2->t;
     return 0.0;
   }
 
   double duration = (inst2->t - inst1->t);
   *t = inst1->t + (TimestampTz) (duration * fraction);
-  *tofree = true;
-  /* We are sure that it is linear interpolation */
-  *closest =  tsegment_value_at_timestamp(inst1, inst2, true, *t);
   return dist;
 }
 
@@ -672,13 +668,12 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  */
 static double
 NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
-  datum_func2 func, Datum *closest, TimestampTz *t, bool *tofree)
+  datum_func2 func, TimestampTz *t)
 {
   const TInstant *inst1;
   double dist;
   Datum point;
   TimestampTz t1;
-  bool tofree1;
 
   /* Instantaneous sequence */
   if (seq->count == 1)
@@ -689,9 +684,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
     if (dist < mindist)
     {
       mindist = dist;
-      *closest = point;
       *t = inst1->t;
-      *tofree = false;
     }
     return mindist;
   }
@@ -699,19 +692,14 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   inst1 = tsequence_inst_n(seq, 0);
-  *tofree = false;
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    dist = NAI_tpointsegm_linear_geo1(inst1, inst2, lwgeom, &point, &t1, &tofree1);
+    dist = NAI_tpointsegm_linear_geo1(inst1, inst2, lwgeom, &t1);
     if (dist < mindist)
     {
-      if (*tofree)
-        pfree(DatumGetPointer(*closest));
       mindist = dist;
-      *closest = point;
       *t = t1;
-      *tofree = tofree1;
     }
     if (mindist == 0.0)
       break;
@@ -727,13 +715,9 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
 static TInstant *
 NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 {
-  Datum closest;
   TimestampTz t;
-  bool tofree;
-  NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &closest, &t, &tofree);
-  TInstant *result = tinstant_make(closest, t, seq->basetypid);
-  if (tofree)
-    pfree(DatumGetPointer(closest));
+  NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &t);
+  TInstant *result = tsequence_at_timestamp(seq, t);
   return result;
 }
 
@@ -744,30 +728,21 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
 static TInstant *
 NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
 {
-  Datum point, closest = PointerGetDatum(NULL); /* make compiler quiet */
   TimestampTz t = 0, t1; /* make compiler quiet */
-  bool tofree = false, tofree1;
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, func,
-      &point, &t1, &tofree1);
+    double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, func, &t1);
     if (dist < mindist)
     {
-      if (tofree)
-        pfree(DatumGetPointer(closest));
       mindist = dist;
-      closest = point;
       t = t1;
-      tofree = tofree1;
     }
     if (mindist == 0.0)
       break;
   }
-  TInstant *result = tinstant_make(closest, t, ts->basetypid);
-  if (tofree)
-    pfree(DatumGetPointer(closest));
+  TInstant *result = (TInstant *) tsequenceset_restrict_timestamp(ts, t, REST_AT);
   return result;
 }
 
