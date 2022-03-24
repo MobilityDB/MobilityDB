@@ -122,14 +122,14 @@ tpointinstarr_gbox(const TInstant **instants, int count, GBOX *box)
   edge_gbox.flags = box->flags;
 
   /* Initialization with the first instant */
-  p = datum_get_point2d_p(tinstant_value(instants[0]));
+  p = datum_point2d_p(tinstant_value(instants[0]));
   ll2cart(p, &A1);
   box->xmin = box->xmax = A1.x;
   box->ymin = box->ymax = A1.y;
   box->zmin = box->zmax = A1.z;
   for (int i = 1; i < count; i++)
   {
-    p = datum_get_point2d_p(tinstant_value(instants[i]));
+    p = datum_point2d_p(tinstant_value(instants[i]));
     ll2cart(p, &A2);
     edge_calculate_gbox(&A1, &A2, &edge_gbox);
     /* Expand the box where necessary */

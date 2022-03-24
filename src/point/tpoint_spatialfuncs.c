@@ -106,7 +106,7 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * detoasted. This is typically the case when the datum is within a Temporal*
  * that has been already detoasted with PG_GETARG_TEMPORAL*
  * The first variant (e.g. datum_get_point2d) is slower than the second (e.g.
- * datum_get_point2d_p) since the point is passed by value and thus the bytes
+ * datum_point2d_p) since the point is passed by value and thus the bytes
  * are copied. The second version is declared const because you aren't allowed
  * to modify the values, only read them.
  */
@@ -174,7 +174,7 @@ datum_point4d(Datum geom, POINT4D *p)
  * Returns a pointer to a 2D point from the datum
  */
 const POINT2D *
-datum_get_point2d_p(Datum geom)
+datum_point2d_p(Datum geom)
 {
   const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   return (POINT2D *) GS_POINT_PTR(gs);
@@ -184,7 +184,7 @@ datum_get_point2d_p(Datum geom)
  * Returns a 2D point from the serialized geometry
  */
 const POINT2D *
-gs_get_point2d_p(const GSERIALIZED *gs)
+gserialized_point2d_p(const GSERIALIZED *gs)
 {
   return (POINT2D *) GS_POINT_PTR(gs);
 }
@@ -193,7 +193,7 @@ gs_get_point2d_p(const GSERIALIZED *gs)
  * Returns a pointer to a 3DZ point from the datum
  */
 const POINT3DZ *
-datum_get_point3dz_p(Datum geom)
+datum_point3dz_p(Datum geom)
 {
   const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   return (POINT3DZ *) GS_POINT_PTR(gs);
@@ -203,7 +203,7 @@ datum_get_point3dz_p(Datum geom)
  * Returns a 3DZ point from the serialized geometry
  */
 const POINT3DZ *
-gs_get_point3dz_p(const GSERIALIZED *gs)
+gserialized_point3dz_p(const GSERIALIZED *gs)
 {
   return (POINT3DZ *) GS_POINT_PTR(gs);
 }
@@ -222,15 +222,15 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
     return false;
   if (FLAGS_GET_Z(GS_FLAGS(gs1)))
   {
-    const POINT3DZ *point1 = gs_get_point3dz_p(gs1);
-    const POINT3DZ *point2 = gs_get_point3dz_p(gs2);
+    const POINT3DZ *point1 = gserialized_point3dz_p(gs1);
+    const POINT3DZ *point2 = gserialized_point3dz_p(gs2);
     return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y) &&
       FP_EQUALS(point1->z, point2->z);
   }
   else
   {
-    const POINT2D *point1 = gs_get_point2d_p(gs1);
-    const POINT2D *point2 = gs_get_point2d_p(gs2);
+    const POINT2D *point1 = gserialized_point2d_p(gs1);
+    const POINT2D *point2 = gserialized_point2d_p(gs2);
     return FP_EQUALS(point1->x, point2->x) && FP_EQUALS(point1->y, point2->y);
   }
 }
@@ -287,7 +287,7 @@ datum_transform(Datum value, Datum srid)
  * Select the appropriate distance function
  */
 datum_func2
-get_distance_fn(int16 flags)
+distance_fn(int16 flags)
 {
   datum_func2 result;
   if (MOBDB_FLAGS_GET_GEODETIC(flags))
@@ -302,7 +302,7 @@ get_distance_fn(int16 flags)
  * Select the appropriate distance function
  */
 datum_func2
-get_pt_distance_fn(int16 flags)
+pt_distance_fn(int16 flags)
 {
   datum_func2 result;
   if (MOBDB_FLAGS_GET_GEODETIC(flags))
@@ -355,8 +355,8 @@ geog_distance(Datum geog1, Datum geog2)
 Datum
 pt_distance2d(Datum geom1, Datum geom2)
 {
-  const POINT2D *p1 = datum_get_point2d_p(geom1);
-  const POINT2D *p2 = datum_get_point2d_p(geom2);
+  const POINT2D *p1 = datum_point2d_p(geom1);
+  const POINT2D *p2 = datum_point2d_p(geom2);
   return Float8GetDatum(distance2d_pt_pt(p1, p2));
 }
 
@@ -366,8 +366,8 @@ pt_distance2d(Datum geom1, Datum geom2)
 Datum
 pt_distance3d(Datum geom1, Datum geom2)
 {
-  const POINT3DZ *p1 = datum_get_point3dz_p(geom1);
-  const POINT3DZ *p2 = datum_get_point3dz_p(geom2);
+  const POINT3DZ *p1 = datum_point3dz_p(geom1);
+  const POINT3DZ *p2 = datum_point3dz_p(geom2);
   return Float8GetDatum(distance3d_pt_pt((POINT3D *) p1, (POINT3D *) p2));
 }
 
@@ -760,15 +760,15 @@ point_on_segment(Datum start, Datum end, Datum point)
   }
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
-    const POINT3DZ *p1 = datum_get_point3dz_p(start);
-    const POINT3DZ *p2 = datum_get_point3dz_p(end);
-    const POINT3DZ *p = datum_get_point3dz_p(point);
+    const POINT3DZ *p1 = datum_point3dz_p(start);
+    const POINT3DZ *p2 = datum_point3dz_p(end);
+    const POINT3DZ *p = datum_point3dz_p(point);
     return point3dz_on_segment(p, p1, p2);
   }
   /* 2D */
-  const POINT2D *p1 = datum_get_point2d_p(start);
-  const POINT2D *p2 = datum_get_point2d_p(end);
-  const POINT2D *p = datum_get_point2d_p(point);
+  const POINT2D *p1 = datum_point2d_p(start);
+  const POINT2D *p2 = datum_point2d_p(end);
+  const POINT2D *p = datum_point2d_p(point);
   return point2d_on_segment(p, p1, p2);
 }
 
@@ -1239,9 +1239,9 @@ geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
   {
     if (FLAGS_GET_Z(GS_FLAGS(gs)))
     {
-      const POINT3DZ *p1 = datum_get_point3dz_p(start);
-      const POINT3DZ *p2 = datum_get_point3dz_p(end);
-      const POINT3DZ *p = datum_get_point3dz_p(point);
+      const POINT3DZ *p1 = datum_point3dz_p(start);
+      const POINT3DZ *p2 = datum_point3dz_p(end);
+      const POINT3DZ *p = datum_point3dz_p(point);
       POINT3DZ proj;
       result = closest_point3dz_on_segment_ratio(p, p1, p2, &proj);
       /* For robustness, force 0/1 when closest point == start/endpoint */
@@ -1254,9 +1254,9 @@ geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
     }
     else
     {
-      const POINT2D *p1 = datum_get_point2d_p(start);
-      const POINT2D *p2 = datum_get_point2d_p(end);
-      const POINT2D *p = datum_get_point2d_p(point);
+      const POINT2D *p1 = datum_point2d_p(start);
+      const POINT2D *p2 = datum_point2d_p(end);
+      const POINT2D *p = datum_point2d_p(point);
       POINT2D proj;
       result = closest_point2d_on_segment_ratio(p, p1, p2, &proj);
       if (p2d_same(p1, &proj))
@@ -1329,10 +1329,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   if (MOBDB_FLAGS_GET_Z(start1->flags)) /* 3D */
   {
     long double zfraction = 0, zdenum;
-    const POINT3DZ *p1 = datum_get_point3dz_p(tinstant_value(start1));
-    const POINT3DZ *p2 = datum_get_point3dz_p(tinstant_value(end1));
-    const POINT3DZ *p3 = datum_get_point3dz_p(tinstant_value(start2));
-    const POINT3DZ *p4 = datum_get_point3dz_p(tinstant_value(end2));
+    const POINT3DZ *p1 = datum_point3dz_p(tinstant_value(start1));
+    const POINT3DZ *p2 = datum_point3dz_p(tinstant_value(end1));
+    const POINT3DZ *p3 = datum_point3dz_p(tinstant_value(start2));
+    const POINT3DZ *p4 = datum_point3dz_p(tinstant_value(end2));
     xdenum = p2->x - p1->x - p4->x + p3->x;
     ydenum = p2->y - p1->y - p4->y + p3->y;
     zdenum = p2->z - p1->z - p4->z + p3->z;
@@ -1381,10 +1381,10 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
   }
   else /* 2D */
   {
-    const POINT2D *p1 = datum_get_point2d_p(tinstant_value(start1));
-    const POINT2D *p2 = datum_get_point2d_p(tinstant_value(end1));
-    const POINT2D *p3 = datum_get_point2d_p(tinstant_value(start2));
-    const POINT2D *p4 = datum_get_point2d_p(tinstant_value(end2));
+    const POINT2D *p1 = datum_point2d_p(tinstant_value(start1));
+    const POINT2D *p2 = datum_point2d_p(tinstant_value(end1));
+    const POINT2D *p3 = datum_point2d_p(tinstant_value(start2));
+    const POINT2D *p4 = datum_point2d_p(tinstant_value(end2));
     xdenum = p2->x - p1->x - p4->x + p3->x;
     ydenum = p2->y - p1->y - p4->y + p3->y;
     if (xdenum == 0 && ydenum == 0)
@@ -1547,38 +1547,23 @@ lwpointarr_make_trajectory(LWGEOM **lwpoints, int count, bool linear)
 LWLINE *
 lwline_make(Datum value1, Datum value2)
 {
-  GSERIALIZED *gs1 = (GSERIALIZED *) DatumGetPointer(value1);
-  GSERIALIZED *gs2 = (GSERIALIZED *) DatumGetPointer(value2);
-  LWGEOM *geoms[2];
-  geoms[0] = lwgeom_from_gserialized(gs1);
-  geoms[1] = lwgeom_from_gserialized(gs2);
-  LWLINE *result = lwline_from_lwgeom_array(geoms[0]->srid, 2, geoms);
-  FLAGS_SET_Z(result->flags, FLAGS_GET_Z(geoms[0]->flags));
-  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(geoms[0]->flags));
-  lwgeom_free(geoms[0]); lwgeom_free(geoms[1]);
+  /* Obtain the flags and the SRID from the first value */
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
+  int srid = gserialized_get_srid(gs);
+  int hasz = FLAGS_GET_Z(GS_FLAGS(gs));
+  int isgeodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
+  /* Since there is no M value a 0 value is passed */
+  POINTARRAY *pa = ptarray_construct_empty(hasz, 0, 2);
+  POINT4D pt;
+  datum_point4d(value1, &pt);
+  ptarray_append_point(pa, &pt, LW_TRUE);
+  datum_point4d(value2, &pt);
+  ptarray_append_point(pa, &pt, LW_TRUE);
+  LWLINE *result = lwline_construct(srid, NULL, pa);
+  FLAGS_SET_Z(result->flags, hasz);
+  FLAGS_SET_GEODETIC(result->flags, isgeodetic);
   return result;
 }
-
-// LWLINE *
-// lwline_make(Datum value1, Datum value2)
-// {
-  // /* Obtain the flags and the SRID from the first value */
-  // GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
-  // int srid = gserialized_get_srid(gs);
-  // int hasz = FLAGS_GET_Z(GS_FLAGS(gs));
-  // int isgeodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
-  // /* We are sure that there is no M value */
-  // POINTARRAY *pa = ptarray_construct_empty(hasz, 0, 2);
-  // POINT4D pt;
-  // datum_point4d(value1, &pt);
-  // ptarray_append_point(pa, &pt, LW_TRUE);
-  // datum_point4d(value2, &pt);
-  // ptarray_append_point(pa, &pt, LW_TRUE);
-  // LWLINE *result = lwline_construct(srid, NULL, pa);
-  // FLAGS_SET_Z(result->flags, hasz);
-  // FLAGS_SET_GEODETIC(result->flags, isgeodetic);
-  // return result;
-// }
 
 /**
  * Compute the trajectory from two points
@@ -2843,11 +2828,11 @@ tpointseq_length_2d(const TSequence *seq)
 {
   double result = 0;
   Datum start = tinstant_value(tsequence_inst_n(seq, 0));
-  const POINT2D *p1 = datum_get_point2d_p(start);
+  const POINT2D *p1 = datum_point2d_p(start);
   for (int i = 1; i < seq->count; i++)
   {
     Datum end = tinstant_value(tsequence_inst_n(seq, i));
-    const POINT2D *p2 = datum_get_point2d_p(end);
+    const POINT2D *p2 = datum_point2d_p(end);
     result += sqrt( ((p1->x - p2->x)*(p1->x - p2->x)) +
       ((p1->y - p2->y)*(p1->y - p2->y)) );
     start = end;
@@ -2866,11 +2851,11 @@ tpointseq_length_3d(const TSequence *seq)
 {
   double result = 0;
   Datum start = tinstant_value(tsequence_inst_n(seq, 0));
-  const POINT3DZ *p1 = datum_get_point3dz_p(start);
+  const POINT3DZ *p1 = datum_point3dz_p(start);
   for (int i = 1; i < seq->count; i++)
   {
     Datum end = tinstant_value(tsequence_inst_n(seq, i));
-    const POINT3DZ *p2 = datum_get_point3dz_p(end);
+    const POINT3DZ *p2 = datum_point3dz_p(end);
     result += sqrt( ((p1->x - p2->x)*(p1->x - p2->x)) +
       ((p1->y - p2->y)*(p1->y - p2->y)) +
       ((p1->z - p2->z)*(p1->z - p2->z)) );
@@ -3000,7 +2985,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   else
   /* Linear interpolation */
   {
-    datum_func2 func = get_pt_distance_fn(seq->flags);
+    datum_func2 func = pt_distance_fn(seq->flags);
     const TInstant *inst1 = tsequence_inst_n(seq, 0);
     Datum value1 = tinstant_value(inst1);
     double length = prevlength;
@@ -3094,7 +3079,7 @@ tpointseq_speed(const TSequence *seq)
 
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  datum_func2 func = get_pt_distance_fn(seq->flags);
+  datum_func2 func = pt_distance_fn(seq->flags);
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double speed;
@@ -3355,8 +3340,8 @@ tpoint_twcentroid(PG_FUNCTION_ARGS)
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
 {
-  const POINT2D *p1 = datum_get_point2d_p(geom1);
-  const POINT2D *p2 = datum_get_point2d_p(geom2);
+  const POINT2D *p1 = datum_point2d_p(geom1);
+  const POINT2D *p2 = datum_point2d_p(geom2);
   double result;
   azimuth_pt_pt(p1, p2, &result);
   return Float8GetDatum(result);
@@ -3531,8 +3516,8 @@ alpha(const POINT2D *p1, const POINT2D *p2)
 static Datum
 geom_bearing(Datum point1, Datum point2)
 {
-  const POINT2D *p1 = datum_get_point2d_p(point1);
-  const POINT2D *p2 = datum_get_point2d_p(point2);
+  const POINT2D *p1 = datum_point2d_p(point1);
+  const POINT2D *p2 = datum_point2d_p(point2);
   if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
       (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;
@@ -3563,8 +3548,8 @@ geom_bearing(Datum point1, Datum point2)
 static Datum
 geog_bearing(Datum point1, Datum point2)
 {
-  const POINT2D *p1 = datum_get_point2d_p(point1);
-  const POINT2D *p2 = datum_get_point2d_p(point2);
+  const POINT2D *p1 = datum_point2d_p(point1);
+  const POINT2D *p2 = datum_point2d_p(point2);
   if ((fabs(p1->x - p2->x) <= MOBDB_EPSILON) &&
       (fabs(p1->y - p2->y) <= MOBDB_EPSILON))
     return 0.0;
@@ -3626,9 +3611,9 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
 {
   Datum dstart = tinstant_value(start);
   Datum dend = tinstant_value(end);
-  const POINT2D *p1 = datum_get_point2d_p(dstart);
-  const POINT2D *p2 = datum_get_point2d_p(dend);
-  const POINT2D *p = datum_get_point2d_p(point);
+  const POINT2D *p1 = datum_point2d_p(dstart);
+  const POINT2D *p2 = datum_point2d_p(dend);
+  const POINT2D *p = datum_point2d_p(point);
   const POINT2D *q;
   long double seglength, length, fraction;
   Datum proj;
@@ -3669,7 +3654,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
   /* Compute the projected value only for geometries */
   if (! geodetic)
     proj = tsegment_value_at_timestamp(start, end, LINEAR, *t);
-  q = datum_get_point2d_p(proj);
+  q = datum_point2d_p(proj);
   /* We add a turning point only if p is to the North of q */
   return FP_GTEQ(p->y, q->y) ? true : false;
 }
@@ -3692,10 +3677,10 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
   const TInstant *end2, Datum *value, TimestampTz *t)
 {
   assert(!MOBDB_FLAGS_GET_GEODETIC(start1->flags));
-  const POINT2D *sp1 = datum_get_point2d_p(tinstant_value(start1));
-  const POINT2D *ep1 = datum_get_point2d_p(tinstant_value(end1));
-  const POINT2D *sp2 = datum_get_point2d_p(tinstant_value(start2));
-  const POINT2D *ep2 = datum_get_point2d_p(tinstant_value(end2));
+  const POINT2D *sp1 = datum_point2d_p(tinstant_value(start1));
+  const POINT2D *ep1 = datum_point2d_p(tinstant_value(end1));
+  const POINT2D *sp2 = datum_point2d_p(tinstant_value(start2));
+  const POINT2D *ep2 = datum_point2d_p(tinstant_value(end2));
   /* It there is a North passage we call the function
     tgeompoint_min_dist_at_timestamp */
   bool ds = (sp1->x - sp2->x) > 0;
@@ -3730,8 +3715,8 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
    * North of the second */
   Datum value1 = tsegment_value_at_timestamp(start1, end1, LINEAR, *t);
   Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
-  sp1 = datum_get_point2d_p(value1);
-  sp2 = datum_get_point2d_p(value2);
+  sp1 = datum_point2d_p(value1);
+  sp2 = datum_point2d_p(value2);
   if (sp1->y > sp2->y) // TODO Use MOBDB_EPSILON
     return false;
  /* We know that the bearing is 0 */
@@ -5260,7 +5245,7 @@ point2D_add_z(Datum point, Datum z, Datum srid)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(point);
   bool geodetic = FLAGS_GET_GEODETIC(GS_FLAGS(gs));
-  const POINT2D *pt = datum_get_point2d_p(point);
+  const POINT2D *pt = datum_point2d_p(point);
   double z1 = DatumGetFloat8(z);
   int srid1 = DatumGetInt32(srid);
   LWPOINT *lwpoint = lwpoint_make3dz(srid1, pt->x, pt->y, z1);

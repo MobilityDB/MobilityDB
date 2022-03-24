@@ -106,7 +106,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
   TInstant *result;
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
+    const POINT3DZ *point = datum_point3dz_p(tinstant_value(inst));
     double4 dvalue;
     double4_set(point->x, point->y, point->z, 1, &dvalue);
     result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
@@ -114,7 +114,7 @@ tpointinst_transform_tcentroid(const TInstant *inst)
   }
   else
   {
-    const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
+    const POINT2D *point = datum_point2d_p(tinstant_value(inst));
     double3 dvalue;
     double3_set(point->x, point->y, 1, &dvalue);
     result = tinstant_make(PointerGetDatum(&dvalue), inst->t,

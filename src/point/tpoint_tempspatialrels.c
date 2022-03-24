@@ -668,10 +668,10 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   long double a, b, c;
   if (hasz) /* 3D */
   {
-    const POINT3DZ *p1 = datum_get_point3dz_p(sv1);
-    const POINT3DZ *p2 = datum_get_point3dz_p(ev1);
-    const POINT3DZ *p3 = datum_get_point3dz_p(sv2);
-    const POINT3DZ *p4 = datum_get_point3dz_p(ev2);
+    const POINT3DZ *p1 = datum_point3dz_p(sv1);
+    const POINT3DZ *p2 = datum_point3dz_p(ev1);
+    const POINT3DZ *p3 = datum_point3dz_p(sv2);
+    const POINT3DZ *p4 = datum_point3dz_p(ev2);
 
     /* per1 functions
      * x(t) = a1 * t + c1
@@ -712,10 +712,10 @@ tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2, Datum ev2,
   }
   else /* 2D */
   {
-    const POINT2D *p1 = datum_get_point2d_p(sv1);
-    const POINT2D *p2 = datum_get_point2d_p(ev1);
-    const POINT2D *p3 = datum_get_point2d_p(sv2);
-    const POINT2D *p4 = datum_get_point2d_p(ev2);
+    const POINT2D *p1 = datum_point2d_p(sv1);
+    const POINT2D *p2 = datum_point2d_p(ev1);
+    const POINT2D *p3 = datum_point2d_p(sv2);
+    const POINT2D *p4 = datum_point2d_p(ev2);
     /* per1 functions
      * x(t) = a1 * t + c1
      * y(t) = a2 * t + c2 */
@@ -1012,9 +1012,9 @@ tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
   long double a, b, c;
   if (hasz) /* 3D */
   {
-    const POINT3DZ *p1 = datum_get_point3dz_p(start);
-    const POINT3DZ *p2 = datum_get_point3dz_p(end);
-    const POINT3DZ *p3 = datum_get_point3dz_p(point);
+    const POINT3DZ *p1 = datum_point3dz_p(start);
+    const POINT3DZ *p2 = datum_point3dz_p(end);
+    const POINT3DZ *p3 = datum_point3dz_p(point);
 
     /* per1 functions
      * x(t) = a1 * t + c1
@@ -1052,9 +1052,9 @@ tdwithin_tpointsegm_point(Datum start, Datum end, Datum point,
   }
   else /* 2D */
   {
-    const POINT2D *p1 = datum_get_point2d_p(start);
-    const POINT2D *p2 = datum_get_point2d_p(end);
-    const POINT2D *p3 = datum_get_point2d_p(point);
+    const POINT2D *p1 = datum_point2d_p(start);
+    const POINT2D *p2 = datum_point2d_p(end);
+    const POINT2D *p3 = datum_point2d_p(point);
     /* per1 functions
      * x(t) = a1 * t + c1
      * y(t) = a2 * t + c2 */

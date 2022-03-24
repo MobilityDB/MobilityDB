@@ -325,7 +325,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
     char z[OUT_DOUBLE_BUFFER_SIZE];
-    const POINT3DZ *pt = datum_get_point3dz_p(tinstant_value(inst));
+    const POINT3DZ *pt = datum_point3dz_p(tinstant_value(inst));
 #if POSTGIS_VERSION_NUMBER < 30000
     lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
     lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
@@ -339,7 +339,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
   }
   else
   {
-    const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
+    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
 #if POSTGIS_VERSION_NUMBER < 30000
     lwprint_double(pt->x, precision, x, OUT_DOUBLE_BUFFER_SIZE);
     lwprint_double(pt->y, precision, y, OUT_DOUBLE_BUFFER_SIZE);
@@ -1131,14 +1131,14 @@ coords_ts_to_wkb_buf(const TInstant *inst, uint8_t *buf, uint8_t variant)
 {
   if (MOBDB_FLAGS_GET_Z(inst->flags))
   {
-    const POINT3DZ *point = datum_get_point3dz_p(tinstant_value(inst));
+    const POINT3DZ *point = datum_point3dz_p(tinstant_value(inst));
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
     buf = double_to_wkb_buf(point->z, buf, variant);
   }
   else
   {
-    const POINT2D *point = datum_get_point2d_p(tinstant_value(inst));
+    const POINT2D *point = datum_point2d_p(tinstant_value(inst));
     buf = double_to_wkb_buf(point->x, buf, variant);
     buf = double_to_wkb_buf(point->y, buf, variant);
   }
