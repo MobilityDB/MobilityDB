@@ -748,7 +748,8 @@ stbox_to_geometry(PG_FUNCTION_ARGS)
     GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
     gserialized_set_srid(g, box->srid);
     result = PointerGetDatum(g);
-    PG_FREE_IF_COPY_P(DatumGetPointer(geom), g);
+    PG_FREE_IF_COPY_P(g, DatumGetPointer(geom));
+    pfree(DatumGetPointer(geom));
   }
   PG_RETURN_DATUM(result);
 }

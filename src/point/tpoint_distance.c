@@ -63,92 +63,89 @@
 /*****************************************************************************/
 
 /**
- * Compute the projected point and the distance between the closest point
- * (2D version).
+ * Returns the distance between the two geometries. When the first geometry
+ * is a segment it also computes a value between 0 and 1 that represents
+ * the location in the segment of the closest point to the second geometry,
+ * as a fraction of total segment length.
  *
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
  * from measures.c
  */
+
 static double
-lw_dist2d_line_geo(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
+lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   long double *fraction)
 {
-  assert(lw1->type == LINETYPE);
-  DISTPTS thedl;
-  thedl.mode = mode;
-  thedl.distance= FLT_MAX;
-  thedl.tolerance = 0;
-  lw_dist2d_recursive(lw1, lw2, &thedl);
-  LWLINE *lwline = lwgeom_as_lwline(lw1);
-  POINT2D a, b, closest;
-  getPoint2d_p(lwline->points, 0, &a);
-  getPoint2d_p(lwline->points, 1, &b);
-  *fraction = closest_point2d_on_segment_ratio(&thedl.p1, &a, &b, &closest);
-  return thedl.distance;
-}
-
-/**
- * Compute the projected point and the distance between the closest point
- * (3D version).
- *
- * @note Function inspired by PostGIS function lw_dist3d_distancepoint
- * from measures3d.c
- */
-static double
-lw_dist3d_line_geo(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
-  long double *fraction)
-{
-  assert(FLAGS_GET_Z(lw1->flags) && FLAGS_GET_Z(lw2->flags));
-  assert(lw1->type == LINETYPE);
-  DISTPTS3D thedl;
-  thedl.mode = mode;
-  thedl.distance= FLT_MAX;
-  thedl.tolerance = 0;
-  lw_dist3d_recursive(lw1, lw2, &thedl);
-  LWLINE *lwline = lwgeom_as_lwline(lw1);
-  POINT3DZ a, b, closest;
-  getPoint3dz_p(lwline->points, 0, &a);
-  getPoint3dz_p(lwline->points, 1, &b);
-  *fraction = closest_point3dz_on_segment_ratio(&thedl.p1, &a, &b, &closest);
-  return thedl.distance;
-}
-
-/**
- * Compute the projected point and the distance between the closest point
- * (geodetic version).
- */
-static double
-lw_dist_sphere_line_geo(const LWGEOM *lw1, const LWGEOM *lw2,
-  long double *fraction)
-{
-  assert(lw1->type == LINETYPE);
-  double min_dist = FLT_MAX;
-  double max_dist = FLT_MAX;
-  GEOGRAPHIC_POINT closest1, closest2, proj;
-  GEOGRAPHIC_EDGE e;
-  POINT4D a, b;
-
-  CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(lw1);
-  CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(lw2);
-  circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
-    &min_dist, &max_dist, &closest1, &closest2);
-  double result = sphere_distance(&closest1, &closest2);
-
-  /* Initialize edge */
-  LWLINE *lwline = lwgeom_as_lwline(lw1);
-  getPoint4d_p(lwline->points, 0, &a);
-  getPoint4d_p(lwline->points, 1, &b);
-  geographic_point_init(a.x, a.y, &(e.start));
-  geographic_point_init(b.x, b.y, &(e.end));
-
-  /* Get the spherical distance between point and edge */
-  edge_distance_to_point(&e, &closest1, &proj);
-
-  /* Compute distance from beginning of the segment to closest point */
-  long double seglength = sphere_distance(&(e.start), &(e.end));
-  long double length = sphere_distance(&(e.start), &proj);
-  *fraction = length / seglength;
-
+  double result;
+  if (FLAGS_GET_GEODETIC(lw1->flags))
+  {
+    double min_dist = FLT_MAX;
+    double max_dist = FLT_MAX;
+    GEOGRAPHIC_POINT closest1, closest2;
+    GEOGRAPHIC_EDGE e;
+    CIRC_NODE *circ_tree1 = lwgeom_calculate_circ_tree(lw1);
+    CIRC_NODE *circ_tree2 = lwgeom_calculate_circ_tree(lw2);
+    circ_tree_distance_tree_internal(circ_tree1, circ_tree2, FP_TOLERANCE,
+      &min_dist, &max_dist, &closest1, &closest2);
+    result = sphere_distance(&closest1, &closest2);
+    if (fraction != NULL)
+    {
+      assert(lw1->type == LINETYPE);
+      LWLINE *lwline = lwgeom_as_lwline(lw1);
+      /* Initialize edge */
+      POINT4D a, b;
+      GEOGRAPHIC_POINT proj;
+      getPoint4d_p(lwline->points, 0, &a);
+      getPoint4d_p(lwline->points, 1, &b);
+      geographic_point_init(a.x, a.y, &(e.start));
+      geographic_point_init(b.x, b.y, &(e.end));
+      /* Get the spherical distance between point and edge */
+      edge_distance_to_point(&e, &closest1, &proj);
+      /* Compute distance from beginning of the segment to closest point */
+      long double seglength = sphere_distance(&(e.start), &(e.end));
+      long double length = sphere_distance(&(e.start), &proj);
+      *fraction = length / seglength;
+    }
+  }
+  else
+  {
+    if (FLAGS_GET_Z(lw1->flags))
+    {
+      DISTPTS3D dl;
+      dl.mode = mode;
+      dl.distance= FLT_MAX;
+      dl.tolerance = 0;
+      lw_dist3d_recursive(lw1, lw2, &dl);
+      result = dl.distance;
+      if (fraction != NULL)
+      {
+        assert(lw1->type == LINETYPE);
+        LWLINE *lwline = lwgeom_as_lwline(lw1);
+        POINT3DZ a, b, closest;
+        getPoint3dz_p(lwline->points, 0, &a);
+        getPoint3dz_p(lwline->points, 1, &b);
+        *fraction = closest_point3dz_on_segment_ratio(&dl.p1, &a, &b, &closest);
+      }
+    }
+    else
+    {
+      DISTPTS dl;
+      dl.mode = mode;
+      dl.distance= FLT_MAX;
+      dl.tolerance = 0;
+      lw_dist2d_recursive(lw1, lw2, &dl);
+      result = dl.distance;
+      if (fraction != NULL)
+      {
+        assert(lw1->type == LINETYPE);
+        LWLINE *lwline = lwgeom_as_lwline(lw1);
+        POINT2D a, b, closest;
+        getPoint2d_p(lwline->points, 0, &a);
+        getPoint2d_p(lwline->points, 1, &b);
+        *fraction = closest_point2d_on_segment_ratio(&dl.p1, &a, &b, &closest);
+      }
+    }
+  }
   return result;
 }
 
@@ -507,10 +504,9 @@ distance_tpoint_tpoint(PG_FUNCTION_ARGS)
  *
  * @param[in] ti Temporal point
  * @param[in] geo Geometry
- * @param[in] func Distance function
  */
 static TInstant *
-NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, datum_func2 func)
+NAI_tpointinstset_geo(const TInstantSet *ti, LWGEOM *geo)
 {
   double mindist = DBL_MAX;
   int number = 0; /* keep compiler quiet */
@@ -518,12 +514,15 @@ NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, datum_func2 func)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     Datum value = tinstant_value(inst);
-    double dist = DatumGetFloat8(func(value, geo));
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    LWGEOM *point = lwgeom_from_gserialized(gs);
+    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     if (dist < mindist)
     {
       mindist = dist;
       number = i;
     }
+    lwgeom_free(point);  
   }
   return tinstant_copy(tinstantset_inst_n(ti, number));
 }
@@ -542,22 +541,25 @@ NAI_tpointinstset_geo(const TInstantSet *ti, Datum geo, datum_func2 func)
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
- * @param[in] func Distance function
  * @param[out] mininst Instant with the minimum distance
  */
 static double
-NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
-  datum_func2 func, const TInstant **mininst)
+NAI_tpointseq_step_geo1(const TSequence *seq, LWGEOM *geo, double mindist,
+  const TInstant **mininst)
 {
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    double dist = DatumGetFloat8(func(tinstant_value(inst), geo));
+    Datum value = tinstant_value(inst);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+    LWGEOM *point = lwgeom_from_gserialized(gs);
+    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     if (dist < mindist)
     {
       mindist = dist;
       *mininst = inst;
     }
+    lwgeom_free(point);  
   }
   return mindist;
 }
@@ -568,13 +570,12 @@ NAI_tpointseq_step_geo1(const TSequence *seq, Datum geo, double mindist,
  *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
- * @param[in] func Distance function
  */
 static TInstant *
-NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
+NAI_tpointseq_step_geo(const TSequence *seq, LWGEOM *geo)
 {
   const TInstant *inst = NULL; /* make compiler quiet */
-  NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, func, &inst);
+  NAI_tpointseq_step_geo1(seq, geo, DBL_MAX, &inst);
   return tinstant_copy(inst);
 }
 
@@ -584,17 +585,16 @@ NAI_tpointseq_step_geo(const TSequence *seq, Datum geo, datum_func2 func)
  *
  * @param[in] ts Temporal point
  * @param[in] geo Geometry
- * @param[in] func Distance function
  */
 static TInstant *
-NAI_tpointseqset_step_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
+NAI_tpointseqset_step_geo(const TSequenceSet *ts, LWGEOM *geo)
 {
   const TInstant *inst = NULL; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, func, &inst);
+    mindist = NAI_tpointseq_step_geo1(seq, geo, mindist, &inst);
   }
   assert(inst != NULL);
   return tinstant_copy(inst);
@@ -630,12 +630,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
 
   /* The trajectory is a line */
   LWLINE *lwline = lwline_make(value1, value2);
-  if (MOBDB_FLAGS_GET_GEODETIC(inst1->flags))
-    dist = lw_dist_sphere_line_geo((LWGEOM *) lwline, lwgeom, &fraction);
-  else
-    dist = MOBDB_FLAGS_GET_Z(inst1->flags) ?
-      lw_dist3d_line_geo((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction) :
-      lw_dist2d_line_geo((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
+  dist = lw_distance_fraction((LWGEOM *) lwline, lwgeom, DIST_MIN, &fraction);
   lwline_free(lwline);
 
   if (fabsl(fraction) < MOBDB_EPSILON)
@@ -661,49 +656,45 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
- * @param[in] func Distance function
- * @param[out] closest Closest point
  * @param[out] t Timestamp
- * @param[out] tofree True when the resulting instant should be freed
  */
 static double
-NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
-  datum_func2 func, TimestampTz *t)
+NAI_tpointseq_linear_geo2(const TSequence *seq, LWGEOM *geo, double mindist,
+  TimestampTz *t)
 {
-  const TInstant *inst1;
   double dist;
-  Datum point;
-  TimestampTz t1;
+  const TInstant *inst1 = tsequence_inst_n(seq, 0);
 
-  /* Instantaneous sequence */
   if (seq->count == 1)
   {
-    inst1 = tsequence_inst_n(seq, 0);
-    point = tinstant_value(inst1);
-    dist =  DatumGetFloat8(func(point, geo));
+    /* Instantaneous sequence */
+    Datum value1 = tinstant_value(inst1);
+    GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value1);
+    LWGEOM *point = lwgeom_from_gserialized(gs);
+    dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
     if (dist < mindist)
     {
       mindist = dist;
       *t = inst1->t;
     }
-    return mindist;
   }
-
-  GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geo);
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  inst1 = tsequence_inst_n(seq, 0);
-  for (int i = 0; i < seq->count - 1; i++)
+  else
   {
-    const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
-    dist = NAI_tpointsegm_linear_geo1(inst1, inst2, lwgeom, &t1);
-    if (dist < mindist)
+    /* General case */
+    TimestampTz t1;
+    for (int i = 0; i < seq->count - 1; i++)
     {
-      mindist = dist;
-      *t = t1;
+      const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
+      dist = NAI_tpointsegm_linear_geo1(inst1, inst2, geo, &t1);
+      if (dist < mindist)
+      {
+        mindist = dist;
+        *t = t1;
+      }
+      if (mindist == 0.0)
+        break;
+      inst1 = inst2;
     }
-    if (mindist == 0.0)
-      break;
-    inst1 = inst2;
   }
   return mindist;
 }
@@ -713,10 +704,10 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, Datum geo, double mindist,
  * point with linear interpolation and the geometry
  */
 static TInstant *
-NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
+NAI_tpointseq_linear_geo(const TSequence *seq, LWGEOM *geo)
 {
   TimestampTz t;
-  NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, func, &t);
+  NAI_tpointseq_linear_geo2(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
   bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
@@ -731,14 +722,14 @@ NAI_tpointseq_linear_geo(const TSequence *seq, Datum geo, datum_func2 func)
  * point with linear interpolation and the geometry
  */
 static TInstant *
-NAI_tpointseqset_linear_geo(const TSequenceSet *ts, Datum geo, datum_func2 func)
+NAI_tpointseqset_linear_geo(const TSequenceSet *ts, LWGEOM *geo)
 {
   TimestampTz t, t1;
   double mindist = DBL_MAX;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, func, &t1);
+    double dist = NAI_tpointseq_linear_geo2(seq, geo, mindist, &t1);
     if (dist < mindist)
     {
       mindist = dist;
@@ -770,21 +761,22 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  datum_func2 func = get_distance_fn(temp->flags);
+  LWGEOM *geo = lwgeom_from_gserialized(gs);
   TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = tinstant_copy((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = NAI_tpointinstset_geo((TInstantSet *) temp, PointerGetDatum(gs), func);
+    result = NAI_tpointinstset_geo((TInstantSet *) temp, geo);
   else if (temp->subtype == SEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-      NAI_tpointseq_linear_geo((TSequence *) temp, PointerGetDatum(gs), func) :
-      NAI_tpointseq_step_geo((TSequence *) temp, PointerGetDatum(gs), func);
+      NAI_tpointseq_linear_geo((TSequence *) temp, geo) :
+      NAI_tpointseq_step_geo((TSequence *) temp, geo);
   else /* temp->subtype == SEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
-      NAI_tpointseqset_linear_geo((TSequenceSet *) temp, PointerGetDatum(gs), func) :
-      NAI_tpointseqset_step_geo((TSequenceSet *) temp, PointerGetDatum(gs), func);
+      NAI_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
+      NAI_tpointseqset_step_geo((TSequenceSet *) temp, geo);
+  lwgeom_free(geo);
   return result;
 }
 

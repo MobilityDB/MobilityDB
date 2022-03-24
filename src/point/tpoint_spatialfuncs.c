@@ -2017,8 +2017,8 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
     instants[i] = tinstant_make(point, inst->t, inst->basetypid);
     pfree(DatumGetPointer(point));
   }
-  pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
+  pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
   return tinstantset_make_free(instants, ti->count, MERGE_NO);
@@ -2068,8 +2068,8 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   for (int i = 0; i < seq->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);
-  pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
+  pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
 
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
@@ -2139,8 +2139,8 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
   for (int i = 0; i < ts->totalcount; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points); pfree(instants);
-  pfree(DatumGetPointer(multipoint)); pfree(DatumGetPointer(transf));
-  PG_FREE_IF_COPY_P(gs, DatumGetPointer(gs));
+  PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
+  pfree(DatumGetPointer(transf)); pfree(DatumGetPointer(multipoint));
   lwmpoint_free(lwmpoint);
   return result;
 }
@@ -4611,8 +4611,8 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
       k += gsinter_get_points(&points[k], gsinter);
+    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
-    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
   }
   pfree_array((void **) simpleseqs, countsimple);
   if (k == 0)
@@ -4902,8 +4902,8 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
     GSERIALIZED *gsinter = (GSERIALIZED *) PG_DETOAST_DATUM(inter);
     if (! gserialized_is_empty(gsinter))
       allperiods = tpointseq_interperiods(seq, gsinter, &totalcount);
+    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
-    PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
     if (totalcount == 0)
     {
       *count = 0;
@@ -4927,8 +4927,8 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
           &countpers[i]);
         totalcount += countpers[i];
       }
+      PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
       pfree(DatumGetPointer(inter));
-      PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(gsinter));
     }
     pfree_array((void **) simpleseqs, countsimple);
     if (totalcount == 0)
