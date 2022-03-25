@@ -105,7 +105,7 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * The datum_* functions suppose that the GSERIALIZED has been already
  * detoasted. This is typically the case when the datum is within a Temporal*
  * that has been already detoasted with PG_GETARG_TEMPORAL*
- * The first variant (e.g. datum_get_point2d) is slower than the second (e.g.
+ * The first variant (e.g. datum_point2d) is slower than the second (e.g.
  * datum_point2d_p) since the point is passed by value and thus the bytes
  * are copied. The second version is declared const because you aren't allowed
  * to modify the values, only read them.
@@ -125,7 +125,7 @@ store_fcinfo(FunctionCallInfo fcinfo)
  * Returns a 2D point from the datum
  */
 POINT2D
-datum_get_point2d(Datum geom)
+datum_point2d(Datum geom)
 {
   const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   POINT2D *point = (POINT2D *) GS_POINT_PTR(gs);
@@ -136,7 +136,7 @@ datum_get_point2d(Datum geom)
  * Returns a 3DZ point from the datum
  */
 POINT3DZ
-datum_get_point3dz(Datum geom)
+datum_point3dz(Datum geom)
 {
   const GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(geom);
   POINT3DZ *point = (POINT3DZ *) GS_POINT_PTR(gs);
@@ -4051,11 +4051,11 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
   POINT2D *points = palloc0(sizeof(POINT2D) * seq->count);
   /* bitarr is an array of bool for collecting the splits */
   bool *bitarr = palloc0(sizeof(bool) * seq->count);
-  points[0] = datum_get_point2d(tinstant_value(tsequence_inst_n(seq, 0)));
+  points[0] = datum_point2d(tinstant_value(tsequence_inst_n(seq, 0)));
   int numsplits = 0;
   for (int i = 1; i < seq->count; i++)
   {
-    points[i] = datum_get_point2d(tinstant_value(tsequence_inst_n(seq, i)));
+    points[i] = datum_point2d(tinstant_value(tsequence_inst_n(seq, i)));
     /* If stationary segment we need to split the sequence */
     if (points[i - 1].x == points[i].x && points[i - 1].y == points[i].y)
     {

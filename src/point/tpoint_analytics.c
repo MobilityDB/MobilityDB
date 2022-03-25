@@ -1378,8 +1378,8 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       speed_seg = tpointinst_speed(inst1, inst2, func);
     if (hasz)
     {
-      p3a = datum_get_point3dz(tinstant_value(inst1));
-      p3b = datum_get_point3dz(tinstant_value(inst2));
+      p3a = datum_point3dz(tinstant_value(inst1));
+      p3b = datum_point3dz(tinstant_value(inst2));
       if (withspeed)
       {
         p4a.x = p3a.x; p4a.y = p3a.y;
@@ -1390,8 +1390,8 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
     }
     else
     {
-      p2a = datum_get_point2d(tinstant_value(inst1));
-      p2b = datum_get_point2d(tinstant_value(inst2));
+      p2a = datum_point2d(tinstant_value(inst1));
+      p2b = datum_point2d(tinstant_value(inst2));
       if (withspeed)
       {
         p3a.x = p2a.x; p3a.y = p2a.y; p3a.z = speed_seg;
@@ -1406,7 +1406,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
         speed_pt = tpointinst_speed(inst1, inst2, func);
       if (hasz)
       {
-        p3k_tmp = datum_get_point3dz(tinstant_value(inst2));
+        p3k_tmp = datum_point3dz(tinstant_value(inst2));
         if (withspeed)
         {
           p4k.x = p3k_tmp.x; p4k.y = p3k_tmp.y;
@@ -1418,7 +1418,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       }
       else
       {
-        p2k_tmp = datum_get_point2d(tinstant_value(inst2));
+        p2k_tmp = datum_point2d(tinstant_value(inst2));
         if (withspeed)
         {
           p3k.x = p2k_tmp.x; p3k.y = p2k_tmp.y; p3k.z = speed_pt;
@@ -1826,7 +1826,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
   LWPOINT *lwpoint;
   if (hasz)
   {
-    POINT3DZ p3d = datum_get_point3dz(value);
+    POINT3DZ p3d = datum_point3dz(value);
     x = p3d.x;
     y = p3d.y;
     double z = p3d.z;
@@ -1837,7 +1837,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
   }
   else
   {
-    POINT2D p2d = datum_get_point2d(value);
+    POINT2D p2d = datum_point2d(value);
     x = p2d.x;
     y = p2d.y;
     p2d.x = a->afac * x + a->bfac * y + a->xoff;

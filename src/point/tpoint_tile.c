@@ -635,7 +635,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
     if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
@@ -735,8 +735,8 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
-    pt = datum_get_point3dz(PointerGetDatum(point));
-    ptorig = datum_get_point3dz(PointerGetDatum(sorigin));
+    pt = datum_point3dz(PointerGetDatum(point));
+    ptorig = datum_point3dz(PointerGetDatum(sorigin));
   }
   else
   {
@@ -985,7 +985,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
     if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
@@ -1120,7 +1120,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
     if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */

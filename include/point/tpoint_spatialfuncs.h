@@ -57,8 +57,8 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 /* Utility functions */
 
-extern POINT2D datum_get_point2d(Datum value);
-extern POINT3DZ datum_get_point3dz(Datum value);
+extern POINT2D datum_point2d(Datum value);
+extern POINT3DZ datum_point3dz(Datum value);
 extern void datum_point4d(Datum value, POINT4D *p);
 
 extern const POINT2D *datum_point2d_p(Datum value);
