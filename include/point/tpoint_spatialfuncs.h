@@ -57,14 +57,14 @@ extern void store_fcinfo(FunctionCallInfo fcinfo);
 
 /* Utility functions */
 
-extern POINT2D datum_get_point2d(Datum value);
-extern POINT3DZ datum_get_point3dz(Datum value);
+extern POINT2D datum_point2d(Datum value);
+extern POINT3DZ datum_point3dz(Datum value);
 extern void datum_point4d(Datum value, POINT4D *p);
 
-extern const POINT2D *datum_get_point2d_p(Datum value);
-extern const POINT2D *gs_get_point2d_p(const GSERIALIZED *gs);
-extern const POINT3DZ *datum_get_point3dz_p(Datum value);
-extern const POINT3DZ *gs_get_point3dz_p(const GSERIALIZED *gs);
+extern const POINT2D *datum_point2d_p(Datum value);
+extern const POINT2D *gserialized_point2d_p(const GSERIALIZED *gs);
+extern const POINT3DZ *datum_point3dz_p(Datum value);
+extern const POINT3DZ *gserialized_point3dz_p(const GSERIALIZED *gs);
 
 extern bool datum_point_eq(Datum geopoint1, Datum geopoint2);
 extern Datum datum2_point_eq(Datum geopoint1, Datum geopoint2);
@@ -75,8 +75,8 @@ extern Datum datum_transform(Datum value, Datum srid);
 
 /* Generic functions */
 
-extern datum_func2 get_distance_fn(int16 flags);
-extern datum_func2 get_pt_distance_fn(int16 flags);
+extern datum_func2 distance_fn(int16 flags);
+extern datum_func2 pt_distance_fn(int16 flags);
 extern Datum geom_distance2d(Datum geom1, Datum geom2);
 extern Datum geom_distance3d(Datum geom1, Datum geom2);
 extern Datum geog_distance(Datum geog1, Datum geog2);
@@ -157,8 +157,8 @@ extern Datum tpoint_trajectory(PG_FUNCTION_ARGS);
 
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   bool linear);
-extern LWLINE *geopoint_lwline(Datum value1, Datum value2);
-extern Datum geopoint_line(Datum value1, Datum value2);
+extern LWLINE *lwline_make(Datum value1, Datum value2);
+extern Datum line_make(Datum value1, Datum value2);
 
 extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpoint_trajectory_internal(const Temporal *temp);

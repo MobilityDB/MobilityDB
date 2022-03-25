@@ -172,7 +172,7 @@ gk(Datum point)
 {
   eqwgs = (awgs * awgs - bwgs * bwgs) / (awgs * awgs);
   eqbes = (abes * abes - bbes * bbes) / (abes * abes);
-  const POINT2D *p2d = datum_get_point2d_p(point);
+  const POINT2D *p2d = datum_point2d_p(point);
   POINT2D result;
   double x = p2d->x;
   double y = p2d->y;
@@ -216,9 +216,9 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
       lwpoint = lwpoint_construct_empty(0, false, false);
     else
     {
-      const POINT2D *p2d= gs_get_point2d_p(gs);
+      const POINT2D *p2d = gserialized_point2d_p(gs);
       Datum geom = gk(point2d_get_datum(p2d));
-      p2d  = datum_get_point2d_p(geom);
+      p2d  = datum_point2d_p(geom);
       lwpoint = lwpoint_make2d(4326, p2d->x, p2d->y);
     }
     result = geo_serialize((LWGEOM *)lwpoint);
@@ -243,7 +243,7 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
         lwpoint = lwline_get_lwpoint(line, i);
         Datum point2d_datum = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));
         Datum geom = gk(point2d_datum);
-        const POINT2D *p2d  = datum_get_point2d_p(geom);
+        const POINT2D *p2d  = datum_point2d_p(geom);
         points[i] = lwpoint_make2d(4326, p2d->x, p2d->y);
       }
 

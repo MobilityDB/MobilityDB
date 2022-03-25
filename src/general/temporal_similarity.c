@@ -79,7 +79,7 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 static double
 tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
 {
-  datum_func2 func = get_pt_distance_fn(inst1->flags);
+  datum_func2 func = pt_distance_fn(inst1->flags);
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
   double result = DatumGetFloat8(func(value1, value2));

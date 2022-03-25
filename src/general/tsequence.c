@@ -3296,21 +3296,6 @@ tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t, Datum *res
 }
 
 /**
- * Returns the temporal instant at the timestamp for timestamps that
- * are at an exclusive bound
- */
-const TInstant *
-tsequence_inst_at_timestamp_excl(const TSequence *seq, TimestampTz t)
-{
-  const TInstant *result;
-  if (t == seq->period.lower)
-    result = tsequence_inst_n(seq, 0);
-  else
-    result = tsequence_inst_n(seq, seq->count - 1);
-  return tinstant_copy(result);
-}
-
-/**
  * Restricts the segment of a temporal value to the timestamp
  *
  * @param[in] inst1,inst2 Temporal values defining the segment

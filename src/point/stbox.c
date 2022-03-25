@@ -748,7 +748,8 @@ stbox_to_geometry(PG_FUNCTION_ARGS)
     GSERIALIZED *g = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
     gserialized_set_srid(g, box->srid);
     result = PointerGetDatum(g);
-    PG_FREE_IF_COPY_P(DatumGetPointer(geom), g);
+    PG_FREE_IF_COPY_P(g, DatumGetPointer(geom));
+    pfree(DatumGetPointer(geom));
   }
   PG_RETURN_DATUM(result);
 }
@@ -815,14 +816,14 @@ geo_stbox(const GSERIALIZED *gs, STBOX *box)
   {
     if (hasz)
     {
-      const POINT3DZ *p = datum_get_point3dz_p(PointerGetDatum(gs));
+      const POINT3DZ *p = datum_point3dz_p(PointerGetDatum(gs));
       box->xmin = box->xmax = p->x;
       box->ymin = box->ymax = p->y;
       box->zmin = box->zmax = p->z;
     }
     else
     {
-      const POINT2D *p = datum_get_point2d_p(PointerGetDatum(gs));
+      const POINT2D *p = datum_point2d_p(PointerGetDatum(gs));
       box->xmin = box->xmax = p->x;
       box->ymin = box->ymax = p->y;
     }
@@ -1262,8 +1263,8 @@ stbox_transform(PG_FUNCTION_ARGS)
   Datum max1 = datum_transform(max, srid);
   if (hasz)
   {
-    const POINT3DZ *ptmin1 = datum_get_point3dz_p(min1);
-    const POINT3DZ *ptmax1 = datum_get_point3dz_p(max1);
+    const POINT3DZ *ptmin1 = datum_point3dz_p(min1);
+    const POINT3DZ *ptmax1 = datum_point3dz_p(max1);
     result->xmin = ptmin1->x;
     result->ymin = ptmin1->y;
     result->zmin = ptmin1->z;
@@ -1273,8 +1274,8 @@ stbox_transform(PG_FUNCTION_ARGS)
   }
   else
   {
-    const POINT2D *ptmin1 = datum_get_point2d_p(min1);
-    const POINT2D *ptmax1 = datum_get_point2d_p(max1);
+    const POINT2D *ptmin1 = datum_point2d_p(min1);
+    const POINT2D *ptmax1 = datum_point2d_p(max1);
     result->xmin = ptmin1->x;
     result->ymin = ptmin1->y;
     result->xmax = ptmax1->x;

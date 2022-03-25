@@ -635,12 +635,12 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
     if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      const POINT2D *p2d = gserialized_point2d_p(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
@@ -735,18 +735,18 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (hasz)
   {
     ensure_has_Z_gs(sorigin);
-    pt = datum_get_point3dz(PointerGetDatum(point));
-    ptorig = datum_get_point3dz(PointerGetDatum(sorigin));
+    pt = datum_point3dz(PointerGetDatum(point));
+    ptorig = datum_point3dz(PointerGetDatum(sorigin));
   }
   else
   {
     /* Initialize to 0 the Z dimension if it is missing */
     memset(&pt, 0, sizeof(POINT3DZ));
-    const POINT2D *p1 = gs_get_point2d_p(sorigin);
+    const POINT2D *p1 = gserialized_point2d_p(sorigin);
     pt.x = p1->x;
     pt.y = p1->y;
     memset(&ptorig, 0, sizeof(POINT3DZ));
-    const POINT2D *p2 = gs_get_point2d_p(sorigin);
+    const POINT2D *p2 = gserialized_point2d_p(sorigin);
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
@@ -985,12 +985,12 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     MOBDB_FLAGS_SET_T(bounds.flags, false);
     POINT3DZ pt;
     if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      const POINT2D *p2d = gserialized_point2d_p(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }
@@ -1120,12 +1120,12 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
       ensure_same_srid(srid, gs_srid);
     POINT3DZ pt;
     if (FLAGS_GET_Z(GS_FLAGS(sorigin)))
-      pt = datum_get_point3dz(PointerGetDatum(sorigin));
+      pt = datum_point3dz(PointerGetDatum(sorigin));
     else
     {
       /* Initialize to 0 the Z dimension if it is missing */
       memset(&pt, 0, sizeof(POINT3DZ));
-      const POINT2D *p2d = gs_get_point2d_p(sorigin);
+      const POINT2D *p2d = gserialized_point2d_p(sorigin);
       pt.x = p2d->x;
       pt.y = p2d->y;
     }

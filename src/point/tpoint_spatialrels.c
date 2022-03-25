@@ -294,13 +294,10 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
   if (geomcoll)
   {
     GSERIALIZED *gstraj = (GSERIALIZED *) PG_DETOAST_DATUM(traj);
-    if (gserialized_get_type(gstraj) != COLLECTIONTYPE)
-      PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
-    else /* type == COLLECTIONTYPE */
+    if (gserialized_get_type(gstraj) == COLLECTIONTYPE)
     {
       bool found = false;
       LWGEOM *lwtraj = lwgeom_from_gserialized(gstraj);
-      PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
       LWCOLLECTION *coll = lwgeom_as_lwcollection(lwtraj);
       int ngeoms = coll->ngeoms;
       for (int i = 0; i < ngeoms; i++)
@@ -319,6 +316,7 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
           break;
         }
       }
+      PG_FREE_IF_COPY_P(gstraj, DatumGetPointer(traj));
       pfree(DatumGetPointer(traj));
       return BoolGetDatum(found);
     }

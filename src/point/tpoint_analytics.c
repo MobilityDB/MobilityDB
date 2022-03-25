@@ -93,12 +93,12 @@ point_to_trajpoint(Datum point, TimestampTz t)
   LWPOINT *result;
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
-    const POINT3DZ *point = gs_get_point3dz_p(gs);
+    const POINT3DZ *point = gserialized_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, epoch);
   }
   else
   {
-    const POINT2D *point = gs_get_point2d_p(gs);
+    const POINT2D *point = gserialized_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, epoch);
   }
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
@@ -625,12 +625,12 @@ point_measure_to_geo_measure(Datum point, Datum measure)
   LWPOINT *result;
   if (FLAGS_GET_Z(GS_FLAGS(gs)))
   {
-    const POINT3DZ *point = gs_get_point3dz_p(gs);
+    const POINT3DZ *point = gserialized_point3dz_p(gs);
     result = lwpoint_make4d(srid, point->x, point->y, point->z, d);
   }
   else
   {
-    const POINT2D *point = gs_get_point2d_p(gs);
+    const POINT2D *point = gserialized_point2d_p(gs);
     result = lwpoint_make3dm(srid, point->x, point->y, d);
   }
   FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(GS_FLAGS(gs)));
@@ -1378,8 +1378,8 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       speed_seg = tpointinst_speed(inst1, inst2, func);
     if (hasz)
     {
-      p3a = datum_get_point3dz(tinstant_value(inst1));
-      p3b = datum_get_point3dz(tinstant_value(inst2));
+      p3a = datum_point3dz(tinstant_value(inst1));
+      p3b = datum_point3dz(tinstant_value(inst2));
       if (withspeed)
       {
         p4a.x = p3a.x; p4a.y = p3a.y;
@@ -1390,8 +1390,8 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
     }
     else
     {
-      p2a = datum_get_point2d(tinstant_value(inst1));
-      p2b = datum_get_point2d(tinstant_value(inst2));
+      p2a = datum_point2d(tinstant_value(inst1));
+      p2b = datum_point2d(tinstant_value(inst2));
       if (withspeed)
       {
         p3a.x = p2a.x; p3a.y = p2a.y; p3a.z = speed_seg;
@@ -1406,7 +1406,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
         speed_pt = tpointinst_speed(inst1, inst2, func);
       if (hasz)
       {
-        p3k_tmp = datum_get_point3dz(tinstant_value(inst2));
+        p3k_tmp = datum_point3dz(tinstant_value(inst2));
         if (withspeed)
         {
           p4k.x = p3k_tmp.x; p4k.y = p3k_tmp.y;
@@ -1418,7 +1418,7 @@ tpointseq_dp_findsplit(const TSequence *seq, int i1, int i2, bool withspeed,
       }
       else
       {
-        p2k_tmp = datum_get_point2d(tinstant_value(inst2));
+        p2k_tmp = datum_point2d(tinstant_value(inst2));
         if (withspeed)
         {
           p3k.x = p2k_tmp.x; p3k.y = p2k_tmp.y; p3k.z = speed_pt;
@@ -1629,13 +1629,13 @@ tpointinstset_remove_repeated_points(const TInstantSet *ti, double tolerance,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
   instants[0] = tinstantset_inst_n(ti, 0);
-  const POINT2D *last = datum_get_point2d_p(tinstant_value(instants[0]));
+  const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
   int k = 1;
   for (int i = 1; i < ti->count; i++)
   {
     bool last_point = (i == ti->count - 1);
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
+    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
     if (ti->count - k > min_points + i)
@@ -1692,13 +1692,13 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 
   const TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   instants[0] = tsequence_inst_n(seq, 0);
-  const POINT2D *last = datum_get_point2d_p(tinstant_value(instants[0]));
+  const POINT2D *last = datum_point2d_p(tinstant_value(instants[0]));
   int k = 1;
   for (int i = 1; i < seq->count; i++)
   {
     bool last_point = (i == seq->count - 1);
     const TInstant *inst = tsequence_inst_n(seq, i);
-    const POINT2D *pt = datum_get_point2d_p(tinstant_value(inst));
+    const POINT2D *pt = datum_point2d_p(tinstant_value(inst));
 
     /* Don't drop points if we are running short of points */
     if (seq->count - i > min_points - k)
@@ -1826,7 +1826,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
   LWPOINT *lwpoint;
   if (hasz)
   {
-    POINT3DZ p3d = datum_get_point3dz(value);
+    POINT3DZ p3d = datum_point3dz(value);
     x = p3d.x;
     y = p3d.y;
     double z = p3d.z;
@@ -1837,7 +1837,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
   }
   else
   {
-    POINT2D p2d = datum_get_point2d(value);
+    POINT2D p2d = datum_point2d(value);
     x = p2d.x;
     y = p2d.y;
     p2d.x = a->afac * x + a->bfac * y + a->xoff;

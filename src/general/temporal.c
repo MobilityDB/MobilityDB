@@ -480,7 +480,7 @@ ensure_valid_tinstarr_gaps(const TInstant **instants, int count, bool merge,
   Datum geom1 = 0; /* Used only for temporal network points */
   datum_func2 point_distance = NULL;
   if (basetypid == type_oid(T_GEOMETRY) || basetypid == type_oid(T_GEOGRAPHY))
-    point_distance = get_pt_distance_fn(instants[0]->flags);
+    point_distance = pt_distance_fn(instants[0]->flags);
   else if (basetypid == type_oid(T_NPOINT))
     geom1 = npoint_geom(DatumGetNpoint(value1));
   int k = 0;
