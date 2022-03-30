@@ -486,4 +486,44 @@ CREATE FUNCTION derivative(tfloat)
   AS 'MODULE_PATHNAME', 'Tnumber_derivative'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/*****************************************************************************
+ * Temperature Conversion
+ *****************************************************************************/
+
+CREATE FUNCTION celsius_to_fahrenheit(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_c_to_f'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION fahrenheit_to_celsius(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_f_to_c'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION celsius_to_kelvin(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_c_to_k'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION kelvin_to_celsius(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_k_to_c'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION kelvin_to_fahrenheit(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_k_to_f'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION fahrenheit_to_kelvin(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'tnumber_f_to_k'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION temperature_categorize(tfloat)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'temperature_categorize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+
 /******************************************************************************/

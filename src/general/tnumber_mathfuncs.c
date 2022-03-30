@@ -49,6 +49,8 @@
 #include "general/lifting.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
+#include "general/temporal_compops.h"
+#include "general/tbool_boolops.h"
 
 /*****************************************************************************
  * Miscellaneous functions on datums
@@ -669,6 +671,147 @@ Tnumber_derivative(PG_FUNCTION_ARGS)
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Temporature conversion functions
+ *****************************************************************************/
+
+/**
+ * Convert the number from celsius to fahrenheit
+ */
+static Datum
+datum_c_to_f(Datum value)
+{
+  return Float8GetDatum(DatumGetFloat8(value) * (9.0 / 5.0) + 32.0);
+}
+
+/**
+ * Convert the number from fahrenheit to celsius
+ */
+static Datum
+datum_f_to_c(Datum value)
+{
+  return Float8GetDatum((DatumGetFloat8(value) - 32.0) * (5.0 / 9.0));
+}
+
+/**
+ * Convert the number from celsius to kelvin
+ */
+static Datum
+datum_c_to_k(Datum value)
+{
+  return Float8GetDatum(DatumGetFloat8(value) + 273.15);
+}
+
+/**
+ * Convert the number from kelvin to celsius
+ */
+static Datum
+datum_k_to_c(Datum value)
+{
+  return Float8GetDatum(DatumGetFloat8(value) - 273.15);
+}
+
+/**
+ * Convert the number from kelvin to fahrenheit
+ */
+static Datum
+datum_k_to_f(Datum value)
+{
+  return Float8GetDatum(DatumGetFloat8(value) * (9.0 / 5.0) - 459.67);
+}
+
+/**
+ * Convert the number from fahrenheit to kelvin
+ */
+static Datum
+datum_f_to_k(Datum value)
+{
+  return Float8GetDatum((DatumGetFloat8(value) + 459.67) * (5.0 / 9.0));
+}
+
+/**
+ * Generic temporature conversion operator on a temporal number
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Temperature conversion function
+ */
+static Datum
+tnumber_convert_temp(FunctionCallInfo fcinfo, Datum (*func)(Datum value))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) func;
+  lfinfo.numparam = 0;
+  lfinfo.restypid = FLOAT8OID;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_c_to_f);
+/**
+ * Convert the temporal number from celsius to fahrenheit
+ */
+PGDLLEXPORT Datum
+Tnumber_c_to_f(PG_FUNCTION_ARGS)
+{
+  return tnumber_convert_temp(fcinfo, &datum_c_to_f);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_f_to_c);
+/**
+ * Convert the temporal number from fahrenheit to celsius
+ */
+PGDLLEXPORT Datum
+Tnumber_f_to_c(PG_FUNCTION_ARGS)
+{
+  return tnumber_convert_temp(fcinfo, &datum_f_to_c);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_c_to_k);
+/**
+ * Convert the temporal number from celsius to kelvin
+ */
+PGDLLEXPORT Datum
+Tnumber_c_to_k(PG_FUNCTION_ARGS)
+{
+  return tnumber_convert_temp(fcinfo, &datum_c_to_k);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_k_to_c);
+/**
+ * Convert the temporal number from kelvin to celsius
+ */
+PGDLLEXPORT Datum
+Tnumber_k_to_c(PG_FUNCTION_ARGS)
+{
+  return tnumber_convert_temp(fcinfo, &datum_k_to_c);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_k_to_f);
+/**
+ * Convert the temporal number from kelvin to fahrenheit
+ */
+PGDLLEXPORT Datum
+Tnumber_k_to_f(PG_FUNCTION_ARGS)
+{
+  return tnumber_convert_temp(fcinfo, &datum_k_to_f);
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_f_to_k);
+/**
+ * Convert the temporal number from fahrenheit to kelvin
+ */
+PGDLLEXPORT Datum
+Tnumber_f_to_k(PG_FUNCTION_ARGS)
+{
+  return tnumber_convert_temp(fcinfo, &datum_f_to_k);
 }
 
 #endif /* #if ! MEOS */

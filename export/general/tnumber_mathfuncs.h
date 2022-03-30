@@ -60,6 +60,13 @@ extern Datum Div_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Tnumber_round(PG_FUNCTION_ARGS);
+extern Datum Tnumber_degree(PG_FUNCTION_ARGS);
+extern Datum Tnumber_c_to_f(PG_FUNCTION_ARGS);
+extern Datum Tnumber_f_to_c(PG_FUNCTION_ARGS);
+extern Datum Tnumber_c_to_k(PG_FUNCTION_ARGS);
+extern Datum Tnumber_k_to_c(PG_FUNCTION_ARGS);
+extern Datum Tnumber_k_to_f(PG_FUNCTION_ARGS);
+extern Datum Tnumber_f_to_k(PG_FUNCTION_ARGS);
 extern Datum Tnumber_derivative(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
