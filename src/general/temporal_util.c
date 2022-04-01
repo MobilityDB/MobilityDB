@@ -452,14 +452,11 @@ datum_eq2(Datum l, Datum r, Oid typel, Oid typer)
     (typel == INT4OID && typer == INT4OID))
     return l == r;
   if (typel == FLOAT8OID && typer == FLOAT8OID)
-    return l == r;
-    // return FP_EQUALS(DatumGetFloat8(l), DatumGetFloat8(r));
+    return MOBDB_FP_EQ(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == INT4OID && typer == FLOAT8OID)
-    return (double) DatumGetInt32(l) == DatumGetFloat8(r);
-    // return FP_EQUALS((double) DatumGetInt32(l), DatumGetFloat8(r));
+    return MOBDB_FP_EQ((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == FLOAT8OID && typer == INT4OID)
-    return DatumGetFloat8(l) == (double) DatumGetInt32(r);
-    // return FP_EQUALS(DatumGetFloat8(l), (double) DatumGetInt32(r));
+    return MOBDB_FP_EQ(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == TEXTOID && typer == TEXTOID)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) == 0;
   if (typel == type_oid(T_DOUBLE2) && typel == typer)
@@ -503,14 +500,11 @@ datum_lt2(Datum l, Datum r, Oid typel, Oid typer)
   if (typel == INT4OID && typer == INT4OID)
     return DatumGetInt32(l) < DatumGetInt32(r);
   if (typel == INT4OID && typer == FLOAT8OID)
-    return (double) DatumGetInt32(l) < DatumGetFloat8(r);
-    // return FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
+    return MOBDB_FP_LT((double) DatumGetInt32(l), DatumGetFloat8(r));
   if (typel == FLOAT8OID && typer == INT4OID)
-    return DatumGetFloat8(l) < (double) DatumGetInt32(r);
-    // return FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
+    return MOBDB_FP_LT(DatumGetFloat8(l), (double) DatumGetInt32(r));
   if (typel == FLOAT8OID && typer == FLOAT8OID)
-    return DatumGetFloat8(l) < DatumGetFloat8(r);
-    // return FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
+    return MOBDB_FP_LT(DatumGetFloat8(l), DatumGetFloat8(r));
   if (typel == TEXTOID && typer == TEXTOID)
     return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID) < 0;
   if (typel == type_oid(T_GEOMETRY) && typel == typer)
