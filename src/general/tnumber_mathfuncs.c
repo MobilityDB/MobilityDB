@@ -732,7 +732,7 @@ datum_f_to_k(Datum value)
 }
 
 /**
- * Generic temporature conversion operator on a temporal number
+ * Generic temperature conversion operator on a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Temperature conversion function
