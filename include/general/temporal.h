@@ -166,15 +166,16 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure xxGTZXLCB, where
- *   xx: unused bits
+ * Macros for manipulating the 'flags' element where the less significant
+ * bits are GTZXLCBsss, where
  *   G: coordinates are geodetic
-     T: has T coordinate,
+ *   T: has T coordinate,
  *   Z: has Z coordinate
  *   X: has value or X coordinate
  *   L: linear interpolation
  *   C: continuous base type
  *   B: base type passed by value
+ *   sss: 3 bits for the temporal subtype (values 0 to 4)
  * Notice that formally speaking the Linear interpolation flag is only needed
  * for sequence and sequence set subtypes. To facilate the transformation from
  * one subtype to another, the linear flag for instant and instant set is set
