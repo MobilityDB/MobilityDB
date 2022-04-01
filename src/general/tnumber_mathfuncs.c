@@ -574,12 +574,13 @@ tnumber_derivative(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   ensure_linear_interpolation(temp->flags);
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT || subtype == INSTANTSET)
     ;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

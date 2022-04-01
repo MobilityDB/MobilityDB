@@ -270,14 +270,15 @@ Temporal *
 tnot_tbool_internal(const Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *)tnot_tboolinst((TInstant *)temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *)tnot_tboolinstset((TInstantSet *)temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *)tnot_tboolseq((TSequence *)temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *)tnot_tboolseqset((TSequenceSet *)temp);
   return result;
 }

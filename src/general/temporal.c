@@ -187,11 +187,12 @@ temporal_valid_typmod(Temporal *temp, int32_t typmod)
   if (typmod < 0)
     return temp;
   int16 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
   /* Typmod has a preference */
-  if (typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != temp->subtype)
+  if (typmod_subtype != ANYTEMPSUBTYPE && typmod_subtype != subtype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Temporal type (%s) does not match column type (%s)",
-      tempsubtype_name(temp->subtype), tempsubtype_name(typmod_subtype))));
+      tempsubtype_name(subtype), tempsubtype_name(typmod_subtype))));
   return temp;
 }
 
@@ -324,7 +325,7 @@ ensure_tinstarr(TInstant **instants, int count)
 {
   for (int i = 0; i < count; i++)
   {
-    if (instants[i]->subtype != INSTANT)
+    if (MOBDB_FLAGS_GET_SUBTYPE(instants[i]->flags) != INSTANT)
     {
       pfree(instants);
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -626,11 +627,12 @@ void *
 temporal_bbox_ptr(const Temporal *temp)
 {
   void *result = NULL;
-  if (temp->subtype == INSTANTSET)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  if (subtype == INSTANTSET)
     result = tinstantset_bbox_ptr((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_bbox_ptr((TSequence *) temp);
-  else if (temp->subtype == SEQUENCESET)
+  else if (subtype == SEQUENCESET)
     result = tsequenceset_bbox_ptr((TSequenceSet *) temp);
   return result;
 }
@@ -645,14 +647,15 @@ temporal_bbox_ptr(const Temporal *temp)
 void
 temporal_bbox(const Temporal *temp, void *box)
 {
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     tinstant_make_bbox((TInstant *) temp, box);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     tinstantset_bbox((TInstantSet *) temp, box);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     tsequence_bbox((TSequence *) temp, box);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     tsequenceset_bbox((TSequenceSet *) temp, box);
   return;
 }
@@ -699,81 +702,83 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   SyncMode mode, Temporal **inter1, Temporal **inter2)
 {
   bool result = false;
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
-  if (temp1->subtype == INSTANT)
+  int16 subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temp1->flags);
+  int16 subtype2 = MOBDB_FLAGS_GET_SUBTYPE(temp2->flags);
+  ensure_valid_tempsubtype(subtype1);
+  ensure_valid_tempsubtype(subtype2);
+  if (subtype1 == INSTANT)
   {
-    if (temp2->subtype == INSTANT)
+    if (subtype2 == INSTANT)
       result = intersection_tinstant_tinstant(
         (TInstant *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->subtype == INSTANTSET)
+    else if (subtype2 == INSTANTSET)
       result = intersection_tinstant_tinstantset(
         (TInstant *) temp1, (TInstantSet *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->subtype == SEQUENCE)
+    else if (subtype2 == SEQUENCE)
       result = intersection_tinstant_tsequence(
         (TInstant *) temp1, (TSequence *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* subtype == SEQUENCESET */
       result = intersection_tinstant_tsequenceset(
         (TInstant *) temp1, (TSequenceSet *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
   }
-  else if (temp1->subtype == INSTANTSET)
+  else if (subtype1 == INSTANTSET)
   {
-    if (temp2->subtype == INSTANT)
+    if (subtype2 == INSTANT)
       result = intersection_tinstantset_tinstant(
         (TInstantSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->subtype == INSTANTSET)
+    else if (subtype2 == INSTANTSET)
       result = intersection_tinstantset_tinstantset(
         (TInstantSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else if (temp2->subtype == SEQUENCE)
+    else if (subtype2 == SEQUENCE)
       result = intersection_tinstantset_tsequence(
         (TInstantSet *) temp1, (TSequence *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* subtype == SEQUENCESET */
       result = intersection_tinstantset_tsequenceset(
         (TInstantSet *) temp1, (TSequenceSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
   }
-  else if (temp1->subtype == SEQUENCE)
+  else if (subtype1 == SEQUENCE)
   {
-    if (temp2->subtype == INSTANT)
+    if (subtype2 == INSTANT)
       result = intersection_tsequence_tinstant(
         (TSequence *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->subtype == INSTANTSET)
+    else if (subtype2 == INSTANTSET)
       result = intersection_tsequence_tinstantset(
         (TSequence *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else if (temp2->subtype == SEQUENCE)
+    else if (subtype2 == SEQUENCE)
       result = synchronize_tsequence_tsequence(
           (TSequence *) temp1, (TSequence *) temp2,
           (TSequence **) inter1, (TSequence **) inter2,
             mode == SYNCHRONIZE_CROSS);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* subtype == SEQUENCESET */
       result = intersection_tsequence_tsequenceset(
           (TSequence *) temp1, (TSequenceSet *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
   }
-  else /* temp1->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
-    if (temp2->subtype == INSTANT)
+    if (subtype2 == INSTANT)
       result = intersection_tsequenceset_tinstant(
         (TSequenceSet *) temp1, (TInstant *) temp2,
         (TInstant **) inter1, (TInstant **) inter2);
-    else if (temp2->subtype == INSTANTSET)
+    else if (subtype2 == INSTANTSET)
       result = intersection_tsequenceset_tinstantset(
         (TSequenceSet *) temp1, (TInstantSet *) temp2,
         (TInstantSet **) inter1, (TInstantSet **) inter2);
-    else if (temp2->subtype == SEQUENCE)
+    else if (subtype2 == SEQUENCE)
       result = synchronize_tsequenceset_tsequence(
           (TSequenceSet *) temp1, (TSequence *) temp2, mode,
           (TSequenceSet **) inter1, (TSequenceSet **) inter2);
-    else /* temp2->subtype == SEQUENCESET */
+    else /* subtype2 == SEQUENCESET */
       result = synchronize_tsequenceset_tsequenceset(
         (TSequenceSet *) temp1, (TSequenceSet *) temp2, mode,
         (TSequenceSet **) inter1, (TSequenceSet **) inter2);
@@ -856,14 +861,15 @@ static char *
 temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 {
   char *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_to_string((TInstant *) temp, value_out);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_to_string((TInstantSet *) temp, value_out);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_to_string((TSequence *) temp, false, value_out);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_to_string((TSequenceSet *) temp, value_out);
   return result;
 }
@@ -891,15 +897,16 @@ temporal_out(PG_FUNCTION_ARGS)
 void
 temporal_write(const Temporal *temp, StringInfo buf)
 {
-  pq_sendbyte(buf, (uint8) temp->subtype);
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  pq_sendbyte(buf, (uint8) subtype);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     tinstant_write((TInstant *) temp, buf);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     tinstantset_write((TInstantSet *) temp, buf);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     tsequence_write((TSequence *) temp, buf);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     tsequenceset_write((TSequenceSet *) temp, buf);
   return;
 }
@@ -1055,7 +1062,7 @@ tsequenceset_constructor(PG_FUNCTION_ARGS)
   /* Ensure that all values are of sequence subtype and of the same interpolation */
   for (int i = 0; i < count; i++)
   {
-    if (sequences[i]->subtype != SEQUENCE)
+    if (MOBDB_FLAGS_GET_SUBTYPE(sequences[i]->flags) != SEQUENCE)
     {
       PG_FREE_IF_COPY(array, 0);
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -1202,13 +1209,14 @@ temporal_from_base(const Temporal *temp, Datum value, Oid basetypid,
   bool linear)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     TInstant *inst = (TInstant *) temp;
     result = (Temporal *) tinstant_make(value, inst->t, basetypid);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *) temp;
     TimestampTz *times = tinstantset_timestamps(ti);
@@ -1218,13 +1226,13 @@ temporal_from_base(const Temporal *temp, Datum value, Oid basetypid,
     result = (Temporal *) tinstantset_make_free(instants, ti->count, MERGE_NO);
     pfree(times);
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *) temp;
     result = (Temporal *) tsequence_from_base_internal(value, basetypid,
       &seq->period, linear);
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *) temp;
     TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
@@ -1254,7 +1262,7 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *inst = PG_GETARG_TEMPORAL_P(1);
   /* Validity tests */
-  if (inst->subtype != INSTANT)
+  if (MOBDB_FLAGS_GET_SUBTYPE(inst->flags) != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The second argument must be of instant subtype")));
   ensure_same_base_type(temp, (Temporal *) inst);
@@ -1264,16 +1272,17 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
   ensure_spatial_validity(temp, inst);
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_merge((TInstant *) temp, (TInstant *) inst);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_append_tinstant((TInstantSet *) temp,
       (TInstant *) inst);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_append_tinstant((TSequence *) temp,
       (TInstant *) inst);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_append_tinstant((TSequenceSet *) temp,
       (TInstant *) inst);
 
@@ -1289,15 +1298,17 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
  * @param[out] out1,out2 Output values
  */
 static void
-temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
+temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   Temporal **out1, Temporal **out2)
 {
   assert(temp1->basetypid == temp2->basetypid);
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
+  int16 subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temp1->flags);
+  int16 subtype2 = MOBDB_FLAGS_GET_SUBTYPE(temp2->flags);
+  ensure_valid_tempsubtype(subtype1);
+  ensure_valid_tempsubtype(subtype2);
 
   /* If both are of the same subtype do nothing */
-  if (temp1->subtype == temp2->subtype)
+  if (subtype1 == subtype2)
   {
     *out1 = temporal_copy(temp1);
     *out2 = temporal_copy(temp2);
@@ -1307,7 +1318,7 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   /* Different subtype */
   bool swap = false;
   Temporal *new1, *new2;
-  if (temp1->subtype > temp2->subtype)
+  if (subtype1 > subtype2)
   {
     new1 = (Temporal *) temp2;
     new2 = (Temporal *) temp1;
@@ -1320,36 +1331,38 @@ temporal_convert_same_type(const Temporal *temp1, const Temporal *temp2,
   }
 
   Temporal *new, *newts = NULL;
-  if (new1->subtype == INSTANT)
+  subtype1 = MOBDB_FLAGS_GET_SUBTYPE(new1->flags);
+  subtype2 = MOBDB_FLAGS_GET_SUBTYPE(new2->flags);
+  if (subtype1 == INSTANT)
   {
-    if (new2->subtype == INSTANTSET)
+    if (subtype2 == INSTANTSET)
       new = (Temporal *) tinstant_to_tinstantset((TInstant *) new1);
-    else if (new2->subtype == SEQUENCE)
+    else if (subtype2 == SEQUENCE)
       new = (Temporal *) tinstant_to_tsequence((TInstant *) new1,
         MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
-    else /* new2->subtype == SEQUENCESET */
+    else /* subtype2 == SEQUENCESET */
       new = (Temporal *) tinstant_to_tsequenceset((TInstant *) new1,
       MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
   }
-  else if (new1->subtype == INSTANTSET)
+  else if (subtype1 == INSTANTSET)
   {
-    if (new2->subtype == SEQUENCE)
+    if (subtype2 == SEQUENCE)
     {
       if (((TInstantSet *) new1)->count == 1)
         new = (Temporal *) tinstantset_to_tsequence((TInstantSet *) new1,
           MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
-      else /* new2->subtype == SEQUENCESET */
+      else /* subtype2 == SEQUENCESET */
       {
         new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
           MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
         newts = (Temporal *) tsequence_to_tsequenceset((TSequence *) new2);
       }
     }
-    else /* new2->subtype == SEQUENCESET */
+    else /* subtype2 == SEQUENCESET */
       new = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) new1,
         MOBDB_FLAGS_GET_CONTINUOUS(new1->flags));
   }
-  else /* new1->subtype == SEQUENCE && new2->subtype == SEQUENCESET */
+  else /* subtype1 == SEQUENCE && subtype2 == SEQUENCESET */
     new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
   if (swap)
   {
@@ -1383,19 +1396,20 @@ temporal_merge_internal(const Temporal *temp1, const Temporal *temp2)
 
   /* Convert to the same subtype if possible */
   Temporal *new1, *new2;
-  temporal_convert_same_type(temp1, temp2, &new1, &new2);
+  temporal_convert_same_subtype(temp1, temp2, &new1, &new2);
 
-  ensure_valid_tempsubtype(new1->subtype);
-  if (new1->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(new1->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_merge(
       (TInstant *) new1, (TInstant *)new2);
-  else if (new1->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_merge(
       (TInstantSet *)new1, (TInstantSet *)new2);
-  else if (new1->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_merge((TSequence *)new1,
       (TSequence *)new2);
-  else /* new1->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_merge((TSequenceSet *)new1,
       (TSequenceSet *)new2);
   if (temp1 != new1)
@@ -1442,10 +1456,11 @@ temporalarr_convert_subtype(Temporal **temparr, int count, int16 subtype)
   Temporal **result = palloc(sizeof(Temporal *) * count);
   for (int i = 0; i < count; i++)
   {
-    assert(subtype >= temparr[i]->subtype);
-    if (temparr[i]->subtype == subtype)
+    int16 subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temparr[i]->flags);
+    assert(subtype >= subtype1);
+    if (subtype == subtype1)
       result[i] = temporal_copy(temparr[i]);
-    else if (temparr[i]->subtype == INSTANT)
+    else if (subtype1 == INSTANT)
     {
       if (subtype == INSTANTSET)
         result[i] = (Temporal *) tinstant_to_tinstantset((TInstant *) temparr[i]);
@@ -1456,14 +1471,14 @@ temporalarr_convert_subtype(Temporal **temparr, int count, int16 subtype)
         result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) temparr[i],
           MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
     }
-    else if (temparr[i]->subtype == INSTANTSET)
+    else if (subtype1 == INSTANTSET)
     {
       /* An instant set can only be converted to a sequence set */
       assert(subtype == SEQUENCESET);
       result[i] = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temparr[i],
         MOBDB_FLAGS_GET_LINEAR(temparr[i]->flags));
     }
-    else /* temparr[i]->subtype == SEQUENCE && subtype == SEQUENCESET */
+    else /* subtype1 == SEQUENCE && subtype == SEQUENCESET */
       result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
   }
   return result;
@@ -1490,7 +1505,8 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 
   /* Ensure all values have the same interpolation and determine
    * temporal subtype of the result */
-  int16 subtype = temparr[0]->subtype;
+  int16 subtype, origsubtype;
+  subtype = origsubtype = MOBDB_FLAGS_GET_SUBTYPE(temparr[0]->flags);
   bool interpolation = MOBDB_FLAGS_GET_LINEAR(temparr[0]->flags);
   for (int i = 1; i < count; i++)
   {
@@ -1500,10 +1516,11 @@ temporal_merge_array(PG_FUNCTION_ARGS)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Input values must be of the same interpolation")));
     }
-    if (subtype != temparr[i]->subtype)
+    int16 subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temparr[i]->flags);
+    if (subtype != subtype1)
     {
       /* A TInstantSet cannot be converted to a TSequence */
-      int16 newsubtype = Max((int16) subtype, (int16) temparr[i]->subtype);
+      int16 newsubtype = Max(subtype, subtype1);
       if (subtype == INSTANTSET && newsubtype == SEQUENCE)
         newsubtype = SEQUENCESET;
       subtype = newsubtype;
@@ -1511,7 +1528,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
   }
   /* Convert all temporal values to a single subtype if needed */
   Temporal **newtemps;
-  if (subtype != temparr[0]->subtype)
+  if (subtype != origsubtype)
     newtemps = temporalarr_convert_subtype(temparr, count, subtype);
   else
     newtemps = temparr;
@@ -1532,7 +1549,7 @@ temporal_merge_array(PG_FUNCTION_ARGS)
       (const TSequenceSet **) newtemps, count);
 
   pfree(temparr);
-  if (subtype != temparr[0]->subtype)
+  if (subtype != origsubtype)
     pfree_array((void **) newtemps, count);
 
   PG_FREE_IF_COPY(array, 0);
@@ -1551,19 +1568,20 @@ temporal_merge_array(PG_FUNCTION_ARGS)
 static RangeType *
 tint_range(const Temporal *temp)
 {
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
     return range_make(value, value, true, true, temp->basetypid);
   }
 
   TBOX *box;
-  if (temp->subtype == INSTANTSET)
+  if (subtype == INSTANTSET)
     box = tinstantset_bbox_ptr((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     box = tsequence_bbox_ptr((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     box = tsequenceset_bbox_ptr((TSequenceSet *) temp);
   Datum min = Int32GetDatum(((int) box->xmin));
   Datum max = Int32GetDatum(((int) box->xmax));
@@ -1592,22 +1610,23 @@ tfloat_to_range(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   RangeType *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
     result = range_make(value, value, true, true, temp->basetypid);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     TBOX *box = tinstantset_bbox_ptr((TInstantSet *) temp);
     Datum min = Float8GetDatum(box->xmin);
     Datum max = Float8GetDatum(box->xmax);
     result = range_make(min, max, true, true, FLOAT8OID);
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tfloatseq_range((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tfloatseqset_to_range((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1621,13 +1640,15 @@ static Temporal *
 tint_to_tfloat_internal(Temporal *temp)
 {
   Temporal *result;
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tintinst_to_tfloatinst((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tintinstset_to_tfloatinstset((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tintseq_to_tfloatseq((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tintseqset_to_tfloatseqset((TSequenceSet *) temp);
   return result;
 }
@@ -1653,14 +1674,15 @@ static Temporal *
 tfloat_to_tint_internal(Temporal *temp)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tfloatinst_to_tintinst((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tfloatinstset_to_tintinstset((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tfloatseq_to_tintseq((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tfloatseqset_to_tintseqset((TSequenceSet *) temp);
   return result;
 }
@@ -1685,14 +1707,15 @@ tfloat_to_tint(PG_FUNCTION_ARGS)
 void
 temporal_period(const Temporal *temp, Period *p)
 {
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     tinstant_period((TInstant *) temp, p);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     tinstantset_period((TInstantSet *) temp, p);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     tsequence_period((TSequence *) temp, p);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     tsequenceset_period((TSequenceSet *) temp, p);
   return;
 }
@@ -1727,14 +1750,15 @@ temporal_to_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = temporal_copy(temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_to_tinstant((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tinstant((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_to_tinstant((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1749,14 +1773,15 @@ temporal_to_tinstantset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_to_tinstantset((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = temporal_copy(temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tinstantset((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_to_tinstantset((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1771,16 +1796,17 @@ temporal_to_tsequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_to_tsequence((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_to_tsequence((TInstantSet *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = temporal_copy(temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_to_tsequence((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1795,16 +1821,17 @@ temporal_to_tsequenceset(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_to_tsequenceset((TInstant *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_to_tsequenceset((TInstantSet *) temp,
       MOBDB_FLAGS_GET_CONTINUOUS(temp->flags));
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = temporal_copy(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1819,16 +1846,17 @@ PGDLLEXPORT Datum
 tstep_to_linear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_seq_subtypes(subtype);
   ensure_base_type_continuous(temp);
 
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     PG_RETURN_POINTER(temporal_copy(temp));
 
   Temporal *result;
-  if (temp->subtype == SEQUENCE)
+  if (subtype == SEQUENCE)
     result = (Temporal *) tstepseq_to_linear((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tstepseqset_to_linear((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -1851,18 +1879,19 @@ temporal_shift_tscale_internal(Temporal *temp, bool shift, bool tscale,
 {
   assert((!shift || start != NULL) && (!tscale || duration != NULL));
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (start != NULL) ?
       (Temporal *) tinstant_shift((TInstant *) temp, start) :
       (Temporal *) tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_shift_tscale((TInstantSet *) temp,
     start, duration);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_shift_tscale((TSequence *) temp,
       start, duration);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_shift_tscale((TSequenceSet *) temp,
       start, duration);
   return result;
@@ -1927,14 +1956,15 @@ Datum temporal_subtype(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char str[12];
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     strcpy(str, "Instant");
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     strcpy(str, "InstantSet");
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     strcpy(str, "Sequence");
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     strcpy(str, "SequenceSet");
   text *result = cstring_to_text(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -1949,10 +1979,11 @@ Datum temporal_interpolation(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char str[12];
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT || subtype == INSTANTSET)
     strcpy(str, "Discrete");
-  else if (temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET)
+  else if (subtype == SEQUENCE || subtype == SEQUENCESET)
   {
     if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
       strcpy(str, "Linear");
@@ -1983,14 +2014,15 @@ static Datum
 temporal_values_array(Temporal *temp)
 {
   ArrayType *result;  /* make the compiler quiet */
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_values_array((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_values_array((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_values_array((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_values_array((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
@@ -2016,14 +2048,15 @@ static Datum
 tfloat_ranges(const Temporal *temp)
 {
   ArrayType *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tfloatinst_ranges_array((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tfloatinstset_ranges_array((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tfloatseq_ranges_array((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tfloatseqset_ranges_array((TSequenceSet *) temp);
   return PointerGetDatum(result);
 }
@@ -2050,7 +2083,7 @@ PGDLLEXPORT Datum
 tinstant_get_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  if (temp->subtype != INSTANT)
+  if (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must be of subtype instant")));
 
@@ -2068,14 +2101,15 @@ PeriodSet *
 temporal_get_time_internal(const Temporal *temp)
 {
   PeriodSet *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_get_time((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_get_time((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_get_time((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_get_time((TSequenceSet *) temp);
   return result;
 }
@@ -2101,7 +2135,7 @@ PGDLLEXPORT Datum
 tinstant_timestamp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  if (temp->subtype != INSTANT)
+  if (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal value must be of subtype instant")));
 
@@ -2118,8 +2152,9 @@ RangeType *
 tnumber_value_range_internal(const Temporal *temp)
 {
   RangeType *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     Datum value = tinstant_value((TInstant *) temp);
     result = range_make(value, value, true, true, temp->basetypid);
@@ -2166,14 +2201,15 @@ temporal_start_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstant_value_copy(tinstantset_inst_n((TInstantSet *) temp, 0));
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tinstant_value_copy(tsequence_inst_n((TSequence *) temp, 0));
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_value_copy(tsequence_inst_n(seq, 0));
@@ -2191,16 +2227,17 @@ temporal_end_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstant_value_copy(tinstantset_inst_n((TInstantSet *) temp,
       ((TInstantSet *) temp)->count - 1));
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tinstant_value_copy(tsequence_inst_n((TSequence *) temp,
       ((TSequence *) temp)->count - 1));
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
@@ -2224,14 +2261,15 @@ const TInstant *
 temporal_min_instant(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (TInstant *) temp;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_min_instant((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_min_instant((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_min_instant((TSequenceSet *) temp);
   return result;
 }
@@ -2244,16 +2282,17 @@ Datum
 temporal_min_value_internal(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = datum_copy(tinstantset_min_value((TInstantSet *) temp),
       temp->basetypid);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = datum_copy(tsequence_min_value((TSequence *) temp),
       temp->basetypid);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = datum_copy(tsequenceset_min_value((TSequenceSet *) temp),
       temp->basetypid);
   return result;
@@ -2281,16 +2320,17 @@ temporal_max_value(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_value_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = datum_copy(tinstantset_max_value((TInstantSet *) temp),
       temp->basetypid);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = datum_copy(tsequence_max_value((TSequence *) temp),
       temp->basetypid);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = datum_copy(tsequenceset_max_value((TSequenceSet *) temp),
       temp->basetypid);
   PG_FREE_IF_COPY(temp, 0);
@@ -2306,19 +2346,20 @@ temporal_timespan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     Interval *interval = (Interval *) palloc(sizeof(Interval));
     interval->month = interval->day =  0;
     interval->time = (TimeOffset) 0;
     result = PointerGetDatum(interval);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_timespan((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_timespan((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -2333,17 +2374,18 @@ temporal_duration(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT || subtype == INSTANTSET)
   {
     Interval *interval = (Interval *) palloc(sizeof(Interval));
     interval->month = interval->day = 0;
     interval->time = (TimeOffset) 0;
     result = PointerGetDatum(interval);
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_duration((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
@@ -2357,9 +2399,10 @@ PGDLLEXPORT Datum
 temporal_num_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_seq_subtypes(subtype);
   int result = 1;
-  if (temp->subtype == SEQUENCESET)
+  if (subtype == SEQUENCESET)
     result = ((TSequenceSet *) temp)->count;
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -2373,9 +2416,10 @@ PGDLLEXPORT Datum
 temporal_start_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_seq_subtypes(subtype);
   TSequence *result;
-  if (temp->subtype == SEQUENCE)
+  if (subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
   else
     result = tsequence_copy(tsequenceset_seq_n((TSequenceSet *) temp, 0));
@@ -2391,9 +2435,10 @@ PGDLLEXPORT Datum
 temporal_end_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_seq_subtypes(subtype);
   TSequence *result;
-  if (temp->subtype == SEQUENCE)
+  if (subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
   else
   {
@@ -2412,10 +2457,11 @@ PGDLLEXPORT Datum
 temporal_sequence_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_seq_subtypes(subtype);
   int i = PG_GETARG_INT32(1); /* Assume 1-based */
   TSequence *result = NULL;
-  if (temp->subtype == SEQUENCE)
+  if (subtype == SEQUENCE)
   {
     if (i == 1)
       result = tsequence_copy((TSequence *) temp);
@@ -2442,13 +2488,15 @@ temporal_sequences(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_segments_array((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_segments_array((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = temporalarr_to_array((const Temporal **) &temp, 1);
-  else /* temp->subtype == SEQUENCE */
+  else /* subtype == SEQUENCE */
     result = tsequenceset_sequences_array((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2464,13 +2512,14 @@ temporal_segments(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  if (subtype == INSTANT)
     result = tinstant_segments_array((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_segments_array((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_segments_array((TSequence *) temp);
-  else
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_segments_array((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2485,14 +2534,15 @@ temporal_num_instants(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = 1;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = ((TInstantSet *) temp)->count;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = ((TSequence *) temp)->count;
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_num_instants((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
@@ -2505,14 +2555,15 @@ TInstant *
 temporal_start_instant_internal(const Temporal *temp)
 {
   TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstant_copy(tinstantset_inst_n((TInstantSet *) temp, 0));
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tinstant_copy(tsequence_inst_n((TSequence *) temp, 0));
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_copy(tsequence_inst_n(seq, 0));
@@ -2542,14 +2593,15 @@ static const TInstant *
 temporal_end_instant_internal(const Temporal *temp)
 {
   const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (TInstant *) temp;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_inst_n((TInstantSet *) temp, ((TInstantSet *) temp)->count - 1);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_inst_n((TSequence *) temp, ((TSequence *) temp)->count - 1);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
@@ -2578,8 +2630,9 @@ temporal_end_instant(PG_FUNCTION_ARGS)
 const TInstant *
 tinstarr_inst_n(const Temporal *temp, int n)
 {
-  assert(temp->subtype == INSTANTSET || temp->subtype == SEQUENCE);
-  if (temp->subtype == INSTANTSET)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  assert(subtype == INSTANTSET || subtype == SEQUENCE);
+  if (subtype == INSTANTSET)
     return tinstantset_inst_n((TInstantSet *) temp, n);
   else
     return tsequence_inst_n((TSequence *) temp, n);
@@ -2595,25 +2648,26 @@ temporal_instant_n(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TInstant *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     if (n == 1)
       result = tinstant_copy((TInstant *) temp);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     if (n >= 1 && n <= ((TInstantSet *) temp)->count)
       result = tinstant_copy(
         tinstantset_inst_n((TInstantSet *) temp, n - 1));
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
   {
     if (n >= 1 && n <= ((TSequence *) temp)->count)
       result = tinstant_copy(
         tsequence_inst_n((TSequence *) temp, n - 1));
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     /* This test is necessary since the n-th DISTINCT instant is requested */
     if (n >= 1 && n <= ((TSequenceSet *) temp)->totalcount)
@@ -2636,14 +2690,15 @@ const TInstant **
 temporal_instants_internal(const Temporal *temp, int *count)
 {
   const TInstant **result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_instants((TInstant *) temp, count);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_instants((TInstantSet *) temp, count);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_instants((TSequence *) temp, count);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_instants((TSequenceSet *) temp, count);
   return result;
 }
@@ -2657,14 +2712,15 @@ temporal_instants(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_instants_array((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_instants_array((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_instants_array((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_instants_array((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
@@ -2679,14 +2735,15 @@ temporal_num_timestamps(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = 1;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = ((TInstantSet *) temp)->count;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = ((TSequence *) temp)->count;
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_num_timestamps((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -2700,14 +2757,15 @@ static TimestampTz
 temporal_start_timestamp_internal(const Temporal *temp)
 {
   TimestampTz result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = ((TInstant *) temp)->t;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_inst_n((TInstantSet *) temp, 0)->t;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_start_timestamp((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_start_timestamp((TSequenceSet *) temp);
   return result;
 }
@@ -2734,14 +2792,15 @@ temporal_end_timestamp(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = ((TInstant *) temp)->t;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_inst_n((TInstantSet *) temp, ((TInstantSet *) temp)->count - 1)->t;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_end_timestamp((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_end_timestamp((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TIMESTAMPTZ(result);
@@ -2758,8 +2817,9 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
   bool found = false;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     if (n == 1)
     {
@@ -2767,7 +2827,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
       result = ((TInstant *) temp)->t;
     }
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     if (n >= 1 && n <= ((TInstantSet *) temp)->count)
     {
@@ -2775,7 +2835,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
       result = (tinstantset_inst_n((TInstantSet *) temp, n - 1))->t;
     }
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
   {
     if (n >= 1 && n <= ((TSequence *) temp)->count)
     {
@@ -2783,7 +2843,7 @@ temporal_timestamp_n(PG_FUNCTION_ARGS)
       result = (tsequence_inst_n((TSequence *) temp, n - 1))->t;
     }
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     found = tsequenceset_timestamp_n((TSequenceSet *) temp, n, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (!found)
@@ -2798,14 +2858,15 @@ static ArrayType *
 temporal_timestamps_array(const Temporal *temp)
 {
   ArrayType *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_timestamps_array((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_timestamps_array((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_timestamps_array((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_timestamps_array((TSequenceSet *) temp);
   return result;
 }
@@ -2895,14 +2956,15 @@ bool
 temporal_ever_eq_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_ever_eq((TInstant *) temp, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_ever_eq((TInstantSet *) temp, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_ever_eq((TSequence *) temp, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_ever_eq((TSequenceSet *) temp, value);
   return result;
 }
@@ -2915,14 +2977,15 @@ static bool
 temporal_always_eq_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_always_eq((TInstant *) temp, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_always_eq((TInstantSet *) temp, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_always_eq((TSequence *) temp, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_always_eq((TSequenceSet *) temp, value);
   return result;
 }
@@ -2935,14 +2998,15 @@ static bool
 temporal_ever_lt_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_ever_lt((TInstant *) temp, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_ever_lt((TInstantSet *) temp, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_ever_lt((TSequence *) temp, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_ever_lt((TSequenceSet *) temp, value);
   return result;
 }
@@ -2955,14 +3019,15 @@ static bool
 temporal_always_lt_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_always_lt((TInstant *) temp, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_always_lt((TInstantSet *) temp, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_always_lt((TSequence *) temp, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_always_lt((TSequenceSet *) temp, value);
   return result;
 }
@@ -2975,14 +3040,15 @@ static bool
 temporal_ever_le_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_ever_le((TInstant *) temp, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_ever_le((TInstantSet *) temp, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_ever_le((TSequence *) temp, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_ever_le((TSequenceSet *) temp, value);
   return result;
 }
@@ -2995,14 +3061,15 @@ static bool
 temporal_always_le_internal(const Temporal *temp, Datum value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_always_le((TInstant *) temp, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_always_le((TInstantSet *) temp, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_always_le((TSequence *) temp, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_always_le((TSequenceSet *) temp, value);
   return result;
 }
@@ -3191,7 +3258,7 @@ temporal_bbox_restrict_value(const Temporal *temp, Datum value)
     ensure_same_dimensionality_tpoint_gs(temp, gs);
     if (gserialized_is_empty(gs))
       return false;
-    if (temp->subtype != INSTANT)
+    if (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != INSTANT)
     {
       STBOX box1, box2;
       temporal_bbox(temp, &box1);
@@ -3350,22 +3417,24 @@ temporal_restrict_value_internal(const Temporal *temp, Datum value,
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
+      return (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != SEQUENCE) ? 
+        temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_value(
       (TInstant *) temp, value, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_value(
       (TInstantSet *) temp, value, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_value((TSequence *) temp,
       value, atfunc);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_value(
       (TSequenceSet *) temp, value, atfunc);
   return result;
@@ -3427,22 +3496,24 @@ temporal_restrict_values_internal(const Temporal *temp, Datum *values,
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
+      return (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != SEQUENCE) ?
+        temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_values(
       (TInstant *) temp, newvalues, newcount, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_values(
       (TInstantSet *) temp, newvalues, newcount, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_values((TSequence *) temp,
       newvalues, newcount, atfunc);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_values(
       (TSequenceSet *) temp, newvalues, newcount, atfunc);
 
@@ -3529,22 +3600,24 @@ tnumber_restrict_range_internal(const Temporal *temp, RangeType *range,
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
+      return (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != SEQUENCE) ?
+        temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tnumberinst_restrict_range(
       (TInstant *) temp, range, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tnumberinstset_restrict_range(
       (TInstantSet *) temp, range, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tnumberseq_restrict_range(
       (TSequence *) temp, range, atfunc);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tnumberseqset_restrict_range(
       (TSequenceSet *) temp, range, atfunc);
   return result;
@@ -3602,24 +3675,26 @@ tnumber_restrict_ranges_internal(const Temporal *temp, RangeType **ranges,
     if (atfunc)
       return NULL;
     else
-      return (temp->subtype != SEQUENCE) ? temporal_copy(temp) :
+      return (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) != SEQUENCE) ? 
+        temporal_copy(temp) :
         (Temporal *) tsequence_to_tsequenceset((TSequence *) temp);
   }
   if (newcount == 1)
     return tnumber_restrict_range_internal(temp, newranges[0], atfunc);
 
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tnumberinst_restrict_ranges((TInstant *) temp,
       newranges, newcount, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tnumberinstset_restrict_ranges((TInstantSet *) temp,
       newranges, newcount, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tnumberseq_restrict_ranges((TSequence *) temp,
         newranges, newcount, atfunc, BBOX_TEST_NO);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tnumberseqset_restrict_ranges((TSequenceSet *) temp,
       newranges, newcount, atfunc);
 
@@ -3697,16 +3772,17 @@ temporal_restrict_minmax(FunctionCallInfo fcinfo, bool min, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = atfunc ? (Temporal *) tinstant_copy((TInstant *) temp) : NULL;
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_minmax((TInstantSet *) temp,
       min, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_minmax((TSequence *) temp,
       min, atfunc);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_minmax((TSequenceSet *) temp,
       min, atfunc);
   PG_FREE_IF_COPY(temp, 0);
@@ -3766,17 +3842,18 @@ temporal_restrict_timestamp_internal(const Temporal *temp, TimestampTz t,
   bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_timestamp((TInstant *) temp, t, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_timestamp((TInstantSet *) temp,
     t, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = atfunc ?
       (Temporal *) tsequence_at_timestamp((TSequence *) temp, t) :
       (Temporal *) tsequence_minus_timestamp((TSequence *) temp, t);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_timestamp((TSequenceSet *) temp,
       t, atfunc);
   return result;
@@ -3827,14 +3904,15 @@ bool
 temporal_value_at_timestamp_inc(const Temporal *temp, TimestampTz t, Datum *value)
 {
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_value_at_timestamp((TInstant *) temp, t, value);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_value_at_timestamp((TInstantSet *) temp, t, value);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_value_at_timestamp_inc((TSequence *) temp, t, value);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_value_at_timestamp_inc((TSequenceSet *) temp, t, value);
   return result;
 }
@@ -3850,14 +3928,15 @@ temporal_value_at_timestamp(PG_FUNCTION_ARGS)
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool found = false;
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     found = tinstant_value_at_timestamp((TInstant *) temp, t, &result);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     found = tinstantset_value_at_timestamp((TInstantSet *) temp, t, &result);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     found = tsequence_value_at_timestamp((TSequence *) temp, t, &result);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     found = tsequenceset_value_at_timestamp((TSequenceSet *) temp, t, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (!found)
@@ -3876,18 +3955,19 @@ temporal_restrict_timestampset(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_timestampset(
       (TInstant *) temp, ts, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_timestampset(
       (TInstantSet *) temp, ts, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = atfunc ?
       (Temporal *) tsequence_at_timestampset((TSequence *) temp, ts) :
       (Temporal *) tsequence_minus_timestampset((TSequence *) temp, ts);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_timestampset(
       (TSequenceSet *) temp, ts, atfunc);
   PG_FREE_IF_COPY(temp, 0);
@@ -3927,18 +4007,19 @@ temporal_restrict_period_internal(const Temporal *temp, const Period *p,
   bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_period(
       (TInstant *) temp, p, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_period(
       (TInstantSet *) temp, p, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = atfunc ?
       (Temporal *) tsequence_at_period((TSequence *) temp, p) :
       (Temporal *) tsequence_minus_period((TSequence *) temp, p);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_period(
       (TSequenceSet *) temp, p, atfunc);
   return result;
@@ -3987,17 +4068,18 @@ temporal_restrict_periodset_internal(const Temporal *temp,
   const PeriodSet *ps, bool atfunc)
 {
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tinstant_restrict_periodset(
       (TInstant *) temp, ps, atfunc);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tinstantset_restrict_periodset(
       (TInstantSet *) temp, ps, atfunc);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tsequence_restrict_periodset(
       (TSequence *) temp, ps, atfunc);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tsequenceset_restrict_periodset(
       (TSequenceSet *) temp, ps, atfunc);
   return result;
@@ -4178,14 +4260,15 @@ temporal_intersects_timestamp(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_intersects_timestamp((TInstant *) temp, t);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_intersects_timestamp((TInstantSet *) temp, t);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_intersects_timestamp((TSequence *) temp, t);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_intersects_timestamp((TSequenceSet *) temp, t);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -4201,14 +4284,15 @@ temporal_intersects_timestampset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_intersects_timestampset((TInstant *) temp, ts);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_intersects_timestampset((TInstantSet *) temp, ts);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_intersects_timestampset((TSequence *) temp, ts);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_intersects_timestampset((TSequenceSet *) temp, ts);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
@@ -4225,14 +4309,15 @@ temporal_intersects_period(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *p = PG_GETARG_PERIOD_P(1);
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_intersects_period((TInstant *) temp, p);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_intersects_period((TInstantSet *) temp, p);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_intersects_period((TSequence *) temp, p);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_intersects_period((TSequenceSet *) temp, p);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -4248,14 +4333,15 @@ temporal_intersects_periodset(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   bool result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_intersects_periodset((TInstant *) temp, ps);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_intersects_periodset((TInstantSet *) temp, ps);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_intersects_periodset((TSequence *) temp, ps);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_intersects_periodset((TSequenceSet *) temp, ps);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
@@ -4276,12 +4362,13 @@ tnumber_integral(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT || subtype == INSTANTSET)
     ;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tnumberseq_integral((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tnumberseqset_integral((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -4296,15 +4383,16 @@ tnumber_twavg(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = datum_double(tinstant_value((TInstant *) temp),
       temp->basetypid);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tnumberinstset_twavg((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tnumberseq_twavg((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tnumberseqset_twavg((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -4324,37 +4412,41 @@ static bool
 temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1->basetypid == temp2->basetypid);
-  ensure_valid_tempsubtype(temp1->subtype);
-  ensure_valid_tempsubtype(temp2->subtype);
+  int16 subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temp1->flags);
+  int16 subtype2 = MOBDB_FLAGS_GET_SUBTYPE(temp2->flags);
+  ensure_valid_tempsubtype(subtype1);
+  ensure_valid_tempsubtype(subtype2);
 
   const TInstant *inst1, *inst2;
   const TInstantSet *ti;
   const TSequence *seq;
   const TSequenceSet *ts;
   /* If both are of the same temporal type use the specific equality */
-  if (temp1->subtype == temp2->subtype)
+  if (subtype1 == subtype2)
   {
-    if (temp1->subtype == INSTANT)
+    if (subtype1 == INSTANT)
       return tinstant_eq((TInstant *) temp1, (TInstant *) temp2);
-    else if (temp1->subtype == INSTANTSET)
+    else if (subtype1 == INSTANTSET)
       return tinstantset_eq((TInstantSet *) temp1, (TInstantSet *) temp2);
-    else if (temp1->subtype == SEQUENCE)
+    else if (subtype1 == SEQUENCE)
       return tsequence_eq((TSequence *) temp1, (TSequence *) temp2);
-    else /* temp1->subtype == SEQUENCESET */
+    else /* subtype1 == SEQUENCESET */
       return tsequenceset_eq((TSequenceSet *) temp1, (TSequenceSet *) temp2);
   }
 
   /* Different temporal type */
-  if (temp1->subtype > temp2->subtype)
+  if (subtype1 > subtype2)
   {
     const Temporal *temp = (Temporal *) temp1;
     temp1 = temp2;
     temp2 = temp;
+    subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temp1->flags);
+    subtype2 = MOBDB_FLAGS_GET_SUBTYPE(temp2->flags);
   }
-  if (temp1->subtype == INSTANT)
+  if (subtype1 == INSTANT)
   {
     const TInstant *inst = (TInstant *) temp1;
-    if (temp2->subtype == INSTANTSET)
+    if (subtype2 == INSTANTSET)
     {
       ti = (TInstantSet *) temp2;
       if (ti->count != 1)
@@ -4362,7 +4454,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       inst1 = tinstantset_inst_n(ti, 0);
       return tinstant_eq(inst, inst1);
     }
-    if (temp2->subtype == SEQUENCE)
+    if (subtype2 == SEQUENCE)
     {
       seq = (TSequence *) temp2;
       if (seq->count != 1)
@@ -4370,7 +4462,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       inst1 = tsequence_inst_n(seq, 0);
       return tinstant_eq(inst, inst1);
     }
-    if (temp2->subtype == SEQUENCESET)
+    if (subtype2 == SEQUENCESET)
     {
       ts = (TSequenceSet *) temp2;
       if (ts->count != 1)
@@ -4383,10 +4475,10 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
     }
 
   }
-  else if (temp1->subtype == INSTANTSET)
+  else if (subtype1 == INSTANTSET)
   {
     ti = (TInstantSet *) temp1;
-    if (temp2->subtype == SEQUENCE)
+    if (subtype2 == SEQUENCE)
     {
       seq = (TSequence *) temp2;
       if (ti->count != 1 || seq->count != 1)
@@ -4395,7 +4487,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       inst2 = tsequence_inst_n(seq, 0);
       return tinstant_eq(inst1, inst2);
     }
-    if (temp2->subtype == SEQUENCESET)
+    if (subtype2 == SEQUENCESET)
     {
       ts = (TSequenceSet *) temp2;
       for (int i = 0; i < ti->count; i ++)
@@ -4411,7 +4503,7 @@ temporal_eq_internal(const Temporal *temp1, const Temporal *temp2)
       return true;
     }
   }
-  /* temp1->subtype == SEQUENCE && temp2->subtype == SEQUENCESET */
+  /* subtype1 == SEQUENCE && subtype2 == SEQUENCESET */
   seq = (TSequence *) temp1;
   ts = (TSequenceSet *) temp2;
   if (ts->count != 1)
@@ -4482,17 +4574,19 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
   if (result)
     return result;
 
+  int16 subtype1 = MOBDB_FLAGS_GET_SUBTYPE(temp1->flags);
+  int16 subtype2 = MOBDB_FLAGS_GET_SUBTYPE(temp2->flags);
   /* If both are of the same temporal type use the specific comparison */
-  if (temp1->subtype == temp2->subtype)
+  if (subtype1 == subtype2)
   {
-    ensure_valid_tempsubtype(temp1->subtype);
-    if (temp1->subtype == INSTANT)
+    ensure_valid_tempsubtype(subtype1);
+    if (subtype1 == INSTANT)
       return tinstant_cmp((TInstant *) temp1, (TInstant *) temp2);
-    else if (temp1->subtype == INSTANTSET)
+    else if (subtype1 == INSTANTSET)
       return tinstantset_cmp((TInstantSet *) temp1, (TInstantSet *) temp2);
-    else if (temp1->subtype == SEQUENCE)
+    else if (subtype1 == SEQUENCE)
       return tsequence_cmp((TSequence *) temp1, (TSequence *) temp2);
-    else /* temp1->subtype == SEQUENCESET */
+    else /* subtype1 == SEQUENCESET */
       return tsequenceset_cmp((TSequenceSet *) temp1, (TSequenceSet *) temp2);
   }
 
@@ -4519,9 +4613,9 @@ temporal_cmp_internal(const Temporal *temp1, const Temporal *temp2)
     return 1;
 
   /* Finally compare temporal type */
-  if (temp1->subtype < temp2->subtype)
+  if (subtype1 < subtype2)
     return -1;
-  else if (temp1->subtype > temp2->subtype)
+  else if (subtype1 > subtype2)
     return 1;
   else
     return 0;
@@ -4631,14 +4725,15 @@ uint32
 temporal_hash_internal(const Temporal *temp)
 {
   uint32 result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_hash((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tinstantset_hash((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tsequence_hash((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tsequenceset_hash((TSequenceSet *) temp);
   return result;
 }

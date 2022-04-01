@@ -169,30 +169,41 @@ struct tempsubtype_struct
  * to the value of the continuous subtype flag.
  *****************************************************************************/
 
-/* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) ((flags) & 0x01))
-#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x10)>>4))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x20)>>5))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x40)>>6))
+#define MOBDB_FLAG_BYVAL      0x0008
+#define MOBDB_FLAG_CONTINUOUS 0x0010
+#define MOBDB_FLAG_LINEAR     0x0020
+#define MOBDB_FLAG_X          0x0040
+#define MOBDB_FLAG_Z          0x0080
+#define MOBDB_FLAG_T          0x0100
+#define MOBDB_FLAG_GEODETIC   0x0200
 
+#define MOBDB_FLAGS_GET_SUBTYPE(flags) ((int16) ((flags & 0x0007)))
+/* The following flag is only used for TInstant */
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)>>3))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>4))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_FLAG_LINEAR)>>5))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>6))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>7))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>8))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>9))
+
+#define MOBDB_FLAGS_SET_SUBTYPE(flags, value) \
+  ((flags) = (((flags) & 0xFFF8) | ((value & 0x0007))))
 /* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_LINEAR) : ((flags) & ~MOBDB_FLAG_LINEAR))
 #define MOBDB_FLAGS_SET_X(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_Z) : ((flags) & ~MOBDB_FLAG_Z))
 #define MOBDB_FLAGS_SET_T(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling
@@ -248,10 +259,10 @@ struct tempsubtype_struct
  */
 typedef struct
 {
-  int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  int16         subtype;       /**< subtype */
-  int16         flags;         /**< flags */
-  Oid           basetypid;     /**< base type's OID (4 bytes) */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  int16         temptype;     /**< temporal type */
+  int16         flags;        /**< flags */
+  Oid           basetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -261,7 +272,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         subtype;      /**< subtype */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
@@ -273,11 +284,11 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  int16         subtype;       /**< subtype */
-  int16         flags;         /**< flags */
-  Oid           basetypid;     /**< base type's OID (4 bytes) */
-  int32         count;         /**< number of TInstant elements */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  int16         temptype;     /**< temporal type */
+  int16         flags;        /**< flags */
+  Oid           basetypid;    /**< base type's OID (4 bytes) */
+  int32         count;        /**< number of TInstant elements */
   int16         bboxsize;     /**< size of the bounding box */
   /**< beginning of variable-length data */
 } TInstantSet;
@@ -288,7 +299,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         subtype;      /**< subtype */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
@@ -303,7 +314,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         subtype;      /**< subtype */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */

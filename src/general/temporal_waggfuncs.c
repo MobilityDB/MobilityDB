@@ -215,26 +215,27 @@ static TSequence **
 temporal_extend(Temporal *temp, Interval *interval, bool min, int *count)
 {
   TSequence **result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_extend(inst, interval, result);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_extend(ti, interval, result);
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_extend(seq, interval, min, result);
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -367,27 +368,28 @@ static TSequence **
 temporal_transform_wcount(const Temporal *temp, const Interval *interval,
   int *count)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
   TSequence **result;
-  if (temp->subtype == INSTANT)
+  if (subtype == INSTANT)
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tinstant_transform_wcount(inst, interval, result);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tinstantset_transform_wcount(ti, interval, result);
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tsequence_transform_wcount(seq, interval, result);
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -543,27 +545,28 @@ static TSequence **
 tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   int *count)
 {
-  ensure_valid_tempsubtype(temp->subtype);
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
   TSequence **result;
-  if (temp->subtype == INSTANT)
+  if (subtype == INSTANT)
   {
     TInstant *inst = (TInstant *)temp;
     result = palloc(sizeof(TSequence *));
     *count = tnumberinst_transform_wavg(inst, interval, result);
   }
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
   {
     TInstantSet *ti = (TInstantSet *)temp;
     result = palloc(sizeof(TSequence *) * ti->count);
     *count = tnumberinstset_transform_wavg(ti, interval, result);
   }
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
   {
     TSequence *seq = (TSequence *)temp;
     result = palloc(sizeof(TSequence *) * seq->count);
     *count = tintseq_transform_wavg(seq, interval, result);
   }
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     TSequenceSet *ts = (TSequenceSet *)temp;
     result = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -628,7 +631,8 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   }
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
-  if ((temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET) &&
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  if ((subtype == SEQUENCE || subtype == SEQUENCESET) &&
     temp->basetypid == FLOAT8OID && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal float sequences")));
@@ -637,7 +641,6 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
     func, min, crossings);
 
   PG_FREE_IF_COPY(temp, 1);
-  PG_FREE_IF_COPY(interval, 2);
   PG_RETURN_POINTER(result);
 }
 

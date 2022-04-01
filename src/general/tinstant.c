@@ -145,10 +145,10 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   void *value_to = ((char *) result) + value_offset;
   memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
-  result->subtype = INSTANT;
   result->basetypid = basetypid;
   result->t = t;
   SET_VARSIZE(result, size);
+  MOBDB_FLAGS_SET_SUBTYPE(result->flags, INSTANT);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = base_type_continuous(basetypid);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);

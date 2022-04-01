@@ -196,10 +196,11 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
     if (list->elemtype == PERIOD)
       return pos_period_timestamp((Period *) list->elems[cur].value, t);
     /* list->elemtype == TEMPORAL */
-    if (((Temporal *) list->elems[cur].value)->subtype == INSTANT)
-      return pos_timestamp_timestamp(((TInstant *) list->elems[cur].value)->t, t);
+    Temporal *temp = (Temporal *) list->elems[cur].value;
+    if (MOBDB_FLAGS_GET_SUBTYPE(temp->flags) == INSTANT)
+      return pos_timestamp_timestamp(((TInstant *) temp)->t, t);
     else
-      return pos_period_timestamp(&((TSequence *) list->elems[cur].value)->period, t);
+      return pos_period_timestamp(&((TSequence *) temp)->period, t);
   }
 }
 
@@ -395,7 +396,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
   }
   else /* list->elemtype == TEMPORAL */
   {
-    subtype = ((Temporal *) skiplist_headval(list))->subtype;
+    subtype = MOBDB_FLAGS_GET_SUBTYPE(((Temporal *) skiplist_headval(list))->flags);
     if (subtype == INSTANT)
       period_set(((TInstant *)values[0])->t,
         ((TInstant *) values[count - 1])->t, true, true, &p);

@@ -137,9 +137,9 @@ tinstantset_make1(const TInstant **instants, int count)
   SET_VARSIZE(result, memsize);
   result->count = count;
   result->basetypid = instants[0]->basetypid;
-  result->subtype = INSTANTSET;
   result->bboxsize = bboxsize;
   bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
+  MOBDB_FLAGS_SET_SUBTYPE(result->flags, INSTANTSET);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
   MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -1343,7 +1343,7 @@ tinstantset_restrict_timestampset(const TInstantSet *ti,
   {
     Temporal *temp = tinstantset_restrict_timestamp(ti,
       timestampset_time_n(ts, 0), atfunc);
-    if (temp == NULL || temp->subtype == INSTANTSET)
+    if (temp == NULL || MOBDB_FLAGS_GET_SUBTYPE(temp->flags) == INSTANTSET)
       return (TInstantSet *) temp;
     TInstant *inst1 = (TInstant *) temp;
     result = tinstantset_make((const TInstant **) &inst1, 1, MERGE_NO);

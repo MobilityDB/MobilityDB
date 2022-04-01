@@ -112,7 +112,7 @@ static Temporal *
 tpoint_valid_typmod(Temporal *temp, int32_t typmod)
 {
   int32 tpoint_srid = tpoint_srid_internal(temp);
-  int16 tpoint_subtype = temp->subtype;
+  int16 tpoint_subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
   int16 typmod_subtype = TYPMOD_GET_SUBTYPE(typmod);
   TYPMOD_DEL_SUBTYPE(typmod);
   /* If there is no geometry type */

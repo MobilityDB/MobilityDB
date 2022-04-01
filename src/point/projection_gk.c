@@ -283,7 +283,6 @@ PGDLLEXPORT Datum
 tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_valid_tempsubtype(temp->subtype);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

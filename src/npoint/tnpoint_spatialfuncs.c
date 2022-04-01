@@ -149,17 +149,18 @@ tnpointinst_srid(const TInstant *inst)
 int
 tnpoint_srid_internal(const Temporal *temp)
 {
-  int result;
-  ensure_valid_tempsubtype(temp->subtype);
   if (temp->basetypid != type_oid(T_NPOINT))
     elog(ERROR, "unknown npoint base type: %d", temp->basetypid);
-  if (temp->subtype == INSTANT)
+  int result;
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tnpointinst_srid((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tpointinstset_srid((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tpointseq_srid((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tpointseqset_srid((TSequenceSet *) temp);
   return result;
 }
@@ -353,14 +354,15 @@ Datum
 tnpoint_geom(const Temporal *temp)
 {
   Datum result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tnpointinst_geom((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = tnpointinstset_geom((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tnpointseq_geom((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tnpointseqset_geom((TSequenceSet *) temp);
   return result;
 }
@@ -499,14 +501,15 @@ tnpoint_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
-    (temp->subtype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->subtype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT || subtype == INSTANTSET ||
+    (subtype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
+    (subtype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
     ;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = tnpointseq_length((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = tnpointseqset_length((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
@@ -633,14 +636,15 @@ tnpoint_cumulative_length(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tnpointinst_set_zero((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tnpointinstset_set_zero((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tnpointseqset_cumulative_length((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -728,14 +732,15 @@ tnpoint_speed(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = (Temporal *) tnpointinst_set_zero((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = (Temporal *) tnpointinstset_set_zero((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tnpointseqset_speed((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -931,14 +936,15 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
-    (temp->subtype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
-    (temp->subtype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT || subtype == INSTANTSET ||
+    (subtype == SEQUENCE && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)) ||
+    (subtype == SEQUENCESET && ! MOBDB_FLAGS_GET_LINEAR(temp->flags)))
     ;
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = (Temporal *) tnpointseqset_azimuth((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)

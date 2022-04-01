@@ -157,8 +157,8 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
   result->count = newcount;
   result->totalcount = totalcount;
   result->basetypid = sequences[0]->basetypid;
-  result->subtype = SEQUENCESET;
   result->bboxsize = bboxsize;
+  MOBDB_FLAGS_SET_SUBTYPE(result->flags, SEQUENCESET);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(sequences[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags,
@@ -299,9 +299,10 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
   int k = 0;
   for (int i = 0; i < ts->count - 1; i++)
     sequences[k++] = tsequenceset_seq_n(ts, i);
-  if (temp->subtype == SEQUENCE)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  if (subtype == SEQUENCE)
     sequences[k++] = (const TSequence *) temp;
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
   {
     TSequenceSet *ts1 = (TSequenceSet *) temp;
     sequences[k++] = tsequenceset_seq_n(ts1, 0);

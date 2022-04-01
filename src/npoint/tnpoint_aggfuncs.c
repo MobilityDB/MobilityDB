@@ -75,7 +75,8 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp1, &count);
   if (state)
   {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, 
+      MOBDB_FLAGS_GET_SUBTYPE(temparr[0]->flags), temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else

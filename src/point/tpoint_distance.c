@@ -768,16 +768,17 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   store_fcinfo(fcinfo);
   LWGEOM *geo = lwgeom_from_gserialized(gs);
   TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
+  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
     result = tinstant_copy((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
+  else if (subtype == INSTANTSET)
     result = NAI_tpointinstset_geo((TInstantSet *) temp, geo);
-  else if (temp->subtype == SEQUENCE)
+  else if (subtype == SEQUENCE)
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseq_linear_geo((TSequence *) temp, geo) :
       NAI_tpointseq_step_geo((TSequence *) temp, geo);
-  else /* temp->subtype == SEQUENCESET */
+  else /* subtype == SEQUENCESET */
     result = MOBDB_FLAGS_GET_LINEAR(temp->flags) ?
       NAI_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
       NAI_tpointseqset_step_geo((TSequenceSet *) temp, geo);
