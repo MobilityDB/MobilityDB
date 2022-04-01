@@ -58,11 +58,18 @@
 /**
  * Floating point precision
  */
-#define MOBDB_EPSILON   1.0E-05
+#define MOBDB_EPSILON   1.e-05
+#define MOBDB_FP_EQ(A, B) (fabs((A)-(B)) <= MOBDB_EPSILON)
+#define MOBDB_FP_NE(A, B) (fabs((A)-(B)) > MOBDB_EPSILON)
+#define MOBDB_FP_LT(A, B) (((A) + MOBDB_EPSILON) < (B))
+#define MOBDB_FP_LE(A, B) (((A) - MOBDB_EPSILON) <= (B))
+#define MOBDB_FP_GT(A, B) (((A) - MOBDB_EPSILON) > (B))
+#define MOBDB_FP_GE(A, B) (((A) + MOBDB_EPSILON) >= (B))
+
 /**
  * Precision for distance operations
  */
-#define DIST_EPSILON    1.0E-05
+#define DIST_EPSILON    1.0e-05
 
 /** Symbolic constants for lifting */
 #define DISCONTINUOUS   true
@@ -159,10 +166,15 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure xGTZXLCB, where
- * x:unused bit, G:Coordinates are geodetic, T:has T coordinate,
- * Z:has Z coordinate, X:has value or X coordinate,
- * B:base type passed by value, L: Linear interpolation, C: Continuous base type
+ * Macros for manipulating the 'flags' element with structure xxGTZXLCB, where
+ *   xx: unused bits
+ *   G: coordinates are geodetic
+     T: has T coordinate,
+ *   Z: has Z coordinate
+ *   X: has value or X coordinate
+ *   L: linear interpolation
+ *   C: continuous base type
+ *   B: base type passed by value
  * Notice that formally speaking the Linear interpolation flag is only needed
  * for sequence and sequence set subtypes. To facilate the transformation from
  * one subtype to another, the linear flag for instant and instant set is set
