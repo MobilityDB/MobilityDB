@@ -582,3 +582,33 @@ SELECT round(derivative(tfloat 'Interp=Stepwise;{[1@2000-01-01, 2@2000-01-02, 1@
 
 -------------------------------------------------------------------------------
 
+SELECT round(celsius_to_fahrenheit(tfloat '15@2000-01-01'), 2);
+SELECT round(fahrenheit_to_celsius(tfloat '15@2000-01-01'), 2);
+SELECT round(celsius_to_kelvin(tfloat '15@2000-01-01'), 2);
+SELECT round(kelvin_to_celsius(tfloat '15@2000-01-01'), 2);
+SELECT round(kelvin_to_fahrenheit(tfloat '15@2000-01-01'), 2);
+SELECT round(fahrenheit_to_kelvin(tfloat '15@2000-01-01'), 2);
+
+SELECT round(celsius_to_fahrenheit(tfloat '{15@2000-01-01, 25@2000-01-02, 15@2000-01-03}'), 2);
+SELECT round(fahrenheit_to_celsius(tfloat '{15@2000-01-01, 25@2000-01-02, 15@2000-01-03}'), 2);
+SELECT round(celsius_to_kelvin(tfloat '{15@2000-01-01, 25@2000-01-02, 15@2000-01-03}'), 2);
+SELECT round(kelvin_to_celsius(tfloat '{15@2000-01-01, 25@2000-01-02, 15@2000-01-03}'), 2);
+SELECT round(kelvin_to_fahrenheit(tfloat '{15@2000-01-01, 25@2000-01-02, 15@2000-01-03}'), 2);
+SELECT round(fahrenheit_to_kelvin(tfloat '{15@2000-01-01, 25@2000-01-02, 15@2000-01-03}'), 2);
+
+SELECT round(celsius_to_fahrenheit(tfloat '[15@2000-01-01, 25@2000-01-02, 15@2000-01-03]'), 2);
+SELECT round(fahrenheit_to_celsius(tfloat '[15@2000-01-01, 25@2000-01-02, 15@2000-01-03]'), 2);
+SELECT round(celsius_to_kelvin(tfloat '[15@2000-01-01, 25@2000-01-02, 15@2000-01-03]'), 2);
+SELECT round(kelvin_to_celsius(tfloat '[15@2000-01-01, 25@2000-01-02, 15@2000-01-03]'), 2);
+SELECT round(kelvin_to_fahrenheit(tfloat '[15@2000-01-01, 25@2000-01-02, 15@2000-01-03]'), 2);
+SELECT round(fahrenheit_to_kelvin(tfloat '[15@2000-01-01, 25@2000-01-02, 15@2000-01-03]'), 2);
+
+SELECT round(celsius_to_fahrenheit(tfloat '{[15@2000-01-01, 25@2000-01-02, 15@2000-01-03],[35@2000-01-04, 35@2000-01-05]}'), 2);
+SELECT round(fahrenheit_to_celsius(tfloat '{[15@2000-01-01, 25@2000-01-02, 15@2000-01-03],[35@2000-01-04, 35@2000-01-05]}'), 2);
+SELECT round(celsius_to_kelvin(tfloat '{[15@2000-01-01, 25@2000-01-02, 15@2000-01-03],[35@2000-01-04, 35@2000-01-05]}'), 2);
+SELECT round(kelvin_to_celsius(tfloat '{[15@2000-01-01, 25@2000-01-02, 15@2000-01-03],[35@2000-01-04, 35@2000-01-05]}'), 2);
+SELECT round(kelvin_to_fahrenheit(tfloat '{[15@2000-01-01, 25@2000-01-02, 15@2000-01-03],[35@2000-01-04, 35@2000-01-05]}'), 2);
+SELECT round(fahrenheit_to_kelvin(tfloat '{[15@2000-01-01, 25@2000-01-02, 15@2000-01-03],[35@2000-01-04, 35@2000-01-05]}'), 2);
+
+-------------------------------------------------------------------------------
+
