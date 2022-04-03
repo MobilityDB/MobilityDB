@@ -66,7 +66,7 @@ extern Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS);
 extern float8 period_sel_default(CachedOp cachedOp);
 extern float8 period_joinsel_default(CachedOp cachedOp);
 
-extern float8 period_sel_internal(PlannerInfo *root, Oid oper, List *args,
+extern float8 period_sel_internal(PlannerInfo *root, Oid operid, List *args,
   int varRelid);
 extern float8 period_joinsel_internal(PlannerInfo *root, CachedOp cachedOp,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo);

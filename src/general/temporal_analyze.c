@@ -315,10 +315,10 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   if (tnumber)
   {
     /* Ensure function is called for temporal numbers */
-    ensure_tnumber_base_type(temporal_extra_data->value_type_id);
-    if (temporal_extra_data->value_type_id == INT4OID)
+    ensure_tnumber_basetype(oid_type(temporal_extra_data->value_typid));
+    if (temporal_extra_data->value_typid == INT4OID)
       rangetypid = type_oid(T_INTRANGE);
-    else /* temporal_extra_data->value_type_id == FLOAT8OID */
+    else /* temporal_extra_data->value_typid == FLOAT8OID */
       rangetypid = type_oid(T_FLOATRANGE);
     typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
     value_lowers = (RangeBound *) palloc(sizeof(RangeBound) * samplerows);
@@ -363,10 +363,10 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       value_lowers[non_null_cnt] = range_lower;
       value_uppers[non_null_cnt] = range_upper;
 
-      if (temporal_extra_data->value_type_id == INT4OID)
+      if (temporal_extra_data->value_typid == INT4OID)
         value_lengths[non_null_cnt] = (float8) (DatumGetInt32(range_upper.val) -
           DatumGetInt32(range_lower.val));
-      else if (temporal_extra_data->value_type_id == FLOAT8OID)
+      else if (temporal_extra_data->value_typid == FLOAT8OID)
         value_lengths[non_null_cnt] = DatumGetFloat8(range_upper.val) -
           DatumGetFloat8(range_lower.val);
     }
@@ -435,8 +435,8 @@ temporal_extra_info(VacAttrStats *stats)
   /*
    * Check attribute data type is a temporal type.
    */
-  if (! temporal_type(stats->attrtypid))
-    elog(ERROR, "temporal_analyze was invoked with invalid type %u",
+  if (! temporal_type(oid_type(stats->attrtypid)))
+    elog(ERROR, "temporal_analyze was invoked with invalid temporal type %u",
        stats->attrtypid);
 
   /* Store our findings for use by stats functions */
@@ -450,7 +450,7 @@ temporal_extra_info(VacAttrStats *stats)
   typentry = lookup_type_cache(stats->attrtypid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
-  extra_data->type_id = typentry->type_id;
+  extra_data->typid = typentry->type_id;
   extra_data->eq_opr = typentry->eq_opr;
   extra_data->lt_opr = typentry->lt_opr;
   extra_data->typbyval = typentry->typbyval;
@@ -460,10 +460,10 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->hash = &typentry->hash_proc_finfo;
 
   /* Information about the value type */
-  typentry = lookup_type_cache(base_oid_from_temporal(stats->attrtypid),
+  typentry = lookup_type_cache(temptypid_basetypid(stats->attrtypid),
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
-  extra_data->value_type_id = typentry->type_id;
+  extra_data->value_typid = typentry->type_id;
   extra_data->value_eq_opr = typentry->eq_opr;
   extra_data->value_lt_opr = typentry->lt_opr;
   extra_data->value_typbyval = typentry->typbyval;
@@ -473,11 +473,11 @@ temporal_extra_info(VacAttrStats *stats)
   extra_data->value_hash = &typentry->hash_proc_finfo;
 
   /* Information about the time type */
-  Oid pertypoid = type_oid(T_PERIOD);
-  typentry = lookup_type_cache(pertypoid,
+  Oid per_typid = type_oid(T_PERIOD);
+  typentry = lookup_type_cache(per_typid,
     TYPECACHE_EQ_OPR | TYPECACHE_LT_OPR | TYPECACHE_CMP_PROC_FINFO |
     TYPECACHE_HASH_PROC_FINFO);
-  extra_data->time_type_id = pertypoid;
+  extra_data->time_typid = per_typid;
   extra_data->time_eq_opr = typentry->eq_opr;
   extra_data->time_lt_opr = typentry->lt_opr;
   extra_data->time_typbyval = false;

@@ -149,10 +149,10 @@ spatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = tpoint1->basetypid;
-  lfinfo.argtypid[1] = tpoint2->basetypid;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = tpoint1->basetype;
+  lfinfo.argtype[1] = tpoint2->basetype;
+  lfinfo.restype = T_BOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(tpoint1->flags) ||

@@ -35,11 +35,13 @@
 #ifndef __TEMPORAL_BOXOPS_H__
 #define __TEMPORAL_BOXOPS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
-
+/* MobilityDB */
 #include "temporal.h"
+#include "general/tempcache.h"
 #include "period.h"
 #include "tbox.h"
 #include "point/stbox.h"
@@ -50,15 +52,14 @@
 
 extern size_t temporal_max_bbox_size();
 extern uint32_t temporal_max_header_size(void);
-extern bool temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid);
-extern int temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid);
-extern void temporal_bbox_expand(void *box1, const void *box2, Oid basetypid);
+extern bool temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype);
+extern int temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype);
 extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
-  const Interval *duration, Oid basetypid);
+  const Interval *duration, CachedType temptype);
 
 /* Compute the bounding box at the creation of temporal values */
 
-extern size_t temporal_bbox_size(Oid basetypid);
+extern size_t temporal_bbox_size(CachedType tempype);
 extern void tinstant_make_bbox(const TInstant *inst, void *bbox);
 extern void tinstantset_make_bbox(const TInstant **inst, int count, void *bbox);
 extern void tsequence_make_bbox(const TInstant** inst, int count,

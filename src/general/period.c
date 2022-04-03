@@ -487,7 +487,7 @@ period_to_tstzrange(PG_FUNCTION_ARGS)
   RangeType *range;
   range = range_make(TimestampTzGetDatum(period->lower),
     TimestampTzGetDatum(period->upper), period->lower_inc,
-    period->upper_inc, TIMESTAMPTZOID);
+    period->upper_inc, T_TIMESTAMPTZ);
   PG_RETURN_POINTER(range);
 }
 

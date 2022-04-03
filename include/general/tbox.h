@@ -35,10 +35,12 @@
 #ifndef __TBOX_H__
 #define __TBOX_H__
 
+/* MobilityDB */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
-
+/* MobilityDB */
+#include "general/tempcache.h"
 #include "timetypes.h"
 
 /*****************************************************************************/
@@ -112,7 +114,7 @@ extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
 extern Datum tbox_to_floatrange(PG_FUNCTION_ARGS);
 extern Datum tbox_to_period(PG_FUNCTION_ARGS);
 
-extern void number_tbox(Datum value, Oid basetypid, TBOX *box);
+extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
 extern void int_tbox(int i, TBOX *box);
 extern void float_tbox(double d, TBOX *box);
 extern void range_tbox(const RangeType *r, TBOX *box);

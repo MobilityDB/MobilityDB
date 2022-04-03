@@ -35,11 +35,13 @@
 #ifndef __TNUMBER_DISTANCE_H__
 #define __TNUMBER_DISTANCE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <float.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/tempcache.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -49,7 +51,8 @@ extern Datum distance_base_tnumber(PG_FUNCTION_ARGS);
 extern Datum distance_tnumber_base(PG_FUNCTION_ARGS);
 extern Datum distance_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum number_distance(Datum l, Datum r, Oid typel, Oid typer);
+extern Datum number_distance(Datum l, Datum r, CachedType typel,
+  CachedType typer);
 
 /* Nearest approach distance */
 

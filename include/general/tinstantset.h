@@ -78,7 +78,7 @@ extern TInstantSet *tinstantset_read(StringInfo buf, Oid basetypid);
 
 /* Constructor functions */
 
-extern TInstantSet *tinstantset_from_base_internal(Datum value, Oid basetypid,
+extern TInstantSet *tinstantset_from_base_internal(Datum value, CachedType basetype,
   const TimestampSet *ts);
 
 extern Datum tinstantset_from_base(PG_FUNCTION_ARGS);

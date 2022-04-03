@@ -200,7 +200,7 @@ double_parse(char **str)
  * Parse a base value from the buffer
  */
 Datum
-basetype_parse(char **str, Oid basetype)
+basetype_parse(char **str, Oid basetypid)
 {
   p_whitespace(str);
   int delim = 0;
@@ -224,7 +224,7 @@ basetype_parse(char **str, Oid basetype)
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse element value")));
   (*str)[delim] = '\0';
-  Datum result = call_input(basetype, *str);
+  Datum result = call_input(basetypid, *str);
   if (isttext)
     /* Replace the double quote */
     (*str)[delim++] = '"';
@@ -445,32 +445,32 @@ periodset_parse(char **str)
  * Parse a temporal instant value from the buffer
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no more input after the instant
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 TInstant *
-tinstant_parse(char **str, Oid basetype, bool end, bool make)
+tinstant_parse(char **str, Oid basetypid, bool end, bool make)
 {
   p_whitespace(str);
   /* The next two instructions will throw an exception if they fail */
-  Datum elem = basetype_parse(str, basetype);
+  Datum elem = basetype_parse(str, basetypid);
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   if (! make)
     return NULL;
-  return tinstant_make(elem, t, basetype);
+  return tinstant_make(elem, t, oid_type(basetypid));
 }
 
 /**
  * Parse a temporal instant set value from the buffer
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 static TInstantSet *
-tinstantset_parse(char **str, Oid basetype)
+tinstantset_parse(char **str, Oid basetypid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -479,12 +479,12 @@ tinstantset_parse(char **str, Oid basetype)
 
   /* First parsing */
   char *bak = *str;
-  tinstant_parse(str, basetype, false, false);
+  tinstant_parse(str, basetypid, false, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tinstant_parse(str, basetype, false, false);
+    tinstant_parse(str, basetypid, false, false);
   }
   if (!p_cbrace(str))
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -497,7 +497,7 @@ tinstantset_parse(char **str, Oid basetype)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    instants[i] = tinstant_parse(str, basetype, false, true);
+    instants[i] = tinstant_parse(str, basetypid, false, true);
   }
   p_cbrace(str);
   return tinstantset_make_free(instants, count, MERGE_NO);
@@ -507,14 +507,14 @@ tinstantset_parse(char **str, Oid basetype)
  * Parse a temporal sequence value from the buffer
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] linear True when the interpolation is linear
  * @param[in] end Set to true when reading a single instant to ensure there is
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 static TSequence *
-tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
+tsequence_parse(char **str, Oid basetypid, bool linear, bool end, bool make)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -527,12 +527,12 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
 
   /* First parsing */
   char *bak = *str;
-  tinstant_parse(str, basetype, false, false);
+  tinstant_parse(str, basetypid, false, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tinstant_parse(str, basetype, false, false);
+    tinstant_parse(str, basetypid, false, false);
   }
   if (p_cbracket(str))
     upper_inc = true;
@@ -551,7 +551,7 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    instants[i] = tinstant_parse(str, basetype, false, true);
+    instants[i] = tinstant_parse(str, basetypid, false, true);
   }
   p_cbracket(str);
   p_cparen(str);
@@ -563,11 +563,11 @@ tsequence_parse(char **str, Oid basetype, bool linear, bool end, bool make)
  * Parse a temporal sequence set value from the buffer
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] basetypid Oid of the base type
  * @param[in] linear True when the interpolation is linear
  */
 static TSequenceSet *
-tsequenceset_parse(char **str, Oid basetype, bool linear)
+tsequenceset_parse(char **str, Oid basetypid, bool linear)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -576,12 +576,12 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
 
   /* First parsing */
   char *bak = *str;
-  tsequence_parse(str, basetype, linear, false, false);
+  tsequence_parse(str, basetypid, linear, false, false);
   int count = 1;
   while (p_comma(str))
   {
     count++;
-    tsequence_parse(str, basetype, linear, false, false);
+    tsequence_parse(str, basetypid, linear, false, false);
   }
   if (!p_cbrace(str))
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -594,7 +594,7 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
   for (int i = 0; i < count; i++)
   {
     p_comma(str);
-    sequences[i] = tsequence_parse(str, basetype, linear, false, true);
+    sequences[i] = tsequence_parse(str, basetypid, linear, false, true);
   }
   p_cbrace(str);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
@@ -604,14 +604,14 @@ tsequenceset_parse(char **str, Oid basetype, bool linear)
  * Parse a temporal value from the buffer (dispatch function)
  *
  * @param[in] str Input string
- * @param[in] basetype Oid of the base type
+ * @param[in] basetypid Oid of the base type
  */
 Temporal *
-temporal_parse(char **str, Oid basetype)
+temporal_parse(char **str, Oid basetypid)
 {
   p_whitespace(str);
   Temporal *result = NULL;  /* keep compiler quiet */
-  bool linear = base_type_continuous(basetype);
+  bool linear = basetype_continuous(oid_type(basetypid));
   /* Starts with "Interp=Stepwise;" */
   if (strncasecmp(*str, "Interp=Stepwise;", 16) == 0)
   {
@@ -620,9 +620,9 @@ temporal_parse(char **str, Oid basetype)
     linear = false;
   }
   if (**str != '{' && **str != '[' && **str != '(')
-    result = (Temporal *) tinstant_parse(str, basetype, true, true);
+    result = (Temporal *) tinstant_parse(str, basetypid, true, true);
   else if (**str == '[' || **str == '(')
-    result = (Temporal *) tsequence_parse(str, basetype, linear, true, true);
+    result = (Temporal *) tsequence_parse(str, basetypid, linear, true, true);
   else if (**str == '{')
   {
     char *bak = *str;
@@ -631,12 +631,12 @@ temporal_parse(char **str, Oid basetype)
     if (**str == '[' || **str == '(')
     {
       *str = bak;
-      result = (Temporal *) tsequenceset_parse(str, basetype, linear);
+      result = (Temporal *) tsequenceset_parse(str, basetypid, linear);
     }
     else
     {
       *str = bak;
-      result = (Temporal *) tinstantset_parse(str, basetype);
+      result = (Temporal *) tinstantset_parse(str, basetypid);
     }
   }
   return result;

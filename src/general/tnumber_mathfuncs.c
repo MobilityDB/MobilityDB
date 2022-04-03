@@ -82,10 +82,10 @@ static bool
 tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  double x1 = datum_double(tinstant_value(start1), start1->basetypid);
-  double x2 = datum_double(tinstant_value(end1), start1->basetypid);
-  double x3 = datum_double(tinstant_value(start2), start2->basetypid);
-  double x4 = datum_double(tinstant_value(end2), start2->basetypid);
+  double x1 = datum_double(tinstant_value(start1), start1->basetype);
+  double x2 = datum_double(tinstant_value(end1), start1->basetype);
+  double x3 = datum_double(tinstant_value(start2), start2->basetype);
+  double x4 = datum_double(tinstant_value(end2), start2->basetype);
   /* Compute the instants t1 and t2 at which the linear functions of the two
    * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
    * minimum/maximum exactly at the middle between t1 and t2.
@@ -125,8 +125,8 @@ tnumber_arithop_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
   Datum value2 = tsegment_value_at_timestamp(start2, end2, LINEAR, *t);
   assert (op == '*' || op == '/');
   *value = (op == '*') ?
-    datum_mult(value1, value2, start1->basetypid, start2->basetypid) :
-    datum_div(value1, value2, start1->basetypid, start2->basetypid);
+    datum_mult(value1, value2, start1->basetype, start2->basetype) :
+    datum_div(value1, value2, start1->basetype, start2->basetype);
   return true;
 }
 
@@ -170,16 +170,16 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] temp Temporal number
  * @param[in] value Number
- * @param[in] basetypid Oid of the base type
+ * @param[in] basetype Base type
  * @param[in] invert True when the base value is the first argument
  * of the function
  */
 static Temporal *
 arithop_tnumber_base1(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
-  Temporal *temp, Datum value, Oid basetypid, bool invert)
+  Datum (*func)(Datum, Datum, CachedType, CachedType), TArithmetic oper,
+  Temporal *temp, Datum value, CachedType basetype, bool invert)
 {
-  ensure_tnumber_base_type(basetypid);
+  ensure_tnumber_basetype(basetype);
   /* If division test whether the denominator is zero */
   if (oper == DIV)
   {
@@ -191,22 +191,22 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
     }
     else
     {
-      double d = datum_double(value, basetypid);
+      double d = datum_double(value, basetype);
       if (fabs(d) < MOBDB_EPSILON)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Division by zero")));
     }
   }
 
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  CachedType restype = temptypid_basetype(get_fn_expr_rettype(fcinfo->flinfo));
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp->basetypid;
-  lfinfo.argtypid[1] = basetypid;
-  lfinfo.restypid = base_oid_from_temporal(temptypid);
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temp->basetype;
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = restype;
   /* This parameter is not used for tnumber <op> base */
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
@@ -225,13 +225,13 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
  */
 static Datum
 arithop_base_tnumber(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
+  Datum (*func)(Datum, Datum, CachedType, CachedType), TArithmetic oper)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
-    temp, value, basetypid, INVERT);
+    temp, value, basetype, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -245,13 +245,13 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
  */
 static Datum
 arithop_tnumber_base(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper)
+  Datum (*func)(Datum, Datum, CachedType, CachedType), TArithmetic oper)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
-    temp, value, basetypid, INVERT_NO);
+    temp, value, basetype, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -288,15 +288,15 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
         errmsg("Division by zero")));
   }
 
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  CachedType temptype = temptypid_basetype(get_fn_expr_rettype(fcinfo->flinfo));
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = base_oid_from_temporal(temptypid);
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temp1->basetype;
+  lfinfo.argtype[1] = temp2->basetype;
+  lfinfo.restype = temptype;
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
@@ -468,10 +468,10 @@ tnumber_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_round_float;
   lfinfo.numparam = 1;
   lfinfo.param[0] = digits;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp->basetypid;
-  lfinfo.argtypid[1] = INT4OID;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temp->basetype;
+  lfinfo.argtype[1] = T_INT4;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
@@ -492,9 +492,9 @@ tnumber_degrees(PG_FUNCTION_ARGS)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_degrees;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp->basetypid;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temp->basetype;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
@@ -524,21 +524,21 @@ tnumberseq_derivative(const TSequence *seq)
   const TInstant *inst1 = tsequence_inst_n(seq, 0);
   Datum value1 = tinstant_value(inst1);
   double derivative;
-  Oid basetypid = seq->basetypid;
+  CachedType basetype = seq->basetype;
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = tsequence_inst_n(seq, i + 1);
     Datum value2 = tinstant_value(inst2);
-    derivative = datum_eq(value1, value2, basetypid) ? 0.0 :
-      (datum_double(value1, basetypid) - datum_double(value2, basetypid)) /
+    derivative = datum_eq(value1, value2, basetype) ? 0.0 :
+      (datum_double(value1, basetype) - datum_double(value2, basetype)) /
         ((double)(inst2->t - inst1->t) / 1000000);
     instants[i] = tinstant_make(Float8GetDatum(derivative), inst1->t,
-      FLOAT8OID);
+      T_FLOAT8);
     inst1 = inst2;
     value1 = value2;
   }
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(derivative),
-    seq->period.upper, FLOAT8OID);
+    seq->period.upper, T_FLOAT8);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);

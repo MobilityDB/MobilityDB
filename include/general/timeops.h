@@ -35,8 +35,11 @@
 #ifndef __TIMEOPS_H__
 #define __TIMEOPS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+/* MobilityDB */
+#include "general/tempcache.h"
 #include "timetypes.h"
 
 /*****************************************************************************/
@@ -53,8 +56,8 @@ typedef enum
 
 /* Miscellaneous */
 
-extern bool time_type(Oid timetypid);
-extern void ensure_time_type(Oid timetypid);
+extern bool time_type(CachedType timetype);
+extern void ensure_time_type(CachedType timetype);
 
 /* Functions for aggregations */
 

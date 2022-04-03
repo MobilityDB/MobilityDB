@@ -118,7 +118,7 @@ upper_inc(const RangeType *range)
 void
 range_bounds(const RangeType *range, double *xmin, double *xmax)
 {
-  ensure_tnumber_range_type(range->rangetypid);
+  ensure_tnumber_rangetype(oid_type(range->rangetypid));
   if (range->rangetypid == type_oid(T_INTRANGE))
   {
     *xmin = (double)(DatumGetInt32(lower_datum(range)));
@@ -135,16 +135,17 @@ range_bounds(const RangeType *range, double *xmin, double *xmax)
  * Construct a range value from given arguments
  */
 RangeType *
-range_make(Datum from, Datum to, bool lower_inc, bool upper_inc, Oid basetypid)
+range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
+  CachedType basetype)
 {
   Oid rangetypid = 0;
-  assert (basetypid == INT4OID || basetypid == FLOAT8OID ||
-    basetypid == TIMESTAMPTZOID);
-  if (basetypid == INT4OID)
+  assert (basetype == T_INT4 || basetype == T_FLOAT8 ||
+    basetype == T_TIMESTAMPTZ);
+  if (basetype == T_INT4)
     rangetypid = type_oid(T_INTRANGE);
-  else if (basetypid == FLOAT8OID)
+  else if (basetype == T_FLOAT8)
     rangetypid = type_oid(T_FLOATRANGE);
-  else /* basetypid == TIMESTAMPTZOID */
+  else /* basetype == T_TIMESTAMPTZ */
     rangetypid = type_oid(T_TSTZRANGE);
 
   TypeCacheEntry* typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);

@@ -422,9 +422,8 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)lwpoint1);
-  Oid basetypid = geodetic ? type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
-  TInstant *result = tinstant_make(PointerGetDatum(gs), t,
-    basetypid);
+  CachedType basetype = geodetic ? T_GEOGRAPHY : T_GEOMETRY;
+  TInstant *result = tinstant_make(PointerGetDatum(gs), t, basetype);
   pfree(gs);
   return result;
 }
@@ -940,8 +939,8 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
   bool segmentize = PG_GETARG_BOOL(2);
-  ensure_tgeo_base_type(tpoint->basetypid);
-  ensure_tnumber_base_type(measure->basetypid);
+  ensure_tgeo_basetype(tpoint->basetype);
+  ensure_tnumber_basetype(measure->basetype);
 
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
@@ -1850,8 +1849,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
   }
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-  *result = tinstant_make(PointerGetDatum(gs), inst->t,
-    type_oid(T_GEOMETRY));
+  *result = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
   lwpoint_free(lwpoint);
   pfree(gs);
   return;
@@ -1989,8 +1987,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   lwpoint_free(lwpoint);
 
   /* Construct the result */
-  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t,
-    type_oid(T_GEOMETRY));
+  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
@@ -2032,8 +2029,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t,
-      type_oid(T_GEOMETRY));
+    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2078,8 +2074,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t,
-      type_oid(T_GEOMETRY));
+    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2229,7 +2224,7 @@ static Datum
 tpointinst_decouple(const TInstant *inst, ArrayType **timesarr)
 {
   Datum epoch = Int32GetDatum((inst->t / 1e6) + DELTA_UNIX_POSTGRES_EPOCH);
-  *timesarr = datumarr_to_array(&epoch, 1, INT4OID);
+  *timesarr = datumarr_to_array(&epoch, 1, T_INT4);
   return tinstant_value_copy(inst);
 }
 
@@ -2262,7 +2257,7 @@ tpointinstset_decouple(const TInstantSet *ti, ArrayType **timesarr)
     MOBDB_FLAGS_GET_LINEAR(ti->flags));
   Datum result = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
-  *timesarr = datumarr_to_array(times, ti->count, INT4OID);
+  *timesarr = datumarr_to_array(times, ti->count, T_INT4);
   for (int i = 0; i < ti->count; i++)
     lwpoint_free((LWPOINT *) points[i]);
   pfree(points);
@@ -2313,7 +2308,7 @@ tpointseq_decouple(const TSequence *seq, ArrayType **timesarr)
   LWGEOM *lwgeom = tpointseq_decouple1(seq, times);
   Datum result = PointerGetDatum(geo_serialize(lwgeom));
   pfree(lwgeom);
-  *timesarr = datumarr_to_array(times, seq->count, INT4OID);
+  *timesarr = datumarr_to_array(times, seq->count, T_INT4);
   pfree(times);
   return result;
 }
@@ -2354,7 +2349,7 @@ tpointseqset_decouple(const TSequenceSet *ts, ArrayType **timesarr)
   LWGEOM *coll = (LWGEOM *) lwcollection_construct((uint8_t) colltype,
     geoms[0]->srid, NULL, (uint32_t) ts->count, geoms);
   Datum result = PointerGetDatum(geo_serialize(coll));
-  *timesarr = datumarr_to_array(times, ts->totalcount, INT4OID);
+  *timesarr = datumarr_to_array(times, ts->totalcount, T_INT4);
   /* We cannot lwgeom_free(geoms[i] or lwgeom_free(coll) */
   pfree(geoms);
   pfree(times);

@@ -422,14 +422,14 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
  * Transform the value to a temporal box (internal function only)
  */
 void
-number_tbox(Datum value, Oid basetypid, TBOX *box)
+number_tbox(Datum value, CachedType basetype, TBOX *box)
 {
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
-  ensure_tnumber_base_type(basetypid);
-  if (basetypid == INT4OID)
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
     box->xmin = box->xmax = (double)(DatumGetInt32(value));
-  else /* basetypid == FLOAT8OID */
+  else /* basetype == T_FLOAT8 */
     box->xmin = box->xmax = DatumGetFloat8(value);
   MOBDB_FLAGS_SET_X(box->flags, true);
   MOBDB_FLAGS_SET_T(box->flags, false);
@@ -510,7 +510,7 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 void
 range_tbox(const RangeType *range, TBOX *box)
 {
-  ensure_tnumber_range_type(range->rangetypid);
+  ensure_tnumber_rangetype(oid_type(range->rangetypid));
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(TBOX));
   range_bounds(range, &box->xmin, &box->xmax);
@@ -771,7 +771,7 @@ range_period_to_tbox(PG_FUNCTION_ARGS)
   if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
     PG_RETURN_NULL();
   Period *p = PG_GETARG_PERIOD_P(1);
-  ensure_tnumber_range_type(range->rangetypid);
+  ensure_tnumber_rangetype(oid_type(range->rangetypid));
   double xmin, xmax;
   range_bounds(range, &xmin, &xmax);
   TBOX *result = tbox_make(true, true, xmin, xmax, p->lower, p->upper);
@@ -805,7 +805,7 @@ tbox_to_floatrange(PG_FUNCTION_ARGS)
   if (!MOBDB_FLAGS_GET_X(box->flags))
     PG_RETURN_NULL();
   RangeType *result = range_make(Float8GetDatum(box->xmin),
-    Float8GetDatum(box->xmax), true, true, FLOAT8OID);
+    Float8GetDatum(box->xmax), true, true, T_FLOAT8);
   PG_RETURN_POINTER(result);
 }
 

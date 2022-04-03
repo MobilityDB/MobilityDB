@@ -69,7 +69,7 @@
  * @note The parameter type is not needed for temporal points
  */
 static char *
-wkt_out(Oid type __attribute__((unused)), Datum value)
+wkt_out(Oid typid __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -89,7 +89,7 @@ wkt_out(Oid type __attribute__((unused)), Datum value)
  * @note The parameter type is not needed for temporal points
  */
 char *
-ewkt_out(Oid type __attribute__((unused)), Datum value)
+ewkt_out(Oid typid __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);

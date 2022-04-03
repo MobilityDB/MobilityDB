@@ -274,9 +274,10 @@ tpoint_index_recheck(StrategyNumber strategy)
  * must not be taken into account by the operators to infinity.
  */
 static bool
-tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
+tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
+  CachedType type)
 {
-  if (tgeo_base_type(subtype))
+  if (tgeo_basetype(type))
   {
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
     if (gs == NULL)
@@ -284,34 +285,34 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     if (!geo_stbox(gs, result))
       return false;
   }
-  else if (subtype == TIMESTAMPTZOID)
+  else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
     timestamp_stbox(t, result);
   }
-  else if (subtype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
     timestampset_stbox_slice(tsdatum, result);
   }
-  else if (subtype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
   {
     Period *p = PG_GETARG_PERIOD_P(1);
     period_stbox(p, result);
   }
-  else if (subtype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     periodset_stbox_slice(psdatum, result);
   }
-  else if (subtype == type_oid(T_STBOX))
+  else if (type == T_STBOX)
   {
     STBOX *box = PG_GETARG_STBOX_P(1);
     if (box == NULL)
       return false;
     memcpy(result, box, sizeof(STBOX));
   }
-  else if (tspatial_type(subtype))
+  else if (tspatial_type(type))
   {
     if (PG_ARGISNULL(1))
       return false;
@@ -319,7 +320,7 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result, Oid subtype)
     temporal_bbox_slice(tempdatum, result);
   }
   else
-    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 
@@ -332,7 +333,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
   STBOX *key = (STBOX *)DatumGetPointer(entry->key),
     query;
@@ -344,7 +345,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
-  if (! tpoint_gist_get_stbox(fcinfo, &query, subtype))
+  if (! tpoint_gist_get_stbox(fcinfo, &query, oid_type(typid)))
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
@@ -1139,7 +1140,7 @@ Datum
 stbox_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   STBOX *key = (STBOX *) DatumGetPointer(entry->key);
   STBOX query;
@@ -1153,7 +1154,7 @@ stbox_gist_distance(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Transform the query into a box */
-  if (! tpoint_gist_get_stbox(fcinfo, &query, subtype))
+  if (! tpoint_gist_get_stbox(fcinfo, &query, oid_type(typid)))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,

@@ -34,11 +34,14 @@
 DROP TABLE IF EXISTS mobdb_temptype;
 CREATE TABLE mobdb_temptype (
   temptypid Oid PRIMARY KEY,
+  temptypname text NOT NULL,
   basetypid Oid NOT NULL,
+  basetypname text NOT NULL,
   basetyplen smallint NOT NULL,
   basebyval boolean NOT NULL,
   basecont boolean NOT NULL,
   boxtypid Oid,
+  boxtypname text,
   boxtyplen smallint
 );
 ALTER TABLE mobdb_temptype SET SCHEMA pg_catalog;
@@ -48,21 +51,29 @@ CREATE FUNCTION register_temporal_type(temporal CHAR(24), base CHAR(24),
 RETURNS void AS $$
 BEGIN
   IF box IS NULL OR box = '' THEN
-    WITH tempid AS (SELECT oid FROM pg_type WHERE typname = temporal),
-      baseid AS (SELECT oid, typlen, typbyval FROM pg_type WHERE typname = base),
-      boxid(oid, typlen) AS (SELECT 0::Oid, 0::smallint)
-    INSERT INTO mobdb_temptype (temptypid, basetypid, basetyplen, basebyval,
-       basecont, boxtypid, boxtyplen)
-    SELECT t.oid, v.oid, v.typlen, v.typbyval, contbase, b.oid, b.typlen
-    FROM tempid t, baseid v, boxid b;
+    WITH tempinfo AS (
+        SELECT oid, typname FROM pg_type WHERE typname = temporal),
+      baseinfo AS (
+        SELECT oid, typname, typlen, typbyval FROM pg_type WHERE typname = base),
+      boxinfo(oid, typname, typlen) AS (
+        SELECT 0::Oid, '', 0::smallint)
+    INSERT INTO mobdb_temptype (temptypid, temptypname, basetypid, basetypname,
+      basetyplen, basebyval, basecont, boxtypid, boxtypname, boxtyplen)
+    SELECT t.oid, t.typname, v.oid, v.typname, v.typlen, v.typbyval, contbase,
+      b.oid, b.typname, b.typlen
+    FROM tempinfo t, baseinfo v, boxinfo b;
   ELSE
-    WITH tempid AS (SELECT oid FROM pg_type WHERE typname = temporal),
-      baseid AS (SELECT oid, typlen, typbyval FROM pg_type WHERE typname = base),
-      boxid AS (SELECT oid, typlen FROM pg_type WHERE typname = box)
-    INSERT INTO mobdb_temptype (temptypid, basetypid, basetyplen, basebyval,
-       basecont, boxtypid, boxtyplen)
-    SELECT t.oid, v.oid, v.typlen, v.typbyval, contbase, b.oid, b.typlen
-    FROM tempid t, baseid v, boxid b;
+    WITH tempinfo AS (
+        SELECT oid, typname FROM pg_type WHERE typname = temporal),
+      baseinfo AS (
+        SELECT oid, typname, typlen, typbyval FROM pg_type WHERE typname = base),
+      boxinfo AS (
+        SELECT oid, typname, typlen FROM pg_type WHERE typname = box)
+    INSERT INTO mobdb_temptype (temptypid, temptypname, basetypid, basetypname,
+      basetyplen, basebyval, basecont, boxtypid, boxtypname, boxtyplen)
+    SELECT t.oid, t.typname, v.oid, v.typname, v.typlen, v.typbyval, contbase,
+      b.oid, b.typname, b.typlen
+    FROM tempinfo t, baseinfo v, boxinfo b;
   END IF;
 END;
 $$ LANGUAGE plpgsql;

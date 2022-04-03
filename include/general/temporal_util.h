@@ -35,6 +35,7 @@
 #ifndef __TEMPORAL_UTIL_H__
 #define __TEMPORAL_UTIL_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
@@ -42,7 +43,7 @@
 #include <utils/float.h>
 #endif
 #include <utils/rangetypes.h>
-
+/* PostgreSQL */
 #include "temporal.h"
 #include "point/postgis.h"
 
@@ -50,45 +51,45 @@
 
 /* Temporal/base types tests */
 
-extern bool temporal_type(Oid temptypid);
-extern void ensure_temporal_base_type(Oid basetypid);
-extern bool base_type_continuous(Oid basetypid);
-extern void ensure_base_type_continuous(Temporal *temp);
-extern bool base_type_byvalue(Oid basetypid);
-extern int16 base_type_length(Oid basetypid);
-extern bool talpha_type(Oid temptypid);
-extern bool talpha_base_type(Oid basetypid);
-extern bool tnumber_type(Oid temptypid);
-extern bool tnumber_base_type(Oid basetypid);
-extern void ensure_tnumber_base_type(Oid basetypid);
-extern bool tnumber_range_type(Oid rangetype);
-extern void ensure_tnumber_range_type(Oid rangetype);
-extern bool tspatial_type(Oid temptypid);
-extern bool tspatial_base_type(Oid basetypid);
-extern bool tgeo_base_type(Oid basetypid);
-extern void ensure_tgeo_base_type(Oid basetypid);
-extern bool tgeo_type(Oid temptypid);
+extern bool temporal_type(CachedType temptype);
+extern void ensure_temporal_basetype(CachedType basetype);
+extern bool basetype_continuous(CachedType basetype);
+extern void ensure_basetype_continuous(CachedType basetype);
+extern bool basetype_byvalue(CachedType basetype);
+extern int16 basetype_length(CachedType basetype);
+extern bool talpha_type(CachedType temptype);
+extern bool talpha_basetype(CachedType basetype);
+extern bool tnumber_type(CachedType temptype);
+extern bool tnumber_basetype(CachedType basetype);
+extern void ensure_tnumber_basetype(CachedType basetype);
+extern bool tnumber_rangetype(CachedType rangetype);
+extern void ensure_tnumber_rangetype(CachedType rangetype);
+extern bool tspatial_type(CachedType temptype);
+extern bool tspatial_basetype(CachedType basetype);
+extern bool tgeo_basetype(CachedType basetype);
+extern void ensure_tgeo_basetype(CachedType basetype);
+extern bool tgeo_type(CachedType basetype);
 
 /* Oid functions */
 
-extern Oid range_oid_from_base(Oid basetypid);
-extern Oid temporal_oid_from_base(Oid basetypid);
-extern Oid base_oid_from_temporal(Oid temptypid);
+extern Oid basetype_rangeoid(CachedType basetype);
+extern Oid basetype_oid(CachedType basetype);
+extern Oid temptype_oid(CachedType temptype);
 
 /* Miscellaneous functions */
 
 extern size_t double_pad(size_t size);
-extern Datum datum_copy(Datum value, Oid type);
-extern double datum_double(Datum d, Oid basetypid);
+extern Datum datum_copy(Datum value, Oid typid);
+extern double datum_double(Datum d, CachedType basetype);
 extern text *cstring2text(const char *cstring);
 extern char *text2cstring(const text *textptr);
 
 /* PostgreSQL call helpers */
 
-extern Datum call_input(Oid type, char *str);
-extern char *call_output(Oid type, Datum value);
-extern bytea *call_send(Oid type, Datum value);
-extern Datum call_recv(Oid type, StringInfo buf);
+extern Datum call_input(Oid typid, char *str);
+extern char *call_output(Oid typid, Datum value);
+extern bytea *call_send(Oid typid, Datum value);
+extern Datum call_recv(Oid typid, StringInfo buf);
 extern Datum call_function1(PGFunction func, Datum arg1);
 extern Datum call_function2(PGFunction func, Datum arg1, Datum arg2);
 extern Datum call_function3(PGFunction func, Datum arg1, Datum arg2,
@@ -97,10 +98,10 @@ extern Datum call_function4(PGFunction func, Datum arg1, Datum arg2,
   Datum arg3, Datum arg4);
 
 extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
-  Oid collation, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+  Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
 
 extern Datum CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo,
-    Oid collation, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
+    Oid collid, Datum arg1, Datum arg2, Datum arg3, Datum arg4);
 
 /* Array functions */
 
@@ -114,17 +115,17 @@ extern Period **periodarr_extract(ArrayType *array, int *count);
 extern RangeType **rangearr_extract(ArrayType *array, int *count);
 extern Temporal **temporalarr_extract(ArrayType *array, int *count);
 
-extern ArrayType *datumarr_to_array(Datum *values, int count, Oid type);
+extern ArrayType *datumarr_to_array(Datum *values, int count, CachedType type);
 extern ArrayType *timestamparr_to_array(const TimestampTz *times, int count);
 extern ArrayType *periodarr_to_array(const Period **periods, int count);
-extern ArrayType *rangearr_to_array(RangeType **ranges, int count, Oid type);
+extern ArrayType *rangearr_to_array(RangeType **ranges, int count, CachedType type);
 extern ArrayType *textarr_to_array(text **textarr, int count);
 extern ArrayType *temporalarr_to_array(const Temporal **temporal, int count);
 extern ArrayType *stboxarr_to_array(STBOX *boxarr, int count);
 
 /* Sort functions */
 
-extern void datumarr_sort(Datum *values, int count, Oid basetypid);
+extern void datumarr_sort(Datum *values, int count, CachedType basetype);
 extern void timestamparr_sort(TimestampTz *times, int count);
 extern void double2arr_sort(double2 *doubles, int count);
 extern void double3arr_sort(double3 *triples, int count);
@@ -136,7 +137,7 @@ extern void tseqarr_sort(TSequence **sequences, int count);
 /* Remove duplicate functions */
 
 extern int datumarr_remove_duplicates(Datum *values, int count,
-  Oid basetypid);
+  CachedType basetype);
 extern int timestamparr_remove_duplicates(TimestampTz *values, int count);
 extern int tinstarr_remove_duplicates(const TInstant **instants, int count);
 
@@ -146,33 +147,33 @@ extern int text_cmp(text *arg1, text *arg2, Oid collid);
 
 /* Arithmetic functions */
 
-extern Datum datum_add(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum_sub(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum_mult(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum_div(Datum l, Datum r, Oid typel, Oid typer);
+extern Datum datum_add(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum_sub(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum_mult(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum_div(Datum l, Datum r, CachedType typel, CachedType typer);
 
 /* Comparison functions on datums */
 
-extern bool datum_eq(Datum l, Datum r, Oid type);
-extern bool datum_ne(Datum l, Datum r, Oid type);
-extern bool datum_lt(Datum l, Datum r, Oid type);
-extern bool datum_le(Datum l, Datum r, Oid type);
-extern bool datum_gt(Datum l, Datum r, Oid type);
-extern bool datum_ge(Datum l, Datum r, Oid type);
+extern bool datum_eq(Datum l, Datum r, CachedType type);
+extern bool datum_ne(Datum l, Datum r, CachedType type);
+extern bool datum_lt(Datum l, Datum r, CachedType type);
+extern bool datum_le(Datum l, Datum r, CachedType type);
+extern bool datum_gt(Datum l, Datum r, CachedType type);
+extern bool datum_ge(Datum l, Datum r, CachedType type);
 
-extern bool datum_eq2(Datum l, Datum r, Oid typel, Oid typer);
-extern bool datum_ne2(Datum l, Datum r, Oid typel, Oid typer);
-extern bool datum_lt2(Datum l, Datum r, Oid typel, Oid typer);
-extern bool datum_le2(Datum l, Datum r, Oid typel, Oid typer);
-extern bool datum_gt2(Datum l, Datum r, Oid typel, Oid typer);
-extern bool datum_ge2(Datum l, Datum r, Oid typel, Oid typer);
+extern bool datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern bool datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern bool datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern bool datum_le2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern bool datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern bool datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer);
 
-extern Datum datum2_eq2(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum2_ne2(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum2_lt2(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum2_le2(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum2_gt2(Datum l, Datum r, Oid typel, Oid typer);
-extern Datum datum2_ge2(Datum l, Datum r, Oid typel, Oid typer);
+extern Datum datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer);
+extern Datum datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer);
 
 /* Hypothenuse functions */
 

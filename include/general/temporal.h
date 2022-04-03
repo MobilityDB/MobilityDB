@@ -35,14 +35,16 @@
 #ifndef __TEMPORAL_H__
 #define __TEMPORAL_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-
-#include "timetypes.h"
-#include "tbox.h"
+/* MobilityDB */
+#include "general/tempcache.h"
+#include "general/timetypes.h"
+#include "general/tbox.h"
 #include "point/stbox.h"
 
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -273,9 +275,8 @@ struct tempsubtype_struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         temptype;     /**< temporal type */
+  int16         basetype;     /**< base type */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -285,9 +286,8 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         temptype;     /**< temporal type */
+  int16         basetype;     /**< base type */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
@@ -298,9 +298,8 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         temptype;     /**< temporal type */
+  int16         basetype;     /**< base type */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
   int16         bboxsize;     /**< size of the bounding box */
   /**< beginning of variable-length data */
@@ -312,9 +311,8 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         temptype;     /**< temporal type */
+  int16         basetype;     /**< base type */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
   Period        period;       /**< time span (24 bytes) */
   int16         bboxsize;     /**< size of the bounding box */
@@ -327,9 +325,8 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         temptype;     /**< temporal type */
+  int16         basetype;     /**< base type */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
   int16         bboxsize;     /**< size of the bounding box */
@@ -444,15 +441,15 @@ typedef struct
 #define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
 
-#define DATUM_FREE(value, basetypid) \
+#define DATUM_FREE(value, basetype) \
   do { \
-    if (! base_type_byvalue(basetypid)) \
+    if (! basetype_byvalue(basetype)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
-#define DATUM_FREE_IF_COPY(value, basetypid, n) \
+#define DATUM_FREE_IF_COPY(value, basetype, n) \
   do { \
-    if (! base_type_byvalue(basetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
+    if (! basetype_byvalue(basetype) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
@@ -506,7 +503,7 @@ extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
   bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
-extern void ensure_positive_datum(Datum size, Oid type);
+extern void ensure_positive_datum(Datum size, CachedType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 extern void ensure_non_empty_array(ArrayType *array);
 
@@ -545,7 +542,7 @@ extern Datum tstepseqset_constructor_gaps(PG_FUNCTION_ARGS);
 extern Datum tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS);
 
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
-  Oid basetypid, bool linear);
+  CachedType basetype, bool linear);
 
 /* Append and merge functions */
 

@@ -68,7 +68,8 @@ extern Datum tge_temporal_base(PG_FUNCTION_ARGS);
 extern Datum tge_temporal_temporal(PG_FUNCTION_ARGS);
 
 extern Temporal * tcomp_temporal_base1(const Temporal *temp, Datum value,
-  Oid datumtypid, Datum (*func)(Datum, Datum, Oid, Oid), bool invert);
+  Oid datumtypid, Datum (*func)(Datum, Datum, CachedType, CachedType),
+  bool invert);
 
 /*****************************************************************************/
 

@@ -41,7 +41,6 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/timestampset.h"
-#include "general/tempcache.h"
 #include "general/temporal_util.h"
 
 typedef enum
@@ -54,27 +53,27 @@ typedef enum
 /*****************************************************************************/
 
 /**
- * Returns true if the Oid is a time type
+ * Returns true if the type is a time type
  */
 bool
-time_type(Oid timetypid)
+time_type(CachedType timetype)
 {
-  if (timetypid == type_oid(T_TIMESTAMPTZ) ||
-    timetypid == type_oid(T_TIMESTAMPSET) ||
-    timetypid == type_oid(T_PERIOD) ||
-    timetypid == type_oid(T_PERIODSET))
+  if (timetype == T_TIMESTAMPTZ ||
+    timetype == T_TIMESTAMPSET ||
+    timetype == T_PERIOD ||
+    timetype == T_PERIODSET)
     return true;
   return false;
 }
 
 /**
- * Ensure that the Oid corresponds to a time type
+ * Ensure that the type corresponds to a time type
  */
 void
-ensure_time_type(Oid timetypid)
+ensure_time_type(CachedType timetype)
 {
-  if (! time_type(timetypid))
-    elog(ERROR, "unknown time type: %d", timetypid);
+  if (! time_type(timetype))
+    elog(ERROR, "unknown time type: %d", timetype);
   return;
 }
 

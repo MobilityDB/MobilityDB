@@ -610,7 +610,7 @@ aggstate_write(SkipList *state, StringInfo buf)
   {
     Oid basetypid = InvalidOid;
     if (state->length > 0)
-      basetypid = ((Temporal *) values[0])->basetypid;
+      basetypid = type_oid(((Temporal *) values[0])->basetype);
     pq_sendint32(buf, basetypid);
     for (i = 0; i < state->length; i ++)
     {

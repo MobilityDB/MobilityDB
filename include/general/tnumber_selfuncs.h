@@ -47,15 +47,15 @@
 extern Datum tnumber_sel(PG_FUNCTION_ARGS);
 extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
 
-extern bool tnumber_cachedop(Oid oper, CachedOp *cachedOp);
+extern bool tnumber_cachedop(Oid operid, CachedOp *cachedOp);
 extern bool tnumber_const_to_tbox(const Node *other, TBOX *box);
 extern float8 tnumber_sel_default(CachedOp operator);
 extern Selectivity tnumber_sel_box(VariableStatData *vardata, TBOX *box,
   CachedOp cachedOp, Oid basetypid);
 
 extern float8 tnumber_joinsel_default(CachedOp cachedOp);
-extern bool tnumber_joinsel_components(CachedOp cachedOp, Oid oprleft,
-  Oid oprright, bool *value, bool *time);
+extern bool tnumber_joinsel_components(CachedOp cachedOp, CachedType oprleft,
+  CachedType oprright, bool *value, bool *time);
 
 /*****************************************************************************/
 

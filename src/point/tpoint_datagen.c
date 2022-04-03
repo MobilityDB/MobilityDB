@@ -104,7 +104,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
       lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);  \
       point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));  \
       lwpoint_free(lwpoint);  \
-      instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));  \
+      instants[l++] = tinstant_make(point, t, T_GEOMETRY);  \
       pfree(DatumGetPointer(point));  \
   } while (0)
 
@@ -487,14 +487,14 @@ create_trip(PG_FUNCTION_ARGS)
   bool *nulls;
   int count;
   int16 elemWidth;
-  Oid elemType = ARR_ELEMTYPE(array);
+  Oid elmeTypid = ARR_ELEMTYPE(array);
   bool elemTypeByVal, isNull;
   char elemAlignmentCode;
   HeapTupleHeader td;
   Form_pg_attribute att;
 
-  get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
-  deconstruct_array(array, elemType, elemWidth, elemTypeByVal,
+  get_typlenbyvalalign(elmeTypid, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
+  deconstruct_array(array, elmeTypid, elemWidth, elemTypeByVal,
     elemAlignmentCode, &datums, &nulls, &count);
 
   td = DatumGetHeapTupleHeader(datums[0]);

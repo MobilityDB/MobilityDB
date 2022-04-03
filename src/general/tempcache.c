@@ -56,6 +56,7 @@
 #include <access/tableam.h>
 #endif
 #include <catalog/namespace.h>
+#include <utils/builtins.h>
 #include <utils/rel.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
@@ -69,36 +70,41 @@
  */
 const char *_type_names[] =
 {
-  [T_BOOL] = "bool",
-  [T_DOUBLE2] = "double2",
-  [T_DOUBLE3] = "double3",
-  [T_DOUBLE4] = "double4",
-  [T_FLOAT8] = "float8",
-  [T_FLOATRANGE] = "floatrange",
-  [T_INT4] = "int4",
-  [T_INTRANGE] = "intrange",
-  [T_PERIOD] = "period",
-  [T_PERIODSET] = "periodset",
-  [T_STBOX] = "stbox",
+  /* Temporal types */
   [T_TBOOL] = "tbool",
-  [T_TBOX] = "tbox",
+  [T_TINT] = "tint",
+  [T_TFLOAT] = "tfloat",
+  [T_TTEXT] = "ttext",
+  [T_TGEOMPOINT] = "tgeompoint",
+  [T_TGEOGPOINT] = "tgeogpoint",
+  [T_TNPOINT] = "tnpoint",
   [T_TDOUBLE2] = "tdouble2",
   [T_TDOUBLE3] = "tdouble3",
   [T_TDOUBLE4] = "tdouble4",
+  /* Base types */
+  [T_BOOL] = "bool",
+  [T_INT4] = "int4",
+  [T_FLOAT8] = "float8",
   [T_TEXT] = "text",
-  [T_TFLOAT] = "tfloat",
-  [T_TIMESTAMPSET] = "timestampset",
-  [T_TIMESTAMPTZ] = "timestamptz",
-  [T_TINT] = "tint",
-  [T_TSTZRANGE] = "tstzrange",
-  [T_TTEXT] = "ttext",
   [T_GEOMETRY] = "geometry",
   [T_GEOGRAPHY] = "geography",
-  [T_TGEOMPOINT] = "tgeompoint",
-  [T_TGEOGPOINT] = "tgeogpoint",
   [T_NPOINT] = "npoint",
+  [T_DOUBLE2] = "double2",
+  [T_DOUBLE3] = "double3",
+  [T_DOUBLE4] = "double4",
+  /* Time types */
+  [T_TIMESTAMPTZ] = "timestamptz",
+  [T_TIMESTAMPSET] = "timestampset",
+  [T_PERIOD] = "period",
+  [T_PERIODSET] = "periodset",
+  /* Box types */
+  [T_TBOX] = "tbox",
+  [T_STBOX] = "stbox",
+  /* Other types needed for the selectivity of the operators */
+  [T_FLOATRANGE] = "floatrange",
+  [T_INTRANGE] = "intrange",
+  [T_TSTZRANGE] = "tstzrange",
   [T_NSEGMENT] = "nsegment",
-  [T_TNPOINT] = "tnpoint"
 };
 
 /**
@@ -141,7 +147,7 @@ const char *_op_names[] =
 };
 
 /*****************************************************************************
- * Catalog functions
+ * Global variables
  *****************************************************************************/
 
 /**
@@ -155,6 +161,33 @@ bool _temptype_cache_ready = false;
  * in MobilityDB.
  */
 static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
+
+/**
+ * Global variable that states whether the type and operator caches
+ * has been initialized.
+ */
+bool _ready = false;
+
+/**
+ * Global array that keeps the Oids of the types used in MobilityDB.
+ */
+Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
+
+/**
+ * Global 3-dimensional array that keeps the Oids of the operators
+ * used in MobilityDB. The first dimension corresponds to the operator
+ * class (e.g., <=), the second and third dimensions correspond,
+ * respectively, to the left and right arguments of the operator.
+ * A value 0 is stored in the cell of the array if the operator class
+ * is not defined for the left and right types.
+ */
+Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
+  [sizeof(_type_names) / sizeof(char *)]
+  [sizeof(_type_names) / sizeof(char *)];
+
+/*****************************************************************************
+ * Functions populating the Oid cache
+ *****************************************************************************/
 
 /**
  * Populate the Oid cache for temporal types
@@ -189,25 +222,32 @@ populate_temptype_cache()
     HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
 #endif
     HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
-    int i = 0;
     while (HeapTupleIsValid(tuple))
     {
       bool isnull = false;
+      temptype_cache_struct temptype;
+      memset(&temptype, 0, sizeof(temptype));
       /* All the following attributes are declared as NOT NULL in the table */
-      _temptype_cache[i].temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
-      _temptype_cache[i].basetypid = DatumGetObjectId(heap_getattr(tuple, 2, tupDesc, &isnull));
-      _temptype_cache[i].basetyplen = DatumGetInt16(heap_getattr(tuple, 3, tupDesc, &isnull));
-      _temptype_cache[i].basebyval = DatumGetObjectId(heap_getattr(tuple, 4, tupDesc, &isnull));
-      _temptype_cache[i].basecont = DatumGetObjectId(heap_getattr(tuple, 5, tupDesc, &isnull));
+      temptype.temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
+      temptype.temptypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 2, tupDesc, &isnull)));
+      temptype.basetypid = DatumGetObjectId(heap_getattr(tuple, 3, tupDesc, &isnull));
+      temptype.basetypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 4, tupDesc, &isnull)));
+      temptype.basetype = typname_type(temptype.basetypname);
+      temptype.basetyplen = DatumGetInt16(heap_getattr(tuple, 5, tupDesc, &isnull));
+      temptype.basebyval = DatumGetObjectId(heap_getattr(tuple, 6, tupDesc, &isnull));
+      temptype.basecont = DatumGetObjectId(heap_getattr(tuple, 7, tupDesc, &isnull));
       /* The box type attributes may be null or zero for internal types such as doubleN */
-      _temptype_cache[i].boxtypid = InvalidOid;
-      _temptype_cache[i].boxtyplen = 0;
-      _temptype_cache[i].boxtypid = DatumGetObjectId(heap_getattr(tuple, 6, tupDesc, &isnull));
+      temptype.boxtypid = InvalidOid;
+      temptype.boxtypname = "";
+      temptype.boxtyplen = 0;
+      temptype.boxtypid = DatumGetObjectId(heap_getattr(tuple, 8, tupDesc, &isnull));
       if (! isnull)
-        _temptype_cache[i].boxtyplen = DatumGetInt16(heap_getattr(tuple, 7, tupDesc, &isnull));
-      i++;
-      if (i == TEMPTYPE_CACHE_MAX_LEN)
-        elog(ERROR, "Cache for temporal types consumed, consider increasing TEMPORAL_TYPE_CACHE_MAX_LEN");
+      {
+        temptype.boxtypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 9, tupDesc, &isnull)));
+        temptype.boxtyplen = DatumGetInt16(heap_getattr(tuple, 10, tupDesc, &isnull));
+      }
+      CachedType i = typname_type(temptype.temptypname);
+      _temptype_cache[i] = temptype;
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
@@ -226,55 +266,6 @@ populate_temptype_cache()
   }
   PG_END_TRY();
 }
-
-/**
- * Returns the Oid of the base type from the Oid of the temporal type
- */
-Oid
-temporal_basetypid(Oid temptypid)
-{
-  if (!_temptype_cache_ready)
-    populate_temptype_cache();
-  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
-  {
-    if (_temptype_cache[i].temptypid == temptypid)
-      return _temptype_cache[i].basetypid;
-    /* If there are no more temporal types in the array */
-    if (_temptype_cache[i].temptypid == InvalidOid)
-      break;
-  }
-  /*We only arrive here on error */
-  elog(ERROR, "type %u is not a temporal type", temptypid);
-}
-
-/*****************************************************************************
- * Functions for the Oid cache
- *****************************************************************************/
-
-/**
- * Global variable that states whether the type and operator caches
- * has been initialized.
- */
-bool _ready = false;
-
-/**
- * Global array that keeps the Oids of the types used in MobilityDB.
- */
-Oid _type_oids[sizeof(_type_names) / sizeof(char *)];
-
-/**
- * Global 3-dimensional array that keeps the Oids of the operators
- * used in MobilityDB. The first dimension corresponds to the operator
- * class (e.g., <=), the second and third dimensions correspond,
- * respectively, to the left and right arguments of the operator.
- * A value 0 is stored in the cell of the array if the operator class
- * is not defined for the left and right types.
- */
-Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
-  [sizeof(_type_names) / sizeof(char *)]
-  [sizeof(_type_names) / sizeof(char *)];
-
-/*****************************************************************************/
 
 /**
  * Populate the Oid cache for types
@@ -353,54 +344,6 @@ populate_operators()
   PG_END_TRY();
 }
 
-/**
- * Fetch from the cache the Oid of a type
- *
- * @arg[in] type Enum value for the type
- */
-Oid
-type_oid(CachedType type)
-{
-  if (!_ready)
-    populate_operators();
-  return _type_oids[type];
-}
-
-/**
- * Fetch from the cache the Oid of a type
- *
- * @arg[in] type Enum value for the type
- */
-CachedType
-cachedtype_oid(Oid typid)
-{
-  if (!_ready)
-    populate_operators();
-  int n = sizeof(_type_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
-  {
-    if (_type_oids[i] == typid)
-      return i;
-  }
-  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-    errmsg("Unknown type %d", typid)));
-}
-
-/**
- * Fetch from the cache the Oid of an operator
- *
- * @arg[in] op Enum value for the operator
- * @arg[in] lt Enum value for the left type
- * @arg[in] rt Enum value for the right type
- */
-Oid
-oper_oid(CachedOp op, CachedType lt, CachedType rt)
-{
-  if (!_ready)
-    populate_operators();
-  return _op_oids[op][lt][rt];
-}
-
 PG_FUNCTION_INFO_V1(fill_opcache);
 /**
  * Function executed during the `CREATE EXTENSION` to precompute the
@@ -447,6 +390,160 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
   table_close(rel, AccessExclusiveLock);
 #endif
   PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * Catalog functions
+ *****************************************************************************/
+
+/**
+ * Returns the Oid of the base type from the Oid of the temporal type
+ */
+Oid
+temptypid_basetypid(Oid temptypid)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptypid == temptypid)
+      return _temptype_cache[i].basetypid;
+    /* If there are no more temporal types in the array */
+    if (_temptype_cache[i].temptypid == InvalidOid)
+      break;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptypid);
+}
+
+/**
+ * Returns the base type from the Oid of the temporal type
+ */
+CachedType
+temptypid_basetype(Oid temptypid)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptypid == temptypid)
+      return _temptype_cache[i].basetype;
+    /* If there are no more temporal types in the array */
+    if (_temptype_cache[i].temptypid == InvalidOid)
+      break;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptypid);
+}
+
+/**
+ * Returns the Oid of the temporal type from the Oid of the base type
+ */
+Oid
+basetypid_temptypid(Oid basetypid)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].basetypid == basetypid)
+      return _temptype_cache[i].temptypid;
+    /* If there are no more temporal types in the array */
+    if (_temptype_cache[i].temptypid == InvalidOid)
+      break;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", basetypid);
+}
+
+/**
+ * Returns the Oid of the temporal type from the base type
+ */
+Oid
+basetype_temptypid(CachedType basetype)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].basetype == basetype)
+      return _temptype_cache[i].temptypid;
+    /* If there are no more temporal types in the array */
+    if (_temptype_cache[i].temptypid == InvalidOid)
+      break;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %d is not a temporal base type", basetype);
+}
+
+/**
+ * Fetch from the cache the Oid of a type
+ *
+ * @arg[in] type Enum value for the type
+ */
+Oid
+type_oid(CachedType type)
+{
+  if (!_ready)
+    populate_operators();
+  return _type_oids[type];
+}
+
+/**
+ * Fetch from the cache the Oid of an operator
+ *
+ * @arg[in] oper Enum value for the operator
+ * @arg[in] lt Enum value for the left type
+ * @arg[in] rt Enum value for the right type
+ */
+Oid
+oper_oid(CachedOp oper, CachedType lt, CachedType rt)
+{
+  if (!_ready)
+    populate_operators();
+  return _op_oids[oper][lt][rt];
+}
+
+/*****************************************************************************/
+
+/**
+ * Fetch from the cache the Oid of a type
+ *
+ * @arg[in] type Enum value for the type
+ */
+CachedType
+oid_type(Oid typid)
+{
+  if (!_ready)
+    populate_operators();
+  int n = sizeof(_type_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (_type_oids[i] == typid)
+      return i;
+  }
+  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+    errmsg("Unknown type %d", typid)));
+}
+
+/**
+ * Fetch from the cache the enum value of a type name
+ *
+ * @arg[in] typname Type name
+ */
+CachedType
+typname_type(char *typname)
+{
+  if (!_ready)
+    populate_operators();
+  int n = sizeof(_type_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (strcmp(_type_names[i], typname) == 0)
+      return i;
+  }
+  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+    errmsg("Unknown type name %s", typname)));
 }
 
 /*****************************************************************************/

@@ -176,7 +176,7 @@ tpoint_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid basetypid = temporal_basetypid(temptypid);
+  Oid basetypid = temptypid_basetypid(temptypid);
   Temporal *result = tpoint_parse(&input, basetypid);
   PG_RETURN_POINTER(result);
 }
@@ -410,9 +410,9 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
-    basetypid);
+    basetype);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }
@@ -481,16 +481,16 @@ tpoint_expand_spatial(PG_FUNCTION_ARGS)
  */
 static Datum
 tcomp_geo_tpoint(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid))
+  Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  CachedType datumtype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
-    datumtypid, func, true);
+    datumtype, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -501,16 +501,16 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
  */
 static Datum
 tcomp_tpoint_geo(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid))
+  Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Oid datumtypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  CachedType datumtype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   Temporal *result = tcomp_temporal_base1(temp, PointerGetDatum(gs),
-    datumtypid, func, false);
+    datumtype, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);

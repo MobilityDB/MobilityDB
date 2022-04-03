@@ -55,7 +55,6 @@
 #include "general/periodset.h"
 #include "general/timeops.h"
 #include "general/temporaltypes.h"
-#include "general/tempcache.h"
 #include "general/temporal_util.h"
 #include "general/rangetypes_ext.h"
 #include "general/tbox.h"
@@ -85,18 +84,18 @@ temporal_max_header_size(void)
  * Returns true if the bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
- * @param[in] basetypid Oid of the base type
+ * @param[in] basetype Temporal base type
  */
 bool
-temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
+temporal_bbox_eq(const void *box1, const void *box2, CachedType basetype)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(basetypid);
-  if (talpha_base_type(basetypid))
+  ensure_temporal_basetype(basetype);
+  if (talpha_basetype(basetype))
     return period_eq_internal((Period *) box1, (Period *) box2);
-  if (tnumber_base_type(basetypid))
+  if (tnumber_basetype(basetype))
     return tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
-  if (tspatial_base_type(basetypid))
+  if (tspatial_basetype(basetype))
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
     // return stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
@@ -104,7 +103,7 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
     return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
-  elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
+  elog(ERROR, "unknown bounding box function for temporal base type: %d", basetype);
 }
 
 /**
@@ -112,20 +111,20 @@ temporal_bbox_eq(const void *box1, const void *box2, Oid basetypid)
  * is less than, equal, or greater than the second one
  *
  * @param[in] box1,box2 Bounding boxes
- * @param[in] basetypid Oid of the base type
+ * @param[in] basetype Temporal base type
  */
 int
-temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid)
+temporal_bbox_cmp(const void *box1, const void *box2, CachedType basetype)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(basetypid);
-  if (talpha_base_type(basetypid))
+  ensure_temporal_basetype(basetype);
+  if (talpha_basetype(basetype))
     return period_cmp_internal((Period *) box1, (Period *) box2);
-  if (tnumber_base_type(basetypid))
+  if (tnumber_basetype(basetype))
     return tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
-  if (tspatial_base_type(basetypid))
+  if (tspatial_basetype(basetype))
     return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
-  elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
+  elog(ERROR, "unknown bounding box function for temporal base type: %d", basetype);
 }
 
 /**
@@ -134,21 +133,21 @@ temporal_bbox_cmp(const void *box1, const void *box2, Oid basetypid)
  * @param[in] box Bounding box
  * @param[in] start Interval to shift
  * @param[in] duration Interval to scale
- * @param[in] basetypid Oid of the base type
+ * @param[in] basetype Temporal base type
  */
 void
 temporal_bbox_shift_tscale(void *box, const Interval *start,
-  const Interval *duration, Oid basetypid)
+  const Interval *duration, CachedType basetype)
 {
-  ensure_temporal_base_type(basetypid);
-  if (talpha_base_type(basetypid))
+  ensure_temporal_basetype(basetype);
+  if (talpha_basetype(basetype))
     period_shift_tscale((Period *) box, start, duration);
-  else if (tnumber_base_type(basetypid))
+  else if (tnumber_basetype(basetype))
     tbox_shift_tscale(start, duration, (TBOX *) box);
-  else if (tspatial_base_type(basetypid))
+  else if (tspatial_basetype(basetype))
     stbox_shift_tscale(start, duration, (STBOX *) box);
   else
-    elog(ERROR, "unknown bounding box function for base type: %d", basetypid);
+    elog(ERROR, "unknown bounding box function for temporal type: %d", basetype);
   return;
 }
 
@@ -159,14 +158,13 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
  *****************************************************************************/
 
 /**
- * Returns true if the temporal type corresponding to the Oid of the
- * base type has its trajectory precomputed
+ * Returns true if the base type does not have bounding box
  */
 static bool
-base_type_without_bbox(Oid basetypid)
+basetype_without_bbox(CachedType basetype)
 {
-  if (basetypid == type_oid(T_DOUBLE2) || basetypid == type_oid(T_DOUBLE3) ||
-      basetypid == type_oid(T_DOUBLE4))
+  if (basetype == T_DOUBLE2 || basetype == T_DOUBLE3 ||
+      basetype == T_DOUBLE4)
     return true;
   return false;
 }
@@ -175,18 +173,18 @@ base_type_without_bbox(Oid basetypid)
  * Returns the size of the bounding box
  */
 size_t
-temporal_bbox_size(Oid basetypid)
+temporal_bbox_size(CachedType basetype)
 {
-  if (talpha_base_type(basetypid))
+  if (talpha_basetype(basetype))
     return sizeof(Period);
-  if (tnumber_base_type(basetypid))
+  if (tnumber_basetype(basetype))
     return sizeof(TBOX);
-  if (tspatial_base_type(basetypid))
+  if (tspatial_basetype(basetype))
     return sizeof(STBOX);
   /* Types without bounding box, such as tdoubleN, must be explicity stated */
-  if (base_type_without_bbox(basetypid))
+  if (basetype_without_bbox(basetype))
     return 0;
-  elog(ERROR, "unknown temporal_bbox_size function for base type: %d", basetypid);
+  elog(ERROR, "unknown temporal_bbox_size function for temporal base type: %d", basetype);
 }
 
 /**
@@ -199,22 +197,22 @@ void
 tinstant_make_bbox(const TInstant *inst, void *box)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(inst->basetypid);
-  memset(box, 0, temporal_bbox_size(inst->basetypid));
-  if (talpha_base_type(inst->basetypid))
+  ensure_temporal_basetype(inst->basetype);
+  memset(box, 0, temporal_bbox_size(inst->basetype));
+  if (talpha_basetype(inst->basetype))
     period_set(inst->t, inst->t, true, true, (Period *) box);
-  else if (tnumber_base_type(inst->basetypid))
+  else if (tnumber_basetype(inst->basetype))
   {
-    double dvalue = datum_double(tinstant_value(inst), inst->basetypid);
+    double dvalue = datum_double(tinstant_value(inst), inst->basetype);
     tbox_set(true, true, dvalue, dvalue, inst->t, inst->t, (TBOX *) box);
   }
-  else if (tgeo_base_type(inst->basetypid))
+  else if (tgeo_basetype(inst->basetype))
     tpointinst_stbox(inst, (STBOX *) box);
-  else if (inst->basetypid == type_oid(T_NPOINT))
+  else if (inst->basetype == T_NPOINT)
     tnpointinst_make_stbox(inst, (STBOX *) box);
   else
-    elog(ERROR, "unknown bounding box function for base type: %d",
-      inst->basetypid);
+    elog(ERROR, "unknown bounding box function for temporal base type: %d",
+      inst->basetype);
   return;
 }
 
@@ -250,19 +248,19 @@ void
 tinstantset_make_bbox(const TInstant **instants, int count, void *box)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(instants[0]->basetypid);
-  if (talpha_base_type(instants[0]->basetypid))
+  ensure_temporal_basetype(instants[0]->basetype);
+  if (talpha_basetype(instants[0]->basetype))
     period_set(instants[0]->t, instants[count - 1]->t, true, true,
       (Period *) box);
-  else if (tnumber_base_type(instants[0]->basetypid))
+  else if (tnumber_basetype(instants[0]->basetype))
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
-  else if (tgeo_base_type(instants[0]->basetypid))
+  else if (tgeo_basetype(instants[0]->basetype))
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
-  else if (instants[0]->basetypid == type_oid(T_NPOINT))
+  else if (instants[0]->basetype == T_NPOINT)
     tnpointinstarr_stbox(instants, count, (STBOX *) box);
   else
-    elog(ERROR, "unknown bounding box function for base type: %d",
-      instants[0]->basetypid);
+    elog(ERROR, "unknown bounding box function for temporal base type: %d",
+      instants[0]->basetype);
   return;
 }
 
@@ -281,21 +279,21 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
   bool upper_inc, bool linear, void *box)
 {
   /* Only external types have bounding box */
-  ensure_temporal_base_type(instants[0]->basetypid);
-  if (talpha_base_type(instants[0]->basetypid))
+  ensure_temporal_basetype(instants[0]->basetype);
+  if (talpha_basetype(instants[0]->basetype))
     period_set(instants[0]->t, instants[count - 1]->t, lower_inc, upper_inc,
       (Period *) box);
-  else if (tnumber_base_type(instants[0]->basetypid))
+  else if (tnumber_basetype(instants[0]->basetype))
     tnumberinstarr_tbox(instants, count, (TBOX *) box);
-  else if (instants[0]->basetypid == type_oid(T_GEOMETRY))
+  else if (instants[0]->basetype == T_GEOMETRY)
     tgeompointinstarr_stbox(instants, count, (STBOX *) box);
-  else if (instants[0]->basetypid == type_oid(T_GEOGRAPHY))
+  else if (instants[0]->basetype == T_GEOGRAPHY)
     tgeogpointinstarr_stbox(instants, count, (STBOX *) box);
-  else if (instants[0]->basetypid == type_oid(T_NPOINT))
+  else if (instants[0]->basetype == T_NPOINT)
     tnpointseq_make_stbox(instants, count, linear, (STBOX *) box);
   else
-    elog(ERROR, "unknown bounding box function for base type: %d",
-      instants[0]->basetypid);
+    elog(ERROR, "unknown bounding box function for temporal type: %d",
+      instants[0]->basetype);
   return;
 }
 
@@ -345,16 +343,16 @@ void
 tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
 {
   /* Only external types have bounding box */ // TODO
-  ensure_temporal_base_type(sequences[0]->basetypid);
-  if (talpha_base_type(sequences[0]->basetypid))
+  ensure_temporal_basetype(sequences[0]->basetype);
+  if (talpha_basetype(sequences[0]->basetype))
     tseqarr_to_period_internal(sequences, count, (Period *) box);
-  else if (tnumber_base_type(sequences[0]->basetypid))
+  else if (tnumber_basetype(sequences[0]->basetype))
     tnumberseqarr_to_tbox_internal(sequences, count, (TBOX *) box);
-  else if (tspatial_base_type(sequences[0]->basetypid))
+  else if (tspatial_basetype(sequences[0]->basetype))
     tpointseqarr_stbox(sequences, count, (STBOX *) box);
   else
-    elog(ERROR, "unknown bounding box function for base type: %d",
-      sequences[0]->basetypid);
+    elog(ERROR, "unknown bounding box function for temporal type: %d",
+      sequences[0]->basetype);
   return;
 }
 
@@ -1109,9 +1107,9 @@ boxop_number_tnumber(FunctionCallInfo fcinfo,
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   TBOX box1, box2;
-  number_tbox(value, basetypid, &box1);
+  number_tbox(value, basetype, &box1);
   temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 1);
@@ -1130,10 +1128,10 @@ boxop_tnumber_number(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  number_tbox(value, basetypid, &box2);
+  number_tbox(value, basetype, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);

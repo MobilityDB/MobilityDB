@@ -41,14 +41,14 @@
 #include <catalog/pg_type.h>
 #include <utils/selfuncs.h>
 /* MobilityDB */
-#include "general/tempcache.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
 extern Datum tnpoint_sel(PG_FUNCTION_ARGS);
 extern Datum tnpoint_joinsel(PG_FUNCTION_ARGS);
 
-extern bool tnpoint_cachedop(Oid oper, CachedOp *cachedOp);
+extern bool tnpoint_cachedop(Oid operid, CachedOp *cachedOp);
 
 /*****************************************************************************/
 

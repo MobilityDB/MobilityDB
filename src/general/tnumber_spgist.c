@@ -360,44 +360,45 @@ distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
 static bool
 tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
 {
-  if (tnumber_base_type(scankey->sk_subtype))
+  CachedType type = oid_type(scankey->sk_subtype);
+  if (tnumber_basetype(type))
   {
     Datum value = scankey->sk_argument;
-    number_tbox(value, scankey->sk_subtype, result);
+    number_tbox(value, type, result);
   }
-  else if (tnumber_range_type(scankey->sk_subtype))
+  else if (tnumber_rangetype(type))
   {
     RangeType *range = DatumGetRangeTypeP(scankey->sk_argument);
     range_tbox(range, result);
   }
-  else if (scankey->sk_subtype == TIMESTAMPTZOID)
+  else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
     timestamp_tbox(t, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
   {
     timestampset_tbox_slice(scankey->sk_argument, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
   {
     Period *p = DatumGetPeriodP(scankey->sk_argument);
     period_tbox(p, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
   {
     periodset_tbox_slice(scankey->sk_argument, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_TBOX))
+  else if (type == T_TBOX)
   {
     memcpy(result, DatumGetTboxP(scankey->sk_argument), sizeof(TBOX));
   }
-  else if (tnumber_type(scankey->sk_subtype))
+  else if (tnumber_type(type))
   {
     temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
-    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 

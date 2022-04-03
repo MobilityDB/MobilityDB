@@ -607,7 +607,7 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
     ensure_has_X_stbox(bounds);
     ensure_not_geodetic(bounds->flags);
     double size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     GSERIALIZED *sorigin;
     int64 tunits = 0; /* make compiler quiet */
     TimestampTz torigin = 0; /* make compiler quiet */
@@ -708,7 +708,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
   if (PG_NARGS() == 3)
   {
     size = PG_GETARG_FLOAT8(1);
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     sorigin = PG_GETARG_GSERIALIZED_P(2);
   }
   else /* PG_NARGS() == 6 */
@@ -716,7 +716,7 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
     /* If time arguments are given */
     t = PG_GETARG_TIMESTAMPTZ(1);
     size = PG_GETARG_FLOAT8(2);
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     Interval *duration = PG_GETARG_INTERVAL_P(3);
     ensure_valid_duration(duration);
     tunits = get_interval_units(duration);
@@ -972,7 +972,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     bool bitmatrix = PG_GETARG_BOOL(3);
 
     /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_same_geodetic(temp->flags, GS_FLAGS(sorigin));
@@ -1107,7 +1107,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     bool bitmatrix = PG_GETARG_BOOL(5);
 
     /* Ensure parameter validity */
-    ensure_positive_datum(Float8GetDatum(size), FLOAT8OID);
+    ensure_positive_datum(Float8GetDatum(size), T_FLOAT8);
     ensure_non_empty(sorigin);
     ensure_point_type(sorigin);
     ensure_valid_duration(duration);

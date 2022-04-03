@@ -510,41 +510,42 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 static bool
 tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
 {
-  if (tgeo_base_type(scankey->sk_subtype))
+  CachedType type = oid_type(scankey->sk_subtype);
+  if (tgeo_basetype(type))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
     /* The geometry can be empty */
     if (!geo_stbox(gs, result))
       return false;
   }
-  else if (scankey->sk_subtype == TIMESTAMPTZOID)
+  else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
     timestamp_stbox(t, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
   {
     timestampset_stbox_slice(scankey->sk_argument, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
   {
     Period *p = DatumGetPeriodP(scankey->sk_argument);
     period_stbox(p, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
   {
     periodset_stbox_slice(scankey->sk_argument, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_STBOX))
+  else if (type == T_STBOX)
   {
     memcpy(result, DatumGetSTboxP(scankey->sk_argument), sizeof(STBOX));
   }
-  else if (tspatial_type(scankey->sk_subtype))
+  else if (tspatial_type(type))
   {
     temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
-    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 

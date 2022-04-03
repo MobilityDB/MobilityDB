@@ -372,31 +372,32 @@ adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
 static bool
 time_spgist_get_period(Period *result, ScanKeyData *scankey)
 {
-  if (scankey->sk_subtype == TIMESTAMPTZOID)
+  CachedType type = oid_type(scankey->sk_subtype);
+  if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
     period_set(t, t, true, true, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
   {
     timestampset_bbox_slice(scankey->sk_argument, result);
   }
-  else if (scankey->sk_subtype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
   {
     Period *p = DatumGetPeriodP(scankey->sk_argument);
     memcpy(result, p, sizeof(Period));
   }
-  else if (scankey->sk_subtype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
   {
     periodset_bbox_slice(scankey->sk_argument, result);
   }
   /* For temporal types whose bounding box is a period */
-  else if (temporal_type(scankey->sk_subtype))
+  else if (temporal_type(type))
   {
     temporal_bbox_slice(scankey->sk_argument, result);
   }
   else
-    elog(ERROR, "Unsupported subtype for indexing: %d", scankey->sk_subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 

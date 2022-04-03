@@ -160,15 +160,15 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *
  * @param[in] start,end Instants defining the first segment
  * @param[in] point Base point
- * @param[in] basetypid Oid of the base point
+ * @param[in] basetype Base point
  * @param[out] value Projected value at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
- * @note The parameter basetypid is not needed for temporal points
+ * @note The parameter basetype is not needed for temporal points
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid __attribute__((unused)), Datum *value,
+  Datum point, CachedType basetype __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
@@ -393,8 +393,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) distance_fn(temp->flags);
   lfinfo.numparam = 0;
-  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp->basetype;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
@@ -462,7 +462,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
   lfinfo.numparam = 0;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
@@ -522,7 +522,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
       mindist = dist;
       number = i;
     }
-    lwgeom_free(point);  
+    lwgeom_free(point);
   }
   return tinstant_copy(tinstantset_inst_n(ti, number));
 }
@@ -539,7 +539,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
  * @param[out] result Instant with the minimum distance
- * @result Minimum distance 
+ * @result Minimum distance
  */
 static double
 NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
@@ -557,7 +557,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
       mindist = dist;
       *result = inst;
     }
-    lwgeom_free(point);  
+    lwgeom_free(point);
   }
   return mindist;
 }
@@ -716,7 +716,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   Datum value;
   bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, seq->basetypid);
+  TInstant *result = tinstant_make(value, t, seq->basetype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -747,7 +747,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
   Datum value;
   bool found = tsequenceset_value_at_timestamp_inc(ts, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, ts->basetypid);
+  TInstant *result = tinstant_make(value, t, ts->basetype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -844,7 +844,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     Datum value;
     bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->basetypid);
+    result = tinstant_make(value, min->t, temp1->basetype);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   PG_FREE_IF_COPY(temp1, 0);

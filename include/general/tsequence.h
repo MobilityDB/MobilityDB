@@ -83,7 +83,7 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 /* Intersection functions */
 
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, Oid basetypid, Datum *inter,
+  const TInstant *inst2, Datum value, CachedType basetype, Datum *inter,
   TimestampTz *t);
 extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
@@ -108,7 +108,7 @@ extern TSequence *tsequence_read(StringInfo buf, Oid basetypid);
 
 /* Constructor functions */
 
-extern TSequence *tsequence_from_base_internal(Datum value, Oid basetypid,
+extern TSequence *tsequence_from_base_internal(Datum value, CachedType basetype,
   const Period *p, bool linear);
 
 extern Datum tsequence_from_base(PG_FUNCTION_ARGS);

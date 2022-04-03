@@ -59,9 +59,9 @@
  * Internal selectivity functions for Temporal types.
  *****************************************************************************/
 
-extern Selectivity scalarineqsel(PlannerInfo *root, Oid oper, bool isgt,
+extern Selectivity scalarineqsel(PlannerInfo *root, Oid operid, bool isgt,
   bool iseq, VariableStatData *vardata, Datum constval,
-  Oid consttype);
+  Oid consttypid);
 extern Selectivity temporal_sel_period(VariableStatData *vardata,
   Period *period, CachedOp cachedOp);
 
@@ -71,7 +71,7 @@ extern Selectivity temporal_sel_period(VariableStatData *vardata,
  *****************************************************************************/
 
 #if POSTGRESQL_VERSION_NUMBER < 120000
-extern double var_eq_const(VariableStatData *vardata, Oid oper,
+extern double var_eq_const(VariableStatData *vardata, Oid operid,
   Datum constval, bool constisnull, bool varonleft, bool negate);
 #endif
 
@@ -80,16 +80,16 @@ extern double var_eq_const(VariableStatData *vardata, Oid oper,
 extern Datum temporal_sel(PG_FUNCTION_ARGS);
 extern Datum temporal_joinsel(PG_FUNCTION_ARGS);
 
-extern float8 temporal_sel_internal(PlannerInfo *root, Oid oper, List *args,
+extern float8 temporal_sel_internal(PlannerInfo *root, Oid operid, List *args,
   int varRelid, TemporalFamily tempfamily);
-extern double temporal_sel_generic(FunctionCallInfo fcinfo, 
+extern double temporal_sel_generic(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
-extern double temporal_joinsel_internal(PlannerInfo *root, Oid oper,
+extern double temporal_joinsel_internal(PlannerInfo *root, Oid operid,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo,
   TemporalFamily tempfamily);
 
-extern double temporal_joinsel_generic(FunctionCallInfo fcinfo, 
+extern double temporal_joinsel_generic(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
 /*****************************************************************************/

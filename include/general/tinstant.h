@@ -35,12 +35,14 @@
 #ifndef __TINSTANT_H__
 #define __TINSTANT_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
+#include "general/tempcache.h"
 #include "point/postgis.h"
 
 /*****************************************************************************/
@@ -50,7 +52,7 @@
 extern Datum *tinstant_value_ptr(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
 extern Datum tinstant_value_copy(const TInstant *inst);
-extern TInstant *tinstant_make(Datum value, TimestampTz t, Oid basetypid);
+extern TInstant *tinstant_make(Datum value, TimestampTz t, CachedType basetype);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
 

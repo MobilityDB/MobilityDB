@@ -122,7 +122,7 @@ TInstantSet *
 tinstantset_make1(const TInstant **instants, int count)
 {
   /* Get the bounding box size */
-  size_t bboxsize = temporal_bbox_size(instants[0]->basetypid);
+  size_t bboxsize = temporal_bbox_size(instants[0]->basetype);
 
   /* Compute the size of the temporal instant set */
   /* Bounding box size */
@@ -136,7 +136,7 @@ tinstantset_make1(const TInstant **instants, int count)
   TInstantSet *result = palloc0(memsize);
   SET_VARSIZE(result, memsize);
   result->count = count;
-  result->basetypid = instants[0]->basetypid;
+  result->basetype = instants[0]->basetype;
   result->bboxsize = bboxsize;
   bool continuous = MOBDB_FLAGS_GET_CONTINUOUS(instants[0]->flags);
   MOBDB_FLAGS_SET_SUBTYPE(result->flags, INSTANTSET);
@@ -144,7 +144,7 @@ tinstantset_make1(const TInstant **instants, int count)
   MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_base_type(instants[0]->basetypid))
+  if (tgeo_basetype(instants[0]->basetype))
   {
     MOBDB_FLAGS_SET_Z(result->flags, MOBDB_FLAGS_GET_Z(instants[0]->flags));
     MOBDB_FLAGS_SET_GEODETIC(result->flags, MOBDB_FLAGS_GET_GEODETIC(instants[0]->flags));
@@ -300,7 +300,7 @@ TInstantSet *
 tinstantset_append_tinstant(const TInstantSet *ti, const TInstant *inst)
 {
   /* Ensure validity of the arguments */
-  assert(ti->basetypid == inst->basetypid);
+  assert(ti->basetype == inst->basetype);
   const TInstant *inst1 = tinstantset_inst_n(ti, ti->count - 1);
   ensure_increasing_timestamps(inst1, inst, MERGE);
   if (inst1->t == inst->t)
@@ -514,11 +514,12 @@ tinstantset_read(StringInfo buf, Oid basetypid)
  * Construct a temporal instant set value from a base value and a timestamp set
  */
 TInstantSet *
-tinstantset_from_base_internal(Datum value, Oid basetypid, const TimestampSet *ts)
+tinstantset_from_base_internal(Datum value, CachedType basetype,
+  const TimestampSet *ts)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
-    instants[i] = tinstant_make(value, timestampset_time_n(ts, i), basetypid);
+    instants[i] = tinstant_make(value, timestampset_time_n(ts, i), basetype);
   return tinstantset_make_free(instants, ts->count, MERGE_NO);
 }
 
@@ -531,9 +532,9 @@ tinstantset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
-  TInstantSet *result = tinstantset_from_base_internal(value, basetypid, ts);
-  DATUM_FREE_IF_COPY(value, basetypid, 0);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  TInstantSet *result = tinstantset_from_base_internal(value, basetype, ts);
+  DATUM_FREE_IF_COPY(value, basetype, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_POINTER(result);
 }
@@ -549,11 +550,11 @@ TInstantSet *
 tintinstset_to_tfloatinstset(const TInstantSet *ti)
 {
   TInstantSet *result = tinstantset_copy(ti);
-  result->basetypid = FLOAT8OID;
+  result->basetype = T_FLOAT8;
   for (int i = 0; i < ti->count; i++)
   {
     TInstant *inst = (TInstant *) tinstantset_inst_n(result, i);
-    inst->basetypid = FLOAT8OID;
+    inst->basetype = T_FLOAT8;
     Datum *value_ptr = tinstant_value_ptr(inst);
     *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
   }
@@ -567,11 +568,11 @@ TInstantSet *
 tfloatinstset_to_tintinstset(const TInstantSet *ti)
 {
   TInstantSet *result = tinstantset_copy(ti);
-  result->basetypid = INT4OID;
+  result->basetype = T_INT4;
   for (int i = 0; i < ti->count; i++)
   {
     TInstant *inst = (TInstant *) tinstantset_inst_n(result, i);
-    inst->basetypid = INT4OID;
+    inst->basetype = T_INT4;
     Datum *value_ptr = tinstant_value_ptr(inst);
     *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
   }
@@ -675,7 +676,7 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
   }
   /* Shift and/or scale bounding box */
   void *bbox = tinstantset_bbox_ptr(result);
-  temporal_bbox_shift_tscale(bbox, start, duration, ti->basetypid);
+  temporal_bbox_shift_tscale(bbox, start, duration, ti->basetype);
   return result;
 }
 
@@ -697,8 +698,8 @@ tinstantset_values(const TInstantSet *ti, Datum *result)
     result[i] = tinstant_value(tinstantset_inst_n(ti, i));
   if (ti->count > 1)
   {
-    datumarr_sort(result, ti->count, ti->basetypid);
-    return datumarr_remove_duplicates(result, ti->count, ti->basetypid);
+    datumarr_sort(result, ti->count, ti->basetype);
+    return datumarr_remove_duplicates(result, ti->count, ti->basetype);
   }
   return 1;
 }
@@ -711,7 +712,7 @@ tinstantset_values_array(const TInstantSet *ti)
 {
   Datum *values = palloc(sizeof(Datum *) * ti->count);
   int count = tinstantset_values(ti, values);
-  ArrayType *result = datumarr_to_array(values, count, ti->basetypid);
+  ArrayType *result = datumarr_to_array(values, count, ti->basetype);
   pfree(values);
   return result;
 }
@@ -726,8 +727,8 @@ tfloatinstset_ranges_array(const TInstantSet *ti)
   int count = tinstantset_values(ti, values);
   RangeType **ranges = palloc(sizeof(RangeType *) * count);
   for (int i = 0; i < count; i++)
-    ranges[i] = range_make(values[i], values[i], true, true, FLOAT8OID);
-  ArrayType *result = rangearr_to_array(ranges, count, type_oid(T_FLOATRANGE));
+    ranges[i] = range_make(values[i], values[i], true, true, T_FLOAT8);
+  ArrayType *result = rangearr_to_array(ranges, count, T_FLOATRANGE);
   pfree_array((void **) ranges, count);
   pfree(values);
   return result;
@@ -755,25 +756,25 @@ tinstantset_get_time(const TInstantSet *ti)
 Datum
 tinstantset_min_value(const TInstantSet *ti)
 {
-  if (ti->basetypid == INT4OID)
+  if (ti->basetype == T_INT4)
   {
     TBOX *box = tinstantset_bbox_ptr(ti);
     return Int32GetDatum((int)(box->xmin));
   }
-  else if (ti->basetypid == FLOAT8OID)
+  else if (ti->basetype == T_FLOAT8)
   {
     TBOX *box = tinstantset_bbox_ptr(ti);
     return Float8GetDatum(box->xmin);
   }
   else
   {
-    Oid basetypid = ti->basetypid;
+    CachedType basetype = ti->basetype;
     Datum min = tinstant_value(tinstantset_inst_n(ti, 0));
     int idx = 0;
     for (int i = 1; i < ti->count; i++)
     {
       Datum value = tinstant_value(tinstantset_inst_n(ti, i));
-      if (datum_lt(value, min, basetypid))
+      if (datum_lt(value, min, basetype))
       {
         min = value;
         idx = i;
@@ -789,25 +790,25 @@ tinstantset_min_value(const TInstantSet *ti)
 Datum
 tinstantset_max_value(const TInstantSet *ti)
 {
-  if (ti->basetypid == INT4OID)
+  CachedType basetype = ti->basetype;
+  if (basetype == T_INT4)
   {
     TBOX *box = tinstantset_bbox_ptr(ti);
     return Int32GetDatum((int)(box->xmax));
   }
-  else if (ti->basetypid == FLOAT8OID)
+  else if (basetype == T_FLOAT8)
   {
     TBOX *box = tinstantset_bbox_ptr(ti);
     return Float8GetDatum(box->xmax);
   }
   else
   {
-    Oid basetypid = ti->basetypid;
     Datum max = tinstant_value(tinstantset_inst_n(ti, 0));
     int idx = 0;
     for (int i = 1; i < ti->count; i++)
     {
       Datum value = tinstant_value(tinstantset_inst_n(ti, i));
-      if (datum_gt(value, max, basetypid))
+      if (datum_gt(value, max, basetype))
       {
         max = value;
         idx = i;
@@ -956,7 +957,7 @@ tinstantset_ever_eq(const TInstantSet *ti, Datum value)
   for (int i = 0; i < ti->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(ti, i));
-    if (datum_eq(valueinst, value, ti->basetypid))
+    if (datum_eq(valueinst, value, ti->basetype))
       return true;
   }
   return false;
@@ -974,13 +975,13 @@ tinstantset_always_eq(const TInstantSet *ti, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers and points */
-  if (tnumber_base_type(ti->basetypid) || tspatial_base_type(ti->basetypid))
+  if (tnumber_basetype(ti->basetype) || tspatial_basetype(ti->basetype))
     return true;
 
   for (int i = 0; i < ti->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(ti, i));
-    if (datum_ne(valueinst, value, ti->basetypid))
+    if (datum_ne(valueinst, value, ti->basetype))
       return false;
   }
   return true;
@@ -1001,7 +1002,7 @@ tinstantset_ever_lt(const TInstantSet *ti, Datum value)
   for (int i = 0; i < ti->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(ti, i));
-    if (datum_lt(valueinst, value, ti->basetypid))
+    if (datum_lt(valueinst, value, ti->basetype))
       return true;
   }
   return false;
@@ -1021,7 +1022,7 @@ tinstantset_ever_le(const TInstantSet *ti, Datum value)
   for (int i = 0; i < ti->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(ti, i));
-    if (datum_le(valueinst, value, ti->basetypid))
+    if (datum_le(valueinst, value, ti->basetype))
       return true;
   }
   return false;
@@ -1040,7 +1041,7 @@ tinstantset_always_lt(const TInstantSet *ti, Datum value)
   for (int i = 0; i < ti->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(ti, i));
-    if (! datum_lt(valueinst, value, ti->basetypid))
+    if (! datum_lt(valueinst, value, ti->basetype))
       return false;
   }
   return true;
@@ -1059,13 +1060,13 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
 
   /* The bounding box test above is enough to compute
    * the answer for temporal numbers */
-  if (tnumber_base_type(ti->basetypid))
+  if (tnumber_basetype(ti->basetype))
     return true;
 
   for (int i = 0; i < ti->count; i++)
   {
     Datum valueinst = tinstant_value(tinstantset_inst_n(ti, i));
-    if (! datum_le(valueinst, value, ti->basetypid))
+    if (! datum_le(valueinst, value, ti->basetype))
       return false;
   }
   return true;
@@ -1087,13 +1088,13 @@ tinstantset_always_le(const TInstantSet *ti, Datum value)
 TInstantSet *
 tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
 {
-  Oid basetypid = ti->basetypid;
+  CachedType basetype = ti->basetype;
 
   /* Singleton instant set */
   if (ti->count == 1)
   {
     Datum value1 = tinstant_value(tinstantset_inst_n(ti, 0));
-    bool equal = datum_eq(value, value1, basetypid);
+    bool equal = datum_eq(value, value1, basetype);
     if ((atfunc && ! equal) || (! atfunc && equal))
       return NULL;
     return tinstantset_copy(ti);
@@ -1105,7 +1106,7 @@ tinstantset_restrict_value(const TInstantSet *ti, Datum value, bool atfunc)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    bool equal = datum_eq(value, tinstant_value(inst), basetypid);
+    bool equal = datum_eq(value, tinstant_value(inst), basetype);
     if ((atfunc && equal) || (! atfunc && ! equal))
       instants[count++] = inst;
   }
@@ -1242,7 +1243,7 @@ tinstantset_min_instant(const TInstantSet *ti)
   for (int i = 1; i < ti->count; i++)
   {
     Datum value = tinstant_value(tinstantset_inst_n(ti, i));
-    if (datum_lt(value, min, ti->basetypid))
+    if (datum_lt(value, min, ti->basetype))
     {
       min = value;
       k = i;
@@ -1548,7 +1549,7 @@ tnumberinstset_twavg(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    result += datum_double(tinstant_value(inst), inst->basetypid);
+    result += datum_double(tinstant_value(inst), inst->basetype);
   }
   return result / ti->count;
 }
@@ -1566,7 +1567,7 @@ tnumberinstset_twavg(const TInstantSet *ti)
 bool
 tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
 {
-  assert(ti1->basetypid == ti2->basetypid);
+  assert(ti1->basetype == ti2->basetype);
   /* If number of sequences or flags are not equal */
   if (ti1->count != ti2->count || ti1->flags != ti2->flags)
     return false;
@@ -1574,7 +1575,7 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
   /* If bounding boxes are not equal */
   void *box1 = tinstantset_bbox_ptr(ti1);
   void *box2 = tinstantset_bbox_ptr(ti2);
-  if (! temporal_bbox_eq(box1, box2, ti1->basetypid))
+  if (! temporal_bbox_eq(box1, box2, ti1->basetype))
     return false;
 
   /* Compare the composing instants */
@@ -1599,7 +1600,7 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
 int
 tinstantset_cmp(const TInstantSet *ti1, const TInstantSet *ti2)
 {
-  assert(ti1->basetypid == ti2->basetypid);
+  assert(ti1->basetype == ti2->basetype);
 
   /* Compare composing instants */
   int count = Min(ti1->count, ti2->count);

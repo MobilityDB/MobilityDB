@@ -203,14 +203,15 @@ tnumber_gist_consistent_internal(const TBOX *key, const TBOX *query,
  * must not be taken into account by the operators to infinity.
  */
 static bool
-tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
+tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid typid)
 {
-  if (tnumber_base_type(subtype))
+  CachedType type = oid_type(typid);
+  if (tnumber_basetype(type))
   {
     Datum value = PG_GETARG_DATUM(1);
-    number_tbox(value, subtype, result);
+    number_tbox(value, type, result);
   }
-  else if (tnumber_range_type(subtype))
+  else if (tnumber_rangetype(type))
   {
     RangeType *range = PG_GETARG_RANGE_P(1);
     if (range == NULL)
@@ -222,34 +223,34 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
     range_tbox(range, result);
     PG_FREE_IF_COPY(range, 1);
   }
-  else if (subtype == TIMESTAMPTZOID)
+  else if (type == T_TIMESTAMPTZ)
   {
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
     timestamp_tbox(t, result);
   }
-  else if (subtype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
     timestampset_tbox_slice(tsdatum, result);
   }
-  else if (subtype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
   {
     Period *p = PG_GETARG_PERIOD_P(1);
     period_tbox(p, result);
   }
-  else if (subtype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     periodset_tbox_slice(psdatum, result);
   }
-  else if (subtype == type_oid(T_TBOX))
+  else if (type == T_TBOX)
   {
     TBOX *box = PG_GETARG_TBOX_P(1);
     if (box == NULL)
       return false;
     memcpy(result, box, sizeof(TBOX));
   }
-  else if (tnumber_type(subtype))
+  else if (tnumber_type(type))
   {
     if (PG_ARGISNULL(1))
       return false;
@@ -257,7 +258,7 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBOX *result, Oid subtype)
     temporal_bbox_slice(tempdatum, result);
   }
   else
-    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 
@@ -270,7 +271,7 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4), result;
   const TBOX *key = DatumGetTboxP(entry->key);
   TBOX query;
@@ -285,7 +286,7 @@ tnumber_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
-  if (! tnumber_gist_get_tbox(fcinfo, &query, subtype))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))
@@ -1069,7 +1070,7 @@ Datum
 tbox_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBOX *key = (TBOX *) DatumGetPointer(entry->key);
   TBOX query;
@@ -1083,7 +1084,7 @@ tbox_gist_distance(PG_FUNCTION_ARGS)
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Transform the query into a box */
-  if (! tnumber_gist_get_tbox(fcinfo, &query, subtype))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, typid))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,

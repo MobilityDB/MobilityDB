@@ -395,7 +395,7 @@ geom_intersection2d(Datum geom1, Datum geom2)
 void
 ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
-  if (tgeo_base_type(temp1->basetypid))
+  if (tgeo_basetype(temp1->basetype))
   {
     ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
     ensure_same_dimensionality(temp1->flags, temp2->flags);
@@ -1973,7 +1973,7 @@ TInstant *
 tpointinst_transform(const TInstant *inst, Datum srid)
 {
   Datum geo = datum_transform(tinstant_value(inst), srid);
-  TInstant *result = tinstant_make(geo, inst->t, inst->basetypid);
+  TInstant *result = tinstant_make(geo, inst->t, inst->basetype);
   pfree(DatumGetPointer(geo));
   return result;
 }
@@ -2003,7 +2003,7 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
   {
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    instants[i] = tinstant_make(point, inst->t, inst->basetypid);
+    instants[i] = tinstant_make(point, inst->t, inst->basetype);
     pfree(DatumGetPointer(point));
   }
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(transf));
@@ -2050,7 +2050,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   {
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
     const TInstant *inst = tsequence_inst_n(seq, i);
-    instants[i] = tinstant_make(point, inst->t, inst->basetypid);
+    instants[i] = tinstant_make(point, inst->t, inst->basetype);
     pfree(DatumGetPointer(point));
   }
 
@@ -2116,7 +2116,7 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
     {
       Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[k++])));
       const TInstant *inst = tsequence_inst_n(seq, j);
-      instants[j] = tinstant_make(point, inst->t, inst->basetypid);
+      instants[j] = tinstant_make(point, inst->t, inst->basetype);
       pfree(DatumGetPointer(point));
     }
     sequences[i] = tsequence_make((const TInstant **) instants, seq->count,
@@ -2181,7 +2181,7 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
     call_function1(geography_from_geometry, tinstant_value(inst)) :
     call_function1(geometry_from_geography, tinstant_value(inst));
   return tinstant_make(point, inst->t, (oper == GEOM_TO_GEOG) ?
-    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+    T_GEOGRAPHY : T_GEOMETRY);
 }
 
 /**
@@ -2214,13 +2214,13 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
   gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
-  Oid result_oid = (oper == GEOM_TO_GEOG) ?
-      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
+  CachedType restype = (oper == GEOM_TO_GEOG) ?
+      T_GEOGRAPHY : T_GEOMETRY;
   for (int i = 0; i < ti->count; i++)
   {
     inst = tinstantset_inst_n(ti, i);
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    instants[i] = tinstant_make(point, inst->t, result_oid);
+    instants[i] = tinstant_make(point, inst->t, restype);
     pfree(DatumGetPointer(point));
   }
   lwmpoint_free(lwmpoint);
@@ -2257,13 +2257,13 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
   gs = (GSERIALIZED *) DatumGetPointer(mpoint_trans);
   LWMPOINT *lwmpoint = lwgeom_as_lwmpoint(lwgeom_from_gserialized(gs));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  Oid result_oid = (oper == GEOM_TO_GEOG) ?
-      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
+  CachedType restype = (oper == GEOM_TO_GEOG) ?
+      T_GEOGRAPHY : T_GEOMETRY;
   for (int i = 0; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
     Datum point = PointerGetDatum(geo_serialize((LWGEOM *) (lwmpoint->geoms[i])));
-    instants[i] = tinstant_make(point, inst->t, result_oid);
+    instants[i] = tinstant_make(point, inst->t, restype);
     pfree(DatumGetPointer(point));
   }
   lwmpoint_free(lwmpoint);
@@ -2703,7 +2703,7 @@ tpoint_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &datum_round_geo;
   lfinfo.numparam = 1;
   lfinfo.param[0] = prec;
-  lfinfo.restypid = temp->basetypid;
+  lfinfo.restype = temp->basetype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
@@ -2754,7 +2754,7 @@ point_get_z(Datum point)
 static Temporal *
 tpoint_get_coord_internal(const Temporal *temp, char c)
 {
-  ensure_tgeo_base_type(temp->basetypid);
+  ensure_tgeo_basetype(temp->basetype);
   if (c == 'z')
     ensure_has_Z(temp->flags);
   /* We only need to fill these parameters for tfunc_temporal */
@@ -2774,7 +2774,7 @@ tpoint_get_coord_internal(const Temporal *temp, char c)
       break;
   }
   lfinfo.numparam = 0;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
@@ -2939,7 +2939,7 @@ tpoint_length(PG_FUNCTION_ARGS)
 static TInstant *
 tpointinst_cumulative_length(const TInstant *inst)
 {
-  return tinstant_make(Float8GetDatum(0.0), inst->t, FLOAT8OID);
+  return tinstant_make(Float8GetDatum(0.0), inst->t, T_FLOAT8);
 }
 
 /**
@@ -2953,7 +2953,7 @@ tpointinstset_cumulative_length(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    instants[i] = tinstant_make(length, inst->t, FLOAT8OID);
+    instants[i] = tinstant_make(length, inst->t, T_FLOAT8);
   }
   return tinstantset_make_free(instants, ti->count, MERGE_NO);
 }
@@ -2972,7 +2972,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   {
     inst = tsequence_inst_n(seq, 0);
     TInstant *inst1 = tinstant_make(Float8GetDatum(0), inst->t,
-      FLOAT8OID);
+      T_FLOAT8);
     TSequence *result = tinstant_to_tsequence(inst1, linear);
     pfree(inst1);
     return result;
@@ -2986,7 +2986,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     for (int i = 0; i < seq->count; i++)
     {
       inst = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(length, inst->t, FLOAT8OID);
+      instants[i] = tinstant_make(length, inst->t, T_FLOAT8);
     }
   }
   else
@@ -2997,7 +2997,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
     Datum value1 = tinstant_value(inst1);
     double length = prevlength;
     instants[0] = tinstant_make(Float8GetDatum(length), inst1->t,
-        FLOAT8OID);
+        T_FLOAT8);
     for (int i = 1; i < seq->count; i++)
     {
       const TInstant *inst2 = tsequence_inst_n(seq, i);
@@ -3005,7 +3005,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
       if (! datum_point_eq(value1, value2))
         length += DatumGetFloat8(func(value1, value2));
       instants[i] = tinstant_make(Float8GetDatum(length), inst2->t,
-        FLOAT8OID);
+        T_FLOAT8);
       inst1 = inst2;
       value1 = value2;
     }
@@ -3098,12 +3098,12 @@ tpointseq_speed(const TSequence *seq)
     speed = datum_point_eq(value1, value2) ? 0.0 :
       DatumGetFloat8(func(value1, value2)) /
         ((double)(inst2->t - inst1->t) / 1000000.0);
-    instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t, FLOAT8OID);
+    instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t, T_FLOAT8);
     inst1 = inst2;
     value1 = value2;
   }
   instants[seq->count - 1] = tinstant_make(Float8GetDatum(speed),
-    seq->period.upper, FLOAT8OID);
+    seq->period.upper, T_FLOAT8);
   /* The resulting sequence has step interpolation */
   TSequence *result = tsequence_make((const TInstant **) instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
@@ -3179,12 +3179,12 @@ tpointinstset_twcentroid(const TInstantSet *ti)
     POINT4D p;
     datum_point4d(tinstant_value(inst), &p);
     instantsx[i] = tinstant_make(Float8GetDatum(p.x), inst->t,
-      FLOAT8OID);
+      T_FLOAT8);
     instantsy[i] = tinstant_make(Float8GetDatum(p.y), inst->t,
-      FLOAT8OID);
+      T_FLOAT8);
     if (hasz)
       instantsz[i] = tinstant_make(Float8GetDatum(p.z), inst->t,
-        FLOAT8OID);
+        T_FLOAT8);
   }
   TInstantSet *tix = tinstantset_make_free(instantsx, ti->count, MERGE_NO);
   TInstantSet *tiy = tinstantset_make_free(instantsy, ti->count, MERGE_NO);
@@ -3221,12 +3221,12 @@ tpointseq_twcentroid(const TSequence *seq)
     POINT4D p;
     datum_point4d(tinstant_value(inst), &p);
     instantsx[i] = tinstant_make(Float8GetDatum(p.x), inst->t,
-      FLOAT8OID);
+      T_FLOAT8);
     instantsy[i] = tinstant_make(Float8GetDatum(p.y), inst->t,
-      FLOAT8OID);
+      T_FLOAT8);
     if (hasz)
       instantsz[i] = tinstant_make(Float8GetDatum(p.z), inst->t,
-        FLOAT8OID);
+        T_FLOAT8);
   }
   TSequence *seqx = tsequence_make_free(instantsx, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
@@ -3273,12 +3273,12 @@ tpointseqset_twcentroid(const TSequenceSet *ts)
       POINT4D p;
       datum_point4d(tinstant_value(inst), &p);
       instantsx[j] = tinstant_make(Float8GetDatum(p.x),
-        inst->t, FLOAT8OID);
+        inst->t, T_FLOAT8);
       instantsy[j] = tinstant_make(Float8GetDatum(p.y),
-        inst->t, FLOAT8OID);
+        inst->t, T_FLOAT8);
       if (hasz)
         instantsz[j] = tinstant_make(Float8GetDatum(p.z),
-          inst->t, FLOAT8OID);
+          inst->t, T_FLOAT8);
     }
     sequencesx[i] = tsequence_make_free(instantsx, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,
@@ -3401,13 +3401,13 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
     if (! datum_point_eq(value1, value2))
     {
       azimuth = func(value1, value2);
-      instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);
+      instants[k++] = tinstant_make(azimuth, inst1->t, T_FLOAT8);
     }
     else
     {
       if (k != 0)
       {
-        instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);
+        instants[k++] = tinstant_make(azimuth, inst1->t, T_FLOAT8);
         upper_inc = true;
         /* Resulting sequence has step interpolation */
         result[l++] = tsequence_make((const TInstant **) instants, k, lower_inc,
@@ -3423,7 +3423,7 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
   }
   if (k != 0)
   {
-    instants[k++] = tinstant_make(azimuth, inst1->t, FLOAT8OID);
+    instants[k++] = tinstant_make(azimuth, inst1->t, T_FLOAT8);
     /* Resulting sequence has step interpolation */
     result[l++] = tsequence_make((const TInstant **) instants, k,
       lower_inc, upper_inc, STEP, NORMALIZE);
@@ -3610,11 +3610,11 @@ get_bearing_fn(int16 flags)
  *
  * @param[in] start,end Instants defining the segment
  * @param[in] point Geometric/geographic point
- * @param[in] basetypid Oid of the base type
+ * @param[in] basetypid Base type
  * @param[out] value Value
  * @param[out] t Timestamp
  * @pre The segment is not constant and has linear interpolation
- * @note The parameter basetypid is not needed for temporal points
+ * @note The parameter basetype is not needed for temporal points
  */
 static bool
 tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
@@ -3778,9 +3778,9 @@ bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) get_bearing_fn(temp->flags);
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temp->basetype;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = invert;
   lfinfo.discont = CONTINUOUS;
@@ -3848,10 +3848,10 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temp1->basetype;
+  lfinfo.argtype[1] = temp2->basetype;
+  lfinfo.restype = T_FLOAT8;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
@@ -4169,7 +4169,7 @@ tpoint_instarr_is_simple(const Temporal *temp, int count)
     const TInstant *inst = tinstarr_inst_n(temp, i);
     points[i] = tinstant_value(inst);
   }
-  datumarr_sort(points, count, temp->basetypid);
+  datumarr_sort(points, count, temp->basetype);
   bool found = false;
   for (int i = 1; i < count; i++)
   {
@@ -4381,7 +4381,7 @@ tpointseq_split(const TSequence *seq, bool *splits, int count)
     {
       Datum value = tinstant_value(instants[end - start - 1]);
       TimestampTz t = tsequence_inst_n(seq, end - start)->t;
-      instants[end - start] = tinstant_make(value, t, seq->basetypid);
+      instants[end - start] = tinstant_make(value, t, seq->basetype);
       tofree = true;
       upper_inc1 = false;
     }
@@ -5243,7 +5243,7 @@ tpoint_assemble_coords_xy(Temporal *temp_x, Temporal *temp_y, int srid,
   lfinfo.numparam = 2;
   lfinfo.param[0] = Int32GetDatum(srid);
   lfinfo.param[1] = BoolGetDatum(geodetic);
-  lfinfo.restypid = type_oid(T_GEOMETRY); // TODO Geography ???
+  lfinfo.restype = T_GEOMETRY; // TODO Geography ???
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp_x->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp_y->flags);
   lfinfo.invert = INVERT_NO;
@@ -5282,7 +5282,7 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
   lfinfo.func = (varfunc) &point2D_add_z;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Int32GetDatum(srid);
-  lfinfo.restypid = type_oid(T_GEOMETRY); // TODO Geography ???
+  lfinfo.restype = T_GEOMETRY; // TODO Geography ???
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp_z->flags);
   lfinfo.invert = INVERT_NO;
@@ -5338,13 +5338,13 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
     if (hasz)
       temp_z = tpoint_get_coord_internal(temp1, 'z');
     RangeType *range_x = range_make(Float8GetDatum(box->xmin),
-      Float8GetDatum(box->xmax), true, upper_inc, FLOAT8OID);
+      Float8GetDatum(box->xmax), true, upper_inc, T_FLOAT8);
     RangeType *range_y = range_make(Float8GetDatum(box->ymin),
-      Float8GetDatum(box->ymax), true, upper_inc, FLOAT8OID);
+      Float8GetDatum(box->ymax), true, upper_inc, T_FLOAT8);
     RangeType *range_z = NULL;
     if (hasz)
       range_z = range_make(Float8GetDatum(box->zmin),
-        Float8GetDatum(box->zmax), true, upper_inc, FLOAT8OID);
+        Float8GetDatum(box->zmax), true, upper_inc, T_FLOAT8);
     Temporal *at_temp_x = tnumber_restrict_range_internal(temp_x, range_x, REST_AT);
     Temporal *at_temp_y = tnumber_restrict_range_internal(temp_y, range_y, REST_AT);
     Temporal *at_temp_z = NULL;

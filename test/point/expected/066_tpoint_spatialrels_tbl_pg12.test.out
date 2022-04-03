@@ -71,7 +71,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)'
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, geography 'Linestring(0 0,5 5)', 5);
@@ -169,7 +169,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(geometry 'Linestring(0 0,5 5)'
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE dwithin(temp, tgeompoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
  count 
 -------
-     0
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE dwithin(temp, geography 'Linestring(0 0,5 5)', 5);
