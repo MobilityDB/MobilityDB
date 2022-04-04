@@ -1392,7 +1392,7 @@ temporal_merge_internal(const Temporal *temp1, const Temporal *temp2)
     return temporal_copy(temp1);
 
   /* Both arguments are temporal */
-  ensure_same_base_type(temp1, temp2);
+  ensure_same_temptype(temp1, temp2);
   ensure_same_interpolation(temp1, temp2);
 
   /* Convert to the same subtype if possible */
