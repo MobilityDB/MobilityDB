@@ -364,11 +364,11 @@ ensure_common_dimension(int16 flags1, int16 flags2)
  * Ensures that the two temporal values have the same base type
  */
 void
-ensure_same_base_type(const Temporal *temp1, const Temporal *temp2)
+ensure_same_temptype(const Temporal *temp1, const Temporal *temp2)
 {
   if (temp1->temptype != temp2->temptype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The temporal values must be of the same base type")));
+      errmsg("The temporal values must be of the same temporal type")));
   return;
 }
 
@@ -1266,7 +1266,7 @@ temporal_append_tinstant(PG_FUNCTION_ARGS)
   if (MOBDB_FLAGS_GET_SUBTYPE(inst->flags) != INSTANT)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("The second argument must be of instant subtype")));
-  ensure_same_base_type(temp, (Temporal *) inst);
+  ensure_same_temptype(temp, (Temporal *) inst);
   /* The test to ensure the increasing timestamps must be done in the
    * specific function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */

@@ -59,7 +59,6 @@ extern void ensure_temptype_continuous(CachedType temptype);
 extern bool basetype_byvalue(CachedType basetype);
 extern int16 basetype_length(CachedType basetype);
 extern bool talpha_type(CachedType temptype);
-extern bool talpha_basetype(CachedType basetype);
 extern bool tnumber_type(CachedType temptype);
 extern void ensure_tnumber_type(CachedType temptype);
 extern bool tnumber_basetype(CachedType basetype);

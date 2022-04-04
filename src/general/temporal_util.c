@@ -176,18 +176,6 @@ talpha_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is an alpha base type (i.e., those whose
- * bounding box is a period) supported by MobilityDB
- */
-bool
-talpha_basetype(CachedType basetype)
-{
-  if (basetype == T_BOOL || basetype == T_TEXT)
-    return true;
-  return false;
-}
-
-/**
  * Returns true if the type is a temporal number type
  */
 bool
