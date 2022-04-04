@@ -73,6 +73,17 @@ temporal_type(CachedType temptype)
  * Ensures that the base type is supported by MobilityDB
  */
 void
+ensure_temporal_type(CachedType temptype)
+{
+  if (! temporal_type(temptype))
+    elog(ERROR, "unknown temporal type: %d", temptype);
+  return;
+}
+
+/**
+ * Ensures that the base type is supported by MobilityDB
+ */
+void
 ensure_temporal_basetype(CachedType basetype)
 {
   if (basetype != T_BOOL && basetype != T_INT4 &&
@@ -102,10 +113,10 @@ basetype_continuous(CachedType basetype)
  * Ensures that the temporal type is continuous
  */
 void
-ensure_basetype_continuous(CachedType basetype)
+ensure_temptype_continuous(CachedType temptype)
 {
-  if (! basetype_continuous(basetype))
-    elog(ERROR, "unknown continuous base type: %d", basetype);
+  if (! basetype_continuous(temptype_basetype(temptype)))
+    elog(ERROR, "unknown continuous temporal type: %d", temptype);
   return;
 }
 
@@ -185,6 +196,17 @@ tnumber_type(CachedType temptype)
   if (temptype == T_TINT || temptype == T_TFLOAT)
     return true;
   return false;
+}
+
+/**
+ * Returns true if the type is a number base type supported by MobilityDB
+ */
+void
+ensure_tnumber_type(CachedType temptype)
+{
+  if (! tnumber_type(temptype))
+    elog(ERROR, "unknown temporal number type: %d", temptype);
+  return;
 }
 
 /**
@@ -276,27 +298,26 @@ tgeo_basetype(CachedType basetype)
 }
 
 /**
- * Ensures that the type is a point base type supported by MobilityDB
- */
-void
-ensure_tgeo_basetype(CachedType basetype)
-{
-  if (! tgeo_basetype(basetype))
-    elog(ERROR, "unknown geospatial base type: %d", basetype);
-  return;
-}
-
-/**
  * Returns true if the type is a temporal point type supported by MobilityDB
  */
 bool
 tgeo_type(CachedType temptype)
 {
-  if (temptype == T_TGEOMPOINT || temptype == T_TGEOMPOINT)
+  if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT)
     return true;
   return false;
 }
 
+/**
+ * Ensures that the type is a point base type supported by MobilityDB
+ */
+void
+ensure_tgeo_type(CachedType temptype)
+{
+  if (! tgeo_type(temptype))
+    elog(ERROR, "unknown geospatial temporal type: %d", temptype);
+  return;
+}
 
 /*****************************************************************************
  * Oid functions
@@ -1070,7 +1091,7 @@ ArrayType *
 temporalarr_to_array(const Temporal **temporalarr, int count)
 {
   assert(count > 0);
-  Oid temptypid = basetype_temptypid(temporalarr[0]->basetype);
+  Oid temptypid = type_oid(temporalarr[0]->temptype);
   ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
     -1, false, 'd');
   return result;

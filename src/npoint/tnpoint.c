@@ -76,7 +76,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
   Datum geom = npoint_geom(np);
-  TInstant *result = tinstant_make(geom, inst->t, T_GEOMETRY);
+  TInstant *result = tinstant_make(geom, inst->t, T_TGEOMPOINT);
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -119,7 +119,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
     assert(opa->npoints <= 1);
     lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
-    instants[i] = tinstant_make(point, inst->t, T_GEOMETRY);
+    instants[i] = tinstant_make(point, inst->t, T_TGEOMPOINT);
     pfree(DatumGetPointer(point));
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
@@ -191,7 +191,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
   npoint *np = geom_npoint(geom);
   if (np == NULL)
     return NULL;
-  TInstant *result = tinstant_make(PointerGetDatum(np), inst->t, T_NPOINT);
+  TInstant *result = tinstant_make(PointerGetDatum(np), inst->t, T_TNPOINT);
   pfree(np);
   return result;
 }
@@ -327,7 +327,7 @@ tnpoint_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &npoint_round_internal;
   lfinfo.numparam = 1;
   lfinfo.param[0] = size;
-  lfinfo.restype = temp->basetype;
+  lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);

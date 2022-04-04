@@ -450,12 +450,14 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
        */
       leftoid = exprType(leftarg);
       rightoid = exprType(rightarg);
+      CachedType lefttype = oid_type(leftoid);
+      CachedType righttype = oid_type(rightoid);
 
       /*
        * Given the index operator family and the arguments and the desired
        * strategy number we can now lookup the operator we want (usually &&).
        */
-      int16 strategy = temporal_get_strategy_by_type(leftoid, idxfn.index);
+      int16 strategy = temporal_get_strategy_by_type(lefttype, idxfn.index);
       /* If no strategy was found for the left argument simply return */
       if (strategy == InvalidStrategy)
         PG_RETURN_POINTER((Node *) NULL);
@@ -463,7 +465,6 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
       /* Determine type of right argument of the index support expression
        * depending on whether there is an expand function */
       exproid = rightoid;
-      CachedType righttype = oid_type(rightoid);
       if (idxfn.expand_arg &&
           (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
            righttype == T_STBOX || righttype == T_TGEOMPOINT ||

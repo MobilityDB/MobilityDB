@@ -66,8 +66,8 @@ tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 {
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  double result = fabs(datum_double(value1, inst1->basetype) -
-    datum_double(value2, inst2->basetype));
+  double result = fabs(datum_double(value1, temptype_basetype(inst1->temptype)) -
+    datum_double(value2, temptype_basetype(inst2->temptype)));
   return result;
 }
 
@@ -94,9 +94,9 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
 static double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2)
 {
-  if (tnumber_basetype(inst1->basetype))
+  if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
-  if (tgeo_basetype(inst1->basetype))
+  if (tgeo_type(inst1->temptype))
     return tpointinst_distance(inst1, inst2);
   elog(ERROR, "Unexpected base type in function tinstant_distance");
 }
@@ -229,7 +229,7 @@ temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable for temporal geographic points */
-  if (temp1->basetype == T_GEOGRAPHY)
+  if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
   double result = temporal_similarity_internal(temp1, temp2, simfunc);
   PG_FREE_IF_COPY(temp1, 0);
@@ -536,7 +536,7 @@ temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
     Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
     Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
     /* Store fcinfo into a global variable for temporal geographic points */
-    if (temp1->basetype == T_GEOGRAPHY)
+    if (temp1->temptype == T_TGEOGPOINT)
       store_fcinfo(fcinfo);
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();

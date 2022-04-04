@@ -422,8 +422,8 @@ trajpoint_to_tpointinst(LWPOINT *lwpoint)
   }
   FLAGS_SET_GEODETIC(lwpoint1->flags, geodetic);
   GSERIALIZED *gs = geo_serialize((LWGEOM *)lwpoint1);
-  CachedType basetype = geodetic ? T_GEOGRAPHY : T_GEOMETRY;
-  TInstant *result = tinstant_make(PointerGetDatum(gs), t, basetype);
+  CachedType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  TInstant *result = tinstant_make(PointerGetDatum(gs), t, temptype);
   pfree(gs);
   return result;
 }
@@ -939,8 +939,8 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
   bool segmentize = PG_GETARG_BOOL(2);
-  ensure_tgeo_basetype(tpoint->basetype);
-  ensure_tnumber_basetype(measure->basetype);
+  ensure_tgeo_type(tpoint->temptype);
+  ensure_tnumber_type(measure->temptype);
 
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
@@ -1849,7 +1849,7 @@ tpointinst_affine_iterator(TInstant **result, const TInstant *inst,
     lwpoint = lwpoint_make2d(srid, p2d.x, p2d.y);
   }
   GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-  *result = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
+  *result = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
   lwpoint_free(lwpoint);
   pfree(gs);
   return;
@@ -1987,7 +1987,7 @@ tpointinst_grid(const TInstant *inst, const gridspec *grid)
   lwpoint_free(lwpoint);
 
   /* Construct the result */
-  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
   /* We cannot lwpoint_free(lwpoint) */
   pfree(gs);
   return result;
@@ -2029,7 +2029,7 @@ tpointinstset_grid(const TInstantSet *ti, const gridspec *grid)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));
@@ -2074,7 +2074,7 @@ tpointseq_grid(const TSequence *seq, const gridspec *grid, bool filter_pts)
     LWPOINT *lwpoint = hasz ?
       lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
     GSERIALIZED *gs = geo_serialize((LWGEOM *) lwpoint);
-    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_GEOMETRY);
+    instants[k++] = tinstant_make(PointerGetDatum(gs), inst->t, T_TGEOMPOINT);
     lwpoint_free(lwpoint);
     pfree(gs);
     memcpy(&prev_p, &p, sizeof(POINT4D));

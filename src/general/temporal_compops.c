@@ -55,9 +55,9 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, CachedType basetype,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temp->basetype;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = basetype;
-  lfinfo.restype = T_BOOL;
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
@@ -141,7 +141,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  if (tgeo_basetype(temp1->basetype))
+  if (tgeo_type(temp1->temptype))
   {
     ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
     ensure_same_dimensionality(temp1->flags, temp2->flags);
@@ -151,9 +151,9 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temp1->basetype;
-  lfinfo.argtype[1] = temp2->basetype;
-  lfinfo.restype = T_BOOL;
+  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||

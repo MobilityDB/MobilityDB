@@ -460,7 +460,7 @@ tinstant_parse(char **str, Oid basetypid, bool end, bool make)
   ensure_end_input(str, end);
   if (! make)
     return NULL;
-  return tinstant_make(elem, t, oid_type(basetypid));
+  return tinstant_make(elem, t, basetypid_temptype(basetypid));
 }
 
 /**

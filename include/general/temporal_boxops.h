@@ -52,8 +52,10 @@
 
 extern size_t temporal_max_bbox_size();
 extern uint32_t temporal_max_header_size(void);
-extern bool temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype);
-extern int temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype);
+extern bool temporal_bbox_eq(const void *box1, const void *box2,
+  CachedType temptype);
+extern int temporal_bbox_cmp(const void *box1, const void *box2,
+  CachedType temptype);
 extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
   const Interval *duration, CachedType temptype);
 
@@ -61,10 +63,12 @@ extern void temporal_bbox_shift_tscale(void *box, const Interval *start,
 
 extern size_t temporal_bbox_size(CachedType tempype);
 extern void tinstant_make_bbox(const TInstant *inst, void *bbox);
-extern void tinstantset_make_bbox(const TInstant **inst, int count, void *bbox);
+extern void tinstantset_make_bbox(const TInstant **inst, int count,
+  void *bbox);
 extern void tsequence_make_bbox(const TInstant** inst, int count,
   bool lower_inc, bool upper_inc, bool linear, void *bbox);
-extern void tsequenceset_make_bbox(const TSequence **seqs, int count, void *bbox);
+extern void tsequenceset_make_bbox(const TSequence **seqs, int count,
+  void *bbox);
 
 /* Bounding box operators for temporal types */
 

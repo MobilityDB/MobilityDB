@@ -57,9 +57,9 @@ typedef struct
   Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
   int numparam;              /**< Number of parameters of the function */
   Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
-  bool args;              /**< True if the lifted function requires arguments */
-  CachedType argtype[2];     /**< Type of the arguments */
-  CachedType restype;        /**< Base type of the result of the function */
+  bool args;                 /**< True if the lifted function requires arguments */
+  CachedType argtype[2];     /**< Base type of the arguments */
+  CachedType restype;        /**< Temporal type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */

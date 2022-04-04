@@ -87,20 +87,20 @@ number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
  *
  * @param[in] temp Temporal number
  * @param[in] value Value
- * @param[in] basetype Type of the base value
+ * @param[in] valuetype Type of the value
  * @param[in] restype Type of the result
  */
 static Temporal *
 distance_tnumber_base_internal(const Temporal *temp, Datum value,
-  CachedType basetype, CachedType restype)
+  CachedType valuetype, CachedType restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &number_distance;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temp->basetype;
-  lfinfo.argtype[1] = basetype;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = valuetype;
   lfinfo.restype = restype;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
@@ -119,12 +119,11 @@ PGDLLEXPORT Datum
 distance_base_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = temptypid_basetypid(temptypid);
+  Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
   Temporal *result = distance_tnumber_base_internal(temp, value,
-    oid_type(basetypid), oid_type(restypid));
+    oid_type(valuetypid), oid_type(restypid));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -139,11 +138,10 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = temptypid_basetypid(temptypid);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
   Temporal *result = distance_tnumber_base_internal(temp, value,
-    oid_type(basetypid), oid_type(restypid));
+    oid_type(valuetypid), oid_type(restypid));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -186,8 +184,8 @@ distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) &number_distance;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temp1->basetype;
-  lfinfo.argtype[1] = temp2->basetype;
+  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
   lfinfo.restype = restype;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
@@ -208,9 +206,8 @@ distance_tnumber_tnumber(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = temptypid_basetypid(temptypid);
   Temporal *result = distance_tnumber_tnumber_internal(temp1, temp2,
-    oid_type(restypid));
+    oid_type(temptypid));
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -410,11 +407,11 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_tnumber_basetype(temp1->basetype);
-  ensure_tnumber_basetype(temp2->basetype);
+  ensure_tnumber_type(temp1->temptype);
+  ensure_tnumber_type(temp2->temptype);
   /* Result of the distance function is a tint iff both arguments are tint */
-  CachedType restype = (temp1->basetype == T_INT4 && temp2->basetype == T_INT4) ?
-    T_INT4 : T_FLOAT8;
+  CachedType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
+    T_TINT : T_TFLOAT;
   Temporal *dist = distance_tnumber_tnumber_internal(temp1, temp2, restype);
   if (dist == NULL)
   {
@@ -424,7 +421,7 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
   }
 
   Datum result = temporal_min_value_internal(dist);
-  if (restype == T_INT4)
+  if (restype == T_TINT)
     result = Float8GetDatum((double) DatumGetInt32(result));
   pfree(dist);
   PG_FREE_IF_COPY(temp1, 0);

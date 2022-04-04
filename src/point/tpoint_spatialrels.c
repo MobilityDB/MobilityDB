@@ -353,9 +353,9 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
   lfinfo.args = true;
-  lfinfo.argtype[0] = temp1->basetype;
-  lfinfo.argtype[1] = temp2->basetype;
-  lfinfo.restype = T_BOOL;
+  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||

@@ -109,14 +109,14 @@ tpointinst_transform_tcentroid(const TInstant *inst)
     const POINT3DZ *point = datum_point3dz_p(tinstant_value(inst));
     double4 dvalue;
     double4_set(point->x, point->y, point->z, 1, &dvalue);
-    result = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_DOUBLE4);
+    result = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_TDOUBLE4);
   }
   else
   {
     const POINT2D *point = datum_point2d_p(tinstant_value(inst));
     double3 dvalue;
     double3_set(point->x, point->y, 1, &dvalue);
-    result = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_DOUBLE3);
+    result = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_TDOUBLE3);
   }
   return result;
 }
@@ -359,10 +359,17 @@ tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 static Datum
 doublen_to_point(const TInstant *inst, int srid)
 {
-  assert(inst->basetype == T_DOUBLE4 ||
-    inst->basetype == T_DOUBLE3);
+  assert(inst->temptype == T_TDOUBLE3 || inst->temptype == T_TDOUBLE4);
   LWPOINT *point;
-  if (inst->basetype == T_DOUBLE4)
+  if (inst->temptype == T_TDOUBLE3)
+  {
+    double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
+    assert(value3->c != 0);
+    double valuea = value3->a / value3->c;
+    double valueb = value3->b / value3->c;
+    point = lwpoint_make2d(srid, valuea, valueb);
+  }
+  else /* inst->temptype == T_TDOUBLE4 */
   {
     double4 *value4 = (double4 *)DatumGetPointer(tinstant_value_ptr(inst));
     assert(value4->d != 0);
@@ -370,14 +377,6 @@ doublen_to_point(const TInstant *inst, int srid)
     double valueb = value4->b / value4->d;
     double valuec = value4->c / value4->d;
     point = lwpoint_make3dz(srid, valuea, valueb, valuec);
-  }
-  else /* inst->basetype == T_DOUBLE3 */
-  {
-    double3 *value3 = (double3 *)DatumGetPointer(tinstant_value_ptr(inst));
-    assert(value3->c != 0);
-    double valuea = value3->a / value3->c;
-    double valueb = value3->b / value3->c;
-    point = lwpoint_make2d(srid, valuea, valueb);
   }
   /* Notice that for the moment we do not aggregate temporal geographic points */
   Datum result = PointerGetDatum(geo_serialize((LWGEOM *) point));
@@ -401,7 +400,7 @@ tpointinst_tcentroid_finalfn(TInstant **instants, int count, int srid)
   {
     TInstant *inst = instants[i];
     Datum value = doublen_to_point(inst, srid);
-    newinstants[i] = tinstant_make(value, inst->t, T_GEOMETRY);
+    newinstants[i] = tinstant_make(value, inst->t, T_TGEOMPOINT);
     pfree(DatumGetPointer(value));
   }
   return tinstantset_make_free(newinstants, count, MERGE_NO);
@@ -427,7 +426,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
     {
       const TInstant *inst = tsequence_inst_n(seq, j);
       Datum value = doublen_to_point(inst, srid);
-      instants[j] = tinstant_make(value, inst->t, T_GEOMETRY);
+      instants[j] = tinstant_make(value, inst->t, T_TGEOMPOINT);
       pfree(DatumGetPointer(value));
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,

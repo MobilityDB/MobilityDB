@@ -165,6 +165,8 @@ extern Datum fill_opcache(PG_FUNCTION_ARGS);
 extern Oid temptypid_basetypid(Oid temptypid);
 extern CachedType temptypid_basetype(Oid temptypid);
 extern Oid basetypid_temptypid(Oid basetypid);
+extern CachedType basetypid_temptype(Oid basetypid);
+extern CachedType temptype_basetype(CachedType temptype);
 extern Oid basetype_temptypid(CachedType basetype);
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);

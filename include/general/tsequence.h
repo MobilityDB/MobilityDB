@@ -108,8 +108,8 @@ extern TSequence *tsequence_read(StringInfo buf, Oid basetypid);
 
 /* Constructor functions */
 
-extern TSequence *tsequence_from_base_internal(Datum value, CachedType basetype,
-  const Period *p, bool linear);
+extern TSequence *tsequence_from_base_internal(Datum value,
+  CachedType temptype, const Period *p, bool linear);
 
 extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
 

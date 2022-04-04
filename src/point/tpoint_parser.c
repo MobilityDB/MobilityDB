@@ -250,7 +250,7 @@ tpointinst_parse(char **str, Oid basetypid, bool end, bool make, int *tpoint_sri
   TimestampTz t = timestamp_parse(str);
   ensure_end_input(str, end);
   TInstant *result = make ?
-    tinstant_make(PointerGetDatum(gs), t, oid_type(basetypid)) : NULL;
+    tinstant_make(PointerGetDatum(gs), t, basetypid_temptype(basetypid)) : NULL;
   pfree(gs);
   return result;
 }

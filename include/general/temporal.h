@@ -275,7 +275,7 @@ struct tempsubtype_struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         basetype;     /**< base type */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   /* variable-length data follows, if any */
 } Temporal;
@@ -286,7 +286,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         basetype;     /**< base type */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   TimestampTz   t;            /**< timestamp (8 bytes) */
   /* variable-length data follows */
@@ -298,7 +298,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         basetype;     /**< base type */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   int32         count;        /**< number of TInstant elements */
   int16         bboxsize;     /**< size of the bounding box */
@@ -311,11 +311,11 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         basetype;     /**< base type */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   int32         count;        /**< number of TInstant elements */
-  Period        period;       /**< time span (24 bytes) */
   int16         bboxsize;     /**< size of the bounding box */
+  Period        period;       /**< time span (24 bytes) */
   /**< beginning of variable-length data */
 } TSequence;
 
@@ -325,7 +325,7 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         basetype;     /**< base type */
+  int16         temptype;     /**< temporal type */
   int16         flags;        /**< flags */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */

@@ -609,8 +609,9 @@ aggstate_write(SkipList *state, StringInfo buf)
   else /* state->elemtype == TEMPORAL */
   {
     Oid basetypid = InvalidOid;
+    Temporal *temp = (Temporal *) values[0];
     if (state->length > 0)
-      basetypid = type_oid(((Temporal *) values[0])->basetype);
+      basetypid = type_oid(temptype_basetype(temp->temptype));
     pq_sendint32(buf, basetypid);
     for (i = 0; i < state->length; i ++)
     {

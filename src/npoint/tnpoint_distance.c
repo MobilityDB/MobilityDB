@@ -200,7 +200,7 @@ NAI_tnpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
   Datum value;
   bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, resultgeom->t, temp->basetype);
+  TInstant *result = tinstant_make(value, resultgeom->t, temp->temptype);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   return result;
 }
@@ -266,7 +266,7 @@ NAI_tnpoint_npoint_internal(FunctionCallInfo fcinfo, Temporal *temp,
   Datum value;
   bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, resultgeom->t, temp->basetype);
+  TInstant *result = tinstant_make(value, resultgeom->t, temp->temptype);
   pfree(tempgeom); pfree(resultgeom); pfree(DatumGetPointer(value));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -323,7 +323,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     Datum value;
     bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->basetype);
+    result = tinstant_make(value, min->t, temp1->temptype);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   PG_FREE_IF_COPY(temp1, 0);

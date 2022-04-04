@@ -52,7 +52,7 @@
 extern Datum *tinstant_value_ptr(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
 extern Datum tinstant_value_copy(const TInstant *inst);
-extern TInstant *tinstant_make(Datum value, TimestampTz t, CachedType basetype);
+extern TInstant *tinstant_make(Datum value, TimestampTz t, CachedType temptype);
 extern TInstant *tinstant_copy(const TInstant *inst);
 extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
 

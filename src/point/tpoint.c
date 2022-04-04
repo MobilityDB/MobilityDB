@@ -410,9 +410,9 @@ tpointinst_constructor(PG_FUNCTION_ARGS)
   ensure_non_empty(gs);
   ensure_has_not_M_gs(gs);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   Temporal *result = (Temporal *) tinstant_make(PointerGetDatum(gs), t,
-    basetype);
+    temptype);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_POINTER(result);
 }

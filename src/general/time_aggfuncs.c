@@ -447,7 +447,7 @@ timestampset_transform_tcount(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    result[i] = tinstant_make(datum_one, t, T_INT4);
+    result[i] = tinstant_make(datum_one, t, T_TINT);
   }
   return result;
 }
@@ -462,7 +462,7 @@ period_transform_tcount(const Period *p)
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, p->lower, T_INT4);
+  instants[0] = tinstant_make(datum_one, p->lower, T_TINT);
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1,
@@ -470,7 +470,7 @@ period_transform_tcount(const Period *p)
   }
   else
   {
-    instants[1] = tinstant_make(datum_one, p->upper, T_INT4);
+    instants[1] = tinstant_make(datum_one, p->upper, T_TINT);
     result = tsequence_make((const TInstant **) instants, 2,
       p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[1]);

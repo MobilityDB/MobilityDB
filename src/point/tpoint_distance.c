@@ -393,8 +393,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) distance_fn(temp->flags);
   lfinfo.numparam = 0;
-  lfinfo.argtype[0] = lfinfo.argtype[1] = temp->basetype;
-  lfinfo.restype = T_FLOAT8;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
@@ -462,7 +462,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
   lfinfo.numparam = 0;
-  lfinfo.restype = T_FLOAT8;
+  lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
@@ -716,7 +716,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   Datum value;
   bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, seq->basetype);
+  TInstant *result = tinstant_make(value, t, seq->temptype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -747,7 +747,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
   Datum value;
   bool found = tsequenceset_value_at_timestamp_inc(ts, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, ts->basetype);
+  TInstant *result = tinstant_make(value, t, ts->temptype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -844,7 +844,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     Datum value;
     bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->basetype);
+    result = tinstant_make(value, min->t, temp1->temptype);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   PG_FREE_IF_COPY(temp1, 0);

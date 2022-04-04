@@ -168,9 +168,9 @@ number_bucket(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   Datum size = PG_GETARG_DATUM(1);
   Datum origin = PG_GETARG_DATUM(2);
-  CachedType type = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  ensure_positive_datum(size, type);
-  Datum result = number_bucket_internal(value, size, origin, type);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
+  ensure_positive_datum(size, basetype);
+  Datum result = number_bucket_internal(value, size, origin, basetype);
   PG_RETURN_DATUM(result);
 }
 
@@ -263,11 +263,11 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
  * @param[in] type Type of the arguments
  */
 static RangeType *
-range_bucket_get(Datum value, Datum size, CachedType type)
+range_bucket_get(Datum value, Datum size, CachedType basetype)
 {
   Datum lower = value;
-  Datum upper = datum_add(value, size, type, type);
-  return range_make(lower, upper, true, false, type);
+  Datum upper = datum_add(value, size, basetype, basetype);
+  return range_make(lower, upper, true, false, basetype);
 }
 
 /**
@@ -742,7 +742,7 @@ tsequence_time_split1(const TSequence *seq, TimestampTz start, TimestampTz end,
           /* The last two values of sequences with step interpolation and
            * exclusive upper bound must be equal */
           Datum value = tinstant_value(instants[k - 1]);
-          tofree[l] = tinstant_make(value, upper, seq->basetype);
+          tofree[l] = tinstant_make(value, upper, seq->temptype);
         }
         instants[k++] = tofree[l++];
       }
@@ -1289,7 +1289,7 @@ tnumberinst_value_split(const TInstant *inst, Datum start_bucket, Datum size,
   Datum **buckets, int *newcount)
 {
   Datum value = tinstant_value(inst);
-  CachedType basetype = inst->basetype;
+  CachedType basetype = temptype_basetype(inst->temptype);
   TInstant **result = palloc(sizeof(TInstant *));
   Datum *values = palloc(sizeof(Datum));
   result[0] = tinstant_copy(inst);
@@ -1315,7 +1315,7 @@ static TInstantSet **
 tnumberinstset_value_split(const TInstantSet *ti, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  CachedType basetype = ti->basetype;
+  CachedType basetype = temptype_basetype(ti->temptype);
   TInstantSet **result;
   Datum *values, value, bucket_value;
 
@@ -1385,7 +1385,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(! MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  CachedType basetype = seq->basetype;
+  CachedType basetype = temptype_basetype(seq->temptype);
   Datum value, bucket_value;
   int bucket_no, seq_no;
 
@@ -1418,7 +1418,7 @@ tnumberseq_step_value_split(TSequence **result, int *numseqs, int numcols,
     int k = 1;
     if (i < seq->count)
     {
-      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, basetype);
+      tofree[l++] = bounds[1] = tinstant_make(value, inst2->t, seq->temptype);
       k++;
     }
     result[bucket_no * numcols + seq_no] = tsequence_make((const TInstant **) bounds,
@@ -1461,7 +1461,7 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
   const TSequence *seq, Datum start_bucket, Datum size, int count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  CachedType basetype = seq->basetype;
+  CachedType basetype = temptype_basetype(seq->temptype);
   Datum value1, bucket_value1;
   int bucket_no1, seq_no;
 
@@ -1542,8 +1542,8 @@ tnumberseq_linear_value_split(TSequence **result, int *numseqs, int numcols,
         tlinearsegm_intersection_value(inst1, inst2, bucket_upper, basetype,
           &projvalue, &t);
         tofree[l++] = bounds[last] =  RANGE_ROUNDOFF ?
-          tinstant_make(bucket_upper, t, basetype) :
-          tinstant_make(projvalue, t, basetype);
+          tinstant_make(bucket_upper, t, seq->temptype) :
+          tinstant_make(projvalue, t, seq->temptype);
       }
       else
         bounds[last] = incr ? (TInstant *) inst2 : (TInstant *) inst1;
@@ -1610,7 +1610,7 @@ static TSequenceSet **
 tnumberseq_value_split(const TSequence *seq, Datum start_bucket, Datum size,
   int count, Datum **buckets, int *newcount)
 {
-  CachedType basetype = seq->basetype;
+  CachedType basetype = temptype_basetype(seq->temptype);
   /* Instantaneous sequence */
   if (seq->count == 1)
   {
@@ -1677,7 +1677,7 @@ tnumberseqset_value_split(const TSequenceSet *ts, Datum start_bucket, Datum size
       count, buckets, newcount);
 
   /* General case */
-  CachedType basetype = ts->basetype;
+  CachedType basetype = temptype_basetype(ts->temptype);
   TSequence **bucketseqs = palloc(sizeof(TSequence *) * ts->totalcount * count);
   /* palloc0 to initialize the counters to 0 */
   int *numseqs = palloc0(sizeof(int) * count);
@@ -1761,7 +1761,7 @@ Datum tnumber_value_split(PG_FUNCTION_ARGS)
     Datum origin = PG_GETARG_DATUM(2);
 
     /* Ensure parameter validity */
-    CachedType basetype = temp->basetype;
+    CachedType basetype = temptype_basetype(temp->temptype);
     ensure_positive_datum(size, basetype);
 
     /* Initialize the FuncCallContext */
@@ -1897,7 +1897,7 @@ Datum tnumber_value_time_split(PG_FUNCTION_ARGS)
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
 
     /* Ensure parameter validity */
-    CachedType basetype = temp->basetype;
+    CachedType basetype = temptype_basetype(temp->temptype);
     ensure_positive_datum(size, basetype);
     ensure_valid_duration(duration);
     int64 tunits = get_interval_units(duration);

@@ -107,7 +107,7 @@ extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
 extern Datum tsequenceset_from_base(PG_FUNCTION_ARGS);
 
 extern TSequenceSet *tsequenceset_from_base_internal(Datum value,
-  CachedType basetype, const PeriodSet *ps, bool linear);
+  CachedType temptype, const PeriodSet *ps, bool linear);
 
 /* Transformation functions */
 

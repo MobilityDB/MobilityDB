@@ -52,14 +52,16 @@
 /* Temporal/base types tests */
 
 extern bool temporal_type(CachedType temptype);
+extern void ensure_temporal_type(CachedType temptype);
 extern void ensure_temporal_basetype(CachedType basetype);
 extern bool basetype_continuous(CachedType basetype);
-extern void ensure_basetype_continuous(CachedType basetype);
+extern void ensure_temptype_continuous(CachedType temptype);
 extern bool basetype_byvalue(CachedType basetype);
 extern int16 basetype_length(CachedType basetype);
 extern bool talpha_type(CachedType temptype);
 extern bool talpha_basetype(CachedType basetype);
 extern bool tnumber_type(CachedType temptype);
+extern void ensure_tnumber_type(CachedType temptype);
 extern bool tnumber_basetype(CachedType basetype);
 extern void ensure_tnumber_basetype(CachedType basetype);
 extern bool tnumber_rangetype(CachedType rangetype);
@@ -67,8 +69,8 @@ extern void ensure_tnumber_rangetype(CachedType rangetype);
 extern bool tspatial_type(CachedType temptype);
 extern bool tspatial_basetype(CachedType basetype);
 extern bool tgeo_basetype(CachedType basetype);
-extern void ensure_tgeo_basetype(CachedType basetype);
 extern bool tgeo_type(CachedType basetype);
+extern void ensure_tgeo_type(CachedType basetype);
 
 /* Oid functions */
 
