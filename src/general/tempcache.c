@@ -417,6 +417,26 @@ temptypid_basetypid(Oid temptypid)
 }
 
 /**
+ * Returns the temporal type from the Oid of the base type
+ */
+CachedType
+basetypid_temptype(Oid basetypid)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].basetypid == basetypid)
+      return i;
+    /* If there are no more temporal types in the array */
+    if (_temptype_cache[i].temptypid == InvalidOid)
+      break;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", basetypid);
+}
+
+/**
  * Returns the temporal type from the base type
  */
 CachedType
