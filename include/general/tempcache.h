@@ -50,41 +50,36 @@
  */
 typedef enum
 {
-  /* Temporal types */
-  T_TBOOL,
-  T_TINT,
-  T_TFLOAT,
-  T_TTEXT,
-  T_TGEOMPOINT,
-  T_TGEOGPOINT,
-  T_TNPOINT,
-  T_TDOUBLE2,
-  T_TDOUBLE3,
-  T_TDOUBLE4,
-  /* Base types */
   T_BOOL,
-  T_INT4,
-  T_FLOAT8,
-  T_TEXT,
-  T_GEOMETRY,
-  T_GEOGRAPHY,
-  T_NPOINT,
   T_DOUBLE2,
   T_DOUBLE3,
   T_DOUBLE4,
-  /* Time types */
-  T_TIMESTAMPTZ,
-  T_TIMESTAMPSET,
+  T_FLOAT8,
+  T_FLOATRANGE,
+  T_INT4,
+  T_INTRANGE,
   T_PERIOD,
   T_PERIODSET,
-  /* Box types */
-  T_TBOX,
   T_STBOX,
-  /* Other types needed for the selectivity of the operators */
-  T_FLOATRANGE,
-  T_INTRANGE,
+  T_TBOOL,
+  T_TBOX,
+  T_TDOUBLE2,
+  T_TDOUBLE3,
+  T_TDOUBLE4,
+  T_TEXT,
+  T_TFLOAT,
+  T_TIMESTAMPSET,
+  T_TIMESTAMPTZ,
+  T_TINT,
   T_TSTZRANGE,
+  T_TTEXT,
+  T_GEOMETRY,
+  T_GEOGRAPHY,
+  T_TGEOMPOINT,
+  T_TGEOGPOINT,
+  T_NPOINT,
   T_NSEGMENT,
+  T_TNPOINT,
 } CachedType;
 
 /**
@@ -134,6 +129,7 @@ typedef struct
 {
   Oid temptypid;          /**< Oid of the temporal type */
   char *temptypname;      /**< Name of the temporal type */
+  CachedType temptype;    /**< Enum value of the temporal type */
   Oid basetypid;          /**< Oid of the base type */
   char *basetypname;      /**< Name of the base type */
   CachedType basetype;    /**< Enum value of the base type */
@@ -168,7 +164,6 @@ extern CachedType temptype_basetype(CachedType temptype);
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
 extern CachedType oid_type(Oid typid);
-extern CachedType typname_type(char *typname);
 
 #endif /* TEMPCACHE_H */
 

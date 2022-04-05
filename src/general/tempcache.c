@@ -70,41 +70,36 @@
  */
 const char *_type_names[] =
 {
-  /* Temporal types */
-  [T_TBOOL] = "tbool",
-  [T_TINT] = "tint",
-  [T_TFLOAT] = "tfloat",
-  [T_TTEXT] = "ttext",
-  [T_TGEOMPOINT] = "tgeompoint",
-  [T_TGEOGPOINT] = "tgeogpoint",
-  [T_TNPOINT] = "tnpoint",
-  [T_TDOUBLE2] = "tdouble2",
-  [T_TDOUBLE3] = "tdouble3",
-  [T_TDOUBLE4] = "tdouble4",
-  /* Base types */
   [T_BOOL] = "bool",
-  [T_INT4] = "int4",
-  [T_FLOAT8] = "float8",
-  [T_TEXT] = "text",
-  [T_GEOMETRY] = "geometry",
-  [T_GEOGRAPHY] = "geography",
-  [T_NPOINT] = "npoint",
   [T_DOUBLE2] = "double2",
   [T_DOUBLE3] = "double3",
   [T_DOUBLE4] = "double4",
-  /* Time types */
-  [T_TIMESTAMPTZ] = "timestamptz",
-  [T_TIMESTAMPSET] = "timestampset",
+  [T_FLOAT8] = "float8",
+  [T_FLOATRANGE] = "floatrange",
+  [T_INT4] = "int4",
+  [T_INTRANGE] = "intrange",
   [T_PERIOD] = "period",
   [T_PERIODSET] = "periodset",
-  /* Box types */
-  [T_TBOX] = "tbox",
   [T_STBOX] = "stbox",
-  /* Other types needed for the selectivity of the operators */
-  [T_FLOATRANGE] = "floatrange",
-  [T_INTRANGE] = "intrange",
+  [T_TBOOL] = "tbool",
+  [T_TBOX] = "tbox",
+  [T_TDOUBLE2] = "tdouble2",
+  [T_TDOUBLE3] = "tdouble3",
+  [T_TDOUBLE4] = "tdouble4",
+  [T_TEXT] = "text",
+  [T_TFLOAT] = "tfloat",
+  [T_TIMESTAMPSET] = "timestampset",
+  [T_TIMESTAMPTZ] = "timestamptz",
+  [T_TINT] = "tint",
   [T_TSTZRANGE] = "tstzrange",
+  [T_TTEXT] = "ttext",
+  [T_GEOMETRY] = "geometry",
+  [T_GEOGRAPHY] = "geography",
+  [T_TGEOMPOINT] = "tgeompoint",
+  [T_TGEOGPOINT] = "tgeogpoint",
+  [T_NPOINT] = "npoint",
   [T_NSEGMENT] = "nsegment",
+  [T_TNPOINT] = "tnpoint"
 };
 
 /**
@@ -151,8 +146,8 @@ const char *_op_names[] =
  *****************************************************************************/
 
 /**
- * Global variable that states whether the type and operator caches
- * has been initialized.
+ * Global variable that states whether the temporal type cache has been
+ * initialized.
  */
 bool _temptype_cache_ready = false;
 
@@ -163,10 +158,10 @@ bool _temptype_cache_ready = false;
 static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
 
 /**
- * Global variable that states whether the type and operator caches
+ * Global variable that states whether the type and operator Oid caches
  * has been initialized.
  */
-bool _ready = false;
+bool _oid_cache_ready = false;
 
 /**
  * Global array that keeps the Oids of the types used in MobilityDB.
@@ -188,6 +183,25 @@ Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
 /*****************************************************************************
  * Functions populating the Oid cache
  *****************************************************************************/
+
+/**
+ * Fetch from the cache the enum value of a type name
+ *
+ * @arg[in] typname Type name
+ * @note This function is used for populating the temptype cache
+ */
+static CachedType
+typname_type(char *typname)
+{
+  int n = sizeof(_type_names) / sizeof(char *);
+  for (int i = 0; i < n; i++)
+  {
+    if (strcmp(_type_names[i], typname) == 0)
+      return i;
+  }
+  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
+    errmsg("Unknown type name %s", typname)));
+}
 
 /**
  * Populate the Oid cache for temporal types
@@ -222,32 +236,33 @@ populate_temptype_cache()
     HeapScanDesc scan = heap_beginscan_catalog(rel, 0, &scandata);
 #endif
     HeapTuple tuple = heap_getnext(scan, ForwardScanDirection);
+    int i = 0;
     while (HeapTupleIsValid(tuple))
     {
       bool isnull = false;
-      temptype_cache_struct temptype;
-      memset(&temptype, 0, sizeof(temptype));
       /* All the following attributes are declared as NOT NULL in the table */
-      temptype.temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
-      temptype.temptypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 2, tupDesc, &isnull)));
-      temptype.basetypid = DatumGetObjectId(heap_getattr(tuple, 3, tupDesc, &isnull));
-      temptype.basetypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 4, tupDesc, &isnull)));
-      temptype.basetype = typname_type(temptype.basetypname);
-      temptype.basetyplen = DatumGetInt16(heap_getattr(tuple, 5, tupDesc, &isnull));
-      temptype.basebyval = DatumGetObjectId(heap_getattr(tuple, 6, tupDesc, &isnull));
-      temptype.basecont = DatumGetObjectId(heap_getattr(tuple, 7, tupDesc, &isnull));
+      _temptype_cache[i].temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
+      _temptype_cache[i].temptypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 2, tupDesc, &isnull)));
+      _temptype_cache[i].temptype = typname_type(_temptype_cache[i].temptypname);
+      _temptype_cache[i].basetypid = DatumGetObjectId(heap_getattr(tuple, 3, tupDesc, &isnull));
+      _temptype_cache[i].basetypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 4, tupDesc, &isnull)));
+      _temptype_cache[i].basetype = typname_type(_temptype_cache[i].basetypname);
+      _temptype_cache[i].basetyplen = DatumGetInt16(heap_getattr(tuple, 5, tupDesc, &isnull));
+      _temptype_cache[i].basebyval = DatumGetObjectId(heap_getattr(tuple, 6, tupDesc, &isnull));
+      _temptype_cache[i].basecont = DatumGetObjectId(heap_getattr(tuple, 7, tupDesc, &isnull));
       /* The box type attributes may be null or zero for internal types such as doubleN */
-      temptype.boxtypid = InvalidOid;
-      temptype.boxtypname = "";
-      temptype.boxtyplen = 0;
-      temptype.boxtypid = DatumGetObjectId(heap_getattr(tuple, 8, tupDesc, &isnull));
+      _temptype_cache[i].boxtypid = InvalidOid;
+      _temptype_cache[i].boxtypname = "";
+      _temptype_cache[i].boxtyplen = 0;
+      _temptype_cache[i].boxtypid = DatumGetObjectId(heap_getattr(tuple, 8, tupDesc, &isnull));
       if (! isnull)
       {
-        temptype.boxtypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 9, tupDesc, &isnull)));
-        temptype.boxtyplen = DatumGetInt16(heap_getattr(tuple, 10, tupDesc, &isnull));
+        _temptype_cache[i].boxtypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 9, tupDesc, &isnull)));
+        _temptype_cache[i].boxtyplen = DatumGetInt16(heap_getattr(tuple, 10, tupDesc, &isnull));
       }
-      CachedType i = typname_type(temptype.temptypname);
-      _temptype_cache[i] = temptype;
+      i++;
+      if (i == TEMPTYPE_CACHE_MAX_LEN)
+        elog(ERROR, "Cache for temporal types consumed, consider increasing TEMPORAL_TYPE_CACHE_MAX_LEN");
       tuple = heap_getnext(scan, ForwardScanDirection);
     }
     heap_endscan(scan);
@@ -271,7 +286,7 @@ populate_temptype_cache()
  * Populate the Oid cache for types
  */
 static void
-populate_types()
+populate_typeoid_cache()
 {
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
@@ -288,7 +303,7 @@ populate_types()
  * Populate the Oid cache for operators
  */
 static void
-populate_operators()
+populate_operoid_cache()
 {
   // elog(NOTICE, "populate operators");
   Oid namespaceId = LookupNamespaceNoError("public") ;
@@ -298,7 +313,7 @@ populate_operators()
 
   PG_TRY();
   {
-    populate_types();
+    populate_typeoid_cache();
     memset(_op_oids, 0, sizeof(_op_oids));
     /*
      * This fetches the pre-computed operator cache from the catalog where
@@ -334,7 +349,7 @@ populate_operators()
     table_close(rel, AccessShareLock);
 #endif
     PopOverrideSearchPath();
-    _ready = true;
+    _oid_cache_ready = true;
   }
   PG_CATCH();
   {
@@ -363,7 +378,7 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
   bool isnull[] = {false, false, false, false};
   Datum data[] = {0, 0, 0, 0};
 
-  populate_types();
+  populate_typeoid_cache();
   int32 m = sizeof(_op_names) / sizeof(char *);
   int32 n = sizeof(_type_names) / sizeof(char *);
   for (int32 i = 0; i < m; i++)
@@ -408,9 +423,6 @@ temptypid_basetypid(Oid temptypid)
   {
     if (_temptype_cache[i].temptypid == temptypid)
       return _temptype_cache[i].basetypid;
-    /* If there are no more temporal types in the array */
-    if (_temptype_cache[i].temptypid == InvalidOid)
-      break;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a temporal type", temptypid);
@@ -427,10 +439,7 @@ basetypid_temptype(Oid basetypid)
   for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
   {
     if (_temptype_cache[i].basetypid == basetypid)
-      return i;
-    /* If there are no more temporal types in the array */
-    if (_temptype_cache[i].temptypid == InvalidOid)
-      break;
+      return _temptype_cache[i].temptype;
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a temporal type", basetypid);
@@ -444,7 +453,13 @@ temptype_basetype(CachedType temptype)
 {
   if (!_temptype_cache_ready)
     populate_temptype_cache();
-  return _temptype_cache[temptype].basetype;
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptype == temptype)
+      return _temptype_cache[i].basetype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptype);
 }
 
 /**
@@ -455,8 +470,8 @@ temptype_basetype(CachedType temptype)
 Oid
 type_oid(CachedType type)
 {
-  if (!_ready)
-    populate_operators();
+  if (!_oid_cache_ready)
+    populate_operoid_cache();
   return _type_oids[type];
 }
 
@@ -470,8 +485,8 @@ type_oid(CachedType type)
 Oid
 oper_oid(CachedOp oper, CachedType lt, CachedType rt)
 {
-  if (!_ready)
-    populate_operators();
+  if (!_oid_cache_ready)
+    populate_operoid_cache();
   return _op_oids[oper][lt][rt];
 }
 
@@ -485,8 +500,8 @@ oper_oid(CachedOp oper, CachedType lt, CachedType rt)
 CachedType
 oid_type(Oid typid)
 {
-  if (!_ready)
-    populate_operators();
+  if (!_oid_cache_ready)
+    populate_operoid_cache();
   int n = sizeof(_type_names) / sizeof(char *);
   for (int i = 0; i < n; i++)
   {
@@ -495,26 +510,6 @@ oid_type(Oid typid)
   }
   ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
     errmsg("Unknown type Oid %d", typid)));
-}
-
-/**
- * Fetch from the cache the enum value of a type name
- *
- * @arg[in] typname Type name
- */
-CachedType
-typname_type(char *typname)
-{
-  if (!_ready)
-    populate_operators();
-  int n = sizeof(_type_names) / sizeof(char *);
-  for (int i = 0; i < n; i++)
-  {
-    if (strcmp(_type_names[i], typname) == 0)
-      return i;
-  }
-  ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-    errmsg("Unknown type name %s", typname)));
 }
 
 /*****************************************************************************/
