@@ -927,15 +927,14 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
 {
   bool hasz = MOBDB_FLAGS_GET_Z(state->box.flags);
   bool hast = (state->tunits > 0);
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     tpointinst_set_tiles(bm, (TInstant *) temp, hasz, hast, state);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     tpointinstset_set_tiles(bm, (TInstantSet *) temp, hasz, hast, state);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     tpointseq_set_tiles(bm, (TSequence *) temp, hasz, hast, state);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     tpointseqset_set_tiles(bm, (TSequenceSet *) temp, hasz, hast, state);
   return;
 }

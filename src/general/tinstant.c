@@ -147,9 +147,9 @@ tinstant_make(Datum value, TimestampTz t, CachedType temptype)
   memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
   result->temptype = temptype;
+  result->subtype = INSTANT;
   result->t = t;
   SET_VARSIZE(result, size);
-  MOBDB_FLAGS_SET_SUBTYPE(result->flags, INSTANT);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
   bool continuous = basetype_continuous(basetype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);

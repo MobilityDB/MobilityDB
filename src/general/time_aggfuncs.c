@@ -496,11 +496,10 @@ periodset_transform_tcount(const PeriodSet *ps)
 }
 
 static void
-ensure_same_timetype_skiplist(SkipList *state, int16 subtype)
+ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
-  int16 skiplist_subtype = MOBDB_FLAGS_GET_SUBTYPE(head->flags);
-  if (skiplist_subtype != subtype)
+  if (head->subtype != subtype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different type")));
   return;

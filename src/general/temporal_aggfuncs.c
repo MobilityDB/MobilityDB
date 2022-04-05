@@ -427,12 +427,11 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  *****************************************************************************/
 
 void
-ensure_same_tempsubtype_skiplist(SkipList *state, int16 subtype,
-  Temporal *temp)
+ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp,
+  uint8 subtype)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
-  if (state->elemtype != TEMPORAL ||
-      MOBDB_FLAGS_GET_SUBTYPE(head->flags) != subtype)
+  if (state->elemtype != TEMPORAL || head->subtype != subtype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different type")));
   if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
@@ -460,7 +459,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &inst, 1, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, INSTANT, (Temporal *) inst);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) inst, INSTANT);
     skiplist_splice(fcinfo, state, (void **) &inst, 1, func, false);
     result = state;
   }
@@ -487,7 +486,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) instants, ti->count, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, INSTANT, (Temporal *) ti);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) ti, INSTANT);
     skiplist_splice(fcinfo, state, (void **) instants, ti->count, func, false);
     result = state;
   }
@@ -514,7 +513,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, SEQUENCE, (Temporal *) seq);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) seq, SEQUENCE);
     skiplist_splice(fcinfo, state, (void **) &seq, 1, func, crossings);
     result = state;
   }
@@ -541,7 +540,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **)sequences, ts->count, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, SEQUENCE, (Temporal *) ts);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) ts, SEQUENCE);
     skiplist_splice(fcinfo, state, (void **) sequences, ts->count, func, crossings);
     result = state;
   }
@@ -575,18 +574,17 @@ temporal_tagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   }
 
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
+  ensure_valid_tempsubtype(temp->subtype);
   SkipList *result;
-  if (subtype == INSTANT)
+  if (temp->subtype == INSTANT)
     result =  tinstant_tagg_transfn(fcinfo, state, (TInstant *) temp, func);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result =  tinstantset_tagg_transfn(fcinfo, state, (TInstantSet *) temp,
       func);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result =  tsequence_tagg_transfn(fcinfo, state, (TSequence *) temp,
       func, crossings);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_tagg_transfn(fcinfo, state, (TSequenceSet *) temp,
       func, crossings);
   PG_FREE_IF_COPY(temp, 1);
@@ -613,8 +611,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
     return state1;
 
   Temporal *head2 = (Temporal *) skiplist_headval(state2);
-  ensure_same_tempsubtype_skiplist(state1,
-    MOBDB_FLAGS_GET_SUBTYPE(head2->flags), head2);
+  ensure_same_tempsubtype_skiplist(state1, head2, head2->subtype);
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
@@ -659,12 +656,11 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 
   Temporal **values = (Temporal **) skiplist_values(state);
   Temporal *result = NULL;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(values[0]->flags);
-  assert(subtype == INSTANT || subtype == SEQUENCE);
-  if (subtype == INSTANT)
+  assert(values[0]->subtype == INSTANT || values[0]->subtype == SEQUENCE);
+  if (values[0]->subtype == INSTANT)
     result = (Temporal *) tinstantset_make((const TInstant **)values,
       state->length, MERGE_NO);
-  else /* subtype == SEQUENCE */
+  else /* values[0]->subtype == SEQUENCE */
     result = (Temporal *) tsequenceset_make((const TSequence **)values,
       state->length, NORMALIZE);
   pfree(values);
@@ -736,27 +732,26 @@ temporal_transform_tagg(const Temporal *temp, int *count,
   TInstant *(*func)(const TInstant *))
 {
   Temporal **result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  if (subtype == INSTANT)
+  if (temp->subtype == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)func((TInstant *) temp);
     *count = 1;
   }
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
   {
     result = (Temporal **) tinstantset_transform_tagg((
       TInstantSet *) temp, func);
     *count = ((TInstantSet *) temp)->count;
   }
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *) tsequence_transform_tagg(
       (TSequence *) temp, func);
     *count = 1;
   }
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     result = (Temporal **) tsequenceset_transform_tagg(
       (TSequenceSet *) temp, func);
@@ -796,8 +791,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (state)
   {
-    ensure_same_tempsubtype_skiplist(state,
-      MOBDB_FLAGS_GET_SUBTYPE(temparr[0]->flags), temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0], temparr[0]->subtype);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, crossings);
   }
   else
@@ -891,25 +885,24 @@ static Temporal **
 temporal_transform_tcount(const Temporal *temp, int *count)
 {
   Temporal **result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  if (subtype == INSTANT)
+  if (temp->subtype == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *) tinstant_transform_tcount((TInstant *) temp);
     *count = 1;
   }
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
   {
     result = (Temporal **) tinstantset_transform_tcount((TInstantSet *) temp);
     *count = ((TInstantSet *) temp)->count;
   }
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *) tsequence_transform_tcount((TSequence *) temp);
     *count = 1;
   }
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     result = (Temporal **) tsequenceset_transform_tcount((TSequenceSet *) temp);
     *count = ((TSequenceSet *) temp)->count;
@@ -940,8 +933,7 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (state)
   {
-    ensure_same_tempsubtype_skiplist(state,
-      MOBDB_FLAGS_GET_SUBTYPE(temparr[0]->flags), temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0], temparr[0]->subtype);
     skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32, false);
   }
   else
@@ -1392,9 +1384,8 @@ tnumber_tavg_finalfn(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Temporal **values = (Temporal **) skiplist_values(state);
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(values[0]->flags);
-  assert(subtype == INSTANT || subtype == SEQUENCE);
-  Temporal *result = (subtype == INSTANT) ?
+  assert(values[0]->subtype == INSTANT || values[0]->subtype == SEQUENCE);
+  Temporal *result = (values[0]->subtype == INSTANT) ?
     (Temporal *) tinstant_tavg_finalfn((TInstant **)values, state->length) :
     (Temporal *) tsequence_tavg_finalfn((TSequence **)values, state->length);
   pfree(values);

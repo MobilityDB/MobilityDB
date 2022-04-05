@@ -397,10 +397,10 @@ tsequence_make1(const TInstant **instants, int count, bool lower_inc,
   SET_VARSIZE(result, memsize);
   result->count = newcount;
   result->temptype = instants[0]->temptype;
+  result->subtype = SEQUENCE;
   result->bboxsize = bboxsize;
   period_set(norminsts[0]->t, norminsts[newcount - 1]->t, lower_inc, upper_inc,
     &result->period);
-  MOBDB_FLAGS_SET_SUBTYPE(result->flags, SEQUENCE);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags,
     MOBDB_FLAGS_GET_CONTINUOUS(norminsts[0]->flags));
   MOBDB_FLAGS_SET_LINEAR(result->flags, linear);

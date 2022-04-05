@@ -505,18 +505,17 @@ disjoint_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, GS_FLAGS(gs));
   bool result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = disjoint_tpointinst_geo((TInstant *) temp,
       PointerGetDatum(gs), func);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = disjoint_tpointinstset_geo((TInstantSet *) temp,
       PointerGetDatum(gs), func);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = disjoint_tpointseq_geo((TSequence *) temp,
       PointerGetDatum(gs), func);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = disjoint_tpointseqset_geo((TSequenceSet *) temp,
       PointerGetDatum(gs), func);
   return result;
@@ -913,18 +912,17 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 
   datum_func3 func = get_dwithin_fn(temp1->flags, temp2->flags);
   bool result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(sync1->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(sync1->subtype);
+  if (sync1->subtype == INSTANT)
     result = dwithin_tpointinst_tpointinst(
       (TInstant *) sync1, (TInstant *) sync2, dist, func);
-  else if (subtype == INSTANTSET)
+  else if (sync1->subtype == INSTANTSET)
     result = dwithin_tpointinstset_tpointinstset(
       (TInstantSet *) sync1, (TInstantSet *) sync2, dist, func);
-  else if (subtype == SEQUENCE)
+  else if (sync1->subtype == SEQUENCE)
     result = dwithin_tpointseq_tpointseq(
       (TSequence *) sync1, (TSequence *) sync2, dist, func);
-  else /* subtype == SEQUENCESET */
+  else /* sync1->subtype == SEQUENCESET */
     result = dwithin_tpointseqset_tpointseqset(
       (TSequenceSet *) sync1, (TSequenceSet *) sync2, dist, func);
 

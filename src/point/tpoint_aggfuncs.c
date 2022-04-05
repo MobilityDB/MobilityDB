@@ -179,25 +179,25 @@ Temporal **
 tpoint_transform_tcentroid(const Temporal *temp, int *count)
 {
   Temporal **result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointinst_transform_tcentroid((TInstant *)temp);
     *count = 1;
   }
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
   {
     result = (Temporal **)tpointinstset_transform_tcentroid((TInstantSet *) temp);
     *count = ((TInstantSet *)temp)->count;
   }
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
   {
     result = palloc(sizeof(Temporal *));
     result[0] = (Temporal *)tpointseq_transform_tcentroid((TSequence *) temp);
     *count = 1;
   }
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
   {
     result = (Temporal **)tpointseqset_transform_tcentroid((TSequenceSet *) temp);
     *count = ((TSequenceSet *)temp)->count;
@@ -303,8 +303,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = tpoint_transform_tcentroid(temp, &count);
   if (state)
   {
-    ensure_same_tempsubtype_skiplist(state,
-      MOBDB_FLAGS_GET_SUBTYPE(temparr[0]->flags), temparr[0]); // ??
+    ensure_same_tempsubtype_skiplist(state, temparr[0], temparr[0]->subtype); // ??
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, false);
   }
   else
@@ -451,12 +450,11 @@ tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
   Temporal **values = (Temporal **) skiplist_values(state);
   int32_t srid = ((struct GeoAggregateState *) state->extra)->srid;
   Temporal *result = NULL;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(values[0]->flags);
-  assert(subtype == INSTANT || subtype == SEQUENCE);
-  if (subtype == INSTANT)
+  assert(values[0]->subtype == INSTANT || values[0]->subtype == SEQUENCE);
+  if (values[0]->subtype == INSTANT)
     result = (Temporal *)tpointinst_tcentroid_finalfn(
       (TInstant **)values, state->length, srid);
-  else /* subtype == SEQUENCE */
+  else /* values[0]->subtype == SEQUENCE */
     result = (Temporal *)tpointseq_tcentroid_finalfn(
       (TSequence **)values, state->length, srid);
 

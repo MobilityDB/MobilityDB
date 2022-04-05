@@ -153,15 +153,14 @@ Temporal *
 tnpoint_tgeompoint(const Temporal *temp)
 {
   Temporal *result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *)tnpointinst_tgeompointinst((TInstant *) temp);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *)tnpointinstset_tgeompointinstset((TInstantSet *) temp);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *)tnpointseq_tgeompointseq((TSequence *) temp);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)tnpointseqset_tgeompointseqset((TSequenceSet *) temp);
   return result;
 }
@@ -276,15 +275,14 @@ static Temporal *
 tgeompoint_tnpoint(Temporal *temp)
 {
   Temporal *result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tgeompointinstset_tnpointinstset((TInstantSet *) temp);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tgeompointseq_tnpointseq((TSequence *) temp);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   return result;
 }
@@ -497,18 +495,17 @@ static nsegment **
 tnpoint_positions_internal(const Temporal *temp, int *count)
 {
   nsegment **result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
   {
     result = tnpointinst_positions((TInstant *) temp);
     *count = 1;
   }
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tnpointinstset_positions((TInstantSet *) temp, count);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tnpointseq_positions((TSequence *) temp, count);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tnpointseqset_positions((TSequenceSet *) temp, count);
   return result;
 }
@@ -541,12 +538,11 @@ PGDLLEXPORT Datum
 tnpoint_route(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  if (subtype != INSTANT && subtype != SEQUENCE)
+  if (temp->subtype != INSTANT && temp->subtype != SEQUENCE)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Input must be a temporal instant or a temporal sequence")));
 
-  const TInstant *inst = (subtype == INSTANT) ?
+  const TInstant *inst = (temp->subtype == INSTANT) ?
     (TInstant *) temp : tsequence_inst_n((TSequence *) temp, 0);
   npoint *np = DatumGetNpoint(tinstant_value(inst));
   int64 result = np->rid;
@@ -623,15 +619,14 @@ tnpoint_routes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tnpointinst_routes((TInstant *) temp);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tnpointinstset_routes((TInstantSet *) temp);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tnpointseq_routes((TSequence *) temp);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tnpointseqset_routes((TSequenceSet *) temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);

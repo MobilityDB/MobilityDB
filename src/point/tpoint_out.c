@@ -110,15 +110,14 @@ static char *
 tpoint_as_text_internal1(const Temporal *temp)
 {
   char *result;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     result = tinstant_to_string((TInstant *) temp, &wkt_out);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     result = tinstantset_to_string((TInstantSet *) temp, &wkt_out);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     result = tsequence_to_string((TSequence *) temp, false, &wkt_out);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_to_string((TSequenceSet *) temp, &wkt_out);
   return result;
 }
@@ -764,15 +763,14 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
   }
 
   char *mfjson;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     mfjson = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     mfjson = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     mfjson = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     mfjson = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
   text *result = cstring_to_text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
@@ -1077,15 +1075,14 @@ static size_t
 tpoint_to_wkb_size(const Temporal *temp, uint8_t variant)
 {
   size_t size = 0;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     size = tpointinst_to_wkb_size((TInstant *) temp, variant);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     size = tpointinstset_to_wkb_size((TInstantSet *) temp, variant);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     size = tpointseq_to_wkb_size((TSequence *) temp, variant);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     size = tpointseqset_to_wkb_size((TSequenceSet *) temp, variant);
   return size;
 }
@@ -1110,7 +1107,7 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
     wkb_flags |= MOBDB_WKB_SRIDFLAG;
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     wkb_flags |= MOBDB_WKB_LINEAR_INTERP;
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
+  uint8 subtype = temp->subtype;
   if (variant & WKB_HEX)
   {
     buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
@@ -1312,15 +1309,14 @@ tpointseqset_to_wkb_buf(const TSequenceSet *ts, uint8_t *buf, uint8_t variant)
 static uint8_t *
 tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 {
-  int16 subtype = MOBDB_FLAGS_GET_SUBTYPE(temp->flags);
-  ensure_valid_tempsubtype(subtype);
-  if (subtype == INSTANT)
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
     return tpointinst_to_wkb_buf((TInstant *) temp, buf, variant);
-  else if (subtype == INSTANTSET)
+  else if (temp->subtype == INSTANTSET)
     return tpointinstset_to_wkb_buf((TInstantSet *) temp, buf, variant);
-  else if (subtype == SEQUENCE)
+  else if (temp->subtype == SEQUENCE)
     return tpointseq_to_wkb_buf((TSequence *) temp, buf, variant);
-  else /* subtype == SEQUENCESET */
+  else /* temp->subtype == SEQUENCESET */
     return tpointseqset_to_wkb_buf((TSequenceSet *) temp, buf, variant);
 }
 
