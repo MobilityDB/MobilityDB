@@ -96,11 +96,12 @@
 #include "general/tnumber_spgist.h"
 
 /* PostgreSQL */
+#include <assert.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-#include <utils/float.h>
 #include <access/spgist_private.h>
+#include <utils/float.h>
 #endif
 #include <utils/timestamp.h>
 /* MobilityDB */
@@ -115,8 +116,8 @@
  *****************************************************************************/
 
 /**
- * Structure to represent the bounding box of a temporal number as a
- * 4-dimensiononal point
+ * Structure to represent the bounding box of an inner node containing a set
+ * of temporal boxes
  */
 typedef struct
 {
@@ -130,7 +131,25 @@ typedef struct
  *****************************************************************************/
 
 /**
- * Copy a RectBox
+ * Initialize the traversal value
+ *
+ * In the beginning, we don't have any restrictions.  We have to
+ * initialize the struct to cover the whole 4D space.
+ */
+static void
+initRectBox(RectBox *rect_box)
+{
+  double infinity = get_float8_infinity();
+  memset(rect_box, 0, sizeof(RectBox));
+  rect_box->left.xmin = rect_box->right.xmin = -infinity;
+  rect_box->left.xmax = rect_box->right.xmax = infinity;
+  rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
+  rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
+  return;
+}
+
+/**
+ * Copy a traversal value
  */
 RectBox *
 rectbox_copy(const RectBox *box)
@@ -182,24 +201,6 @@ getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
     quadrant |= 0x1;
 
   return quadrant;
-}
-
-/**
- * Initialize the traversal value
- *
- * In the beginning, we don't have any restrictions.  We have to
- * initialize the struct to cover the whole 4D space.
- */
-static void
-initRectBox(RectBox *rect_box)
-{
-  double infinity = get_float8_infinity();
-  memset(rect_box, 0, sizeof(RectBox));
-  rect_box->left.xmin = rect_box->right.xmin = -infinity;
-  rect_box->left.xmax = rect_box->right.xmax = infinity;
-  rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
-  rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
-  return;
 }
 
 /**
@@ -356,15 +357,19 @@ overAfter4D(const RectBox *rect_box, const TBOX *query)
 static double
 distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
 {
-  double dx;
+  /* If the boxes do not intersect in the time dimension return infinity */
+  bool hast = MOBDB_FLAGS_GET_T(query->flags);
+  if (hast && (query->tmin > rect_box->right.tmax ||
+      rect_box->left.tmin > query->tmax))
+    return DBL_MAX;
 
+  double dx;
   if (query->xmax < rect_box->left.xmin)
     dx = rect_box->left.xmin - query->xmax;
   else if (query->xmin > rect_box->right.xmax)
     dx = query->xmin - rect_box->right.xmax;
   else
     dx = 0;
-
   return dx;
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
@@ -490,7 +495,6 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     TBOX *box = DatumGetTboxP(in->datums[i]);
-
     lowXs[i] = box->xmin;
     highXs[i] = box->xmax;
     lowTs[i] = (double) box->tmin;
@@ -505,7 +509,6 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   median = in->nTuples / 2;
 
   centroid = (TBOX *) palloc0(sizeof(TBOX));
-
   centroid->xmin = lowXs[median];
   centroid->xmax = highXs[median];
   centroid->tmin = (TimestampTz) lowTs[median];
@@ -514,10 +517,8 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = PointerGetDatum(centroid);
-
   out->nNodes = 16;
   out->nodeLabels = NULL;    /* We don't need node labels. */
-
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
@@ -529,7 +530,6 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   {
     TBOX *box = DatumGetTboxP(in->datums[i]);
     uint8 quadrant = getQuadrant4D(centroid, box);
-
     out->leafTupleDatums[i] = PointerGetDatum(box);
     out->mapTuplesToNodes[i] = quadrant;
   }
@@ -554,10 +554,14 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
+  uint8 quadrant;
   MemoryContext old_ctx;
   RectBox *rect_box, infbox, next_rect_box;
-  uint8 quadrant;
-  TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries, *orderbys;
+  TBOX *centroid, *queries, *orderbys;
+
+  /* Fetch the centroid of this node. */
+  assert(in->hasPrefix);
+  centroid = DatumGetTboxP(in->prefixDatum);
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -575,7 +579,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   /*
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
-   * This transformation is done here to avoid doing it for all octants
+   * This transformation is done here to avoid doing it for all quadrants
    * in the loop below.
    */
   if (in->norderbys > 0)
@@ -634,11 +638,12 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
     out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   /* Loop for every node */
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)
   {
+    /* Compute the bounding box of the child */
     nextRectBox(rect_box, centroid, quadrant, &next_rect_box);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
@@ -700,13 +705,13 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
       {
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
-        for (int j = 0; j < in->norderbys; j++)
-          distances[j] = distanceBoxRectBox(&orderbys[j], &next_rect_box);
+        for (i = 0; i < in->norderbys; i++)
+          distances[i] = distanceBoxRectBox(&orderbys[i], &next_rect_box);
       }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
-  }
+  } /* Loop for every child */
 
   if (in->nkeys > 0)
     pfree(queries);
@@ -750,10 +755,10 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     TBOX query;
 
-    if (tnumber_spgist_get_tbox(&in->scankeys[i], &query))
-      result = tbox_index_consistent_leaf(key, &query, strategy);
-    else
-      result = false;
+    /* Cast the query to a box and perform the test */
+    tnumber_spgist_get_tbox(&in->scankeys[i], &query);
+    result = tbox_index_consistent_leaf(key, &query, strategy);
+
     /* If any check is failed, we have found our answer. */
     if (! result)
       break;

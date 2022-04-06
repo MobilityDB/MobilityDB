@@ -95,6 +95,7 @@
 #include "point/tpoint_spgist.h"
 
 /* PostgreSQL */
+#include <assert.h>
 #include <float.h>
 #include <access/spgist.h>
 #include <utils/builtins.h>
@@ -478,17 +479,12 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
   /* The query argument can be an empty geometry */
   if (! MOBDB_FLAGS_GET_X(query->flags))
       return DBL_MAX;
-  bool hast = MOBDB_FLAGS_GET_T(query->flags) &&
-     MOBDB_FLAGS_GET_T(cube_box->left.flags);
-  Period p1, p2, inter;
-  /* Project the boxes to their common timespan */
-  if (hast)
-  {
-    period_set(query->tmin, query->tmax, true, true, &p1);
-    period_set(cube_box->left.tmin, cube_box->right.tmax, true, true, &p2);
-    if (! inter_period_period(&p1, &p2, &inter))
-      return DBL_MAX;
-  }
+
+  /* If the boxes do not intersect in the time dimension return infinity */
+  bool hast = MOBDB_FLAGS_GET_T(query->flags);
+  if (hast && (query->tmin > cube_box->right.tmax ||
+      cube_box->left.tmin > query->tmax))
+    return DBL_MAX;
 
   double dx, dy, dz;
   if (query->xmax < cube_box->left.xmin)
@@ -652,7 +648,6 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     box = DatumGetSTboxP(in->datums[i]);
-
     lowXs[i] = box->xmin;
     highXs[i] = box->xmax;
     lowYs[i] = box->ymin;
@@ -695,10 +690,8 @@ stbox_spgist_picksplit(PG_FUNCTION_ARGS)
   /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
-
   out->nNodes = hasz ? 256 : 128;
   out->nodeLabels = NULL;    /* We don't need node labels. */
-
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
@@ -742,7 +735,11 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   CubeSTbox *cube_box, infbox, next_cube_box;
   uint16 octant;
-  STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries, *orderbys;
+  STBOX *centroid, *queries, *orderbys;
+
+  /* Fetch the centroid of this node. */
+  assert(in->hasPrefix);
+  centroid = DatumGetSTboxP(in->prefixDatum);
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if

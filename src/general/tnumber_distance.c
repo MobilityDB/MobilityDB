@@ -282,7 +282,7 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
   if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
-      return DBL_MAX;
+    return DBL_MAX;
 
   /* If the boxes intersect in the value dimension return 0 */
   if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)

@@ -164,6 +164,58 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
+ * Compare the lower bound of two periods, returning <0, 0, or >0 according to
+ * whether a's bound is less than, equal to, or greater than b's bound.
+ * 
+ * @note This function does the same as period_bound_cmp but avoids
+ * deserializing the periods into lower and upper bounds
+ */
+int
+period_lower_cmp(const Period *a, const Period *b)
+{
+  int result = timestamp_cmp_internal(a->lower, b->lower);
+  if (result == 0)
+  {
+    if (a->lower_inc == b->lower_inc)
+      /* both are inclusive or exclusive */
+      return 0;
+    else if (a->lower_inc)
+      /* first is inclusive and second is exclusive */
+      return 1;
+    else
+      /* first is exclusive and second is inclusive */
+      return -1;
+  }
+  return result;
+}
+
+/**
+ * Compare the upper bound of two periods, returning <0, 0, or >0 according to
+ * whether a's bound is less than, equal to, or greater than b's bound.
+ * 
+ * @note This function does the same as period_bound_cmp but avoids
+ * deserializing the periods into lower and upper bounds
+ */
+int
+period_upper_cmp(const Period *a, const Period *b)
+{
+  int result = timestamp_cmp_internal(a->upper, b->upper);
+  if (result == 0)
+  {
+    if (a->upper_inc == b->upper_inc)
+      /* both are inclusive or exclusive */
+      return 0;
+    else if (a->upper_inc)
+      /* first is inclusive and second is exclusive */
+      return 1;
+    else
+      /* first is exclusive and second is inclusive */
+      return -1;
+  }
+  return result;
+}
+
+/**
  * Construct a period from the bounds
  */
 Period *

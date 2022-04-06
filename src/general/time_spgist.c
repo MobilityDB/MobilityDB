@@ -43,6 +43,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/timetypes.h"
+#include "general/timeops.h"
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -51,326 +52,96 @@
 #include "general/tempcache.h"
 
 /*****************************************************************************
- * SP-GiST config function
+ * Data structures
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_spgist_config);
 /**
- * SP-GiST config function for time types
+ * Structure to represent the bounding box of an inner node containing a set
+ * of periods
  */
-PGDLLEXPORT Datum
-period_spgist_config(PG_FUNCTION_ARGS)
+typedef struct
 {
-  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-
-  cfg->prefixType = type_oid(T_PERIOD);
-  cfg->labelType = VOIDOID;  /* We don't need node labels. */
-  cfg->leafType = type_oid(T_PERIOD);
-  cfg->canReturnData = false;
-  cfg->longValuesOK = false;
-
-  PG_RETURN_VOID();
-}
+  Period left;
+  Period right;
+} PeriodNode;
 
 /*****************************************************************************
- * SP-GiST choose functions
+ * General functions
  *****************************************************************************/
 
 /**
- * Determine which quadrant a 2D-mapped period falls into, relative to the
- * centroid.
+ * Initialize the traversal value
  *
- * Quadrants are numbered as follows:
- * @code
- *  4  |  1
- * ----+----
- *  3  |  2
- * @endcode
- * where the lower bound of period is the horizontal axis and upper bound the
- * vertical axis.
- *
- * Periods on one of the axes are taken to lie in the quadrant with higher value
- * along perpendicular axis. That is, a value on the horizontal axis is taken
- * to belong to quadrant 1 or 4, and a value on the vertical axis is taken to
- * belong to quadrant 1 or 2. A period equal to centroid is taken to lie in
- * quadrant 1.
+ * In the beginning, we don't have any restrictions.  We have to
+ * initialize the struct to cover the whole 2D space.
  */
-int16
-getQuadrant(const Period *centroid, const Period *tst)
+static void
+periodnode_init(PeriodNode *nodebox)
 {
-  PeriodBound centroidLower, centroidUpper, lower, upper;
-  period_deserialize(centroid, &centroidLower, &centroidUpper);
-  period_deserialize(tst, &lower, &upper);
+  memset(nodebox, 0, sizeof(PeriodNode));
+  nodebox->left.lower = nodebox->left.upper = DT_NOBEGIN;
+  nodebox->right.lower = nodebox->right.upper = DT_NOEND;
+  return;
+}
 
-  if (period_bound_cmp(&lower, &centroidLower) >= 0)
+/**
+ * Copy a traversal value
+ */
+PeriodNode *
+periodnode_copy(const PeriodNode *orig)
+{
+  PeriodNode *result = palloc(sizeof(PeriodNode));
+  memcpy(result, orig, sizeof(PeriodNode));
+  return result;
+}
+
+/**
+ * Compute the next traversal value for a quadtree given the bounding box
+ * and the centroid of the current node and the quadrant number (0 to 3).
+ *
+ * For example, given the bounding box of the root node (level 0) and
+ * the centroid as follows 
+ *     nodebox = (-infinity, -infinity)(infinity, infinity) 
+ *     centroid = (2001-06-13 18:10:00+02, 2001-06-13 18:11:00+02)
+ * the quadrants are as follows 
+ *     0 = (-infinity, 2001-06-13 18:10:00)(infinity, 2001-06-13 18:11:00)
+ *     1 = (-infinity, 2001-06-13 18:10:00)(2001-06-13 18:11:00, infinity)
+ *     2 = (2001-06-13 18:10:00, -infinity)(infinity, 2001-06-13 18:11:00)
+ *     3 = (2001-06-13 18:10:00, -infinity)(2001-06-13 18:11:00, infinity)
+ */
+static void
+periodnode_quadtree_next(const PeriodNode *nodebox, const Period *centroid,
+  uint8 quadrant, PeriodNode *next_nodebox)
+{
+  memcpy(next_nodebox, nodebox, sizeof(PeriodNode));
+  if (quadrant & 0x2)
   {
-    if (period_bound_cmp(&upper, &centroidUpper) >= 0)
-      return 1;
-    else
-      return 2;
+    next_nodebox->left.lower = centroid->lower;
+    next_nodebox->left.lower_inc = centroid->lower_inc;
   }
   else
   {
-    if (period_bound_cmp(&upper, &centroidUpper) >= 0)
-      return 4;
-    else
-      return 3;
+    next_nodebox->left.upper = centroid->lower;
+    next_nodebox->left.upper_inc = centroid->lower_inc;
   }
-}
-
-PG_FUNCTION_INFO_V1(period_spgist_choose);
-/**
- * SP-GiST choose function for time types
- */
-PGDLLEXPORT Datum
-period_spgist_choose(PG_FUNCTION_ARGS)
-{
-  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
-  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
-  Period *period = DatumGetPeriodP(in->leafDatum),
-    *centroid;
-  int16 quadrant;
-
-  if (in->allTheSame)
+  if (quadrant & 0x1)
   {
-    out->resultType = spgMatchNode;
-    /* nodeN will be set by core */
-    out->result.matchNode.levelAdd = 0;
-    out->result.matchNode.restDatum = PeriodPGetDatum(period);
-    PG_RETURN_VOID();
-  }
-
-  centroid = DatumGetPeriodP(in->prefixDatum);
-  quadrant = getQuadrant(centroid, period);
-
-  assert(quadrant <= in->nNodes);
-
-  /* Select node matching to quadrant number */
-  out->resultType = spgMatchNode;
-  out->result.matchNode.nodeN = quadrant - 1;
-  out->result.matchNode.levelAdd = 1;
-  out->result.matchNode.restDatum = PeriodPGetDatum(period);
-
-  PG_RETURN_VOID();
-}
-
-/*****************************************************************************
- * SP-GiST pick-split function
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(period_spgist_picksplit);
-/**
- * SP-GiST pick-split function for time types
- *
- * It splits a list of time types into quadrants by choosing a central 4D
- * point as the median of the coordinates of the time types.
- */
-PGDLLEXPORT Datum
-period_spgist_picksplit(PG_FUNCTION_ARGS)
-{
-  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
-  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
-  Period *centroid;
-  int median, i;
-  /* Use the median values of lower and upper bounds as the centroid period */
-  PeriodBound *lowerBounds = palloc(sizeof(PeriodBound) * in->nTuples),
-    *upperBounds = palloc(sizeof(PeriodBound) * in->nTuples);
-
-  /* Construct "centroid" period from medians of lower and upper bounds */
-  for (i = 0; i < in->nTuples; i++)
-    period_deserialize(DatumGetPeriodP(in->datums[i]),
-      &lowerBounds[i], &upperBounds[i]);
-
-  qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
-  qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
-
-  median = in->nTuples / 2;
-
-  centroid = period_make(lowerBounds[median].t, upperBounds[median].t,
-    lowerBounds[median].inclusive, upperBounds[median].inclusive);
-
-  /* Fill the output */
-  out->hasPrefix = true;
-  out->prefixDatum = PeriodPGetDatum(centroid);
-
-  out->nNodes = 4;
-  out->nodeLabels = NULL;    /* we don't need node labels */
-
-  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
-  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
-
-  /*
-   * Assign periods to corresponding nodes according to quadrants relative to
-   * "centroid" period.
-   */
-  for (i = 0; i < in->nTuples; i++)
-  {
-    Period *period = DatumGetPeriodP(in->datums[i]);
-    int16 quadrant = getQuadrant(centroid, period);
-
-    out->leafTupleDatums[i] = PeriodPGetDatum(period);
-    out->mapTuplesToNodes[i] = quadrant - 1;
-  }
-
-  pfree(lowerBounds); pfree(upperBounds);
-
-  PG_RETURN_VOID();
-}
-
-/*****************************************************************************
- * SP-GiST inner consistent functions
- *****************************************************************************/
-
-/**
- * Check if two bounds A and B are adjacent, where A is an upper bound and B
- * is a lower bound.
- */
-bool
-period_bounds_adjacent(const PeriodBound *boundA, const PeriodBound *boundB)
-{
-  assert(!boundA->lower && boundB->lower);
-  return timestamp_cmp_internal(boundA->t, boundB->t) == 0 &&
-    boundA->inclusive != boundB->inclusive;
-}
-
-/**
- * Given an argument and centroid bound, this function determines if any
- * bounds that are adjacent to the argument are smaller than, or greater than
- * or equal to centroid. For brevity, we call the arg < centroid "left", and
- * arg >= centroid case "right". This corresponds to how the quadrants are
- * arranged, if you imagine that "left" is equivalent to "down" and "right"
- * is equivalent to "up".
- *
- * For the "left" case, returns -1, and for the "right" case, returns 1.
- */
-static int
-adjacent_cmp_bounds(const PeriodBound *arg, const PeriodBound *centroid)
-{
-  int cmp;
-
-  assert(arg->lower != centroid->lower);
-
-  cmp = period_bound_cmp(arg, centroid);
-
-  if (centroid->lower)
-  {
-    /*------
-     * The argument is an upper bound, we are searching for adjacent lower
-     * bounds. A matching adjacent lower bound must be *larger* than the
-     * argument, but only just.
-     *
-     * The following table illustrates the desired result with a fixed
-     * argument bound, and different centroids. The CMP column shows
-     * the value of 'cmp' variable, and ADJ shows whether the argument
-     * and centroid are adjacent, per bounds_adjacent(). (N) means we
-     * don't need to check for that case, because it's implied by CMP.
-     * With the argument range [..., 500), the adjacent range we're
-     * searching for is [500, ...):
-     *
-     *  ARGUMENT   CENTROID    CMP   ADJ
-     *  [..., 500) [498, ...)   >    (N)  [500, ...) is to the right
-     *  [..., 500) [499, ...)   =    (N)  [500, ...) is to the right
-     *  [..., 500) [500, ...)   <     Y  [500, ...) is to the right
-     *  [..., 500) [501, ...)   <     N  [500, ...) is to the left
-     *
-     * So, we must search left when the argument is smaller than, and not
-     * adjacent, to the centroid. Otherwise search right.
-     *------
-     */
-    if (cmp < 0 && ! period_bounds_adjacent(arg, centroid))
-      return -1;
-    else
-      return 1;
+    next_nodebox->right.lower = centroid->upper;
+    next_nodebox->right.lower_inc = centroid->upper_inc;
   }
   else
   {
-    /*------
-     * The argument is a lower bound, we are searching for adjacent upper
-     * bounds. A matching adjacent upper bound must be *smaller* than the
-     * argument, but only just.
-     *
-     *  ARGUMENT   CENTROID    CMP   ADJ
-     *  [500, ...) [..., 499)   >    (N)  [..., 500) is to the right
-     *  [500, ...) [..., 500)   >    (Y)  [..., 500) is to the right
-     *  [500, ...) [..., 501)   =    (N)  [..., 500) is to the left
-     *  [500, ...) [..., 502)   <    (N)  [..., 500) is to the left
-     *
-     * We must search left when the argument is smaller than or equal to
-     * the centroid. Otherwise search right. We don't need to check
-     * whether the argument is adjacent with the centroid, because it
-     * doesn't matter.
-     *------
-     */
-    if (cmp <= 0)
-      return -1;
-    else
-      return 1;
+    next_nodebox->right.upper = centroid->upper;
+    next_nodebox->right.upper_inc = centroid->upper_inc;
   }
-}
-
-/**
- * Like adjacent_cmp_bounds, but also takes into account the previous
- * level's centroid. We might've traversed left (or right) at the previous
- * node, in search for ranges adjacent to the other bound, even though we
- * already ruled out the possibility for any matches in that direction for
- * this bound. By comparing the argument with the previous centroid, and
- * the previous centroid with the current centroid, we can determine which
- * direction we should've moved in at previous level, and which direction we
- * actually moved.
- *
- * If there can be any matches to the left, returns -1. If to the right,
- * returns 1. If there can be no matches below this centroid, because we
- * already ruled them out at the previous level, returns 0.
- *
- * XXX: Comparing just the previous and current level isn't foolproof; we
- * might still search some branches unnecessarily. For example, imagine that
- * we are searching for value 15, and we traverse the following centroids
- * (only considering one bound for the moment):
- *
- * Level 1: 20
- * Level 2: 50
- * Level 3: 25
- *
- * At this point, previous centroid is 50, current centroid is 25, and the
- * target value is to the left. But because we already moved right from
- * centroid 20 to 50 in the first level, there cannot be any values < 20 in
- * the current branch. But we don't know that just by looking at the previous
- * and current centroid, so we traverse left, unnecessarily. The reason we are
- * down this branch is that we're searching for matches with the *other*
- * bound. If we kept track of which bound we are searching for explicitly,
- * instead of deducing that from the previous and current centroid, we could
- * avoid some unnecessary work.
- */
-static int
-adjacent_inner_consistent(PeriodBound *arg, PeriodBound *centroid,
-  PeriodBound *prev)
-{
-  if (prev)
-  {
-    int prevcmp, cmp;
-
-    /*
-     * Which direction were we supposed to traverse at previous level,
-     * left or right?
-     */
-    prevcmp = adjacent_cmp_bounds(arg, prev);
-
-    /* and which direction did we actually go? */
-    cmp = period_bound_cmp(centroid, prev);
-
-    /* if the two don't agree, there's nothing to see here */
-    if ((prevcmp < 0 && cmp >= 0) || (prevcmp > 0 && cmp < 0))
-      return 0;
-  }
-
-  return adjacent_cmp_bounds(arg, centroid);
+  return;
 }
 
 /**
  * Transform a query argument into a period.
  */
 static bool
-time_spgist_get_period(Period *result, ScanKeyData *scankey)
+time_spgist_get_period(const ScanKeyData *scankey, Period *result)
 {
   CachedType type = oid_type(scankey->sk_subtype);
   if (type == T_TIMESTAMPTZ)
@@ -401,6 +172,194 @@ time_spgist_get_period(Period *result, ScanKeyData *scankey)
   return true;
 }
 
+/**
+ * Calculate the quadrant
+ *
+ * The quadrant is 8 bit unsigned integer with 2 least bits in use.
+ * This function accepts Periods as input. The 2 bits are set by comparing
+ * a corner of the box. This makes 4 quadrants in total.
+ */
+static uint8
+getQuadrant2D(const Period *centroid, const Period *query)
+{
+  uint8 quadrant = 0;
+  if (period_lower_cmp(query, centroid) > 0)
+    quadrant |= 0x2;
+  if (period_upper_cmp(query, centroid) > 0)
+    quadrant |= 0x1;
+  return quadrant;
+}
+
+/**
+ * Can any period from nodebox overlap with this argument?
+ */
+static bool
+overlap2D(const PeriodNode *nodebox, const Period *query)
+{
+  Period p;
+  period_set(nodebox->left.lower, nodebox->right.upper,
+    nodebox->left.lower_inc, nodebox->right.upper_inc, &p);
+  return overlaps_period_period_internal(&p, query);
+}
+
+/**
+ * Can any period from nodebox contain the query?
+ */
+static bool
+contain2D(const PeriodNode *nodebox, const Period *query)
+{
+  Period p;
+  period_set(nodebox->left.lower, nodebox->right.upper,
+    nodebox->left.lower_inc, nodebox->right.upper_inc, &p);
+  return contains_period_period_internal(&p, query);
+}
+
+/**
+ * Can any period from nodebox be before the query?
+ */
+static bool
+before2D(const PeriodNode *nodebox, const Period *query)
+{
+  return before_period_period_internal(&nodebox->right, query);
+}
+
+/**
+ * Can any period from nodebox does not extend after the query?
+ */
+static bool
+overBefore2D(const PeriodNode *nodebox, const Period *query)
+{
+  return overbefore_period_period_internal(&nodebox->right, query);
+}
+
+/**
+ * Can any period from nodebox be after the query?
+ */
+static bool
+after2D(const PeriodNode *nodebox, const Period *query)
+{
+  return after_period_period_internal(&nodebox->left, query);
+}
+
+/**
+ * Can any period from nodebox does not extend before the query?
+ */
+static bool
+overAfter2D(const PeriodNode *nodebox, const Period *query)
+{
+  return overafter_period_period_internal(&nodebox->left, query);
+}
+
+/*****************************************************************************
+ * SP-GiST config function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(period_spgist_config);
+/**
+ * SP-GiST config function for time types
+ */
+PGDLLEXPORT Datum
+period_spgist_config(PG_FUNCTION_ARGS)
+{
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  cfg->prefixType = type_oid(T_PERIOD);  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;  /* We don't need node labels. */
+  cfg->leafType = type_oid(T_PERIOD);
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * SP-GiST choose functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(period_spgist_choose);
+/**
+ * SP-GiST choose function for time types
+ */
+PGDLLEXPORT Datum
+period_spgist_choose(PG_FUNCTION_ARGS)
+{
+  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
+  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  Period *centroid = DatumGetPeriodP(in->prefixDatum),
+    *period = DatumGetPeriodP(in->leafDatum);
+
+  out->resultType = spgMatchNode;
+  out->result.matchNode.restDatum = PointerGetDatum(period);
+
+  /* nodeN will be set by core, when allTheSame. */
+  if (!in->allTheSame)
+    out->result.matchNode.nodeN = getQuadrant2D(centroid, period);
+
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * SP-GiST pick-split function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(period_spgist_picksplit);
+/**
+ * SP-GiST pick-split function for time types
+ *
+ * It splits a list of time types into quadrants by choosing a central 4D
+ * point as the median of the coordinates of the time types.
+ */
+PGDLLEXPORT Datum
+period_spgist_picksplit(PG_FUNCTION_ARGS)
+{
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  Period *centroid;
+  int median, i;
+  /* Use the median values of lower and upper bounds as the centroid period */
+  PeriodBound *lowerBounds = palloc(sizeof(PeriodBound) * in->nTuples);
+  PeriodBound *upperBounds = palloc(sizeof(PeriodBound) * in->nTuples);
+
+  /* Construct "centroid" period from medians of lower and upper bounds */
+  for (i = 0; i < in->nTuples; i++)
+    period_deserialize(DatumGetPeriodP(in->datums[i]),
+      &lowerBounds[i], &upperBounds[i]);
+
+  qsort(lowerBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
+  qsort(upperBounds, (size_t) in->nTuples, sizeof(PeriodBound), period_bound_qsort_cmp);
+
+  median = in->nTuples / 2;
+
+  centroid = period_make(lowerBounds[median].t, upperBounds[median].t,
+    lowerBounds[median].inclusive, upperBounds[median].inclusive);
+
+  /* Fill the output */
+  out->hasPrefix = true;
+  out->prefixDatum = PeriodPGetDatum(centroid);
+  out->nNodes = 4;
+  out->nodeLabels = NULL;    /* we don't need node labels */
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+
+  /*
+   * Assign periods to corresponding nodes according to quadrants relative to
+   * "centroid" period.
+   */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    Period *period = DatumGetPeriodP(in->datums[i]);
+    int16 quadrant = getQuadrant2D(centroid, period);
+    out->leafTupleDatums[i] = PeriodPGetDatum(period);
+    out->mapTuplesToNodes[i] = quadrant;
+  }
+
+  pfree(lowerBounds); pfree(upperBounds);
+
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * SP-GiST inner consistent functions
+ *****************************************************************************/
+
 PG_FUNCTION_INFO_V1(period_spgist_inner_consistent);
 /**
  * SP-GiST inner consistent function function for time types
@@ -410,17 +369,27 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
-  int which, i;
-  Period *centroid;
-  PeriodBound centroidLower, centroidUpper;
-  MemoryContext oldCtx;
+  int i;
+  uint8 node;
+  MemoryContext old_ctx;
+  PeriodNode *nodebox, infbox, next_nodebox;
+  Period *centroid, *queries;
+
+  /* Fetch the centroid of this node. */
+  assert(in->hasPrefix);
+  centroid = DatumGetPeriodP(in->prefixDatum);
 
   /*
-   * For adjacent search we need also previous centroid (if any) to improve
-   * the precision of the consistent check. In this case needPrevious flag
-   * is set and centroid is passed into traversalValue.
+   * We are saving the traversal value or initialize it an unbounded one, if
+   * we have just begun to walk the tree.
    */
-  bool needPrevious = false;
+  if (in->traversalValue)
+    nodebox = in->traversalValue;
+  else
+  {
+    periodnode_init(&infbox);
+    nodebox = &infbox;
+  }
 
   if (in->allTheSame)
   {
@@ -428,270 +397,79 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
     out->nNodes = in->nNodes;
     out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
+    {
       out->nodeNumbers[i] = i;
+    }
+
     PG_RETURN_VOID();
   }
 
-  /* Fetch the centroid of this node. */
-  centroid = DatumGetPeriodP(in->prefixDatum);
-  period_deserialize(centroid, &centroidLower, &centroidUpper);
-
-  assert(in->nNodes == 4);
-
-  /*
-   * Nth bit of which variable means that (N - 1)th node (Nth quadrant)
-   * should be visited. Initially all bits are set. Bits of nodes which
-   * can be skipped will be unset.
-   */
-  which = (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
-
-  for (i = 0; i < in->nkeys; i++)
+  /* Transform the queries into periods */
+  if (in->nkeys > 0)
   {
-    StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Period query;
-    Period *prevCentroid = NULL;
-    PeriodBound lower, upper, prevLower, prevUpper;
-    /* Restrictions on period bounds according to scan strategy */
-    PeriodBound *minLower = NULL, *maxLower = NULL,
-      *minUpper = NULL, *maxUpper = NULL;
-
-    /* Are the restrictions on period bounds inclusive? */
-    bool inclusive = true;
-    int cmp, which1, which2;
-
-    /* Cast the query to Period for ease of the following operations */
-    time_spgist_get_period(&query, &in->scankeys[i]);
-    period_deserialize(&query, &lower, &upper);
-
-    /*
-     * Most strategies are handled by forming a bounding box from the
-     * search key, defined by a minLower, maxLower, minUpper,
-     * maxUpper. Some modify 'which' directly, to specify exactly
-     * which quadrants need to be visited.
-     */
-    switch (strategy)
-    {
-      case RTOverlapStrategyNumber:
-        /*
-         * Periods overlap, if lower bound of each period
-         * is lower or equal to upper bound of the other period.
-         */
-        maxLower = &upper;
-        minUpper = &lower;
-        break;
-
-      case RTContainsStrategyNumber:
-        /*
-         * Period A contains period B if lower
-         * bound of A is lower or equal to lower bound of period B
-         * and upper bound of period A is greater or equal to upper
-         * bound of period A.
-         */
-        which &= (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
-        maxLower = &lower;
-        minUpper = &upper;
-        break;
-
-      case RTContainedByStrategyNumber:
-        /* The opposite of contains. */
-        minLower = &lower;
-        maxUpper = &upper;
-        break;
-
-      case RTAdjacentStrategyNumber:
-        /*
-         * Previously selected quadrant could exclude possibility
-         * for lower or upper bounds to be adjacent. Deserialize
-         * previous centroid range if present for checking this.
-         */
-        if (in->traversalValue)
-        {
-          prevCentroid = DatumGetPeriodP(in->traversalValue);
-          period_deserialize(prevCentroid, &prevLower,
-            &prevUpper);
-        }
-
-        /*
-         * For a range's upper bound to be adjacent to the
-         * argument's lower bound, it will be found along the line
-         * adjacent to (and just below) Y=lower. Therefore, if the
-         * argument's lower bound is less than the centroid's
-         * upper bound, the line falls in quadrants 2 and 3; if
-         * greater, the line falls in quadrants 1 and 4. (see
-         * adjacent_cmp_bounds for description of edge cases).
-         */
-        cmp = adjacent_inner_consistent(&lower, &centroidUpper,
-          prevCentroid ? &prevUpper : NULL);
-        if (cmp > 0)
-          which1 = (1 << 1) | (1 << 4);
-        else if (cmp < 0)
-          which1 = (1 << 2) | (1 << 3);
-        else
-          which1 = 0;
-
-        /*
-         * Also search for ranges's adjacent to argument's upper
-         * bound. They will be found along the line adjacent to
-         * (and just right of) X=upper, which falls in quadrants 3
-         * and 4, or 1 and 2.
-         */
-        cmp = adjacent_inner_consistent(&upper, &centroidLower,
-          prevCentroid ? &prevLower : NULL);
-        if (cmp > 0)
-          which2 = (1 << 1) | (1 << 2);
-        else if (cmp < 0)
-          which2 = (1 << 3) | (1 << 4);
-        else
-          which2 = 0;
-
-        /* We must chase down ranges adjacent to either bound. */
-        which &= which1 | which2;
-
-        needPrevious = true;
-        break;
-
-      case RTEqualStrategyNumber:
-      case RTSameStrategyNumber:
-        /*
-         * Equal period can be only in the same quadrant where
-         * argument would be placed to.
-         */
-        which &= (1 << getQuadrant(centroid, &query));
-        break;
-
-      case RTBeforeStrategyNumber:
-        /*
-         * Period A is before period B if upper bound of A is lower
-         * than lower bound of B.
-         */
-        maxUpper = &lower;
-        inclusive = false;
-        break;
-
-      case RTOverBeforeStrategyNumber:
-        /*
-         * Period A is overbefore to period B if upper bound of A is
-         * less or equal to upper bound of B.
-         */
-        maxUpper = &upper;
-        break;
-
-      case RTAfterStrategyNumber:
-        /*
-         * Period A is after period B if lower bound of A is greater
-         * than upper bound of B.
-         */
-        minLower = &upper;
-        inclusive = false;
-        break;
-
-      case RTOverAfterStrategyNumber:
-        /*
-         * Period A is overafter to period B if lower bound of A is
-         * greater or equal to lower bound of B.
-         */
-        minLower = &lower;
-        break;
-
-      default:
-        elog(ERROR, "unrecognized strategy: %d", strategy);
-    }
-
-    /*
-     * Using the bounding box, see which quadrants we have to descend
-     * into.
-     */
-    if (minLower)
-    {
-      /*
-       * If the centroid's lower bound is less than or equal to the
-       * minimum lower bound, anything in the 3rd and 4th quadrants
-       * will have an even smaller lower bound, and thus can't
-       * match.
-       */
-      if (period_bound_cmp(&centroidLower, minLower) <= 0)
-        which &= (1 << 1) | (1 << 2);
-    }
-    if (maxLower)
-    {
-      /*
-       * If the centroid's lower bound is greater than the maximum
-       * lower bound, anything in the 1st and 2nd quadrants will
-       * also have a greater than or equal lower bound, and thus
-       * can't match. If the centroid's lower bound is equal to the
-       * maximum lower bound, we can still exclude the 1st and 2nd
-       * quadrants if we're looking for a value strictly greater
-       * than the maximum.
-       */
-      int cmp;
-
-      cmp = period_bound_cmp(&centroidLower, maxLower);
-      if (cmp > 0 || (!inclusive && cmp == 0))
-        which &= (1 << 3) | (1 << 4);
-    }
-    if (minUpper)
-    {
-      /*
-       * If the centroid's upper bound is less than or equal to the
-       * minimum upper bound, anything in the 2nd and 3rd quadrants
-       * will have an even smaller upper bound, and thus can't
-       * match.
-       */
-      if (period_bound_cmp(&centroidUpper, minUpper) <= 0)
-        which &= (1 << 1) | (1 << 4);
-    }
-    if (maxUpper)
-    {
-      /*
-       * If the centroid's upper bound is greater than the maximum
-       * upper bound, anything in the 1st and 4th quadrants will
-       * also have a greater than or equal upper bound, and thus
-       * can't match. If the centroid's upper bound is equal to the
-       * maximum upper bound, we can still exclude the 1st and 4th
-       * quadrants if we're looking for a value strictly greater
-       * than the maximum.
-       */
-      int      cmp;
-
-      cmp = period_bound_cmp(&centroidUpper, maxUpper);
-      if (cmp > 0 || (!inclusive && cmp == 0))
-        which &= (1 << 2) | (1 << 3);
-    }
-
-    if (which == 0)
-      break;      /* no need to consider remaining conditions */
+    queries = (Period *) palloc0(sizeof(Period) * in->nkeys);
+    for (i = 0; i < in->nkeys; i++)
+      time_spgist_get_period(&in->scankeys[i], &queries[i]);
   }
 
-  /* We must descend into the quadrant(s) identified by 'which' */
-  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
-  if (needPrevious)
-    out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+  /* Allocate enough memory for nodes */
   out->nNodes = 0;
+  out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
 
-  /*
-   * Elements of traversalValues should be allocated in
-   * traversalMemoryContext
-   */
-  oldCtx = MemoryContextSwitchTo(in->traversalMemoryContext);
-
-  for (i = 1; i <= in->nNodes; i++)
+  /* Loop for each child */
+  for (node = 0; node < in->nNodes; node++)
   {
-    if (which & (1 << i))
+    /* Compute the bounding box of the child */
+    periodnode_quadtree_next(nodebox, centroid, node, &next_nodebox);
+    bool flag = true;
+    for (i = 0; i < in->nkeys; i++)
     {
-      /* Save previous prefix if needed */
-      if (needPrevious)
+      StrategyNumber strategy = in->scankeys[i].sk_strategy;
+      switch (strategy)
       {
-        /* We know that in->prefixDatum in this place is a period */
-        Datum previousCentroid = PointerGetDatum(period_copy(
-          (Period *) DatumGetPointer(in->prefixDatum)));
-        out->traversalValues[out->nNodes] = (void *) previousCentroid;
+        case RTOverlapStrategyNumber:
+        case RTContainedByStrategyNumber:
+        case RTAdjacentStrategyNumber:
+          flag = overlap2D(&next_nodebox, &queries[i]);
+          break;
+        case RTContainsStrategyNumber:
+        case RTSameStrategyNumber:
+          flag = contain2D(&next_nodebox, &queries[i]);
+          break;
+        case RTBeforeStrategyNumber:
+          flag = !overAfter2D(&next_nodebox, &queries[i]);
+          break;
+        case RTOverBeforeStrategyNumber:
+          flag = !after2D(&next_nodebox, &queries[i]);
+          break;
+        case RTAfterStrategyNumber:
+          flag = !overBefore2D(&next_nodebox, &queries[i]);
+          break;
+        case RTOverAfterStrategyNumber:
+          flag = !before2D(&next_nodebox, &queries[i]);
+          break;
+        default:
+          elog(ERROR, "unrecognized strategy: %d", strategy);
       }
-      out->nodeNumbers[out->nNodes] = i - 1;
+      /* If any check is failed, we have found our answer. */
+      if (! flag)
+        break;
+    }
+
+    if (flag)
+    {
+      /* Pass traversalValue and node */
+      old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+      out->traversalValues[out->nNodes] = periodnode_copy(&next_nodebox);
+      MemoryContextSwitchTo(old_ctx);
+      out->nodeNumbers[out->nNodes] = node;
       out->nNodes++;
     }
-  }
+  } /* Loop for every child */
 
-  MemoryContextSwitchTo(oldCtx);
+  if (in->nkeys > 0)
+    pfree(queries);
 
   PG_RETURN_VOID();
 }
@@ -710,16 +488,20 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
   Period *key = DatumGetPeriodP(in->leafDatum);
-  bool res = true;
+  bool result = true;
+  int i;
 
-  /* Initialization so that all the tests are exact for time types. */
-  out->recheck = false;
+  /**
+   * Initialization so that all the tests are lossy.
+   * This will be changed below for some tests. 
+   */
+  out->recheck = true;
 
   /* leafDatum is what it is... */
   out->leafValue = in->leafDatum;
 
   /* Perform the required comparison(s) */
-  for (int i = 0; i < in->nkeys; i++)
+  for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     Period query;
@@ -727,20 +509,19 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= period_index_recheck(strategy);
 
-    /* Cast the query to Period for ease of the following operations */
-    time_spgist_get_period(&query, &in->scankeys[i]);
+    /* Cast the query to a period and perform the test */
+    time_spgist_get_period(&in->scankeys[i], &query);
+    result = period_index_consistent_leaf(key, &query, strategy);
+    /* All tests are lossy for temporal types */
     if (temporal_type(in->scankeys[i].sk_subtype))
-      /* All tests are lossy for temporal types */
       out->recheck = true;
 
-    res = period_index_consistent_leaf(key, &query, strategy);
-
     /* If any check is failed, we have found our answer. */
-    if (!res)
+    if (! result)
       break;
   }
 
-  PG_RETURN_BOOL(res);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
