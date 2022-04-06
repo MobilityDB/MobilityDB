@@ -60,5 +60,13 @@ SELECT COUNT(*) FROM tbl_tgeompoint3D_big_allthesame WHERE temp && geometry 'Poi
  12380
 (1 row)
 
+SELECT k FROM tbl_tgeompoint3D_big_allthesame ORDER BY temp |=| geometry 'Point(5 5 5)', k LIMIT 3;
+  k  
+-----
+ 121
+ 122
+ 123
+(3 rows)
+
 DROP TABLE tbl_tgeompoint3D_big_allthesame;
 DROP TABLE

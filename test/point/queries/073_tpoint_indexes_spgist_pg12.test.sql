@@ -48,13 +48,14 @@ SELECT k, round((temp |=| tgeompoint '[Point(1 1 1)@2001-06-01, Point(2 2 2)@200
 DROP INDEX tbl_tgeompoint3D_spgist_idx;
 
 -------------------------------------------------------------------------------
--- Coverage of all the same logic in SP-GiST indexes
+-- Coverage of all the same and order by logic in SP-GiST indexes
 
 CREATE TABLE tbl_tgeompoint3D_big_allthesame AS SELECT k, tgeompoint_seq(geometry 'Point(5 5 5)', p) AS temp FROM tbl_period_big;
 CREATE INDEX tbl_tgeompoint3D_big_allthesame_spgist_idx ON tbl_tgeompoint3D_big_allthesame USING SPGIST(temp);
 ANALYZE tbl_tgeompoint3D_big_allthesame;
 
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big_allthesame WHERE temp && geometry 'Point(5 5 5)';
+SELECT k FROM tbl_tgeompoint3D_big_allthesame ORDER BY temp |=| geometry 'Point(5 5 5)', k LIMIT 3;
 
 DROP TABLE tbl_tgeompoint3D_big_allthesame;
 

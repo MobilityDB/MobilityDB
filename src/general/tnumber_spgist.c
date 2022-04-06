@@ -620,14 +620,21 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   /*
    * Transform the queries into bounding boxes.
    */
-  queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
-  for (i = 0; i < in->nkeys; i++)
-    tnumber_spgist_get_tbox(&in->scankeys[i], &queries[i]);
+  if (in->nkeys > 0)
+  {
+    queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
+    for (i = 0; i < in->nkeys; i++)
+      tnumber_spgist_get_tbox(&in->scankeys[i], &queries[i]);
+  }
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+#endif
 
   /* Loop for every node */
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)
@@ -701,12 +708,11 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     }
   }
 
-  pfree(queries);
+  if (in->nkeys > 0)
+    pfree(queries);
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
-  {
     pfree(orderbys);
-  }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();

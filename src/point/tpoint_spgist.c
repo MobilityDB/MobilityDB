@@ -808,14 +808,21 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    * This transformation is done here to avoid doing it for all octants
    * in the loop below.
    */
-  queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
-  for (i = 0; i < in->nkeys; i++)
-    tpoint_spgist_get_stbox(&in->scankeys[i], &queries[i]);
+  if (in->nkeys > 0)
+  {
+    queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
+    for (i = 0; i < in->nkeys; i++)
+      tpoint_spgist_get_stbox(&in->scankeys[i], &queries[i]);
+  }
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+#endif
 
   for (octant = 0; octant < in->nNodes; octant++)
   {
@@ -913,12 +920,11 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     }
   }
 
-  pfree(queries);
+  if (in->nkeys > 0)
+    pfree(queries);
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   if (in->norderbys > 0)
-  {
     pfree(orderbys);
-  }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
