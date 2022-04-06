@@ -205,8 +205,7 @@ tinstant_make_bbox(const TInstant *inst, void *box)
     period_set(inst->t, inst->t, true, true, (Period *) box);
   else if (tnumber_type(inst->temptype))
   {
-    double dvalue = datum_double(tinstant_value(inst),
-      temptype_basetype(inst->temptype));
+    double dvalue = tnumberinst_double(inst);
     tbox_set(true, true, dvalue, dvalue, inst->t, inst->t, (TBOX *) box);
   }
   else if (tgeo_type(inst->temptype))

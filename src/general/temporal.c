@@ -4308,8 +4308,7 @@ tnumber_twavg(PG_FUNCTION_ARGS)
   double result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = datum_double(tinstant_value((TInstant *) temp),
-      temptype_basetype(temp->temptype));
+    result = tnumberinst_double((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
     result = tnumberinstset_twavg((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)

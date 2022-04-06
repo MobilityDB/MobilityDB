@@ -596,9 +596,22 @@ datum_double(Datum d, CachedType basetype)
   ensure_tnumber_basetype(basetype);
   if (basetype == T_INT4)
     return (double)(DatumGetInt32(d));
-  else if (basetype == T_FLOAT8)
+  else /* basetype == T_FLOAT8 */
     return DatumGetFloat8(d);
-  elog(ERROR, "unknown datum_double function for base type: %d", basetype);
+}
+
+/**
+ * Convert the value of temporal number instant to a double
+ */
+double
+tnumberinst_double(const TInstant *inst)
+{
+  ensure_tnumber_type(inst->temptype);
+  Datum d = tinstant_value(inst);
+  if (inst->temptype == T_TINT)
+    return (double)(DatumGetInt32(d));
+  else /* inst->temptype == T_TFLOAT */
+    return DatumGetFloat8(d);
 }
 
 /**

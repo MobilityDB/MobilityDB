@@ -260,7 +260,7 @@ timestamptz_bucket(PG_FUNCTION_ARGS)
  *
  * @param[in] value Start value of the bucket
  * @param[in] size Size of the buckets
- * @param[in] type Type of the arguments
+ * @param[in] basetype Type of the arguments
  */
 static RangeType *
 range_bucket_get(Datum value, Datum size, CachedType basetype)

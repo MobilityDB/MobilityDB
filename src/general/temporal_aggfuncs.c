@@ -1297,8 +1297,7 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 TInstant *
 tnumberinst_transform_tavg(const TInstant *inst)
 {
-  double value = datum_double(tinstant_value(inst),
-    temptype_basetype(inst->temptype));
+  double value = tnumberinst_double(inst);
   double2 dvalue;
   double2_set(value, 1, &dvalue);
   TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,

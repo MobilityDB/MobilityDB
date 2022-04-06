@@ -1165,12 +1165,10 @@ static bool
 tnumbersegm_intersection(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  CachedType basetype1 = temptype_basetype(start1->temptype);
-  CachedType basetype2 = temptype_basetype(start2->temptype);
-  double x1 = datum_double(tinstant_value(start1), basetype1);
-  double x2 = datum_double(tinstant_value(end1), basetype1);
-  double x3 = datum_double(tinstant_value(start2), basetype2);
-  double x4 = datum_double(tinstant_value(end2), basetype2);
+  double x1 = tnumberinst_double(start1);
+  double x2 = tnumberinst_double(end1);
+  double x3 = tnumberinst_double(start2);
+  double x4 = tnumberinst_double(end2);
   /* Compute the instant t at which the linear functions of the two segments
      are equal: at + b = ct + d that is t = (d - b) / (a - c).
      To reduce problems related to floating point precision, t1 and t2

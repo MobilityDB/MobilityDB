@@ -82,12 +82,10 @@ static bool
 tnumber_arithop_tp_at_timestamp1(const TInstant *start1, const TInstant *end1,
   const TInstant *start2, const TInstant *end2, TimestampTz *t)
 {
-  CachedType basetype1 = temptype_basetype(start1->temptype);
-  CachedType basetype2 = temptype_basetype(start2->temptype);
-  double x1 = datum_double(tinstant_value(start1), basetype1);
-  double x2 = datum_double(tinstant_value(end1), basetype1);
-  double x3 = datum_double(tinstant_value(start2), basetype2);
-  double x4 = datum_double(tinstant_value(end2), basetype2);
+  double x1 = tnumberinst_double(start1);
+  double x2 = tnumberinst_double(end1);
+  double x3 = tnumberinst_double(start2);
+  double x4 = tnumberinst_double(end2);
   /* Compute the instants t1 and t2 at which the linear functions of the two
    * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
    * minimum/maximum exactly at the middle between t1 and t2.

@@ -64,10 +64,7 @@
 static double
 tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 {
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  double result = fabs(datum_double(value1, temptype_basetype(inst1->temptype)) -
-    datum_double(value2, temptype_basetype(inst2->temptype)));
+  double result = fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
   return result;
 }
 
