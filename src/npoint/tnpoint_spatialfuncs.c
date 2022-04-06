@@ -371,14 +371,9 @@ tnpoint_geom(const Temporal *temp)
  * @param[in] inst1, inst2 Temporal network point instants
  */
 static Datum
-tnpointseqsegm_trajectory(const TInstant *inst1, const TInstant *inst2)
+tnpointseqsegm_trajectory(const npoint *np1, const npoint *np2)
 {
-  npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
-  npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
-  assert(np1->rid == np2->rid);
-
-  if (np1->pos == np2->pos)
-    return npoint_geom(np1);
+  assert(np1->rid == np2->rid && np1->pos != np2->pos);
 
   Datum line = route_geom(np1->rid);
   if ((np1->pos == 0 && np2->pos == 1) ||
@@ -771,8 +766,8 @@ static TInstant **
 tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   int *count)
 {
-  npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
-  npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
+  const npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
+  const npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
 
   /* Constant segment */
   if (np1->pos == np2->pos)
@@ -782,7 +777,7 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* Find all vertices in the segment */
-  Datum traj = tnpointseqsegm_trajectory(inst1, inst2);
+  Datum traj = tnpointseqsegm_trajectory(np1, np2);
   int countVertices = DatumGetInt32(call_function1(
     LWGEOM_numpoints_linestring, traj));
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
