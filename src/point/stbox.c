@@ -923,7 +923,7 @@ timestampset_stbox_slice(Datum tsdatum, STBOX *box)
   else
     ts = (TimestampSet *) tsdatum;
   timestampset_stbox(ts, box);
-  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
 
@@ -998,7 +998,7 @@ periodset_stbox_slice(Datum psdatum, STBOX *box)
   else
     ps = (PeriodSet *) psdatum;
   periodset_stbox(ps, box);
-  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 

@@ -991,17 +991,15 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  /* Project the boxes to their common timespan */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) &&
-    MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2, inter;
-  if (hast)
-  {
-    period_set(box1->tmin, box1->tmax, true, true, &p1);
-    period_set(box2->tmin, box2->tmax, true, true, &p2);
-    if (! inter_period_period(&p1, &p2, &inter))
+
+  /* If the boxes do not intersect in the time dimension return infinity */
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
       return DBL_MAX;
-  }
+
+  /* If the boxes intersect in the value dimension return 0 */
+  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
+    return 0.0;
 
   /* Select the distance function to be applied */
   bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);

@@ -278,37 +278,22 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
-  /* Project the boxes to their common timespan */
+
+  /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2, inter;
-  if (hast)
-  {
-    period_set(box1->tmin, box1->tmax, true, true, &p1);
-    period_set(box2->tmin, box2->tmax, true, true, &p2);
-    if (! inter_period_period(&p1, &p2, &inter))
+  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
       return DBL_MAX;
-  }
 
-  /* Convert the boxes to ranges */
-  RangeType *range1 = range_make(Float8GetDatum(box1->xmin),
-    Float8GetDatum(box1->xmax), true, true, T_FLOAT8);
-  RangeType *range2 = range_make(Float8GetDatum(box2->xmin),
-    Float8GetDatum(box2->xmax), true, true, T_FLOAT8);
-  TypeCacheEntry *typcache = lookup_type_cache(range1->rangetypid,
-    TYPECACHE_RANGE_INFO);
-  /* Compute the result */
-  double result;
-  if (range_overlaps_internal(typcache, range1, range2))
-    result = 0.0;
-  else if (range_before_internal(typcache, range1, range2))
-    result = box2->tmin - box1->tmax;
-  else
-    /* range_after_internal(typcache, range1, range2) */
-    result = box1->tmin - box2->tmax;
+  /* If the boxes intersect in the value dimension return 0 */
+  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
+    return 0.0;
 
-  pfree(range1); pfree(range2);
-
-  return result;
+  if (box1->xmax < box2->xmin)
+    /* box1 is to the left of box2 */
+    return box2->xmin - box1->xmax;
+  else 
+    /* box1 is to the right of box2 */
+    return box1->xmin - box2->xmax;
 }
 
 PG_FUNCTION_INFO_V1(NAD_tbox_tbox);

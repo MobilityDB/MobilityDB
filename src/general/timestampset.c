@@ -103,7 +103,7 @@ timestampset_bbox_slice(Datum tsdatum, Period *p)
   else
     ts = (TimestampSet *) tsdatum;
   timestampset_bbox(ts, p);
-  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
 

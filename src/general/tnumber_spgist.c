@@ -108,8 +108,11 @@
 #include "general/tempcache.h"
 #include "general/temporal_boxops.h"
 #include "general/tnumber_gist.h"
+#include "general/tnumber_distance.h"
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Data structures
+ *****************************************************************************/
 
 /**
  * Structure to represent the bounding box of a temporal number as a
@@ -120,6 +123,22 @@ typedef struct
   TBOX left;
   TBOX right;
 } RectBox;
+
+
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+/**
+ * Copy a RectBox
+ */
+RectBox *
+rectbox_copy(const RectBox *box)
+{
+  RectBox *result = palloc(sizeof(RectBox));
+  memcpy(result, box, sizeof(RectBox));
+  return result;
+}
 
 /**
  * Comparator for qsort
@@ -171,19 +190,16 @@ getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
  * In the beginning, we don't have any restrictions.  We have to
  * initialize the struct to cover the whole 4D space.
  */
-static RectBox *
-initRectBox(void)
+static void
+initRectBox(RectBox *rect_box)
 {
-  RectBox *rect_box = (RectBox *) palloc(sizeof(RectBox));
   double infinity = get_float8_infinity();
-
+  memset(rect_box, 0, sizeof(RectBox));
   rect_box->left.xmin = rect_box->right.xmin = -infinity;
   rect_box->left.xmax = rect_box->right.xmax = infinity;
-
   rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
   rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
-
-  return rect_box;
+  return;
 }
 
 /**
@@ -193,11 +209,10 @@ initRectBox(void)
  * boxes.  When we are traversing the tree, we must calculate RectBox,
  * using centroid and quadrant.
  */
-static RectBox *
-nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
+static void
+nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant,
+  RectBox *next_rect_box)
 {
-  RectBox *next_rect_box = (RectBox *) palloc(sizeof(RectBox));
-
   memcpy(next_rect_box, rect_box, sizeof(RectBox));
 
   if (quadrant & 0x8)
@@ -220,7 +235,7 @@ nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant)
   else
     next_rect_box->right.tmax = centroid->tmax;
 
-  return next_rect_box;
+  return;
 }
 
 /**
@@ -358,7 +373,7 @@ distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
  * Transform a query argument into a TBOX.
  */
 static bool
-tnumber_spgist_get_tbox(TBOX *result, ScanKeyData *scankey)
+tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
 {
   CachedType type = oid_type(scankey->sk_subtype);
   if (tnumber_basetype(type))
@@ -540,9 +555,9 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
   MemoryContext old_ctx;
-  RectBox *rect_box;
+  RectBox *rect_box, infbox, next_rect_box;
   uint8 quadrant;
-  TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries;
+  TBOX *centroid = DatumGetTboxP(in->prefixDatum), *queries, *orderbys;
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -551,7 +566,25 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   if (in->traversalValue)
     rect_box = in->traversalValue;
   else
-    rect_box = initRectBox();
+  {
+    initRectBox(&infbox);
+    rect_box = &infbox;
+  }
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  /*
+   * Transform the orderbys into bounding boxes initializing the dimensions
+   * that must not be taken into account for the operators to infinity.
+   * This transformation is done here to avoid doing it for all octants
+   * in the loop below.
+   */
+  if (in->norderbys > 0)
+  {
+    orderbys = palloc0(sizeof(TBOX) * in->norderbys);
+    for (i = 0; i < in->norderbys; i++)
+      tnumber_spgist_get_tbox(&in->orderbys[i], &orderbys[i]);
+  }
+#endif
 
   if (in->allTheSame)
   {
@@ -559,29 +592,27 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     out->nNodes = in->nNodes;
     out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
+    {
       out->nodeNumbers[i] = i;
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-    if (in->norderbys > 0 && in->nNodes > 0)
-    {
-      double *distances = palloc(sizeof(double) * in->norderbys);
-      for (int j = 0; j < in->norderbys; j++)
+      if (in->norderbys > 0)
       {
-        TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
-        distances[j] = distanceBoxRectBox(box, rect_box);
-      }
+        /* Use parent quadrant box as traversalValue */
+        old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+        out->traversalValues[i] = rectbox_copy(rect_box);
+        MemoryContextSwitchTo(old_ctx);
 
-      out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-      out->distances[0] = distances;
+        /* Compute the distances */
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[i] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+          distances[j] = distanceBoxRectBox(&orderbys[j], rect_box);
 
-      for (i = 1; i < in->nNodes; i++)
-      {
-        out->distances[i] = palloc(sizeof(double) * in->norderbys);
-        memcpy(out->distances[i], distances,
-          sizeof(double) * in->norderbys);
+        pfree(orderbys);
       }
-    }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
+    }
 
     PG_RETURN_VOID();
   }
@@ -591,26 +622,17 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   queries = (TBOX *) palloc0(sizeof(TBOX) * in->nkeys);
   for (i = 0; i < in->nkeys; i++)
-    tnumber_spgist_get_tbox(&queries[i], &in->scankeys[i]);
+    tnumber_spgist_get_tbox(&in->scankeys[i], &queries[i]);
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  if (in->norderbys > 0)
-    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-#endif
-  /*
-   * We switch memory context, because we want to allocate memory for new
-   * traversal values (next_rect_box) and pass these pieces of memory to
-   * further call of this function.
-   */
-  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
+  /* Loop for every node */
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)
   {
-    RectBox *next_rect_box = nextRectBox(rect_box, centroid, quadrant);
+    nextRectBox(rect_box, centroid, quadrant, &next_rect_box);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -620,75 +642,72 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap4D(next_rect_box, &queries[i]);
+          flag = overlap4D(&next_rect_box, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain4D(next_rect_box, &queries[i]);
+          flag = contain4D(&next_rect_box, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight4D(next_rect_box, &queries[i]);
+          flag = !overRight4D(&next_rect_box, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right4D(next_rect_box, &queries[i]);
+          flag = !right4D(&next_rect_box, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft4D(next_rect_box, &queries[i]);
+          flag = !overLeft4D(&next_rect_box, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left4D(next_rect_box, &queries[i]);
+          flag = !left4D(&next_rect_box, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter4D(next_rect_box, &queries[i]);
+          flag = !overAfter4D(&next_rect_box, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after4D(next_rect_box, &queries[i]);
+          flag = !after4D(&next_rect_box, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore4D(next_rect_box, &queries[i]);
+          flag = !overBefore4D(&next_rect_box, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before4D(next_rect_box, &queries[i]);
+          flag = !before4D(&next_rect_box, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
       }
       /* If any check is failed, we have found our answer. */
-      if (!flag)
+      if (! flag)
         break;
     }
+
     if (flag)
     {
-      out->traversalValues[out->nNodes] = next_rect_box;
+      /* Pass traversalValue and quadrant */
+      old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+      out->traversalValues[out->nNodes] = rectbox_copy(&next_rect_box);
+      MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = quadrant;
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+      /* Pass distances */
       if (in->norderbys > 0)
       {
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
         for (int j = 0; j < in->norderbys; j++)
-        {
-          TBOX *box = DatumGetTboxP(in->orderbys[j].sk_argument);
-          distances[j] = distanceBoxRectBox(box, next_rect_box);
-        }
+          distances[j] = distanceBoxRectBox(&orderbys[j], &next_rect_box);
       }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
-    else
-    {
-      /*
-       * If this node is not selected, we don't need to keep the next
-       * traversal value in the memory context.
-       */
-      pfree(next_rect_box);
-    }
   }
 
-  /* Switch after */
-  MemoryContextSwitchTo(old_ctx);
-
   pfree(queries);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+  {
+    pfree(orderbys);
+  }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
 }
@@ -706,11 +725,9 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  Datum leaf = in->leafDatum;
-#endif
   TBOX *key = DatumGetTboxP(in->leafDatum);
-  bool res = true;
+  bool result = true;
+  int i;
 
   /*
    * All tests are lossy since boxes do not distinghish between inclusive
@@ -722,31 +739,39 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   out->leafValue = in->leafDatum;
 
   /* Perform the required comparison(s) */
-  for (int i = 0; i < in->nkeys; i++)
+  for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     TBOX query;
 
-    if (tnumber_spgist_get_tbox(&query, &in->scankeys[i]))
-      res = tbox_index_consistent_leaf(key, &query, strategy);
+    if (tnumber_spgist_get_tbox(&in->scankeys[i], &query))
+      result = tbox_index_consistent_leaf(key, &query, strategy);
     else
-      res = false;
+      result = false;
     /* If any check is failed, we have found our answer. */
-    if (!res)
+    if (! result)
       break;
   }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  if (res && in->norderbys > 0)
+  if (result && in->norderbys > 0)
   {
-    out->distances = spg_key_orderbys_distances(leaf, false, in->orderbys,
-      in->norderbys);
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
+    double *distances = palloc(sizeof(double) * in->norderbys);
+    out->distances = distances;
+    for (i = 0; i < in->norderbys; i++)
+    {
+      TBOX box;
+      tnumber_spgist_get_tbox(&in->orderbys[i], &box);
+      distances[i] = NAD_tbox_tbox_internal(&box, key);
+    }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
   }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
-  PG_RETURN_BOOL(res);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************

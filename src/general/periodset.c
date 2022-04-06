@@ -93,7 +93,7 @@ periodset_bbox_slice(Datum psdatum, Period *p)
   else
     ps = (PeriodSet *) psdatum;
   periodset_bbox(ps, p);
-  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 

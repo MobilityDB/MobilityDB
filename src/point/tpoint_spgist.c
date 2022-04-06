@@ -115,7 +115,9 @@
 #include "point/tpoint_distance.h"
 #include "point/tpoint_gist.h"
 
-/*****************************************************************************/
+/*****************************************************************************
+ * Data structures
+ *****************************************************************************/
 
 /**
  * Structure to represent the bounding box of a temporal point as a 6- or
@@ -126,6 +128,21 @@ typedef struct
   STBOX left;
   STBOX right;
 } CubeSTbox;
+
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+/**
+ * Copy a CubeSTbox
+ */
+CubeSTbox *
+cubestbox_copy(const CubeSTbox *box)
+{
+  CubeSTbox *result = palloc(sizeof(CubeSTbox));
+  memcpy(result, box, sizeof(CubeSTbox));
+  return result;
+}
 
 /**
  * Calculate the octant
@@ -175,10 +192,10 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
  * In the beginning, we don't have any restrictions.  We have to
  * initialize the struct to cover the whole 8D space.
  */
-static CubeSTbox *
-initCubeSTbox(STBOX *centroid)
+static void
+initCubeSTbox(STBOX *centroid, CubeSTbox *cube_box)
 {
-  CubeSTbox *cube_box = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
+  memset(cube_box, 0, sizeof(CubeSTbox));
   double infinity = get_float8_infinity();
 
   cube_box->left.xmin = cube_box->right.xmin = -infinity;
@@ -196,7 +213,7 @@ initCubeSTbox(STBOX *centroid)
   cube_box->left.srid = cube_box->right.srid = centroid->srid;
   cube_box->left.flags = cube_box->right.flags = centroid->flags;
 
-  return cube_box;
+  return;
 }
 
 /**
@@ -206,11 +223,10 @@ initCubeSTbox(STBOX *centroid)
  * boxes. When we are traversing the tree, we must calculate CubeSTbox,
  * using centroid and octant.
  */
-static CubeSTbox *
-nextCubeSTbox(const CubeSTbox *cube_box, const STBOX *centroid, uint8 octant)
+static void
+nextCubeSTbox(const CubeSTbox *cube_box, const STBOX *centroid, uint8 octant,
+  CubeSTbox *next_cube_box)
 {
-  CubeSTbox *next_cube_box = (CubeSTbox *) palloc0(sizeof(CubeSTbox));
-
   memcpy(next_cube_box, cube_box, sizeof(CubeSTbox));
 
   if (MOBDB_FLAGS_GET_Z(centroid->flags))
@@ -256,7 +272,7 @@ nextCubeSTbox(const CubeSTbox *cube_box, const STBOX *centroid, uint8 octant)
   else
     next_cube_box->right.tmax = centroid->tmax;
 
-  return next_cube_box;
+  return;
 }
 
 /**
@@ -508,7 +524,7 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
  * Transform a query argument into an STBOX.
  */
 static bool
-tpoint_spgist_get_stbox(STBOX *result, ScanKeyData *scankey)
+tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
 {
   CachedType type = oid_type(scankey->sk_subtype);
   if (tgeo_basetype(type))
@@ -724,9 +740,9 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
   MemoryContext old_ctx;
-  CubeSTbox *cube_box;
+  CubeSTbox *cube_box, infbox, next_cube_box;
   uint16 octant;
-  STBOX *queries, *centroid = DatumGetSTboxP(in->prefixDatum);
+  STBOX *centroid = DatumGetSTboxP(in->prefixDatum), *queries, *orderbys;
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -735,7 +751,10 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   if (in->traversalValue)
     cube_box = in->traversalValue;
   else
-    cube_box = initCubeSTbox(centroid);
+  {
+    initCubeSTbox(centroid, &infbox);
+    cube_box = &infbox;
+  }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   /*
@@ -744,9 +763,12 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    * This transformation is done here to avoid doing it for all octants
    * in the loop below.
    */
-  STBOX *orderbys = (STBOX *) palloc0(sizeof(STBOX) * in->norderbys);
-  for (i = 0; i < in->norderbys; i++)
-    tpoint_spgist_get_stbox(&orderbys[i], &in->orderbys[i]);
+  if (in->norderbys > 0)
+  {
+    orderbys = palloc0(sizeof(STBOX) * in->norderbys);
+    for (i = 0; i < in->norderbys; i++)
+      tpoint_spgist_get_stbox(&in->orderbys[i], &orderbys[i]);
+  }
 #endif
 
   if (in->allTheSame)
@@ -755,24 +777,27 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     out->nNodes = in->nNodes;
     out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
     for (i = 0; i < in->nNodes; i++)
+    {
       out->nodeNumbers[i] = i;
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-    if (in->norderbys > 0 && in->nNodes > 0)
-    {
-      double *distances = palloc0(sizeof(double) * in->norderbys);
-      for (i = 0; i < in->norderbys; i++)
-        distances[i] = distanceBoxCubeBox(&orderbys[i], cube_box);
-      out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-      out->distances[0] = distances;
-      for (i = 1; i < in->nNodes; i++)
+      if (in->norderbys > 0)
       {
-        out->distances[i] = palloc(sizeof(double) * in->norderbys);
-        memcpy(out->distances[i], distances, sizeof(double) * in->norderbys);
+        /* Use parent quadrant box as traversalValue */
+        old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+        out->traversalValues[i] = cubestbox_copy(cube_box);
+        MemoryContextSwitchTo(old_ctx);
+
+        /* Compute the distances */
+        double *distances = palloc0(sizeof(double) * in->norderbys);
+        out->distances[i] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+          distances[j] = distanceBoxCubeBox(&orderbys[i], cube_box);
+
+        pfree(orderbys);
       }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
     }
-    pfree(orderbys);
-#endif
 
     PG_RETURN_VOID();
   }
@@ -785,26 +810,16 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    */
   queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
   for (i = 0; i < in->nkeys; i++)
-    tpoint_spgist_get_stbox(&queries[i], &in->scankeys[i]);
+    tpoint_spgist_get_stbox(&in->scankeys[i], &queries[i]);
 
   /* Allocate enough memory for nodes */
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  if (in->norderbys > 0)
-    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
-#endif
-  /*
-   * We switch memory context, because we want to allocate memory for new
-   * traversal values (next_cube_box) and pass these pieces of memory to
-   * further calls of this function.
-   */
-  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
   for (octant = 0; octant < in->nNodes; octant++)
   {
-    CubeSTbox *next_cube_box = nextCubeSTbox(cube_box, centroid, (uint8) octant);
+    nextCubeSTbox(cube_box, centroid, (uint8) octant, &next_cube_box);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -814,59 +829,59 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap8D(next_cube_box, &queries[i]);
+          flag = overlap8D(&next_cube_box, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain8D(next_cube_box, &queries[i]);
+          flag = contain8D(&next_cube_box, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight8D(next_cube_box, &queries[i]);
+          flag = !overRight8D(&next_cube_box, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right8D(next_cube_box, &queries[i]);
+          flag = !right8D(&next_cube_box, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft8D(next_cube_box, &queries[i]);
+          flag = !overLeft8D(&next_cube_box, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left8D(next_cube_box, &queries[i]);
+          flag = !left8D(&next_cube_box, &queries[i]);
           break;
         case RTFrontStrategyNumber:
-          flag = !overBack8D(next_cube_box, &queries[i]);
+          flag = !overBack8D(&next_cube_box, &queries[i]);
           break;
         case RTOverFrontStrategyNumber:
-          flag = !back8D(next_cube_box, &queries[i]);
+          flag = !back8D(&next_cube_box, &queries[i]);
           break;
         case RTBackStrategyNumber:
-          flag = !overFront8D(next_cube_box, &queries[i]);
+          flag = !overFront8D(&next_cube_box, &queries[i]);
           break;
         case RTOverBackStrategyNumber:
-          flag = !front8D(next_cube_box, &queries[i]);
+          flag = !front8D(&next_cube_box, &queries[i]);
           break;
         case RTAboveStrategyNumber:
-          flag = !overBelow8D(next_cube_box, &queries[i]);
+          flag = !overBelow8D(&next_cube_box, &queries[i]);
           break;
         case RTOverAboveStrategyNumber:
-          flag = !below8D(next_cube_box, &queries[i]);
+          flag = !below8D(&next_cube_box, &queries[i]);
           break;
         case RTBelowStrategyNumber:
-          flag = !overAbove8D(next_cube_box, &queries[i]);
+          flag = !overAbove8D(&next_cube_box, &queries[i]);
           break;
         case RTOverBelowStrategyNumber:
-          flag = !above8D(next_cube_box, &queries[i]);
+          flag = !above8D(&next_cube_box, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore8D(next_cube_box, &queries[i]);
+          flag = !overBefore8D(&next_cube_box, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before8D(next_cube_box, &queries[i]);
+          flag = !before8D(&next_cube_box, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter8D(next_cube_box, &queries[i]);
+          flag = !overAfter8D(&next_cube_box, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after8D(next_cube_box, &queries[i]);
+          flag = !after8D(&next_cube_box, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
@@ -879,33 +894,32 @@ stbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
 
     if (flag)
     {
-      out->traversalValues[out->nNodes] = next_cube_box;
+      /* Pass traversalValue and quadrant */
+      old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+      out->traversalValues[out->nNodes] = cubestbox_copy(&next_cube_box);
+      MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = octant;
 #if POSTGRESQL_VERSION_NUMBER >= 120000
+      /* Pass distances */
       if (in->norderbys > 0)
       {
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
         for (int j = 0; j < in->norderbys; j++)
-          distances[j] = distanceBoxCubeBox(&orderbys[j], next_cube_box);
+          distances[j] = distanceBoxCubeBox(&orderbys[j], &next_cube_box);
       }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
-    }
-    else
-    {
-      /*
-       * If this node is not selected, we don't need to keep the next
-       * traversal value in the memory context.
-       */
-      pfree(next_cube_box);
     }
   }
 
-  /* Switch after */
-  MemoryContextSwitchTo(old_ctx);
-
   pfree(queries);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+  {
+    pfree(orderbys);
+  }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
 }
@@ -923,11 +937,9 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-#if POSTGRESQL_VERSION_NUMBER >= 120000
-  Datum leaf = in->leafDatum;
-#endif
   STBOX *key = DatumGetSTboxP(in->leafDatum);
-  bool res = true;
+  bool result = true;
+  int i;
 
   /* Initialize the value to do not recheck, will be updated below */
   out->recheck = false;
@@ -936,7 +948,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   out->leafValue = in->leafDatum;
 
   /* Perform the required comparison(s) */
-  for (int i = 0; i < in->nkeys; i++)
+  for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
     STBOX query;
@@ -944,26 +956,32 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     /* Update the recheck flag according to the strategy */
     out->recheck |= tpoint_index_recheck(strategy);
 
-    if (tpoint_spgist_get_stbox(&query, &in->scankeys[i]))
-      res = stbox_index_consistent_leaf(key, &query, strategy);
+    if (tpoint_spgist_get_stbox(&in->scankeys[i], &query))
+      result = stbox_index_consistent_leaf(key, &query, strategy);
     else
-      res = false;
+      result = false;
     /* If any check is failed, we have found our answer. */
-    if (!res)
+    if (! result)
       break;
   }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
-  if (res && in->norderbys > 0)
+  if (result && in->norderbys > 0)
   {
-    out->distances = spg_key_orderbys_distances(leaf, true, in->orderbys,
-      in->norderbys);
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
+    double *distances = palloc(sizeof(double) * in->norderbys);
+    out->distances = distances;
+    for (i = 0; i < in->norderbys; i++)
+    {
+      STBOX box;
+      tpoint_spgist_get_stbox(&in->orderbys[i], &box);
+      distances[i] = NAD_stbox_stbox_internal(&box, key);
+    }
   }
-#endif
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
-  PG_RETURN_BOOL(res);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
