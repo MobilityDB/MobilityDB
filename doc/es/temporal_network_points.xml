@@ -952,9 +952,9 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				<para><varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>, <varname>#&gt;&gt;</varname>, que solo consideran la dimensión temporal en puntos de la red temporal,</para>
 			</listitem>
 			<listitem>
-				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, and <varname>-|-</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta.</para>
+				<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname> y <varname>|=|</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta.</para>
 			</listitem>
 		</itemizedlist>
-		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos. Además, un índice GiST puede acelerar las consultas del vecino más cercano que involucran al operador <varname>|=|</varname>.</para>
+		<para>Estos operadores trabajan con cuadros delimitadores, no con los valores completos.</para>
 	</sect1>
 </chapter>

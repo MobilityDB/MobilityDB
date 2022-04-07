@@ -34,7 +34,7 @@
 -- tables the sequence sets have a key value k >= 76
 
 
-CREATE INDEX tbl_tnpoint_gist_idx ON tbl_tnpoint USING gist(temp);
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND contains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
 
@@ -53,13 +53,13 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, geometry 'SRID=5
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
 
-DROP INDEX tbl_tnpoint_gist_idx;
+DROP INDEX tbl_tnpoint_rtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- Test index support function for ever spatial relationships
 
-CREATE INDEX tbl_tnpoint_spgist_idx ON tbl_tnpoint USING spgist(temp);
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND contains(geometry 'SRID=5676;Polygon((0 0,0 5,5 5,5 0,0 0))', temp);
 
@@ -78,6 +78,6 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, geometry 'SRID=5
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(geometry 'SRID=5676;Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
 
-DROP INDEX tbl_tnpoint_spgist_idx;
+DROP INDEX tbl_tnpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------

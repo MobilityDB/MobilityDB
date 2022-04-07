@@ -49,7 +49,7 @@ CREATE FUNCTION tnpoint_spgist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tnpoint_gist_ops
+CREATE OPERATOR CLASS tnpoint_rtree_ops
   DEFAULT FOR TYPE tnpoint USING gist AS
   STORAGE stbox,
   -- strictly left
@@ -165,7 +165,7 @@ CREATE OPERATOR CLASS tnpoint_gist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tnpoint_spgist_ops
+CREATE OPERATOR CLASS tnpoint_quadtree_ops
   DEFAULT FOR TYPE tnpoint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tnpoint, geometry),
@@ -271,9 +271,9 @@ CREATE OPERATOR CLASS tnpoint_spgist_ops
   OPERATOR  31    #&> (tnpoint, tnpoint),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
-  FUNCTION  2 stbox_spgist_choose(internal, internal),
-  FUNCTION  3 stbox_spgist_picksplit(internal, internal),
-  FUNCTION  4 stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2 stbox_quadtree_choose(internal, internal),
+  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 tnpoint_spgist_compress(internal);
 

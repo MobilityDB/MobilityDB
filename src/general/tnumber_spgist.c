@@ -446,12 +446,12 @@ tbox_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_choose);
+PG_FUNCTION_INFO_V1(tbox_quadtree_choose);
 /**
  * SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_choose(PG_FUNCTION_ARGS)
+tbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -472,7 +472,7 @@ tbox_spgist_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_picksplit);
+PG_FUNCTION_INFO_V1(tbox_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for temporal numbers
  *
@@ -480,7 +480,7 @@ PG_FUNCTION_INFO_V1(tbox_spgist_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-tbox_spgist_picksplit(PG_FUNCTION_ARGS)
+tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -544,12 +544,12 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_inner_consistent);
+PG_FUNCTION_INFO_V1(tbox_quadtree_inner_consistent);
 /**
  * SP-GiST inner consistent function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
+tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);

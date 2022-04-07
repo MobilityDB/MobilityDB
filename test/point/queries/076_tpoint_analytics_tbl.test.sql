@@ -66,8 +66,8 @@ SELECT asGeography(temp, true) FROM tbl_tgeogpoint3D LIMIT 10;
 SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint LIMIT 10;
 SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D LIMIT 10;
 
-SELECT count(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
-SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
 
 SELECT asText(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint LIMIT 10;
 SELECT asText(round((temp::geography)::tgeogpoint, 6)) FROM tbl_tgeogpoint3D LIMIT 10;

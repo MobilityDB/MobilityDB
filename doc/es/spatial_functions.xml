@@ -605,7 +605,7 @@ SELECT tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, Point(3 1)@2000-01-03
   geometry 'Linestring(1 3,2 2,3 3)';
 -- 1.4142135623731
 </programlisting>
-					<para>El operador <varname>|=|</varname> se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST (ver la <xref linkend="operators_temporal_types" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
+					<para>El operador <varname>|=|</varname> se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST o SP-GIST (ver la <xref linkend="operators_temporal_types" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
 					<programlisting xml:space="preserve">
 SELECT ST_DistanceCPA(
   tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,

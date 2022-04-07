@@ -2627,7 +2627,7 @@ SELECT mobilitydb_full_version();
 
 	<sect1 id="indexing_temporal_types">
 		<title>Indexación de tipos temporales</title>
-		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de tipos temporales. El índice GiST implementa un árbol R para tipos alfanuméricos temporales y para tipos de puntos temporales. El índice SP-GiST implementa un árbol cuádruple para tipos alfanuméricos temporales y un árbol óctuple para tipos de puntos temporales. Ejemplos de creación de índices son los siguientes:
+		<para>Se pueden crear índices GiST y SP-GiST para columnas de tabla de tipos temporales. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple n-dimensional. Ejemplos de creación de índices son los siguientes:
 			<programlisting xml:space="preserve">
 CREATE INDEX Department_NoEmps_Gist_Idx ON Department USING Gist(NoEmps);
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
@@ -2665,12 +2665,10 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				</listitem>
 
 				<listitem>
-					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname> y <varname>~=</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir, <varname>period</varname>, <varname>tbox</varname> o <varname>stbox</varname>), no los valores completos.</para>
+					<para><varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname> y <varname>|=|</varname>, que consideran tantas dimensiones como compartan la columna indexada y el argumento de consulta. Estos operadores trabajan en cuadros delimitadores (es decir, <varname>period</varname>, <varname>tbox</varname> o <varname>stbox</varname>), no los valores completos.</para>
 				</listitem>
 			</itemizedlist>
 		</para>
-
-		<para>Además, un índice GiST puede acelerar las consultas de vecinos más cercanos que involucran el operador <varname>|=|</varname>.</para>
 
 		<para>Por ejemplo, dado el índice definido anteriormente en la tabla <varname>Department</varname> y una consulta que implica una condición con el operador <varname>&amp;&amp;</varname> (superposición), si el argumento derecho es un flotante temporal, entonces se consideran tanto el valor como las dimensiones de tiempo para filtrar las tuplas de la relación, mientras que si el argumento derecho es un valor flotante, un rango flotante o un tipo de tiempo, entonces el valor o la dimensión de tiempo se utilizará para filtrar las tuplas de la relación. Además, se puede construir un cuadro delimitador a partir de un valor/rango y/o una marca de tiempo/período, que se puede usar para filtrar las tuplas de la relación. Ejemplos de consultas que utilizan el índice en la tabla <varname>Department</varname> definida anteriormente se dan a continuación.
 			<programlisting xml:space="preserve">

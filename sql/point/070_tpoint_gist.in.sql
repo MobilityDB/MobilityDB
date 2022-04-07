@@ -57,7 +57,7 @@ CREATE FUNCTION stbox_gist_distance(internal, stbox, smallint, oid, internal)
   AS 'MODULE_PATHNAME', 'stbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS stbox_gist_ops
+CREATE OPERATOR CLASS stbox_rtree_ops
   DEFAULT FOR TYPE stbox USING gist AS
   STORAGE stbox,
   -- strictly left
@@ -159,7 +159,7 @@ CREATE FUNCTION tpoint_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'tpoint_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS tgeompoint_gist_ops
+CREATE OPERATOR CLASS tgeompoint_rtree_ops
   DEFAULT FOR TYPE tgeompoint USING gist AS
   STORAGE stbox,
   -- strictly left
@@ -291,7 +291,7 @@ CREATE OPERATOR CLASS tgeompoint_gist_ops
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
   FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
 
-CREATE OPERATOR CLASS tgeogpoint_gist_ops
+CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   DEFAULT FOR TYPE tgeogpoint USING gist AS
   STORAGE stbox,
   -- overlaps

@@ -737,6 +737,40 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 		</sect2>
 
 		<sect2>
+			<title>Distance Operators</title>
+
+			<para>There are two distance operators for time types. These operators work with bouding periods and compute both the smallest distance between the two time values but they differ in the result type: the <varname>&lt;-&gt;</varname> operator returns a standard SQL type <varname>interval</varname>, while the <varname>|=|</varname> operator returns a <varname>float</varname> which is the number of seconds between the two time values. The latter operator can also be used for nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_time_types" />).</para>
+
+			<itemizedlist>
+				<listitem id="smallest_distance_interval">
+					<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+					<para>Get the smallest distance ever in an interval</para>
+					<para><varname>time &lt;-&gt; time: interval</varname></para>
+					<programlisting xml:space="preserve">
+SELECT period '[2012-01-02, 2012-01-06)' &lt;-&gt; timestamptz '2012-01-07';
+-- 1 day
+SELECT timestampset '{2012-01-01, 2012-01-03, 2012-01-05}' &lt;-&gt;
+  timestampset '{2012-01-02, 2012-01-04}';
+--  00:00:00
+</programlisting>
+				</listitem>
+
+				<listitem id="smallest_distance_secs">
+					<indexterm><primary><varname>|=|</varname></primary></indexterm>
+					<para>Get the smallest distance ever in number of seconds</para>
+					<para><varname>time |=| time: float</varname></para>
+					<programlisting xml:space="preserve">
+SELECT period '[2012-01-02, 2012-01-06)' |=| timestamptz '2012-01-07';
+-- 86400
+SELECT timestampset '{2012-01-01, 2012-01-03, 2012-01-05}' |=|
+  timestampset '{2012-01-02, 2012-01-04}';
+--  0
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Aggregate Functions</title>
 
 			<para>The temporal aggregate functions generalize the traditional aggregate functions. Their semantics is that they compute the value of the function at every instant in the <emphasis>union</emphasis> of the temporal extents of the values to aggregate. In contrast, recall that all other functions manipulating time types compute the value of the function at every instant in the <emphasis>intersection</emphasis> of the temporal extents of the arguments.</para>
@@ -846,14 +880,14 @@ SELECT tunion(ps) FROM periods;
 	<sect1 id ="indexing_time_types">
 		<title>Indexing of Time Types</title>
 
-		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> types. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
+		<para>GiST and SP-GiST indexes can be created for table columns of the <varname>timestampset</varname>, <varname>period</varname>, and <varname>periodset</varname> types. The GiST index implements an R-tree while the SP-GiST index implements a quad-tree. An example of creation of a GiST index in a column <varname>During</varname> of type <varname>period</varname> in a table <varname>Reservation</varname> is as follows:
 			<programlisting xml:space="preserve">
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During period);
 CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
 </programlisting>
 		</para>
-		<para>A GiST or SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname>.</para>
+		<para>A GiST or an SP-GiST index can accelerate queries involving the following operators: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, and <varname>|=|</varname>.</para>
 		<para>In addition, B-tree indexes can be created for table columns of a time type. For these index types, basically the only useful operation is equality. There is a B-tree sort ordering defined for values of time types with corresponding <varname>&lt;</varname> and <varname>&gt;</varname> operators, but the ordering is rather arbitrary and not usually useful in the real world. The B-tree support is primarily meant to allow sorting internally in queries, rather than creation of actual indexes.</para>
 	</sect1>
 </chapter>

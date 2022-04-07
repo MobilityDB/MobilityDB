@@ -111,65 +111,30 @@ periodnode_copy(const PeriodNode *orig)
  */
 static void
 periodnode_quadtree_next(const PeriodNode *nodebox, const Period *centroid,
-  uint8 quadrant, PeriodNode *next_nodebox)
+  uint8 quadrant, PeriodNode *next_nodeperiod)
 {
-  memcpy(next_nodebox, nodebox, sizeof(PeriodNode));
+  memcpy(next_nodeperiod, nodebox, sizeof(PeriodNode));
   if (quadrant & 0x2)
   {
-    next_nodebox->left.lower = centroid->lower;
-    next_nodebox->left.lower_inc = centroid->lower_inc;
+    next_nodeperiod->left.lower = centroid->lower;
+    next_nodeperiod->left.lower_inc = centroid->lower_inc;
   }
   else
   {
-    next_nodebox->left.upper = centroid->lower;
-    next_nodebox->left.upper_inc = centroid->lower_inc;
+    next_nodeperiod->left.upper = centroid->lower;
+    next_nodeperiod->left.upper_inc = centroid->lower_inc;
   }
   if (quadrant & 0x1)
   {
-    next_nodebox->right.lower = centroid->upper;
-    next_nodebox->right.lower_inc = centroid->upper_inc;
+    next_nodeperiod->right.lower = centroid->upper;
+    next_nodeperiod->right.lower_inc = centroid->upper_inc;
   }
   else
   {
-    next_nodebox->right.upper = centroid->upper;
-    next_nodebox->right.upper_inc = centroid->upper_inc;
+    next_nodeperiod->right.upper = centroid->upper;
+    next_nodeperiod->right.upper_inc = centroid->upper_inc;
   }
   return;
-}
-
-/**
- * Transform a query argument into a period.
- */
-static bool
-time_spgist_get_period(const ScanKeyData *scankey, Period *result)
-{
-  CachedType type = oid_type(scankey->sk_subtype);
-  if (type == T_TIMESTAMPTZ)
-  {
-    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
-    period_set(t, t, true, true, result);
-  }
-  else if (type == T_TIMESTAMPSET)
-  {
-    timestampset_bbox_slice(scankey->sk_argument, result);
-  }
-  else if (type == T_PERIOD)
-  {
-    Period *p = DatumGetPeriodP(scankey->sk_argument);
-    memcpy(result, p, sizeof(Period));
-  }
-  else if (type == T_PERIODSET)
-  {
-    periodset_bbox_slice(scankey->sk_argument, result);
-  }
-  /* For temporal types whose bounding box is a period */
-  else if (temporal_type(type))
-  {
-    temporal_bbox_slice(scankey->sk_argument, result);
-  }
-  else
-    elog(ERROR, "Unsupported type for indexing: %d", type);
-  return true;
 }
 
 /**
@@ -250,6 +215,66 @@ overAfter2D(const PeriodNode *nodebox, const Period *query)
   return overafter_period_period_internal(&nodebox->left, query);
 }
 
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+/**
+ * Distance between a query period and a box of periods
+ */
+static double
+distance_period_nodeperiod(Period *query, PeriodNode *box)
+{
+  /* If the the period intersects the box return 0 */
+  Period p;
+  period_set(box->left.lower, box->right.upper,
+    box->left.lower_inc, box->right.upper_inc, &p);
+  if (overlaps_period_period_internal(query, &p))
+    return 0;
+
+  /* If the query is to the left of the box return the distance between
+   * the upper bound of the query and lower bound of the box */
+  if (box->left.lower >= query->upper)
+    return box->left.lower - query->upper;
+  
+  /* If the query is to the right of the box return the distance between
+   * the upper bound of the box and lower bound of the query */
+  return query->lower - box->right.upper;
+}
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
+
+/**
+ * Transform a query argument into a period.
+ */
+static bool
+time_spgist_get_period(const ScanKeyData *scankey, Period *result)
+{
+  CachedType type = oid_type(scankey->sk_subtype);
+  if (type == T_TIMESTAMPTZ)
+  {
+    TimestampTz t = DatumGetTimestampTz(scankey->sk_argument);
+    period_set(t, t, true, true, result);
+  }
+  else if (type == T_TIMESTAMPSET)
+  {
+    timestampset_bbox_slice(scankey->sk_argument, result);
+  }
+  else if (type == T_PERIOD)
+  {
+    Period *p = DatumGetPeriodP(scankey->sk_argument);
+    memcpy(result, p, sizeof(Period));
+  }
+  else if (type == T_PERIODSET)
+  {
+    periodset_bbox_slice(scankey->sk_argument, result);
+  }
+  /* For temporal types whose bounding box is a period */
+  else if (temporal_type(type))
+  {
+    temporal_bbox_slice(scankey->sk_argument, result);
+  }
+  else
+    elog(ERROR, "Unsupported type for indexing: %d", type);
+  return true;
+}
+
 /*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
@@ -274,12 +299,12 @@ period_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_spgist_choose);
+PG_FUNCTION_INFO_V1(period_quadtree_choose);
 /**
  * SP-GiST choose function for time types
  */
 PGDLLEXPORT Datum
-period_spgist_choose(PG_FUNCTION_ARGS)
+period_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -300,7 +325,7 @@ period_spgist_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_spgist_picksplit);
+PG_FUNCTION_INFO_V1(period_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for time types
  *
@@ -308,7 +333,7 @@ PG_FUNCTION_INFO_V1(period_spgist_picksplit);
  * point as the median of the coordinates of the time types.
  */
 PGDLLEXPORT Datum
-period_spgist_picksplit(PG_FUNCTION_ARGS)
+period_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -360,20 +385,20 @@ period_spgist_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_spgist_inner_consistent);
+PG_FUNCTION_INFO_V1(period_quadtree_inner_consistent);
 /**
  * SP-GiST inner consistent function function for time types
  */
 PGDLLEXPORT Datum
-period_spgist_inner_consistent(PG_FUNCTION_ARGS)
+period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
   uint8 node;
   MemoryContext old_ctx;
-  PeriodNode *nodebox, infbox, next_nodebox;
-  Period *centroid, *queries;
+  PeriodNode *nodebox, infbox, next_nodeperiod;
+  Period *centroid, *queries, *orderbys;
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);
@@ -391,6 +416,21 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
     nodebox = &infbox;
   }
 
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  /*
+   * Transform the orderbys into bounding boxes initializing the dimensions
+   * that must not be taken into account for the operators to infinity.
+   * This transformation is done here to avoid doing it for all quadrants
+   * in the loop below.
+   */
+  if (in->norderbys > 0)
+  {
+    orderbys = palloc0(sizeof(Period) * in->norderbys);
+    for (i = 0; i < in->norderbys; i++)
+      time_spgist_get_period(&in->orderbys[i], &orderbys[i]);
+  }
+#endif
+
   if (in->allTheSame)
   {
     /* Report that all nodes should be visited */
@@ -399,6 +439,24 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->nNodes; i++)
     {
       out->nodeNumbers[i] = i;
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+      if (in->norderbys > 0)
+      {
+        /* Use parent quadrant box as traversalValue */
+        old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+        out->traversalValues[i] = periodnode_copy(nodebox);
+        MemoryContextSwitchTo(old_ctx);
+
+        /* Compute the distances */
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[i] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+          distances[j] = distance_period_nodeperiod(&orderbys[j], nodebox);
+
+        pfree(orderbys);
+      }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
     }
 
     PG_RETURN_VOID();
@@ -416,12 +474,16 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
   out->nNodes = 0;
   out->nodeNumbers = (int *) palloc(sizeof(int) * in->nNodes);
   out->traversalValues = (void **) palloc(sizeof(void *) * in->nNodes);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+    out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   /* Loop for each child */
   for (node = 0; node < in->nNodes; node++)
   {
     /* Compute the bounding box of the child */
-    periodnode_quadtree_next(nodebox, centroid, node, &next_nodebox);
+    periodnode_quadtree_next(nodebox, centroid, node, &next_nodeperiod);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -431,23 +493,23 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap2D(&next_nodebox, &queries[i]);
+          flag = overlap2D(&next_nodeperiod, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain2D(&next_nodebox, &queries[i]);
+          flag = contain2D(&next_nodeperiod, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter2D(&next_nodebox, &queries[i]);
+          flag = !overAfter2D(&next_nodeperiod, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after2D(&next_nodebox, &queries[i]);
+          flag = !after2D(&next_nodeperiod, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore2D(&next_nodebox, &queries[i]);
+          flag = !overBefore2D(&next_nodeperiod, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before2D(&next_nodebox, &queries[i]);
+          flag = !before2D(&next_nodeperiod, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
@@ -461,15 +523,29 @@ period_spgist_inner_consistent(PG_FUNCTION_ARGS)
     {
       /* Pass traversalValue and node */
       old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
-      out->traversalValues[out->nNodes] = periodnode_copy(&next_nodebox);
+      out->traversalValues[out->nNodes] = periodnode_copy(&next_nodeperiod);
       MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = node;
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+      /* Pass distances */
+      if (in->norderbys > 0)
+      {
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[out->nNodes] = distances;
+        for (i = 0; i < in->norderbys; i++)
+          distances[i] = distance_period_nodeperiod(&orderbys[i], &next_nodeperiod);
+      }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;
     }
   } /* Loop for every child */
 
   if (in->nkeys > 0)
     pfree(queries);
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (in->norderbys > 0)
+    pfree(orderbys);
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_VOID();
 }
@@ -520,6 +596,24 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     if (! result)
       break;
   }
+
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  if (result && in->norderbys > 0)
+  {
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
+    double *distances = palloc(sizeof(double) * in->norderbys);
+    out->distances = distances;
+    for (i = 0; i < in->norderbys; i++)
+    {
+      Period box;
+      time_spgist_get_period(&in->orderbys[i], &box);
+      distances[i] = distance_secs_period_period_internal(&box, key);
+    }
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
+  }
+#endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
   PG_RETURN_BOOL(result);
 }

@@ -73,8 +73,8 @@ SELECT stboxes(tgeompoint '{Point(1 1)@2000-01-01}');
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp::stbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tgeogpoint WHERE temp::stbox IS NOT NULL;
 
 -------------------------------------------------------------------------------
 

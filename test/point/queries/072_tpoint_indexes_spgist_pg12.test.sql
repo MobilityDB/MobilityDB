@@ -28,24 +28,24 @@
 -------------------------------------------------------------------------------
 
 ANALYZE tbl_tgeompoint;
-DROP INDEX IF EXISTS tbl_tgeompoint_spgist_idx;
-CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING SPGIST(temp);
+DROP INDEX IF EXISTS tbl_tgeompoint_quadtree_idx;
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
 
 SELECT k, temp |=| geometry 'Point empty' FROM tbl_tgeompoint ORDER BY 2, 1 LIMIT 3;
 SELECT k, round((temp |=| tgeompoint '[Point(1 1)@2001-06-01, Point(2 2)@2001-07-01]')::numeric, 6) FROM tbl_tgeompoint ORDER BY 2, 1 LIMIT 3;
 SELECT k, round((temp |=| tgeompoint '[Point(-1 -1 -1)@2001-06-01, Point(-2 -2 -2)@2001-07-01]')::numeric, 6) FROM tbl_tgeompoint3D ORDER BY 2, 1 LIMIT 3;
 
-DROP INDEX tbl_tgeompoint_spgist_idx;
+DROP INDEX tbl_tgeompoint_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
 ANALYZE tbl_tgeompoint3D;
-DROP INDEX IF EXISTS tbl_tgeompoint3D_spgist_idx;
-CREATE INDEX tbl_tgeompoint3D_spgist_idx ON tbl_tgeompoint3D USING SPGIST(temp);
+DROP INDEX IF EXISTS tbl_tgeompoint3D_quadtree_idx;
+CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
 
 SELECT k, round((temp |=| tgeompoint '[Point(1 1 1)@2001-06-01, Point(2 2 2)@2001-07-01]')::numeric, 6) FROM tbl_tgeompoint3D ORDER BY 2, 1 LIMIT 3;
 
-DROP INDEX tbl_tgeompoint3D_spgist_idx;
+DROP INDEX tbl_tgeompoint3D_quadtree_idx;
 
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes

@@ -471,6 +471,55 @@ extern PeriodSet *minus_periodset_period_internal(const PeriodSet *ps,
 extern PeriodSet *minus_periodset_periodset_internal(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
+/* Distance returning an Interval */
+
+extern Datum distance_timestamp_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_timestamp_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_timestamp_period(PG_FUNCTION_ARGS);
+extern Datum distance_timestamp_periodset(PG_FUNCTION_ARGS);
+extern Datum distance_timestampset_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_timestampset_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_timestampset_period(PG_FUNCTION_ARGS);
+extern Datum distance_timestampset_periodset(PG_FUNCTION_ARGS);
+extern Datum distance_period_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_period_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_period_period(PG_FUNCTION_ARGS);
+extern Datum distance_period_periodset(PG_FUNCTION_ARGS);
+extern Datum distance_periodset_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_periodset_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_periodset_period(PG_FUNCTION_ARGS);
+extern Datum distance_periodset_periodset(PG_FUNCTION_ARGS);
+
+extern Interval *distance_period_timestamp_internal(const Period *p,
+  TimestampTz t);
+extern Interval *distance_period_period_internal(const Period *p1,
+  const Period *p2);
+
+/* Distance returning a float in seconds for use with indexes in 
+ * nearest neighbor searches */
+
+extern Datum distance_secs_timestamp_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestamp_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestamp_period(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestamp_periodset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestampset_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestampset_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestampset_period(PG_FUNCTION_ARGS);
+extern Datum distance_secs_timestampset_periodset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_period_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_secs_period_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_period_period(PG_FUNCTION_ARGS);
+extern Datum distance_secs_period_periodset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_periodset_timestamp(PG_FUNCTION_ARGS);
+extern Datum distance_secs_periodset_timestampset(PG_FUNCTION_ARGS);
+extern Datum distance_secs_periodset_period(PG_FUNCTION_ARGS);
+extern Datum distance_secs_periodset_periodset(PG_FUNCTION_ARGS);
+
+extern double distance_secs_period_timestamp_internal(const Period *p,
+  TimestampTz t);
+extern double distance_secs_period_period_internal(const Period *p1,
+  const Period *p2);
+
 #endif
 
 /*****************************************************************************/

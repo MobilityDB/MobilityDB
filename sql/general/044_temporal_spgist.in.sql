@@ -38,15 +38,15 @@ CREATE FUNCTION tbox_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_spgist_choose(internal, internal)
+CREATE FUNCTION tbox_quadtree_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_spgist_picksplit(internal, internal)
+CREATE FUNCTION tbox_quadtree_picksplit(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbox_spgist_inner_consistent(internal, internal)
+CREATE FUNCTION tbox_quadtree_inner_consistent(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -68,7 +68,7 @@ CREATE FUNCTION temporal_spgist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tbox_spgist_ops
+CREATE OPERATOR CLASS tbox_quadtree_ops
   DEFAULT FOR TYPE tbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (tbox, tbox),
@@ -124,14 +124,14 @@ CREATE OPERATOR CLASS tbox_spgist_ops
   OPERATOR  31    #&> (tbox, tfloat),
   -- functions
   FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_spgist_choose(internal, internal),
-  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
-  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  tbox_quadtree_choose(internal, internal),
+  FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tbool_spgist_ops
+CREATE OPERATOR CLASS tbool_quadtree_ops
   DEFAULT FOR TYPE tbool USING spgist AS
   -- overlaps
   OPERATOR  3    && (tbool, timestamptz),
@@ -189,15 +189,15 @@ CREATE OPERATOR CLASS tbool_spgist_ops
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_spgist_choose(internal, internal),
-  FUNCTION  3  period_spgist_picksplit(internal, internal),
-  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  period_quadtree_choose(internal, internal),
+  FUNCTION  3  period_quadtree_picksplit(internal, internal),
+  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  temporal_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tint_spgist_ops
+CREATE OPERATOR CLASS tint_quadtree_ops
   DEFAULT FOR TYPE tint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tint, int),
@@ -315,15 +315,15 @@ CREATE OPERATOR CLASS tint_spgist_ops
   OPERATOR  31    #&> (tint, tfloat),
   -- functions
   FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_spgist_choose(internal, internal),
-  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
-  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  tbox_quadtree_choose(internal, internal),
+  FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  tnumber_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tfloat_spgist_ops
+CREATE OPERATOR CLASS tfloat_quadtree_ops
   DEFAULT FOR TYPE tfloat USING spgist AS
   -- strictly left
   OPERATOR  1    << (tfloat, float),
@@ -441,15 +441,15 @@ CREATE OPERATOR CLASS tfloat_spgist_ops
   OPERATOR  31    #&> (tfloat, tfloat),
   -- functions
   FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_spgist_choose(internal, internal),
-  FUNCTION  3  tbox_spgist_picksplit(internal, internal),
-  FUNCTION  4  tbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  tbox_quadtree_choose(internal, internal),
+  FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  tnumber_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS ttext_spgist_ops
+CREATE OPERATOR CLASS ttext_quadtree_ops
   DEFAULT FOR TYPE ttext USING spgist AS
   -- overlaps
   OPERATOR  3    && (ttext, timestamptz),
@@ -507,9 +507,9 @@ CREATE OPERATOR CLASS ttext_spgist_ops
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_spgist_choose(internal, internal),
-  FUNCTION  3  period_spgist_picksplit(internal, internal),
-  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  period_quadtree_choose(internal, internal),
+  FUNCTION  3  period_quadtree_picksplit(internal, internal),
+  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  temporal_spgist_compress(internal);
 

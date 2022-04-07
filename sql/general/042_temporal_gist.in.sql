@@ -99,7 +99,7 @@ CREATE FUNCTION ttext_gist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tbox_gist_ops
+CREATE OPERATOR CLASS tbox_rtree_ops
   DEFAULT FOR TYPE tbox USING gist AS
   -- strictly left
   OPERATOR  1    << (tbox, tbox),
@@ -163,7 +163,7 @@ CREATE OPERATOR CLASS tbox_gist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tbool_gist_ops
+CREATE OPERATOR CLASS tbool_rtree_ops
   DEFAULT FOR TYPE tbool USING gist AS
   STORAGE period,
   -- overlaps
@@ -230,7 +230,7 @@ CREATE OPERATOR CLASS tbool_gist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tint_gist_ops
+CREATE OPERATOR CLASS tint_rtree_ops
   DEFAULT FOR TYPE tint USING gist AS
   STORAGE tbox,
   -- strictly left
@@ -356,7 +356,7 @@ CREATE OPERATOR CLASS tint_gist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tfloat_gist_ops
+CREATE OPERATOR CLASS tfloat_rtree_ops
   DEFAULT FOR TYPE tfloat USING gist AS
   STORAGE tbox,
   -- strictly left
@@ -491,7 +491,7 @@ CREATE OPERATOR CLASS tfloat_gist_ops
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS ttext_gist_ops
+CREATE OPERATOR CLASS ttext_rtree_ops
   DEFAULT FOR TYPE ttext USING gist AS
   STORAGE period,
   -- overlaps

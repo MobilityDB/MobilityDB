@@ -605,7 +605,7 @@ SELECT tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, Point(3 1)@2000-01-03
   geometry 'Linestring(1 3,2 2,3 3)';
 -- 1.4142135623731
 </programlisting>
-					<para>The operator <varname>|=|</varname> can be used for doing nearest neighbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />). This operator corresponds to the PostGIS function <varname>ST_DistanceCPA</varname>, altough the latter requires both arguments to be a trajectory.</para>
+					<para>The operator <varname>|=|</varname> can be used for doing nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_temporal_types" />). This operator corresponds to the PostGIS function <varname>ST_DistanceCPA</varname>, altough the latter requires both arguments to be a trajectory.</para>
 				<programlisting xml:space="preserve">
 SELECT ST_DistanceCPA(
   tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,

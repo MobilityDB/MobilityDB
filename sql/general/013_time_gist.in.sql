@@ -62,7 +62,7 @@ CREATE FUNCTION period_gist_fetch(internal)
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS timestampset_gist_ops
+CREATE OPERATOR CLASS timestampset_rtree_ops
   DEFAULT FOR TYPE timestampset USING gist AS
   STORAGE period,
   -- overlaps
@@ -81,6 +81,13 @@ CREATE OPERATOR CLASS timestampset_gist_ops
   OPERATOR  17    -|- (timestampset, periodset),
   -- equals
   OPERATOR  18    = (timestampset, timestampset),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
+  OPERATOR  25    |=| (timestampset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (timestampset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (timestampset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (timestampset, periodset) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (timestampset, timestamptz),
   OPERATOR  28    &<# (timestampset, timestampset),
@@ -121,7 +128,7 @@ CREATE FUNCTION period_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'period_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS period_gist_ops
+CREATE OPERATOR CLASS period_rtree_ops
   DEFAULT FOR TYPE period USING gist AS
   -- overlaps
   OPERATOR  3    && (period, timestampset),
@@ -140,6 +147,13 @@ CREATE OPERATOR CLASS period_gist_ops
   OPERATOR  17    -|- (period, periodset),
   -- equals
   OPERATOR  18    = (period, period),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
+  OPERATOR  25    |=| (period, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (period, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (period, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (period, periodset) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (period, timestamptz),
   OPERATOR  28    &<# (period, timestampset),
@@ -181,7 +195,7 @@ CREATE FUNCTION periodset_gist_compress(internal)
   AS 'MODULE_PATHNAME', 'periodset_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR CLASS periodset_gist_ops
+CREATE OPERATOR CLASS periodset_rtree_ops
   DEFAULT FOR TYPE periodset USING gist AS
   STORAGE period,
   -- overlaps
@@ -201,6 +215,13 @@ CREATE OPERATOR CLASS periodset_gist_ops
   OPERATOR  17    -|- (periodset, periodset),
   -- equals
   OPERATOR  18    = (periodset, periodset),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
+  OPERATOR  25    |=| (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (periodset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
   OPERATOR  28    &<# (periodset, timestampset),

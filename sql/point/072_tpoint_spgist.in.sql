@@ -36,15 +36,15 @@ CREATE FUNCTION stbox_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_spgist_choose(internal, internal)
+CREATE FUNCTION stbox_quadtree_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_spgist_picksplit(internal, internal)
+CREATE FUNCTION stbox_quadtree_picksplit(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stbox_spgist_inner_consistent(internal, internal)
+CREATE FUNCTION stbox_quadtree_inner_consistent(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -59,7 +59,7 @@ CREATE FUNCTION tpoint_spgist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS stbox_spgist_ops
+CREATE OPERATOR CLASS stbox_quadtree_ops
   DEFAULT FOR TYPE stbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (stbox, stbox),
@@ -135,14 +135,14 @@ CREATE OPERATOR CLASS stbox_spgist_ops
   OPERATOR  35    /&> (stbox, tgeompoint),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_spgist_choose(internal, internal),
-  FUNCTION  3  stbox_spgist_picksplit(internal, internal),
-  FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  stbox_quadtree_choose(internal, internal),
+  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tgeompoint_spgist_ops
+CREATE OPERATOR CLASS tgeompoint_quadtree_ops
   DEFAULT FOR TYPE tgeompoint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tgeompoint, geometry),
@@ -268,15 +268,15 @@ CREATE OPERATOR CLASS tgeompoint_spgist_ops
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_spgist_choose(internal, internal),
-  FUNCTION  3  stbox_spgist_picksplit(internal, internal),
-  FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  stbox_quadtree_choose(internal, internal),
+  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  tpoint_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS tgeogpoint_spgist_ops
+CREATE OPERATOR CLASS tgeogpoint_quadtree_ops
   DEFAULT FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
   OPERATOR  3    && (tgeogpoint, geography),
@@ -354,9 +354,9 @@ CREATE OPERATOR CLASS tgeogpoint_spgist_ops
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_spgist_choose(internal, internal),
-  FUNCTION  3  stbox_spgist_picksplit(internal, internal),
-  FUNCTION  4  stbox_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  stbox_quadtree_choose(internal, internal),
+  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  tpoint_spgist_compress(internal);
 

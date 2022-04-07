@@ -270,13 +270,13 @@ SELECT asText(round((temp::geometry)::tgeompoint, 6)) FROM tbl_tgeompoint3D LIMI
  POINT Z (72.479066 35.632887 62.944135)@2001-04-26 00:13:00+00
 (10 rows)
 
-SELECT count(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
+SELECT COUNT(*) FROM tbl_tgeompoint WHERE (temp::geometry)::tgeompoint = temp;
  count 
 -------
     59
 (1 row)
 
-SELECT count(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
+SELECT COUNT(*) FROM tbl_tgeompoint3D WHERE (temp::geometry)::tgeompoint = temp;
  count 
 -------
     58
