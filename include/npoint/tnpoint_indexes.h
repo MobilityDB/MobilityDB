@@ -35,6 +35,7 @@
 #ifndef __TNPOINT_INDEXES_H__
 #define __TNPOINT_INDEXES_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>

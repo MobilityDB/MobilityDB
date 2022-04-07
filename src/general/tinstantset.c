@@ -494,15 +494,15 @@ tinstantset_write(const TInstantSet *ti, StringInfo buf)
  * read from the buffer
  *
  * @param[in] buf Buffer
- * @param[in] basetypid Oid of the base type
+ * @param[in] temptype Temporal type
  */
 TInstantSet *
-tinstantset_read(StringInfo buf, Oid basetypid)
+tinstantset_read(StringInfo buf, CachedType temptype)
 {
   int count = (int) pq_getmsgint(buf, 4);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
-    instants[i] = tinstant_read(buf, basetypid);
+    instants[i] = tinstant_read(buf, temptype);
   return tinstantset_make_free(instants, count, MERGE_NO);
 }
 

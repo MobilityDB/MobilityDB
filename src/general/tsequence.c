@@ -773,7 +773,7 @@ tseqarr_normalize(const TSequence **sequences, int count, int *newcount)
       /* If float/point sequences and collinear last/first segments having the same duration
          ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
       */
-      (basetype_continuous(basetype) &&
+      (temptype_continuous(seq1->temptype) &&
         datum_eq(last1value, first1value, basetype) &&
         datum_collinear(basetype, last2value, first1value, first2value,
           last2->t, first1->t, first2->t))
@@ -1405,10 +1405,10 @@ tsequence_write(const TSequence *seq, StringInfo buf)
  * read from the buffer (dispatch function)
  *
  * @param[in] buf Buffer
- * @param[in] basetypid Oid of the base type
+ * @param[in] temptype Temporal type
  */
 TSequence *
-tsequence_read(StringInfo buf, Oid basetypid)
+tsequence_read(StringInfo buf, CachedType temptype)
 {
   int count = (int) pq_getmsgint(buf, 4);
   bool lower_inc = (char) pq_getmsgbyte(buf);
@@ -1416,7 +1416,7 @@ tsequence_read(StringInfo buf, Oid basetypid)
   bool linear = (char) pq_getmsgbyte(buf);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i++)
-    instants[i] = tinstant_read(buf, basetypid);
+    instants[i] = tinstant_read(buf, temptype);
   return tsequence_make_free(instants, count, lower_inc,
     upper_inc, linear, NORMALIZE);
 }

@@ -35,10 +35,11 @@
 #ifndef __LIFTING_H__
 #define __LIFTING_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /**
  * Structure to represent the information about lifted functions

@@ -35,11 +35,13 @@
 #ifndef __TPOINT_SPATIALFUNCS_H__
 #define __TPOINT_SPATIALFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
-#include "tpoint.h"
+#include "point/tpoint.h"
 
 /* Get the flags byte of a GSERIALIZED depending on the version */
 #if POSTGIS_VERSION_NUMBER < 30000

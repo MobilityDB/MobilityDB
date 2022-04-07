@@ -35,12 +35,13 @@
 #ifndef __TINSTANTSET_H__
 #define __TINSTANTSET_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -80,7 +81,7 @@ extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1,
 extern char *tinstantset_to_string(const TInstantSet *ti,
   char *(*value_out)(Oid, Datum));
 extern void tinstantset_write(const TInstantSet *ti, StringInfo buf);
-extern TInstantSet *tinstantset_read(StringInfo buf, Oid basetypid);
+extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 

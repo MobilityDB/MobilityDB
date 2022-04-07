@@ -35,10 +35,11 @@
 #ifndef __TPOINT_TEMPSPATIALRELS_H__
 #define __TPOINT_TEMPSPATIALRELS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
 
 /* Compute either the tintersects or the tdisjoint relationship */

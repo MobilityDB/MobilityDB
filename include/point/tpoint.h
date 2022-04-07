@@ -35,13 +35,14 @@
 #ifndef __TPOINT_H__
 #define __TPOINT_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "general/temporal.h"
-
+/* PostGIS */
 #include <liblwgeom.h>
-#include "stbox.h"
+/* MobilityDB */
+#include "general/temporal.h"
+#include "point/stbox.h"
 
 /*****************************************************************************
  * Macros for manipulating the 'typmod' int. An int32_t used as follows:

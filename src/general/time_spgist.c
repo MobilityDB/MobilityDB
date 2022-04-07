@@ -220,23 +220,23 @@ overAfter2D(const PeriodNode *nodebox, const Period *query)
  * Distance between a query period and a box of periods
  */
 static double
-distance_period_nodeperiod(Period *query, PeriodNode *box)
+distance_period_nodeperiod(Period *query, PeriodNode *nodebox)
 {
-  /* If the the period intersects the box return 0 */
+  /* If the the period intersects the nodebox return 0 */
   Period p;
-  period_set(box->left.lower, box->right.upper,
-    box->left.lower_inc, box->right.upper_inc, &p);
+  period_set(nodebox->left.lower, nodebox->right.upper,
+    nodebox->left.lower_inc, nodebox->right.upper_inc, &p);
   if (overlaps_period_period_internal(query, &p))
     return 0;
 
-  /* If the query is to the left of the box return the distance between
-   * the upper bound of the query and lower bound of the box */
-  if (box->left.lower >= query->upper)
-    return box->left.lower - query->upper;
+  /* If the query is to the left of the nodebox return the distance between
+   * the upper bound of the query and lower bound of the nodebox */
+  if (nodebox->left.lower >= query->upper)
+    return nodebox->left.lower - query->upper;
   
-  /* If the query is to the right of the box return the distance between
-   * the upper bound of the box and lower bound of the query */
-  return query->lower - box->right.upper;
+  /* If the query is to the right of the nodebox return the distance between
+   * the upper bound of the nodebox and lower bound of the query */
+  return query->lower - nodebox->right.upper;
 }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
 
@@ -443,7 +443,7 @@ period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
       if (in->norderbys > 0)
       {
-        /* Use parent quadrant box as traversalValue */
+        /* Use parent quadrant nodebox as traversalValue */
         old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
         out->traversalValues[i] = periodnode_copy(nodebox);
         MemoryContextSwitchTo(old_ctx);
@@ -482,7 +482,7 @@ period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   /* Loop for each child */
   for (node = 0; node < in->nNodes; node++)
   {
-    /* Compute the bounding box of the child */
+    /* Compute the bounding box of the child node */
     periodnode_quadtree_next(nodebox, centroid, node, &next_nodeperiod);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
@@ -563,7 +563,7 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
-  Period *key = DatumGetPeriodP(in->leafDatum);
+  Period *key = DatumGetPeriodP(in->leafDatum), period;
   bool result = true;
   int i;
 
@@ -580,14 +580,13 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nkeys; i++)
   {
     StrategyNumber strategy = in->scankeys[i].sk_strategy;
-    Period query;
 
     /* Update the recheck flag according to the strategy */
     out->recheck |= period_index_recheck(strategy);
 
     /* Cast the query to a period and perform the test */
-    time_spgist_get_period(&in->scankeys[i], &query);
-    result = period_index_consistent_leaf(key, &query, strategy);
+    time_spgist_get_period(&in->scankeys[i], &period);
+    result = period_index_consistent_leaf(key, &period, strategy);
     /* All tests are lossy for temporal types */
     if (temporal_type(in->scankeys[i].sk_subtype))
       out->recheck = true;
@@ -606,9 +605,9 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     out->distances = distances;
     for (i = 0; i < in->norderbys; i++)
     {
-      Period box;
-      time_spgist_get_period(&in->orderbys[i], &box);
-      distances[i] = distance_secs_period_period_internal(&box, key);
+      /* Cast the order by argument to a period and perform the test */
+      time_spgist_get_period(&in->orderbys[i], &period);
+      distances[i] = distance_secs_period_period_internal(&period, key);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;

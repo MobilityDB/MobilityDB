@@ -35,10 +35,13 @@
 #ifndef __TEMPORAL_PARSER_H__
 #define __TEMPORAL_PARSER_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "timetypes.h"
-#include "temporal.h"
+/* MobilityDB */
+#include "general/tempcache.h"
+#include "general/timetypes.h"
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -60,8 +63,8 @@ extern TimestampTz timestamp_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
-extern TInstant *tinstant_parse(char **str, Oid basetypid, bool end, bool make);
-extern Temporal *temporal_parse(char **str, Oid basetypid);
+extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end, bool make);
+extern Temporal *temporal_parse(char **str, CachedType temptype);
 
 /*****************************************************************************/
 

@@ -35,12 +35,13 @@
 #ifndef __TIME_ANALYZE_H__
 #define __TIME_ANALYZE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
 #include <commands/vacuum.h>
-
-#include "period.h"
+/* MobilityDB */
+#include "general/period.h"
 
 /*
  * It is not possible to differentiate bound histogram of ranges and of periods

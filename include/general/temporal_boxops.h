@@ -40,10 +40,10 @@
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
 /* MobilityDB */
-#include "temporal.h"
 #include "general/tempcache.h"
-#include "period.h"
-#include "tbox.h"
+#include "general/temporal.h"
+#include "general/period.h"
+#include "general/tbox.h"
 #include "point/stbox.h"
 
 /*****************************************************************************/

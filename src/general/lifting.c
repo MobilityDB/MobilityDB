@@ -230,7 +230,7 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     instants[i] = tfunc_tinstant(inst, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
-    basetype_continuous(temptype_basetype(lfinfo->restype));
+    temptype_continuous(lfinfo->restype);
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
 }
@@ -373,7 +373,7 @@ tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
     instants[i] = tfunc_tinstant_base(inst, value, lfinfo);
   }
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags) &&
-    basetype_continuous(temptype_basetype(lfinfo->restype));
+    temptype_continuous(lfinfo->restype);
   result[0] = tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, linear, NORMALIZE);
   return 1;

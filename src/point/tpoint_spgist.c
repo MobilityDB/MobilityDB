@@ -40,7 +40,7 @@
  * objects, so called "spaghetti data".
  *
  * Unlike the original oct-tree, we are splitting the tree into 256
- * octants in 8D space.  It is easier to imagine it as splitting space
+ * quadrants in 8D space.  It is easier to imagine it as splitting space
  * four times into four:
  * @code
  *              |      |                        |      |
@@ -58,19 +58,19 @@
  * @endcode
  * We are using STBOX data type as the prefix, but we are treating them
  * as points in 8-dimensional space, because 4D boxes are not enough
- * to represent the octant boundaries in 8D space.  They however are
+ * to represent the quadrant boundaries in 8D space.  They however are
  * sufficient to point out the additional boundaries of the next
- * octant.
+ * quadrant.
  *
  * We are using traversal values provided by SP-GiST to calculate and
- * to store the bounds of the octants, while traversing into the tree.
+ * to store the bounds of the quadrants, while traversing into the tree.
  * Traversal value has all the boundaries in the 8D space, and is is
  * capable of transferring the required boundaries to the following
  * traversal values.  In conclusion, three things are necessary
  * to calculate the next traversal value:
  *
  *  1. the traversal value of the parent
- *  2. the octant of the current node
+ *  2. the quadrant of the current node
  *  3. the prefix of the current node
  *
  * If we visualize them on our simplified drawing (see the drawing above);
@@ -79,12 +79,12 @@
  * the inner axis.
  *
  * For example, consider the case of overlapping.  When recursion
- * descends deeper and deeper down the tree, all octants in
+ * descends deeper and deeper down the tree, all quadrants in
  * the current node will be checked for overlapping.  The boundaries
- * will be re-calculated for all octants.  Overlap check answers
- * the question: can any box from this octant overlap with the given
- * box?  If yes, then this octant will be walked.  If no, then this
- * octant will be skipped.
+ * will be re-calculated for all quadrants.  Overlap check answers
+ * the question: can any box from this quadrant overlap with the given
+ * box?  If yes, then this quadrant will be walked.  If no, then this
+ * quadrant will be skipped.
  *
  * This method provides restrictions for minimum and maximum values of
  * every dimension of every corner of the box on every level of the tree
@@ -128,63 +128,63 @@ typedef struct
 {
   STBOX left;
   STBOX right;
-} CubeSTbox;
+} STboxNode;
 
 /*****************************************************************************
  * General functions
  *****************************************************************************/
 
 /**
- * Copy a CubeSTbox
+ * Copy a STboxNode
  */
-CubeSTbox *
-cubestbox_copy(const CubeSTbox *box)
+STboxNode *
+cubestbox_copy(const STboxNode *box)
 {
-  CubeSTbox *result = palloc(sizeof(CubeSTbox));
-  memcpy(result, box, sizeof(CubeSTbox));
+  STboxNode *result = palloc(sizeof(STboxNode));
+  memcpy(result, box, sizeof(STboxNode));
   return result;
 }
 
 /**
- * Calculate the octant
+ * Calculate the quadrant
  *
- * The octant is 8 bit unsigned integer with all bits in use.
+ * The quadrant is 8 bit unsigned integer with all bits in use.
  * This function accepts 2 STBOX as input.  All 8 bits are set by comparing a
- * corner of the box. This makes 256 octants in total.
+ * corner of the box. This makes 256 quadrants in total.
  */
 static uint8
 getOctant8D(const STBOX *centroid, const STBOX *inBox)
 {
-  uint8 octant = 0;
+  uint8 quadrant = 0;
 
   if (MOBDB_FLAGS_GET_Z(centroid->flags))
   {
     if (inBox->zmin > centroid->zmin)
-      octant |= 0x80;
+      quadrant |= 0x80;
 
     if (inBox->zmax > centroid->zmax)
-      octant |= 0x40;
+      quadrant |= 0x40;
   }
 
   if (inBox->ymin > centroid->ymin)
-    octant |= 0x20;
+    quadrant |= 0x20;
 
   if (inBox->ymax > centroid->ymax)
-    octant |= 0x10;
+    quadrant |= 0x10;
 
   if (inBox->xmin > centroid->xmin)
-    octant |= 0x08;
+    quadrant |= 0x08;
 
   if (inBox->xmax > centroid->xmax)
-    octant |= 0x04;
+    quadrant |= 0x04;
 
   if (inBox->tmin > centroid->tmin)
-    octant |= 0x02;
+    quadrant |= 0x02;
 
   if (inBox->tmax > centroid->tmax)
-    octant |= 0x01;
+    quadrant |= 0x01;
 
-  return octant;
+  return quadrant;
 }
 
 /**
@@ -194,25 +194,25 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
  * initialize the struct to cover the whole 8D space.
  */
 static void
-initCubeSTbox(STBOX *centroid, CubeSTbox *cube_box)
+initCubeSTbox(STBOX *centroid, STboxNode *nodebox)
 {
-  memset(cube_box, 0, sizeof(CubeSTbox));
+  memset(nodebox, 0, sizeof(STboxNode));
   double infinity = get_float8_infinity();
 
-  cube_box->left.xmin = cube_box->right.xmin = -infinity;
-  cube_box->left.xmax = cube_box->right.xmax = infinity;
+  nodebox->left.xmin = nodebox->right.xmin = -infinity;
+  nodebox->left.xmax = nodebox->right.xmax = infinity;
 
-  cube_box->left.ymin = cube_box->right.ymin = -infinity;
-  cube_box->left.ymax = cube_box->right.ymax = infinity;
+  nodebox->left.ymin = nodebox->right.ymin = -infinity;
+  nodebox->left.ymax = nodebox->right.ymax = infinity;
 
-  cube_box->left.zmin = cube_box->right.zmin = -infinity;
-  cube_box->left.zmax = cube_box->right.zmax = infinity;
+  nodebox->left.zmin = nodebox->right.zmin = -infinity;
+  nodebox->left.zmax = nodebox->right.zmax = infinity;
 
-  cube_box->left.tmin = cube_box->right.tmin = DT_NOBEGIN;
-  cube_box->left.tmax = cube_box->right.tmax = DT_NOEND;
+  nodebox->left.tmin = nodebox->right.tmin = DT_NOBEGIN;
+  nodebox->left.tmax = nodebox->right.tmax = DT_NOEND;
 
-  cube_box->left.srid = cube_box->right.srid = centroid->srid;
-  cube_box->left.flags = cube_box->right.flags = centroid->flags;
+  nodebox->left.srid = nodebox->right.srid = centroid->srid;
+  nodebox->left.flags = nodebox->right.flags = centroid->flags;
 
   return;
 }
@@ -220,253 +220,253 @@ initCubeSTbox(STBOX *centroid, CubeSTbox *cube_box)
 /**
  * Calculate the next traversal value
  *
- * All centroids are bounded by CubeSTbox, but SP-GiST only keeps
- * boxes. When we are traversing the tree, we must calculate CubeSTbox,
- * using centroid and octant.
+ * All centroids are bounded by STboxNode, but SP-GiST only keeps
+ * boxes. When we are traversing the tree, we must calculate STboxNode,
+ * using centroid and quadrant.
  */
 static void
-nextCubeSTbox(const CubeSTbox *cube_box, const STBOX *centroid, uint8 octant,
-  CubeSTbox *next_cube_box)
+stboxnode_quadtree_next(const STboxNode *nodebox, const STBOX *centroid,
+  uint8 quadrant, STboxNode *next_nodebox)
 {
-  memcpy(next_cube_box, cube_box, sizeof(CubeSTbox));
+  memcpy(next_nodebox, nodebox, sizeof(STboxNode));
 
   if (MOBDB_FLAGS_GET_Z(centroid->flags))
   {
-    if (octant & 0x80)
-      next_cube_box->left.zmin = centroid->zmin;
+    if (quadrant & 0x80)
+      next_nodebox->left.zmin = centroid->zmin;
     else
-      next_cube_box->left.zmax = centroid->zmin;
+      next_nodebox->left.zmax = centroid->zmin;
 
-    if (octant & 0x40)
-      next_cube_box->right.zmin = centroid->zmax;
+    if (quadrant & 0x40)
+      next_nodebox->right.zmin = centroid->zmax;
     else
-      next_cube_box->right.zmax = centroid->zmax;
+      next_nodebox->right.zmax = centroid->zmax;
   }
 
-  if (octant & 0x20)
-    next_cube_box->left.ymin = centroid->ymin;
+  if (quadrant & 0x20)
+    next_nodebox->left.ymin = centroid->ymin;
   else
-    next_cube_box->left.ymax = centroid->ymin;
+    next_nodebox->left.ymax = centroid->ymin;
 
-  if (octant & 0x10)
-    next_cube_box->right.ymin = centroid->ymax;
+  if (quadrant & 0x10)
+    next_nodebox->right.ymin = centroid->ymax;
   else
-    next_cube_box->right.ymax = centroid->ymax;
+    next_nodebox->right.ymax = centroid->ymax;
 
-  if (octant & 0x08)
-    next_cube_box->left.xmin = centroid->xmin;
+  if (quadrant & 0x08)
+    next_nodebox->left.xmin = centroid->xmin;
   else
-    next_cube_box->left.xmax = centroid->xmin;
+    next_nodebox->left.xmax = centroid->xmin;
 
-  if (octant & 0x04)
-    next_cube_box->right.xmin = centroid->xmax;
+  if (quadrant & 0x04)
+    next_nodebox->right.xmin = centroid->xmax;
   else
-    next_cube_box->right.xmax = centroid->xmax;
+    next_nodebox->right.xmax = centroid->xmax;
 
-  if (octant & 0x02)
-    next_cube_box->left.tmin = centroid->tmin;
+  if (quadrant & 0x02)
+    next_nodebox->left.tmin = centroid->tmin;
   else
-    next_cube_box->left.tmax = centroid->tmin;
+    next_nodebox->left.tmax = centroid->tmin;
 
-  if (octant & 0x01)
-    next_cube_box->right.tmin = centroid->tmax;
+  if (quadrant & 0x01)
+    next_nodebox->right.tmin = centroid->tmax;
   else
-    next_cube_box->right.tmax = centroid->tmax;
+    next_nodebox->right.tmax = centroid->tmax;
 
   return;
 }
 
 /**
- * Can any cube from cube_box overlap with query?
+ * Can any box from nodebox overlap with query?
  */
 static bool
-overlap8D(const CubeSTbox *cube_box, const STBOX *query)
+overlap8D(const STboxNode *nodebox, const STBOX *query)
 {
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= cube_box->left.xmin <= query->xmax &&
-      cube_box->right.xmax >= query->xmin &&
-      cube_box->left.ymin <= query->ymax &&
-      cube_box->right.ymax >= query->ymin;
+    result &= nodebox->left.xmin <= query->xmax &&
+      nodebox->right.xmax >= query->xmin &&
+      nodebox->left.ymin <= query->ymax &&
+      nodebox->right.ymax >= query->ymin;
   if (MOBDB_FLAGS_GET_Z(query->flags))
-    result &= cube_box->left.zmin <= query->zmax &&
-      cube_box->right.zmax >= query->zmin;
+    result &= nodebox->left.zmin <= query->zmax &&
+      nodebox->right.zmax >= query->zmin;
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= cube_box->left.tmin <= query->tmax &&
-      cube_box->right.tmax >= query->tmin;
+    result &= nodebox->left.tmin <= query->tmax &&
+      nodebox->right.tmax >= query->tmin;
   return result;
 }
 
 /**
- * Can any cube from cube_box contain query?
+ * Can any box from nodebox contain query?
  */
 static bool
-contain8D(const CubeSTbox *cube_box, const STBOX *query)
+contain8D(const STboxNode *nodebox, const STBOX *query)
 {
   bool result = true;
   /* Result value is computed only for the dimensions of the query */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= cube_box->right.xmax >= query->xmax &&
-      cube_box->left.xmin <= query->xmin &&
-      cube_box->right.ymax >= query->ymax &&
-      cube_box->left.ymin <= query->ymin;
+    result &= nodebox->right.xmax >= query->xmax &&
+      nodebox->left.xmin <= query->xmin &&
+      nodebox->right.ymax >= query->ymax &&
+      nodebox->left.ymin <= query->ymin;
   if (MOBDB_FLAGS_GET_Z(query->flags))
-    result &= cube_box->right.zmax >= query->zmax &&
-      cube_box->left.zmin <= query->zmin;
+    result &= nodebox->right.zmax >= query->zmax &&
+      nodebox->left.zmin <= query->zmin;
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= cube_box->right.tmax >= query->tmax &&
-      cube_box->left.tmin <= query->tmin;
+    result &= nodebox->right.tmax >= query->tmax &&
+      nodebox->left.tmin <= query->tmin;
   return result;
 }
 
 /**
- * Can any cube from cube_box be left of query?
+ * Can any box from nodebox be left of query?
  */
 static bool
-left8D(const CubeSTbox *cube_box, const STBOX *query)
+left8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.xmax < query->xmin);
+  return (nodebox->right.xmax < query->xmin);
 }
 
 /**
- * Can any cube from cube_box does not extend the right of query?
+ * Can any box from nodebox does not extend the right of query?
  */
 static bool
-overLeft8D(const CubeSTbox *cube_box, const STBOX *query)
+overLeft8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.xmax <= query->xmax);
+  return (nodebox->right.xmax <= query->xmax);
 }
 
 /**
- * Can any cube from cube_box be right of query?
+ * Can any box from nodebox be right of query?
  */
 static bool
-right8D(const CubeSTbox *cube_box, const STBOX *query)
+right8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.xmin > query->xmax);
+  return (nodebox->left.xmin > query->xmax);
 }
 
 /**
- * Can any cube from cube_box does not extend the left of query?
+ * Can any box from nodebox does not extend the left of query?
  */
 static bool
-overRight8D(const CubeSTbox *cube_box, const STBOX *query)
+overRight8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.xmin >= query->xmin);
+  return (nodebox->left.xmin >= query->xmin);
 }
 
 /**
- * Can any cube from cube_box be below of query?
+ * Can any box from nodebox be below of query?
  */
 static bool
-below8D(const CubeSTbox *cube_box, const STBOX *query)
+below8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.ymax < query->ymin);
+  return (nodebox->right.ymax < query->ymin);
 }
 
 /**
- * Can any cube from cube_box does not extend above query?
+ * Can any box from nodebox does not extend above query?
  */
 static bool
-overBelow8D(const CubeSTbox *cube_box, const STBOX *query)
+overBelow8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.ymax <= query->ymax);
+  return (nodebox->right.ymax <= query->ymax);
 }
 
 /**
- * Can any cube from cube_box be above of query?
+ * Can any box from nodebox be above of query?
  */
 static bool
-above8D(const CubeSTbox *cube_box, const STBOX *query)
+above8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.ymin > query->ymax);
+  return (nodebox->left.ymin > query->ymax);
 }
 
 /**
- * Can any cube from cube_box does not extend below of query?
+ * Can any box from nodebox does not extend below of query?
  */
 static bool
-overAbove8D(const CubeSTbox *cube_box, const STBOX *query)
+overAbove8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.ymin >= query->ymin);
+  return (nodebox->left.ymin >= query->ymin);
 }
 
 /**
- * Can any cube from cube_box be in front of query?
+ * Can any box from nodebox be in front of query?
  */
 static bool
-front8D(CubeSTbox *cube_box, STBOX *query)
+front8D(STboxNode *nodebox, STBOX *query)
 {
-  return (cube_box->right.zmax < query->zmin);
+  return (nodebox->right.zmax < query->zmin);
 }
 
 /**
- * Can any cube from cube_box does not extend the back of query?
+ * Can any box from nodebox does not extend the back of query?
  */
 static bool
-overFront8D(const CubeSTbox *cube_box, const STBOX *query)
+overFront8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.zmax <= query->zmax);
+  return (nodebox->right.zmax <= query->zmax);
 }
 
 /**
- * Can any cube from cube_box be back to query?
+ * Can any box from nodebox be back to query?
  */
 static bool
-back8D(const CubeSTbox *cube_box, const STBOX *query)
+back8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.zmin > query->zmax);
+  return (nodebox->left.zmin > query->zmax);
 }
 
 /**
- * Can any cube from cube_box does not extend the front of query?
+ * Can any box from nodebox does not extend the front of query?
  */
 static bool
-overBack8D(const CubeSTbox *cube_box, const STBOX *query)
+overBack8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.zmin >= query->zmin);
+  return (nodebox->left.zmin >= query->zmin);
 }
 
 /**
- * Can any cube from cube_box be before of query?
+ * Can any box from nodebox be before of query?
  */
 static bool
-before8D(const CubeSTbox *cube_box, const STBOX *query)
+before8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.tmax < query->tmin);
+  return (nodebox->right.tmax < query->tmin);
 }
 
 /**
- * Can any cube from cube_box does not extend the after of query?
+ * Can any box from nodebox does not extend the after of query?
  */
 static bool
-overBefore8D(const CubeSTbox *cube_box, const STBOX *query)
+overBefore8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->right.tmax <= query->tmax);
+  return (nodebox->right.tmax <= query->tmax);
 }
 
 /**
- * Can any cube from cube_box be after of query?
+ * Can any box from nodebox be after of query?
  */
 static bool
-after8D(const CubeSTbox *cube_box, const STBOX *query)
+after8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.tmin > query->tmax);
+  return (nodebox->left.tmin > query->tmax);
 }
 
 /**
- * Can any cube from cube_box does not extend the before of query?
+ * Can any box from nodebox does not extend the before of query?
  */
 static bool
-overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
+overAfter8D(const STboxNode *nodebox, const STBOX *query)
 {
-  return (cube_box->left.tmin >= query->tmin);
+  return (nodebox->left.tmin >= query->tmin);
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
- * Lower bound for the distance between query and cube_box.
+ * Lower bound for the distance between query and nodebox.
  * @note The temporal dimension is only taken into account for returning
  * +infinity (which will be translated into NULL) if the boxes do not
  * intersect in time. Besides that, it is not possible to mix different
@@ -474,7 +474,7 @@ overAfter8D(const CubeSTbox *cube_box, const STBOX *query)
  * restrictive.
  */
 static double
-distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
+distance_stbox_nodebox(const STBOX *query, const STboxNode *nodebox)
 {
   /* The query argument can be an empty geometry */
   if (! MOBDB_FLAGS_GET_X(query->flags))
@@ -482,32 +482,32 @@ distanceBoxCubeBox(const STBOX *query, const CubeSTbox *cube_box)
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(query->flags);
-  if (hast && (query->tmin > cube_box->right.tmax ||
-      cube_box->left.tmin > query->tmax))
+  if (hast && (query->tmin > nodebox->right.tmax ||
+      nodebox->left.tmin > query->tmax))
     return DBL_MAX;
 
   double dx, dy, dz;
-  if (query->xmax < cube_box->left.xmin)
-    dx = cube_box->left.xmin - query->xmax;
-  else if (query->xmin > cube_box->right.xmax)
-    dx = query->xmin - cube_box->right.xmax;
+  if (query->xmax < nodebox->left.xmin)
+    dx = nodebox->left.xmin - query->xmax;
+  else if (query->xmin > nodebox->right.xmax)
+    dx = query->xmin - nodebox->right.xmax;
   else
     dx = 0;
 
-  if (query->ymax < cube_box->left.ymin)
-    dy = cube_box->left.ymin - query->ymax;
-  else if (query->ymin > cube_box->right.ymax)
-    dy = query->ymin - cube_box->right.ymax;
+  if (query->ymax < nodebox->left.ymin)
+    dy = nodebox->left.ymin - query->ymax;
+  else if (query->ymin > nodebox->right.ymax)
+    dy = query->ymin - nodebox->right.ymax;
   else
     dy = 0;
 
-  bool hasz = MOBDB_FLAGS_GET_Z(cube_box->left.flags);
+  bool hasz = MOBDB_FLAGS_GET_Z(nodebox->left.flags);
   if (hasz)
   {
-    if (query->zmax < cube_box->left.zmin)
-      dz = cube_box->left.zmin - query->zmax;
-    else if (query->zmin > cube_box->right.zmax)
-      dz = query->zmin - cube_box->right.zmax;
+    if (query->zmax < nodebox->left.zmin)
+      dz = nodebox->left.zmin - query->zmax;
+    else if (query->zmin > nodebox->right.zmax)
+      dz = query->zmin - nodebox->right.zmax;
     else
       dz = 0;
   }
@@ -616,7 +616,7 @@ PG_FUNCTION_INFO_V1(stbox_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for temporal points
  *
- * It splits a list of boxes into octants by choosing a central 8D
+ * It splits a list of boxes into quadrants by choosing a central 8D
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
@@ -696,15 +696,15 @@ stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
   /*
-   * Assign ranges to corresponding nodes according to octants relative to
+   * Assign ranges to corresponding nodes according to quadrants relative to
    * the "centroid" range
    */
   for (i = 0; i < in->nTuples; i++)
   {
     box = DatumGetSTboxP(in->datums[i]);
-    uint8 octant = getOctant8D(centroid, box);
+    uint8 quadrant = getOctant8D(centroid, box);
     out->leafTupleDatums[i] = STboxPGetDatum(box);
-    out->mapTuplesToNodes[i] = octant;
+    out->mapTuplesToNodes[i] = quadrant;
   }
 
   pfree(lowXs); pfree(highXs);
@@ -733,8 +733,8 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
   int i;
   MemoryContext old_ctx;
-  CubeSTbox *cube_box, infbox, next_cube_box;
-  uint16 octant;
+  STboxNode *nodebox, infbox, next_nodebox;
+  uint16 quadrant;
   STBOX *centroid, *queries, *orderbys;
 
   /* Fetch the centroid of this node. */
@@ -746,18 +746,18 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
    * we have just begun to walk the tree.
    */
   if (in->traversalValue)
-    cube_box = in->traversalValue;
+    nodebox = in->traversalValue;
   else
   {
     initCubeSTbox(centroid, &infbox);
-    cube_box = &infbox;
+    nodebox = &infbox;
   }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   /*
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
-   * This transformation is done here to avoid doing it for all octants
+   * This transformation is done here to avoid doing it for all quadrants
    * in the loop below.
    */
   if (in->norderbys > 0)
@@ -782,14 +782,14 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
       {
         /* Use parent quadrant box as traversalValue */
         old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
-        out->traversalValues[i] = cubestbox_copy(cube_box);
+        out->traversalValues[i] = cubestbox_copy(nodebox);
         MemoryContextSwitchTo(old_ctx);
 
         /* Compute the distances */
         double *distances = palloc0(sizeof(double) * in->norderbys);
         out->distances[i] = distances;
         for (int j = 0; j < in->norderbys; j++)
-          distances[j] = distanceBoxCubeBox(&orderbys[i], cube_box);
+          distances[j] = distance_stbox_nodebox(&orderbys[i], nodebox);
 
         pfree(orderbys);
       }
@@ -802,7 +802,7 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   /*
    * Transform the queries into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
-   * This transformation is done here to avoid doing it for all octants
+   * This transformation is done here to avoid doing it for all quadrants
    * in the loop below.
    */
   if (in->nkeys > 0)
@@ -821,9 +821,9 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     out->distances = (double **) palloc(sizeof(double *) * in->nNodes);
 #endif
 
-  for (octant = 0; octant < in->nNodes; octant++)
+  for (quadrant = 0; quadrant < in->nNodes; quadrant++)
   {
-    nextCubeSTbox(cube_box, centroid, (uint8) octant, &next_cube_box);
+    stboxnode_quadtree_next(nodebox, centroid, (uint8) quadrant, &next_nodebox);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -833,59 +833,59 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap8D(&next_cube_box, &queries[i]);
+          flag = overlap8D(&next_nodebox, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain8D(&next_cube_box, &queries[i]);
+          flag = contain8D(&next_nodebox, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight8D(&next_cube_box, &queries[i]);
+          flag = !overRight8D(&next_nodebox, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right8D(&next_cube_box, &queries[i]);
+          flag = !right8D(&next_nodebox, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft8D(&next_cube_box, &queries[i]);
+          flag = !overLeft8D(&next_nodebox, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left8D(&next_cube_box, &queries[i]);
+          flag = !left8D(&next_nodebox, &queries[i]);
           break;
         case RTFrontStrategyNumber:
-          flag = !overBack8D(&next_cube_box, &queries[i]);
+          flag = !overBack8D(&next_nodebox, &queries[i]);
           break;
         case RTOverFrontStrategyNumber:
-          flag = !back8D(&next_cube_box, &queries[i]);
+          flag = !back8D(&next_nodebox, &queries[i]);
           break;
         case RTBackStrategyNumber:
-          flag = !overFront8D(&next_cube_box, &queries[i]);
+          flag = !overFront8D(&next_nodebox, &queries[i]);
           break;
         case RTOverBackStrategyNumber:
-          flag = !front8D(&next_cube_box, &queries[i]);
+          flag = !front8D(&next_nodebox, &queries[i]);
           break;
         case RTAboveStrategyNumber:
-          flag = !overBelow8D(&next_cube_box, &queries[i]);
+          flag = !overBelow8D(&next_nodebox, &queries[i]);
           break;
         case RTOverAboveStrategyNumber:
-          flag = !below8D(&next_cube_box, &queries[i]);
+          flag = !below8D(&next_nodebox, &queries[i]);
           break;
         case RTBelowStrategyNumber:
-          flag = !overAbove8D(&next_cube_box, &queries[i]);
+          flag = !overAbove8D(&next_nodebox, &queries[i]);
           break;
         case RTOverBelowStrategyNumber:
-          flag = !above8D(&next_cube_box, &queries[i]);
+          flag = !above8D(&next_nodebox, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore8D(&next_cube_box, &queries[i]);
+          flag = !overBefore8D(&next_nodebox, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before8D(&next_cube_box, &queries[i]);
+          flag = !before8D(&next_nodebox, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter8D(&next_cube_box, &queries[i]);
+          flag = !overAfter8D(&next_nodebox, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after8D(&next_cube_box, &queries[i]);
+          flag = !after8D(&next_nodebox, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
@@ -900,9 +900,9 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     {
       /* Pass traversalValue and quadrant */
       old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
-      out->traversalValues[out->nNodes] = cubestbox_copy(&next_cube_box);
+      out->traversalValues[out->nNodes] = cubestbox_copy(&next_nodebox);
       MemoryContextSwitchTo(old_ctx);
-      out->nodeNumbers[out->nNodes] = octant;
+      out->nodeNumbers[out->nNodes] = quadrant;
 #if POSTGRESQL_VERSION_NUMBER >= 120000
       /* Pass distances */
       if (in->norderbys > 0)
@@ -910,7 +910,7 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
         for (int j = 0; j < in->norderbys; j++)
-          distances[j] = distanceBoxCubeBox(&orderbys[j], &next_cube_box);
+          distances[j] = distance_stbox_nodebox(&orderbys[j], &next_nodebox);
       }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;

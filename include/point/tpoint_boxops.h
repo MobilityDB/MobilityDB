@@ -35,13 +35,15 @@
 #ifndef __TPOINT_BOXOPS_H__
 #define __TPOINT_BOXOPS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
 #include "general/temporal_util.h"
-#include "stbox.h"
+#include "point/stbox.h"
 
 /*****************************************************************************/
 

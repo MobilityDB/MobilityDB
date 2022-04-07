@@ -35,12 +35,15 @@
 #ifndef __TEMPORAL_ANALYZE_H__
 #define __TEMPORAL_ANALYZE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <commands/vacuum.h>
 #include <utils/rangetypes.h>
 #include <parser/parse_oper.h>
 #include <statistics/extended_stats_internal.h>
+
+/*****************************************************************************/
 
 /*
  * Extra data for compute_stats function
@@ -127,4 +130,3 @@ extern Datum generic_analyze(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 #endif
-

@@ -41,8 +41,8 @@
 #include <utils/selfuncs.h>
 /* MobilityDB */
 #include "general/tempcache.h"
-#include "tpoint.h"
-#include "tpoint_analyze.h"
+#include "point/tpoint.h"
+#include "point/tpoint_analyze.h"
 
 /**
 * The maximum number of dimensions our code can handle.

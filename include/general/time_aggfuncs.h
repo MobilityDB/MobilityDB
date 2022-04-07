@@ -35,10 +35,11 @@
 #ifndef __TIME_AGGFUNCS_H__
 #define __TIME_AGGFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
-
+/* MobilityDB */
 #include "general/period.h"
 
 /*****************************************************************************/

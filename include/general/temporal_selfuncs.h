@@ -35,6 +35,7 @@
 #ifndef __TEMPORAL_SELFUNCS_H__
 #define __TEMPORAL_SELFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_operator.h>
@@ -43,9 +44,9 @@
 #include <utils/rangetypes.h>
 #include <utils/selfuncs.h>
 #include <utils/typcache.h>
-
-#include "temporal.h"
-#include "tempcache.h"
+/* MobilityDB */
+#include "general/tempcache.h"
+#include "general/temporal.h"
 
 #define BTREE_AM_OID   403
 

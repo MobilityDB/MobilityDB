@@ -151,7 +151,7 @@ tinstant_make(Datum value, TimestampTz t, CachedType temptype)
   result->t = t;
   SET_VARSIZE(result, size);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
-  bool continuous = basetype_continuous(basetype);
+  bool continuous = temptype_continuous(temptype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
   MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
@@ -288,10 +288,10 @@ tinstant_write(const TInstant *inst, StringInfo buf)
  * the buffer
  *
  * @param[in] buf Buffer
- * @param[in] basetypid Oid of the base type
+ * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_read(StringInfo buf, Oid basetypid)
+tinstant_read(StringInfo buf, CachedType temptype)
 {
   TimestampTz t = call_recv(TIMESTAMPTZOID, buf);
   int size = pq_getmsgint(buf, 4) ;
@@ -302,9 +302,9 @@ tinstant_read(StringInfo buf, Oid basetypid)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  Datum value = call_recv(basetypid, &buf2);
+  Datum value = call_recv(temptype_basetypid(temptype), &buf2);
   buf->cursor += size ;
-  return tinstant_make(value, t, basetypid_temptype(basetypid));
+  return tinstant_make(value, t, temptype);
 }
 
 /*****************************************************************************

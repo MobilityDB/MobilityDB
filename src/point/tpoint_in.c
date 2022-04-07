@@ -946,11 +946,10 @@ Datum tpoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid basetypid = temptypid_basetypid(temptypid);
   char *wkt = text2cstring(wkt_text);
   /* Save the address of wkt since it is modified by the parse function */
   char *wkt_save = wkt;
-  Temporal *result = tpoint_parse(&wkt, basetypid);
+  Temporal *result = tpoint_parse(&wkt, oid_type(temptypid));
   pfree(wkt_save);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);

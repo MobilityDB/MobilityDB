@@ -36,10 +36,11 @@
 #ifndef __DOUBLEN_H__
 #define __DOUBLEN_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 

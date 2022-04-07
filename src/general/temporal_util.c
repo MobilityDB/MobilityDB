@@ -96,15 +96,15 @@ ensure_temporal_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the base type is continuous
+ * Returns true if the temporal type is continuous
  */
 bool
-basetype_continuous(CachedType basetype)
+temptype_continuous(CachedType temptype)
 {
-  if (basetype == T_FLOAT8 || basetype == T_DOUBLE2 ||
-    basetype == T_DOUBLE3 || basetype == T_DOUBLE4 ||
-    basetype == T_GEOGRAPHY || basetype == T_GEOMETRY ||
-    basetype == T_NPOINT)
+  if (temptype == T_TFLOAT || temptype == T_TDOUBLE2 ||
+    temptype == T_TDOUBLE3 || temptype == T_TDOUBLE4 ||
+    temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
+    temptype == T_TNPOINT)
     return true;
   return false;
 }
@@ -115,7 +115,7 @@ basetype_continuous(CachedType basetype)
 void
 ensure_temptype_continuous(CachedType temptype)
 {
-  if (! basetype_continuous(temptype_basetype(temptype)))
+  if (! temptype_continuous(temptype))
     elog(ERROR, "unknown continuous temporal type: %d", temptype);
   return;
 }

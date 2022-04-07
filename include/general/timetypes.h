@@ -41,9 +41,12 @@
 #ifndef __TIMETYPES_H__
 #define __TIMETYPES_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <access/stratnum.h>
 #include <utils/timestamp.h>
+
+/*****************************************************************************/
 
 /**
  * Structure to represent periods

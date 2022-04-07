@@ -44,7 +44,7 @@
 #endif
 #include <utils/rangetypes.h>
 /* PostgreSQL */
-#include "temporal.h"
+#include "general/temporal.h"
 #include "point/postgis.h"
 
 /*****************************************************************************/
@@ -54,7 +54,7 @@
 extern bool temporal_type(CachedType temptype);
 extern void ensure_temporal_type(CachedType temptype);
 extern void ensure_temporal_basetype(CachedType basetype);
-extern bool basetype_continuous(CachedType basetype);
+extern bool temptype_continuous(CachedType temptype);
 extern void ensure_temptype_continuous(CachedType temptype);
 extern bool basetype_byvalue(CachedType basetype);
 extern int16 basetype_length(CachedType basetype);

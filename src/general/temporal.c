@@ -837,8 +837,7 @@ temporal_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid basetypid = temptypid_basetypid(temptypid);
-  Temporal *result = temporal_parse(&input, basetypid);
+  Temporal *result = temporal_parse(&input, oid_type(temptypid));
   int32 temp_typmod = -1;
   if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
     temp_typmod = PG_GETARG_INT32(2);
@@ -927,22 +926,22 @@ temporal_send(PG_FUNCTION_ARGS)
  * read from the buffer (dispatch function)
  *
  * @param[in] buf Buffer
- * @param[in] basetypid Oid of the base type
+ * @param[in] temptype Temporal type
  */
 Temporal *
-temporal_read(StringInfo buf, Oid basetypid)
+temporal_read(StringInfo buf, CachedType temptype)
 {
-  int16 type = (int16) pq_getmsgbyte(buf);
+  uint8 subtype = pq_getmsgbyte(buf);
   Temporal *result;
-  ensure_valid_tempsubtype(type);
-  if (type == INSTANT)
-    result = (Temporal *) tinstant_read(buf, basetypid);
-  else if (type == INSTANTSET)
-    result = (Temporal *) tinstantset_read(buf, basetypid);
-  else if (type == SEQUENCE)
-    result = (Temporal *) tsequence_read(buf, basetypid);
-  else /* type == SEQUENCESET */
-    result = (Temporal *) tsequenceset_read(buf, basetypid);
+  ensure_valid_tempsubtype(subtype);
+  if (subtype == INSTANT)
+    result = (Temporal *) tinstant_read(buf, temptype);
+  else if (subtype == INSTANTSET)
+    result = (Temporal *) tinstantset_read(buf, temptype);
+  else if (subtype == SEQUENCE)
+    result = (Temporal *) tsequence_read(buf, temptype);
+  else /* subtype == SEQUENCESET */
+    result = (Temporal *) tsequenceset_read(buf, temptype);
   return result;
 }
 
@@ -955,8 +954,7 @@ temporal_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid basetypid = temptypid_basetypid(temptypid);
-  Temporal *result = temporal_read(buf, basetypid) ;
+  Temporal *result = temporal_read(buf, oid_type(temptypid));
   PG_RETURN_POINTER(result);
 }
 

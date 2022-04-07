@@ -32,15 +32,15 @@
  * Operators for time types.
  */
 
-#ifndef __TIMEOPS_H__
-#define __TIMEOPS_H__
+#ifndef __TIME_OPS_H__
+#define __TIME_OPS_H__
 
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 /* MobilityDB */
 #include "general/tempcache.h"
-#include "timetypes.h"
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 

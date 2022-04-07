@@ -412,6 +412,23 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
  *****************************************************************************/
 
 /**
+ * Returns the Oid of the base type from the temporal type
+ */
+Oid
+temptype_basetypid(CachedType temptype)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptype == temptype)
+      return _temptype_cache[i].basetypid;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptype);
+}
+
+/**
  * Returns the Oid of the base type from the Oid of the temporal type
  */
 Oid
@@ -426,23 +443,6 @@ temptypid_basetypid(Oid temptypid)
   }
   /* We only arrive here on error */
   elog(ERROR, "type %u is not a temporal type", temptypid);
-}
-
-/**
- * Returns the temporal type from the Oid of the base type
- */
-CachedType
-basetypid_temptype(Oid basetypid)
-{
-  if (!_temptype_cache_ready)
-    populate_temptype_cache();
-  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
-  {
-    if (_temptype_cache[i].basetypid == basetypid)
-      return _temptype_cache[i].temptype;
-  }
-  /* We only arrive here on error */
-  elog(ERROR, "type %u is not a temporal type", basetypid);
 }
 
 /**

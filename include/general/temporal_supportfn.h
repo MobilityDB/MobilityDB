@@ -35,9 +35,12 @@
 #ifndef __TEMPORAL_SUPPORTFN_H__
 #define __TEMPORAL_SUPPORTFN_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+
+/*****************************************************************************/
 
 /*
 * Depending on the function, we will deploy different index enhancement

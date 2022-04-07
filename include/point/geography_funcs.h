@@ -35,9 +35,10 @@
 #ifndef __GEOGRAPHY_FUNCTIONS_H__
 #define __GEOGRAPHY_FUNCTIONS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-
+/* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER < 30000
 #include "postgis.h"

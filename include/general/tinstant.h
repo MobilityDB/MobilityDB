@@ -66,7 +66,7 @@ extern Temporal *tinstant_merge_array(const TInstant **instants, int count);
 
 extern char *tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum));
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
-extern TInstant *tinstant_read(StringInfo buf, Oid basetypid);
+extern TInstant *tinstant_read(StringInfo buf, CachedType temptype);
 
 /* Intersection function */
 

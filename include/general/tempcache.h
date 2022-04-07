@@ -145,21 +145,12 @@ typedef struct
 
 /*****************************************************************************/
 
-/* Global variable that states whether the temporal type cache has been filled */
-extern bool _temptyp_cache_ready;
-
-/**
- * Global variable that states whether the type and operator caches
- * has been initialized.
- */
-extern bool _ready;
-
 extern Datum fill_opcache(PG_FUNCTION_ARGS);
 
 /* Catalog functions */
 
+extern Oid temptype_basetypid(Oid temptypid);
 extern Oid temptypid_basetypid(Oid temptypid);
-extern CachedType basetypid_temptype(Oid basetypid);
 extern CachedType temptype_basetype(CachedType temptype);
 extern Oid type_oid(CachedType t);
 extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);

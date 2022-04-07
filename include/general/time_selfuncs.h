@@ -35,12 +35,13 @@
 #ifndef __TIME_SELFUNCS_H__
 #define __TIME_SELFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/selfuncs.h>
-
-#include "temporal_selfuncs.h"
-#include "timetypes.h"
+/* MobilityDB */
+#include "general/temporal_selfuncs.h"
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 

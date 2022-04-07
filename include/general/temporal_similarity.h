@@ -30,7 +30,11 @@
 #ifndef __TEMPORAL_SIMILARITY_H__
 #define __TEMPORAL_SIMILARITY_H__
 
+/* PostgreSQL */
 #include <postgres.h>
+#include <fmgr.h>
+
+/*****************************************************************************/
 
 typedef enum
 {
@@ -58,6 +62,13 @@ typedef struct
   int size;
   Match *path;
 } SimilarityPathState;
+
+/*****************************************************************************/
+
+extern Datum temporal_frechet_distance(PG_FUNCTION_ARGS);
+extern Datum temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
+
+/*****************************************************************************/
 
 #endif /* __TEMPORAL_SIMILARITY_H__ */
 

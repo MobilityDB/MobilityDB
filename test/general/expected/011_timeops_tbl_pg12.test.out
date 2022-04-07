@@ -2,28 +2,28 @@ ANALYZE tbl_period_big;
 ANALYZE
 CREATE INDEX tbl_period_big_quadtree_idx ON tbl_period_big USING SPGIST(p);
 CREATE INDEX
-SELECT k, p |=| timestamptz '2001-06-01' FROM tbl_period_big ORDER BY 2, 1 LIMIT 3;
-  k   | ?column? 
-------+----------
- 5585 |      540
- 5717 |     3120
- 7059 |     3960
+SELECT p |=| timestamptz '2001-06-01' FROM tbl_period_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+      540
+     3120
+     3960
 (3 rows)
 
-SELECT k, p |=| period '[2001-06-01, 2001-07-01]' FROM tbl_period_big ORDER BY 2, 1 LIMIT 3;
-  k  | ?column? 
------+----------
- 122 |        0
- 131 |        0
- 150 |        0
+SELECT p |=| period '[2001-06-01, 2001-07-01]' FROM tbl_period_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
 (3 rows)
 
-SELECT k, p |=| periodset '{[2001-01-01, 2001-01-15], [2001-02-01, 2001-02-15]}' FROM tbl_period_big ORDER BY 2, 1 LIMIT 3;
-  k  | ?column? 
------+----------
- 124 |        0
- 126 |        0
- 138 |        0
+SELECT p |=| periodset '{[2001-01-01, 2001-01-15], [2001-02-01, 2001-02-15]}' FROM tbl_period_big ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        0
+        0
+        0
 (3 rows)
 
 DROP INDEX tbl_period_big_quadtree_idx;

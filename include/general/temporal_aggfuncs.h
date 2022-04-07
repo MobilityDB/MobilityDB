@@ -35,12 +35,13 @@
 #ifndef __TEMPORAL_AGGFUNCS_H__
 #define __TEMPORAL_AGGFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "skiplist.h"
-#include "temporal.h"
-#include "temporal_util.h"
+/* MobilityDB */
+#include "general/skiplist.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************/
 

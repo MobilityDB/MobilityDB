@@ -35,8 +35,10 @@
 #ifndef __TNPOINT_DISTANCE_H__
 #define __TNPOINT_DISTANCE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+/* PostgreSQL */
 #include "general/temporal.h"
 
 /*****************************************************************************/

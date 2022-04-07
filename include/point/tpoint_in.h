@@ -35,6 +35,7 @@
 #ifndef __TPOINT_IN_H__
 #define __TPOINT_IN_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 

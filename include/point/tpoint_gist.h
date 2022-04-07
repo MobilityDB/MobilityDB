@@ -35,9 +35,11 @@
 #ifndef __TPOINT_GIST_H__
 #define __TPOINT_GIST_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/builtins.h>
+/* MobilityDB */
 #include "general/temporal.h"
 
 /*****************************************************************************/

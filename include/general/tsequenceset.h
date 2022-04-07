@@ -35,12 +35,13 @@
 #ifndef __TSEQUENCESET_H__
 #define __TSEQUENCESET_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -94,7 +95,7 @@ extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
 extern char *tsequenceset_to_string(const TSequenceSet *ts,
   char *(*value_out)(Oid, Datum));
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
-extern TSequenceSet *tsequenceset_read(StringInfo buf, Oid basetypid);
+extern TSequenceSet *tsequenceset_read(StringInfo buf, CachedType temptype);
 
 /* Cast functions */
 

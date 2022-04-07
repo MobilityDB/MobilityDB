@@ -529,7 +529,7 @@ extern Datum temporal_out(PG_FUNCTION_ARGS);
 extern Datum temporal_send(PG_FUNCTION_ARGS);
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
 
-extern Temporal* temporal_read(StringInfo buf, Oid basetypid);
+extern Temporal* temporal_read(StringInfo buf, CachedType temptype);
 extern void temporal_write(const Temporal* temp, StringInfo buf);
 
 /* Constructor functions */

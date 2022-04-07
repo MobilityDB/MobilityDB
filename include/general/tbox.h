@@ -35,13 +35,13 @@
 #ifndef __TBOX_H__
 #define __TBOX_H__
 
-/* MobilityDB */
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/tempcache.h"
-#include "timetypes.h"
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 

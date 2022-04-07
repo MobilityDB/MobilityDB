@@ -238,7 +238,7 @@ PG_FUNCTION_INFO_V1(temporal_frechet_distance);
 /**
  * Compute the discrete Frechet distance between two temporal values.
  */
-Datum
+PGDLLEXPORT Datum
 temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
   return temporal_similarity(fcinfo, FRECHET);
@@ -248,7 +248,7 @@ PG_FUNCTION_INFO_V1(temporal_dynamic_time_warp);
 /**
  * Compute the Dynamic Time Match (DTW) distance between two temporal values.
  */
-Datum
+PGDLLEXPORT Datum
 temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 {
   return temporal_similarity(fcinfo, DYNTIMEWARP);

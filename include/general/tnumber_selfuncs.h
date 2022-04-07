@@ -35,12 +35,13 @@
 #ifndef __TNUMBER_SELFUNCS_H__
 #define __TNUMBER_SELFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_operator.h>
 #include <utils/selfuncs.h>
-
-#include "temporal.h"
-#include "tempcache.h"
+/* MobilityDB */
+#include "general/temporal.h"
+#include "general/tempcache.h"
 
 /*****************************************************************************/
 

@@ -644,16 +644,16 @@ tsequenceset_write(const TSequenceSet *ts, StringInfo buf)
  * read from the buffer
  *
  * @param[in] buf Buffer
- * @param[in] basetypid Oid of the base type
+ * @param[in] temptype Temporal type
  */
 TSequenceSet *
-tsequenceset_read(StringInfo buf, Oid basetypid)
+tsequenceset_read(StringInfo buf, CachedType temptype)
 {
   int count = (int) pq_getmsgint(buf, 4);
   assert(count > 0);
   TSequence **sequences = palloc(sizeof(TSequence *) * count);
   for (int i = 0; i < count; i++)
-    sequences[i] = tsequence_read(buf, basetypid);
+    sequences[i] = tsequence_read(buf, temptype);
   return tsequenceset_make_free(sequences, count, NORMALIZE_NO);
 }
 

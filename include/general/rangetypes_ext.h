@@ -35,11 +35,12 @@
 #ifndef __RANGETYPES_EXT_H__
 #define __RANGETYPES_EXT_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
-
-#include "temporaltypes.h"
+/* MobilityDB */
+#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 

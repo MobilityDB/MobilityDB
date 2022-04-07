@@ -35,10 +35,11 @@
 #ifndef __STBOX_H__
 #define __STBOX_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <liblwgeom.h>
-
+/* MobilityDB */
 #include "general/timetypes.h"
 
 /*****************************************************************************

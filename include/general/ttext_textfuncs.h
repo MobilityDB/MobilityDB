@@ -35,6 +35,7 @@
 #ifndef __TTEXT_TEXTFUNCS_H__
 #define __TTEXT_TEXTFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>

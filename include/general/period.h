@@ -36,11 +36,12 @@
 #ifndef __PERIOD_H__
 #define __PERIOD_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
 #include <catalog/pg_type.h>
-
-#include "timetypes.h"
+/* MobilityDB */
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 
