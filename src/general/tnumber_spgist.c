@@ -123,7 +123,7 @@ typedef struct
 {
   TBOX left;
   TBOX right;
-} RectBox;
+} TboxNode;
 
 
 /*****************************************************************************
@@ -137,25 +137,25 @@ typedef struct
  * initialize the struct to cover the whole 4D space.
  */
 static void
-initRectBox(RectBox *rect_box)
+tboxnode_init(TboxNode *nodebox)
 {
   double infinity = get_float8_infinity();
-  memset(rect_box, 0, sizeof(RectBox));
-  rect_box->left.xmin = rect_box->right.xmin = -infinity;
-  rect_box->left.xmax = rect_box->right.xmax = infinity;
-  rect_box->left.tmin = rect_box->right.tmin = DT_NOBEGIN;
-  rect_box->left.tmax = rect_box->right.tmax = DT_NOEND;
+  memset(nodebox, 0, sizeof(TboxNode));
+  nodebox->left.xmin = nodebox->right.xmin = -infinity;
+  nodebox->left.xmax = nodebox->right.xmax = infinity;
+  nodebox->left.tmin = nodebox->right.tmin = DT_NOBEGIN;
+  nodebox->left.tmax = nodebox->right.tmax = DT_NOEND;
   return;
 }
 
 /**
  * Copy a traversal value
  */
-RectBox *
-rectbox_copy(const RectBox *box)
+TboxNode *
+tboxnode_copy(const TboxNode *box)
 {
-  RectBox *result = palloc(sizeof(RectBox));
-  memcpy(result, box, sizeof(RectBox));
+  TboxNode *result = palloc(sizeof(TboxNode));
+  memcpy(result, box, sizeof(TboxNode));
   return result;
 }
 
@@ -184,7 +184,7 @@ compareDoubles(const void *a, const void *b)
  * a corner of the box. This makes 16 quadrants in total.
  */
 static uint8
-getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
+get_quadrant4D(const TBOX *centroid, const TBOX *inBox)
 {
   uint8 quadrant = 0;
 
@@ -206,168 +206,168 @@ getQuadrant4D(const TBOX *centroid, const TBOX *inBox)
 /**
  * Calculate the next traversal value
  *
- * All centroids are bounded by RectBox, but SP-GiST only keeps
- * boxes.  When we are traversing the tree, we must calculate RectBox,
+ * All centroids are bounded by TboxNode, but SP-GiST only keeps
+ * boxes.  When we are traversing the tree, we must calculate TboxNode,
  * using centroid and quadrant.
  */
 static void
-nextRectBox(const RectBox *rect_box, const TBOX *centroid, uint8 quadrant,
-  RectBox *next_rect_box)
+tboxnode_quadtree_next(const TboxNode *nodebox, const TBOX *centroid,
+  uint8 quadrant, TboxNode *next_nodebox)
 {
-  memcpy(next_rect_box, rect_box, sizeof(RectBox));
+  memcpy(next_nodebox, nodebox, sizeof(TboxNode));
 
   if (quadrant & 0x8)
-    next_rect_box->left.xmin = centroid->xmin;
+    next_nodebox->left.xmin = centroid->xmin;
   else
-    next_rect_box->left.xmax = centroid->xmin;
+    next_nodebox->left.xmax = centroid->xmin;
 
   if (quadrant & 0x4)
-    next_rect_box->right.xmin = centroid->xmax;
+    next_nodebox->right.xmin = centroid->xmax;
   else
-    next_rect_box->right.xmax = centroid->xmax;
+    next_nodebox->right.xmax = centroid->xmax;
 
   if (quadrant & 0x2)
-    next_rect_box->left.tmin = centroid->tmin;
+    next_nodebox->left.tmin = centroid->tmin;
   else
-    next_rect_box->left.tmax = centroid->tmin;
+    next_nodebox->left.tmax = centroid->tmin;
 
   if (quadrant & 0x1)
-    next_rect_box->right.tmin = centroid->tmax;
+    next_nodebox->right.tmin = centroid->tmax;
   else
-    next_rect_box->right.tmax = centroid->tmax;
+    next_nodebox->right.tmax = centroid->tmax;
 
   return;
 }
 
 /**
- * Can any rectangle from rect_box overlap with this argument?
+ * Can any rectangle from nodebox overlap with this argument?
  */
 static bool
-overlap4D(const RectBox *rect_box, const TBOX *query)
+overlap4D(const TboxNode *nodebox, const TBOX *query)
 {
   bool result = true;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= rect_box->left.xmin <= query->xmax &&
-      rect_box->right.xmax >= query->xmin;
+    result &= nodebox->left.xmin <= query->xmax &&
+      nodebox->right.xmax >= query->xmin;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= rect_box->left.tmin <= query->tmax &&
-      rect_box->right.tmax >= query->tmin;
+    result &= nodebox->left.tmin <= query->tmax &&
+      nodebox->right.tmax >= query->tmin;
   return result;
 }
 
 /**
- * Can any rectangle from rect_box contain this argument?
+ * Can any rectangle from nodebox contain this argument?
  */
 static bool
-contain4D(const RectBox *rect_box, const TBOX *query)
+contain4D(const TboxNode *nodebox, const TBOX *query)
 {
   bool result = true;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_X(query->flags))
-    result &= rect_box->right.xmax >= query->xmax &&
-      rect_box->left.xmin <= query->xmin;
+    result &= nodebox->right.xmax >= query->xmax &&
+      nodebox->left.xmin <= query->xmin;
   /* If the dimension is not missing */
   if (MOBDB_FLAGS_GET_T(query->flags))
-    result &= rect_box->right.tmax >= query->tmax &&
-      rect_box->left.tmin <= query->tmin;
+    result &= nodebox->right.tmax >= query->tmax &&
+      nodebox->left.tmin <= query->tmin;
   return result;
 }
 
 /**
- * Can any rectangle from rect_box be left of this argument?
+ * Can any rectangle from nodebox be left of this argument?
  */
 static bool
-left4D(const RectBox *rect_box, const TBOX *query)
+left4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.xmax < query->xmin);
+  return (nodebox->right.xmax < query->xmin);
 }
 
 /**
- * Can any rectangle from rect_box does not extend the right of this argument?
+ * Can any rectangle from nodebox does not extend the right of this argument?
  */
 static bool
-overLeft4D(const RectBox *rect_box, const TBOX *query)
+overLeft4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.xmax <= query->xmax);
+  return (nodebox->right.xmax <= query->xmax);
 }
 
 /**
- * Can any rectangle from rect_box be right of this argument?
+ * Can any rectangle from nodebox be right of this argument?
  */
 static bool
-right4D(const RectBox *rect_box, const TBOX *query)
+right4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.xmin > query->xmax);
+  return (nodebox->left.xmin > query->xmax);
 }
 
 /**
- * Can any rectangle from rect_box does not extend the left of this argument?
+ * Can any rectangle from nodebox does not extend the left of this argument?
  */
 static bool
-overRight4D(const RectBox *rect_box, const TBOX *query)
+overRight4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.xmin >= query->xmin);
+  return (nodebox->left.xmin >= query->xmin);
 }
 
 /**
- * Can any rectangle from rect_box be before this argument?
+ * Can any rectangle from nodebox be before this argument?
  */
 static bool
-before4D(const RectBox *rect_box, const TBOX *query)
+before4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.tmax < query->tmin);
+  return (nodebox->right.tmax < query->tmin);
 }
 
 /**
- * Can any rectangle from rect_box does not extend after this argument?
+ * Can any rectangle from nodebox does not extend after this argument?
  */
 static bool
-overBefore4D(const RectBox *rect_box, const TBOX *query)
+overBefore4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->right.tmax <= query->tmax);
+  return (nodebox->right.tmax <= query->tmax);
 }
 
 /**
- * Can any rectangle from rect_box be after this argument?
+ * Can any rectangle from nodebox be after this argument?
  */
 static bool
-after4D(const RectBox *rect_box, const TBOX *query)
+after4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.tmin > query->tmax);
+  return (nodebox->left.tmin > query->tmax);
 }
 
 /**
- * Can any rectangle from rect_box does not extend before this argument?
+ * Can any rectangle from nodebox does not extend before this argument?
  */
 static bool
-overAfter4D(const RectBox *rect_box, const TBOX *query)
+overAfter4D(const TboxNode *nodebox, const TBOX *query)
 {
-  return (rect_box->left.tmin >= query->tmin);
+  return (nodebox->left.tmin >= query->tmin);
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 /**
- * Lower bound for the distance between query and rect_box.
+ * Lower bound for the distance between query and nodebox.
  * @note The temporal dimension is not taken into the account since it is not
  * possible to mix different units in the computation. As a consequence, the
  * filtering is not very restrictive.
  */
 static double
-distanceBoxRectBox(const TBOX *query, const RectBox *rect_box)
+distance_tbox_nodebox(const TBOX *query, const TboxNode *nodebox)
 {
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(query->flags);
-  if (hast && (query->tmin > rect_box->right.tmax ||
-      rect_box->left.tmin > query->tmax))
+  if (hast && (query->tmin > nodebox->right.tmax ||
+      nodebox->left.tmin > query->tmax))
     return DBL_MAX;
 
   double dx;
-  if (query->xmax < rect_box->left.xmin)
-    dx = rect_box->left.xmin - query->xmax;
-  else if (query->xmin > rect_box->right.xmax)
-    dx = query->xmin - rect_box->right.xmax;
+  if (query->xmax < nodebox->left.xmin)
+    dx = nodebox->left.xmin - query->xmax;
+  else if (query->xmin > nodebox->right.xmax)
+    dx = query->xmin - nodebox->right.xmax;
   else
     dx = 0;
   return dx;
@@ -463,7 +463,7 @@ tbox_spgist_choose(PG_FUNCTION_ARGS)
 
   /* nodeN will be set by core, when allTheSame. */
   if (!in->allTheSame)
-    out->result.matchNode.nodeN = getQuadrant4D(centroid, box);
+    out->result.matchNode.nodeN = get_quadrant4D(centroid, box);
 
   PG_RETURN_VOID();
 }
@@ -529,7 +529,7 @@ tbox_spgist_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     TBOX *box = DatumGetTboxP(in->datums[i]);
-    uint8 quadrant = getQuadrant4D(centroid, box);
+    uint8 quadrant = get_quadrant4D(centroid, box);
     out->leafTupleDatums[i] = PointerGetDatum(box);
     out->mapTuplesToNodes[i] = quadrant;
   }
@@ -556,7 +556,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   int i;
   uint8 quadrant;
   MemoryContext old_ctx;
-  RectBox *rect_box, infbox, next_rect_box;
+  TboxNode *nodebox, infbox, next_nodebox;
   TBOX *centroid, *queries, *orderbys;
 
   /* Fetch the centroid of this node. */
@@ -568,11 +568,11 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
    * we have just begun to walk the tree.
    */
   if (in->traversalValue)
-    rect_box = in->traversalValue;
+    nodebox = in->traversalValue;
   else
   {
-    initRectBox(&infbox);
-    rect_box = &infbox;
+    tboxnode_init(&infbox);
+    nodebox = &infbox;
   }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -604,14 +604,14 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
       {
         /* Use parent quadrant box as traversalValue */
         old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
-        out->traversalValues[i] = rectbox_copy(rect_box);
+        out->traversalValues[i] = tboxnode_copy(nodebox);
         MemoryContextSwitchTo(old_ctx);
 
         /* Compute the distances */
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[i] = distances;
         for (int j = 0; j < in->norderbys; j++)
-          distances[j] = distanceBoxRectBox(&orderbys[j], rect_box);
+          distances[j] = distance_tbox_nodebox(&orderbys[j], nodebox);
 
         pfree(orderbys);
       }
@@ -644,7 +644,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
   for (quadrant = 0; quadrant < in->nNodes; quadrant++)
   {
     /* Compute the bounding box of the child */
-    nextRectBox(rect_box, centroid, quadrant, &next_rect_box);
+    tboxnode_quadtree_next(nodebox, centroid, quadrant, &next_nodebox);
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
@@ -654,35 +654,35 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         case RTOverlapStrategyNumber:
         case RTContainedByStrategyNumber:
         case RTAdjacentStrategyNumber:
-          flag = overlap4D(&next_rect_box, &queries[i]);
+          flag = overlap4D(&next_nodebox, &queries[i]);
           break;
         case RTContainsStrategyNumber:
         case RTSameStrategyNumber:
-          flag = contain4D(&next_rect_box, &queries[i]);
+          flag = contain4D(&next_nodebox, &queries[i]);
           break;
         case RTLeftStrategyNumber:
-          flag = !overRight4D(&next_rect_box, &queries[i]);
+          flag = !overRight4D(&next_nodebox, &queries[i]);
           break;
         case RTOverLeftStrategyNumber:
-          flag = !right4D(&next_rect_box, &queries[i]);
+          flag = !right4D(&next_nodebox, &queries[i]);
           break;
         case RTRightStrategyNumber:
-          flag = !overLeft4D(&next_rect_box, &queries[i]);
+          flag = !overLeft4D(&next_nodebox, &queries[i]);
           break;
         case RTOverRightStrategyNumber:
-          flag = !left4D(&next_rect_box, &queries[i]);
+          flag = !left4D(&next_nodebox, &queries[i]);
           break;
         case RTBeforeStrategyNumber:
-          flag = !overAfter4D(&next_rect_box, &queries[i]);
+          flag = !overAfter4D(&next_nodebox, &queries[i]);
           break;
         case RTOverBeforeStrategyNumber:
-          flag = !after4D(&next_rect_box, &queries[i]);
+          flag = !after4D(&next_nodebox, &queries[i]);
           break;
         case RTAfterStrategyNumber:
-          flag = !overBefore4D(&next_rect_box, &queries[i]);
+          flag = !overBefore4D(&next_nodebox, &queries[i]);
           break;
         case RTOverAfterStrategyNumber:
-          flag = !before4D(&next_rect_box, &queries[i]);
+          flag = !before4D(&next_nodebox, &queries[i]);
           break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
@@ -696,7 +696,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
     {
       /* Pass traversalValue and quadrant */
       old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
-      out->traversalValues[out->nNodes] = rectbox_copy(&next_rect_box);
+      out->traversalValues[out->nNodes] = tboxnode_copy(&next_nodebox);
       MemoryContextSwitchTo(old_ctx);
       out->nodeNumbers[out->nNodes] = quadrant;
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -706,7 +706,7 @@ tbox_spgist_inner_consistent(PG_FUNCTION_ARGS)
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
         for (i = 0; i < in->norderbys; i++)
-          distances[i] = distanceBoxRectBox(&orderbys[i], &next_rect_box);
+          distances[i] = distance_tbox_nodebox(&orderbys[i], &next_nodebox);
       }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */
       out->nNodes++;

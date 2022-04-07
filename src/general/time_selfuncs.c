@@ -52,7 +52,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_analyze.h"
 #include "general/tempcache.h"
 

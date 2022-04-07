@@ -48,7 +48,7 @@
 /* MobilityDB */
 #include "general/rangetypes_ext.h"
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_gist.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"

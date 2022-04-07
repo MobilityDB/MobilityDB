@@ -43,7 +43,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/timetypes.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
@@ -180,7 +180,7 @@ time_spgist_get_period(const ScanKeyData *scankey, Period *result)
  * a corner of the box. This makes 4 quadrants in total.
  */
 static uint8
-getQuadrant2D(const Period *centroid, const Period *query)
+get_quadrant2D(const Period *centroid, const Period *query)
 {
   uint8 quadrant = 0;
   if (period_lower_cmp(query, centroid) > 0)
@@ -291,7 +291,7 @@ period_spgist_choose(PG_FUNCTION_ARGS)
 
   /* nodeN will be set by core, when allTheSame. */
   if (!in->allTheSame)
-    out->result.matchNode.nodeN = getQuadrant2D(centroid, period);
+    out->result.matchNode.nodeN = get_quadrant2D(centroid, period);
 
   PG_RETURN_VOID();
 }
@@ -346,7 +346,7 @@ period_spgist_picksplit(PG_FUNCTION_ARGS)
   for (i = 0; i < in->nTuples; i++)
   {
     Period *period = DatumGetPeriodP(in->datums[i]);
-    int16 quadrant = getQuadrant2D(centroid, period);
+    int16 quadrant = get_quadrant2D(centroid, period);
     out->leafTupleDatums[i] = PeriodPGetDatum(period);
     out->mapTuplesToNodes[i] = quadrant;
   }

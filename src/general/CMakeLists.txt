@@ -27,7 +27,7 @@ add_library(general OBJECT
   time_aggfuncs.c
   time_analyze.c
   time_gist.c
-  timeops.c
+  time_ops.c
   time_selfuncs.c
   time_spgist.c
   timestampset.c

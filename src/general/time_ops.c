@@ -32,7 +32,7 @@
  * Operators for time types.
  */
 
-#include "general/timeops.h"
+#include "general/time_ops.h"
 
 /* PostgreSQL */
 #include <assert.h>

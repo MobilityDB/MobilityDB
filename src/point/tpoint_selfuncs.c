@@ -41,7 +41,7 @@
 #include <utils/syscache.h>
 /* MobilityDB */
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_selfuncs.h"
 #include "general/temporal.h"
 #include "general/temporal_selfuncs.h"

@@ -42,7 +42,7 @@
 /* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 

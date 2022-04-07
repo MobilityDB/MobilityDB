@@ -41,7 +41,7 @@
 /* PostgreSQL */
 #include <assert.h>
 /* MobilityDB */
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/temporal_boxops.h"
 

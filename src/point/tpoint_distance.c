@@ -51,7 +51,7 @@
 #endif
 /* MobilityDB */
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "point/postgis.h"
 #include "point/geography_funcs.h"

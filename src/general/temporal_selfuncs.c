@@ -68,7 +68,7 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_selfuncs.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
