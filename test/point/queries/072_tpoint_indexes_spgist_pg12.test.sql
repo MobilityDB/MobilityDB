@@ -55,7 +55,7 @@ ANALYZE tbl_tgeompoint3D_big_allthesame;
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tgeompoint3D_big_allthesame WHERE temp && geometry 'Point(5 5 5)';
-SELECT temp |=| geometry 'Point(5 5 5)' FROM tbl_tgeompoint3D_big_allthesame LIMIT 3;
+SELECT temp |=| geometry 'Point(5 5 5)' FROM tbl_tgeompoint3D_big_allthesame ORDER BY 1 LIMIT 3;
 
 DROP TABLE tbl_tgeompoint3D_big_allthesame;
 
