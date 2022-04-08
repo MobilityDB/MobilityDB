@@ -133,8 +133,8 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
   /* Sampling distance in meters at which an acceleration/deceleration/stop
    * event may be generated. */
   double P_EVENT_LENGTH = 5.0;
-  /* Constant speed edgess in kilometers/hour, simplification of the accelaration */
-  double P_EVENT_ACC = 12.0 * 3.6;
+  /* Constant speed edgess in meters/second, simplification of the accelaration */
+  double P_EVENT_ACC = 12.0;
 
   /* Probabilities for forced stops at crossings by road type transition
    * defined by a matrix where lines and columns are ordered by
