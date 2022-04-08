@@ -402,9 +402,9 @@ PGDLLEXPORT Datum
 contains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  ensure_has_not_Z_gs(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
+  ensure_has_not_Z_gs(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_has_not_Z(temp->flags);
   bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL,

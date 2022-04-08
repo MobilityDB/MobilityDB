@@ -907,16 +907,13 @@ PG_FUNCTION_INFO_V1(tpoint_ever_eq);
 Datum
 tpoint_ever_eq(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_BOOL(false);
   ensure_point_type(gs);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  if (gserialized_is_empty(gs))
-  {
-    PG_FREE_IF_COPY(temp, 0);
-    PG_RETURN_BOOL(false);
-  }
   bool result = tpoint_ever_eq_internal(temp, PointerGetDatum(gs));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -3774,9 +3771,9 @@ PGDLLEXPORT Datum
 bearing_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
+  ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -3797,9 +3794,9 @@ PGDLLEXPORT Datum
 bearing_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
+  ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);

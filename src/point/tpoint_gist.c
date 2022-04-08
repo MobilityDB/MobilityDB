@@ -280,10 +280,9 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
   if (tgeo_basetype(type))
   {
     GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-    if (gs == NULL)
+    if (gs == NULL || gserialized_is_empty(gs))
       return false;
-    if (!geo_stbox(gs, result))
-      return false;
+    geo_stbox(gs, result);
   }
   else if (type == T_TIMESTAMPTZ)
   {
