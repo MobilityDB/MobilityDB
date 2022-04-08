@@ -105,9 +105,9 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE dwithin(g, se
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE dwithin(g, ts, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE dwithin(t1.seq, t2.temp, 10);
 -- 3D
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE dwithin(g, temp, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE dwithin(temp, g, 10);
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE dwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE dwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
 -- Geography
 SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE dwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE dwithin(temp, g, 10);

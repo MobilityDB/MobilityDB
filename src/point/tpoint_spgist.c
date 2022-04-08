@@ -194,7 +194,7 @@ getOctant8D(const STBOX *centroid, const STBOX *inBox)
  * initialize the struct to cover the whole 8D space.
  */
 static void
-initCubeSTbox(STBOX *centroid, STboxNode *nodebox)
+stboxnode_init(const STBOX *centroid, STboxNode *nodebox)
 {
   memset(nodebox, 0, sizeof(STboxNode));
   double infinity = get_float8_infinity();
@@ -527,7 +527,7 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(scankey->sk_argument);
     /* The geometry can be empty */
-    if (!geo_stbox(gs, result))
+    if (! geo_stbox(gs, result))
       return false;
   }
   else if (type == T_TIMESTAMPTZ)
@@ -749,7 +749,7 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
     nodebox = in->traversalValue;
   else
   {
-    initCubeSTbox(centroid, &infbox);
+    stboxnode_init(centroid, &infbox);
     nodebox = &infbox;
   }
 
@@ -764,6 +764,7 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   {
     orderbys = palloc0(sizeof(STBOX) * in->norderbys);
     for (i = 0; i < in->norderbys; i++)
+      /* If the argument is an empty geometry the following call will do nothing */
       tpoint_spgist_get_stbox(&in->orderbys[i], &orderbys[i]);
   }
 #endif
@@ -809,6 +810,7 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   {
     queries = (STBOX *) palloc0(sizeof(STBOX) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
+      /* If the argument is an empty geometry the following call will do nothing */
       tpoint_spgist_get_stbox(&in->scankeys[i], &queries[i]);
   }
 
@@ -978,8 +980,11 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     for (i = 0; i < in->norderbys; i++)
     {
       STBOX box;
-      tpoint_spgist_get_stbox(&in->orderbys[i], &box);
-      distances[i] = NAD_stbox_stbox_internal(&box, key);
+      if (tpoint_spgist_get_stbox(&in->orderbys[i], &box))
+        distances[i] = NAD_stbox_stbox_internal(&box, key);
+      else
+        /* If empty geometry */
+        distances[i] = DBL_MAX;
     }
   }
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */

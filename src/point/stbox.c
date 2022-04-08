@@ -795,13 +795,7 @@ geo_stbox(const GSERIALIZED *gs, STBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
   if (gserialized_is_empty(gs))
-  {
-    /* Spatial dimensions are set as missing for the SP-GiST index */
-    MOBDB_FLAGS_SET_X(box->flags, false);
-    MOBDB_FLAGS_SET_Z(box->flags, false);
-    MOBDB_FLAGS_SET_T(box->flags, false);
     return false;
-  }
 
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));

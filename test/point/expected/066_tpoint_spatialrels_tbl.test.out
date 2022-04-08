@@ -202,22 +202,22 @@ SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE dwithin
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE dwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE dwithin(g, temp, 10);
  count 
 -------
-  2934
+   997
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE dwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE dwithin(temp, g, 10);
  count 
 -------
-  2934
+   997
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
  count 
 -------
-   138
+   132
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE dwithin(g, temp, 10);

@@ -446,6 +446,8 @@ PGDLLEXPORT Datum
 geo_expand_spatial(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   double d = PG_GETARG_FLOAT8(1);
   STBOX *box = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, box);
@@ -483,6 +485,8 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
@@ -502,9 +506,11 @@ static Datum
 tcomp_tpoint_geo(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   ensure_point_type(gs);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
   CachedType datumtype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));

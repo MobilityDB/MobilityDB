@@ -380,6 +380,8 @@ PGDLLEXPORT Datum
 ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
@@ -428,8 +430,10 @@ PG_FUNCTION_INFO_V1(ttouches_tnpoint_geo);
 PGDLLEXPORT Datum
 ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)

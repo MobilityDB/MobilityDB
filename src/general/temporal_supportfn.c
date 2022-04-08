@@ -317,7 +317,7 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
   Oid leftoid, rightoid, operid;
 
   /* Return estimated selectivity */
-   assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+  assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
     tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (IsA(rawreq, SupportRequestSelectivity))
   {

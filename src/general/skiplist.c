@@ -608,11 +608,8 @@ aggstate_write(SkipList *state, StringInfo buf)
   }
   else /* state->elemtype == TEMPORAL */
   {
-    Oid basetypid = InvalidOid;
-    Temporal *temp = (Temporal *) values[0];
     if (state->length > 0)
-      basetypid = type_oid(temptype_basetype(temp->temptype));
-    pq_sendint32(buf, basetypid);
+      pq_sendint32(buf, ((Temporal *) values[0])->temptype);
     for (i = 0; i < state->length; i ++)
     {
       SPI_connect();
@@ -656,9 +653,9 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   }
   else /* elemtype == TEMPORAL */
   {
-    Oid basetypid = pq_getmsgint(buf, 4);
+    CachedType temptype = pq_getmsgint(buf, 4);
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_read(buf, basetypid);
+      values[i] = temporal_read(buf, temptype);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

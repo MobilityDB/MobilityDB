@@ -32,7 +32,7 @@ ANALYZE tbl_tgeompoint3D;
 DROP INDEX IF EXISTS tbl_tgeompoint_quadtree_idx;
 DROP INDEX IF EXISTS tbl_tgeompoint3D_quadtree_idx;
 CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING SPGIST(temp);
-CREATE INDEX tbl_tgeompoint_quadtree3D_idx ON tbl_tgeompoint3D USING SPGIST(temp);
+CREATE INDEX tbl_tgeompoint3D_quadtree_idx ON tbl_tgeompoint3D USING SPGIST(temp);
 
 -- EXPLAIN ANALYZE
 SELECT temp |=| geometry 'Point empty' FROM tbl_tgeompoint ORDER BY 1 LIMIT 3;

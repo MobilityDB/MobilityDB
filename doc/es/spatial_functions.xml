@@ -826,7 +826,7 @@ SELECT dwithin(geometry 'Point(1 1 1)',
 -- true
 SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02]', 1);
--- ERROR:  Only point geometries accepted
+-- false
 </programlisting>
 				</listitem>
 

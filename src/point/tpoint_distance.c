@@ -414,12 +414,12 @@ PGDLLEXPORT Datum
 distance_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
@@ -436,13 +436,13 @@ PG_FUNCTION_INFO_V1(distance_tpoint_geo);
 PGDLLEXPORT Datum
 distance_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
+  ensure_point_type(gs);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
@@ -1005,22 +1005,31 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
   datum_func2 func = distance_fn(box1->flags);
   /* Convert the boxes to geometries */
-  GBOX gbox1, gbox2;
-  stbox_gbox(box1, &gbox1);
-  Datum geo1 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox1)) :
-    call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
-  Datum geo11 = call_function2(LWGEOM_set_srid, geo1,
-    Int32GetDatum(box1->srid));
-  stbox_gbox(box2, &gbox2);
-  Datum geo2 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox2)) :
-    call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox2));
-  Datum geo21 = call_function2(LWGEOM_set_srid, geo2,
-    Int32GetDatum(box2->srid));
+  Datum geo1, geo2;
+  if (hasz)
+  {
+    /* BOX3D has SRID field */
+    BOX3D box3d1, box3d2;
+    stbox_box3d(box1, &box3d1);
+    stbox_box3d(box2, &box3d2);
+    geo1 = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d1));
+    geo2 = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d2));
+  }
+  else
+  {
+    /* GBOX DOES NOT HAVE SRID field */
+    GBOX gbox1, gbox2;
+    stbox_gbox(box1, &gbox1);
+    stbox_gbox(box2, &gbox2);
+    Datum geo11 = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
+    Datum geo22 = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox2));
+    geo1 = call_function2(LWGEOM_set_srid, geo11, Int32GetDatum(box1->srid));
+    geo2 = call_function2(LWGEOM_set_srid, geo22, Int32GetDatum(box2->srid));
+    pfree(DatumGetPointer(geo11)); pfree(DatumGetPointer(geo22));
+  }
   /* Compute the result */
-  double result = DatumGetFloat8(func(geo11, geo21));
-
-  pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo11));
-  pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(geo21));
+  double result = DatumGetFloat8(func(geo1, geo2));
+  pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
   return result;
 }
 
