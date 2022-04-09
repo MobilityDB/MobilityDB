@@ -736,7 +736,11 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   MemoryContext old_ctx;
   STboxNode *nodebox, infbox, next_nodebox;
   uint16 quadrant;
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   STBOX *centroid, *queries, *orderbys;
+#else
+  STBOX *centroid, *queries;
+#endif
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);

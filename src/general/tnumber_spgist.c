@@ -557,7 +557,11 @@ tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   uint8 quadrant;
   MemoryContext old_ctx;
   TboxNode *nodebox, infbox, next_nodebox;
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   TBOX *centroid, *queries, *orderbys;
+#else
+  TBOX *centroid, *queries;
+#endif
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);

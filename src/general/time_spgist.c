@@ -398,7 +398,11 @@ period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
   uint8 node;
   MemoryContext old_ctx;
   PeriodNode *nodebox, infbox, next_nodeperiod;
+#if POSTGRESQL_VERSION_NUMBER >= 120000
   Period *centroid, *queries, *orderbys;
+#else
+  Period *centroid, *queries;
+#endif
 
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);
