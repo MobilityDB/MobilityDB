@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_boxops.c
- * Bounding box operators for temporal network points.
+ * @brief Bounding box operators for temporal network points.
  *
  * These operators test the bounding boxes of temporal npoints, which are
  * STBOX boxes. The following operators are defined:

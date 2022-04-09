@@ -29,7 +29,8 @@
 
 /**
  * @file tnumber_mathfuncs.c
- * Temporal mathematical operators (+, -, *, /) and functions (round, degrees).
+ * @brief Mathematical operators (+, -, *, /) and functions (round, degrees)
+ * for temporal number.
  */
 
 #include "general/tnumber_mathfuncs.h"

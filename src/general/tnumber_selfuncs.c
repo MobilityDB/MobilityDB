@@ -29,7 +29,8 @@
 
 /**
  * @file tnumber_selfuncs.c
- * Functions for selectivity estimation of operators on temporal number types
+ * @brief Functions for selectivity estimation of operators on temporal number
+ * types.
  */
 
 #include "general/tnumber_selfuncs.h"

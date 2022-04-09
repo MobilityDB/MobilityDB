@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_parser.c
- * Functions for parsing temporal points.
+ * @brief Functions for parsing temporal points.
  */
 
 #include "point/tpoint_parser.h"

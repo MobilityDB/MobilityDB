@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint.c
- * Basic functions for temporal network points.
+ * @brief Basic functions for temporal network points.
  */
 
 #include "npoint/tnpoint.h"

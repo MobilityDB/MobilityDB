@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_aggfuncs.c
- * Aggregate functions for temporal network points.
+ * @brief Aggregate functions for temporal network points.
  *
  * The only function currently provided is temporal centroid.
  */

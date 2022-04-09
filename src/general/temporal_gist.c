@@ -29,8 +29,8 @@
 
 /**
  * @file temporal_gist.c
- * R-tree GiST index for temporal types where only the time dimension
- * is taken into account for indexing, currently, tbool and ttext.
+ * @brief R-tree GiST index for temporal types where only the time dimension
+ * is taken into account for indexing, currently, `tbool` and `ttext`.
  */
 
 #include "general/temporal_gist.h"

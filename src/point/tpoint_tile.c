@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_tile.c
- * Functions for spatial and spatiotemporal tiles.
+ * @brief Functions for spatial and spatiotemporal tiles.
  */
 
 /* PostgreSQL */

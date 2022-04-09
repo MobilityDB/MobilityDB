@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_supportfn.c
- * Index support functions for temporal types.
+ * @brief Index support functions for temporal types.
  */
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000

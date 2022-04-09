@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_in.c
- * Input of temporal points in WKT, EWKT and MF-JSON format
+ * @brief Input of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON format.
  */
 
 #include "point/tpoint_in.h"

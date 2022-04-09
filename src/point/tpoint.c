@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint.c
- * Basic functions for temporal points.
+ * @brief General functions for temporal points.
  */
 
 #include "point/tpoint.h"

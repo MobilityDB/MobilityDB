@@ -29,9 +29,9 @@
 
 /**
  * @file tpoint_datagen.c
- * Data generator for MobilityDB.
+ * @brief Data generator for MobilityDB.
  *
- * These functions are used in particular for the BerlinMOD data generator
+ * These functions are used in the BerlinMOD data generator
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  */
 
@@ -468,7 +468,11 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 
 PG_FUNCTION_INFO_V1(create_trip);
 /**
- * Create a trip using the BerlinMOD data generator
+ * Create a trip using the BerlinMOD data generator.
+ *
+ * @note This function is equivalent to the PL/pgSQL function
+ * CreateTrip in the BerlinMOD generator but is written in C
+ * to speed up the generation.
  */
 Datum
 create_trip(PG_FUNCTION_ARGS)

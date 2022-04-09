@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * @file timeops.c
- * Operators for time types.
+ * @file time_ops.c
+ * @brief Operators for time types.
  */
 
 #include "general/time_ops.h"
@@ -4461,13 +4461,13 @@ distance_period_timestamp_internal(const Period *p, TimestampTz t)
   /* If the periods intersect return 0 */
   if (contains_period_timestamp_internal(p, t))
     return palloc0(sizeof(Interval));
-  
+
   /* If the period is to the left of the timestamp return the distance
    * between the upper bound of the period and the timestamp */
   if (p->lower > t)
     return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
       TimestampTzGetDatum(p->lower), TimestampTzGetDatum(t)));
-  
+
   /* If the first period is to the right of the seconde return the distance
    * between the upper bound of the second and lower bound of the first */
     return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
@@ -4483,13 +4483,13 @@ distance_period_period_internal(const Period *p1, const Period *p2)
   /* If the periods intersect return 0 */
   if (overlaps_period_period_internal(p1, p2))
     return palloc0(sizeof(Interval));
-  
+
   /* If the first period is to the left of the second return the distance
    * between the upper bound of the first and lower bound of the second */
   if (p2->lower >= p1->upper)
     return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
       TimestampTzGetDatum(p2->lower), TimestampTzGetDatum(p1->upper)));
-  
+
   /* If the first period is to the right of the seconde return the distance
    * between the upper bound of the second and lower bound of the first */
     return (Interval *) DatumGetPointer(call_function2(timestamp_mi,
@@ -4753,12 +4753,12 @@ distance_secs_period_timestamp_internal(const Period *p, TimestampTz t)
   /* If the periods intersect return 0 */
   if (contains_period_timestamp_internal(p, t))
     return 0.0;
-  
+
   /* If the period is to the left of the timestamp return the distance
    * between the upper bound of the period and the timestamp */
   if (p->lower > t)
     return ((float8) p->lower - (float8) t) / USECS_PER_SEC;
-  
+
   /* If the first period is to the right of the seconde return the distance
    * between the upper bound of the second and lower bound of the first */
     return ((float8) t - (float8) p->upper) / USECS_PER_SEC;
@@ -4773,7 +4773,7 @@ distance_secs_period_period_internal(const Period *p1, const Period *p2)
   /* If the periods intersect return 0 */
   if (overlaps_period_period_internal(p1, p2))
     return 0.0;
-  
+
   /* If the first period is to the left of the second return the distance
    * between the upper bound of the first and lower bound of the second */
   if (p2->lower >= p1->upper)

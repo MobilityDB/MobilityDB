@@ -29,7 +29,7 @@
 
 /**
  * @file stbox.c
- * Functions for spatiotemporal bounding boxes.
+ * @brief Functions for spatiotemporal bounding boxes.
  */
 
 #include "point/stbox.h"

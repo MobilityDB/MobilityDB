@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_boxops.c
- * Bounding box operators for temporal types.
+ * @brief Bounding box operators for temporal types.
  *
  * The bounding box of temporal values are
  * - a `Period` for temporal Booleans

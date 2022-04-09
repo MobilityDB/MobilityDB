@@ -29,7 +29,8 @@
 
 /**
  * @file tpoint_out.c
- * Output of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON format
+ * @brief Output of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON
+ * format.
  */
 
 #include "point/tpoint_out.h"

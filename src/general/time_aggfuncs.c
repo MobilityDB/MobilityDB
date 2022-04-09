@@ -29,7 +29,7 @@
 
 /**
  * @file time_aggfuncs.c
- * Aggregate functions for time types
+ * @brief Aggregate functions for time types.
  */
 
 #include "general/time_aggfuncs.h"

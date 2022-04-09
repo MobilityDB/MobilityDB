@@ -29,7 +29,7 @@
 
 /**
  * @file geography_functions.c
- * Spatial functions for PostGIS geography.
+ * @brief Spatial functions for PostGIS geography.
  *
  * These functions are supposed to be included in a forthcoming version of
  * PostGIS, to be proposed as a PR. This still remains to be done.

@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_spatialfuncs.c
- * Geospatial functions for temporal network points.
+ * @brief Spatial functions for temporal network points.
  */
 
 #include "npoint/tnpoint_spatialfuncs.h"

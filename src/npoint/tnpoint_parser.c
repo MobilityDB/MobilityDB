@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_parser.c
- * Functions for parsing static network types.
+ * @brief Functions for parsing static network types.
  */
 
 #include "npoint/tnpoint_parser.h"

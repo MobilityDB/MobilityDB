@@ -29,9 +29,9 @@
 
 /**
  * @file tempcache.c
- *
- * MobilityDB builds a cache of OIDs in global arrays in order to avoid (slow)
- * lookups. The global arrays are initialized at the loading of the extension.
+ * @brief Create a cache of information about temporal types and PostgreSQL
+ * OIDs in global arrays in order to avoid (slow) lookups. These arrays are
+ * initialized at the loading of the extension.
  *
  * The selectivity of Boolean operators is essential to determine efficient
  * execution plans for queries. The temporal extension defines several classes

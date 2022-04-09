@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_compops.c
- * Temporal comparison operators (=, <>, <, >, <=, >=).
+ * @brief Temporal comparison operators: #=, #<>, #<, #>, #<=, #>=.
  */
 
 #include "general/temporal_compops.h"

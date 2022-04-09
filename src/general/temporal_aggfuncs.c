@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_aggfuncs.c
- * Temporal aggregate functions
+ * @brief General aggregate functions for temporal types.
  */
 
 #include "general/temporal_aggfuncs.h"

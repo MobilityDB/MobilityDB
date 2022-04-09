@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_distance.c
- * Distance functions for temporal points.
+ * @brief Distance functions for temporal points.
  */
 
 #include "point/tpoint_distance.h"

@@ -29,7 +29,7 @@
 
 /**
  * @file time_spgist.c
- * Quad-tree SP-GiST index for time types.
+ * @brief Quad-tree SP-GiST index for time types.
  *
  * The functions in this file are based on those in the file
  * `rangetypes_spgist.c`.
@@ -100,10 +100,10 @@ periodnode_copy(const PeriodNode *orig)
  * and the centroid of the current node and the quadrant number (0 to 3).
  *
  * For example, given the bounding box of the root node (level 0) and
- * the centroid as follows 
- *     nodebox = (-infinity, -infinity)(infinity, infinity) 
+ * the centroid as follows
+ *     nodebox = (-infinity, -infinity)(infinity, infinity)
  *     centroid = (2001-06-13 18:10:00+02, 2001-06-13 18:11:00+02)
- * the quadrants are as follows 
+ * the quadrants are as follows
  *     0 = (-infinity, 2001-06-13 18:10:00)(infinity, 2001-06-13 18:11:00)
  *     1 = (-infinity, 2001-06-13 18:10:00)(2001-06-13 18:11:00, infinity)
  *     2 = (2001-06-13 18:10:00, -infinity)(infinity, 2001-06-13 18:11:00)
@@ -233,7 +233,7 @@ distance_period_nodeperiod(Period *query, PeriodNode *nodebox)
    * the upper bound of the query and lower bound of the nodebox */
   if (nodebox->left.lower >= query->upper)
     return nodebox->left.lower - query->upper;
-  
+
   /* If the query is to the right of the nodebox return the distance between
    * the upper bound of the nodebox and lower bound of the query */
   return query->lower - nodebox->right.upper;
@@ -569,7 +569,7 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
   /**
    * Initialization so that all the tests are lossy.
-   * This will be changed below for some tests. 
+   * This will be changed below for some tests.
    */
   out->recheck = true;
 

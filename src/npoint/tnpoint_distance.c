@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_distance.c
- * Temporal distance for temporal network points.
+ * @brief Temporal distance for temporal network points.
  */
 
 #include "npoint/tnpoint_distance.h"

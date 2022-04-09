@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_analyze.c
- * Functions for gathering statistics from temporal point columns.
+ * @brief Functions for gathering statistics from temporal point columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimensions of temporal types. The kind of statistics depends on the subtype

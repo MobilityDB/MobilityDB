@@ -29,12 +29,13 @@
 
 /**
  * @file geo_constructors.c
- * Constructors for the 2D geometric operations. These constructors should
- * be submitted as a PR to PostgreSQL, this needs still to be done.
+ * @brief Constructors for the 2D geometric operations.
  *
  * This module implements the constructors  for the following geometric
  * types: `point`, `line`, `lseg` (line segment), `box`, `circle`, `path`,
  * and `polygon`.
+ *
+ * @note These constructors should be submitted as a PR to PostgreSQL.
  */
 
 

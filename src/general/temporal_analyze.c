@@ -29,7 +29,8 @@
 
 /**
  * @file temporal_analyze.c
- * Functions for gathering statistics from temporal alphanumeric columns.
+ * @brief Functions for gathering statistics from temporal alphanumeric
+ * columns.
  *
  * Various kind of statistics are collected for both the value and the time
  * dimension of temporal types. Please refer to the PostgreSQL file pg_statistic_d.h

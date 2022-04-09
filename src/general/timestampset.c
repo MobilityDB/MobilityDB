@@ -29,7 +29,8 @@
 
 /**
  * @file timestampset.c
- * Basic functions for set of (distinct) timestamps.
+ * @brief General functions for `timestampset` values composed of an ordered
+ * list of distinct `timestamptz` values.
  */
 
 #include "general/timestampset.h"

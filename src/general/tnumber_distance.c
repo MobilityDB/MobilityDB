@@ -29,7 +29,7 @@
 
 /**
  * @file tnumber_distance.c
- * Distance functions for temporal numbers.
+ * @brief Distance functions for temporal numbers.
  */
 
 #include "general/tnumber_distance.h"
@@ -291,7 +291,7 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   if (box1->xmax < box2->xmin)
     /* box1 is to the left of box2 */
     return box2->xmin - box1->xmax;
-  else 
+  else
     /* box1 is to the right of box2 */
     return box1->xmin - box2->xmax;
 }

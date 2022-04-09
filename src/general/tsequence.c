@@ -29,7 +29,7 @@
 
 /**
  * @file tsequence.c
- * Basic functions for temporal sequences.
+ * @brief General functions for temporal sequences.
  */
 
 #include "general/tsequence.h"
@@ -2491,7 +2491,7 @@ tsequence_restrict_value1(const TSequence *seq, Datum value, bool atfunc,
     inst1 = tsequence_inst_n(seq, 0);
     /* We do not call the function tinstant_restrict_value since this
      * would create a new unnecessary instant that needs to be freed */
-    bool equal = datum_eq(tinstant_value(inst1), value, 
+    bool equal = datum_eq(tinstant_value(inst1), value,
       temptype_basetype(seq->temptype));
     if ((atfunc && ! equal) || (! atfunc && equal))
       return 0;

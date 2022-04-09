@@ -29,8 +29,8 @@
 
 /**
  * @file temporal_selfuncs.c
- * Functions for selectivity estimation of operators on temporal types whose
- * bounding box is a `Period`, that is, `tbool` and `ttext`.
+ * @brief Functions for selectivity estimation of operators on temporal types
+ * whose bounding box is a `Period`, that is, `tbool` and `ttext`.
  *
  * The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`

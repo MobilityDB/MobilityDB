@@ -29,7 +29,7 @@
 
 /**
  * @file ttext_textfuncs.c
- * Temporal text functions: `textcat`, `lower`, `upper`.
+ * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
 #include "general/ttext_textfuncs.h"

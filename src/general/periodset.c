@@ -29,7 +29,7 @@
 
 /**
  * @file periodset.c
- * Basic functions for set of disjoint periods.
+ * @brief General functions for set of disjoint periods.
  */
 
 #include "general/periodset.h"

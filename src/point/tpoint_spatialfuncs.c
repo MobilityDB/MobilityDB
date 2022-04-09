@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_spatialfuncs.c
- * Spatial functions for temporal points.
+ * @brief Spatial functions for temporal points.
  */
 
 #include "point/tpoint_spatialfuncs.h"

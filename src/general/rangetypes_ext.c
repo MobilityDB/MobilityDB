@@ -29,7 +29,7 @@
 
 /**
  * @file rangetypes_ext.c
- * Extended operators for range types.
+ * @brief Extended operators for range types.
  *
  * These operators have been submitted as a PR to PostgreSQL.
  */

@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_selfuncs.c
- * Functions for selectivity estimation of operators on temporal points
+ * @brief Functions for selectivity estimation of operators on temporal points.
  */
 
 #include "point/tpoint_selfuncs.h"

@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_gist.c
- * R-tree GiST index for temporal points.
+ * @brief R-tree GiST index for temporal points.
  */
 
 #include "point/tpoint_gist.h"

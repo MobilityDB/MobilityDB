@@ -28,8 +28,9 @@
  *****************************************************************************/
 
 /**
- * tnpoint_selfuncs.c
- * Functions for selectivity estimation of operators on temporal network points
+ * @file tnpoint_selfuncs.c
+ * @brief Functions for selectivity estimation of operators on temporal network
+ * points.
  */
 
 #include "npoint/tnpoint_selfuncs.h"

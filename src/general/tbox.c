@@ -29,7 +29,7 @@
 
 /**
  * @file tbox.c
- * Functions for temporal bounding boxes.
+ * @brief Functions for temporal bounding boxes.
  */
 
 #include "general/tbox.h"

@@ -29,7 +29,7 @@
 
 /**
  * @file time_gist.c
- * R-tree GiST index for time types.
+ * @brief R-tree GiST index for time types.
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
  */

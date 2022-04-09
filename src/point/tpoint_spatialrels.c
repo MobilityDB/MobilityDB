@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_spatialrels.c
- * Ever spatial relationships for temporal points.
+ * @brief Ever spatial relationships for temporal points.
  *
  * These relationships compute the ever spatial relationship between the
  * arguments and return a Boolean. These functions may be used for filtering

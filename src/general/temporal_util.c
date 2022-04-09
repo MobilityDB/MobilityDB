@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_util.c
- * Miscellaneous utility functions for temporal types.
+ * @brief General utility functions for temporal types.
  */
 
 #include "general/temporal_util.h"

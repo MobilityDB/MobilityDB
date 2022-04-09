@@ -29,8 +29,8 @@
 
 /**
  * @file temporal_similarity.c
- * Similarity distance for temporal values. Currently, the discrete Frechet
- * distance and the Dynamic Time Warping (DTW) distance are implemented.
+ * @brief Similarity distance for temporal values. Currently, discrete Frechet
+ * distance and Dynamic Time Warping (DTW) distance are implemented.
  */
 
 #include "general/temporal_similarity.h"

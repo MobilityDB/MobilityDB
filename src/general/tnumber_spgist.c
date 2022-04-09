@@ -29,8 +29,8 @@
 
 /**
  * @file tnumber_spgist.c
- * SP-GiST implementation of 4-dimensional quad-tree over temporal integers
- * and temporal floats.
+ * @brief SP-GiST implementation of 4-dimensional quad-tree over temporal
+ * integers and temporal floats.
  *
  * These functions are based on those in the file ``geo_spgist.c`. from
  * PostgreSQL. This module provides SP-GiST implementation for temporal

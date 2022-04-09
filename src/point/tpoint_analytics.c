@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_analytics.c
- * Analytic functions for temporal points and temporal floats.
+ * @brief Analytic functions for temporal points and temporal floats.
  */
 
 #include "point/tpoint_analytics.h"

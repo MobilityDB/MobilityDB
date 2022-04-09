@@ -30,7 +30,7 @@
 
 /**
  * @file tinstant.c
- * Basic functions for temporal instants.
+ * @brief General functions for temporal instants.
  */
 
 #include "general/tinstant.h"
@@ -519,7 +519,7 @@ tinstant_shift(const TInstant *inst, const Interval *interval)
 bool
 tinstant_ever_eq(const TInstant *inst, Datum value)
 {
-  return datum_eq(tinstant_value(inst), value, 
+  return datum_eq(tinstant_value(inst), value,
     temptype_basetype(inst->temptype));
 }
 

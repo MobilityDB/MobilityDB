@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_posops.c
- * Relative position operators for temporal types.
+ * @brief Relative position operators for temporal types.
  *
  * The following operators are defined:
  * - `left`, `overleft`, `right`, `overright` for the value dimension

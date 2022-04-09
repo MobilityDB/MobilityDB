@@ -29,7 +29,9 @@
 
 /**
  * @file lifting.c
- * Generic functions for lifting functions and operators on temporal types.
+ * @brief Generic functions for lifting functions and operators on temporal
+ * types.
+ *
  * These functions are used for lifting arithmetic operators (`+`, `-`, `*`,
  * `/`), Boolean operators (`and`, `or`, `not`), comparisons (`<`, `<=`, `>`,
  * `>=`), distance (`<->`), spatial relationships (`tcontains`), etc.
@@ -163,7 +165,7 @@
  * The function is applied to the composing instants.
  *****************************************************************************/
 
-/*
+/**
  * Apply the variadic function with the optional arguments to the base value
  */
 static Datum
@@ -182,7 +184,7 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Applies the function with the optional arguments to the temporal value
+ * Apply the function with the optional arguments to the temporal value
  *
  * @param[in] inst Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -197,7 +199,7 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Applies the function to the temporal value
+ * Apply the function to the temporal value
  *
  * @param[in] ti Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -215,7 +217,7 @@ tfunc_tinstantset(const TInstantSet *ti, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Applies the function to the temporal value
+ * Apply the function to the temporal value
  *
  * @param[in] seq Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -236,7 +238,7 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Applies the function to the temporal value
+ * Apply the function to the temporal value
  *
  * @param[in] ts Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -254,7 +256,7 @@ tfunc_tsequenceset(const TSequenceSet *ts, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Applies the function to the temporal value (dispatch function)
+ * Apply the function to the temporal value (dispatch function)
  *
  * @param[in] temp Temporal value
  * @param[in] lfinfo Information about the lifted function
@@ -314,7 +316,7 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
 }
 
 /**
- * Applies the function to the temporal value and the base value
+ * Apply the function to the temporal value and the base value
  *
  * @param[in] inst Temporal value
  * @param[in] value Base value
@@ -332,7 +334,7 @@ tfunc_tinstant_base(const TInstant *inst, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value
+ * Apply the function to the temporal value and the base value
  *
  * @param[in] ti Temporal value
  * @param[in] value Base value
@@ -352,7 +354,7 @@ tfunc_tinstantset_base(const TInstantSet *ti, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value when no
+ * Apply the function to the temporal value and the base value when no
  * turning points should be added and when the function does not have
  * instantaneous discontinuities
  *
@@ -380,7 +382,7 @@ tfunc_tsequence_base_scan(const TSequence *seq, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value when turning
+ * Apply the function to the temporal value and the base value when turning
  * points should be added
  *
  * @param[in] seq Temporal value
@@ -426,7 +428,7 @@ tfunc_tsequence_base_turnpt(const TSequence *seq, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value when the
+ * Apply the function to the temporal value and the base value when the
  * function has instantaneuous discontinuties
  *
  * @param[out] result Array on which the pointers of the newly constructed
@@ -578,7 +580,7 @@ tfunc_tsequence_base_discont(const TSequence *seq, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value.
+ * Apply the function to the temporal value and the base value.
  * Dispatch function depending on whether the function has
  * instantaneous discontinuities.
  */
@@ -609,7 +611,7 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value
+ * Apply the function to the temporal value and the base value
  *
  * @param[in] ts Temporal value
  * @param[in] value Base value
@@ -640,7 +642,7 @@ tfunc_tsequenceset_base(const TSequenceSet *ts, Datum value,
 }
 
 /**
- * Applies the function to the temporal value and the base value
+ * Apply the function to the temporal value and the base value
  * (dispatch function)
  *
  * @param[in] temp Temporal value

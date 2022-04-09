@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_waggfuncs.c
- * Window temporal aggregate functions
+ * @brief Window aggregate functions for temporal types.
  */
 
 #include "general/temporal_waggfuncs.h"

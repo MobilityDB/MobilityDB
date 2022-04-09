@@ -29,7 +29,7 @@
 
 /**
  * @file tbool_boolops.c
- * Temporal Boolean operators (and, or, not).
+ * @brief Temporal Boolean operators: and, or, not.
  */
 
 #include "general/tbool_boolops.h"

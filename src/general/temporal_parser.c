@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_parser.c
- * Functions for parsing time types and temporal types.
+ * @brief Functions for parsing time types and temporal types.
  *
  * Many functions make two passes for parsing, the first one to obtain the
  * number of elements in order to do memory allocation with `palloc`, the

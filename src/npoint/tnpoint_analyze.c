@@ -29,7 +29,8 @@
 
 /**
  * @file tnpoint_analyze.c
- * Functions for gathering statistics from temporal network point columns
+ * @brief Functions for gathering statistics from temporal network point
+ * columns.
  */
 
 #include "npoint/tnpoint_analyze.h"

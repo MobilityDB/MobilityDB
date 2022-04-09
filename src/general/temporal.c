@@ -29,7 +29,7 @@
 
 /**
  * @file temporal.c
- * Basic functions for temporal types of any subtype.
+ * @brief Basic functions for temporal types of any subtype.
  */
 
 #include "general/temporal.h"
@@ -402,7 +402,7 @@ ensure_increasing_timestamps(const TInstant *inst1, const TInstant *inst2,
       errmsg("Timestamps for temporal value must be increasing: %s, %s", t1, t2)));
   }
   if (merge && inst1->t == inst2->t &&
-    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2), 
+    ! datum_eq(tinstant_value(inst1), tinstant_value(inst2),
         temptype_basetype(inst1->temptype)))
   {
     char *t1 = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst1->t));

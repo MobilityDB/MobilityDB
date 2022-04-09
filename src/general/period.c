@@ -29,8 +29,8 @@
 
 /**
  * @file period.c
- * Basic routines for time periods composed of two `TimestampTz` values and
- * two Boolean values stating whether the bounds are inclusive or not.
+ * @brief General functions for time periods composed of two `TimestampTz`
+ * values and two Boolean values stating whether the bounds are inclusive.
  */
 
 #include "general/period.h"
@@ -166,7 +166,7 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
 /**
  * Compare the lower bound of two periods, returning <0, 0, or >0 according to
  * whether a's bound is less than, equal to, or greater than b's bound.
- * 
+ *
  * @note This function does the same as period_bound_cmp but avoids
  * deserializing the periods into lower and upper bounds
  */
@@ -192,7 +192,7 @@ period_lower_cmp(const Period *a, const Period *b)
 /**
  * Compare the upper bound of two periods, returning <0, 0, or >0 according to
  * whether a's bound is less than, equal to, or greater than b's bound.
- * 
+ *
  * @note This function does the same as period_bound_cmp but avoids
  * deserializing the periods into lower and upper bounds
  */

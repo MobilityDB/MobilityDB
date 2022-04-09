@@ -29,7 +29,8 @@
 
 /**
  * @file tpoint_spgist.c
- * SP-GiST implementation of 8-dimensional oct-tree over temporal points
+ * @brief SP-GiST implementation of 8-dimensional quad-tree over temporal
+ * points.
  *
  * This module provides SP-GiST implementation for boxes using an oct-tree
  * analogy in 8-dimensional space. SP-GiST doesn't allow indexing of

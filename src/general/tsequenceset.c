@@ -29,7 +29,7 @@
 
 /**
  * @file tsequenceset.c
- * Basic functions for temporal sequence sets.
+ * @brief General functions for temporal sequence sets.
  */
 
 #include "general/tsequenceset.h"
@@ -947,7 +947,7 @@ tsequenceset_values(const TSequenceSet *ts, Datum *result)
       result[k++] = tinstant_value(tsequence_inst_n(seq, j));
   }
   if (k > 1)
-  { 
+  {
     CachedType basetype = temptype_basetype(ts->temptype);
     datumarr_sort(result, k, basetype);
     k = datumarr_remove_duplicates(result, k, basetype);

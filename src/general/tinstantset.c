@@ -29,7 +29,7 @@
 
 /**
  * @file tinstantset.c
- * Basic functions for temporal instant sets.
+ * @brief General functions for temporal instant sets.
  */
 
 #include "general/tinstantset.h"
