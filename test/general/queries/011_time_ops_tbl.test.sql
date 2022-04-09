@@ -28,9 +28,9 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests of operators that do not involved indexes for time types and
+-- File time_ops.c
+-- Tests of operators that do not involve indexes for time types and
 -- selectivity tests.
--- File timeops.c
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_timestamptz, tbl_period WHERE t -|- p;

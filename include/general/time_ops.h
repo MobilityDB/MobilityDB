@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file timeops.h
+ * @file time_ops.h
  * Operators for time types.
  */
 
@@ -495,7 +495,7 @@ extern Interval *distance_period_timestamp_internal(const Period *p,
 extern Interval *distance_period_period_internal(const Period *p1,
   const Period *p2);
 
-/* Distance returning a float in seconds for use with indexes in 
+/* Distance returning a float in seconds for use with indexes in
  * nearest neighbor searches */
 
 extern Datum distance_secs_timestamp_timestamp(PG_FUNCTION_ARGS);

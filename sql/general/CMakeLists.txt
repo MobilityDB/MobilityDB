@@ -13,7 +13,7 @@ SET(LOCAL_FILES
   003_timestampset
   005_periodset
   007_rangetypes_ext
-  011_timeops
+  011_time_ops
   013_time_gist
   ${FILE_015}
   017_time_aggfuncs

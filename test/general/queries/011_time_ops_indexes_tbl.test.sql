@@ -28,10 +28,8 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Tests of operators for time types.
 -- File timeops.c
--- This test file is continued by a companion file for testing SPGIST indexes
--- since the latter are enabled for PostgreSQL versions >= 11
+-- Tests of operators for time types.
 -------------------------------------------------------------------------------
 
 DROP INDEX IF EXISTS tbl_timestampset_rtree_idx;
@@ -1042,7 +1040,7 @@ DROP INDEX IF EXISTS tbl_periodset_quadtree_idx;
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_timeops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx 
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
 ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_timeops;
