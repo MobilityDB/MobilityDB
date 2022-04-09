@@ -1175,7 +1175,7 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_periodset_quadtree_idx;
 DROP INDEX
 SELECT * FROM test_timeops
-WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx 
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx
 ORDER BY op, leftarg, rightarg;
  op | leftarg | rightarg | no_idx | rtree_idx | quadtree_idx 
 ----+---------+----------+--------+-----------+--------------

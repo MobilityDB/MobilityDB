@@ -368,7 +368,7 @@ tnpoint_geom(const Temporal *temp)
 /**
  * Compute the trajectory of two instants.
  *
- * @param[in] inst1, inst2 Temporal network point instants
+ * @param[in] np1, np2 Network points
  */
 static Datum
 tnpointseqsegm_trajectory(const npoint *np1, const npoint *np2)
