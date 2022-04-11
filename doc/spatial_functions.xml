@@ -605,7 +605,7 @@ SELECT tgeompoint 'Interp=Stepwise;(Point(1 1)@2000-01-01, Point(3 1)@2000-01-03
   geometry 'Linestring(1 3,2 2,3 3)';
 -- 1.4142135623731
 </programlisting>
-					<para>The operator <varname>|=|</varname> can be used for doing nearest neighbor searches using a GiST index (see <xref linkend="indexing_temporal_types" />). This operator corresponds to the PostGIS function <varname>ST_DistanceCPA</varname>, altough the latter requires both arguments to be a trajectory.</para>
+					<para>The operator <varname>|=|</varname> can be used for doing nearest neighbor searches using a GiST or an SP-GiST index (see <xref linkend="indexing_temporal_types" />). This operator corresponds to the PostGIS function <varname>ST_DistanceCPA</varname>, altough the latter requires both arguments to be a trajectory.</para>
 				<programlisting xml:space="preserve">
 SELECT ST_DistanceCPA(
   tgeompoint '[Point(0 0 0)@2012-01-01, Point(1 1 1)@2012-01-03,
@@ -819,14 +819,14 @@ SELECT disjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 				<listitem id="dwithin">
 					<indexterm><primary><varname>dwithin</varname></primary></indexterm>
 					<para>Is ever at distance within &Z_support; &geography_support;</para>
-					<para><varname>dwithin({point,tpoint},{point,tpoint},float): boolean</varname></para>
+					<para><varname>dwithin({geo,tpoint},{geo,tpoint},float): boolean</varname></para>
 					<programlisting xml:space="preserve">
 SELECT dwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2000-01-01, Point(1 1 0)@2000-01-02]', 1);
 -- true
 SELECT dwithin(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 2 2)@2000-01-01,Point(2 2 2)@2000-01-02]', 1);
--- ERROR:  Only point geometries accepted
+-- false
 </programlisting>
 				</listitem>
 

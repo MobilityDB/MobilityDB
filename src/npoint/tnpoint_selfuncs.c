@@ -28,13 +28,15 @@
  *****************************************************************************/
 
 /**
- * tnpoint_selfuncs.c
- * Functions for selectivity estimation of operators on temporal network points
+ * @file tnpoint_selfuncs.c
+ * @brief Functions for selectivity estimation of operators on temporal network
+ * points.
  */
 
 #include "npoint/tnpoint_selfuncs.h"
 
 /* MobilityDB */
+#include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
 #include "point/tpoint_selfuncs.h"
 
@@ -44,25 +46,25 @@
  * Get the enum value associated to the operator
  */
 bool
-tnpoint_cachedop(Oid oper, CachedOp *cachedOp)
+tnpoint_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
   {
-    if (oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_NPOINT, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TNPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_GEOMETRY) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_NPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TNPOINT, T_TNPOINT))
+    if (operid == oper_oid((CachedOp) i, T_GEOMETRY, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_NPOINT, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_STBOX, T_TNPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_GEOMETRY) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_NPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_STBOX) ||
+        operid == oper_oid((CachedOp) i, T_TNPOINT, T_TNPOINT))
       {
         *cachedOp = (CachedOp) i;
         return true;

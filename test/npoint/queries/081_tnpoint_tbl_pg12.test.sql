@@ -29,7 +29,7 @@
 
 -- Test index support function for ever/always equal and intersects<Time>
 
-CREATE INDEX tbl_tnpoint_gist_idx ON tbl_tnpoint USING gist(temp);
+CREATE INDEX tbl_tnpoint_rtree_idx ON tbl_tnpoint USING gist(temp);
 
 -- EXPLAIN ANALYZE
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?= 'NPoint(1, 0.1)';
@@ -44,13 +44,13 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
 
-DROP INDEX tbl_tnpoint_gist_idx;
+DROP INDEX tbl_tnpoint_rtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- Test index support function for ever/always equal and intersects<Time>
 
-CREATE INDEX tbl_tnpoint_spgist_idx ON tbl_tnpoint USING spgist(temp);
+CREATE INDEX tbl_tnpoint_quadtree_idx ON tbl_tnpoint USING spgist(temp);
 
 -- EXPLAIN ANALYZE
 -- SELECT COUNT(*) FROM tbl_tnpoint WHERE temp ?= 'NPoint(1, 0.1)';
@@ -65,6 +65,6 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2001
 
 SELECT COUNT(*) FROM tbl_tnpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
 
-DROP INDEX tbl_tnpoint_spgist_idx;
+DROP INDEX tbl_tnpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------

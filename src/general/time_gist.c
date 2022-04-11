@@ -29,7 +29,7 @@
 
 /**
  * @file time_gist.c
- * R-tree GiST index for time types.
+ * @brief R-tree GiST index for time types.
  *
  * These functions are based on those in the file `rangetypes_gist.c`.
  */
@@ -45,7 +45,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
 
@@ -148,39 +148,40 @@ period_index_recheck(StrategyNumber strategy)
  * Transform the query argument into a period
  */
 static bool
-time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid subtype)
+time_gist_get_period(FunctionCallInfo fcinfo, Period *result, Oid typid)
 {
-  if (subtype == TIMESTAMPTZOID)
+  CachedType type = oid_type(typid);
+  if (type == T_TIMESTAMPTZ)
   {
     /* Since function period_gist_consistent is strict, t is not NULL */
     TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
     period_set(t, t, true, true, result);
   }
-  else if (subtype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
   {
     Datum tsdatum = PG_GETARG_DATUM(1);
     timestampset_bbox_slice(tsdatum, result);
   }
-  else if (subtype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
   {
     Period *p = PG_GETARG_PERIOD_P(1);
     if (p == NULL)
       PG_RETURN_BOOL(false);
     memcpy(result, p, sizeof(Period));
   }
-  else if (subtype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
   {
     Datum psdatum = PG_GETARG_DATUM(1);
     periodset_bbox_slice(psdatum, result);
   }
   /* For temporal types whose bounding box is a period */
-  else if (temporal_type(subtype))
+  else if (temporal_type(type))
   {
     Datum tempdatum = PG_GETARG_DATUM(1);
     temporal_bbox_slice(tempdatum, result);
   }
   else
-    elog(ERROR, "Unsupported type for indexing: %d", subtype);
+    elog(ERROR, "Unsupported type for indexing: %d", type);
   return true;
 }
 
@@ -194,7 +195,7 @@ period_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid subtype = PG_GETARG_OID(3);
+  Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   bool result;
   const Period *key = DatumGetPeriodP(entry->key);
@@ -207,7 +208,7 @@ period_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   /* Transform the query into a box */
-  if (! time_gist_get_period(fcinfo, &query, subtype))
+  if (! time_gist_get_period(fcinfo, &query, typid))
     PG_RETURN_BOOL(false);
 
   if (GIST_LEAF(entry))

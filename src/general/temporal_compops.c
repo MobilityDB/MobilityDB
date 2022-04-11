@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_compops.c
- * Temporal comparison operators (=, <>, <, >, <=, >=).
+ * @brief Temporal comparison operators: #=, #<>, #<, #>, #<=, #>=.
  */
 
 #include "general/temporal_compops.h"
@@ -47,17 +47,17 @@
  *****************************************************************************/
 
 Temporal *
-tcomp_temporal_base1(const Temporal *temp, Datum value, Oid basetypid,
-  Datum (*func)(Datum, Datum, Oid, Oid), bool invert)
+tcomp_temporal_base1(const Temporal *temp, Datum value, CachedType basetype,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp->basetypid;
-  lfinfo.argtypid[1] = basetypid;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = basetype;
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = invert;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp->flags);
@@ -68,11 +68,11 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, Oid basetypid,
 
 PGDLLEXPORT Datum
 tcomp_base_temporal(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid))
+  Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -80,7 +80,7 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = tcomp_temporal_base1(temp, value, basetypid,
+  Temporal *result = tcomp_temporal_base1(temp, value, basetype,
     func, INVERT);
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
@@ -90,7 +90,7 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
     pfree(result);
     result = at_result;
   }
-  DATUM_FREE_IF_COPY(value, basetypid, 0);
+  DATUM_FREE_IF_COPY(value, basetype, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -99,11 +99,11 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
 
 Datum
 tcomp_temporal_base(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid))
+  Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -111,7 +111,7 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = tcomp_temporal_base1(temp, value, basetypid,
+  Temporal *result = tcomp_temporal_base1(temp, value, basetype,
     func, INVERT_NO);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
@@ -122,7 +122,7 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
     result = at_result;
   }
   PG_FREE_IF_COPY(temp, 0);
-  DATUM_FREE_IF_COPY(value, basetypid, 1);
+  DATUM_FREE_IF_COPY(value, basetype, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -141,7 +141,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  if (tgeo_base_type(temp1->basetypid))
+  if (tgeo_type(temp1->temptype))
   {
     ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
     ensure_same_dimensionality(temp1->flags, temp2->flags);
@@ -150,10 +150,10 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||

@@ -29,7 +29,7 @@
 
 /**
  * @file skiplist.c
- * Functions manipulating skiplists
+ * @brief Functions manipulating skiplists.
  */
 
 #include "general/skiplist.h"
@@ -47,7 +47,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_aggfuncs.h"
 #include "general/temporal_util.h"
 #include "general/temporal_aggfuncs.h"
@@ -196,10 +196,11 @@ skiplist_elmpos(const SkipList *list, int cur, TimestampTz t)
     if (list->elemtype == PERIOD)
       return pos_period_timestamp((Period *) list->elems[cur].value, t);
     /* list->elemtype == TEMPORAL */
-    if (((Temporal *) list->elems[cur].value)->subtype == INSTANT)
-      return pos_timestamp_timestamp(((TInstant *) list->elems[cur].value)->t, t);
-    else
-      return pos_period_timestamp(&((TSequence *) list->elems[cur].value)->period, t);
+    Temporal *temp = (Temporal *) list->elems[cur].value;
+    if (temp->subtype == INSTANT)
+      return pos_timestamp_timestamp(((TInstant *) temp)->t, t);
+    else /* temp->subtype == SEQUENCE */
+      return pos_period_timestamp(&((TSequence *) temp)->period, t);
   }
 }
 
@@ -380,7 +381,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
    */
   assert(list->length > 0);
   Period p;
-  int16 subtype = 0;
+  uint8 subtype = 0;
   if (list->elemtype == TIMESTAMPTZ)
   {
     period_set((TimestampTz) values[0], (TimestampTz) values[count - 1],
@@ -399,7 +400,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
     if (subtype == INSTANT)
       period_set(((TInstant *)values[0])->t,
         ((TInstant *) values[count - 1])->t, true, true, &p);
-    else
+    else /* subtype == SEQUENCE */
       period_set(((TSequence *)values[0])->period.lower,
         ((TSequence *) values[count - 1])->period.upper,
         ((TSequence *) values[0])->period.lower_inc,
@@ -607,10 +608,8 @@ aggstate_write(SkipList *state, StringInfo buf)
   }
   else /* state->elemtype == TEMPORAL */
   {
-    Oid basetypid = InvalidOid;
     if (state->length > 0)
-      basetypid = ((Temporal *) values[0])->basetypid;
-    pq_sendint32(buf, basetypid);
+      pq_sendint32(buf, ((Temporal *) values[0])->temptype);
     for (i = 0; i < state->length; i ++)
     {
       SPI_connect();
@@ -654,9 +653,9 @@ aggstate_read(FunctionCallInfo fcinfo, StringInfo buf)
   }
   else /* elemtype == TEMPORAL */
   {
-    Oid basetypid = pq_getmsgint(buf, 4);
+    CachedType temptype = pq_getmsgint(buf, 4);
     for (int i = 0; i < length; i ++)
-      values[i] = temporal_read(buf, basetypid);
+      values[i] = temporal_read(buf, temptype);
     size_t extrasize = (size_t) pq_getmsgint64(buf);
     result = skiplist_make(fcinfo, values, length, TEMPORAL);
     if (extrasize)

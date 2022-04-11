@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- * tnpoint_posops.c
- * Relative position operators for temporal network points.
+ * @file tnpoint_posops.c
+ * @brief Relative position operators for temporal network points.
  *
  * The following operators are defined for the spatial dimension:
  * - left, overleft, right, overright, below, overbelow, above, overabove,
@@ -72,16 +72,13 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  if (!geo_stbox(gs, &box1))
-  {
-    PG_FREE_IF_COPY(gs, 0);
-    PG_FREE_IF_COPY(temp, 1);
-    PG_RETURN_NULL();
-  }
+  geo_stbox(gs, &box1);
   temporal_bbox(temp, &box2);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(gs, 0);
@@ -99,17 +96,14 @@ static Datum
 posop_tnpoint_geom(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_has_not_Z_gs(gs);
   STBOX box1, box2;
-  if (!geo_stbox(gs, &box2))
-  {
-    PG_FREE_IF_COPY(temp, 0);
-    PG_FREE_IF_COPY(gs, 1);
-    PG_RETURN_NULL();
-  }
+  geo_stbox(gs, &box2);
   temporal_bbox(temp, &box1);
   bool result = func(&box1, &box2);
   PG_FREE_IF_COPY(temp, 0);

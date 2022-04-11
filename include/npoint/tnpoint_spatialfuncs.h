@@ -35,11 +35,12 @@
 #ifndef __TNPOINT_SPATIALFUNCS_H__
 #define __TNPOINT_SPATIALFUNCS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
+/* MobilityDB */
 #include "general/temporal.h"
-#include "tnpoint_static.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 

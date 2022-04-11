@@ -36,15 +36,15 @@ CREATE FUNCTION period_spgist_config(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_spgist_choose(internal, internal)
+CREATE FUNCTION period_quadtree_choose(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_spgist_picksplit(internal, internal)
+CREATE FUNCTION period_quadtree_picksplit(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION period_spgist_inner_consistent(internal, internal)
+CREATE FUNCTION period_quadtree_inner_consistent(internal, internal)
   RETURNS void
   AS 'MODULE_PATHNAME'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -63,7 +63,7 @@ CREATE FUNCTION periodset_spgist_compress(internal)
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS timestampset_spgist_ops
+CREATE OPERATOR CLASS timestampset_quadtree_ops
   DEFAULT FOR TYPE timestampset USING spgist AS
   -- overlaps
   OPERATOR  3    && (timestampset, timestampset),
@@ -81,6 +81,13 @@ CREATE OPERATOR CLASS timestampset_spgist_ops
   OPERATOR  17    -|- (timestampset, periodset),
   -- equals
   OPERATOR  18    = (timestampset, timestampset),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
+  OPERATOR  25    |=| (timestampset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (timestampset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (timestampset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (timestampset, periodset) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (timestampset, timestamptz),
   OPERATOR  28    &<# (timestampset, timestampset),
@@ -103,15 +110,15 @@ CREATE OPERATOR CLASS timestampset_spgist_ops
   OPERATOR  31    #&> (timestampset, periodset),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_spgist_choose(internal, internal),
-  FUNCTION  3  period_spgist_picksplit(internal, internal),
-  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  period_quadtree_choose(internal, internal),
+  FUNCTION  3  period_quadtree_picksplit(internal, internal),
+  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  timestampset_spgist_compress(internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS period_spgist_ops
+CREATE OPERATOR CLASS period_quadtree_ops
   DEFAULT FOR TYPE period USING spgist AS
   -- overlaps
   OPERATOR  3    && (period, timestampset),
@@ -130,6 +137,13 @@ CREATE OPERATOR CLASS period_spgist_ops
   OPERATOR  17    -|- (period, periodset),
   -- equals
   OPERATOR  18    = (period, period),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
+  OPERATOR  25    |=| (period, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (period, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (period, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (period, periodset) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (period, timestamptz),
   OPERATOR  28    &<# (period, timestampset),
@@ -152,14 +166,14 @@ CREATE OPERATOR CLASS period_spgist_ops
   OPERATOR  31    #&> (period, periodset),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_spgist_choose(internal, internal),
-  FUNCTION  3  period_spgist_picksplit(internal, internal),
-  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  period_quadtree_choose(internal, internal),
+  FUNCTION  3  period_quadtree_picksplit(internal, internal),
+  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  period_spgist_leaf_consistent(internal, internal);
 
 /******************************************************************************/
 
-CREATE OPERATOR CLASS periodset_spgist_ops
+CREATE OPERATOR CLASS periodset_quadtree_ops
   DEFAULT FOR TYPE periodset USING spgist AS
   -- overlaps
   OPERATOR  3    && (periodset, timestampset),
@@ -178,6 +192,13 @@ CREATE OPERATOR CLASS periodset_spgist_ops
   OPERATOR  17    -|- (periodset, periodset),
 -- equals
   OPERATOR  18    = (periodset, periodset),
+#if POSTGRESQL_VERSION_NUMBER >= 120000
+  -- nearest approach distance
+  OPERATOR  25    |=| (periodset, timestamptz) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (periodset, timestampset) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (periodset, period) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (periodset, periodset) FOR ORDER BY pg_catalog.float_ops,
+#endif //POSTGRESQL_VERSION_NUMBER >= 120000
   -- overlaps or before
   OPERATOR  28    &<# (periodset, timestamptz),
   OPERATOR  28    &<# (periodset, timestampset),
@@ -200,9 +221,9 @@ CREATE OPERATOR CLASS periodset_spgist_ops
   OPERATOR  31    #&> (periodset, periodset),
   -- functions
   FUNCTION  1  period_spgist_config(internal, internal),
-  FUNCTION  2  period_spgist_choose(internal, internal),
-  FUNCTION  3  period_spgist_picksplit(internal, internal),
-  FUNCTION  4  period_spgist_inner_consistent(internal, internal),
+  FUNCTION  2  period_quadtree_choose(internal, internal),
+  FUNCTION  3  period_quadtree_picksplit(internal, internal),
+  FUNCTION  4  period_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  period_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  periodset_spgist_compress(internal);
 

@@ -29,9 +29,9 @@
 
 /**
  * @file projection_gk.c
- * Implementation of the Gauss-Krueger projection that is used in Secondo
+ * @brief Implementation of the Gauss-Krueger projection used in Secondo.
  *
- * This projection does not correspond to any standard projection in
+ * @note This projection does not correspond to any standard projection in
  * http://www.epsg.org/. This projection is provided to enable the comparison
  * of MobilityDB and Secondo.
  */
@@ -283,13 +283,12 @@ PGDLLEXPORT Datum
 tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_valid_tempsubtype(temp->subtype);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &gk;
   lfinfo.numparam = 0;
-  lfinfo.restypid = temp->basetypid;
+  lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);

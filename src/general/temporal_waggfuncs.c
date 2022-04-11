@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_waggfuncs.c
- * Window temporal aggregate functions
+ * @brief Window aggregate functions for temporal types.
  */
 
 #include "general/temporal_waggfuncs.h"
@@ -67,8 +67,7 @@ tinstant_extend(const TInstant *inst, const Interval *interval,
     TimestampTzGetDatum(inst->t),
     PointerGetDatum(interval)));
   instants[0] = (TInstant *) inst;
-  instants[1] = tinstant_make(tinstant_value(inst), upper,
-    inst->basetypid);
+  instants[1] = tinstant_make(tinstant_value(inst), upper, inst->temptype);
   result[0] = tsequence_make((const TInstant **) instants, 2, true, true,
     MOBDB_FLAGS_GET_CONTINUOUS(inst->flags), NORMALIZE_NO);
   pfree(instants[1]);
@@ -117,6 +116,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
   Datum value1 = tinstant_value(inst1);
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
   bool lower_inc = seq->period.lower_inc;
+  CachedType basetype = temptype_basetype(seq->temptype);
   for (int i = 0; i < seq->count - 1; i++)
   {
     TInstant *inst2 = (TInstant *) tsequence_inst_n(seq, i + 1);
@@ -124,13 +124,13 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 
     /* Stepwise interpolation or constant segment */
-    if (!linear || datum_eq(value1, value2, inst1->basetypid))
+    if (!linear || datum_eq(value1, value2, basetype))
     {
       TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
         timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
         PointerGetDatum(interval)));
       instants[0] = (TInstant *) inst1;
-      instants[1] = tinstant_make(value1, upper, inst1->basetypid);
+      instants[1] = tinstant_make(value1, upper, inst1->temptype);
       result[i] = tsequence_make((const TInstant **) instants, 2,
         lower_inc, upper_inc, linear, NORMALIZE_NO);
       pfree(instants[1]);
@@ -139,8 +139,8 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
     {
       /* Increasing period and minimum function or
        * decreasing period and maximum function */
-      if ((datum_lt(value1, value2, inst1->basetypid) && min) ||
-        (datum_gt(value1, value2, inst1->basetypid) && !min))
+      if ((datum_lt(value1, value2, basetype) && min) ||
+        (datum_gt(value1, value2, basetype) && !min))
       {
         /* Extend the start value for the duration of the window */
         TimestampTz lower = DatumGetTimestampTz(DirectFunctionCall2(
@@ -150,8 +150,8 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
           timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
           PointerGetDatum(interval)));
         instants[0] = inst1;
-        instants[1] = tinstant_make(value1, lower, inst1->basetypid);
-        instants[2] = tinstant_make(value2, upper, inst1->basetypid);
+        instants[1] = tinstant_make(value1, lower, inst1->temptype);
+        instants[2] = tinstant_make(value2, upper, inst1->temptype);
         result[i] = tsequence_make((const TInstant **) instants, 3,
           lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[1]); pfree(instants[2]);
@@ -164,7 +164,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
           PointerGetDatum(interval)));
         instants[0] = inst1;
         instants[1] = inst2;
-        instants[2] = tinstant_make(value2, upper, inst1->basetypid);
+        instants[2] = tinstant_make(value2, upper, inst1->temptype);
         result[i] = tsequence_make((const TInstant**) instants, 3,
           lower_inc, upper_inc, linear, NORMALIZE_NO);
         pfree(instants[2]);
@@ -260,8 +260,8 @@ tinstant_transform_wcount1(TimestampTz lower, TimestampTz upper,
   TimestampTz upper1 = DatumGetTimestampTz(DirectFunctionCall2(
     timestamptz_pl_interval, TimestampTzGetDatum(upper),
     PointerGetDatum(interval)));
-  instants[0] = tinstant_make(Int32GetDatum(1), lower, INT4OID);
-  instants[1] = tinstant_make(Int32GetDatum(1), upper1, INT4OID);
+  instants[0] = tinstant_make(Int32GetDatum(1), lower, T_TINT);
+  instants[1] = tinstant_make(Int32GetDatum(1), upper1, T_TINT);
   TSequence *result = tsequence_make((const TInstant **) instants, 2,
     lower_inc, upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
@@ -414,10 +414,10 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
   /* Should be additional attribute */
   bool linear = true;
   float8 value = 0.0;
-  ensure_tnumber_base_type(inst->basetypid);
-  if (inst->basetypid == INT4OID)
+  ensure_tnumber_type(inst->temptype);
+  if (inst->temptype == T_TINT)
     value = DatumGetInt32(tinstant_value(inst));
-  else /* inst->basetypid == FLOAT8OID */
+  else /* inst->temptype == T_TFLOAT */
     value = DatumGetFloat8(tinstant_value(inst));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
@@ -425,10 +425,8 @@ tnumberinst_transform_wavg(const TInstant *inst, const Interval *interval,
     timestamptz_pl_interval, TimestampTzGetDatum(inst->t),
     PointerGetDatum(interval)));
   TInstant *instants[2];
-  instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst->t,
-    type_oid(T_DOUBLE2));
-  instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
-    type_oid(T_DOUBLE2));
+  instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst->t, T_TDOUBLE2);
+  instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper, T_TDOUBLE2);
   result[0] = tsequence_make((const TInstant**) instants, 2, true, true,
     linear, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
@@ -494,10 +492,8 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interval,
     TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
       timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
       PointerGetDatum(interval)));
-    instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst1->t,
-      type_oid(T_DOUBLE2));
-    instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper,
-      type_oid(T_DOUBLE2));
+    instants[0] = tinstant_make(PointerGetDatum(&dvalue), inst1->t, T_TDOUBLE2);
+    instants[1] = tinstant_make(PointerGetDatum(&dvalue), upper, T_TDOUBLE2);
     result[i] = tsequence_make((const TInstant **) instants, 2,
       lower_inc, upper_inc, linear, NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
@@ -543,8 +539,8 @@ static TSequence **
 tnumber_transform_wavg(const Temporal *temp, const Interval *interval,
   int *count)
 {
-  ensure_valid_tempsubtype(temp->subtype);
   TSequence **result;
+  ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
     TInstant *inst = (TInstant *)temp;
@@ -629,7 +625,7 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Interval *interval = PG_GETARG_INTERVAL_P(2);
   if ((temp->subtype == SEQUENCE || temp->subtype == SEQUENCESET) &&
-    temp->basetypid == FLOAT8OID && func == &datum_sum_float8)
+    temp->temptype == T_TFLOAT && func == &datum_sum_float8)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported for temporal float sequences")));
 
@@ -637,7 +633,6 @@ temporal_wagg_transfn(FunctionCallInfo fcinfo, datum_func2 func,
     func, min, crossings);
 
   PG_FREE_IF_COPY(temp, 1);
-  PG_FREE_IF_COPY(interval, 2);
   PG_RETURN_POINTER(result);
 }
 

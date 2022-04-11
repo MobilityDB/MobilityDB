@@ -35,11 +35,12 @@
 #ifndef __TNPOINT_BOXOPS_H__
 #define __TNPOINT_BOXOPS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
+/* PostgreSQL */
 #include "general/temporal.h"
-#include "tnpoint.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

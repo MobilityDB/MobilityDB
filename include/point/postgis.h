@@ -36,9 +36,10 @@
 #ifndef __POSTGIS_H__
 #define __POSTGIS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-
+/* PostGIS */
 #include <liblwgeom.h>
 #if POSTGIS_VERSION_NUMBER >= 30000
 #include <lwgeodetic_tree.h>

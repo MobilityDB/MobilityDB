@@ -29,7 +29,7 @@
 
 /**
  * @file stbox.c
- * Functions for spatiotemporal bounding boxes.
+ * @brief Functions for spatiotemporal bounding boxes.
  */
 
 #include "point/stbox.h"
@@ -795,13 +795,7 @@ geo_stbox(const GSERIALIZED *gs, STBOX *box)
   /* Note: zero-fill is required here, just as in heap tuples */
   memset(box, 0, sizeof(STBOX));
   if (gserialized_is_empty(gs))
-  {
-    /* Spatial dimensions are set as missing for the SP-GiST index */
-    MOBDB_FLAGS_SET_X(box->flags, false);
-    MOBDB_FLAGS_SET_Z(box->flags, false);
-    MOBDB_FLAGS_SET_T(box->flags, false);
     return false;
-  }
 
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
@@ -923,7 +917,7 @@ timestampset_stbox_slice(Datum tsdatum, STBOX *box)
   else
     ts = (TimestampSet *) tsdatum;
   timestampset_stbox(ts, box);
-  POSTGIS_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
+  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
   return;
 }
 
@@ -998,7 +992,7 @@ periodset_stbox_slice(Datum psdatum, STBOX *box)
   else
     ps = (PeriodSet *) psdatum;
   periodset_stbox(ps, box);
-  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 

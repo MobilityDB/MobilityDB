@@ -37,11 +37,12 @@
 
 /*****************************************************************************/
 
-#include "temporal.h"
-#include "tinstant.h"
-#include "tinstantset.h"
-#include "tsequence.h"
-#include "tsequenceset.h"
+/* MobilityDB */
+#include "general/temporal.h"
+#include "general/tinstant.h"
+#include "general/tinstantset.h"
+#include "general/tsequence.h"
+#include "general/tsequenceset.h"
 
 /*****************************************************************************/
 

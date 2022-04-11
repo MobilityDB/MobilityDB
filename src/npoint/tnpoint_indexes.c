@@ -29,7 +29,8 @@
 
 /**
  * @file tnpoint_indexes.c
- * R-tree GiST and SP-GiST indexes for temporal network points.
+ * @brief R-tree GiST and quad-tree SP-GiST indexes for temporal network
+ * points.
  */
 
 #include "npoint/tnpoint_indexes.h"

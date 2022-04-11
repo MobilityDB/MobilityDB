@@ -39,83 +39,83 @@ set force_parallel_mode=regress;
 -- contains
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE contains(g, temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE contains(g, temp);
 
 -------------------------------------------------------------------------------
 -- disjoint
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE disjoint(g, temp);
-SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE disjoint(temp, g);
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE disjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE disjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE disjoint(t1.temp, t2.temp);
 -- 3D
-SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE disjoint(g, temp);
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE disjoint(temp, g);
-SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE disjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE disjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE disjoint(t1.temp, t2.temp);
 -- Geography
-SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE disjoint(g, temp);
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE disjoint(temp, g);
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE disjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE disjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE disjoint(t1.temp, t2.temp);
 -- 3D
-SELECT count(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE disjoint(g, temp);
-SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE disjoint(temp, g);
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE disjoint(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE disjoint(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE disjoint(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE disjoint(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- intersects
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE intersects(g, temp);
-SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE intersects(temp, g);
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE intersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE intersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE intersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE intersects(t1.temp, t2.temp);
 -- 3D
-SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE intersects(g, temp);
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE intersects(temp, g);
-SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE intersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE intersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE intersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE intersects(t1.temp, t2.temp);
 -- Geography
 -- The following two queries return different number result (3302 vs 3300) 
 -- depending on PostGIS version. For this reason they are commented out
--- SELECT count(*) FROM tbl_geography, tbl_tgeogpoint WHERE intersects(g, temp);
--- SELECT count(*) FROM tbl_tgeogpoint, tbl_geography WHERE intersects(temp, g);
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE intersects(t1.temp, t2.temp);
+-- SELECT COUNT(*) FROM tbl_geography, tbl_tgeogpoint WHERE intersects(g, temp);
+-- SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geography WHERE intersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE intersects(t1.temp, t2.temp);
 -- 3D
-SELECT count(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE intersects(g, temp);
-SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE intersects(temp, g);
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE intersects(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_geography3D, tbl_tgeogpoint3D WHERE intersects(g, temp);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D WHERE intersects(temp, g);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE intersects(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- touches
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_geometry, tbl_tgeompoint WHERE touches(g, temp);
-SELECT count(*) FROM tbl_tgeompoint, tbl_geometry WHERE touches(temp, g);
+SELECT COUNT(*) FROM tbl_geometry, tbl_tgeompoint WHERE touches(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geometry WHERE touches(temp, g);
 -- 3D
-SELECT count(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE touches(g, temp);
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE touches(temp, g);
+SELECT COUNT(*) FROM tbl_geometry3D, tbl_tgeompoint3D WHERE touches(g, temp);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D WHERE touches(temp, g);
 
 -------------------------------------------------------------------------------
 -- dwithin
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint WHERE dwithin(g, temp, 10);
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point WHERE dwithin(temp, g, 10);
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE dwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE dwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
 -- Step interpolation
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE dwithin(g, seq, 10);
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE dwithin(g, ts, 10);
-SELECT count(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE dwithin(t1.seq, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq WHERE dwithin(g, seq, 10);
+SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset WHERE dwithin(g, ts, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint_step_seq t1, tbl_tgeompoint t2 WHERE dwithin(t1.seq, t2.temp, 10);
 -- 3D
-SELECT count(*) FROM tbl_geom_point, tbl_tgeompoint WHERE dwithin(g, temp, 10);
-SELECT count(*) FROM tbl_tgeompoint, tbl_geom_point WHERE dwithin(temp, g, 10);
-SELECT count(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geom_point3D, tbl_tgeompoint3D WHERE dwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geom_point3D WHERE dwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
 -- Geography
-SELECT count(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE dwithin(g, temp, 10);
-SELECT count(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE dwithin(temp, g, 10);
-SELECT count(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint WHERE dwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point WHERE dwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2 WHERE dwithin(t1.temp, t2.temp, 10);
 -- 3D
-SELECT count(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D WHERE dwithin(g, temp, 10);
-SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE dwithin(temp, g, 10);
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
+SELECT COUNT(*) FROM tbl_geog_point3D, tbl_tgeogpoint3D WHERE dwithin(g, temp, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geog_point3D WHERE dwithin(temp, g, 10);
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE dwithin(t1.temp, t2.temp, 10);
 
 -------------------------------------------------------------------------------
 set parallel_tuple_cost=100;

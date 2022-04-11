@@ -146,13 +146,13 @@ SELECT MAX(numInstants(appendInstant(temp, shift(endInstant(temp), '5 min')))) F
   57
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint where temp::tgeompoint is not null;
+SELECT COUNT(*) FROM tbl_tnpoint WHERE temp::tgeompoint IS NOT NULL;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)::tnpoint, 7);
+SELECT COUNT(*) FROM tbl_tnpoint WHERE round(temp, 7) = round((temp::tgeompoint)::tnpoint, 7);
  count 
 -------
    100
@@ -170,7 +170,7 @@ SELECT DISTINCT tempSubtype(temp) FROM tbl_tnpoint ORDER BY 1;
 SELECT MAX(memSize(temp)) FROM tbl_tnpoint;
  max  
 ------
- 1904
+ 1936
 (1 row)
 
 /*
@@ -218,25 +218,25 @@ SELECT MAX(getTimestamp(inst)) FROM tbl_tnpoint_inst;
  2001-12-30 18:06:00+00
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?= t2.np;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp ?= t2.np;
  count 
 -------
    101
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %= t2.np;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_npoint t2 WHERE t1.temp %= t2.np;
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
+SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE ever_eq(t1.inst, t2.np);
  count 
 -------
      0
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
+SELECT COUNT(*) FROM tbl_tnpoint_inst t1, tbl_npoint t2 WHERE always_eq(t1.inst, t2.np);
  count 
 -------
      0

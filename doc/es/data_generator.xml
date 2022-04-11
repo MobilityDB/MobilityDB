@@ -295,10 +295,7 @@
 		<title>Generación de tablas con valores aleatorios</title>
 
 		<para>
-			Los archivos
-			<varname>/datagen/general/create_test_tables_temporal.sql</varname> and
-			<varname>/datagen/point/create_test_tables_tpoint.sql</varname>
-			dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.
+			Los archivos <varname>create_test_tables_temporal.sql</varname> y <varname>create_test_tables_tpoint.sql</varname> dan ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba. Por ejemplo, el primer archivo define la función siguiente.
 		</para>
 
 		<programlisting xml:space="preserve">

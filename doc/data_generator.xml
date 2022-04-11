@@ -295,10 +295,7 @@
 		<title>Generation of Tables with Random Values</title>
 
 		<para>
-			The files
-			<varname>datagen/general/create_test_tables_temporal.sql</varname> and
-			<varname>datagen/point/create_test_tables_tpoint.sql</varname>
-			provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.
+			The files <varname>create_test_tables_temporal.sql</varname> and <varname>create_test_tables_tpoint.sql</varname> provide usage examples for the functions generating random values listed above. For example, the first file defines the following function.
 		</para>
 
 		<programlisting xml:space="preserve">

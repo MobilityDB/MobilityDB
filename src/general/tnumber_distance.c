@@ -29,7 +29,7 @@
 
 /**
  * @file tnumber_distance.c
- * Distance functions for temporal numbers.
+ * @brief Distance functions for temporal numbers.
  */
 
 #include "general/tnumber_distance.h"
@@ -45,7 +45,7 @@
 #include <utils/timestamp.h>
 /* MobilityDB */
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
@@ -59,21 +59,21 @@
  * Returns the distance between the two numbers
  */
 Datum
-number_distance(Datum l, Datum r, Oid typel, Oid typer)
+number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
 {
   Datum result = 0;
-  if (typel == INT4OID)
+  if (typel == T_INT4)
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Int32GetDatum(abs(DatumGetInt32(l) - DatumGetInt32(r)));
-    else if (typer == FLOAT8OID)
+    else if (typer == T_FLOAT8)
       result = Float8GetDatum(fabs(DatumGetInt32(l) - DatumGetFloat8(r)));
   }
-  else if (typel == FLOAT8OID)
+  else if (typel == T_FLOAT8)
   {
-    if (typer == INT4OID)
+    if (typer == T_INT4)
       result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetInt32(r)));
-    else if (typer == FLOAT8OID)
+    else if (typer == T_FLOAT8)
       result = Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
   }
   return result;
@@ -87,21 +87,21 @@ number_distance(Datum l, Datum r, Oid typel, Oid typer)
  *
  * @param[in] temp Temporal number
  * @param[in] value Value
- * @param[in] basetypid Type of the base value
- * @param[in] restypid Type of the result
+ * @param[in] valuetype Type of the value
+ * @param[in] restype Type of the result
  */
 static Temporal *
 distance_tnumber_base_internal(const Temporal *temp, Datum value,
-  Oid basetypid, Oid restypid)
+  CachedType valuetype, CachedType restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &number_distance;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp->basetypid;
-  lfinfo.argtypid[1] = basetypid;
-  lfinfo.restypid = restypid;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp->temptype);
+  lfinfo.argtype[1] = valuetype;
+  lfinfo.restype = restype;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
@@ -119,12 +119,11 @@ PGDLLEXPORT Datum
 distance_base_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = base_oid_from_temporal(temptypid);
-  Temporal *result = distance_tnumber_base_internal(temp, value, basetypid,
-    restypid);
+  Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Temporal *result = distance_tnumber_base_internal(temp, value,
+    oid_type(valuetypid), oid_type(restypid));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -139,11 +138,10 @@ distance_tnumber_base(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = base_oid_from_temporal(temptypid);
-  Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = distance_tnumber_base_internal(temp, value, basetypid,
-    restypid);
+  Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
+  Temporal *result = distance_tnumber_base_internal(temp, value,
+    oid_type(valuetypid), oid_type(restypid));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -175,20 +173,20 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
  * (dispatch function)
  *
  * @param[in] temp1,temp2 Temporal numbers
- * @param[in] restypid Type of the result
+ * @param[in] restype Type of the result
  */
 static Temporal *
 distance_tnumber_tnumber_internal(const Temporal *temp1, const Temporal *temp2,
-  Oid restypid)
+  CachedType restype)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &number_distance;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = restypid;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.restype = restype;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
@@ -208,8 +206,8 @@ distance_tnumber_tnumber(PG_FUNCTION_ARGS)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid restypid = base_oid_from_temporal(temptypid);
-  Temporal *result = distance_tnumber_tnumber_internal(temp1, temp2, restypid);
+  Temporal *result = distance_tnumber_tnumber_internal(temp1, temp2,
+    oid_type(temptypid));
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -226,14 +224,14 @@ distance_tnumber_tnumber(PG_FUNCTION_ARGS)
  * base value (internal function)
  */
 static double
-NAD_tnumber_base_internal(Temporal *temp, Datum value, Oid basetypid)
+NAD_tnumber_base_internal(Temporal *temp, Datum value, CachedType basetype)
 {
-  ensure_tnumber_base_type(basetypid);
+  ensure_tnumber_basetype(basetype);
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
-  if (basetypid == INT4OID)
+  if (basetype == T_INT4)
     int_tbox(DatumGetInt32(value), &box2);
-  else /* basetypid == FLOAT8OID */
+  else /* basetype == T_FLOAT8 */
     float_tbox(DatumGetFloat8(value), &box2);
   return NAD_tbox_tbox_internal(&box1, &box2);
 }
@@ -248,7 +246,8 @@ NAD_base_tnumber(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(0);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = NAD_tnumber_base_internal(temp, value, basetypid);
+  double result = NAD_tnumber_base_internal(temp, value,
+    oid_type(basetypid));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_FLOAT8(result);
 }
@@ -264,7 +263,8 @@ NAD_tnumber_base(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  double result = NAD_tnumber_base_internal(temp, value, basetypid);
+  double result = NAD_tnumber_base_internal(temp, value,
+    oid_type(basetypid));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
 }
@@ -278,37 +278,22 @@ NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box1); ensure_has_X_tbox(box2);
-  /* Project the boxes to their common timespan */
+
+  /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2, inter;
-  if (hast)
-  {
-    period_set(box1->tmin, box1->tmax, true, true, &p1);
-    period_set(box2->tmin, box2->tmax, true, true, &p2);
-    if (! inter_period_period(&p1, &p2, &inter))
-      return DBL_MAX;
-  }
+  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
+    return DBL_MAX;
 
-  /* Convert the boxes to ranges */
-  RangeType *range1 = range_make(Float8GetDatum(box1->xmin),
-    Float8GetDatum(box1->xmax), true, true, FLOAT8OID);
-  RangeType *range2 = range_make(Float8GetDatum(box2->xmin),
-    Float8GetDatum(box2->xmax), true, true, FLOAT8OID);
-  TypeCacheEntry *typcache = lookup_type_cache(range1->rangetypid,
-    TYPECACHE_RANGE_INFO);
-  /* Compute the result */
-  double result;
-  if (range_overlaps_internal(typcache, range1, range2))
-    result = 0.0;
-  else if (range_before_internal(typcache, range1, range2))
-    result = box2->tmin - box1->tmax;
+  /* If the boxes intersect in the value dimension return 0 */
+  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
+    return 0.0;
+
+  if (box1->xmax < box2->xmin)
+    /* box1 is to the left of box2 */
+    return box2->xmin - box1->xmax;
   else
-    /* range_after_internal(typcache, range1, range2) */
-    result = box1->tmin - box2->tmax;
-
-  pfree(range1); pfree(range2);
-
-  return result;
+    /* box1 is to the right of box2 */
+    return box1->xmin - box2->xmax;
 }
 
 PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
@@ -407,12 +392,12 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_tnumber_base_type(temp1->basetypid);
-  ensure_tnumber_base_type(temp2->basetypid);
+  ensure_tnumber_type(temp1->temptype);
+  ensure_tnumber_type(temp2->temptype);
   /* Result of the distance function is a tint iff both arguments are tint */
-  Oid restypid = (temp1->basetypid == INT4OID && temp2->basetypid == INT4OID) ?
-    INT4OID : FLOAT8OID;
-  Temporal *dist = distance_tnumber_tnumber_internal(temp1, temp2, restypid);
+  CachedType restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
+    T_TINT : T_TFLOAT;
+  Temporal *dist = distance_tnumber_tnumber_internal(temp1, temp2, restype);
   if (dist == NULL)
   {
     PG_FREE_IF_COPY(temp1, 0);
@@ -421,7 +406,7 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
   }
 
   Datum result = temporal_min_value_internal(dist);
-  if (restypid == INT4OID)
+  if (restype == T_TINT)
     result = Float8GetDatum((double) DatumGetInt32(result));
   pfree(dist);
   PG_FREE_IF_COPY(temp1, 0);

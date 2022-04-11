@@ -2029,10 +2029,10 @@ SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04,
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b @> t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <@ t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
-SELECT count(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b -|- t2.b;
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b && t2.b;
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b @> t2.b;
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b <@ t2.b;
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b ~= t2.b;
+SELECT COUNT(*) FROM tbl_tbox t1, tbl_tbox t2 WHERE t1.b -|- t2.b;
 
 -------------------------------------------------------------------------------

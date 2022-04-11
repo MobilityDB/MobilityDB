@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint.c
- * Basic functions for temporal network points.
+ * @brief Basic functions for temporal network points.
  */
 
 #include "npoint/tnpoint.h"
@@ -59,8 +59,7 @@ tnpoint_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Oid basetypid = temporal_basetypid(temptypid);
-  Temporal *result = temporal_parse(&input, basetypid);
+  Temporal *result = temporal_parse(&input, oid_type(temptypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -76,7 +75,7 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
   Datum geom = npoint_geom(np);
-  TInstant *result = tinstant_make(geom, inst->t, type_oid(T_GEOMETRY));
+  TInstant *result = tinstant_make(geom, inst->t, T_TGEOMPOINT);
   pfree(DatumGetPointer(geom));
   return result;
 }
@@ -119,7 +118,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
     assert(opa->npoints <= 1);
     lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
     Datum point = PointerGetDatum(geo_serialize(lwpoint));
-    instants[i] = tinstant_make(point, inst->t, type_oid(T_GEOMETRY));
+    instants[i] = tinstant_make(point, inst->t, T_TGEOMPOINT);
     pfree(DatumGetPointer(point));
   }
   TSequence *result = tsequence_make_free(instants, seq->count,
@@ -190,8 +189,7 @@ tgeompointinst_tnpointinst(const TInstant *inst)
   npoint *np = geom_npoint(geom);
   if (np == NULL)
     return NULL;
-  TInstant *result = tinstant_make(PointerGetDatum(np), inst->t,
-    type_oid(T_NPOINT));
+  TInstant *result = tinstant_make(PointerGetDatum(np), inst->t, T_TNPOINT);
   pfree(np);
   return result;
 }
@@ -278,13 +276,13 @@ tgeompoint_tnpoint(Temporal *temp)
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = (Temporal *)tgeompointinst_tnpointinst((TInstant *) temp);
+    result = (Temporal *) tgeompointinst_tnpointinst((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *)tgeompointinstset_tnpointinstset((TInstantSet *) temp);
+    result = (Temporal *) tgeompointinstset_tnpointinstset((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *)tgeompointseq_tnpointseq((TSequence *) temp);
+    result = (Temporal *) tgeompointseq_tnpointseq((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *)tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
+    result = (Temporal *) tgeompointseqset_tnpointseqset((TSequenceSet *) temp);
   return result;
 }
 
@@ -326,7 +324,7 @@ tnpoint_round(PG_FUNCTION_ARGS)
   lfinfo.func = (varfunc) &npoint_round_internal;
   lfinfo.numparam = 1;
   lfinfo.param[0] = size;
-  lfinfo.restypid = temp->basetypid;
+  lfinfo.restype = temp->temptype;
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);

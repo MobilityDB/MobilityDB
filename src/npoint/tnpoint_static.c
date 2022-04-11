@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_static.c
- * Network-based static point and segment types
+ * @brief Network-based static point and segment types.
  *
  * Several functions are commented out since they are not currently used.
  * They are kept if needed in the future.
@@ -136,7 +136,7 @@ npointarr_geom(npoint **points, int count)
     result = geoms[0];
   else
   {
-    ArrayType *array = datumarr_to_array(geoms, count, type_oid(T_GEOMETRY));
+    ArrayType *array = datumarr_to_array(geoms, count, T_GEOMETRY);
     result = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
     pfree(array);
     for (int i = 0; i < count; i++)
@@ -170,7 +170,7 @@ nsegmentarr_geom(nsegment **segments, int count)
     result = geoms[0];
   else
   {
-    ArrayType *array = datumarr_to_array(geoms, count, type_oid(T_GEOMETRY));
+    ArrayType *array = datumarr_to_array(geoms, count, T_GEOMETRY);
     result = call_function1(pgis_union_geometry_array, PointerGetDatum(array));
     pfree(array);
     for (int i = 0; i < count; i++)

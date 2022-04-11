@@ -274,9 +274,9 @@ SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::period;
 
 /* Errors */
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::period;
-ERROR:  The box does not have time dimension
+ERROR:  The box must have time dimension
 SELECT stbox 'STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0))'::period;
-ERROR:  The box does not have time dimension
+ERROR:  The box must have time dimension
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box2d;
     box2d     
 --------------
@@ -303,7 +303,7 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))
 
 /* Errors */
 SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box2d;
-ERROR:  The box does not have XY(Z) dimensions
+ERROR:  The box must have XY(Z) dimension
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))'::box3d;
        box3d        
 --------------------
@@ -330,7 +330,7 @@ SELECT stbox 'STBOX ZT((1.0, 2.0, 3.0, 2000-01-01), (4.0, 5.0, 6.0, 2000-01-02))
 
 /* Errors */
 SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::box3d;
-ERROR:  The box does not have XY(Z) dimensions
+ERROR:  The box must have XY(Z) dimension
 SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX T((1,1,2000-01-01),(5,5,2000-01-05))'::geometry);
                 st_asewkt                 
 ------------------------------------------
@@ -405,7 +405,7 @@ SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX ZT((1,1,1,2000-01-01),(1,1,1,2000-01-05)
 
 /* Errors */
 SELECT stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))'::geometry;
-ERROR:  The box does not have XY(Z) dimensions
+ERROR:  The box must have XY(Z) dimension
 SELECT (geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))'::box2d)::stbox;
        stbox        
 --------------------
@@ -738,9 +738,9 @@ SELECT round(stbox 'GEODSTBOX T((1.12345,1.12345,1.12345,2000-01-01),(2.12345,2.
 
 /* Errors */
 SELECT round(stbox 'STBOX T((,2000-01-01),(,2000-01-02))', 2);
-ERROR:  The box must have XY dimension
+ERROR:  The box must have XY(Z) dimension
 SELECT round(stbox 'GEODSTBOX T((,2000-01-01),(,2000-01-02))', 2);
-ERROR:  The box must have XY dimension
+ERROR:  The box must have XY(Z) dimension
 SELECT MIN(xmin(b)) FROM tbl_stbox;
    min    
 ----------
@@ -852,31 +852,31 @@ SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' -|- stbox 'STBOX T((, , 2000-01-01)
 ERROR:  The temporal values must have at least one common dimension
 SELECT stbox 'STBOX((1.0, 1.0), (2.0, 2.0))' ~= stbox 'STBOX T((, , 2000-01-01), (, , 2000-01-02))';
 ERROR:  The temporal values must have at least one common dimension
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b && t2.b;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b @> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b @> t2.b;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <@ t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <@ t2.b;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b ~= t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b ~= t2.b;
  count 
 -------
    100
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b -|- t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b -|- t2.b;
  count 
 -------
      0
@@ -1075,85 +1075,85 @@ SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' />> stbox 'GEODSTBOX((1
 ERROR:  The temporal value must have Z dimension
 SELECT stbox 'STBOX Z((1.0, 1.0, 1.0), (2.0, 2.0, 2.0))' /&> stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))';
 ERROR:  The temporal value must have Z dimension
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b << t2.b;
  count 
 -------
   4359
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &< t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &< t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b >> t2.b;
  count 
 -------
   4359
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &> t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<| t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<| t2.b;
  count 
 -------
   4428
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<| t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<| t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |>> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |>> t2.b;
  count 
 -------
   4428
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |&> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b |&> t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<# t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <<# t2.b;
  count 
 -------
   4949
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<# t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &<# t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #>> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #>> t2.b;
  count 
 -------
   4949
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b #&> t2.b;
  count 
 -------
   5050
 (1 row)
 
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b <</ t2.b;
 ERROR:  The temporal value must have Z dimension
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b &</ t2.b;
 ERROR:  The temporal value must have Z dimension
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b />> t2.b;
 ERROR:  The temporal value must have Z dimension
-SELECT count(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
+SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b /&> t2.b;
 ERROR:  The temporal value must have Z dimension
 SELECT stbox 'STBOX((1.0, 2.0), (3.0, 4.0))' + stbox 'STBOX((1.0, 2.0), (3.0, 4.0))';
       ?column?      

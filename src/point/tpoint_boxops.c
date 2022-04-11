@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_boxops.c
- * Bounding box operators for temporal points.
+ * @brief Bounding box operators for temporal points.
  *
  * These operators test the bounding boxes of temporal points, which are an
  * `STBOX`, where the *x*, *y*, and optional *z* coordinates are for the space

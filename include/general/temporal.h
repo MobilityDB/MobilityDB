@@ -35,14 +35,16 @@
 #ifndef __TEMPORAL_H__
 #define __TEMPORAL_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-
-#include "timetypes.h"
-#include "tbox.h"
+/* MobilityDB */
+#include "general/tempcache.h"
+#include "general/timetypes.h"
+#include "general/tbox.h"
 #include "point/stbox.h"
 
 #if POSTGRESQL_VERSION_NUMBER < 130000
@@ -166,10 +168,10 @@ struct tempsubtype_struct
 #define TEMPSUBTYPE_MAX_LEN   13
 
 /*****************************************************************************
- * Macros for manipulating the 'flags' element with structure xxGTZXLCB, where
- *   xx: unused bits
+ * Macros for manipulating the 'flags' element where the less significant
+ * bits are GTZXLCB, where
  *   G: coordinates are geodetic
-     T: has T coordinate,
+ *   T: has T coordinate,
  *   Z: has Z coordinate
  *   X: has value or X coordinate
  *   L: linear interpolation
@@ -181,30 +183,38 @@ struct tempsubtype_struct
  * to the value of the continuous subtype flag.
  *****************************************************************************/
 
+#define MOBDB_FLAG_BYVAL      0x0001
+#define MOBDB_FLAG_CONTINUOUS 0x0002
+#define MOBDB_FLAG_LINEAR     0x0004
+#define MOBDB_FLAG_X          0x0008
+#define MOBDB_FLAG_Z          0x0010
+#define MOBDB_FLAG_T          0x0020
+#define MOBDB_FLAG_GEODETIC   0x0040
+
 /* The following flag is only used for TInstant */
-#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) ((flags) & 0x01))
-#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & 0x02)>>1))
-#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & 0x04)>>2))
-#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & 0x08)>>3))
-#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & 0x10)>>4))
-#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & 0x20)>>5))
-#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & 0x40)>>6))
+#define MOBDB_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MOBDB_FLAG_BYVAL)))
+#define MOBDB_FLAGS_GET_CONTINUOUS(flags) ((bool) (((flags) & MOBDB_FLAG_CONTINUOUS)>>1))
+#define MOBDB_FLAGS_GET_LINEAR(flags)     ((bool) (((flags) & MOBDB_FLAG_LINEAR)>>2))
+#define MOBDB_FLAGS_GET_X(flags)          ((bool) (((flags) & MOBDB_FLAG_X)>>3))
+#define MOBDB_FLAGS_GET_Z(flags)          ((bool) (((flags) & MOBDB_FLAG_Z)>>4))
+#define MOBDB_FLAGS_GET_T(flags)          ((bool) (((flags) & MOBDB_FLAG_T)>>5))
+#define MOBDB_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MOBDB_FLAG_GEODETIC)>>6))
 
 /* The following flag is only used for TInstant */
 #define MOBDB_FLAGS_SET_BYVAL(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x01) : ((flags) & 0xFE))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_BYVAL) : ((flags) & ~MOBDB_FLAG_BYVAL))
 #define MOBDB_FLAGS_SET_CONTINUOUS(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x02) : ((flags) & 0xFD))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_CONTINUOUS) : ((flags) & ~MOBDB_FLAG_CONTINUOUS))
 #define MOBDB_FLAGS_SET_LINEAR(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x04) : ((flags) & 0xFB))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_LINEAR) : ((flags) & ~MOBDB_FLAG_LINEAR))
 #define MOBDB_FLAGS_SET_X(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x08) : ((flags) & 0xF7))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_X) : ((flags) & ~MOBDB_FLAG_X))
 #define MOBDB_FLAGS_SET_Z(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x10) : ((flags) & 0xEF))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_Z) : ((flags) & ~MOBDB_FLAG_Z))
 #define MOBDB_FLAGS_SET_T(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x20) : ((flags) & 0xDF))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_T) : ((flags) & ~MOBDB_FLAG_T))
 #define MOBDB_FLAGS_SET_GEODETIC(flags, value) \
-  ((flags) = (value) ? ((flags) | 0x40) : ((flags) & 0xBF))
+  ((flags) = (value) ? ((flags) | MOBDB_FLAG_GEODETIC) : ((flags) & ~MOBDB_FLAG_GEODETIC))
 
 /*****************************************************************************
  * Definitions for bucketing and tiling
@@ -260,10 +270,10 @@ struct tempsubtype_struct
  */
 typedef struct
 {
-  int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  int16         subtype;       /**< subtype */
-  int16         flags;         /**< flags */
-  Oid           basetypid;     /**< base type's OID (4 bytes) */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  uint8         temptype;     /**< temporal type */
+  uint8         subtype;      /**< temporal subtype */
+  int16         flags;        /**< flags */
   /* variable-length data follows, if any */
 } Temporal;
 
@@ -273,9 +283,9 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         subtype;      /**< subtype */
+  uint8         temptype;     /**< temporal type */
+  uint8         subtype;      /**< temporal subtype */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   TimestampTz   t;            /**< timestamp (8 bytes) */
   /* variable-length data follows */
 } TInstant;
@@ -285,11 +295,11 @@ typedef struct
  */
 typedef struct
 {
-  int32         vl_len_;       /**< varlena header (do not touch directly!) */
-  int16         subtype;       /**< subtype */
-  int16         flags;         /**< flags */
-  Oid           basetypid;     /**< base type's OID (4 bytes) */
-  int32         count;         /**< number of TInstant elements */
+  int32         vl_len_;      /**< varlena header (do not touch directly!) */
+  uint8         temptype;     /**< temporal type */
+  uint8         subtype;      /**< temporal subtype */
+  int16         flags;        /**< flags */
+  int32         count;        /**< number of TInstant elements */
   int16         bboxsize;     /**< size of the bounding box */
   /**< beginning of variable-length data */
 } TInstantSet;
@@ -300,12 +310,12 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         subtype;      /**< subtype */
+  uint8         temptype;     /**< temporal type */
+  uint8         subtype;      /**< temporal subtype */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TInstant elements */
-  Period        period;       /**< time span (24 bytes) */
   int16         bboxsize;     /**< size of the bounding box */
+  Period        period;       /**< time span (24 bytes) */
   /**< beginning of variable-length data */
 } TSequence;
 
@@ -315,9 +325,9 @@ typedef struct
 typedef struct
 {
   int32         vl_len_;      /**< varlena header (do not touch directly!) */
-  int16         subtype;      /**< subtype */
+  uint8         temptype;     /**< temporal type */
+  uint8         subtype;      /**< temporal subtype */
   int16         flags;        /**< flags */
-  Oid           basetypid;    /**< base type's OID (4 bytes) */
   int32         count;        /**< number of TSequence elements */
   int32         totalcount;   /**< total number of TInstant elements in all TSequence elements */
   int16         bboxsize;     /**< size of the bounding box */
@@ -432,15 +442,15 @@ typedef struct
 #define PG_GETARG_ANYDATUM(X) (get_typlen(get_fn_expr_argtype(fcinfo->flinfo, X)) == -1 ? \
   PointerGetDatum(PG_GETARG_VARLENA_P(X)) : PG_GETARG_DATUM(X))
 
-#define DATUM_FREE(value, basetypid) \
+#define DATUM_FREE(value, basetype) \
   do { \
-    if (! base_type_byvalue(basetypid)) \
+    if (! basetype_byvalue(basetype)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
-#define DATUM_FREE_IF_COPY(value, basetypid, n) \
+#define DATUM_FREE_IF_COPY(value, basetype, n) \
   do { \
-    if (! base_type_byvalue(basetypid) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
+    if (! basetype_byvalue(basetype) && DatumGetPointer(value) != PG_GETARG_POINTER(n)) \
       pfree(DatumGetPointer(value)); \
   } while (0)
 
@@ -482,7 +492,7 @@ extern void ensure_valid_tempsubtype_all(int16 type);
 extern void ensure_seq_subtypes(int16 subtype);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
-extern void ensure_same_base_type(const Temporal *temp1,
+extern void ensure_same_temptype(const Temporal *temp1,
   const Temporal *temp2);
 extern void ensure_same_interpolation(const Temporal *temp1,
   const Temporal *temp2);
@@ -494,7 +504,7 @@ extern int *ensure_valid_tinstarr_gaps(const TInstant **instants, int count,
   bool merge, int16 subtype, double maxdist, Interval *maxt, int *countsplits);
 extern void ensure_valid_tseqarr(const TSequence **sequences, int count);
 
-extern void ensure_positive_datum(Datum size, Oid type);
+extern void ensure_positive_datum(Datum size, CachedType basetype);
 extern void ensure_valid_duration(const Interval *duration);
 extern void ensure_non_empty_array(ArrayType *array);
 
@@ -519,7 +529,7 @@ extern Datum temporal_out(PG_FUNCTION_ARGS);
 extern Datum temporal_send(PG_FUNCTION_ARGS);
 extern Datum temporal_recv(PG_FUNCTION_ARGS);
 
-extern Temporal* temporal_read(StringInfo buf, Oid basetypid);
+extern Temporal* temporal_read(StringInfo buf, CachedType temptype);
 extern void temporal_write(const Temporal* temp, StringInfo buf);
 
 /* Constructor functions */
@@ -533,7 +543,7 @@ extern Datum tstepseqset_constructor_gaps(PG_FUNCTION_ARGS);
 extern Datum tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS);
 
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
-  Oid basetypid, bool linear);
+  CachedType basetype, bool linear);
 
 /* Append and merge functions */
 

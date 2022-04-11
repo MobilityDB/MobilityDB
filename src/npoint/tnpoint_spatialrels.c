@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_spatialrels.c
- * Ever spatial relationships for temporal network points.
+ * @brief Ever spatial relationships for temporal network points.
  *
  * These relationships compute the ever spatial relationship between the
  * arguments and return a Boolean. These functions may be used for filtering
@@ -149,10 +149,10 @@ spatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = tpoint1->basetypid;
-  lfinfo.argtypid[1] = tpoint2->basetypid;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(tpoint1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(tpoint2->temptype);
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(tpoint1->flags) ||

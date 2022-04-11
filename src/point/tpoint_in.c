@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_in.c
- * Input of temporal points in WKT, EWKT and MF-JSON format
+ * @brief Input of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON format.
  */
 
 #include "point/tpoint_in.h"
@@ -220,9 +220,9 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  * Returns a temporal instant point from its MF-JSON representation
  */
 static TInstant *
-tpointinst_from_mfjson(json_object *mfjson, int srid, Oid basetypid)
+tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 {
-  bool geodetic = basetypid == type_oid(T_GEOGRAPHY);
+  bool geodetic = (temptype == T_TGEOGPOINT);
   /* Get coordinates */
   json_object *coordinates = findMemberByName(mfjson, "coordinates");
   if (coordinates == NULL)
@@ -250,7 +250,7 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, Oid basetypid)
   /* Replace 'T' by ' ' before converting to timestamptz */
   str[10] = ' ';
   TimestampTz t = call_input(TIMESTAMPTZOID, str);
-  TInstant *result = tinstant_make(value, t, basetypid);
+  TInstant *result = tinstant_make(value, t, temptype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -259,10 +259,10 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, Oid basetypid)
  * Returns array of temporal instant points from its MF-JSON representation
  */
 static TInstant **
-tpointinstarr_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
+tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   int *count)
 {
-  bool geodetic = basetypid == type_oid(T_GEOGRAPHY);
+  bool geodetic = (temptype == T_TGEOGPOINT);
   /* Get coordinates and datetimes */
   int numpoints, numdates;
   Datum *values = parse_mfjson_points(mfjson, srid, geodetic, &numpoints);
@@ -274,7 +274,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
   /* Construct the array of temporal instant points */
   TInstant **result = palloc(sizeof(TInstant *) * numpoints);
   for (int i = 0; i < numpoints; i++)
-    result[i] = tinstant_make(values[i], times[i], basetypid);
+    result[i] = tinstant_make(values[i], times[i], temptype);
 
   for (int i = 0; i < numpoints; i++)
     pfree(DatumGetPointer(values[i]));
@@ -287,10 +287,10 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
  * Returns a temporal instant set point from its MF-JSON representation
  */
 static TInstantSet *
-tpointinstset_from_mfjson(json_object *mfjson, int srid, Oid basetypid)
+tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 {
   int count;
-  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, basetypid,
+  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, temptype,
     &count);
   return tinstantset_make_free(instants, count, MERGE_NO);
 }
@@ -299,12 +299,12 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, Oid basetypid)
  * Returns a temporal sequence point from its MF-JSON representation
  */
 static TSequence *
-tpointseq_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
+tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   bool linear)
 {
   /* Get the array of temporal instant points */
   int count;
-  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, basetypid,
+  TInstant **instants = tpointinstarr_from_mfjson(mfjson, srid, temptype,
     &count);
 
   /* Get lower bound flag */
@@ -332,7 +332,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
  * Returns a temporal sequence set point from its MF-JSON representation
  */
 static TSequenceSet *
-tpointseqset_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
+tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   bool linear)
 {
   json_object *seqs = NULL;
@@ -354,7 +354,7 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
   {
     json_object* seqvalue = NULL;
     seqvalue = json_object_array_get_idx(seqs, i);
-    sequences[i] = tpointseq_from_mfjson(seqvalue, srid, basetypid, linear);
+    sequences[i] = tpointseq_from_mfjson(seqvalue, srid, temptype, linear);
   }
   return tsequenceset_make_free(sequences, numseqs, NORMALIZE);
 }
@@ -364,7 +364,7 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, Oid basetypid,
  */
 static Temporal *
 tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
-  Oid basetypid)
+  CachedType temptype)
 {
   char *mfjson = text2cstring(mfjson_input);
   char *srs = NULL;
@@ -465,9 +465,9 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
       poObjDates = findMemberByName(poObj, "datetimes");
       if (poObjDates != NULL &&
         json_object_get_type(poObjDates) == json_type_array)
-        result = (Temporal *) tpointinstset_from_mfjson(poObj, srid, basetypid);
+        result = (Temporal *) tpointinstset_from_mfjson(poObj, srid, temptype);
       else
-        result = (Temporal *) tpointinst_from_mfjson(poObj, srid, basetypid);
+        result = (Temporal *) tpointinst_from_mfjson(poObj, srid, temptype);
     }
     else if (strcmp(pszInterp, "Stepwise") == 0 ||
       strcmp(pszInterp, "Linear") == 0)
@@ -475,9 +475,9 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
       bool linear = strcmp(pszInterp, "Linear") == 0;
       json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs != NULL)
-        result = (Temporal *) tpointseqset_from_mfjson(poObj, srid, basetypid, linear);
+        result = (Temporal *) tpointseqset_from_mfjson(poObj, srid, temptype, linear);
       else
-        result = (Temporal *) tpointseq_from_mfjson(poObj, srid, basetypid, linear);
+        result = (Temporal *) tpointseq_from_mfjson(poObj, srid, temptype, linear);
     }
     else
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -496,9 +496,8 @@ tpoint_from_mfjson(PG_FUNCTION_ARGS)
 {
   text *mfjson_input = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid basetypid = temporal_basetypid(temptypid);
   Temporal *result = tpoint_from_mfjson_internal(fcinfo, mfjson_input,
-    basetypid);
+    oid_type(temptypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -699,8 +698,8 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
   /* Create the instant point */
   Datum value = point_from_wkb_state(s);
   TimestampTz t = timestamp_from_wkb_state(s);
-  TInstant *result = tinstant_make(value, t, (s->geodetic) ?
-    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY));
+  CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
+  TInstant *result = tinstant_make(value, t, temptype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -712,14 +711,13 @@ static TInstant **
 tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 {
   TInstant **result = palloc(sizeof(TInstant *) * count);
-  Oid geotype = (s->geodetic) ?
-    type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
+  CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
   for (int i = 0; i < count; i++)
   {
     /* Parse the point and the timestamp to create the instant point */
     Datum value = point_from_wkb_state(s);
     TimestampTz t = timestamp_from_wkb_state(s);
-    result[i] = tinstant_make(value, t, geotype);
+    result[i] = tinstant_make(value, t, temptype);
     pfree(DatumGetPointer(value));
   }
   return result;
@@ -810,15 +808,14 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
     size_t size = countinst * ((ndims * WKB_DOUBLE_SIZE) + WKB_TIMESTAMP_SIZE);
     wkb_parse_state_check(s, size);
     /* Parse the instants */
-    Oid geotype = (s->geodetic) ?
-      type_oid(T_GEOGRAPHY) : type_oid(T_GEOMETRY);
+    CachedType temptype = (s->geodetic) ? T_TGEOGPOINT : T_TGEOMPOINT;
     TInstant **instants = palloc(sizeof(TInstant *) * countinst);
     for (int j = 0; j < countinst; j++)
     {
       /* Parse the point and the timestamp to create the instant point */
       Datum value = point_from_wkb_state(s);
       TimestampTz t = timestamp_from_wkb_state(s);
-      instants[j] = tinstant_make(value, t, geotype);
+      instants[j] = tinstant_make(value, t, temptype);
       pfree(DatumGetPointer(value));
     }
     sequences[i] = tsequence_make_free(instants, countinst, lower_inc,
@@ -949,11 +946,10 @@ Datum tpoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Oid basetypid = temporal_basetypid(temptypid);
   char *wkt = text2cstring(wkt_text);
   /* Save the address of wkt since it is modified by the parse function */
   char *wkt_save = wkt;
-  Temporal *result = tpoint_parse(&wkt, basetypid);
+  Temporal *result = tpoint_parse(&wkt, oid_type(temptypid));
   pfree(wkt_save);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);

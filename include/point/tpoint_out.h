@@ -35,6 +35,7 @@
 #ifndef __TPOINT_OUT_H__
 #define __TPOINT_OUT_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
@@ -52,7 +53,7 @@ extern Datum tpoint_as_binary(PG_FUNCTION_ARGS);
 extern Datum tpoint_as_ewkb(PG_FUNCTION_ARGS);
 extern Datum tpoint_as_hexewkb(PG_FUNCTION_ARGS);
 
-extern char *ewkt_out(Oid type, Datum value);
+extern char *ewkt_out(Oid typid, Datum value);
 
 /*****************************************************************************/
 

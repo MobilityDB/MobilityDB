@@ -35,8 +35,9 @@
 #ifndef __TNPOINT_PARSER_H__
 #define __TNPOINT_PARSER_H__
 
+/* MobilityDB */
 #include "general/temporal.h"
-#include "tnpoint.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

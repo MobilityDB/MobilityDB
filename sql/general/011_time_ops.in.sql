@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /*
- * timeops.sql
+ * time_ops.sql
  * Operators for time types.
  */
 
@@ -1480,6 +1480,314 @@ CREATE OPERATOR * (
   PROCEDURE = time_intersection,
   LEFTARG = periodset, RIGHTARG = periodset,
   COMMUTATOR = *
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION time_distance(timestamptz, timestamptz)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestamp_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(timestamptz, timestampset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestamp_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(timestamptz, period)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestamp_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(timestamptz, periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestamp_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestamptz, RIGHTARG = timestampset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestamptz, RIGHTARG = period,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestamptz, RIGHTARG = periodset,
+  COMMUTATOR = <->
+);
+
+CREATE FUNCTION time_distance(timestampset, timestamptz)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestampset_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(timestampset, timestampset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestampset_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(timestampset, period)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestampset_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(timestampset, periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_timestampset_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestampset, RIGHTARG = timestamptz,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestampset, RIGHTARG = timestampset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestampset, RIGHTARG = period,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = timestampset, RIGHTARG = periodset,
+  COMMUTATOR = <->
+);
+
+CREATE FUNCTION time_distance(period, timestamptz)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_period_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(period, timestampset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_period_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(period, period)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_period_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(period, periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_period_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = period, RIGHTARG = timestamptz,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = period, RIGHTARG = timestampset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = period, RIGHTARG = period,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = period, RIGHTARG = periodset,
+  COMMUTATOR = <->
+);
+
+CREATE FUNCTION time_distance(periodset, timestamptz)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_periodset_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(periodset, timestampset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_periodset_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(periodset, period)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_periodset_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance(periodset, periodset)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'distance_periodset_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = periodset, RIGHTARG = timestamptz,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = periodset, RIGHTARG = timestampset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = periodset, RIGHTARG = period,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = time_distance,
+  LEFTARG = periodset, RIGHTARG = periodset,
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION time_distance_secs(timestamptz, timestamptz)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestamp_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(timestamptz, timestampset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestamp_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(timestamptz, period)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestamp_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(timestamptz, periodset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestamp_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestamptz, RIGHTARG = timestamptz,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestamptz, RIGHTARG = timestampset,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestamptz, RIGHTARG = period,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestamptz, RIGHTARG = periodset,
+  COMMUTATOR = |=|
+);
+
+CREATE FUNCTION time_distance_secs(timestampset, timestamptz)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestampset_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(timestampset, timestampset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestampset_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(timestampset, period)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestampset_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(timestampset, periodset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_timestampset_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestampset, RIGHTARG = timestamptz,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestampset, RIGHTARG = timestampset,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestampset, RIGHTARG = period,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = timestampset, RIGHTARG = periodset,
+  COMMUTATOR = |=|
+);
+
+CREATE FUNCTION time_distance_secs(period, timestamptz)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_period_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(period, timestampset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_period_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(period, period)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_period_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(period, periodset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_period_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = period, RIGHTARG = timestamptz,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = period, RIGHTARG = timestampset,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = period, RIGHTARG = period,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = period, RIGHTARG = periodset,
+  COMMUTATOR = |=|
+);
+
+CREATE FUNCTION time_distance_secs(periodset, timestamptz)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_periodset_timestamp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(periodset, timestampset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_periodset_timestampset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(periodset, period)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_periodset_period'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION time_distance_secs(periodset, periodset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'distance_secs_periodset_periodset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = periodset, RIGHTARG = timestamptz,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = periodset, RIGHTARG = timestampset,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = periodset, RIGHTARG = period,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = time_distance_secs,
+  LEFTARG = periodset, RIGHTARG = periodset,
+  COMMUTATOR = |=|
 );
 
 /*****************************************************************************/

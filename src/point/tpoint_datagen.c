@@ -29,9 +29,9 @@
 
 /**
  * @file tpoint_datagen.c
- * Data generator for MobilityDB.
+ * @brief Data generator for MobilityDB.
  *
- * These functions are used in particular for the BerlinMOD data generator
+ * These functions are used in the BerlinMOD data generator
  * https://github.com/MobilityDB/MobilityDB-BerlinMOD
  */
 
@@ -104,7 +104,7 @@ pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
       lwpoint = lwpoint_make2d(srid, curPos.x, curPos.y);  \
       point = PointerGetDatum(geo_serialize((LWGEOM *) lwpoint));  \
       lwpoint_free(lwpoint);  \
-      instants[l++] = tinstant_make(point, t, type_oid(T_GEOMETRY));  \
+      instants[l++] = tinstant_make(point, t, T_TGEOMPOINT);  \
       pfree(DatumGetPointer(point));  \
   } while (0)
 
@@ -468,7 +468,11 @@ create_trip_internal(LWLINE **lines, const double *maxSpeeds, const int *categor
 
 PG_FUNCTION_INFO_V1(create_trip);
 /**
- * Create a trip using the BerlinMOD data generator
+ * Create a trip using the BerlinMOD data generator.
+ *
+ * @note This function is equivalent to the PL/pgSQL function
+ * CreateTrip in the BerlinMOD generator but is written in C
+ * to speed up the generation.
  */
 Datum
 create_trip(PG_FUNCTION_ARGS)
@@ -487,14 +491,14 @@ create_trip(PG_FUNCTION_ARGS)
   bool *nulls;
   int count;
   int16 elemWidth;
-  Oid elemType = ARR_ELEMTYPE(array);
+  Oid elmeTypid = ARR_ELEMTYPE(array);
   bool elemTypeByVal, isNull;
   char elemAlignmentCode;
   HeapTupleHeader td;
   Form_pg_attribute att;
 
-  get_typlenbyvalalign(elemType, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
-  deconstruct_array(array, elemType, elemWidth, elemTypeByVal,
+  get_typlenbyvalalign(elmeTypid, &elemWidth, &elemTypeByVal, &elemAlignmentCode);
+  deconstruct_array(array, elmeTypid, elemWidth, elemTypeByVal,
     elemAlignmentCode, &datums, &nulls, &count);
 
   td = DatumGetHeapTupleHeader(datums[0]);

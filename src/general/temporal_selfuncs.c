@@ -29,8 +29,8 @@
 
 /**
  * @file temporal_selfuncs.c
- * Functions for selectivity estimation of operators on temporal types whose
- * bounding box is a `Period`, that is, `tbool` and `ttext`.
+ * @brief Functions for selectivity estimation of operators on temporal types
+ * whose bounding box is a `Period`, that is, `tbool` and `ttext`.
  *
  * The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`
@@ -68,7 +68,7 @@
 #include "general/period.h"
 #include "general/periodset.h"
 #include "general/time_selfuncs.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal_util.h"
 #include "general/temporal_boxops.h"
@@ -88,7 +88,7 @@
  * @note Function copied from selfuncs.c since it is not exported.
  */
 double
-var_eq_const(VariableStatData *vardata, Oid oper,
+var_eq_const(VariableStatData *vardata, Oid operid,
        Datum constval, bool constisnull,
        bool varonleft, bool negate)
 {
@@ -129,7 +129,7 @@ var_eq_const(VariableStatData *vardata, Oid oper,
   }
   else if (HeapTupleIsValid(vardata->statsTuple) &&
        statistic_proc_security_check(vardata,
-                       (opfuncoid = get_opcode(oper))))
+                       (opfuncoid = get_opcode(operid))))
   {
     AttStatsSlot sslot;
     bool    match = false;
@@ -144,7 +144,7 @@ var_eq_const(VariableStatData *vardata, Oid oper,
      */
     if (get_attstatsslot(&sslot, vardata->statsTuple,
                // EZ replaced InvalidOid by operator
-               STATISTIC_KIND_MCV, oper,
+               STATISTIC_KIND_MCV, operid,
                ATTSTATSSLOT_VALUES | ATTSTATSSLOT_NUMBERS))
     {
       FmgrInfo  eqproc;
@@ -252,9 +252,10 @@ static bool
 temporal_const_to_period(Node *other, Period *period)
 {
   Oid consttype = ((Const *) other)->consttype;
-  if (time_type(consttype))
+  CachedType type = oid_type(consttype);
+  if (time_type(type))
     time_const_to_period(other, period);
-  else if (consttype == type_oid(T_TBOOL) || consttype == type_oid(T_TTEXT))
+  else if (type == T_TBOOL || type == T_TTEXT)
     temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), period);
   else
     return false;
@@ -265,27 +266,27 @@ temporal_const_to_period(Node *other, Period *period)
  * Returns the enum value associated to the operator
  */
 static bool
-temporal_cachedop(Oid oper, CachedOp *cachedOp)
+temporal_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++) {
-    if (oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TTEXT) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
-        oper == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
+    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TTEXT) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TBOOL, T_TBOOL) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TTEXT, T_TTEXT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -336,7 +337,7 @@ temporal_sel_default(CachedOp oper)
  * don't have statistics or cannot use them for some reason.
  */
 float8
-temporal_joinsel_default(Oid oper __attribute__((unused)))
+temporal_joinsel_default(Oid operid __attribute__((unused)))
 {
   // TODO take care of the operator
   return 0.001;
@@ -363,12 +364,12 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
    */
   if (cachedOp == SAME_OP)
   {
-    Oid oper = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
+    Oid operid = oper_oid(EQ_OP, T_PERIOD, T_PERIOD);
 #if POSTGRESQL_VERSION_NUMBER < 130000
-    selec = var_eq_const(vardata, oper, PeriodPGetDatum(period),
+    selec = var_eq_const(vardata, operid, PeriodPGetDatum(period),
       false, false, false);
 #else
-    selec = var_eq_const(vardata, oper, DEFAULT_COLLATION_OID,
+    selec = var_eq_const(vardata, operid, DEFAULT_COLLATION_OID,
       PeriodPGetDatum(period), false, false, false);
 #endif
   }
@@ -399,14 +400,14 @@ temporal_sel_period(VariableStatData *vardata, Period *period,
  * Get enumeration value associated to the operator according to the family
  */
 static bool
-temporal_cachedop_family(Oid oper, CachedOp *cachedOp, TemporalFamily tempfamily)
+temporal_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE);
   if (tempfamily == TEMPORALTYPE)
-    return temporal_cachedop(oper, cachedOp);
+    return temporal_cachedop(operid, cachedOp);
   else /* tempfamily == TNUMBERTYPE */
-    return tnumber_cachedop(oper, cachedOp);
+    return tnumber_cachedop(operid, cachedOp);
 }
 
 /**
@@ -414,7 +415,7 @@ temporal_cachedop_family(Oid oper, CachedOp *cachedOp, TemporalFamily tempfamily
  * bounding box is a period, that is, tbool and ttext (internal function)
  */
 float8
-temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
+temporal_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid,
   TemporalFamily tempfamily)
 {
   VariableStatData vardata;
@@ -424,7 +425,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! temporal_cachedop_family(oper, &cachedOp, tempfamily))
+  if (! temporal_cachedop_family(operid, &cachedOp, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -470,8 +471,8 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    oper = get_commutator(oper);
-    if (!oper)
+    operid = get_commutator(operid);
+    if (! operid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
@@ -502,7 +503,7 @@ temporal_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
     assert(MOBDB_FLAGS_GET_X(box.flags) ||
       MOBDB_FLAGS_GET_T(box.flags));
     /* Get the base type of the temporal column */
-    Oid basetypid = base_oid_from_temporal(vardata.atttype);
+    Oid basetypid = temptypid_basetypid(vardata.atttype);
     /* Compute the selectivity */
     selec = tnumber_sel_box(&vardata, &box, cachedOp, basetypid);
   }
@@ -520,7 +521,7 @@ float8
 temporal_sel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
+  Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
 
@@ -528,9 +529,9 @@ temporal_sel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
          tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-    result = temporal_sel_internal(root, oper, args, varRelid, tempfamily);
+    result = temporal_sel_internal(root, operid, args, varRelid, tempfamily);
   else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-    result = tpoint_sel_internal(root, oper, args, varRelid, tempfamily);
+    result = tpoint_sel_internal(root, operid, args, varRelid, tempfamily);
   return result;
 }
 
@@ -557,7 +558,7 @@ temporal_sel(PG_FUNCTION_ARGS)
  * = and <> are eqsel and neqsel, respectively.
  */
 float8
-temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+temporal_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo,
   TemporalFamily tempfamily)
 {
@@ -573,7 +574,7 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! temporal_cachedop_family(oper, &cachedOp, tempfamily))
+  if (! temporal_cachedop_family(operid, &cachedOp, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -589,8 +590,8 @@ temporal_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
   }
   else /* tempfamily == TNUMBERTYPE */
   {
-    Oid oprleft = var1->vartype;
-    Oid oprright = var2->vartype;
+    CachedType oprleft = oid_type(var1->vartype);
+    CachedType oprright = oid_type(var2->vartype);
     if (! tnumber_joinsel_components(cachedOp, oprleft, oprright,
       &value, &time))
       /* In the case of unknown arguments */
@@ -633,7 +634,7 @@ float8
 temporal_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
+  Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
   SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
@@ -650,12 +651,12 @@ temporal_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
          tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-    result = temporal_joinsel_internal(root, oper, args, jointype, sjinfo,
+    result = temporal_joinsel_internal(root, operid, args, jointype, sjinfo,
       tempfamily);
   else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
   {
     int mode = Int32GetDatum(0) /* ND mode TO GENERALIZE */;
-    result = tpoint_joinsel_internal(root, oper, args, jointype, sjinfo,
+    result = tpoint_joinsel_internal(root, operid, args, jointype, sjinfo,
       mode, tempfamily);
   }
   return result;

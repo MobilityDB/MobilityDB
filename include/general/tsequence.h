@@ -35,12 +35,13 @@
 #ifndef __TSEQUENCE_H__
 #define __TSEQUENCE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -83,7 +84,7 @@ extern bool synchronize_tsequence_tsequence(const TSequence *seq1,
 /* Intersection functions */
 
 extern bool tlinearsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, Oid basetypid, Datum *inter,
+  const TInstant *inst2, Datum value, CachedType basetype, Datum *inter,
   TimestampTz *t);
 extern bool tsegment_intersection(const TInstant *start1,
   const TInstant *end1, bool linear1, const TInstant *start2,
@@ -104,12 +105,12 @@ extern bool intersection_tinstantset_tsequence(const TInstantSet *ti,
 extern char *tsequence_to_string(const TSequence *seq, bool component,
   char *(*value_out)(Oid, Datum));
 extern void tsequence_write(const TSequence *seq, StringInfo buf);
-extern TSequence *tsequence_read(StringInfo buf, Oid basetypid);
+extern TSequence *tsequence_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
-extern TSequence *tsequence_from_base_internal(Datum value, Oid basetypid,
-  const Period *p, bool linear);
+extern TSequence *tsequence_from_base_internal(Datum value,
+  CachedType temptype, const Period *p, bool linear);
 
 extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
 

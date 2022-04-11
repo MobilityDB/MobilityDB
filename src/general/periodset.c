@@ -29,7 +29,7 @@
 
 /**
  * @file periodset.c
- * Basic functions for set of disjoint periods.
+ * @brief General functions for set of disjoint periods.
  */
 
 #include "general/periodset.h"
@@ -42,7 +42,7 @@
 /* MobilityDB */
 #include "general/timestampset.h"
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
 
@@ -93,7 +93,7 @@ periodset_bbox_slice(Datum psdatum, Period *p)
   else
     ps = (PeriodSet *) psdatum;
   periodset_bbox(ps, p);
-  POSTGIS_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
+  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
   return;
 }
 

@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_spatialrels.c
- * Ever spatial relationships for temporal points.
+ * @brief Ever spatial relationships for temporal points.
  *
  * These relationships compute the ever spatial relationship between the
  * arguments and return a Boolean. These functions may be used for filtering
@@ -352,10 +352,10 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 0;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = temp1->basetypid;
-  lfinfo.argtypid[1] = temp2->basetypid;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
+  lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
+  lfinfo.restype = T_TBOOL;
   lfinfo.reslinear = STEP;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
@@ -402,9 +402,9 @@ PGDLLEXPORT Datum
 contains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  ensure_has_not_Z_gs(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
+  ensure_has_not_Z_gs(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_has_not_Z(temp->flags);
   bool result = spatialrel_tpoint_geo(temp, gs, (Datum) NULL,
@@ -711,7 +711,6 @@ PGDLLEXPORT Datum
 dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  // ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -735,7 +734,6 @@ PGDLLEXPORT Datum
 dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  // ensure_point_type(gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);

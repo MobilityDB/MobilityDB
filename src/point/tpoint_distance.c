@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_distance.c
- * Distance functions for temporal points.
+ * @brief Distance functions for temporal points.
  */
 
 #include "point/tpoint_distance.h"
@@ -51,7 +51,7 @@
 #endif
 /* MobilityDB */
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "point/postgis.h"
 #include "point/geography_funcs.h"
@@ -160,15 +160,15 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *
  * @param[in] start,end Instants defining the first segment
  * @param[in] point Base point
- * @param[in] basetypid Oid of the base point
+ * @param[in] basetype Base point
  * @param[out] value Projected value at turning point
  * @param[out] t Timestamp at turning point
  * @pre The segment is not constant.
- * @note The parameter basetypid is not needed for temporal points
+ * @note The parameter basetype is not needed for temporal points
  */
 static bool
 tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
-  Datum point, Oid basetypid __attribute__((unused)), Datum *value,
+  Datum point, CachedType basetype __attribute__((unused)), Datum *value,
   TimestampTz *t)
 {
   long double duration = (long double) (end->t - start->t);
@@ -393,8 +393,8 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) distance_fn(temp->flags);
   lfinfo.numparam = 0;
-  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
@@ -414,12 +414,12 @@ PGDLLEXPORT Datum
 distance_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  if (gserialized_is_empty(gs))
+    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
@@ -436,13 +436,13 @@ PG_FUNCTION_INFO_V1(distance_tpoint_geo);
 PGDLLEXPORT Datum
 distance_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
+  ensure_point_type(gs);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
@@ -462,7 +462,7 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
   lfinfo.numparam = 0;
-  lfinfo.restypid = FLOAT8OID;
+  lfinfo.restype = T_TFLOAT;
   lfinfo.reslinear = MOBDB_FLAGS_GET_LINEAR(temp1->flags) ||
     MOBDB_FLAGS_GET_LINEAR(temp2->flags);
   lfinfo.invert = INVERT_NO;
@@ -522,7 +522,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
       mindist = dist;
       number = i;
     }
-    lwgeom_free(point);  
+    lwgeom_free(point);
   }
   return tinstant_copy(tinstantset_inst_n(ti, number));
 }
@@ -539,7 +539,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
  * @param[out] result Instant with the minimum distance
- * @result Minimum distance 
+ * @result Minimum distance
  */
 static double
 NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
@@ -557,7 +557,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
       mindist = dist;
       *result = inst;
     }
-    lwgeom_free(point);  
+    lwgeom_free(point);
   }
   return mindist;
 }
@@ -716,7 +716,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
   Datum value;
   bool found = tsequence_value_at_timestamp_inc(seq, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, seq->basetypid);
+  TInstant *result = tinstant_make(value, t, seq->temptype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -747,7 +747,7 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
   Datum value;
   bool found = tsequenceset_value_at_timestamp_inc(ts, t, &value);
   assert(found);
-  TInstant *result = tinstant_make(value, t, ts->basetypid);
+  TInstant *result = tinstant_make(value, t, ts->temptype);
   pfree(DatumGetPointer(value));
   return result;
 }
@@ -843,7 +843,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     Datum value;
     bool found = temporal_value_at_timestamp_inc(temp1, min->t, &value);
     assert(found);
-    result = tinstant_make(value, min->t, temp1->basetypid);
+    result = tinstant_make(value, min->t, temp1->temptype);
     pfree(dist); pfree(DatumGetPointer(value));
   }
   PG_FREE_IF_COPY(temp1, 0);
@@ -991,38 +991,45 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   ensure_same_geodetic(box1->flags, box2->flags);
   ensure_same_spatial_dimensionality(box1->flags, box2->flags);
   ensure_same_srid_stbox(box1, box2);
-  /* Project the boxes to their common timespan */
-  bool hast = MOBDB_FLAGS_GET_T(box1->flags) &&
-    MOBDB_FLAGS_GET_T(box2->flags);
-  Period p1, p2, inter;
-  if (hast)
-  {
-    period_set(box1->tmin, box1->tmax, true, true, &p1);
-    period_set(box2->tmin, box2->tmax, true, true, &p2);
-    if (! inter_period_period(&p1, &p2, &inter))
+
+  /* If the boxes do not intersect in the time dimension return infinity */
+  bool hast = MOBDB_FLAGS_GET_T(box1->flags) && MOBDB_FLAGS_GET_T(box2->flags);
+  if (hast && (box1->tmin > box2->tmax || box2->tmin > box1->tmax))
       return DBL_MAX;
-  }
+
+  /* If the boxes intersect in the value dimension return 0 */
+  if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax)
+    return 0.0;
 
   /* Select the distance function to be applied */
   bool hasz = MOBDB_FLAGS_GET_Z(box1->flags);
   datum_func2 func = distance_fn(box1->flags);
   /* Convert the boxes to geometries */
-  GBOX gbox1, gbox2;
-  stbox_gbox(box1, &gbox1);
-  Datum geo1 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox1)) :
-    call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
-  Datum geo11 = call_function2(LWGEOM_set_srid, geo1,
-    Int32GetDatum(box1->srid));
-  stbox_gbox(box2, &gbox2);
-  Datum geo2 = hasz ? call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&gbox2)) :
-    call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox2));
-  Datum geo21 = call_function2(LWGEOM_set_srid, geo2,
-    Int32GetDatum(box2->srid));
+  Datum geo1, geo2;
+  if (hasz)
+  {
+    /* BOX3D has SRID field */
+    BOX3D box3d1, box3d2;
+    stbox_box3d(box1, &box3d1);
+    stbox_box3d(box2, &box3d2);
+    geo1 = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d1));
+    geo2 = call_function1(BOX3D_to_LWGEOM, PointerGetDatum(&box3d2));
+  }
+  else
+  {
+    /* GBOX DOES NOT HAVE SRID field */
+    GBOX gbox1, gbox2;
+    stbox_gbox(box1, &gbox1);
+    stbox_gbox(box2, &gbox2);
+    Datum geo11 = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox1));
+    Datum geo22 = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox2));
+    geo1 = call_function2(LWGEOM_set_srid, geo11, Int32GetDatum(box1->srid));
+    geo2 = call_function2(LWGEOM_set_srid, geo22, Int32GetDatum(box2->srid));
+    pfree(DatumGetPointer(geo11)); pfree(DatumGetPointer(geo22));
+  }
   /* Compute the result */
-  double result = DatumGetFloat8(func(geo11, geo21));
-
-  pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo11));
-  pfree(DatumGetPointer(geo2)); pfree(DatumGetPointer(geo21));
+  double result = DatumGetFloat8(func(geo1, geo2));
+  pfree(DatumGetPointer(geo1)); pfree(DatumGetPointer(geo2));
   return result;
 }
 

@@ -30,7 +30,7 @@
 
 /**
  * @file tinstant.c
- * Basic functions for temporal instants.
+ * @brief General functions for temporal instants.
  */
 
 #include "general/tinstant.h"
@@ -46,7 +46,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -93,7 +93,7 @@ tinstant_value_copy(const TInstant *inst)
   if (MOBDB_FLAGS_GET_BYVAL(inst->flags))
     return *value;
   /* For base types passed by reference */
-  int16 typlen =  base_type_length(inst->basetypid);
+  int16 typlen =  basetype_length(temptype_basetype(inst->temptype));
   size_t value_size = (typlen != -1) ? (unsigned int) typlen : VARSIZE(value);
   void *result = palloc0(value_size);
   memcpy(result, value, value_size);
@@ -113,10 +113,10 @@ tinstant_value_copy(const TInstant *inst)
  *
  * @param value Base value
  * @param t Timestamp
- * @param basetypid Oid of the base type
+ * @param temptype Base type
  */
 TInstant *
-tinstant_make(Datum value, TimestampTz t, Oid basetypid)
+tinstant_make(Datum value, TimestampTz t, CachedType temptype)
 {
   size_t value_offset = double_pad(sizeof(TInstant));
   size_t size = value_offset;
@@ -124,8 +124,9 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   TInstant *result;
   size_t value_size;
   void *value_from;
+  CachedType basetype = temptype_basetype(temptype);
   /* Copy value */
-  bool typbyval = base_type_byvalue(basetypid);
+  bool typbyval = basetype_byvalue(basetype);
   if (typbyval)
   {
     /* For base types passed by value */
@@ -136,7 +137,7 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   {
     /* For base types passed by reference */
     value_from = DatumGetPointer(value);
-    int16 typlen = base_type_length(basetypid);
+    int16 typlen = basetype_length(basetype);
     value_size = (typlen != -1) ? double_pad((unsigned int) typlen) :
       double_pad(VARSIZE(value_from));
   }
@@ -145,17 +146,17 @@ tinstant_make(Datum value, TimestampTz t, Oid basetypid)
   void *value_to = ((char *) result) + value_offset;
   memcpy(value_to, value_from, value_size);
   /* Initialize fixed-size values */
+  result->temptype = temptype;
   result->subtype = INSTANT;
-  result->basetypid = basetypid;
   result->t = t;
   SET_VARSIZE(result, size);
   MOBDB_FLAGS_SET_BYVAL(result->flags, typbyval);
-  bool continuous = base_type_continuous(basetypid);
+  bool continuous = temptype_continuous(temptype);
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, continuous);
   MOBDB_FLAGS_SET_LINEAR(result->flags, continuous);
   MOBDB_FLAGS_SET_X(result->flags, true);
   MOBDB_FLAGS_SET_T(result->flags, true);
-  if (tgeo_base_type(basetypid))
+  if (tgeo_type(temptype))
   {
     GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(value);
     MOBDB_FLAGS_SET_Z(result->flags, FLAGS_GET_Z(GS_FLAGS(gs)));
@@ -247,9 +248,10 @@ char *
 tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum))
 {
   char *t = call_output(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
-  char *value = value_out(inst->basetypid, tinstant_value(inst));
+  CachedType basetype = temptype_basetype(inst->temptype);
+  char *value = value_out(type_oid(basetype), tinstant_value(inst));
   char *result;
-  if (inst->basetypid == TEXTOID)
+  if (inst->temptype == T_TTEXT)
   {
     result = palloc(strlen(value) + strlen(t) + 4);
     sprintf(result, "\"%s\"@%s", value, t);
@@ -273,8 +275,9 @@ tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum))
 void
 tinstant_write(const TInstant *inst, StringInfo buf)
 {
+  CachedType basetype = temptype_basetype(inst->temptype);
   bytea *bt = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(inst->t));
-  bytea *bv = call_send(inst->basetypid, tinstant_value(inst));
+  bytea *bv = call_send(type_oid(basetype), tinstant_value(inst));
   pq_sendbytes(buf, VARDATA(bt), VARSIZE(bt) - VARHDRSZ);
   pq_sendint32(buf, VARSIZE(bv) - VARHDRSZ) ;
   pq_sendbytes(buf, VARDATA(bv), VARSIZE(bv) - VARHDRSZ);
@@ -285,10 +288,10 @@ tinstant_write(const TInstant *inst, StringInfo buf)
  * the buffer
  *
  * @param[in] buf Buffer
- * @param[in] basetypid Oid of the base type
+ * @param[in] temptype Temporal type
  */
 TInstant *
-tinstant_read(StringInfo buf, Oid basetypid)
+tinstant_read(StringInfo buf, CachedType temptype)
 {
   TimestampTz t = call_recv(TIMESTAMPTZOID, buf);
   int size = pq_getmsgint(buf, 4) ;
@@ -299,9 +302,9 @@ tinstant_read(StringInfo buf, Oid basetypid)
     .maxlen = size,
     .data = buf->data + buf->cursor
   };
-  Datum value = call_recv(basetypid, &buf2);
+  Datum value = call_recv(temptype_basetypid(temptype), &buf2);
   buf->cursor += size ;
-  return tinstant_make(value, t, basetypid);
+  return tinstant_make(value, t, temptype);
 }
 
 /*****************************************************************************
@@ -338,7 +341,7 @@ TInstant *
 tintinst_to_tfloatinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
-  result->basetypid = FLOAT8OID;
+  result->temptype = T_TFLOAT;
   MOBDB_FLAGS_SET_LINEAR(result->flags, true);
   Datum *value_ptr = tinstant_value_ptr(result);
   *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
@@ -352,7 +355,7 @@ TInstant *
 tfloatinst_to_tintinst(const TInstant *inst)
 {
   TInstant *result = tinstant_copy(inst);
-  result->basetypid = INT4OID;
+  result->temptype = T_TINT;
   MOBDB_FLAGS_SET_LINEAR(result->flags, true);
   Datum *value_ptr = tinstant_value_ptr(result);
   *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
@@ -414,7 +417,7 @@ ArrayType *
 tinstant_values_array(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
-  return datumarr_to_array(&value, 1, inst->basetypid);
+  return datumarr_to_array(&value, 1, temptype_basetype(inst->temptype));
 }
 
 /**
@@ -424,8 +427,8 @@ ArrayType *
 tfloatinst_ranges_array(const TInstant *inst)
 {
   Datum value = tinstant_value(inst);
-  RangeType *range = range_make(value, value, true, true, inst->basetypid);
-  ArrayType *result = rangearr_to_array(&range, 1, type_oid(T_FLOATRANGE));
+  RangeType *range = range_make(value, value, true, true, T_FLOAT8);
+  ArrayType *result = rangearr_to_array(&range, 1, T_FLOATRANGE);
   pfree(range);
   return result;
 }
@@ -516,7 +519,8 @@ tinstant_shift(const TInstant *inst, const Interval *interval)
 bool
 tinstant_ever_eq(const TInstant *inst, Datum value)
 {
-  return datum_eq(tinstant_value(inst), value, inst->basetypid);
+  return datum_eq(tinstant_value(inst), value,
+    temptype_basetype(inst->temptype));
 }
 
 /**
@@ -525,7 +529,8 @@ tinstant_ever_eq(const TInstant *inst, Datum value)
 bool
 tinstant_always_eq(const TInstant *inst, Datum value)
 {
-  return datum_eq(tinstant_value(inst), value, inst->basetypid);
+  return datum_eq(tinstant_value(inst), value,
+    temptype_basetype(inst->temptype));
 }
 
 /*****************************************************************************/
@@ -536,7 +541,8 @@ tinstant_always_eq(const TInstant *inst, Datum value)
 bool
 tinstant_ever_lt(const TInstant *inst, Datum value)
 {
-  return datum_lt(tinstant_value(inst), value, inst->basetypid);
+  return datum_lt(tinstant_value(inst), value,
+    temptype_basetype(inst->temptype));
 }
 
 /**
@@ -546,7 +552,8 @@ tinstant_ever_lt(const TInstant *inst, Datum value)
 bool
 tinstant_ever_le(const TInstant *inst, Datum value)
 {
-  return datum_le(tinstant_value(inst), value, inst->basetypid);
+  return datum_le(tinstant_value(inst), value,
+    temptype_basetype(inst->temptype));
 }
 
 /**
@@ -555,7 +562,8 @@ tinstant_ever_le(const TInstant *inst, Datum value)
 bool
 tinstant_always_lt(const TInstant *inst, Datum value)
 {
-  return datum_lt(tinstant_value(inst), value, inst->basetypid);
+  return datum_lt(tinstant_value(inst), value,
+    temptype_basetype(inst->temptype));
 }
 
 /**
@@ -565,7 +573,8 @@ tinstant_always_lt(const TInstant *inst, Datum value)
 bool
 tinstant_always_le(const TInstant *inst, Datum value)
 {
-  return datum_le(tinstant_value(inst), value, inst->basetypid);
+  return datum_le(tinstant_value(inst), value,
+    temptype_basetype(inst->temptype));
 }
 
 /*****************************************************************************
@@ -578,7 +587,8 @@ tinstant_always_le(const TInstant *inst, Datum value)
 TInstant *
 tinstant_restrict_value(const TInstant *inst, Datum value, bool atfunc)
 {
-  if (datum_eq(value, tinstant_value(inst), inst->basetypid))
+  if (datum_eq(value, tinstant_value(inst),
+      temptype_basetype(inst->temptype)))
     return atfunc ? tinstant_copy(inst) : NULL;
   return atfunc ? NULL : tinstant_copy(inst);
 }
@@ -598,7 +608,7 @@ tinstant_restrict_values_test(const TInstant *inst, const Datum *values,
   Datum value = tinstant_value(inst);
   for (int i = 0; i < count; i++)
   {
-    if (datum_eq(value, values[i], inst->basetypid))
+    if (datum_eq(value, values[i], temptype_basetype(inst->temptype)))
       return atfunc ? true : false;
   }
   return atfunc ? false : true;
@@ -854,11 +864,12 @@ tinstant_intersects_periodset(const TInstant *inst, const PeriodSet *ps)
 bool
 tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 {
-  assert(inst1->basetypid == inst2->basetypid);
+  assert(inst1->temptype == inst2->temptype);
   /* Compare values and timestamps */
   Datum value1 = tinstant_value(inst1);
   Datum value2 = tinstant_value(inst2);
-  return inst1->t == inst2->t && datum_eq(value1, value2, inst1->basetypid);
+  return inst1->t == inst2->t && datum_eq(value1, value2,
+    temptype_basetype(inst1->temptype));
 }
 
 /**
@@ -875,7 +886,7 @@ tinstant_eq(const TInstant *inst1, const TInstant *inst2)
 int
 tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
 {
-  assert(inst1->basetypid == inst2->basetypid);
+  assert(inst1->temptype == inst2->temptype);
   /* Compare timestamps */
   int cmp = timestamp_cmp_internal(inst1->t, inst2->t);
   if (cmp < 0)
@@ -884,10 +895,10 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
     return 1;
   /* Compare values */
   if (datum_lt(tinstant_value(inst1), tinstant_value(inst2),
-    inst1->basetypid))
+      temptype_basetype(inst1->temptype)))
     return -1;
   if (datum_gt(tinstant_value(inst1), tinstant_value(inst2),
-    inst1->basetypid))
+      temptype_basetype(inst1->temptype)))
     return 1;
   /* The two values are equal */
   return 0;
@@ -911,24 +922,24 @@ tinstant_hash(const TInstant *inst)
   Datum value = tinstant_value(inst);
   /* Apply the hash function according to the subtype */
   uint32 value_hash = 0;
-  ensure_temporal_base_type(inst->basetypid);
-  if (inst->basetypid == BOOLOID)
+  ensure_temporal_type(inst->temptype);
+  if (inst->temptype == T_TBOOL)
     value_hash = DatumGetUInt32(call_function1(hashchar, value));
-  else if (inst->basetypid == INT4OID)
+  else if (inst->temptype == T_TINT)
     value_hash = DatumGetUInt32(call_function1(hashint4, value));
-  else if (inst->basetypid == FLOAT8OID)
+  else if (inst->temptype == T_TFLOAT)
     value_hash = DatumGetUInt32(call_function1(hashfloat8, value));
-  else if (inst->basetypid == TEXTOID)
+  else if (inst->temptype == T_TTEXT)
     value_hash = DatumGetUInt32(call_function1(hashtext, value));
-  else if (tgeo_base_type(inst->basetypid))
+  else if (tgeo_type(inst->temptype))
     value_hash = DatumGetUInt32(call_function1(lwgeom_hash, value));
-  else if (inst->basetypid == type_oid(T_NPOINT))
+  else if (inst->temptype == T_TNPOINT)
   {
     value_hash = DatumGetUInt32(call_function1(hashint8, value));
     value_hash ^= DatumGetUInt32(call_function1(hashfloat8, value));
   }
   else
-    elog(ERROR, "unknown hash function for base type: %d", inst->basetypid);
+    elog(ERROR, "unknown hash function for temporal type: %d", inst->temptype);
   /* Apply the hash function according to the timestamp */
   time_hash = DatumGetUInt32(call_function1(hashint8, TimestampTzGetDatum(inst->t)));
 

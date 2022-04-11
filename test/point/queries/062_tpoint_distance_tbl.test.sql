@@ -67,103 +67,103 @@ WHERE t1.temp <-> t2.temp IS NOT NULL ORDER BY 1 LIMIT 10;
 
 -------------------------------------------------------------------------------
 
-SELECT count(*) FROM tbl_tgeompoint,
+SELECT COUNT(*) FROM tbl_tgeompoint,
 ( SELECT * FROM tbl_geometry LIMIT 10 ) t
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1,
+SELECT COUNT(*) FROM tbl_tgeompoint t1,
 ( SELECT * FROM tbl_tgeompoint t2 LIMIT 10 ) t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D, tbl_geometry3D
+SELECT COUNT(*) FROM tbl_tgeompoint3D, tbl_geometry3D
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint,
+SELECT COUNT(*) FROM tbl_tgeogpoint,
 ( SELECT * FROM tbl_geography LIMIT 10 ) t
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint t1,
 ( SELECT * FROM tbl_tgeogpoint t2  LIMIT 10 ) t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D, tbl_geography3D
+SELECT COUNT(*) FROM tbl_tgeogpoint3D, tbl_geography3D
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2
 WHERE NearestApproachInstant(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeompoint,
+SELECT COUNT(*) FROM tbl_tgeompoint,
 ( SELECT * FROM tbl_geometry LIMIT 10 ) t
 WHERE NearestApproachDistance(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1,
+SELECT COUNT(*) FROM tbl_tgeompoint t1,
 ( SELECT * FROM tbl_tgeompoint t2 LIMIT 10 ) t2
 WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D,
+SELECT COUNT(*) FROM tbl_tgeompoint3D,
 ( SELECT * FROM tbl_geometry3D LIMIT 10 ) t
 WHERE NearestApproachDistance(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D t1,
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1,
 ( SELECT * FROM tbl_tgeompoint3D LIMIT 10 ) t2
 WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint,
+SELECT COUNT(*) FROM tbl_tgeogpoint,
 ( SELECT * FROM tbl_geography LIMIT 10 ) t
 WHERE NearestApproachDistance(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint t1,
 ( SELECT * FROM tbl_tgeogpoint t2 LIMIT 10 ) t2
 WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D,
+SELECT COUNT(*) FROM tbl_tgeogpoint3D,
 ( SELECT * FROM tbl_geography3D LIMIT 10 ) t
 WHERE NearestApproachDistance(temp, g) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1,
 ( SELECT * FROM tbl_tgeogpoint3D LIMIT 10 ) t2
 WHERE NearestApproachDistance(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeompoint,
+SELECT COUNT(*) FROM tbl_tgeompoint,
 ( SELECT * FROM tbl_geometry LIMIT 10 ) t
 WHERE g |=| temp IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1,
+SELECT COUNT(*) FROM tbl_tgeompoint t1,
 ( SELECT * FROM tbl_tgeompoint t2 LIMIT 10 ) t2
 WHERE t1.temp |=| t2.temp IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D,
+SELECT COUNT(*) FROM tbl_tgeompoint3D,
 ( SELECT * FROM tbl_geometry3D LIMIT 10 ) t
 WHERE g |=| temp IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D t1,
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1,
 (SELECT * FROM tbl_tgeompoint3D LIMIT 10 ) t2
 WHERE t1.temp |=| t2.temp IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint,
+SELECT COUNT(*) FROM tbl_tgeogpoint,
 ( SELECT * FROM tbl_geography LIMIT 10 ) t
 WHERE g |=| temp IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint t1,
 ( SELECT * FROM tbl_tgeogpoint t2 LIMIT 10 ) t2
 WHERE t1.temp |=| t2.temp IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D,
+SELECT COUNT(*) FROM tbl_tgeogpoint3D,
 ( SELECT * FROM tbl_geography3D LIMIT 10 ) t
 WHERE g |=| temp IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1,
 (SELECT * FROM tbl_tgeogpoint3D LIMIT 10 ) t2
 WHERE t1.temp |=| t2.temp IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeompoint,
+SELECT COUNT(*) FROM tbl_tgeompoint,
 ( SELECT * FROM tbl_geometry LIMIT 10 ) t
 WHERE shortestLine(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint t1,
+SELECT COUNT(*) FROM tbl_tgeompoint t1,
 ( SELECT * FROM tbl_tgeompoint t2 LIMIT 10 ) t2
 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D,
+SELECT COUNT(*) FROM tbl_tgeompoint3D,
 ( SELECT * FROM tbl_geometry3D LIMIT 10 ) t
 WHERE shortestLine(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeompoint3D t1,
+SELECT COUNT(*) FROM tbl_tgeompoint3D t1,
 ( SELECT * FROM tbl_tgeompoint3D LIMIT 10 ) t2
 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
 
-SELECT count(*) FROM tbl_tgeogpoint,
+SELECT COUNT(*) FROM tbl_tgeogpoint,
 ( SELECT * FROM tbl_geography LIMIT 10 ) t
 WHERE shortestLine(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint t1,
 ( SELECT * FROM tbl_tgeogpoint t2 LIMIT 10 ) t2
 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
--- SELECT count(*) FROM tbl_tgeogpoint3D,
+-- SELECT COUNT(*) FROM tbl_tgeogpoint3D,
 -- ( SELECT * FROM tbl_geography3D LIMIT 10 ) t
 -- WHERE shortestLine(g, temp) IS NOT NULL;
-SELECT count(*) FROM tbl_tgeogpoint3D t1,
+SELECT COUNT(*) FROM tbl_tgeogpoint3D t1,
 ( SELECT * FROM tbl_tgeogpoint3D LIMIT 10 ) t2
 WHERE shortestLine(t1.temp, t2.temp) IS NOT NULL;
 

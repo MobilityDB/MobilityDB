@@ -35,28 +35,10 @@
 #ifndef TEMPCACHE_H
 #define TEMPCACHE_H
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
-#include "temporal.h"
-
-/*****************************************************************************/
-
-/**
- * Structure to represent the temporal type cache array
- */
-typedef struct
-{
-  Oid temptypid;          /**< Oid of the temporal type */
-  Oid basetypid;          /**< Oid of the base type */
-  int32 basetyplen;       /**< Length of the base type */
-  bool basebyval;         /**< True if the base type is passed by value */
-  bool basecont;          /**< True if the base type is continuous */
-  Oid boxtypid;           /**< Oid of the box type */
-  int32 boxtyplen;        /**< Length of the box type */
-} temptype_cache_struct;
-
-#define TEMPTYPE_CACHE_MAX_LEN   16
 
 /*****************************************************************************/
 
@@ -64,6 +46,7 @@ typedef struct
  * Enumeration that defines the built-in and temporal types used in
  * MobilityDB. The Oids of these types are cached in a global array and
  * the enum values are used in the global array for the operator cache.
+ * The temporal types should be first to accelerate the search for them.
  */
 typedef enum
 {
@@ -138,21 +121,40 @@ typedef enum
   OVERAFTER_OP,
 } CachedOp;
 
-/* Global variable that states whether the temporal type cache has been filled */
-extern bool _temptyp_cache_ready;
-
-extern Oid temporal_basetypid(Oid temptypid);
-
 /**
- * Global variable that states whether the type and operator caches
- * has been initialized.
+ * Structure to represent the temporal type cache array.
+ * The array is sorted on the enum value corresponding to the `temptypid`
  */
-extern bool _ready;
+typedef struct
+{
+  Oid temptypid;          /**< Oid of the temporal type */
+  char *temptypname;      /**< Name of the temporal type */
+  CachedType temptype;    /**< Enum value of the temporal type */
+  Oid basetypid;          /**< Oid of the base type */
+  char *basetypname;      /**< Name of the base type */
+  CachedType basetype;    /**< Enum value of the base type */
+  int32 basetyplen;       /**< Length of the base type */
+  bool basebyval;         /**< True if the base type is passed by value */
+  bool basecont;          /**< True if the base type is continuous */
+  Oid boxtypid;           /**< Oid of the box type */
+  char *boxtypname;       /**< Name of the box type */
+  int32 boxtyplen;        /**< Length of the box type */
+} temptype_cache_struct;
 
-extern Oid type_oid(CachedType t);
-extern CachedType cachedtype_oid(Oid typid);
-extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
+#define TEMPTYPE_CACHE_MAX_LEN   16
+
+/*****************************************************************************/
+
 extern Datum fill_opcache(PG_FUNCTION_ARGS);
+
+/* Catalog functions */
+
+extern Oid temptype_basetypid(Oid temptypid);
+extern Oid temptypid_basetypid(Oid temptypid);
+extern CachedType temptype_basetype(CachedType temptype);
+extern Oid type_oid(CachedType t);
+extern Oid oper_oid(CachedOp op, CachedType lt, CachedType rt);
+extern CachedType oid_type(Oid typid);
 
 #endif /* TEMPCACHE_H */
 

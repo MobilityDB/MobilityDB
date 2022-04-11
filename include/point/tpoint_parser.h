@@ -35,14 +35,16 @@
 #ifndef __TPOINT_PARSER_H__
 #define __TPOINT_PARSER_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+/* MobilityDB */
 #include "general/temporal.h"
 
 /*****************************************************************************/
 
 extern STBOX *stbox_parse(char **str);
-extern Temporal *tpoint_parse(char **str, Oid basetype);
+extern Temporal *tpoint_parse(char **str, Oid basetypid);
 
 /*****************************************************************************/
 

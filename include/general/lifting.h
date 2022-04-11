@@ -35,15 +35,16 @@
 #ifndef __LIFTING_H__
 #define __LIFTING_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /**
  * Structure to represent the information about lifted functions
  *
- * The mandatory parameters are `func`, `numparam`, and `restypid`. These
+ * The mandatory parameters are `func`, `numparam`, and `restype`. These
  * parameters are used by function `tfunc_temporal`, which applies the lifted
  * function to every instant of the temporal value. The remaining parameters
  * are used by functions `tfunc_temporal_base` and `tfunc_temporal_temporal`
@@ -57,9 +58,9 @@ typedef struct
   Datum (*func)(Datum, ...); /**< Variadic function that is lifted */
   int numparam;              /**< Number of parameters of the function */
   Datum param[MAX_PARAMS];   /**< Datum array for the parameters of the function */
-  bool argoids;              /**< True if the lifted function requires the Oid of the arguments */
-  Oid argtypid[2];           /**< Type of the arguments */
-  Oid restypid;              /**< Base type of the result of the function */
+  bool args;                 /**< True if the lifted function requires arguments */
+  CachedType argtype[2];     /**< Base type of the arguments */
+  CachedType restype;        /**< Temporal type of the result of the function */
   bool reslinear;            /**< True if the result has linear interpolation */
   bool invert;               /**< True if the arguments of the function must be inverted */
   bool discont;              /**< True if the function has instantaneous discontinuities */

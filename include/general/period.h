@@ -36,11 +36,12 @@
 #ifndef __PERIOD_H__
 #define __PERIOD_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <lib/stringinfo.h>
 #include <catalog/pg_type.h>
-
-#include "timetypes.h"
+/* MobilityDB */
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 
@@ -50,6 +51,8 @@ extern void period_deserialize(const Period *p, PeriodBound *lower,
   PeriodBound *upper);
 extern int period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2);
 extern int period_bound_qsort_cmp(const void *a1, const void *a2);
+extern int period_lower_cmp(const Period *a, const Period *b);
+extern int period_upper_cmp(const Period *a, const Period *b);
 extern Period *period_make(TimestampTz lower, TimestampTz upper,
   bool lower_inc, bool upper_inc);
   extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,

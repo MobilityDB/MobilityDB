@@ -251,6 +251,20 @@
 		</sect2>
 
 		<sect2>
+			<title>Distance Operators</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Get the smallest distance ever in an interval</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="smallest_distance_secs"><varname>|=|</varname></link>: Get the smallest distance ever in number of seconds</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Aggregate Functions</title>
 
 			<itemizedlist>

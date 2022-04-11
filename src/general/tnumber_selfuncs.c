@@ -29,7 +29,8 @@
 
 /**
  * @file tnumber_selfuncs.c
- * Functions for selectivity estimation of operators on temporal number types
+ * @brief Functions for selectivity estimation of operators on temporal number
+ * types.
  */
 
 #include "general/tnumber_selfuncs.h"
@@ -47,7 +48,7 @@
 #include "general/temporal_boxops.h"
 /* MobilityDB */
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal_util.h"
 #include "general/tempcache.h"
@@ -431,7 +432,7 @@ calc_hist_selectivity_contains(TypeCacheEntry *typcache,
  */
 static double
 calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
-            RangeType *constval, Oid operator)
+            RangeType *constval, Oid operid)
 {
   AttStatsSlot hslot;
   AttStatsSlot lslot;
@@ -477,8 +478,8 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
   }
 
   /* @> and @< also need a histogram of range lengths */
-  if (operator == OID_RANGE_CONTAINS_OP ||
-    operator == OID_RANGE_CONTAINED_OP)
+  if (operid == OID_RANGE_CONTAINS_OP ||
+    operid == OID_RANGE_CONTAINED_OP)
   {
     if (!(HeapTupleIsValid(vardata->statsTuple) &&
         get_attstatsslot(&lslot, vardata->statsTuple,
@@ -509,7 +510,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
    * Calculate selectivity comparing the lower or upper bound of the
    * constant with the histogram of lower or upper bounds.
    */
-  switch (operator)
+  switch (operid)
   {
     case OID_RANGE_LESS_OP:
 
@@ -629,7 +630,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
       break;
 
     default:
-      elog(ERROR, "unknown range operator %u", operator);
+      elog(ERROR, "unknown range operator %u", operid);
       hist_selec = -1.0;  /* keep compiler quiet */
       break;
   }
@@ -651,47 +652,47 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
  * Returns the enum value associated to the operator
  */
 bool
-tnumber_cachedop(Oid oper, CachedOp *cachedOp)
+tnumber_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = LT_OP; i <= OVERAFTER_OP; i++)
   {
     if (/* Time types */
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TFLOAT) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TFLOAT) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TFLOAT) ||
         /* Range types */
-        oper == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_INTRANGE, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_FLOATRANGE, T_TFLOAT) ||
         /* Tbox type */
-        oper == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TBOX, T_TFLOAT) ||
         /* Tint type */
-        oper == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_FLOAT8) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_INTRANGE) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TINT, T_TFLOAT) ||
         /* Tfloat type */
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_FLOAT8) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
-        oper == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_INT4) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOAT8) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_FLOATRANGE) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TBOX) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TINT) ||
+        operid == oper_oid((CachedOp) i, T_TFLOAT, T_TFLOAT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -706,23 +707,23 @@ tnumber_cachedop(Oid oper, CachedOp *cachedOp)
 bool
 tnumber_const_to_tbox(const Node *other, TBOX *box)
 {
-  Oid consttype = ((Const *) other)->consttype;
-
-  if (tnumber_base_type(consttype))
-    number_tbox(((Const *) other)->constvalue, consttype, box);
-  else if (tnumber_range_type(consttype))
+  Oid consttypid = ((Const *) other)->consttype;
+  CachedType type = oid_type(consttypid);
+  if (tnumber_basetype(type))
+    number_tbox(((Const *) other)->constvalue, type, box);
+  else if (tnumber_rangetype(type))
     range_tbox(DatumGetRangeTypeP(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_TIMESTAMPTZ))
+  else if (type == T_TIMESTAMPTZ)
     timestamp_tbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
     timestampset_tbox_slice(((Const *) other)->constvalue, box);
-  else if (consttype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
     period_tbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
     periodset_tbox_slice(((Const *) other)->constvalue, box);
-  else if (consttype == type_oid(T_TBOX))
+  else if (type == T_TBOX)
     memcpy(box, DatumGetTboxP(((Const *) other)->constvalue), sizeof(TBOX));
-  else if (tnumber_type(consttype))
+  else if (tnumber_type(type))
     temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
@@ -735,33 +736,33 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 static Oid
 tnumber_rangeop(CachedOp cachedOp)
 {
-  Oid op = InvalidOid;
+  Oid operid = InvalidOid;
   if (cachedOp == LT_OP)
-    op = OID_RANGE_LESS_OP;
+    operid = OID_RANGE_LESS_OP;
   else if (cachedOp == LE_OP)
-    op = OID_RANGE_LESS_EQUAL_OP;
+    operid = OID_RANGE_LESS_EQUAL_OP;
   else if (cachedOp == GE_OP)
-    op = OID_RANGE_GREATER_EQUAL_OP;
+    operid = OID_RANGE_GREATER_EQUAL_OP;
   else if (cachedOp == GT_OP)
-    op = OID_RANGE_GREATER_OP;
+    operid = OID_RANGE_GREATER_OP;
   else if (cachedOp == OVERLAPS_OP)
-    op = OID_RANGE_OVERLAP_OP;
+    operid = OID_RANGE_OVERLAP_OP;
   else if (cachedOp == CONTAINS_OP)
-    op = OID_RANGE_CONTAINS_OP;
+    operid = OID_RANGE_CONTAINS_OP;
   else if (cachedOp == CONTAINED_OP)
-    op = OID_RANGE_CONTAINED_OP;
+    operid = OID_RANGE_CONTAINED_OP;
   else if (cachedOp == LEFT_OP)
-    op = OID_RANGE_LEFT_OP;
+    operid = OID_RANGE_LEFT_OP;
   else if (cachedOp == RIGHT_OP)
-    op = OID_RANGE_RIGHT_OP;
+    operid = OID_RANGE_RIGHT_OP;
   else if (cachedOp == OVERLEFT_OP)
-    op = OID_RANGE_OVERLAPS_LEFT_OP;
+    operid = OID_RANGE_OVERLAPS_LEFT_OP;
   else if (cachedOp == OVERRIGHT_OP)
-    op = OID_RANGE_OVERLAPS_RIGHT_OP;
+    operid = OID_RANGE_OVERLAPS_RIGHT_OP;
   /* There is no ~= for ranges but we cover this operator explicity */
   else if (cachedOp == SAME_OP)
-    op = OID_RANGE_OVERLAPS_RIGHT_OP;
-  return op;
+    operid = OID_RANGE_OVERLAPS_RIGHT_OP;
+  return operid;
 }
 
 /**
@@ -834,9 +835,10 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
     /* If the corresponding range operator is not found */
     if (value_oprid != InvalidOid)
     {
+      CachedType basetype = oid_type(basetypid);
       range = range_make(Float8GetDatum(box->xmin),
-        Float8GetDatum(box->xmax), true, true, basetypid);
-      rangetypid = range_oid_from_base(basetypid);
+        Float8GetDatum(box->xmax), true, true, basetype);
+      rangetypid = basetype_rangeoid(basetype);
       typcache = lookup_type_cache(rangetypid, TYPECACHE_RANGE_INFO);
     }
   }
@@ -946,14 +948,14 @@ tnumber_joinsel_default(CachedOp cachedOp __attribute__((unused)))
  * join selectivity
  */
 bool
-tnumber_joinsel_components(CachedOp cachedOp, Oid oprleft, Oid oprright,
-  bool *value, bool *time)
+tnumber_joinsel_components(CachedOp cachedOp, CachedType oprleft,
+  CachedType oprright, bool *value, bool *time)
 {
   /* Get the argument which may not a temporal number */
-  Oid arg = tnumber_type(oprleft) ? oprright : oprleft;
+  CachedType arg = tnumber_type(oprleft) ? oprright : oprleft;
 
   /* Determine the components */
-  if (tnumber_base_type(arg) || tnumber_range_type(arg) ||
+  if (tnumber_basetype(arg) || tnumber_rangetype(arg) ||
     cachedOp == LEFT_OP || cachedOp == OVERLEFT_OP ||
     cachedOp == RIGHT_OP || cachedOp == OVERRIGHT_OP)
   {

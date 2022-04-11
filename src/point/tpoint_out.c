@@ -29,7 +29,8 @@
 
 /**
  * @file tpoint_out.c
- * Output of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON format
+ * @brief Output of temporal points in WKT, EWKT, WKB, EWKB, and MF-JSON
+ * format.
  */
 
 #include "point/tpoint_out.h"
@@ -69,7 +70,7 @@
  * @note The parameter type is not needed for temporal points
  */
 static char *
-wkt_out(Oid type __attribute__((unused)), Datum value)
+wkt_out(Oid typid __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -89,7 +90,7 @@ wkt_out(Oid type __attribute__((unused)), Datum value)
  * @note The parameter type is not needed for temporal points
  */
 char *
-ewkt_out(Oid type __attribute__((unused)), Datum value)
+ewkt_out(Oid typid __attribute__((unused)), Datum value)
 {
   GSERIALIZED *gs = (GSERIALIZED *)DatumGetPointer(value);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
@@ -1107,15 +1108,16 @@ tpoint_wkb_type(const Temporal *temp, uint8_t *buf, uint8_t variant)
     wkb_flags |= MOBDB_WKB_SRIDFLAG;
   if (MOBDB_FLAGS_GET_LINEAR(temp->flags))
     wkb_flags |= MOBDB_WKB_LINEAR_INTERP;
+  uint8 subtype = temp->subtype;
   if (variant & WKB_HEX)
   {
     buf[0] = (uint8_t) hexchr[wkb_flags >> 4];
-    buf[1] = (uint8_t) hexchr[temp->subtype];
+    buf[1] = (uint8_t) hexchr[subtype];
     return buf + 2;
   }
   else
   {
-    buf[0] = (uint8_t) temp->subtype + wkb_flags;
+    buf[0] = (uint8_t) subtype + wkb_flags;
     return buf + 1;
   }
 }

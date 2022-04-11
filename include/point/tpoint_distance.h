@@ -35,12 +35,14 @@
 #ifndef __TPOINT_DISTANCE_H__
 #define __TPOINT_DISTANCE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "general/temporal.h"
+/* PostGIS */
 #include <liblwgeom.h>
-#include "tpoint.h"
+/* MobilityDB */
+#include "general/temporal.h"
+#include "point/tpoint.h"
 
 /*****************************************************************************/
 

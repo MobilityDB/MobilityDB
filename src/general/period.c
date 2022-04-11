@@ -29,8 +29,8 @@
 
 /**
  * @file period.c
- * Basic routines for time periods composed of two `TimestampTz` values and
- * two Boolean values stating whether the bounds are inclusive or not.
+ * @brief General functions for time periods composed of two `TimestampTz`
+ * values and two Boolean values stating whether the bounds are inclusive.
  */
 
 #include "general/period.h"
@@ -42,7 +42,7 @@
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/temporal_util.h"
 #include "general/temporal_parser.h"
@@ -161,6 +161,58 @@ period_bound_qsort_cmp(const void *a1, const void *a2)
   PeriodBound *b1 = (PeriodBound *) a1;
   PeriodBound *b2 = (PeriodBound *) a2;
   return period_bound_cmp(b1, b2);
+}
+
+/**
+ * Compare the lower bound of two periods, returning <0, 0, or >0 according to
+ * whether a's bound is less than, equal to, or greater than b's bound.
+ *
+ * @note This function does the same as period_bound_cmp but avoids
+ * deserializing the periods into lower and upper bounds
+ */
+int
+period_lower_cmp(const Period *a, const Period *b)
+{
+  int result = timestamp_cmp_internal(a->lower, b->lower);
+  if (result == 0)
+  {
+    if (a->lower_inc == b->lower_inc)
+      /* both are inclusive or exclusive */
+      return 0;
+    else if (a->lower_inc)
+      /* first is inclusive and second is exclusive */
+      return 1;
+    else
+      /* first is exclusive and second is inclusive */
+      return -1;
+  }
+  return result;
+}
+
+/**
+ * Compare the upper bound of two periods, returning <0, 0, or >0 according to
+ * whether a's bound is less than, equal to, or greater than b's bound.
+ *
+ * @note This function does the same as period_bound_cmp but avoids
+ * deserializing the periods into lower and upper bounds
+ */
+int
+period_upper_cmp(const Period *a, const Period *b)
+{
+  int result = timestamp_cmp_internal(a->upper, b->upper);
+  if (result == 0)
+  {
+    if (a->upper_inc == b->upper_inc)
+      /* both are inclusive or exclusive */
+      return 0;
+    else if (a->upper_inc)
+      /* first is inclusive and second is exclusive */
+      return 1;
+    else
+      /* first is exclusive and second is inclusive */
+      return -1;
+  }
+  return result;
 }
 
 /**
@@ -487,7 +539,7 @@ period_to_tstzrange(PG_FUNCTION_ARGS)
   RangeType *range;
   range = range_make(TimestampTzGetDatum(period->lower),
     TimestampTzGetDatum(period->upper), period->lower_inc,
-    period->upper_inc, TIMESTAMPTZOID);
+    period->upper_inc, T_TIMESTAMPTZ);
   PG_RETURN_POINTER(range);
 }
 

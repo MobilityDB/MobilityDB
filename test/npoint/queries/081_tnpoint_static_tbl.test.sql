@@ -60,8 +60,8 @@ SELECT MAX(endPosition(ns)) FROM tbl_nsegment;
 -- Cast functions between network and space
 -------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_npoint WHERE np::geometry is not null;
-SELECT COUNT(*) FROM tbl_nsegment WHERE ns::geometry is not null;
+SELECT COUNT(*) FROM tbl_npoint WHERE np::geometry IS NOT NULL;
+SELECT COUNT(*) FROM tbl_nsegment WHERE ns::geometry IS NOT NULL;
 
 SELECT COUNT(*) FROM tbl_npoint WHERE np = (np::geometry)::npoint;
 SELECT COUNT(*) FROM tbl_nsegment WHERE ns = (ns::geometry)::nsegment;

@@ -35,11 +35,12 @@
 #ifndef __RANGETYPES_EXT_H__
 #define __RANGETYPES_EXT_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/rangetypes.h>
-
-#include "temporaltypes.h"
+/* MobilityDB */
+#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 
@@ -56,7 +57,7 @@ extern bool upper_inc(const RangeType *range);
 #endif
 extern void range_bounds(const RangeType *range, double *xmin, double *xmax);
 extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, Oid basetypid);
+  bool upper_inc, CachedType basetype);
 extern RangeType **rangearr_normalize(RangeType **ranges, int count,
   int *newcount);
 

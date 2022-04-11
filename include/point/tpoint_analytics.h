@@ -35,9 +35,10 @@
 #ifndef __TPOINT_ANALYTICS_H__
 #define __TPOINT_ANALYTICS_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-
+/* MobilityDB */
 #include "general/temporaltypes.h"
 
 /*****************************************************************************/

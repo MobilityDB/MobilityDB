@@ -35,10 +35,11 @@
 #ifndef __TNPOINT_STATIC_H__
 #define __TNPOINT_STATIC_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-
-#include "tnpoint.h"
+/* MobilityDB */
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 

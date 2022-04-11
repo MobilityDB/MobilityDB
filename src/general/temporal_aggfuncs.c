@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_aggfuncs.c
- * Temporal aggregate functions
+ * @brief General aggregate functions for temporal types.
  */
 
 #include "general/temporal_aggfuncs.h"
@@ -45,7 +45,7 @@
 /* MobilityDB */
 #include "general/skiplist.h"
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -176,8 +176,8 @@ tinstant_tagg(TInstant **instants1, int count1, TInstant **instants2,
     if (cmp == 0)
     {
       result[count++] = tinstant_make(
-        func(tinstant_value(inst1), tinstant_value(inst2)),
-        inst1->t, inst1->basetypid);
+        func(tinstant_value(inst1), tinstant_value(inst2)), inst1->t,
+          inst1->temptype);
       i++;
       j++;
     }
@@ -296,8 +296,8 @@ tsequence_tagg1(const TSequence *seq1, const TSequence *seq2,
     const TInstant *inst1 = tsequence_inst_n(syncseq1, i);
     const TInstant *inst2 = tsequence_inst_n(syncseq2, i);
     instants[i] = tinstant_make(
-      func(tinstant_value(inst1), tinstant_value(inst2)),
-      inst1->t, inst1->basetypid);
+      func(tinstant_value(inst1), tinstant_value(inst2)), inst1->t,
+        seq1->temptype);
   }
   sequences[k++] = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MOBDB_FLAGS_GET_LINEAR(seq1->flags), NORMALIZE);
@@ -426,12 +426,15 @@ tsequence_tagg(TSequence **sequences1, int count1, TSequence **sequences2,
  * Generic aggregate transition functions
  *****************************************************************************/
 
+/**
+ * Ensure that the subtype and the interpolation of the skiplist and temporal
+ * point are the same
+ */
 void
-ensure_same_tempsubtype_skiplist(SkipList *state, int16 subtype,
-  Temporal *temp)
+ensure_same_tempsubtype_skiplist(SkipList *state, Temporal *temp)
 {
   Temporal *head = (Temporal *) skiplist_headval(state);
-  if (state->elemtype != TEMPORAL || head->subtype != subtype)
+  if (state->elemtype != TEMPORAL || head->subtype != temp->subtype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different type")));
   if (MOBDB_FLAGS_GET_LINEAR(head->flags) !=
@@ -459,7 +462,7 @@ tinstant_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &inst, 1, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, INSTANT, (Temporal *) inst);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) inst);
     skiplist_splice(fcinfo, state, (void **) &inst, 1, func, false);
     result = state;
   }
@@ -486,7 +489,7 @@ tinstantset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) instants, ti->count, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, INSTANT, (Temporal *) ti);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) instants[0]);
     skiplist_splice(fcinfo, state, (void **) instants, ti->count, func, false);
     result = state;
   }
@@ -513,7 +516,7 @@ tsequence_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **) &seq, 1, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, SEQUENCE, (Temporal *) seq);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) seq);
     skiplist_splice(fcinfo, state, (void **) &seq, 1, func, crossings);
     result = state;
   }
@@ -540,7 +543,7 @@ tsequenceset_tagg_transfn(FunctionCallInfo fcinfo, SkipList *state,
     result = skiplist_make(fcinfo, (void **)sequences, ts->count, TEMPORAL);
   else
   {
-    ensure_same_tempsubtype_skiplist(state, SEQUENCE, (Temporal *) ts);
+    ensure_same_tempsubtype_skiplist(state, (Temporal *) sequences[0]);
     skiplist_splice(fcinfo, state, (void **) sequences, ts->count, func, crossings);
     result = state;
   }
@@ -611,7 +614,7 @@ temporal_tagg_combinefn1(FunctionCallInfo fcinfo, SkipList *state1,
     return state1;
 
   Temporal *head2 = (Temporal *) skiplist_headval(state2);
-  ensure_same_tempsubtype_skiplist(state1, head2->subtype, head2);
+  ensure_same_tempsubtype_skiplist(state1, head2);
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
   skiplist_splice(fcinfo, state1, values2, count2, func, crossings);
@@ -656,8 +659,7 @@ temporal_tagg_finalfn(PG_FUNCTION_ARGS)
 
   Temporal **values = (Temporal **) skiplist_values(state);
   Temporal *result = NULL;
-  assert(values[0]->subtype == INSTANT ||
-    values[0]->subtype == SEQUENCE);
+  assert(values[0]->subtype == INSTANT || values[0]->subtype == SEQUENCE);
   if (values[0]->subtype == INSTANT)
     result = (Temporal *) tinstantset_make((const TInstant **)values,
       state->length, MERGE_NO);
@@ -792,7 +794,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
   Temporal **temparr = temporal_transform_tagg(temp, &count, transform);
   if (state)
   {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, func, crossings);
   }
   else
@@ -816,7 +818,7 @@ temporal_tagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
 static TInstant *
 tinstant_transform_tcount(const TInstant *inst)
 {
-  return tinstant_make(Int32GetDatum(1), inst->t, INT4OID);
+  return tinstant_make(Int32GetDatum(1), inst->t, T_TINT);
 }
 
 /**
@@ -831,7 +833,7 @@ tinstantset_transform_tcount(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    result[i] = tinstant_make(datum_one, inst->t, INT4OID);
+    result[i] = tinstant_make(datum_one, inst->t, T_TINT);
   }
   return result;
 }
@@ -847,15 +849,15 @@ tsequence_transform_tcount(const TSequence *seq)
   Datum datum_one = Int32GetDatum(1);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(datum_one, seq->period.lower, INT4OID);
+    TInstant *inst = tinstant_make(datum_one, seq->period.lower, T_TINT);
     result = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return result;
   }
 
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, seq->period.lower, INT4OID);
-  instants[1] = tinstant_make(datum_one, seq->period.upper, INT4OID);
+  instants[0] = tinstant_make(datum_one, seq->period.lower, T_TINT);
+  instants[1] = tinstant_make(datum_one, seq->period.upper, T_TINT);
   result = tsequence_make((const TInstant **) instants, 2,
     seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE_NO);
   pfree(instants[0]); pfree(instants[1]);
@@ -934,7 +936,7 @@ temporal_tcount_transfn(PG_FUNCTION_ARGS)
   Temporal **temparr = temporal_transform_tcount(temp, &count);
   if (state)
   {
-    ensure_same_tempsubtype_skiplist(state, temparr[0]->subtype, temparr[0]);
+    ensure_same_tempsubtype_skiplist(state, temparr[0]);
     skiplist_splice(fcinfo, state, (void **) temparr, count, &datum_sum_int32, false);
   }
   else
@@ -1298,11 +1300,11 @@ ttext_tmax_combinefn(PG_FUNCTION_ARGS)
 TInstant *
 tnumberinst_transform_tavg(const TInstant *inst)
 {
-  double value = datum_double(tinstant_value(inst), inst->basetypid);
+  double value = tnumberinst_double(inst);
   double2 dvalue;
   double2_set(value, 1, &dvalue);
   TInstant *result = tinstant_make(PointerGetDatum(&dvalue), inst->t,
-    type_oid(T_DOUBLE2));
+    T_TDOUBLE2);
   return result;
 }
 
@@ -1341,8 +1343,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
     TInstant *inst = instants[i];
     double2 *value = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
     double tavg = value->a / value->b;
-    newinstants[i] = tinstant_make(Float8GetDatum(tavg), inst->t,
-      FLOAT8OID);
+    newinstants[i] = tinstant_make(Float8GetDatum(tavg), inst->t, T_TFLOAT);
   }
   return tinstantset_make_free(newinstants, count, MERGE_NO);
 }
@@ -1363,8 +1364,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
       const TInstant *inst = tsequence_inst_n(seq, j);
       double2 *value2 = (double2 *)DatumGetPointer(tinstant_value_ptr(inst));
       double value = value2->a / value2->b;
-      instants[j] = tinstant_make(Float8GetDatum(value), inst->t,
-        FLOAT8OID);
+      instants[j] = tinstant_make(Float8GetDatum(value), inst->t, T_TFLOAT);
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
       seq->period.lower_inc, seq->period.upper_inc,

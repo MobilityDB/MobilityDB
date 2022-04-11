@@ -29,8 +29,8 @@
 
 -- Test index support function for ever/always equal and intersects<Time>
 
-CREATE INDEX tbl_tgeompoint_gist_idx ON tbl_tgeompoint USING gist(temp);
-CREATE INDEX tbl_tgeogpoint_gist_idx ON tbl_tgeogpoint USING gist(temp);
+CREATE INDEX tbl_tgeompoint_rtree_idx ON tbl_tgeompoint USING gist(temp);
+CREATE INDEX tbl_tgeogpoint_rtree_idx ON tbl_tgeogpoint USING gist(temp);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
@@ -51,15 +51,15 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
 
-DROP INDEX tbl_tgeompoint_gist_idx;
-DROP INDEX tbl_tgeogpoint_gist_idx;
+DROP INDEX tbl_tgeompoint_rtree_idx;
+DROP INDEX tbl_tgeogpoint_rtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- Test index support function for ever/always equal and intersects<Time>
 
-CREATE INDEX tbl_tgeompoint_spgist_idx ON tbl_tgeompoint USING spgist(temp);
-CREATE INDEX tbl_tgeogpoint_spgist_idx ON tbl_tgeogpoint USING spgist(temp);
+CREATE INDEX tbl_tgeompoint_quadtree_idx ON tbl_tgeompoint USING spgist(temp);
+CREATE INDEX tbl_tgeogpoint_quadtree_idx ON tbl_tgeogpoint USING spgist(temp);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE temp ?= 'Point(1 1)';
@@ -80,7 +80,7 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriod(temp, '[2001-06-01, 2
 SELECT COUNT(*) FROM tbl_tgeompoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE intersectsPeriodSet(temp, '{[2001-06-01, 2001-07-01]}');
 
-DROP INDEX tbl_tgeompoint_spgist_idx;
-DROP INDEX tbl_tgeogpoint_spgist_idx;
+DROP INDEX tbl_tgeompoint_quadtree_idx;
+DROP INDEX tbl_tgeogpoint_quadtree_idx;
 
 -------------------------------------------------------------------------------

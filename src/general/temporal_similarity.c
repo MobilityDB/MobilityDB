@@ -29,8 +29,8 @@
 
 /**
  * @file temporal_similarity.c
- * Similarity distance for temporal values. Currently, the discrete Frechet
- * distance and the Dynamic Time Warping (DTW) distance are implemented.
+ * @brief Similarity distance for temporal values. Currently, discrete Frechet
+ * distance and Dynamic Time Warping (DTW) distance are implemented.
  */
 
 #include "general/temporal_similarity.h"
@@ -64,10 +64,7 @@
 static double
 tnumberinst_distance(const TInstant *inst1, const TInstant *inst2)
 {
-  Datum value1 = tinstant_value(inst1);
-  Datum value2 = tinstant_value(inst2);
-  double result = fabs(datum_double(value1, inst1->basetypid) -
-    datum_double(value2, inst2->basetypid));
+  double result = fabs(tnumberinst_double(inst1) - tnumberinst_double(inst2));
   return result;
 }
 
@@ -94,9 +91,9 @@ tpointinst_distance(const TInstant *inst1, const TInstant *inst2)
 static double
 tinstant_distance(const TInstant *inst1, const TInstant *inst2)
 {
-  if (tnumber_base_type(inst1->basetypid))
+  if (tnumber_type(inst1->temptype))
     return tnumberinst_distance(inst1, inst2);
-  if (tgeo_base_type(inst1->basetypid))
+  if (tgeo_type(inst1->temptype))
     return tpointinst_distance(inst1, inst2);
   elog(ERROR, "Unexpected base type in function tinstant_distance");
 }
@@ -229,7 +226,7 @@ temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable for temporal geographic points */
-  if (temp1->basetypid == type_oid(T_GEOGRAPHY))
+  if (temp1->temptype == T_TGEOGPOINT)
     store_fcinfo(fcinfo);
   double result = temporal_similarity_internal(temp1, temp2, simfunc);
   PG_FREE_IF_COPY(temp1, 0);
@@ -241,7 +238,7 @@ PG_FUNCTION_INFO_V1(temporal_frechet_distance);
 /**
  * Compute the discrete Frechet distance between two temporal values.
  */
-Datum
+PGDLLEXPORT Datum
 temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
   return temporal_similarity(fcinfo, FRECHET);
@@ -251,7 +248,7 @@ PG_FUNCTION_INFO_V1(temporal_dynamic_time_warp);
 /**
  * Compute the Dynamic Time Match (DTW) distance between two temporal values.
  */
-Datum
+PGDLLEXPORT Datum
 temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 {
   return temporal_similarity(fcinfo, DYNTIMEWARP);
@@ -536,7 +533,7 @@ temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
     Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
     Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
     /* Store fcinfo into a global variable for temporal geographic points */
-    if (temp1->basetypid == type_oid(T_GEOGRAPHY))
+    if (temp1->temptype == T_TGEOGPOINT)
       store_fcinfo(fcinfo);
     /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();

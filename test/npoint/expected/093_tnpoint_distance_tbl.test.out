@@ -22,7 +22,7 @@ SELECT round(MAX(maxValue(t1.temp <-> t2.np))::numeric, 6) FROM tbl_tnpoint t1, 
  121.839892
 (1 row)
 
-SELECT count(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <-> t2.temp IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2 WHERE t1.temp <-> t2.temp IS NOT NULL;
  count 
 -------
    100

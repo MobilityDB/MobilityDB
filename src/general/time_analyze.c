@@ -28,8 +28,8 @@
  *****************************************************************************/
 
 /**
- *@file time_analyze.c
- * Functions for gathering statistics from time type columns
+ * @file time_analyze.c
+ * @brief Functions for gathering statistics from time type columns.
  *
  * These functions are based on those of the file rangetypes_typanalyze.c.
  * For a period type column, histograms of lower and upper bounds, and

@@ -27,12 +27,26 @@
 --
 -------------------------------------------------------------------------------
 
+-- Nearest neighbor search
+ANALYZE tbl_period_big;
+
+CREATE INDEX tbl_period_big_quadtree_idx ON tbl_period_big USING SPGIST(p);
+
+-- EXPLAIN ANALYZE
+SELECT p |=| timestamptz '2001-06-01' FROM tbl_period_big ORDER BY 1 LIMIT 3;
+SELECT p |=| period '[2001-06-01, 2001-07-01]' FROM tbl_period_big ORDER BY 1 LIMIT 3;
+SELECT p |=| periodset '{[2001-01-01, 2001-01-15], [2001-02-01, 2001-02-15]}' FROM tbl_period_big ORDER BY 1 LIMIT 3;
+
+DROP INDEX tbl_period_big_quadtree_idx;
+
+-------------------------------------------------------------------------------
+
 -- RESTRICTION SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_timestampset_big_gist_idx ON tbl_timestampset_big USING gist(ts);
-CREATE INDEX tbl_period_big_gist_idx ON tbl_period_big USING gist(p);
-CREATE INDEX tbl_periodset_big_gist_idx ON tbl_periodset_big USING gist(ps);
+CREATE INDEX tbl_timestampset_big_rtree_idx ON tbl_timestampset_big USING gist(ts);
+CREATE INDEX tbl_period_big_rtree_idx ON tbl_period_big USING gist(p);
+CREATE INDEX tbl_periodset_big_rtree_idx ON tbl_periodset_big USING gist(ps);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts && timestampset '{2001-06-01, 2001-07-01}';
@@ -77,18 +91,18 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE period '[2001-06-01, 2001-07-01]' <
 SELECT COUNT(*) FROM tbl_period_big WHERE periodset '{[2001-06-01, 2001-07-01]}' <@ p;
 SELECT COUNT(*) FROM tbl_periodset_big WHERE periodset '{[2001-06-01, 2001-07-01]}' <@ ps;
 
-DROP INDEX tbl_timestampset_big_gist_idx;
-DROP INDEX tbl_period_big_gist_idx;
-DROP INDEX tbl_periodset_big_gist_idx;
+DROP INDEX tbl_timestampset_big_rtree_idx;
+DROP INDEX tbl_period_big_rtree_idx;
+DROP INDEX tbl_periodset_big_rtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- JOIN SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_timestampset_gist_idx ON tbl_timestampset USING gist(ts);
-CREATE INDEX tbl_period_gist_idx ON tbl_period USING gist(p);
-CREATE INDEX tbl_periodset_gist_idx ON tbl_periodset USING gist(ps);
+CREATE INDEX tbl_timestampset_rtree_idx ON tbl_timestampset USING gist(ts);
+CREATE INDEX tbl_period_rtree_idx ON tbl_period USING gist(p);
+CREATE INDEX tbl_periodset_rtree_idx ON tbl_periodset USING gist(ps);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts && t2.ts;
@@ -124,18 +138,18 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_period t2 WHERE t1.ps <@ t2.p;
 SELECT COUNT(*) FROM tbl_period t1, tbl_periodset t2 WHERE t1.p <@ t2.ps;
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps;
 
-DROP INDEX tbl_timestampset_gist_idx;
-DROP INDEX tbl_period_gist_idx;
-DROP INDEX tbl_periodset_gist_idx;
+DROP INDEX tbl_timestampset_rtree_idx;
+DROP INDEX tbl_period_rtree_idx;
+DROP INDEX tbl_periodset_rtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- RESTRICTION SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_timestampset_big_spgist_idx ON tbl_timestampset_big USING spgist(ts);
-CREATE INDEX tbl_period_big_spgist_idx ON tbl_period_big USING spgist(p);
-CREATE INDEX tbl_periodset_big_spgist_idx ON tbl_periodset_big USING spgist(ps);
+CREATE INDEX tbl_timestampset_big_quadtree_idx ON tbl_timestampset_big USING spgist(ts);
+CREATE INDEX tbl_period_big_quadtree_idx ON tbl_period_big USING spgist(p);
+CREATE INDEX tbl_periodset_big_quadtree_idx ON tbl_periodset_big USING spgist(ps);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_timestampset_big WHERE ts && timestampset '{2001-06-01, 2001-07-01}';
@@ -180,18 +194,18 @@ SELECT COUNT(*) FROM tbl_periodset_big WHERE period '[2001-06-01, 2001-07-01]' <
 SELECT COUNT(*) FROM tbl_period_big WHERE periodset '{[2001-06-01, 2001-07-01]}' <@ p;
 SELECT COUNT(*) FROM tbl_periodset_big WHERE periodset '{[2001-06-01, 2001-07-01]}' <@ ps;
 
-DROP INDEX tbl_timestampset_big_spgist_idx;
-DROP INDEX tbl_period_big_spgist_idx;
-DROP INDEX tbl_periodset_big_spgist_idx;
+DROP INDEX tbl_timestampset_big_quadtree_idx;
+DROP INDEX tbl_period_big_quadtree_idx;
+DROP INDEX tbl_periodset_big_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- JOIN SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_timestampset_spgist_idx ON tbl_timestampset USING gist(ts);
-CREATE INDEX tbl_period_spgist_idx ON tbl_period USING gist(p);
-CREATE INDEX tbl_periodset_spgist_idx ON tbl_periodset USING gist(ps);
+CREATE INDEX tbl_timestampset_quadtree_idx ON tbl_timestampset USING gist(ts);
+CREATE INDEX tbl_period_quadtree_idx ON tbl_period USING gist(p);
+CREATE INDEX tbl_periodset_quadtree_idx ON tbl_periodset USING gist(ps);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts && t2.ts;
@@ -240,18 +254,18 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps;
 SELECT COUNT(*) FROM tbl_period t1, tbl_period t2 WHERE t1.p <@ t2.p;
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps;
 
-DROP INDEX tbl_timestampset_spgist_idx;
-DROP INDEX tbl_period_spgist_idx;
-DROP INDEX tbl_periodset_spgist_idx;
+DROP INDEX tbl_timestampset_quadtree_idx;
+DROP INDEX tbl_period_quadtree_idx;
+DROP INDEX tbl_periodset_quadtree_idx;
 
 -------------------------------------------------------------------------------
 
 -- JOIN SELECTIVITY
 -- Test index support function
 
-CREATE INDEX tbl_timestampset_spgist_idx ON tbl_timestampset USING spgist(ts);
-CREATE INDEX tbl_period_spgist_idx ON tbl_period USING spgist(p);
-CREATE INDEX tbl_periodset_spgist_idx ON tbl_periodset USING spgist(ps);
+CREATE INDEX tbl_timestampset_quadtree_idx ON tbl_timestampset USING spgist(ts);
+CREATE INDEX tbl_period_quadtree_idx ON tbl_period USING spgist(p);
+CREATE INDEX tbl_periodset_quadtree_idx ON tbl_periodset USING spgist(ps);
 
 -- EXPLAIN ANALYZE
 SELECT COUNT(*) FROM tbl_timestampset t1, tbl_timestampset t2 WHERE t1.ts && t2.ts;
@@ -287,8 +301,8 @@ SELECT COUNT(*) FROM tbl_periodset t1, tbl_period t2 WHERE t1.ps <@ t2.p;
 SELECT COUNT(*) FROM tbl_period t1, tbl_periodset t2 WHERE t1.p <@ t2.ps;
 SELECT COUNT(*) FROM tbl_periodset t1, tbl_periodset t2 WHERE t1.ps <@ t2.ps;
 
-DROP INDEX tbl_timestampset_spgist_idx;
-DROP INDEX tbl_period_spgist_idx;
-DROP INDEX tbl_periodset_spgist_idx;
+DROP INDEX tbl_timestampset_quadtree_idx;
+DROP INDEX tbl_period_quadtree_idx;
+DROP INDEX tbl_periodset_quadtree_idx;
 
 -------------------------------------------------------------------------------

@@ -35,9 +35,11 @@
 #ifndef __TIME_SPGIST_H__
 #define __TIME_SPGIST_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-#include "timetypes.h"
+/* MobilityDB */
+#include "general/timetypes.h"
 
 /*****************************************************************************/
 

@@ -251,6 +251,20 @@
 		</sect2>
 
 		<sect2>
+			<title>Operadores de distancia</title>
+
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="distance"><varname>&lt;-&gt;</varname></link>: Obtener la distancia mínima en un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="smallest_distance_secs"><varname>|=|</varname></link>: Obtener la distancia mínima en número de segundos</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Funciones agregadas</title>
 
 			<itemizedlist>

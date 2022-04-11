@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_selfuncs.c
- * Functions for selectivity estimation of operators on temporal points
+ * @brief Functions for selectivity estimation of operators on temporal points.
  */
 
 #include "point/tpoint_selfuncs.h"
@@ -41,7 +41,7 @@
 #include <utils/syscache.h>
 /* MobilityDB */
 #include "general/period.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_selfuncs.h"
 #include "general/temporal.h"
 #include "general/temporal_selfuncs.h"
@@ -458,22 +458,22 @@ nd_box_ratio_position(const ND_BOX *b1, const ND_BOX *b2, CachedOp op)
 static bool
 tpoint_const_stbox(Node *other, STBOX *box)
 {
-  Oid consttype = ((Const *) other)->consttype;
-
-  if (tgeo_base_type(consttype))
+  Oid consttypid = ((Const *) other)->consttype;
+  CachedType type = oid_type(consttypid);
+  if (tgeo_basetype(type))
     geo_stbox((GSERIALIZED *) PointerGetDatum(((Const *) other)->constvalue),
       box);
-  else if (consttype == type_oid(T_TIMESTAMPTZ))
+  else if (type == T_TIMESTAMPTZ)
     timestamp_stbox(DatumGetTimestampTz(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_TIMESTAMPSET))
+  else if (type == T_TIMESTAMPSET)
     timestampset_stbox_slice(((Const *) other)->constvalue, box);
-  else if (consttype == type_oid(T_PERIOD))
+  else if (type == T_PERIOD)
     period_stbox(DatumGetPeriodP(((Const *) other)->constvalue), box);
-  else if (consttype == type_oid(T_PERIODSET))
+  else if (type == T_PERIODSET)
     periodset_stbox_slice(((Const *) other)->constvalue, box);
-  else if (consttype == type_oid(T_STBOX))
+  else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(((Const *) other)->constvalue), sizeof(STBOX));
-  else if (tspatial_type(consttype))
+  else if (tspatial_type(type))
     temporal_bbox(DatumGetTemporalP(((Const *) other)->constvalue), box);
   else
     return false;
@@ -484,37 +484,37 @@ tpoint_const_stbox(Node *other, STBOX *box)
  * Get the enum value associated to the operator
  */
 static bool
-tpoint_cachedop(Oid oper, CachedOp *cachedOp)
+tpoint_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = OVERLAPS_OP; i <= OVERAFTER_OP; i++)
   {
-    if (oper == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
+    if (operid == oper_oid((CachedOp) i, T_GEOMETRY, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_STBOX, T_TGEOMPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_GEOMETRY) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_STBOX) ||
+        operid == oper_oid((CachedOp) i, T_TGEOMPOINT, T_TGEOMPOINT) ||
 
-        oper == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
-        oper == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
+        operid == oper_oid((CachedOp) i, T_GEOGRAPHY, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_STBOX, T_TGEOGPOINT) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_GEOGRAPHY) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_STBOX) ||
+        operid == oper_oid((CachedOp) i, T_TGEOGPOINT, T_TGEOGPOINT))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -806,14 +806,14 @@ tpoint_sel_default(CachedOp oper)
  * Get enumeration value associated to the operator according to the family
  */
 static bool
-tpoint_cachedop_family(Oid oper, CachedOp *cachedOp, TemporalFamily tempfamily)
+tpoint_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfamily)
 {
   /* Get enumeration value associated to the operator */
   assert(tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (tempfamily == TPOINTTYPE)
-    return tpoint_cachedop(oper, cachedOp);
+    return tpoint_cachedop(operid, cachedOp);
   else /* tempfamily == TNPOINTTYPE */
-    return tnpoint_cachedop(oper, cachedOp);
+    return tnpoint_cachedop(operid, cachedOp);
 }
 
 /**
@@ -821,7 +821,7 @@ tpoint_cachedop_family(Oid oper, CachedOp *cachedOp, TemporalFamily tempfamily)
  * (internal function)
  */
 float8
-tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
+tpoint_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid,
   TemporalFamily tempfamily)
 {
   VariableStatData vardata;
@@ -833,7 +833,7 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! tpoint_cachedop_family(oper, &cachedOp, tempfamily))
+  if (! tpoint_cachedop_family(operid, &cachedOp, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -871,8 +871,8 @@ tpoint_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid,
   if (! varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    oper = get_commutator(oper);
-    if (! oper)
+    operid = get_commutator(operid);
+    if (! operid)
     {
       /* Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
@@ -969,17 +969,17 @@ pg_nd_stats_from_tuple(HeapTuple stats_tuple, int mode)
 * by the selectivity functions and the debugging functions.
 */
 static ND_STATS *
-pg_get_nd_stats(const Oid table_oid, AttrNumber att_num, int mode, bool only_parent)
+pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_parent)
 {
   HeapTuple stats_tuple = NULL;
   ND_STATS *nd_stats;
 
   /* First pull the stats tuple for the whole tree */
   if ( ! only_parent )
-    stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table_oid), Int16GetDatum(att_num), BoolGetDatum(true));
+    stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(tableid), Int16GetDatum(att_num), BoolGetDatum(true));
   /* Fall-back to main table stats only, if not found for whole tree or explicitly ignored */
   if ( only_parent || ! stats_tuple )
-    stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(table_oid), Int16GetDatum(att_num), BoolGetDatum(false));
+    stats_tuple = SearchSysCache3(STATRELATTINH, ObjectIdGetDatum(tableid), Int16GetDatum(att_num), BoolGetDatum(false));
   if ( ! stats_tuple )
     return NULL;
 
@@ -1230,14 +1230,14 @@ geo_joinsel(const ND_STATS *s1, const ND_STATS *s2)
  * join selectivity
  */
 static bool
-tpoint_joinsel_components(CachedOp cachedOp, Oid oprleft, Oid oprright,
-  bool *space, bool *time)
+tpoint_joinsel_components(CachedOp cachedOp, CachedType oprleft,
+  CachedType oprright, bool *space, bool *time)
 {
   /* Get the argument which may not be a temporal point */
-  Oid arg = tspatial_type(oprleft) ? oprright : oprleft;
+  CachedType arg = tspatial_type(oprleft) ? oprright : oprleft;
 
   /* Determine the components */
-  if (tspatial_base_type(arg) ||
+  if (tspatial_basetype(arg) ||
     cachedOp == LEFT_OP || cachedOp == OVERLEFT_OP ||
     cachedOp == RIGHT_OP || cachedOp == OVERRIGHT_OP ||
     cachedOp == BELOW_OP || cachedOp == OVERBELOW_OP ||
@@ -1276,7 +1276,7 @@ tpoint_joinsel_components(CachedOp cachedOp, Oid oprleft, Oid oprright,
  * points (internal function)
  */
 float8
-tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
+tpoint_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
   TemporalFamily tempfamily)
 {
@@ -1292,7 +1292,7 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! tpoint_cachedop_family(oper, &cachedOp, tempfamily))
+  if (! tpoint_cachedop_family(operid, &cachedOp, tempfamily))
     /* In the case of unknown operator */
     return DEFAULT_TEMP_SEL;
 
@@ -1300,8 +1300,8 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid oper, List *args,
    * Determine whether the space and/or the time components are
    * taken into account for the selectivity estimation
    */
-  Oid oprleft = var1->vartype;
-  Oid oprright = var2->vartype;
+  CachedType oprleft = oid_type(var1->vartype);
+  CachedType oprright = oid_type(var2->vartype);
   bool space, time;
   if (! tpoint_joinsel_components(cachedOp, oprleft, oprright,
     &space, &time))

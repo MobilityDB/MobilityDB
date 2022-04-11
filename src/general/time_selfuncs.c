@@ -29,7 +29,7 @@
 
 /**
  * @file time_selfuncs.c
- * Functions for selectivity estimation of time types operators
+ * @brief Functions for selectivity estimation of time types operators.
  *
  * These functions are based on those of the file `rangetypes_selfuncs.c`.
  * Estimates are based on histograms of lower and upper bounds.
@@ -52,7 +52,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/time_analyze.h"
 #include "general/tempcache.h"
 
@@ -84,25 +84,25 @@ period_joinsel_default(CachedOp cachedOp __attribute__((unused)))
  * Get the enum associated to the operator from different cases
  */
 static bool
-time_cachedop(Oid oper, CachedOp *cachedOp)
+time_cachedop(Oid operid, CachedOp *cachedOp)
 {
   for (int i = EQ_OP; i <= OVERAFTER_OP; i++)
   {
-    if (oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
-        oper == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
+    if (operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPTZ, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_TIMESTAMPSET, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_PERIOD, T_PERIODSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPTZ) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_TIMESTAMPSET) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIOD) ||
+        operid == oper_oid((CachedOp) i, T_PERIODSET, T_PERIODSET))
       {
         *cachedOp = (CachedOp) i;
         return true;
@@ -798,16 +798,17 @@ void
 time_const_to_period(Node *other, Period *period)
 {
   Oid timetypid = ((Const *) other)->consttype;
+  CachedType timetype = oid_type(timetypid);
   const Period *p;
-  ensure_time_type(timetypid);
-  if (timetypid == TIMESTAMPTZOID)
+  ensure_time_type(timetype);
+  if (timetype == T_TIMESTAMPTZ)
   {
     /* The right argument is a TimestampTz constant. We convert it into
      * a singleton period */
     TimestampTz t = DatumGetTimestampTz(((Const *) other)->constvalue);
     period_set(t, t, true, true, period);
   }
-  else if (timetypid == type_oid(T_TIMESTAMPSET))
+  else if (timetype == T_TIMESTAMPSET)
   {
     /* The right argument is a TimestampSet constant. We convert it into
      * a period, which is its bounding box. */
@@ -815,13 +816,13 @@ time_const_to_period(Node *other, Period *period)
       DatumGetTimestampSetP(((Const *) other)->constvalue));
     memcpy(period, p, sizeof(Period));
   }
-  else if (timetypid == type_oid(T_PERIOD))
+  else if (timetype == T_PERIOD)
   {
     /* Just copy the value */
     p = DatumGetPeriodP(((Const *) other)->constvalue);
     memcpy(period, p, sizeof(Period));
   }
-  else /* timetypid == type_oid(T_PERIODSET) */
+  else /* timetype == T_PERIODSET */
   {
     /* The right argument is a PeriodSet constant. We convert it into
      * a period, which is its bounding box. */
@@ -836,7 +837,7 @@ time_const_to_period(Node *other, Period *period)
  * Restriction selectivity for period operators (internal function)
  */
 float8
-period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
+period_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -850,7 +851,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    */
   if (!get_restriction_variable(root, args, varRelid, &vardata, &other,
       &varonleft))
-    return period_sel_default(oper);
+    return period_sel_default(operid);
 
   /*
    * Can't do anything useful if the something is not a constant, either.
@@ -858,7 +859,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (!IsA(other, Const))
   {
     ReleaseVariableStats(vardata);
-    return period_sel_default(oper);
+    return period_sel_default(operid);
   }
 
   /*
@@ -878,13 +879,13 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
   if (!varonleft)
   {
     /* we have other Op var, commute to make var Op other */
-    oper = get_commutator(oper);
-    if (!oper)
+    operid = get_commutator(operid);
+    if (!operid)
     {
       /* TODO: check whether there might still be a way to estimate.
        * Use default selectivity (should we raise an error instead?) */
       ReleaseVariableStats(vardata);
-      return period_sel_default(oper);
+      return period_sel_default(operid);
     }
   }
 
@@ -896,9 +897,9 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(oper, &cachedOp))
+  if (! time_cachedop(operid, &cachedOp))
     /* Unknown operator */
-    return period_sel_default(oper);
+    return period_sel_default(operid);
 
   /*
    * Estimate using statistics. Note that period_sel_internal need not handle
@@ -932,7 +933,7 @@ period_sel_internal(PlannerInfo *root, Oid oper, List *args, int varRelid)
    */
   float8 hist_selec = period_sel_hist(&vardata, &period, cachedOp);
   if (hist_selec < 0.0)
-    hist_selec = period_sel_default(oper);
+    hist_selec = period_sel_default(operid);
 
   selec = hist_selec;
 
@@ -952,10 +953,10 @@ PGDLLEXPORT Datum
 period_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
+  Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selec = period_sel_internal(root, oper, args, varRelid);
+  float8 selec = period_sel_internal(root, operid, args, varRelid);
   PG_RETURN_FLOAT8((float8) selec);
 }
 
@@ -970,7 +971,7 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
 {
   Oid table_oid = PG_GETARG_OID(0);
   text *att_text = PG_GETARG_TEXT_P(1);
-  Oid oper = PG_GETARG_OID(2);
+  Oid operid = PG_GETARG_OID(2);
   Period *p = PG_GETARG_PERIOD_P(3);
   float8 selec = 0.0;
 
@@ -994,9 +995,9 @@ _mobdb_period_sel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(oper, &cachedOp))
+  if (! time_cachedop(operid, &cachedOp))
     /* In case of unknown operator */
-    elog(ERROR, "Unknown period operator %d", oper);
+    elog(ERROR, "Unknown period operator %d", operid);
 
   /* Retrieve the stats object */
   HeapTuple stats_tuple = NULL;
@@ -1419,18 +1420,18 @@ PG_FUNCTION_INFO_V1(period_joinsel);
 Datum period_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
-  Oid oper = PG_GETARG_OID(1);
+  Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   JoinType jointype = (JoinType) PG_GETARG_INT16(3);
   SpecialJoinInfo *sjinfo = (SpecialJoinInfo *) PG_GETARG_POINTER(4);
 
   /* Check length of args and punt on > 2 */
   if (list_length(args) != 2)
-    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+    PG_RETURN_FLOAT8(period_joinsel_default(operid));
 
   /* Only respond to an inner join/unknown context join */
   if (jointype != JOIN_INNER)
-    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+    PG_RETURN_FLOAT8(period_joinsel_default(operid));
 
   Node *arg1 = (Node *) linitial(args);
   Node *arg2 = (Node *) lsecond(args);
@@ -1438,13 +1439,13 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
   /* We only do column joins right now, no functional joins */
   /* TODO: handle t1 <op> expandX(t2) */
   if (!IsA(arg1, Var) || !IsA(arg2, Var))
-    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+    PG_RETURN_FLOAT8(period_joinsel_default(operid));
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(oper, &cachedOp))
+  if (! time_cachedop(operid, &cachedOp))
     /* Unknown operator */
-    PG_RETURN_FLOAT8(period_joinsel_default(oper));
+    PG_RETURN_FLOAT8(period_joinsel_default(operid));
 
   float8 selec = period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
 
@@ -1464,7 +1465,7 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
   text *att1_text = PG_GETARG_TEXT_P(1);
   Oid table2_oid = PG_GETARG_OID(2);
   text *att2_text = PG_GETARG_TEXT_P(3);
-  Oid oper = PG_GETARG_OID(4);
+  Oid operid = PG_GETARG_OID(4);
   float8 selec = 0.0;
 
   /* Test input parameters */
@@ -1504,9 +1505,9 @@ _mobdb_period_joinsel(PG_FUNCTION_ARGS)
 
   /* Get enumeration value associated to the operator */
   CachedOp cachedOp;
-  if (! time_cachedop(oper, &cachedOp))
+  if (! time_cachedop(operid, &cachedOp))
     /* In case of unknown operator */
-    elog(ERROR, "Unknown period operator %d", oper);
+    elog(ERROR, "Unknown period operator %d", operid);
 
   /* Retrieve the stats objects */
   HeapTuple stats1_tuple = NULL, stats2_tuple = NULL;

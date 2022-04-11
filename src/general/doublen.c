@@ -29,8 +29,8 @@
 
 /**
  * @file doublen.c
- * Internal types used in particular for computing the average and centroid
- * temporal aggregates.
+ * @brief Internal types used in particular for computing the average and
+ * centroid temporal aggregates.
  *
  * The `double2`, `double3`, and `double4` types are base types composed,
  * respectively, of two, three, and four `double` values. The `tdouble2`,

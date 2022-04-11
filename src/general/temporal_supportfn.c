@@ -29,7 +29,7 @@
 
 /**
  * @file temporal_supportfn.c
- * Index support functions for temporal types.
+ * @brief Index support functions for temporal types.
  */
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -196,15 +196,15 @@ static const IndexableFunction TNPointIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 static int16
-temporal_get_strategy_by_type(Oid type, uint16_t index)
+temporal_get_strategy_by_type(CachedType temptype, uint16_t index)
 {
-  if (talpha_type(type))
+  if (talpha_type(temptype))
     return TemporalStrategies[index];
-  if (tnumber_type(type))
+  if (tnumber_type(temptype))
     return TNumberStrategies[index];
-  if (tgeo_type(type))
+  if (tgeo_type(temptype))
     return TPointStrategies[index];
-  if (type == type_oid(T_TNPOINT))
+  if (temptype == T_TNPOINT)
     return TNPointStrategies[index];
   return InvalidStrategy;
 }
@@ -225,7 +225,7 @@ func_needs_index(Oid funcid, const IndexableFunction *idxfns,
   const char *fn_name = get_func_name(funcid);
   do
   {
-    if(strcmp(idxfns->fn_name, fn_name) == 0)
+    if (strcmp(idxfns->fn_name, fn_name) == 0)
     {
       *result = *idxfns;
       return true;
@@ -278,12 +278,10 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname;
-  if (argoid == type_oid(T_GEOMETRY) ||
-      argoid == type_oid(T_GEOGRAPHY) ||
-      argoid == type_oid(T_STBOX) ||
-      argoid == type_oid(T_TGEOMPOINT) ||
-      argoid == type_oid(T_TGEOGPOINT) ||
-      argoid == type_oid(T_TNPOINT))
+  CachedType argtype = oid_type(argoid);
+  if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY ||
+      argtype == T_STBOX || argtype == T_TGEOMPOINT ||
+      argtype == T_TGEOGPOINT || argtype == T_TNPOINT)
     funcname = "expandspatial";
   else
     elog(ERROR, "Unknown expand function for type %d", argoid);
@@ -316,36 +314,36 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
-  Oid leftoid, rightoid, oproid;
+  Oid leftoid, rightoid, operid;
 
   /* Return estimated selectivity */
-   assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
+  assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
     tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
     leftoid = exprType(linitial(req->args));
     rightoid = exprType(lsecond(req->args));
-    CachedType ltype = cachedtype_oid(leftoid);
-    CachedType rtype = cachedtype_oid(rightoid);
-    oproid = oper_oid(OVERLAPS_OP, ltype, rtype);
+    CachedType ltype = oid_type(leftoid);
+    CachedType rtype = oid_type(rightoid);
+    operid = oper_oid(OVERLAPS_OP, ltype, rtype);
     if (req->is_join)
     {
       if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_joinsel_internal(req->root, oproid, req->args,
+        req->selectivity = temporal_joinsel_internal(req->root, operid, req->args,
           req->jointype, req->sjinfo, tempfamily);
       else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_joinsel_internal(req->root, oproid, req->args,
+        req->selectivity = tpoint_joinsel_internal(req->root, operid, req->args,
           req->jointype, req->sjinfo, Int32GetDatum(0), /* ND mode TO GENERALIZE */
           tempfamily);
     }
     else
     {
       if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_sel_internal(req->root, oproid, req->args,
+        req->selectivity = temporal_sel_internal(req->root, operid, req->args,
           req->varRelid, tempfamily);
       else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_sel_internal(req->root, oproid, req->args,
+        req->selectivity = tpoint_sel_internal(req->root, operid, req->args,
           req->varRelid, tempfamily);
     }
     PG_RETURN_POINTER(req);
@@ -365,13 +363,13 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
        * calling operator */
       Oid funcoid;
       /* Oid of the operator of the index support expression */
-      Oid idxoproid;
+      Oid idxoperid;
       /* Oid of the right argument of the index support expression */
       Oid exproid;
       List *args;
       Node *leftarg, *rightarg;
 
-      oproid = InvalidOid;
+      operid = InvalidOid;
       if (isfunc)
       {
         FuncExpr *funcexpr = (FuncExpr *) req->node;
@@ -381,7 +379,7 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
       else
       {
         OpExpr *opexpr = (OpExpr *) req->node;
-        oproid = opexpr->opno;
+        operid = opexpr->opno;
         funcoid = opexpr->opfuncid;
         args = opexpr->args;
       }
@@ -404,7 +402,7 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
             funcoid);
         else
           elog(WARNING, "support function called from unsupported operator %d",
-            oproid);
+            operid);
       }
 
       /*
@@ -452,12 +450,14 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
        */
       leftoid = exprType(leftarg);
       rightoid = exprType(rightarg);
+      CachedType lefttype = oid_type(leftoid);
+      CachedType righttype = oid_type(rightoid);
 
       /*
        * Given the index operator family and the arguments and the desired
        * strategy number we can now lookup the operator we want (usually &&).
        */
-      int16 strategy = temporal_get_strategy_by_type(leftoid, idxfn.index);
+      int16 strategy = temporal_get_strategy_by_type(lefttype, idxfn.index);
       /* If no strategy was found for the left argument simply return */
       if (strategy == InvalidStrategy)
         PG_RETURN_POINTER((Node *) NULL);
@@ -466,18 +466,15 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
        * depending on whether there is an expand function */
       exproid = rightoid;
       if (idxfn.expand_arg &&
-          (rightoid == type_oid(T_GEOMETRY) ||
-           rightoid == type_oid(T_GEOGRAPHY) ||
-           rightoid == type_oid(T_STBOX) ||
-           rightoid == type_oid(T_TGEOMPOINT) ||
-           rightoid == type_oid(T_TGEOGPOINT) ||
-           rightoid == type_oid(T_TNPOINT)))
+          (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
+           righttype == T_STBOX || righttype == T_TGEOMPOINT ||
+           righttype == T_TGEOGPOINT || righttype == T_TNPOINT))
         exproid = type_oid(T_STBOX);
       else
         PG_RETURN_POINTER((Node *) NULL);
-        
-      idxoproid = get_opfamily_member(opfamilyoid, leftoid, exproid, strategy);
-      if (idxoproid == InvalidOid)
+
+      idxoperid = get_opfamily_member(opfamilyoid, leftoid, exproid, strategy);
+      if (idxoperid == InvalidOid)
         elog(ERROR, "no operator found for '%s': opfamily %u type %d",
           idxfn.fn_name, opfamilyoid, leftoid);
 
@@ -508,7 +505,7 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
           PG_RETURN_POINTER((Node *) NULL);
 
         /* OK, we can make an index expression */
-        expr = make_opclause(idxoproid, BOOLOID, false, (Expr *) leftarg,
+        expr = make_opclause(idxoperid, BOOLOID, false, (Expr *) leftarg,
           (Expr *) expandexpr, InvalidOid, InvalidOid);
 
         ret = (Node *)(list_make1(expr));
@@ -532,7 +529,7 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
 #endif
           PG_RETURN_POINTER((Node *) NULL);
 
-        expr = make_opclause(idxoproid, BOOLOID, false, (Expr *) leftarg,
+        expr = make_opclause(idxoperid, BOOLOID, false, (Expr *) leftarg,
           (Expr *) rightarg, InvalidOid, InvalidOid);
 
         ret = (Node *)(list_make1(expr));

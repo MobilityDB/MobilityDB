@@ -29,7 +29,7 @@
 
 /**
  * @file tpoint_tempspatialrels.c
- * Temporal spatial relationships for temporal points.
+ * @brief Temporal spatial relationships for temporal points.
  *
  * These relationships are applied at each instant and result in a temporal
  * Boolean.
@@ -76,7 +76,7 @@
 /* MobilityDB */
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 #include "general/tbool_boolops.h"
@@ -142,7 +142,7 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
   /* For disjoint we need to invert the result */
   if (! tinter)
     result = ! result;
-  return tinstant_make(BoolGetDatum(result), inst->t, BOOLOID);
+  return tinstant_make(BoolGetDatum(result), inst->t, T_TBOOL);
 }
 
 /**
@@ -165,7 +165,7 @@ tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter,
     /* For disjoint we need to invert the result */
     if (! tinter)
       result = ! result;
-    instants[i] = tinstant_make(BoolGetDatum(result), inst->t, BOOLOID);
+    instants[i] = tinstant_make(BoolGetDatum(result), inst->t, T_TBOOL);
   }
   TInstantSet *result = tinstantset_make(instants, ti->count, MERGE_NO);
   pfree_array((void **) instants, ti->count);
@@ -203,11 +203,11 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
     if (! tinter)
       datum_res = BoolGetDatum(! DatumGetBool(datum_res));
     TInstant *instants[2];
-    instants[0] = tinstant_make(datum_res, inst1->t, BOOLOID);
+    instants[0] = tinstant_make(datum_res, inst1->t, T_TBOOL);
     int l = 1;
     bool upper_inc1 = false;
     if (inst2 != NULL)
-      instants[l++] = tinstant_make(datum_res, inst2->t, BOOLOID);
+      instants[l++] = tinstant_make(datum_res, inst2->t, T_TBOOL);
     else
       upper_inc1 = true;
     result[k++] = tsequence_make((const TInstant **) instants, l,
@@ -251,7 +251,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   if (! overlaps_stbox_stbox_internal(box1, box))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_internal(datum_no, BOOLOID,
+    result[0] = tsequence_from_base_internal(datum_no, T_TBOOL,
       &seq->period, STEP);
     *count = 1;
     return result;
@@ -263,7 +263,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   if (gserialized_is_empty(gsinter))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_internal(datum_no, BOOLOID,
+    result[0] = tsequence_from_base_internal(datum_no, T_TBOOL,
       &seq->period, STEP);
     pfree(DatumGetPointer(inter));
     *count = 1;
@@ -278,7 +278,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     datum_point_eq(tinstant_value(start), tinstant_value(end)))
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_internal(datum_yes, BOOLOID,
+    result[0] = tsequence_from_base_internal(datum_yes, T_TBOOL,
       &seq->period, STEP);
     PG_FREE_IF_COPY_P(gsinter, DatumGetPointer(inter));
     pfree(DatumGetPointer(inter));
@@ -292,7 +292,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
   if (countper == 0)
   {
     result = palloc(sizeof(TSequence *));
-    result[0] = tsequence_from_base_internal(datum_no, BOOLOID,
+    result[0] = tsequence_from_base_internal(datum_no, T_TBOOL,
       &seq->period, STEP);
     pfree(DatumGetPointer(gsinter));
     *count = 1;
@@ -314,14 +314,14 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
     newcount += ps->count;
   result = palloc(sizeof(TSequence *) * newcount);
   for (int i = 0; i < countper; i++)
-    result[i] = tsequence_from_base_internal(datum_yes, BOOLOID,
+    result[i] = tsequence_from_base_internal(datum_yes, T_TBOOL,
       periods[i], STEP);
   if (ps != NULL)
   {
     for (int i = 0; i < ps->count; i++)
     {
       const Period *p = periodset_per_n(ps, i);
-      result[i + countper] = tsequence_from_base_internal(datum_no, BOOLOID,
+      result[i + countper] = tsequence_from_base_internal(datum_no, T_TBOOL,
         p, STEP);
     }
     tseqarr_sort(result, newcount);
@@ -470,7 +470,7 @@ tinterrel_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs,
   /* Non-empty geometries have a bounding box */
   geo_stbox(gs, &box2);
   if (!overlaps_stbox_stbox_internal(&box1, &box2))
-    return temporal_from_base(temp, datum_no, BOOLOID, STEP);
+    return temporal_from_base(temp, datum_no, T_TBOOL, STEP);
 
   /* 3D only if both arguments are 3D */
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp->flags) &&
@@ -823,7 +823,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
   if (seq1->count == 1)
   {
     TInstant *inst = tinstant_make(func(tinstant_value(start1),
-      tinstant_value(start2), dist), start1->t, BOOLOID);
+      tinstant_value(start2), dist), start1->t, T_TBOOL);
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
@@ -843,7 +843,7 @@ tdwithin_tpointseq_tpointseq2(const TSequence *seq1, const TSequence *seq2,
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
   TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, lower, BOOLOID);
+  instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
   double dist_d = DatumGetFloat8(dist);
@@ -1152,7 +1152,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
   Datum sv = tinstant_value(start);
   if (seq->count == 1)
   {
-    TInstant *inst = tinstant_make(func(sv, point, dist), start->t, BOOLOID);
+    TInstant *inst = tinstant_make(func(sv, point, dist), start->t, T_TBOOL);
     result[0] = tinstant_to_tsequence(inst, STEP);
     pfree(inst);
     return 1;
@@ -1169,7 +1169,7 @@ tdwithin_tpointseq_point1(const TSequence *seq, Datum point, Datum dist,
    * the for loop to avoid creating and freeing the instants each time a
    * segment of the result is computed */
   TInstant *instants[3];
-  instants[0] = tinstant_make(datum_true, lower, BOOLOID);
+  instants[0] = tinstant_make(datum_true, lower, T_TBOOL);
   instants[1] = tinstant_copy(instants[0]);
   instants[2] = tinstant_copy(instants[0]);
   double dist_d = DatumGetFloat8(dist);
@@ -1447,7 +1447,7 @@ ttouches_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs,
     pfree(DatumGetPointer(bound));
   }
   else
-    result = temporal_from_base(temp, BoolGetDatum(false), BOOLOID, STEP);
+    result = temporal_from_base(temp, BoolGetDatum(false), T_TBOOL, STEP);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
@@ -1537,9 +1537,9 @@ tdwithin_tpoint_geo_internal(const Temporal *temp, GSERIALIZED *gs, Datum dist,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
   lfinfo.param[0] = dist;
-  lfinfo.argoids = true;
-  lfinfo.argtypid[0] = lfinfo.argtypid[1] = temp->basetypid;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.args = true;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = temptype_basetype(temp->temptype);
+  lfinfo.restype = T_TBOOL;
   lfinfo.invert = INVERT_NO;
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1650,7 +1650,7 @@ tdwithin_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) func;
   lfinfo.numparam = 1;
   lfinfo.param[0] = dist;
-  lfinfo.restypid = BOOLOID;
+  lfinfo.restype = T_TBOOL;
   Temporal *result;
   ensure_valid_tempsubtype(sync1->subtype);
   if (sync1->subtype == INSTANT)

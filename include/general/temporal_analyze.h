@@ -35,12 +35,15 @@
 #ifndef __TEMPORAL_ANALYZE_H__
 #define __TEMPORAL_ANALYZE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <commands/vacuum.h>
 #include <utils/rangetypes.h>
 #include <parser/parse_oper.h>
 #include <statistics/extended_stats_internal.h>
+
+/*****************************************************************************/
 
 /*
  * Extra data for compute_stats function
@@ -49,7 +52,7 @@
 typedef struct
 {
   /* Information about array element type */
-  Oid type_id;         /**< element type's OID */
+  Oid typid;           /**< element type's OID */
   Oid eq_opr;          /**< default equality operator's OID */
   Oid lt_opr;          /**< default less than operator's OID */
   bool typbyval;       /**< physical properties of element type */
@@ -57,7 +60,7 @@ typedef struct
   char typalign;
 
   /* Information about the value part of array element */
-  Oid value_type_id;   /**< element type's OID */
+  Oid value_typid;     /**< element type's OID */
   Oid value_eq_opr;    /**< default equality operator's OID */
   Oid value_lt_opr;    /**< default less than operator's OID */
   bool value_typbyval; /**< physical properties of element type */
@@ -65,7 +68,7 @@ typedef struct
   char value_typalign;
 
   /* Information about the temporal part of array element */
-  Oid time_type_id;    /**< element type's OID */
+  Oid time_typid;      /**< element type's OID */
   Oid time_eq_opr;     /**< default equality operator's OID */
   Oid time_lt_opr;     /**< default less than operator's OID */
   bool time_typbyval;  /**< physical properties of element type */
@@ -127,4 +130,3 @@ extern Datum generic_analyze(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 #endif
-

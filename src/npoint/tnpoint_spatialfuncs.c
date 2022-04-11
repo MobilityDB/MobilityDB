@@ -29,7 +29,7 @@
 
 /**
  * @file tnpoint_spatialfuncs.c
- * Geospatial functions for temporal network points.
+ * @brief Spatial functions for temporal network points.
  */
 
 #include "npoint/tnpoint_spatialfuncs.h"
@@ -39,7 +39,7 @@
 #include <float.h>
 /* MobilityDB */
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
@@ -149,10 +149,10 @@ tnpointinst_srid(const TInstant *inst)
 int
 tnpoint_srid_internal(const Temporal *temp)
 {
+  if (temp->temptype != T_TNPOINT)
+    elog(ERROR, "unknown temporal type: %d", temp->temptype);
   int result;
   ensure_valid_tempsubtype(temp->subtype);
-  if (temp->basetypid != type_oid(T_NPOINT))
-    elog(ERROR, "unknown npoint base type: %d", temp->basetypid);
   if (temp->subtype == INSTANT)
     result = tnpointinst_srid((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
@@ -368,17 +368,12 @@ tnpoint_geom(const Temporal *temp)
 /**
  * Compute the trajectory of two instants.
  *
- * @param[in] inst1, inst2 Temporal network point instants
+ * @param[in] np1, np2 Network points
  */
 static Datum
-tnpointseqsegm_trajectory(const TInstant *inst1, const TInstant *inst2)
+tnpointseqsegm_trajectory(const npoint *np1, const npoint *np2)
 {
-  npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
-  npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
-  assert(np1->rid == np2->rid);
-
-  if (np1->pos == np2->pos)
-    return npoint_geom(np1);
+  assert(np1->rid == np2->rid && np1->pos != np2->pos);
 
   Datum line = route_geom(np1->rid);
   if ((np1->pos == 0 && np2->pos == 1) ||
@@ -430,7 +425,7 @@ npoint_same_internal(const npoint *np1, const npoint *np2)
     return fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
   Datum point1 = npoint_geom(np1);
   Datum point2 = npoint_geom(np2);
-  bool result = datum_eq(point1, point2, type_oid(T_GEOMETRY));
+  bool result = datum_eq(point1, point2, T_GEOMETRY);
   pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
   return result;
 }
@@ -518,7 +513,7 @@ tnpoint_length(PG_FUNCTION_ARGS)
 static TInstant *
 tnpointinst_set_zero(const TInstant *inst)
 {
-  return tinstant_make(Float8GetDatum(0.0), inst->t, FLOAT8OID);
+  return tinstant_make(Float8GetDatum(0.0), inst->t, T_TFLOAT);
 }
 
 /**
@@ -532,7 +527,7 @@ tnpointinstset_set_zero(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    instants[i] = tinstant_make(zero, inst->t, FLOAT8OID);
+    instants[i] = tinstant_make(zero, inst->t, T_TFLOAT);
   }
   TInstantSet *result = tinstantset_make((const TInstant **) instants,
     ti->count, MERGE_NO);
@@ -554,7 +549,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   if (seq->count == 1)
   {
     inst1 = tsequence_inst_n(seq, 0);
-    inst = tinstant_make(Float8GetDatum(prevlength), inst1->t, FLOAT8OID);
+    inst = tinstant_make(Float8GetDatum(prevlength), inst1->t, T_TFLOAT);
     TSequence *result = tsequence_make((const TInstant **) &inst, 1,
       true, true, true, false);
     pfree(inst);
@@ -569,7 +564,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
     for (int i = 0; i < seq->count; i++)
     {
       inst1 = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(length, inst1->t, FLOAT8OID);
+      instants[i] = tinstant_make(length, inst1->t, T_TFLOAT);
     }
   }
   else
@@ -579,14 +574,13 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
     npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
     double rlength = route_length(np1->rid);
     double length = prevlength;
-    instants[0] = tinstant_make(Float8GetDatum(length), inst1->t, FLOAT8OID);
+    instants[0] = tinstant_make(Float8GetDatum(length), inst1->t, T_TFLOAT);
     for (int i = 1; i < seq->count; i++)
     {
       const TInstant *inst2 = tsequence_inst_n(seq, i);
       npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
       length += fabs(np2->pos - np1->pos) * rlength;
-      instants[i] = tinstant_make(Float8GetDatum(length), inst2->t,
-        FLOAT8OID);
+      instants[i] = tinstant_make(Float8GetDatum(length), inst2->t, T_TFLOAT);
       np1 = np2;
     }
   }
@@ -668,7 +662,7 @@ tnpointseq_speed(const TSequence *seq)
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = tsequence_inst_n(seq, i);
-      instants[i] = tinstant_make(length, inst->t, FLOAT8OID);
+      instants[i] = tinstant_make(length, inst->t, T_TFLOAT);
     }
   }
   else
@@ -685,13 +679,12 @@ tnpointseq_speed(const TSequence *seq)
       npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
       double length = fabs(np2->pos - np1->pos) * rlength;
       speed = length / (((double)(inst2->t) - (double)(inst1->t)) / 1000000);
-      instants[i] = tinstant_make(Float8GetDatum(speed),
-        inst1->t, FLOAT8OID);
+      instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t, T_TFLOAT);
       inst1 = inst2;
       np1 = np2;
     }
-    instants[seq->count-1] = tinstant_make(Float8GetDatum(speed),
-      inst2->t, FLOAT8OID);
+    instants[seq->count-1] = tinstant_make(Float8GetDatum(speed), inst2->t,
+      T_TFLOAT);
   }
   /* The resulting sequence has stepwise interpolation */
   TSequence *result = tsequence_make_free(instants, seq->count,
@@ -773,8 +766,8 @@ static TInstant **
 tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   int *count)
 {
-  npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
-  npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
+  const npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
+  const npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
 
   /* Constant segment */
   if (np1->pos == np2->pos)
@@ -784,7 +777,7 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   }
 
   /* Find all vertices in the segment */
-  Datum traj = tnpointseqsegm_trajectory(inst1, inst2);
+  Datum traj = tnpointseqsegm_trajectory(np1, np2);
   int countVertices = DatumGetInt32(call_function1(
     LWGEOM_numpoints_linestring, traj));
   TInstant **result = palloc(sizeof(TInstant *) * countVertices);
@@ -799,7 +792,7 @@ tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
     double fraction = DatumGetFloat8(call_function2(
       LWGEOM_line_locate_point, traj, vertex2));
     azimuth = call_function2(LWGEOM_azimuth, vertex1, vertex2);
-    result[i] = tinstant_make(azimuth, time, FLOAT8OID);
+    result[i] = tinstant_make(azimuth, time, T_TFLOAT);
     pfree(DatumGetPointer(vertex1));
     vertex1 = vertex2;
     time =  inst1->t + (long) ((double) (inst2->t - inst1->t) * fraction);
@@ -849,7 +842,7 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
         }
         /* Add closing instant */
         last_value = tinstant_value(allinstants[n - 1]);
-        allinstants[n++] = tinstant_make(last_value, inst1->t, FLOAT8OID);
+        allinstants[n++] = tinstant_make(last_value, inst1->t, T_TFLOAT);
         /* Resulting sequence has stepwise interpolation */
         result[l++] = tsequence_make_free(allinstants, n, lower_inc, true,
           STEP, true);
@@ -879,7 +872,7 @@ tnpointseq_azimuth2(const TSequence *seq, TSequence **result)
     }
     /* Add closing instant */
     last_value = tinstant_value(allinstants[n - 1]);
-    allinstants[n++] = tinstant_make(last_value, inst1->t, FLOAT8OID);
+    allinstants[n++] = tinstant_make(last_value, inst1->t, T_TFLOAT);
     /* Resulting sequence has stepwise interpolation */
     result[l++] = tsequence_make((const TInstant **) allinstants, n,
       lower_inc, true, false, true);

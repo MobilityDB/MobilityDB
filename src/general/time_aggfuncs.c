@@ -29,7 +29,7 @@
 
 /**
  * @file time_aggfuncs.c
- * Aggregate functions for time types
+ * @brief Aggregate functions for time types.
  */
 
 #include "general/time_aggfuncs.h"
@@ -44,7 +44,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
-#include "general/timeops.h"
+#include "general/time_ops.h"
 #include "general/temporaltypes.h"
 #include "general/temporal_util.h"
 
@@ -447,7 +447,7 @@ timestampset_transform_tcount(const TimestampSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
-    result[i] = tinstant_make(datum_one, t, INT4OID);
+    result[i] = tinstant_make(datum_one, t, T_TINT);
   }
   return result;
 }
@@ -462,7 +462,7 @@ period_transform_tcount(const Period *p)
   TSequence *result;
   Datum datum_one = Int32GetDatum(1);
   TInstant *instants[2];
-  instants[0] = tinstant_make(datum_one, p->lower, INT4OID);
+  instants[0] = tinstant_make(datum_one, p->lower, T_TINT);
   if (p->lower == p->upper)
   {
     result = tsequence_make((const TInstant **) instants, 1,
@@ -470,7 +470,7 @@ period_transform_tcount(const Period *p)
   }
   else
   {
-    instants[1] = tinstant_make(datum_one, p->upper, INT4OID);
+    instants[1] = tinstant_make(datum_one, p->upper, T_TINT);
     result = tsequence_make((const TInstant **) instants, 2,
       p->lower_inc, p->upper_inc, STEP, NORMALIZE_NO);
     pfree(instants[1]);
@@ -496,9 +496,10 @@ periodset_transform_tcount(const PeriodSet *ps)
 }
 
 static void
-ensure_same_timetype_skiplist(SkipList *state, int16 subtype)
+ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
 {
-  if (((Temporal *) skiplist_headval(state))->subtype != subtype)
+  Temporal *head = (Temporal *) skiplist_headval(state);
+  if (head->subtype != subtype)
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Cannot aggregate temporal values of different type")));
   return;

@@ -81,7 +81,7 @@ END;
 $$ LANGUAGE PLPGSQL STRICT;
 
 /*
-SELECT random_int(1,7), count(*)
+SELECT random_int(1,7), COUNT(*)
 FROM generate_series(1, 1e3)
 GROUP BY 1
 ORDER BY 1;

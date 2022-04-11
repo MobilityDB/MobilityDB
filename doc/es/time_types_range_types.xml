@@ -737,6 +737,40 @@ SELECT timestamp '2011-01-01' #&amp;&gt; period '[2011-01-01, 2011-01-05)';
 		</sect2>
 
 		<sect2>
+			<title>Operadores de distancia</title>
+
+			<para>Hay dos operadores de distancia para los tipos de tiempo. Estos operadores trabajan con períodos delimitadores y calculan la distancia mínima entre los dos valores de tiempo, pero difieren en el tipo de resultado: el operador <varname>&lt;-&gt;</varname> devuelve un tipo <varname>intervalo</varname> SQL estándar, mientras que el operador <varname>|=|</varname> devuelve un <varname>float</varname> que es el número de segundos entre los dos valores de tiempo. El último operador también se puede usar para la búsqueda de vecinos más cercanos usando un índice GiST o SP-GiST (ver <xref linkend="indexing_time_types" />).</para>
+
+			<itemizedlist>
+				<listitem id="smallest_distance_interval">
+					<indexterm><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+					<para>Obtener la distancia mínima en un intervalo</para>
+					<para><varname>time &lt;-&gt; time: interval</varname></para>
+					<programlisting xml:space="preserve">
+SELECT period '[2012-01-02, 2012-01-06)' &lt;-&gt; timestamptz '2012-01-07';
+-- 1 day
+SELECT timestampset '{2012-01-01, 2012-01-03, 2012-01-05}' &lt;-&gt;
+  timestampset '{2012-01-02, 2012-01-04}';
+--  00:00:00
+</programlisting>
+				</listitem>
+
+				<listitem id="smallest_distance_secs">
+					<indexterm><primary><varname>|=|</varname></primary></indexterm>
+					<para>Obtener la distancia mínima en número de segundos</para>
+					<para><varname>time |=| time: float</varname></para>
+					<programlisting xml:space="preserve">
+SELECT period '[2012-01-02, 2012-01-06)' |=| timestamptz '2012-01-07';
+-- 86400
+SELECT timestampset '{2012-01-01, 2012-01-03, 2012-01-05}' |=|
+  timestampset '{2012-01-02, 2012-01-04}';
+--  0
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Funciones agregadas</title>
 
 			<para>Las funciones agregadas temporales generalizan las funciones agregadas tradicionales. Su semántica es que calculan el valor de la función en cada instante de la <emphasis>unión</emphasis> de las extensiones temporales de los valores a agregar. En contraste, recuerde que todas las otras funciones que manipulan tipos de tiempo calculan el valor de la función en cada instante de la <emphasis>intersección</emphasis> de las extensiones temporales de los argumentos.</para>
@@ -846,14 +880,14 @@ SELECT tunion(ps) FROM periods;
 	<sect1 id ="indexing_time_types">
 		<title>Indexación de tipos de tiempo</title>
 
-		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname>. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>period</varname> en una tabla <varname>Reservation</varname> es como sigue:
+		<para>Se pueden crear índices GiST y SP-GiST en columnas de tablas de los tipos <varname>timestampset</varname>, <varname>period</varname> y <varname>periodset</varname>. El índice GiST implementa un árbol R, mientras que el índice SP-GiST implementa un árbol cuádruple. Un ejemplo de creación de un índice GiST en una columna <varname>During</varname> de tipo <varname>period</varname> en una tabla <varname>Reservation</varname> es como sigue:
 			<programlisting xml:space="preserve">
 CREATE TABLE Reservation (ReservationID integer PRIMARY KEY, RoomID integer,
   During period);
 CREATE INDEX Reservation_During_Idx ON Reservation USING GIST(During);
 </programlisting>
 		</para>
-		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname>.</para>
+		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran a los siguientes operadores: <varname>=</varname>, <varname>&amp;&amp;</varname>, <varname>&lt;@</varname>, <varname>@&gt;</varname>, <varname>-|-</varname>, <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname> y <varname>|=|</varname>.</para>
 		<para>Además, se pueden crear índices de árbol B para columnas de tabla de un tipo de tiempo. Para estos tipos de índices, básicamente la única operación útil es la igualdad. Hay un orden de clasificación de árbol B definido para valores de tipos de tiempo con los correspondientes operadores <varname>&lt;</varname> y <varname>&gt;</varname>, pero el orden es bastante arbitrario y no suele ser útil en el mundo real. El soporte del árbol B está destinado principalmente a permitir la clasificación interna en las consultas, en lugar de la creación de índices reales.</para>
 	</sect1>
 </chapter>

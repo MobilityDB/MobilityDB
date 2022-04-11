@@ -30,10 +30,11 @@
 #ifndef __TEMPORAL_TILE_H__
 #define __TEMPORAL_TILE_H__
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-
-#include "temporal.h"
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -45,7 +46,7 @@ typedef struct RangeBucketState
 {
   bool done;
   int i;
-  Oid basetypid;
+  CachedType basetype;
   Temporal *temp; /* NULL when generating bucket list, used for splitting */
   Datum size;
   Datum origin;
