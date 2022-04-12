@@ -43,11 +43,11 @@
 
 /*****************************************************************************/
 
-extern Datum distance_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum distance_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum distance_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum distance_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Distance_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Distance_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Distance_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Distance_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 
 extern Datum NAI_geo_tnpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -59,11 +59,11 @@ extern Datum NAD_npoint_tnpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tnpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAD_tnpoint_npoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Shortestline_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Shortestline_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

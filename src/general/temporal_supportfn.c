@@ -310,7 +310,8 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
  * The function must also have an entry above in the IndexableFunctions array
  * so that we know what index search strategy we want to apply.
  */
-Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+Datum
+temporal_supportfn_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
@@ -330,20 +331,20 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
     if (req->is_join)
     {
       if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_joinsel_internal(req->root, operid, req->args,
+        req->selectivity = temporal_joinsel(req->root, operid, req->args,
           req->jointype, req->sjinfo, tempfamily);
       else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_joinsel_internal(req->root, operid, req->args,
+        req->selectivity = tpoint_joinsel(req->root, operid, req->args,
           req->jointype, req->sjinfo, Int32GetDatum(0), /* ND mode TO GENERALIZE */
           tempfamily);
     }
     else
     {
       if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-        req->selectivity = temporal_sel_internal(req->root, operid, req->args,
+        req->selectivity = temporal_sel(req->root, operid, req->args,
           req->varRelid, tempfamily);
       else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-        req->selectivity = tpoint_sel_internal(req->root, operid, req->args,
+        req->selectivity = tpoint_sel(req->root, operid, req->args,
           req->varRelid, tempfamily);
     }
     PG_RETURN_POINTER(req);
@@ -549,44 +550,44 @@ Datum temporal_supportfn_internal(FunctionCallInfo fcinfo, TemporalFamily tempfa
   PG_RETURN_POINTER(ret);
 }
 
-PG_FUNCTION_INFO_V1(temporal_supportfn);
+PG_FUNCTION_INFO_V1(Temporal_supportfn);
 /**
  * Support function for temporal types
  */
 PGDLLEXPORT Datum
-temporal_supportfn(PG_FUNCTION_ARGS)
+Temporal_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_internal(fcinfo, TEMPORALTYPE);
+  return temporal_supportfn_generic(fcinfo, TEMPORALTYPE);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_supportfn);
+PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 /**
  * Support function for temporal number types
  */
 PGDLLEXPORT Datum
-tnumber_supportfn(PG_FUNCTION_ARGS)
+Tnumber_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_internal(fcinfo, TNUMBERTYPE);
+  return temporal_supportfn_generic(fcinfo, TNUMBERTYPE);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_supportfn);
+PG_FUNCTION_INFO_V1(Tpoint_supportfn);
 /**
  * Support function for temporal number types
  */
 PGDLLEXPORT Datum
-tpoint_supportfn(PG_FUNCTION_ARGS)
+Tpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_internal(fcinfo, TPOINTTYPE);
+  return temporal_supportfn_generic(fcinfo, TPOINTTYPE);
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_supportfn);
+PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 /**
  * Support function for temporal number types
  */
 PGDLLEXPORT Datum
-tnpoint_supportfn(PG_FUNCTION_ARGS)
+Tnpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_internal(fcinfo, TNPOINTTYPE);
+  return temporal_supportfn_generic(fcinfo, TNPOINTTYPE);
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */

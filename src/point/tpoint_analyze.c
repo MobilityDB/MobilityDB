@@ -159,7 +159,7 @@ nd_box_init_bounds(ND_BOX *a)
 }
 
 /**
- * Returns the sum of values of the double array
+ * Return the sum of values of the double array
  */
 static double
 total_double(const double *vals, int nvals)
@@ -221,7 +221,7 @@ nd_box_overlap(const ND_STATS *nd_stats, const ND_BOX *nd_box, ND_IBOX *nd_ibox)
 }
 
 /**
- * Returns true if #ND_BOX a overlaps b, false otherwise.
+ * Return true if #ND_BOX a overlaps b, false otherwise.
  */
 int
 nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -236,7 +236,7 @@ nd_box_intersects(const ND_BOX *a, const ND_BOX *b, int ndims)
 }
 
 /**
- * Returns the proportion of b2 that is covered by b1
+ * Return the proportion of b2 that is covered by b1
  */
 double
 nd_box_ratio_overlaps(const ND_BOX *b1, const ND_BOX *b2, int ndims)
@@ -1058,12 +1058,12 @@ tpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_analyze);
+PG_FUNCTION_INFO_V1(Tpoint_analyze);
 /**
  * Compute the statistics for temporal point columns
  */
 PGDLLEXPORT Datum
-tpoint_analyze(PG_FUNCTION_ARGS)
+Tpoint_analyze(PG_FUNCTION_ARGS)
 {
   return generic_analyze(fcinfo, &tpoint_compute_stats);
 }

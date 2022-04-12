@@ -43,11 +43,15 @@
 #include "point/tpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Generic dispatch function
+ * Generic functions
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 Temporal *
-tcomp_temporal_base1(const Temporal *temp, Datum value, CachedType basetype,
+tcomp_temporal_base(const Temporal *temp, Datum value, CachedType basetype,
   Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
 {
   LiftedFunctionInfo lfinfo;
@@ -66,8 +70,11 @@ tcomp_temporal_base1(const Temporal *temp, Datum value, CachedType basetype,
   return tfunc_temporal_base(temp, value, &lfinfo);
 }
 
-PGDLLEXPORT Datum
-tcomp_base_temporal(FunctionCallInfo fcinfo,
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
+static Datum
+tcomp_base_temporal_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   Datum value = PG_GETARG_ANYDATUM(0);
@@ -80,13 +87,11 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = tcomp_temporal_base1(temp, value, basetype,
-    func, INVERT);
+  Temporal *result = tcomp_temporal_base(temp, value, basetype, func, INVERT);
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value_internal(result, atvalue,
-      REST_AT);
+    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
     pfree(result);
     result = at_result;
   }
@@ -97,8 +102,11 @@ tcomp_base_temporal(FunctionCallInfo fcinfo,
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 Datum
-tcomp_temporal_base(FunctionCallInfo fcinfo,
+tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
@@ -111,13 +119,12 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = tcomp_temporal_base1(temp, value, basetype,
+  Temporal *result = tcomp_temporal_base(temp, value, basetype,
     func, INVERT_NO);
   /* Restrict the result to the Boolean value in the third argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value_internal(result, atvalue,
-      REST_AT);
+    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
     pfree(result);
     result = at_result;
   }
@@ -128,7 +135,10 @@ tcomp_temporal_base(FunctionCallInfo fcinfo,
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
+Datum
 tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
@@ -143,7 +153,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   }
   if (tgeo_type(temp1->temptype))
   {
-    ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+    ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
     ensure_same_dimensionality(temp1->flags, temp2->flags);
   }
   LiftedFunctionInfo lfinfo;
@@ -164,8 +174,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {
-    Temporal *at_result = temporal_restrict_value_internal(result, atvalue,
-      REST_AT);
+    Temporal *at_result = temporal_restrict_value(result, atvalue, REST_AT);
     pfree(result);
     result = at_result;
   }
@@ -179,26 +188,32 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
  * Temporal eq
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(teq_base_temporal);
-
+PG_FUNCTION_INFO_V1(Teq_base_temporal);
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 PGDLLEXPORT Datum
-teq_base_temporal(PG_FUNCTION_ARGS)
+Teq_base_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_base_temporal(fcinfo, &datum2_eq2);
+  return tcomp_base_temporal_ext(fcinfo, &datum2_eq2);
 }
 
-PG_FUNCTION_INFO_V1(teq_temporal_base);
-
+PG_FUNCTION_INFO_V1(Teq_temporal_base);
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 PGDLLEXPORT Datum
-teq_temporal_base(PG_FUNCTION_ARGS)
+Teq_temporal_base(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_base(fcinfo, &datum2_eq2);
+  return tcomp_temporal_base_ext(fcinfo, &datum2_eq2);
 }
 
-PG_FUNCTION_INFO_V1(teq_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
 PGDLLEXPORT Datum
-teq_temporal_temporal(PG_FUNCTION_ARGS)
+Teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return tcomp_temporal_temporal(fcinfo, &datum2_eq2);
 }
@@ -207,26 +222,32 @@ teq_temporal_temporal(PG_FUNCTION_ARGS)
  * Temporal ne
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tne_base_temporal);
-
+PG_FUNCTION_INFO_V1(Tne_base_temporal);
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 PGDLLEXPORT Datum
-tne_base_temporal(PG_FUNCTION_ARGS)
+Tne_base_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_base_temporal(fcinfo, &datum2_ne2);
+  return tcomp_base_temporal_ext(fcinfo, &datum2_ne2);
 }
 
-PG_FUNCTION_INFO_V1(tne_temporal_base);
-
+PG_FUNCTION_INFO_V1(Tne_temporal_base);
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 PGDLLEXPORT Datum
-tne_temporal_base(PG_FUNCTION_ARGS)
+Tne_temporal_base(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_base(fcinfo, &datum2_ne2);
+  return tcomp_temporal_base_ext(fcinfo, &datum2_ne2);
 }
 
-PG_FUNCTION_INFO_V1(tne_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
 PGDLLEXPORT Datum
-tne_temporal_temporal(PG_FUNCTION_ARGS)
+Tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return tcomp_temporal_temporal(fcinfo, &datum2_ne2);
 }
@@ -235,26 +256,32 @@ tne_temporal_temporal(PG_FUNCTION_ARGS)
  * Temporal lt
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tlt_base_temporal);
-
+PG_FUNCTION_INFO_V1(Tlt_base_temporal);
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 PGDLLEXPORT Datum
-tlt_base_temporal(PG_FUNCTION_ARGS)
+Tlt_base_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_base_temporal(fcinfo, &datum2_lt2);
+  return tcomp_base_temporal_ext(fcinfo, &datum2_lt2);
 }
 
-PG_FUNCTION_INFO_V1(tlt_temporal_base);
-
+PG_FUNCTION_INFO_V1(Tlt_temporal_base);
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 PGDLLEXPORT Datum
-tlt_temporal_base(PG_FUNCTION_ARGS)
+Tlt_temporal_base(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_base(fcinfo, &datum2_lt2);
+  return tcomp_temporal_base_ext(fcinfo, &datum2_lt2);
 }
 
-PG_FUNCTION_INFO_V1(tlt_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
 PGDLLEXPORT Datum
-tlt_temporal_temporal(PG_FUNCTION_ARGS)
+Tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return tcomp_temporal_temporal(fcinfo, &datum2_lt2);
 }
@@ -263,26 +290,32 @@ tlt_temporal_temporal(PG_FUNCTION_ARGS)
  * Temporal le
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tle_base_temporal);
-
+PG_FUNCTION_INFO_V1(Tle_base_temporal);
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 PGDLLEXPORT Datum
-tle_base_temporal(PG_FUNCTION_ARGS)
+Tle_base_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_base_temporal(fcinfo, &datum2_le2);
+  return tcomp_base_temporal_ext(fcinfo, &datum2_le2);
 }
 
-PG_FUNCTION_INFO_V1(tle_temporal_base);
-
+PG_FUNCTION_INFO_V1(Tle_temporal_base);
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 PGDLLEXPORT Datum
-tle_temporal_base(PG_FUNCTION_ARGS)
+Tle_temporal_base(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_base(fcinfo, &datum2_le2);
+  return tcomp_temporal_base_ext(fcinfo, &datum2_le2);
 }
 
-PG_FUNCTION_INFO_V1(tle_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
 PGDLLEXPORT Datum
-tle_temporal_temporal(PG_FUNCTION_ARGS)
+Tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return tcomp_temporal_temporal(fcinfo, &datum2_le2);
 }
@@ -291,26 +324,32 @@ tle_temporal_temporal(PG_FUNCTION_ARGS)
  * Temporal gt
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tgt_base_temporal);
-
+PG_FUNCTION_INFO_V1(Tgt_base_temporal);
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 PGDLLEXPORT Datum
-tgt_base_temporal(PG_FUNCTION_ARGS)
+Tgt_base_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_base_temporal(fcinfo, &datum2_gt2);
+  return tcomp_base_temporal_ext(fcinfo, &datum2_gt2);
 }
 
-PG_FUNCTION_INFO_V1(tgt_temporal_base);
-
+PG_FUNCTION_INFO_V1(Tgt_temporal_base);
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 PGDLLEXPORT Datum
-tgt_temporal_base(PG_FUNCTION_ARGS)
+Tgt_temporal_base(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_base(fcinfo, &datum2_gt2);
+  return tcomp_temporal_base_ext(fcinfo, &datum2_gt2);
 }
 
-PG_FUNCTION_INFO_V1(tgt_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
 PGDLLEXPORT Datum
-tgt_temporal_temporal(PG_FUNCTION_ARGS)
+Tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return tcomp_temporal_temporal(fcinfo, &datum2_gt2);
 }
@@ -319,26 +358,32 @@ tgt_temporal_temporal(PG_FUNCTION_ARGS)
  * Temporal ge
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tge_base_temporal);
-
+PG_FUNCTION_INFO_V1(Tge_base_temporal);
+/**
+ * @brief Return the temporal comparison of the base value and the temporal value.
+ */
 PGDLLEXPORT Datum
-tge_base_temporal(PG_FUNCTION_ARGS)
+Tge_base_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_base_temporal(fcinfo, &datum2_ge2);
+  return tcomp_base_temporal_ext(fcinfo, &datum2_ge2);
 }
 
-PG_FUNCTION_INFO_V1(tge_temporal_base);
-
+PG_FUNCTION_INFO_V1(Tge_temporal_base);
+/**
+ * @brief Return the temporal comparison of the temporal value and the base value.
+ */
 PGDLLEXPORT Datum
-tge_temporal_base(PG_FUNCTION_ARGS)
+Tge_temporal_base(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_base(fcinfo, &datum2_ge2);
+  return tcomp_temporal_base_ext(fcinfo, &datum2_ge2);
 }
 
-PG_FUNCTION_INFO_V1(tge_temporal_temporal);
-
+PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
 PGDLLEXPORT Datum
-tge_temporal_temporal(PG_FUNCTION_ARGS)
+Tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
   return tcomp_temporal_temporal(fcinfo, &datum2_ge2);
 }

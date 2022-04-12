@@ -48,7 +48,7 @@
 #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _contains(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Contains_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(geometry, tnpoint)
   RETURNS boolean
@@ -59,7 +59,7 @@ CREATE FUNCTION contains(geometry, tnpoint)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 CREATE FUNCTION contains(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Contains_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -70,23 +70,23 @@ CREATE FUNCTION contains(geometry, tnpoint)
 
 CREATE FUNCTION disjoint(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'disjoint_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Disjoint_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(npoint, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'disjoint_npoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Disjoint_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(tnpoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'disjoint_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Disjoint_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'disjoint_tnpoint_npoint'
+  AS 'MODULE_PATHNAME', 'Disjoint_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION disjoint(tnpoint, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'disjoint_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Disjoint_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -95,7 +95,7 @@ CREATE FUNCTION disjoint(tnpoint, tnpoint)
 
 CREATE FUNCTION _intersects(npoint, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_npoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Intersects_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(npoint, tnpoint)
   RETURNS boolean
@@ -104,7 +104,7 @@ CREATE FUNCTION intersects(npoint, tnpoint)
 
 CREATE FUNCTION _intersects(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tnpoint_npoint'
+  AS 'MODULE_PATHNAME', 'Intersects_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, npoint)
   RETURNS boolean
@@ -114,7 +114,7 @@ CREATE FUNCTION intersects(tnpoint, npoint)
 #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _intersects(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Intersects_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(geometry, tnpoint)
   RETURNS boolean
@@ -123,7 +123,7 @@ CREATE FUNCTION intersects(geometry, tnpoint)
 
 CREATE FUNCTION _intersects(tnpoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Intersects_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, geometry)
   RETURNS boolean
@@ -132,7 +132,7 @@ CREATE FUNCTION intersects(tnpoint, geometry)
 
 CREATE FUNCTION _intersects(tnpoint, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Intersects_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, tnpoint)
   RETURNS boolean
@@ -143,17 +143,17 @@ CREATE FUNCTION intersects(tnpoint, tnpoint)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 CREATE FUNCTION intersects(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Intersects_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Intersects_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION intersects(tnpoint, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'intersects_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Intersects_tnpoint_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -164,7 +164,7 @@ CREATE FUNCTION intersects(tnpoint, tnpoint)
 
 CREATE FUNCTION _touches(npoint, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_npoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Touches_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(npoint, tnpoint)
   RETURNS boolean
@@ -173,7 +173,7 @@ CREATE FUNCTION touches(npoint, tnpoint)
 
 CREATE FUNCTION _touches(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_tnpoint_npoint'
+  AS 'MODULE_PATHNAME', 'Touches_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(tnpoint, npoint)
   RETURNS boolean
@@ -183,7 +183,7 @@ CREATE FUNCTION touches(tnpoint, npoint)
 #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _touches(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Touches_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(geometry, tnpoint)
   RETURNS boolean
@@ -192,7 +192,7 @@ CREATE FUNCTION touches(geometry, tnpoint)
 
 CREATE FUNCTION _touches(tnpoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Touches_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(tnpoint, geometry)
   RETURNS boolean
@@ -203,12 +203,12 @@ CREATE FUNCTION touches(tnpoint, geometry)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 CREATE FUNCTION touches(geometry, tnpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Touches_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION touches(tnpoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'touches_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Touches_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -219,7 +219,7 @@ CREATE FUNCTION touches(tnpoint, geometry)
 
 CREATE FUNCTION _dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_npoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Dwithin_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(npoint, tnpoint, dist float8)
   RETURNS boolean
@@ -228,7 +228,7 @@ CREATE FUNCTION dwithin(npoint, tnpoint, dist float8)
 
 CREATE FUNCTION _dwithin(tnpoint, npoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_npoint'
+  AS 'MODULE_PATHNAME', 'Dwithin_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, npoint, dist float8)
   RETURNS boolean
@@ -238,7 +238,7 @@ CREATE FUNCTION dwithin(tnpoint, npoint, dist float8)
 #if POSTGRESQL_VERSION_NUMBER < 120000
 CREATE FUNCTION _dwithin(tnpoint, geometry, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Dwithin_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, geometry, dist float8)
   RETURNS boolean
@@ -247,7 +247,7 @@ CREATE FUNCTION dwithin(tnpoint, geometry, dist float8)
 
 CREATE FUNCTION _dwithin(geometry, tnpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Dwithin_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)
   RETURNS boolean
@@ -256,24 +256,24 @@ CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)
 
 CREATE FUNCTION dwithin(tnpoint, tnpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Dwithin_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER < 120000
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 CREATE FUNCTION dwithin(geometry, tnpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Dwithin_geo_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, geometry, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Dwithin_tnpoint_geo'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dwithin(tnpoint, tnpoint, dist float8)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'dwithin_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Dwithin_tnpoint_tnpoint'
   SUPPORT tnpoint_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000

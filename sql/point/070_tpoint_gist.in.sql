@@ -34,27 +34,27 @@
 
 CREATE FUNCTION stbox_gist_consistent(internal, stbox, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_gist_union(internal, internal)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'stbox_gist_union'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_union'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_gist_penalty(internal, internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'stbox_gist_penalty'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_penalty'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_gist_picksplit(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'stbox_gist_picksplit'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_picksplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_gist_same(stbox, stbox, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'stbox_gist_same'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_gist_distance(internal, stbox, smallint, oid, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'stbox_gist_distance'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS stbox_rtree_ops
@@ -148,15 +148,15 @@ CREATE OPERATOR CLASS stbox_rtree_ops
 
 CREATE FUNCTION gist_tgeompoint_consistent(internal, tgeompoint, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gist_tgeogpoint_consistent(internal, tgeogpoint, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tpoint_gist_compress'
+  AS 'MODULE_PATHNAME', 'Tpoint_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tgeompoint_rtree_ops

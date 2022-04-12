@@ -186,7 +186,7 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
   {
     if (invert)
     {
-      if (temporal_ever_eq_internal(temp, Float8GetDatum(0.0)))
+      if (temporal_ever_eq(temp, Float8GetDatum(0.0)))
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
           errmsg("Division by zero")));
     }
@@ -280,11 +280,11 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
    * the common timespan */
   if (oper == DIV)
   {
-    PeriodSet *ps = temporal_get_time_internal(temp1);
-    Temporal *projtemp2 = temporal_restrict_periodset_internal(temp2, ps, REST_AT);
+    PeriodSet *ps = temporal_time(temp1);
+    Temporal *projtemp2 = temporal_restrict_periodset(temp2, ps, REST_AT);
     if (projtemp2 == NULL)
       PG_RETURN_NULL();
-    if (temporal_ever_eq_internal(projtemp2, Float8GetDatum(0.0)))
+    if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Division by zero")));
   }
@@ -316,32 +316,32 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
  * Temporal addition
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(add_base_tnumber);
+PG_FUNCTION_INFO_V1(Add_base_tnumber);
 /**
- * Returns the temporal addition of the number and the temporal number
+ * Return the temporal addition of the number and the temporal number
  */
 PGDLLEXPORT Datum
-add_base_tnumber(PG_FUNCTION_ARGS)
+Add_base_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_base_tnumber(fcinfo, &datum_add, ADD);
 }
 
-PG_FUNCTION_INFO_V1(add_tnumber_base);
+PG_FUNCTION_INFO_V1(Add_tnumber_base);
 /**
- * Returns the temporal addition of the temporal number and the number
+ * Return the temporal addition of the temporal number and the number
  */
 PGDLLEXPORT Datum
-add_tnumber_base(PG_FUNCTION_ARGS)
+Add_tnumber_base(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_base(fcinfo, &datum_add, ADD);
 }
 
-PG_FUNCTION_INFO_V1(add_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 /**
- * Returns the temporal addition of the temporal numbers
+ * Return the temporal addition of the temporal numbers
  */
 PGDLLEXPORT Datum
-add_tnumber_tnumber(PG_FUNCTION_ARGS)
+Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_add, ADD, NULL);
 }
@@ -350,32 +350,32 @@ add_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Temporal subtraction
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(sub_base_tnumber);
+PG_FUNCTION_INFO_V1(Sub_base_tnumber);
 /**
- * Returns the temporal subtraction of the number and the temporal number
+ * Return the temporal subtraction of the number and the temporal number
  */
 PGDLLEXPORT Datum
-sub_base_tnumber(PG_FUNCTION_ARGS)
+Sub_base_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_base_tnumber(fcinfo, &datum_sub, SUB);
 }
 
-PG_FUNCTION_INFO_V1(sub_tnumber_base);
+PG_FUNCTION_INFO_V1(Sub_tnumber_base);
 /**
- * Returns the temporal subtraction of the temporal number and the number
+ * Return the temporal subtraction of the temporal number and the number
  */
 PGDLLEXPORT Datum
-sub_tnumber_base(PG_FUNCTION_ARGS)
+Sub_tnumber_base(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_base(fcinfo, &datum_sub, SUB);
 }
 
-PG_FUNCTION_INFO_V1(sub_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 /**
- * Returns the temporal subtraction of the temporal numbers
+ * Return the temporal subtraction of the temporal numbers
  */
 PGDLLEXPORT Datum
-sub_tnumber_tnumber(PG_FUNCTION_ARGS)
+Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_sub, SUB, NULL);
 }
@@ -384,32 +384,32 @@ sub_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Temporal multiplication
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(mult_base_tnumber);
+PG_FUNCTION_INFO_V1(Mult_base_tnumber);
 /**
- * Returns the temporal multiplication of the number and the temporal number
+ * Return the temporal multiplication of the number and the temporal number
  */
 PGDLLEXPORT Datum
-mult_base_tnumber(PG_FUNCTION_ARGS)
+Mult_base_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_base_tnumber(fcinfo, &datum_mult, MULT);
 }
 
-PG_FUNCTION_INFO_V1(mult_tnumber_base);
+PG_FUNCTION_INFO_V1(Mult_tnumber_base);
 /**
- * Returns the temporal multiplication of the temporal number and the number
+ * Return the temporal multiplication of the temporal number and the number
  */
 PGDLLEXPORT Datum
-mult_tnumber_base(PG_FUNCTION_ARGS)
+Mult_tnumber_base(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_base(fcinfo, &datum_mult, MULT);
 }
 
-PG_FUNCTION_INFO_V1(mult_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 /**
- * Returns the temporal multiplication of the temporal numbers
+ * Return the temporal multiplication of the temporal numbers
  */
 PGDLLEXPORT Datum
-mult_tnumber_tnumber(PG_FUNCTION_ARGS)
+Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT,
     &tnumber_mult_tp_at_timestamp);
@@ -419,32 +419,32 @@ mult_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Temporal division
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(div_base_tnumber);
+PG_FUNCTION_INFO_V1(Div_base_tnumber);
 /**
- * Returns the temporal division of the number and the temporal number
+ * Return the temporal division of the number and the temporal number
  */
 PGDLLEXPORT Datum
-div_base_tnumber(PG_FUNCTION_ARGS)
+Div_base_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_base_tnumber(fcinfo, &datum_div, DIV);
 }
 
-PG_FUNCTION_INFO_V1(div_tnumber_base);
+PG_FUNCTION_INFO_V1(Div_tnumber_base);
 /**
- * Returns the temporal division of the temporal number and the number
+ * Return the temporal division of the temporal number and the number
  */
 PGDLLEXPORT Datum
-div_tnumber_base(PG_FUNCTION_ARGS)
+Div_tnumber_base(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_base(fcinfo, &datum_div, DIV);
 }
 
-PG_FUNCTION_INFO_V1(div_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 /**
- * Returns the temporal multiplication of the temporal numbers
+ * Return the temporal multiplication of the temporal numbers
  */
 PGDLLEXPORT Datum
-div_tnumber_tnumber(PG_FUNCTION_ARGS)
+Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return arithop_tnumber_tnumber(fcinfo, &datum_div, DIV,
     &tnumber_div_tp_at_timestamp);
@@ -454,12 +454,12 @@ div_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Miscellaneous temporal functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_round);
+PG_FUNCTION_INFO_V1(Tnumber_round);
 /**
  * Round the temporal number to the number of decimal places
  */
 PGDLLEXPORT Datum
-tnumber_round(PG_FUNCTION_ARGS)
+Tnumber_round(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum digits = PG_GETARG_DATUM(1);
@@ -480,12 +480,12 @@ tnumber_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_degrees);
+PG_FUNCTION_INFO_V1(Tnumber_degrees);
 /**
  * Convert the temporal number from radians to degrees
  */
 PGDLLEXPORT Datum
-tnumber_degrees(PG_FUNCTION_ARGS)
+Tnumber_degrees(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* We only need to fill these parameters for tfunc_temporal */
@@ -508,7 +508,7 @@ tnumber_degrees(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the derivative of the temporal number
+ * Return the derivative of the temporal number
  * @pre The temporal number has linear interpolation
  */
 static TSequence *
@@ -547,7 +547,7 @@ tnumberseq_derivative(const TSequence *seq)
 }
 
 /**
- * Returns the derivative of the temporal number
+ * Return the derivative of the temporal number
  */
 static TSequenceSet *
 tnumberseqset_derivative(const TSequenceSet *ts)
@@ -564,12 +564,12 @@ tnumberseqset_derivative(const TSequenceSet *ts)
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_derivative);
+PG_FUNCTION_INFO_V1(Tnumber_derivative);
 /**
- * Returns the derivative of the temporal number
+ * Return the derivative of the temporal number
  */
 PGDLLEXPORT Datum
-tnumber_derivative(PG_FUNCTION_ARGS)
+Tnumber_derivative(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;

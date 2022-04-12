@@ -42,27 +42,27 @@
 
 /*****************************************************************************/
 
-extern Datum tcontains_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tcontains_geo_tnpoint(PG_FUNCTION_ARGS);
 
-extern Datum tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
 
-extern Datum tintersects_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tintersects_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Tintersects_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tintersects_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
 
-extern Datum ttouches_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum ttouches_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum ttouches_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum ttouches_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Ttouches_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Ttouches_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS);
 
-extern Datum tdwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

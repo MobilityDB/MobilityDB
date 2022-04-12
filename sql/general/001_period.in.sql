@@ -36,24 +36,24 @@ CREATE TYPE period;
 
 CREATE FUNCTION period_in(cstring)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_out(period)
   RETURNS cstring
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_recv(internal)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_send(period)
   RETURNS bytea
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION period_analyze(internal)
   RETURNS boolean
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE period (
@@ -72,12 +72,12 @@ CREATE TYPE period (
 
 CREATE FUNCTION period(timestamptz, timestamptz)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'period_constructor2'
+  AS 'MODULE_PATHNAME', 'Period_constructor2'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'period_constructor4'
+  AS 'MODULE_PATHNAME', 'Period_constructor4'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -86,15 +86,15 @@ CREATE FUNCTION period(timestamptz, timestamptz, boolean, boolean)
 
 CREATE FUNCTION period(timestamptz)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'timestamp_to_period'
+  AS 'MODULE_PATHNAME', 'Timestamp_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(tstzrange)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'tstzrange_to_period'
+  AS 'MODULE_PATHNAME', 'Tstzrange_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tstzrange(period)
   RETURNS tstzrange
-  AS 'MODULE_PATHNAME', 'period_to_tstzrange'
+  AS 'MODULE_PATHNAME', 'Period_to_tstzrange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS period) WITH FUNCTION period(timestamptz);
@@ -107,41 +107,41 @@ CREATE CAST (period AS tstzrange) WITH FUNCTION tstzrange(period);
 
 CREATE FUNCTION lower(period)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'period_lower'
+  AS 'MODULE_PATHNAME', 'Period_lower'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upper(period)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'period_upper'
+  AS 'MODULE_PATHNAME', 'Period_upper'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lower_inc(period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_lower_inc'
+  AS 'MODULE_PATHNAME', 'Period_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upper_inc(period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_upper_inc'
+  AS 'MODULE_PATHNAME', 'Period_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(period)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'period_duration'
+  AS 'MODULE_PATHNAME', 'Period_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(period, interval)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'period_shift'
+  AS 'MODULE_PATHNAME', 'Period_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION period_sel(internal, oid, internal, integer)
   RETURNS float
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_sel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_joinsel'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Functions for debugging the selectivity code
@@ -168,31 +168,31 @@ CREATE OR REPLACE FUNCTION _mobdb_period_joinsel(tbl1 regclass, col1 text,
 
 CREATE FUNCTION period_eq(period, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_eq'
+  AS 'MODULE_PATHNAME', 'Period_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_ne(period, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_ne'
+  AS 'MODULE_PATHNAME', 'Period_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_lt(period, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_lt'
+  AS 'MODULE_PATHNAME', 'Period_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_le(period, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_le'
+  AS 'MODULE_PATHNAME', 'Period_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_ge(period, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_ge'
+  AS 'MODULE_PATHNAME', 'Period_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_gt(period, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'period_gt'
+  AS 'MODULE_PATHNAME', 'Period_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_cmp(period, period)
   RETURNS int4
-  AS 'MODULE_PATHNAME', 'period_cmp'
+  AS 'MODULE_PATHNAME', 'Period_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
@@ -245,12 +245,12 @@ CREATE OPERATOR CLASS period_ops
 
 CREATE FUNCTION period_hash(period)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'period_hash'
+  AS 'MODULE_PATHNAME', 'Period_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION period_hash_extended(period, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'period_hash_extended'
+  AS 'MODULE_PATHNAME', 'Period_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS hash_period_ops

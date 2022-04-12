@@ -51,7 +51,7 @@
  *****************************************************************************/
 
 /**
- * Returns the size in bytes to read from toast to get the basic information
+ * Return the size in bytes to read from toast to get the basic information
  * from a variable-length time type: Time struct (i.e., TimestampSet
  * or PeriodSet) and bounding box size
 */
@@ -62,7 +62,8 @@ time_max_header_size(void)
 }
 
 /**
- * Returns the n-th timestamp of the timestamp set value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the n-th timestamp of the timestamp set value
  */
 TimestampTz
 timestampset_time_n(const TimestampSet *ts, int index)
@@ -71,7 +72,7 @@ timestampset_time_n(const TimestampSet *ts, int index)
 }
 
 /**
- * Returns a pointer to the precomputed bounding box of the timestamp set value
+ * Return a pointer to the precomputed bounding box of the timestamp set value
  */
 const Period *
 timestampset_bbox_ptr(const TimestampSet *ts)
@@ -109,7 +110,8 @@ timestampset_bbox_slice(Datum tsdatum, Period *p)
 }
 
 /**
- * Construct a timestamp set from an array of timestamps
+ * @ingroup libmeos_time_constructor
+ * @brief Construct a timestamp set from an array of timestamps
  *
  * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
@@ -150,7 +152,8 @@ timestampset_make(const TimestampTz *times, int count)
 }
 
 /**
- * Construct a timestamp set from the array of timestamps and free the array
+ * @ingroup libmeos_time_constructor
+ * @brief Construct a timestamp set from the array of timestamps and free the array
  * after the creation
  *
  * @param[in] times Array of timestamps
@@ -170,7 +173,8 @@ timestampset_make_free(TimestampTz *times, int count)
 }
 
 /**
- * Returns a copy of the timestamp set
+ * @ingroup libmeos_time_constructor
+ * @brief Return a copy of the timestamp set.
  */
 TimestampSet *
 timestampset_copy(const TimestampSet *ts)
@@ -181,7 +185,7 @@ timestampset_copy(const TimestampSet *ts)
 }
 
 /**
- * Returns the location of the timestamp in the timestamp set value
+ * Return the location of the timestamp in the timestamp set value
  * using binary search
  *
  * If the timestamp is found, the index of the timestamp is returned
@@ -202,7 +206,7 @@ timestampset_copy(const TimestampSet *ts)
  * @param[in] ts Timestamp set value
  * @param[in] t Timestamp
  * @param[out] loc Location
- * @result Returns true if the timestamp is contained in the timestamp set value
+ * @result Return true if the timestamp is contained in the timestamp set value
  */
 bool
 timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
@@ -235,12 +239,12 @@ timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc)
  * Input/output functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_in);
+PG_FUNCTION_INFO_V1(Timestampset_in);
 /**
  * Input function for timestamp set values
  */
 PGDLLEXPORT Datum
-timestampset_in(PG_FUNCTION_ARGS)
+Timestampset_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   TimestampSet *result = timestampset_parse(&input);
@@ -248,7 +252,8 @@ timestampset_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns the string representation of the timestamp set value
+ * @ingroup libmeos_time_input_output
+ * @brief Return the string representation of the timestamp set value.
  */
 char *
 timestampset_to_string(const TimestampSet *ts)
@@ -264,12 +269,12 @@ timestampset_to_string(const TimestampSet *ts)
   return stringarr_to_string(strings, ts->count, outlen, "", '{', '}');
 }
 
-PG_FUNCTION_INFO_V1(timestampset_out);
+PG_FUNCTION_INFO_V1(Timestampset_out);
 /**
  * Output function for timestamp set values
  */
 PGDLLEXPORT Datum
-timestampset_out(PG_FUNCTION_ARGS)
+Timestampset_out(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   char *result = timestampset_to_string(ts);
@@ -277,41 +282,69 @@ timestampset_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_send);
 /**
- * Send function for timestamp set values
+ * @ingroup libmeos_time_input_output
+ * @brief Write the binary representation of the time value into the buffer.
+ *
+ * @param[in] ts Time value
+ * @param[in] buf Buffer
  */
-PGDLLEXPORT Datum
-timestampset_send(PG_FUNCTION_ARGS)
+static void
+timestampset_write(const TimestampSet *ts, StringInfo buf)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint32(&buf, ts->count);
+  pq_sendint32(buf, ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     TimestampTz t = timestampset_time_n(ts, i);
     bytea *t1 = call_send(TIMESTAMPTZOID, TimestampTzGetDatum(t));
-    pq_sendbytes(&buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
+    pq_sendbytes(buf, VARDATA(t1), VARSIZE(t1) - VARHDRSZ);
     pfree(t1);
   }
+  return;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_send);
+/**
+ * Send function for timestamp set values
+ */
+PGDLLEXPORT Datum
+Timestampset_send(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  timestampset_write(ts, &buf) ;
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
-PG_FUNCTION_INFO_V1(timestampset_recv);
 /**
- * Receive function for timestamp set values
+ * @ingroup libmeos_time_input_output
+ * @brief Return a new time value from its binary representation
+ * read from the buffer.
+ *
+ * @param[in] buf Buffer
  */
-PGDLLEXPORT Datum
-timestampset_recv(PG_FUNCTION_ARGS)
+TimestampSet *
+timestampset_read(StringInfo buf)
 {
-  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
   int count = (int) pq_getmsgint(buf, 4);
   TimestampTz *times = palloc(sizeof(TimestampTz) * count);
   for (int i = 0; i < count; i++)
     times[i] = DatumGetTimestampTz(call_recv(TIMESTAMPTZOID, buf));
   TimestampSet *result = timestampset_make_free(times, count);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_recv);
+/**
+ * Receive function for timestamp set values
+ */
+PGDLLEXPORT Datum
+Timestampset_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  TimestampSet *result = timestampset_read(buf);
   PG_RETURN_POINTER(result);
 }
 
@@ -319,12 +352,12 @@ timestampset_recv(PG_FUNCTION_ARGS)
  * Constructor function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_constructor);
+PG_FUNCTION_INFO_V1(Timestampset_constructor);
 /**
  * Construct a timestamp set value from an array of timestamp values
  */
 PGDLLEXPORT Datum
-timestampset_constructor(PG_FUNCTION_ARGS)
+Timestampset_constructor(PG_FUNCTION_ARGS)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
@@ -339,21 +372,32 @@ timestampset_constructor(PG_FUNCTION_ARGS)
  * Cast function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestamp_to_timestampset);
+/**
+ * @ingroup libmeos_time_cast
+ * @brief Cast a timestamp value as a timestamp set value
+ */
+static TimestampSet *
+timestamp_to_timestampset(TimestampTz t)
+{
+  TimestampSet *result = timestampset_make(&t, 1);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Timestamp_to_timestampset);
 /**
  * Cast a timestamp value as a timestamp set value
  */
 PGDLLEXPORT Datum
-timestamp_to_timestampset(PG_FUNCTION_ARGS)
+Timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *result = timestampset_make(&t, 1);
+  TimestampSet *result = timestamp_to_timestampset(t);
   PG_RETURN_POINTER(result);
 }
 
 /**
- * Returns the bounding period on which the timestamp set value is defined
- * (internal function)
+ * @ingroup libmeos_time_cast
+ * @brief Return the bounding period of the timestamp set value.
  */
 void
 timestampset_period(const TimestampSet *ts, Period *p)
@@ -366,12 +410,12 @@ timestampset_period(const TimestampSet *ts, Period *p)
   return;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_to_period);
+PG_FUNCTION_INFO_V1(Timestampset_to_period);
 /**
- * Returns the bounding period on which the timestamp set value is defined
+ * Return the bounding period on which the timestamp set value is defined
  */
 PGDLLEXPORT Datum
-timestampset_to_period(PG_FUNCTION_ARGS)
+Timestampset_to_period(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
@@ -383,97 +427,168 @@ timestampset_to_period(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_mem_size);
 /**
- * Returns the size in bytes of the timestamp set value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the size in bytes of the timestamp set value.
+ */
+static int
+timestampset_mem_size(TimestampSet *ts)
+{
+  return (int) VARSIZE(DatumGetPointer(ts));
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_mem_size);
+/**
+ * Return the size in bytes of the timestamp set value
  */
 PGDLLEXPORT Datum
-timestampset_mem_size(PG_FUNCTION_ARGS)
+Timestampset_mem_size(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Datum result = Int32GetDatum((int)VARSIZE(DatumGetPointer(ts)));
+  Datum result = timestampset_mem_size(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_timespan);
 /**
- * Returns the timespan of the timestamp set value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the timespan of the timestamp set value.
  */
-PGDLLEXPORT Datum
-timestampset_timespan(PG_FUNCTION_ARGS)
+Interval *
+timestampset_timespan(TimestampSet *ts)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
-  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(end),
-    TimestampTzGetDatum(start));
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_DATUM(result);
+  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
+    TimestampTzGetDatum(end), TimestampTzGetDatum(start)));
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_num_timestamps);
+PG_FUNCTION_INFO_V1(Timestampset_timespan);
 /**
- * Returns the number of timestamps of the timestamp set value
+ * Return the timespan of the timestamp set value
  */
 PGDLLEXPORT Datum
-timestampset_num_timestamps(PG_FUNCTION_ARGS)
+Timestampset_timespan(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Interval *result = timestampset_timespan(ts);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @ingroup libmeos_time_accessor
+ * @brief Return the number of timestamps of the timestamp set value.
+ */
+static int
+timestampset_num_timestamps(TimestampSet *ts)
+{
+  return ts->count;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_num_timestamps);
+/**
+ * Return the number of timestamps of the timestamp set value
+ */
+PGDLLEXPORT Datum
+Timestampset_num_timestamps(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_INT32(ts->count);
+  PG_RETURN_INT32(timestampset_num_timestamps(ts));
 }
 
-PG_FUNCTION_INFO_V1(timestampset_start_timestamp);
 /**
- * Returns the start timestamp of the timestamp set value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the start timestamp of the timestamp set value.
  */
-PGDLLEXPORT Datum
-timestampset_start_timestamp(PG_FUNCTION_ARGS)
+static TimestampTz
+timestampset_start_timestamp(TimestampSet *ts)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampTz result = timestampset_time_n(ts, 0);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_TIMESTAMPTZ(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_end_timestamp);
+PG_FUNCTION_INFO_V1(Timestampset_start_timestamp);
 /**
- * Returns the end timestamp of the timestamp set value
+ * Return the start timestamp of the timestamp set value
  */
 PGDLLEXPORT Datum
-timestampset_end_timestamp(PG_FUNCTION_ARGS)
+Timestampset_start_timestamp(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz result = timestampset_time_n(ts, ts->count - 1);
+  TimestampTz result = timestampset_start_timestamp(ts);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_timestamp_n);
 /**
- * Returns the n-th timestamp of the timestamp set value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the end timestamp of the timestamp set value.
+ */
+static TimestampTz
+timestampset_end_timestamp(TimestampSet *ts)
+{
+  TimestampTz result = timestampset_time_n(ts, ts->count - 1);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_end_timestamp);
+/**
+ * Return the end timestamp of the timestamp set value
  */
 PGDLLEXPORT Datum
-timestampset_timestamp_n(PG_FUNCTION_ARGS)
+Timestampset_end_timestamp(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  TimestampTz result = timestampset_end_timestamp(ts);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+/**
+ * @ingroup libmeos_time_accessor
+ * @brief Return the n-th timestamp of the timestamp set value.
+ *
+ * @param[in] ts Timestamp set
+ * @param[in] n Number
+ * @param[out] t Timestamp
+ * @result Return true if the timestamp is found
+ * @note It is assumed that n is 1-based
+ */
+static bool
+timestampset_timestamp_n(TimestampSet *ts, int n, TimestampTz *result)
+{
+  if (n < 1 || n > ts->count)
+    return false;
+  *result = timestampset_time_n(ts, n - 1);
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_timestamp_n);
+/**
+ * Return the n-th timestamp of the timestamp set value
+ */
+PGDLLEXPORT Datum
+Timestampset_timestamp_n(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
-  if (n < 1 || n > ts->count)
-  {
-    PG_FREE_IF_COPY(ts, 0);
-    PG_RETURN_NULL();
-  }
-  TimestampTz result = timestampset_time_n(ts, n - 1);
+  TimestampTz result;
+  bool found = timestampset_timestamp_n(ts, n, &result);
   PG_FREE_IF_COPY(ts, 0);
+  if (! found)
+    PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
 /**
- * Returns the timestamps of the timestamp set value (internal function)
+ * @ingroup libmeos_time_accessor
+ * @brief Return the timestamps of the timestamp set value.
  */
 TimestampTz *
-timestampset_timestamps_internal(const TimestampSet *ts)
+timestampset_timestamps(const TimestampSet *ts)
 {
   TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -481,15 +596,15 @@ timestampset_timestamps_internal(const TimestampSet *ts)
   return times;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_timestamps);
+PG_FUNCTION_INFO_V1(Timestampset_timestamps);
 /**
- * Returns the timestamps of the timestamp set value
+ * Return the timestamps of the timestamp set value
  */
 PGDLLEXPORT Datum
-timestampset_timestamps(PG_FUNCTION_ARGS)
+Timestampset_timestamps(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz *times = timestampset_timestamps_internal(ts);
+  TimestampTz *times = timestampset_timestamps(ts);
   ArrayType *result = timestamparr_to_array(times, ts->count);
   pfree(times);
   PG_FREE_IF_COPY(ts, 0);
@@ -497,10 +612,11 @@ timestampset_timestamps(PG_FUNCTION_ARGS)
 }
 
 /**
- * Shift the period set value by the interval (internal function)
+ * @ingroup libmeos_time_transf
+ * @brief Shift the period set value by the interval.
  */
 TimestampSet *
-timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
+timestampset_shift(const TimestampSet *ts, const Interval *interval)
 {
   TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -513,16 +629,16 @@ timestampset_shift_internal(const TimestampSet *ts, const Interval *interval)
   return timestampset_make_free(times, ts->count);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_shift);
+PG_FUNCTION_INFO_V1(Timestampset_shift);
 /**
  * Shift the period set value by the interval
  */
 PGDLLEXPORT Datum
-timestampset_shift(PG_FUNCTION_ARGS)
+Timestampset_shift(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Interval *interval = PG_GETARG_INTERVAL_P(1);
-  TimestampSet *result = timestampset_shift_internal(ts, interval);
+  TimestampSet *result = timestampset_shift(ts, interval);
   PG_FREE_IF_COPY(ts, 0);
   PG_RETURN_POINTER(result);
 }
@@ -532,14 +648,14 @@ timestampset_shift(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns -1, 0, or 1 depending on whether the first timestamp set value
- * is less than, equal, or greater than the second temporal value (internal
- * function)
+ * @ingroup libmeos_time_comparison
+ * @brief Return -1, 0, or 1 depending on whether the first timestamp set
+ * value is less than, equal, or greater than the second temporal value.
  *
  * @note Function used for B-tree comparison
  */
 int
-timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
+timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 {
   int count = Min(ts1->count, ts2->count);
   int result = 0;
@@ -552,7 +668,7 @@ timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
       break;
   }
   /* The first count times of the two TimestampSet are equal */
-  if (!result)
+  if (! result)
   {
     if (count < ts1->count) /* ts1 has more timestamps than ts2 */
       result = 1;
@@ -564,30 +680,31 @@ timestampset_cmp_internal(const TimestampSet *ts1, const TimestampSet *ts2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_cmp);
+PG_FUNCTION_INFO_V1(Timestampset_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first timestamp set value
+ * Return -1, 0, or 1 depending on whether the first timestamp set value
  * is less than, equal, or greater than the second temporal value
  */
 PGDLLEXPORT Datum
-timestampset_cmp(PG_FUNCTION_ARGS)
+Timestampset_cmp(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  int cmp = timestampset_cmp_internal(ts1, ts2);
+  int cmp = timestampset_cmp(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_INT32(cmp);
 }
 
 /**
- * Returns true if the first timestamp set value is equal to the second one
- * (internal function)
+ * @ingroup libmeos_time_oper
+ * @brief Return true if the first timestamp set value is equal to the
+ * second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
-timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
+timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
 {
   if (ts1->count != ts2->count)
     return false;
@@ -603,106 +720,107 @@ timestampset_eq_internal(const TimestampSet *ts1, const TimestampSet *ts2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_eq);
+PG_FUNCTION_INFO_V1(Timestampset_eq);
 /**
- * Returns true if the first timestamp set value is equal to the second one
+ * Return true if the first timestamp set value is equal to the second one
  */
 PGDLLEXPORT Datum
-timestampset_eq(PG_FUNCTION_ARGS)
+Timestampset_eq(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_eq_internal(ts1, ts2);
+  bool result = timestampset_eq(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
 /**
- * Returns true if the first timestamp set value is different from the second one
- * (internal function)
+ * @ingroup libmeos_time_oper
+ * @brief Return true if the first timestamp set value is different from the
+ * second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
-timestampset_ne_internal(const TimestampSet *ts1, const TimestampSet *ts2)
+timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 {
-  return !timestampset_eq_internal(ts1, ts2);
+  return !timestampset_eq(ts1, ts2);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_ne);
+PG_FUNCTION_INFO_V1(Timestampset_ne);
 /**
- * Returns true if the first timestamp set value is different from the second one
+ * Return true if the first timestamp set value is different from the second one
  */
 PGDLLEXPORT Datum
-timestampset_ne(PG_FUNCTION_ARGS)
+Timestampset_ne(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = timestampset_ne_internal(ts1, ts2);
+  bool result = timestampset_ne(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(result);
 }
 
 
-PG_FUNCTION_INFO_V1(timestampset_lt);
+PG_FUNCTION_INFO_V1(Timestampset_lt);
 /**
- * Returns true if the first timestamp set value is less than the second one
+ * Return true if the first timestamp set value is less than the second one
  */
 PGDLLEXPORT Datum
-timestampset_lt(PG_FUNCTION_ARGS)
+Timestampset_lt(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  int cmp = timestampset_cmp_internal(ts1, ts2);
+  int cmp = timestampset_cmp(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(cmp < 0);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_le);
+PG_FUNCTION_INFO_V1(Timestampset_le);
 /**
- * Returns true if the first timestamp set value is less than
+ * Return true if the first timestamp set value is less than
  * or equal to the second one
  */
 PGDLLEXPORT Datum
-timestampset_le(PG_FUNCTION_ARGS)
+Timestampset_le(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  int cmp = timestampset_cmp_internal(ts1, ts2);
+  int cmp = timestampset_cmp(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(cmp <= 0);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_ge);
+PG_FUNCTION_INFO_V1(Timestampset_ge);
 /**
- * Returns true if the first timestamp set value is greater than
+ * Return true if the first timestamp set value is greater than
  * or equal to the second one
  */
 PGDLLEXPORT Datum
-timestampset_ge(PG_FUNCTION_ARGS)
+Timestampset_ge(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  int cmp = timestampset_cmp_internal(ts1, ts2);
+  int cmp = timestampset_cmp(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(cmp >= 0);
 }
 
-PG_FUNCTION_INFO_V1(timestampset_gt);
+PG_FUNCTION_INFO_V1(Timestampset_gt);
 /**
- * Returns true if the first timestamp set value is greater than the second one
+ * Return true if the first timestamp set value is greater than the second one
  */
 PGDLLEXPORT Datum
-timestampset_gt(PG_FUNCTION_ARGS)
+Timestampset_gt(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
   TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  int cmp = timestampset_cmp_internal(ts1, ts2);
+  int cmp = timestampset_cmp(ts1, ts2);
   PG_FREE_IF_COPY(ts1, 0);
   PG_FREE_IF_COPY(ts2, 1);
   PG_RETURN_BOOL(cmp > 0);
@@ -715,11 +833,11 @@ timestampset_gt(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the 32-bit hash value of a timestamp set
- * (internal function)
+ * @ingroup libmeos_time_accessor
+ * @brief Return the 32-bit hash value of a timestamp set.
  */
 static uint32
-timestampset_hash_internal(const TimestampSet *ts)
+timestampset_hash(const TimestampSet *ts)
 {
   uint32 result = 1;
   for (int i = 0; i < ts->count; i++)
@@ -731,24 +849,24 @@ timestampset_hash_internal(const TimestampSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_hash);
+PG_FUNCTION_INFO_V1(Timestampset_hash);
 /**
- * Returns the 32-bit hash value of a timestamp set
+ * Return the 32-bit hash value of a timestamp set
  */
 PGDLLEXPORT Datum
-timestampset_hash(PG_FUNCTION_ARGS)
+Timestampset_hash(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  uint32 result = timestampset_hash_internal(ts);
+  uint32 result = timestampset_hash(ts);
   PG_RETURN_UINT32(result);
 }
 
 /**
- * Returns the 64-bit hash value of a timestamp set using a seed
- * (internal function)
+ * @ingroup libmeos_time_oper
+ * @brief Return the 64-bit hash value of a timestamp set using a seed.
  */
 static uint64
-timestampset_hash_extended_internal(const TimestampSet *ts, Datum seed)
+timestampset_hash_extended(const TimestampSet *ts, Datum seed)
 {
   uint64 result = 1;
   for (int i = 0; i < ts->count; i++)
@@ -761,16 +879,16 @@ timestampset_hash_extended_internal(const TimestampSet *ts, Datum seed)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_hash_extended);
+PG_FUNCTION_INFO_V1(Timestampset_hash_extended);
 /**
- * Returns the 64-bit hash value of a timestamp set using a seed
+ * Return the 64-bit hash value of a timestamp set using a seed
  */
 PGDLLEXPORT Datum
-timestampset_hash_extended(PG_FUNCTION_ARGS)
+Timestampset_hash_extended(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Datum seed = PG_GETARG_DATUM(1);
-  uint64 result = timestampset_hash_extended_internal(ts, seed);
+  uint64 result = timestampset_hash_extended(ts, seed);
   PG_RETURN_UINT64(result);
 }
 

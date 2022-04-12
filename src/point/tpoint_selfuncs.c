@@ -57,7 +57,7 @@
  *****************************************************************************/
 
 /**
- * Returns true if a contains b, false otherwise.
+ * Return true if a contains b, false otherwise.
  */
 static int
 nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
@@ -72,7 +72,7 @@ nd_box_contains(const ND_BOX *a, const ND_BOX *b, int ndims)
 }
 
 /**
- * Returns true if a is strictly left of b, false otherwise.
+ * Return true if a is strictly left of b, false otherwise.
  */
 static bool
 nd_box_left(const ND_BOX *a, const ND_BOX *b)
@@ -81,7 +81,7 @@ nd_box_left(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a does not extend to right of b, false otherwise.
+ * Return true if a does not extend to right of b, false otherwise.
  */
 static bool
 nd_box_overleft(const ND_BOX *a, const ND_BOX *b)
@@ -90,7 +90,7 @@ nd_box_overleft(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a is strictly right of b, false otherwise.
+ * Return true if a is strictly right of b, false otherwise.
  */
 static bool
 nd_box_right(const ND_BOX *a, const ND_BOX *b)
@@ -99,7 +99,7 @@ nd_box_right(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a does not extend to left of b, false otherwise.
+ * Return true if a does not extend to left of b, false otherwise.
  */
 static bool
 nd_box_overright(const ND_BOX *a, const ND_BOX *b)
@@ -108,7 +108,7 @@ nd_box_overright(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a is strictly below of b, false otherwise.
+ * Return true if a is strictly below of b, false otherwise.
  */
 static bool
 nd_box_below(const ND_BOX *a, const ND_BOX *b)
@@ -117,7 +117,7 @@ nd_box_below(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a does not extend above of b, false otherwise.
+ * Return true if a does not extend above of b, false otherwise.
  */
 static bool
 nd_box_overbelow(const ND_BOX *a, const ND_BOX *b)
@@ -126,7 +126,7 @@ nd_box_overbelow(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a is strictly above of b, false otherwise.
+ * Return true if a is strictly above of b, false otherwise.
  */
 static bool
 nd_box_above(const ND_BOX *a, const ND_BOX *b)
@@ -135,7 +135,7 @@ nd_box_above(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a does not extend below of b, false otherwise.
+ * Return true if a does not extend below of b, false otherwise.
  */
 static bool
 nd_box_overabove(const ND_BOX *a, const ND_BOX *b)
@@ -144,7 +144,7 @@ nd_box_overabove(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a is strictly front of b, false otherwise.
+ * Return true if a is strictly front of b, false otherwise.
  */
 static bool
 nd_box_front(const ND_BOX *a, const ND_BOX *b)
@@ -153,7 +153,7 @@ nd_box_front(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a does not extend to the back of b, false otherwise.
+ * Return true if a does not extend to the back of b, false otherwise.
  */
 static bool
 nd_box_overfront(const ND_BOX *a, const ND_BOX *b)
@@ -162,7 +162,7 @@ nd_box_overfront(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a strictly back of b, false otherwise.
+ * Return true if a strictly back of b, false otherwise.
  */
 static bool
 nd_box_back(const ND_BOX *a, const ND_BOX *b)
@@ -171,7 +171,7 @@ nd_box_back(const ND_BOX *a, const ND_BOX *b)
 }
 
 /**
- * Returns true if a does not extend to the front of b, false otherwise.
+ * Return true if a does not extend to the front of b, false otherwise.
  */
 static bool
 nd_box_overback(const ND_BOX *a, const ND_BOX *b)
@@ -186,7 +186,7 @@ nd_box_overback(const ND_BOX *a, const ND_BOX *b)
  *****************************************************************************/
 
 /**
- * Returns the proportion of b2 that is left of b1.
+ * Return the proportion of b2 that is left of b1.
  */
 static double
 nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2)
@@ -205,7 +205,7 @@ nd_box_ratio_left(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is overleft of b1.
+ * Return the proportion of b2 that is overleft of b1.
  */
 static double
 nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2)
@@ -224,7 +224,7 @@ nd_box_ratio_overleft(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is right of b1.
+ * Return the proportion of b2 that is right of b1.
  */
 static double
 nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2)
@@ -243,7 +243,7 @@ nd_box_ratio_right(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is overright of b1.
+ * Return the proportion of b2 that is overright of b1.
  */
 static double
 nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2)
@@ -262,7 +262,7 @@ nd_box_ratio_overright(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is below of b1.
+ * Return the proportion of b2 that is below of b1.
  */
 static double
 nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2)
@@ -281,7 +281,7 @@ nd_box_ratio_below(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is overbelow of b1.
+ * Return the proportion of b2 that is overbelow of b1.
  */
 static double
 nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2)
@@ -300,7 +300,7 @@ nd_box_ratio_overbelow(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is above of b1.
+ * Return the proportion of b2 that is above of b1.
  */
 static double
 nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2)
@@ -319,7 +319,7 @@ nd_box_ratio_above(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is overabove of b1.
+ * Return the proportion of b2 that is overabove of b1.
  */
 static double
 nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2)
@@ -338,7 +338,7 @@ nd_box_ratio_overabove(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is front of b1.
+ * Return the proportion of b2 that is front of b1.
  */
 static double
 nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2)
@@ -357,7 +357,7 @@ nd_box_ratio_front(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is overfront of b1.
+ * Return the proportion of b2 that is overfront of b1.
  */
 static double
 nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2)
@@ -376,7 +376,7 @@ nd_box_ratio_overfront(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is back of b1.
+ * Return the proportion of b2 that is back of b1.
  */
 static double
 nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2)
@@ -395,7 +395,7 @@ nd_box_ratio_back(const ND_BOX *b1, const ND_BOX *b2)
 }
 
 /**
- * Returns the proportion of b2 that is overback of b1.
+ * Return the proportion of b2 that is overback of b1.
  */
 static double
 nd_box_ratio_overback(const ND_BOX *b1, const ND_BOX *b2)
@@ -550,7 +550,7 @@ nd_box_from_stbox(const STBOX *box, ND_BOX *nd_box)
 }
 
 /**
- * Returns an estimate of the selectivity of a spatiotemporal search box by
+ * Return an estimate of the selectivity of a spatiotemporal search box by
  * looking at data in the ND_STATS structure. The selectivity is a float in
  * [0,1] that estimates the proportion of the rows in the table that will be
  * returned as a result of the search box.
@@ -759,7 +759,7 @@ geo_sel(VariableStatData *vardata, const STBOX *box, CachedOp op)
  *****************************************************************************/
 
 /**
- * Returns a default restriction selectivity estimate for a given operator,
+ * Return a default restriction selectivity estimate for a given operator,
  * when we don't have statistics or cannot use them for some reason.
  */
 static float8
@@ -821,7 +821,7 @@ tpoint_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfamily
  * (internal function)
  */
 float8
-tpoint_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid,
+tpoint_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   TemporalFamily tempfamily)
 {
   VariableStatData vardata;
@@ -923,12 +923,12 @@ tpoint_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid,
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_sel);
+PG_FUNCTION_INFO_V1(Tpoint_sel);
 /**
  * Estimate the restriction selectivity of the operators for temporal points
  */
 PGDLLEXPORT Datum
-tpoint_sel(PG_FUNCTION_ARGS)
+Tpoint_sel(PG_FUNCTION_ARGS)
 {
   return temporal_sel_generic(fcinfo, TPOINTTYPE);
 }
@@ -989,7 +989,7 @@ pg_get_nd_stats(const Oid tableid, AttrNumber att_num, int mode, bool only_paren
 }
 
 /**
- * Returns a default join selectivity estimate for a given operator,
+ * Return a default join selectivity estimate for a given operator,
  * when we don't have statistics or cannot use them for some reason.
  */
 static float8
@@ -1276,7 +1276,7 @@ tpoint_joinsel_components(CachedOp cachedOp, CachedType oprleft,
  * points (internal function)
  */
 float8
-tpoint_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
+tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
   TemporalFamily tempfamily)
 {
@@ -1344,12 +1344,12 @@ tpoint_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
       selec *= period_joinsel_default(cachedOp);
     else
       /* Estimate join selectivity */
-      selec *= period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
+      selec *= period_joinsel(root, cachedOp, args, jointype, sjinfo);
   }
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_joinsel);
+PG_FUNCTION_INFO_V1(Tpoint_joinsel);
 /**
  * Estimate the join selectivity value of the operators for temporal points.
  *
@@ -1359,7 +1359,7 @@ PG_FUNCTION_INFO_V1(tpoint_joinsel);
  *   joinsel = estimated_nrows / (totalrows1 * totalrows2)
  */
 PGDLLEXPORT Datum
-tpoint_joinsel(PG_FUNCTION_ARGS)
+Tpoint_joinsel(PG_FUNCTION_ARGS)
 {
   return temporal_joinsel_generic(fcinfo, TPOINTTYPE);
 }

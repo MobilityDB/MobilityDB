@@ -78,15 +78,15 @@ extern double var_eq_const(VariableStatData *vardata, Oid operid,
 
 /*****************************************************************************/
 
-extern Datum temporal_sel(PG_FUNCTION_ARGS);
-extern Datum temporal_joinsel(PG_FUNCTION_ARGS);
+extern Datum Temporal_sel(PG_FUNCTION_ARGS);
+extern Datum Temporal_joinsel(PG_FUNCTION_ARGS);
 
-extern float8 temporal_sel_internal(PlannerInfo *root, Oid operid, List *args,
+extern float8 temporal_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid, TemporalFamily tempfamily);
 extern double temporal_sel_generic(FunctionCallInfo fcinfo,
   TemporalFamily tempfamily);
 
-extern double temporal_joinsel_internal(PlannerInfo *root, Oid operid,
+extern double temporal_joinsel(PlannerInfo *root, Oid operid,
   List *args, JoinType jointype, SpecialJoinInfo *sjinfo,
   TemporalFamily tempfamily);
 

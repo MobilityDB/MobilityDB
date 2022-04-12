@@ -34,15 +34,15 @@
 
 CREATE FUNCTION tpoint_extent_transfn(stbox, tgeompoint)
   RETURNS stbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tpoint_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tpoint_extent_transfn(stbox, tgeogpoint)
   RETURNS stbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tpoint_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tpoint_extent_combinefn(stbox, stbox)
   RETURNS stbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tpoint_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tgeompoint) (
@@ -62,11 +62,11 @@ CREATE AGGREGATE extent(tgeogpoint) (
 
 CREATE FUNCTION tcount_transfn(internal, tgeompoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tgeogpoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(tgeompoint) (
@@ -90,11 +90,11 @@ CREATE AGGREGATE tcount(tgeogpoint) (
 
 CREATE FUNCTION wcount_transfn(internal, tgeompoint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_wcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION wcount_transfn(internal, tgeogpoint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_wcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wcount(tgeompoint, interval) (
@@ -118,15 +118,15 @@ CREATE AGGREGATE wcount(tgeogpoint, interval) (
 
 CREATE FUNCTION tcentroid_transfn(internal, tgeompoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tpoint_tcentroid_transfn'
+  AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcentroid_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tpoint_tcentroid_combinefn'
+  AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcentroid_finalfn(internal)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tpoint_tcentroid_finalfn'
+  AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tcentroid(tgeompoint) (
@@ -143,20 +143,20 @@ CREATE AGGREGATE tcentroid(tgeompoint) (
 
 CREATE FUNCTION temporal_merge_transfn(internal, tgeompoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_merge_transfn(internal, tgeogpoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeompoint_tagg_finalfn(internal)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint_tagg_finalfn(internal)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE merge(tgeompoint) (

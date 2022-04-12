@@ -40,19 +40,19 @@
 
 CREATE FUNCTION temporal_before(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -83,19 +83,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -126,19 +126,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -169,19 +169,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -214,19 +214,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -257,19 +257,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -300,19 +300,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -343,19 +343,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -388,19 +388,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -431,19 +431,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -474,19 +474,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -517,19 +517,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -562,19 +562,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'After_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -605,19 +605,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'After_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -648,19 +648,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'After_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -691,19 +691,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'After_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -736,19 +736,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -779,19 +779,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -824,19 +824,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -867,19 +867,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -912,19 +912,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -955,19 +955,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(intrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(intrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(intrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(intrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1000,19 +1000,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(floatrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(floatrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(floatrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(floatrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1043,19 +1043,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1088,35 +1088,35 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Before_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overbefore_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'After_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1169,35 +1169,35 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Before_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overbefore_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'After_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overafter_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1252,19 +1252,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1295,19 +1295,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1339,19 +1339,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1382,19 +1382,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'After_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1425,19 +1425,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Before_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'After_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1470,19 +1470,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1513,19 +1513,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1557,19 +1557,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1600,19 +1600,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'After_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1643,19 +1643,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1686,19 +1686,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1729,19 +1729,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1772,35 +1772,35 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'After_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1853,35 +1853,35 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1934,35 +1934,35 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2017,19 +2017,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2060,19 +2060,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2104,19 +2104,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2147,19 +2147,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'After_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2190,19 +2190,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2233,19 +2233,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2276,19 +2276,19 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2319,35 +2319,35 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION temporal_left(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'After_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2400,35 +2400,35 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2481,35 +2481,35 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Left_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overleft_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Right_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overright_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Before_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overbefore_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'After_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overafter_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -2564,19 +2564,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2607,19 +2607,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2651,19 +2651,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2694,19 +2694,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'After_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -2737,19 +2737,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Before_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'After_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (

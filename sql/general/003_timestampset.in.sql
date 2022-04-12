@@ -40,24 +40,24 @@ CREATE TYPE timestampset;
 
 CREATE FUNCTION timestampset_in(cstring)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'timestampset_in'
+  AS 'MODULE_PATHNAME', 'Timestampset_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_out(timestampset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Timestampset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_recv(internal)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'timestampset_recv'
+  AS 'MODULE_PATHNAME', 'Timestampset_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_send(timestampset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Timestampset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampset_analyze(internal)
   RETURNS boolean
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Timestampset_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE timestampset (
@@ -78,7 +78,7 @@ CREATE TYPE timestampset (
 
 CREATE FUNCTION timestampset(timestamptz[])
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'timestampset_constructor'
+  AS 'MODULE_PATHNAME', 'Timestampset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -87,11 +87,11 @@ CREATE FUNCTION timestampset(timestamptz[])
 
 CREATE FUNCTION timestampset(timestamptz)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'timestamp_to_timestampset'
+  AS 'MODULE_PATHNAME', 'Timestamp_to_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(timestampset)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'timestampset_to_period'
+  AS 'MODULE_PATHNAME', 'Timestampset_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS timestampset) WITH FUNCTION timestampset(timestamptz);
@@ -103,42 +103,42 @@ CREATE CAST (timestampset AS period) WITH FUNCTION period(timestampset);
 
 CREATE FUNCTION memSize(timestampset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'timestampset_mem_size'
+  AS 'MODULE_PATHNAME', 'Timestampset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(timestampset)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'timestampset_timespan'
+  AS 'MODULE_PATHNAME', 'Timestampset_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numTimestamps(timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'timestampset_num_timestamps'
+  AS 'MODULE_PATHNAME', 'Timestampset_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startTimestamp(timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'timestampset_start_timestamp'
+  AS 'MODULE_PATHNAME', 'Timestampset_start_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endTimestamp(timestampset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'timestampset_end_timestamp'
+  AS 'MODULE_PATHNAME', 'Timestampset_end_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampN(timestampset, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'timestampset_timestamp_n'
+  AS 'MODULE_PATHNAME', 'Timestampset_timestamp_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(timestampset)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'timestampset_timestamps'
+  AS 'MODULE_PATHNAME', 'Timestampset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(timestampset, interval)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'timestampset_shift'
+  AS 'MODULE_PATHNAME', 'Timestampset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -147,31 +147,31 @@ CREATE FUNCTION shift(timestampset, interval)
 
 CREATE FUNCTION timestampset_eq(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'timestampset_eq'
+  AS 'MODULE_PATHNAME', 'Timestampset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_ne(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'timestampset_ne'
+  AS 'MODULE_PATHNAME', 'Timestampset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_lt(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'timestampset_lt'
+  AS 'MODULE_PATHNAME', 'Timestampset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_le(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'timestampset_le'
+  AS 'MODULE_PATHNAME', 'Timestampset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_ge(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'timestampset_ge'
+  AS 'MODULE_PATHNAME', 'Timestampset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_gt(timestampset, timestampset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'timestampset_gt'
+  AS 'MODULE_PATHNAME', 'Timestampset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timestampset_cmp(timestampset, timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'timestampset_cmp'
+  AS 'MODULE_PATHNAME', 'Timestampset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
@@ -224,12 +224,12 @@ CREATE OPERATOR CLASS timestampset_ops
 
 CREATE FUNCTION timestampset_hash(timestampset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'timestampset_hash'
+  AS 'MODULE_PATHNAME', 'Timestampset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampset_hash_extended(timestampset, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'timestampset_hash_extended'
+  AS 'MODULE_PATHNAME', 'Timestampset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS period_hash_ops

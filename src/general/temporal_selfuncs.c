@@ -263,7 +263,7 @@ temporal_const_to_period(Node *other, Period *period)
 }
 
 /**
- * Returns the enum value associated to the operator
+ * Return the enum value associated to the operator
  */
 static bool
 temporal_cachedop(Oid operid, CachedOp *cachedOp)
@@ -296,7 +296,7 @@ temporal_cachedop(Oid operid, CachedOp *cachedOp)
 }
 
 /**
- * Returns a default selectivity estimate for the operator when we don't
+ * Return a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 static double
@@ -333,7 +333,7 @@ temporal_sel_default(CachedOp oper)
 }
 
 /**
- * Returns a default join selectivity estimate for given operator, when we
+ * Return a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
 float8
@@ -345,7 +345,7 @@ temporal_joinsel_default(Oid operid __attribute__((unused)))
 
 
 /**
- * Returns an estimate of the selectivity of the search period and the
+ * Return an estimate of the selectivity of the search period and the
  * operator for columns of temporal values. For the traditional comparison
  * operators (<, <=, ...), we follow the approach for range types in
  * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
@@ -415,7 +415,7 @@ temporal_cachedop_family(Oid operid, CachedOp *cachedOp, TemporalFamily tempfami
  * bounding box is a period, that is, tbool and ttext (internal function)
  */
 float8
-temporal_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid,
+temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   TemporalFamily tempfamily)
 {
   VariableStatData vardata;
@@ -529,19 +529,19 @@ temporal_sel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
          tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-    result = temporal_sel_internal(root, operid, args, varRelid, tempfamily);
+    result = temporal_sel(root, operid, args, varRelid, tempfamily);
   else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
-    result = tpoint_sel_internal(root, operid, args, varRelid, tempfamily);
+    result = tpoint_sel(root, operid, args, varRelid, tempfamily);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(temporal_sel);
+PG_FUNCTION_INFO_V1(Temporal_sel);
 /**
  * Estimate the selectivity value of the operators for temporal types whose
  * bounding box is a period, that is, tbool and ttext.
  */
 PGDLLEXPORT Datum
-temporal_sel(PG_FUNCTION_ARGS)
+Temporal_sel(PG_FUNCTION_ARGS)
 {
   return temporal_sel_generic(fcinfo, TEMPORALTYPE);
 }
@@ -551,14 +551,14 @@ temporal_sel(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns an estimate of the join selectivity for columns of temporal values.
+ * Return an estimate of the join selectivity for columns of temporal values.
  * For the traditional comparison operators (<, <=, ...), we follow the
  * approach for range types in PostgreSQL, this function  computes the
  * selectivity for <, <=, >, and >=, while the selectivity functions for
  * = and <> are eqsel and neqsel, respectively.
  */
 float8
-temporal_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
+temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo,
   TemporalFamily tempfamily)
 {
@@ -619,7 +619,7 @@ temporal_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
       selec *= period_joinsel_default(cachedOp);
     else
       /* Estimate join selectivity */
-      selec *= period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
+      selec *= period_joinsel(root, cachedOp, args, jointype, sjinfo);
   }
 
   CLAMP_PROBABILITY(selec);
@@ -651,24 +651,24 @@ temporal_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   assert(tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
          tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE);
   if (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE)
-    result = temporal_joinsel_internal(root, operid, args, jointype, sjinfo,
+    result = temporal_joinsel(root, operid, args, jointype, sjinfo,
       tempfamily);
   else /* (tempfamily == TPOINTTYPE || tempfamily == TNPOINTTYPE) */
   {
     int mode = Int32GetDatum(0) /* ND mode TO GENERALIZE */;
-    result = tpoint_joinsel_internal(root, operid, args, jointype, sjinfo,
+    result = tpoint_joinsel(root, operid, args, jointype, sjinfo,
       mode, tempfamily);
   }
   return result;
 }
 
-PG_FUNCTION_INFO_V1(temporal_joinsel);
+PG_FUNCTION_INFO_V1(Temporal_joinsel);
 /*
  * Estimate the join selectivity value of the operators for temporal types
  * whose bounding box is a period, that is, tbool and ttext.
  */
 PGDLLEXPORT Datum
-temporal_joinsel(PG_FUNCTION_ARGS)
+Temporal_joinsel(PG_FUNCTION_ARGS)
 {
   return temporal_joinsel_generic(fcinfo, TEMPORALTYPE);
 }

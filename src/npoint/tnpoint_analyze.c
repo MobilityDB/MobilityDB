@@ -154,12 +154,12 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_analyze);
+PG_FUNCTION_INFO_V1(Tnpoint_analyze);
 /**
  * Compute the statistics for temporal network point columns
  */
 PGDLLEXPORT Datum
-tnpoint_analyze(PG_FUNCTION_ARGS)
+Tnpoint_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   int16 subtype;

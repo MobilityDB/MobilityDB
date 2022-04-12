@@ -56,24 +56,24 @@
  * implemented for debugging purposes.
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(double2_in);
+PG_FUNCTION_INFO_V1(Double2_in);
 /**
  * Input function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
-double2_in(PG_FUNCTION_ARGS __attribute__((unused)))
+Double2_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double2 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
-PG_FUNCTION_INFO_V1(double2_out);
+PG_FUNCTION_INFO_V1(Double2_out);
 /**
  * Output function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
-double2_out(PG_FUNCTION_ARGS)
+Double2_out(PG_FUNCTION_ARGS)
 {
   double2 *d = (double2 *) PG_GETARG_POINTER(0);
   char *result;
@@ -82,12 +82,12 @@ double2_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(double2_recv);
+PG_FUNCTION_INFO_V1(Double2_recv);
 /**
  * Receive function for double2 values
  */
 PGDLLEXPORT Datum
-double2_recv(PG_FUNCTION_ARGS)
+Double2_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
   double2 *result = palloc(sizeof(double2));
@@ -96,12 +96,12 @@ double2_recv(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(double2_send);
+PG_FUNCTION_INFO_V1(Double2_send);
 /**
  * Send function for double2 values
  */
 PGDLLEXPORT Datum
-double2_send(PG_FUNCTION_ARGS)
+Double2_send(PG_FUNCTION_ARGS)
 {
   double2 *d = (double2 *) PG_GETARG_POINTER(0);
   StringInfoData buf;
@@ -127,7 +127,7 @@ double2_set(double a, double b, double2 *result)
 }
 
 /**
- * Returns the addition of the double2 values
+ * Return the addition of the double2 values
  */
 double2 *
 double2_add(const double2 *d1, const double2 *d2)
@@ -139,7 +139,7 @@ double2_add(const double2 *d1, const double2 *d2)
 }
 
 /**
- * Returns true if the double2 values are equal
+ * Return true if the double2 values are equal
  */
 bool
 double2_eq(const double2 *d1, const double2 *d2)
@@ -148,7 +148,7 @@ double2_eq(const double2 *d1, const double2 *d2)
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first double2
+ * Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
  * This function is currently not used
 int
@@ -165,24 +165,24 @@ double2_cmp(double2 *d1, double2 *d2)
  * Input/Output functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(double3_in);
+PG_FUNCTION_INFO_V1(Double3_in);
 /**
  * Input function for double2 values (stub only)
  */
 PGDLLEXPORT Datum
-double3_in(PG_FUNCTION_ARGS __attribute__((unused)))
+Double3_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double3 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
-PG_FUNCTION_INFO_V1(double3_out);
+PG_FUNCTION_INFO_V1(Double3_out);
 /**
  * Output function for double3 values (stub only)
  */
 PGDLLEXPORT Datum
-double3_out(PG_FUNCTION_ARGS)
+Double3_out(PG_FUNCTION_ARGS)
 {
   double3 *d = (double3 *) PG_GETARG_POINTER(0);
   char *result;
@@ -191,12 +191,12 @@ double3_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(double3_recv);
+PG_FUNCTION_INFO_V1(Double3_recv);
 /**
  * Receive function for double3 values
  */
 PGDLLEXPORT Datum
-double3_recv(PG_FUNCTION_ARGS)
+Double3_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
   double3 *result = palloc(sizeof(double3));
@@ -205,12 +205,12 @@ double3_recv(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(double3_send);
+PG_FUNCTION_INFO_V1(Double3_send);
 /**
  * Send function for double3 values
  */
 PGDLLEXPORT Datum
-double3_send(PG_FUNCTION_ARGS)
+Double3_send(PG_FUNCTION_ARGS)
 {
   double3 *d = (double3 *) PG_GETARG_POINTER(0);
   StringInfoData buf;
@@ -237,7 +237,7 @@ double3_set(double a, double b, double c, double3 *result)
 }
 
 /**
- * Returns the addition of the double3 values
+ * Return the addition of the double3 values
  */
 double3 *
 double3_add(const double3 *d1, const double3 *d2)
@@ -250,7 +250,7 @@ double3_add(const double3 *d1, const double3 *d2)
 }
 
 /**
- * Returns true if the double3 values are equal
+ * Return true if the double3 values are equal
  */
 bool
 double3_eq(const double3 *d1, const double3 *d2)
@@ -259,7 +259,7 @@ double3_eq(const double3 *d1, const double3 *d2)
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first double2
+ * Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
  * This function is currently not used
 int
@@ -280,24 +280,24 @@ double3_cmp(double3 *d1, double3 *d2)
  * Input/Output functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(double4_in);
+PG_FUNCTION_INFO_V1(Double4_in);
 /**
  * Input function for double4 values (stub only)
  */
 PGDLLEXPORT Datum
-double4_in(PG_FUNCTION_ARGS __attribute__((unused)))
+Double4_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type double4 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
-PG_FUNCTION_INFO_V1(double4_out);
+PG_FUNCTION_INFO_V1(Double4_out);
 /**
  * Output function for double4 values (stub only)
  */
 PGDLLEXPORT Datum
-double4_out(PG_FUNCTION_ARGS)
+Double4_out(PG_FUNCTION_ARGS)
 {
   double4 *d = (double4 *) PG_GETARG_POINTER(0);
   char *result;
@@ -306,12 +306,12 @@ double4_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(double4_recv);
+PG_FUNCTION_INFO_V1(Double4_recv);
 /**
  * Receive function for double4 values
  */
 PGDLLEXPORT Datum
-double4_recv(PG_FUNCTION_ARGS)
+Double4_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
   double4 *result = palloc(sizeof(double4));
@@ -320,12 +320,12 @@ double4_recv(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(double4_send);
+PG_FUNCTION_INFO_V1(Double4_send);
 /**
  * Send function for double3 values
  */
 PGDLLEXPORT Datum
-double4_send(PG_FUNCTION_ARGS)
+Double4_send(PG_FUNCTION_ARGS)
 {
   double4 *d = (double4 *) PG_GETARG_POINTER(0);
   StringInfoData buf;
@@ -353,7 +353,7 @@ double4_set(double a, double b, double c, double d, double4 *result)
 }
 
 /**
- * Returns the addition of the double4 values
+ * Return the addition of the double4 values
  */
 double4 *
 double4_add(const double4 *d1, const double4 *d2)
@@ -367,7 +367,7 @@ double4_add(const double4 *d1, const double4 *d2)
 }
 
 /**
- * Returns true if the double4 values are equal
+ * Return true if the double4 values are equal
  */
 bool
 double4_eq(const double4 *d1, const double4 *d2)
@@ -378,36 +378,36 @@ double4_eq(const double4 *d1, const double4 *d2)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tdouble2_in);
+PG_FUNCTION_INFO_V1(Tdouble2_in);
 /**
  * Input function for the temporal double2 type (stub only)
  */
 PGDLLEXPORT Datum
-tdouble2_in(PG_FUNCTION_ARGS __attribute__((unused)))
+Tdouble2_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type tdouble2 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
-PG_FUNCTION_INFO_V1(tdouble3_in);
+PG_FUNCTION_INFO_V1(Tdouble3_in);
 /**
  * Input function for the temporal double3 type (stub only)
  */
 PGDLLEXPORT Datum
-tdouble3_in(PG_FUNCTION_ARGS __attribute__((unused)))
+Tdouble3_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type tdouble3 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
 
-PG_FUNCTION_INFO_V1(tdouble4_in);
+PG_FUNCTION_INFO_V1(Tdouble4_in);
 /**
  * Input function for the temporal double4 type (stub only)
  */
 PGDLLEXPORT Datum
-tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
+Tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
 {
   ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
     errmsg("Type tdouble4 is an internal type")));

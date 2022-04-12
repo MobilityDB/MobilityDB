@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * Returns a pointer to the bounding box of the temporal value
+ * Return a pointer to the bounding box of the temporal value
  */
 void *
 tsequenceset_bbox_ptr(const TSequenceSet *ts)
@@ -78,7 +78,7 @@ tsequenceset_bbox(const TSequenceSet *ts, void *box)
 }
 
 /**
- * Returns a pointer to the offsets array of the temporal value
+ * Return a pointer to the offsets array of the temporal value
  */
 static size_t *
 tsequenceset_offsets_ptr(const TSequenceSet *ts)
@@ -88,7 +88,8 @@ tsequenceset_offsets_ptr(const TSequenceSet *ts)
 }
 
 /**
- * Returns the n-th sequence of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the n-th sequence of the temporal value.
  */
 const TSequence *
 tsequenceset_seq_n(const TSequenceSet *ts, int index)
@@ -99,6 +100,30 @@ tsequenceset_seq_n(const TSequenceSet *ts, int index)
       ts->count * sizeof(size_t) +
       /* offset */
       (tsequenceset_offsets_ptr(ts))[index]);
+}
+
+/**
+ * Ensure the validity of the arguments when creating a temporal value
+ */
+static void
+tsequenceset_make_valid(const TSequence **sequences, int count)
+{
+  bool linear = MOBDB_FLAGS_GET_LINEAR(sequences[0]->flags);
+  /* Ensure that all values are of sequence subtype and of the same interpolation */
+  for (int i = 0; i < count; i++)
+  {
+    if (sequences[i]->subtype != SEQUENCE)
+    {
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Input values must be temporal sequences")));
+    }
+    if (MOBDB_FLAGS_GET_LINEAR(sequences[i]->flags) != linear)
+    {
+      ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+        errmsg("Input sequences must have the same interpolation")));
+    }
+  }
+  return;
 }
 
 /**
@@ -125,7 +150,7 @@ tsequenceset_seq_n(const TSequenceSet *ts, int index)
  * temporal sequence set values before applying an operation to them.
  */
 TSequenceSet *
-tsequenceset_make(const TSequence **sequences, int count, bool normalize)
+tsequenceset_make1(const TSequence **sequences, int count, bool normalize)
 {
   /* Test the validity of the sequences */
   assert(count > 0);
@@ -200,8 +225,27 @@ tsequenceset_make(const TSequence **sequences, int count, bool normalize)
 }
 
 /**
- * Construct a temporal sequence set value from the array of temporal
- * sequence values and free the array and the sequences after the creation
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from the array of temporal
+ * sequence values.
+ *
+ * @param[in] sequences Array of sequences
+ * @param[in] count Number of elements in the array
+ * @param[in] normalize True when the resulting value should be normalized.
+ * In particular, normalize is false when synchronizing two
+ * temporal sequence set values before applying an operation to them.
+ */
+TSequenceSet *
+tsequenceset_make(const TSequence **sequences, int count, bool normalize)
+{
+  tsequenceset_make_valid(sequences, count);
+  return tsequenceset_make1(sequences, count, normalize);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from the array of temporal
+ * sequence values and free the array and the sequences after the creation.
  *
  * @param[in] sequences Array of sequences
  * @param[in] count Number of elements in the array
@@ -222,7 +266,100 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
 }
 
 /**
- * Returns a copy of the temporal value
+ * Ensure the validity of the arguments when creating a temporal value
+ * This function extends function tsequence_make_valid by spliting the
+ * sequences according the maximum distance or interval between instants.
+ */
+int *
+tsequenceset_make_valid_gaps(const TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, bool linear, double maxdist, Interval *maxt, int *countsplits)
+{
+  tsequence_make_valid1(instants, count, lower_inc, upper_inc, linear);
+  return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO,
+    SEQUENCE, maxdist, maxt, countsplits);
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from the array of temporal
+ * sequence values.
+ *
+ * @param[in] instants Array of instants
+ * @param[in] count Number of elements in the array
+ * @param[in] linear True when the resulting value has linear interpolation.
+ * @param[in] maxdist Maximum distance for defining a gap.
+ * @param[in] maxt Maximum time interval for defining a gap.
+ */
+TSequenceSet *
+tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
+  float maxdist, Interval *maxt)
+{
+  /* Set the interval to NULL if it is negative or zero */
+  Interval intervalzero;
+  memset(&intervalzero, 0, sizeof(Interval));
+  int cmp = call_function2(interval_cmp, PointerGetDatum(maxt),
+    PointerGetDatum(&intervalzero));
+  if (cmp <= 0)
+    maxt = NULL;
+
+  TSequence *seq;
+  TSequenceSet *result;
+
+  /* If no gaps are given construt call the standard sequence constructor */
+  if (maxdist <= 0.0 && maxt == NULL)
+  {
+    seq = tsequence_make((const TInstant **) instants, count, true, true,
+      linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+    return result;
+  }
+
+  /* Ensure that the array of instants is valid and determine the splits */
+  int countsplits;
+  int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
+    count, true, true, linear, maxdist, maxt, &countsplits);
+  int newcount = 0;
+  if (countsplits == 0)
+  {
+    /* There are no gaps  */
+    pfree(splits);
+    seq = tsequence_make1((const TInstant **) instants, count,
+      true, true, linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) &seq, 1, NORMALIZE_NO);
+  }
+  else
+  {
+    /* Split according to gaps  */
+    const TInstant **newinsts = palloc(sizeof(TInstant *) * count);
+    TSequence **sequences = palloc(sizeof(TSequence *) * (countsplits + 1));
+    int j = 0, k = 0;
+    for (int i = 0; i < count; i++)
+    {
+      if (splits[j] == i)
+      {
+        /* Finalize the current sequence and start a new one */
+        assert(k > 0);
+        sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
+          true, true, linear, NORMALIZE);
+        j++; k = 0;
+      }
+      /* Continue with the current sequence */
+      newinsts[k++] = instants[i];
+    }
+    /* Construct last sequence */
+    if (k > 0)
+      sequences[newcount++] = tsequence_make1((const TInstant **) newinsts, k,
+        true, true, linear, NORMALIZE);
+    result = tsequenceset_make((const TSequence **) sequences, newcount,
+      NORMALIZE);
+    pfree(newinsts); pfree(sequences);
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Return a copy of the temporal value.
  */
 TSequenceSet *
 tsequenceset_copy(const TSequenceSet *ts)
@@ -233,7 +370,7 @@ tsequenceset_copy(const TSequenceSet *ts)
 }
 
 /**
- * Returns the location of the timestamp in the temporal sequence set value
+ * Return the location of the timestamp in the temporal sequence set value
  * using binary search
  *
  * If the timestamp is contained in the temporal value, the index of the
@@ -254,7 +391,7 @@ tsequenceset_copy(const TSequenceSet *ts)
  * @param[in] ts Temporal sequence set value
  * @param[in] t Timestamp
  * @param[out] loc Location
- * @result Returns true if the timestamp is contained in the temporal value
+ * @result Return true if the timestamp is contained in the temporal value
  */
 bool
 tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t, int *loc)
@@ -266,7 +403,7 @@ tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t, int *loc)
   {
     middle = (first + last)/2;
     seq = tsequenceset_seq_n(ts, middle);
-    if (contains_period_timestamp_internal(&seq->period, t))
+    if (contains_period_timestamp(&seq->period, t))
     {
       *loc = middle;
       return true;
@@ -287,7 +424,8 @@ tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t, int *loc)
  *****************************************************************************/
 
 /**
- * Append an instant to the temporal value
+ * @ingroup libmeos_temporal_transf
+ * @brief Append an instant to the temporal value.
  */
 TSequenceSet *
 tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
@@ -312,7 +450,8 @@ tsequenceset_append_tinstant(const TSequenceSet *ts, const TInstant *inst)
 }
 
 /**
- * Merge the two temporal values
+ * @ingroup libmeos_temporal_transf
+ * @brief Merge the two temporal values
  */
 TSequenceSet *
 tsequenceset_merge(const TSequenceSet *ts1, const TSequenceSet *ts2)
@@ -322,7 +461,8 @@ tsequenceset_merge(const TSequenceSet *ts1, const TSequenceSet *ts2)
 }
 
 /**
- * Merge the array of temporal sequence set values.
+ * @ingroup libmeos_temporal_transf
+ * @brief Merge the array of temporal sequence set values.
  * The values in the array may overlap in a single instant.
  *
  * @param[in] seqsets Array of values
@@ -364,7 +504,7 @@ tsequenceset_merge_array(const TSequenceSet **seqsets, int count)
  * @param[in] ts,seq Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time
+ * @result Return false if the input values do not overlap on time
  */
 bool
 synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
@@ -373,7 +513,7 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
   /* Test whether the bounding period of the two temporal values overlap */
   Period p;
   tsequenceset_period(ts, &p);
-  if (!overlaps_period_period_internal(&seq->period, &p))
+  if (! overlaps_period_period(&seq->period, &p))
     return false;
 
   int loc;
@@ -417,23 +557,23 @@ synchronize_tsequenceset_tsequence(const TSequenceSet *ts, const TSequence *seq,
  * @param[in] ts1,ts2 Input values
  * @param[in] mode Intersection or synchronization (with or without adding crossings)
  * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time
+ * @result Return false if the input values do not overlap on time
  */
 bool
-synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSet *ts2,
-  SyncMode mode, TSequenceSet **inter1, TSequenceSet **inter2)
+synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1,
+  const TSequenceSet *ts2, SyncMode mode, TSequenceSet **inter1,
+  TSequenceSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
   tsequenceset_period(ts1, &p1);
   tsequenceset_period(ts2, &p2);
-  if (!overlaps_period_period_internal(&p1, &p2))
+  if (! overlaps_period_period(&p1, &p2))
     return false;
 
-  TSequence **sequences1 = palloc(sizeof(TSequence *) *
-    (ts1->count + ts2->count));
-  TSequence **sequences2 = palloc(sizeof(TSequence *) *
-    (ts1->count + ts2->count));
+  int count = ts1->count + ts2->count;
+  TSequence **sequences1 = palloc(sizeof(TSequence *) * count);
+  TSequence **sequences2 = palloc(sizeof(TSequence *) * count);
   int i = 0, j = 0, k = 0;
   while (i < ts1->count && j < ts2->count)
   {
@@ -454,7 +594,8 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSe
     {
       i++; j++;
     }
-    else if (cmp < 0 || (cmp == 0 && ! seq1->period.upper_inc && seq2->period.upper_inc))
+    else if (cmp < 0 ||
+      (cmp == 0 && ! seq1->period.upper_inc && seq2->period.upper_inc))
       i++;
     else
       j++;
@@ -479,13 +620,14 @@ synchronize_tsequenceset_tsequenceset(const TSequenceSet *ts1, const TSequenceSe
  *
  * @param[in] ts,inst Input values
  * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time
+ * @result Return false if the input values do not overlap on time
  */
 bool
 intersection_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
   TInstant **inter1, TInstant **inter2)
 {
-  TInstant *inst1 = (TInstant *) tsequenceset_restrict_timestamp(ts, inst->t, REST_AT);
+  TInstant *inst1 = (TInstant *)
+    tsequenceset_restrict_timestamp(ts, inst->t, REST_AT);
   if (inst1 == NULL)
     return false;
 
@@ -499,7 +641,7 @@ intersection_tsequenceset_tinstant(const TSequenceSet *ts, const TInstant *inst,
  *
  * @param[in] inst,ts Input values
  * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time
+ * @result Return false if the input values do not overlap on time
  */
 bool
 intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
@@ -513,17 +655,17 @@ intersection_tinstant_tsequenceset(const TInstant *inst, const TSequenceSet *ts,
  *
  * @param[in] ts,ti Input values
  * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on time
+ * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet *ti,
-  TInstantSet **inter1, TInstantSet **inter2)
+intersection_tsequenceset_tinstantset(const TSequenceSet *ts,
+  const TInstantSet *ti, TInstantSet **inter1, TInstantSet **inter2)
 {
   /* Test whether the bounding period of the two temporal values overlap */
   Period p1, p2;
   tsequenceset_period(ts, &p1);
   tinstantset_period(ti, &p2);
-  if (!overlaps_period_period_internal(&p1, &p2))
+  if (! overlaps_period_period(&p1, &p2))
     return false;
 
   TInstant **instants1 = palloc(sizeof(TInstant *) * ti->count);
@@ -533,7 +675,7 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet 
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     const TInstant *inst = tinstantset_inst_n(ti, j);
-    if (contains_period_timestamp_internal(&seq->period, inst->t))
+    if (contains_period_timestamp(&seq->period, inst->t))
     {
       instants1[k] = tsequence_at_timestamp(seq, inst->t);
       instants2[k++] = inst;
@@ -565,11 +707,11 @@ intersection_tsequenceset_tinstantset(const TSequenceSet *ts, const TInstantSet 
  *
  * @param[in] ti,ts Input values
  * @param[out] inter1,inter2 Output values
- * @result Returns false if the input values do not overlap on time
+ * @result Return false if the input values do not overlap on time
  */
 bool
-intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet *ts,
-  TInstantSet **inter1, TInstantSet **inter2)
+intersection_tinstantset_tsequenceset(const TInstantSet *ti,
+  const TSequenceSet *ts, TInstantSet **inter1, TInstantSet **inter2)
 {
   return intersection_tsequenceset_tinstantset(ts, ti, inter2, inter1);
 }
@@ -580,7 +722,7 @@ intersection_tinstantset_tsequenceset(const TInstantSet *ti, const TSequenceSet 
  * @param[in] seq,ts Input values
  * @param[in] mode Enumeration for either intersect or synchronize
  * @param[out] inter1, inter2 Output values
- * @result Returns false if the input values do not overlap on times
+ * @result Return false if the input values do not overlap on times
  */
 bool
 intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts,
@@ -594,7 +736,8 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ts
  *****************************************************************************/
 
 /**
- * Returns the string representation of the temporal value
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the string representation of the temporal value.
  *
  * @param[in] ts Temporal value
  * @param[in] value_out Function called to output the base value
@@ -621,8 +764,9 @@ tsequenceset_to_string(const TSequenceSet *ts, char *(*value_out)(Oid, Datum))
 }
 
 /**
- * Write the binary representation of the temporal value
- * into the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Write the binary representation of the temporal value into the
+ * buffer.
  *
  * @param[in] ts Temporal value
  * @param[in] buf Buffer
@@ -640,8 +784,9 @@ tsequenceset_write(const TSequenceSet *ts, StringInfo buf)
 }
 
 /**
- * Returns a new temporal value from its binary representation
- * read from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a new temporal value from its binary representation read from
+ * the buffer.
  *
  * @param[in] buf Buffer
  * @param[in] temptype Temporal type
@@ -662,10 +807,11 @@ tsequenceset_read(StringInfo buf, CachedType temptype)
  *****************************************************************************/
 
 /**
- * Cast a temporal float value as a floatrange
+ * @ingroup libmeos_temporal_cast
+ * @brief Cast a temporal float value as a floatrange.
  */
 RangeType *
-tfloatseqset_to_range(const TSequenceSet *ts)
+tfloatseqset_range(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
@@ -707,10 +853,11 @@ tfloatseqset_to_range(const TSequenceSet *ts)
 }
 
 /**
- * Cast the temporal integer value as a temporal float value
+ * @ingroup libmeos_temporal_cast
+ * @brief Cast the temporal integer value as a temporal float value.
  */
 TSequenceSet *
-tintseqset_to_tfloatseqset(const TSequenceSet *ts)
+tintseqset_tfloatseqset(const TSequenceSet *ts)
 {
   TSequenceSet *result = tsequenceset_copy(ts);
   result->temptype = T_TFLOAT;
@@ -732,14 +879,15 @@ tintseqset_to_tfloatseqset(const TSequenceSet *ts)
 }
 
 /**
- * Cast the temporal float value as a temporal integer value
+ * @ingroup libmeos_temporal_cast
+ * @brief Cast the temporal float value as a temporal integer value.
  */
 TSequenceSet *
-tfloatseqset_to_tintseqset(const TSequenceSet *ts)
+tfloatseqset_tintseqset(const TSequenceSet *ts)
 {
   if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-        errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
   TSequenceSet *result = tsequenceset_copy(ts);
   result->temptype = T_TINT;
   MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
@@ -764,34 +912,35 @@ tfloatseqset_to_tintseqset(const TSequenceSet *ts)
  *****************************************************************************/
 
 /**
- * Construct a temporal sequence set value from from a base value and
- * a timestamp set (internal function)
- $
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a temporal sequence set value from from a base value and
+ * a timestamp set.
+ *
  * @param[in] value Base value
  * @param[in] temptype Temporal type
  * @param[in] ps Period set
  * @param[in] linear True when the resulting value has linear interpolation
 */
 TSequenceSet *
-tsequenceset_from_base_internal(Datum value, CachedType temptype,
+tsequenceset_from_base(Datum value, CachedType temptype,
   const PeriodSet *ps, bool linear)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
   {
     const Period *p = periodset_per_n(ps, i);
-    sequences[i] = tsequence_from_base_internal(value, temptype, p, linear);
+    sequences[i] = tsequence_from_base(value, temptype, p, linear);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
 
-PG_FUNCTION_INFO_V1(tsequenceset_from_base);
+PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
 /**
- * Construct a temporal sequence set value from from a base value and
- a timestamp set
+ * Construct a temporal sequence set value from from a base value and a
+ * timestamp set
  */
 PGDLLEXPORT Datum
-tsequenceset_from_base(PG_FUNCTION_ARGS)
+Tsequenceset_from_base(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_ANYDATUM(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
@@ -801,7 +950,7 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
   else
     linear = PG_GETARG_BOOL(2);
   CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequenceSet *result = tsequenceset_from_base_internal(value, temptype,
+  TSequenceSet *result = tsequenceset_from_base(value, temptype,
     ps, linear);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_POINTER(result);
@@ -812,28 +961,32 @@ tsequenceset_from_base(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Transform the temporal instant value into a temporal sequence set value
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal instant value into a temporal sequence set.
+ * value.
  */
 TSequenceSet *
-tinstant_to_tsequenceset(const TInstant *inst, bool linear)
+tinstant_tsequenceset(const TInstant *inst, bool linear)
 {
-  TSequence *seq = tinstant_to_tsequence(inst, linear);
-  TSequenceSet *result = tsequence_to_tsequenceset(seq);
+  TSequence *seq = tinstant_tsequence(inst, linear);
+  TSequenceSet *result = tsequence_tsequenceset(seq);
   pfree(seq);
   return result;
 }
 
 /**
- * Transform the temporal instant set value into a temporal sequence set value
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal instant set value into a temporal sequence set
+ * value.
  */
 TSequenceSet *
-tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
+tinstantset_tsequenceset(const TInstantSet *ti, bool linear)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    sequences[i] = tinstant_to_tsequence(inst, linear);
+    sequences[i] = tinstant_tsequence(inst, linear);
   }
   TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
     ti->count, NORMALIZE_NO);
@@ -842,24 +995,26 @@ tinstantset_to_tsequenceset(const TInstantSet *ti, bool linear)
 }
 
 /**
- * Transform the temporal sequence set value from the temporal sequence
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal sequence set value from the temporal sequence.
  */
 TSequenceSet *
-tsequence_to_tsequenceset(const TSequence *seq)
+tsequence_tsequenceset(const TSequence *seq)
 {
   return tsequenceset_make(&seq, 1, NORMALIZE_NO);
 }
 
 /**
- * Transform the temporal value with continuous base type from stepwise
- * to linear interpolation
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal value with continuous base type from stepwise
+ * to linear interpolation.
  */
 TSequenceSet *
-tstepseqset_to_linear(const TSequenceSet *ts)
+tstepseqset_tlinearseqset(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tstepseq_to_linear(tsequenceset_seq_n(ts, 0));
+    return tstepseq_tlinearseq(tsequenceset_seq_n(ts, 0));
 
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount);
@@ -867,13 +1022,15 @@ tstepseqset_to_linear(const TSequenceSet *ts)
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tstepseq_to_linear1(seq, &sequences[k]);
+    k += tstepseq_tlinearseq1(seq, &sequences[k]);
   }
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
 /**
- * Shift and/or scale the time span of the temporal value by the two intervals
+ * @ingroup libmeos_temporal_transf
+ * @brief Shift and/or scale the time span of the temporal value by the two
+ * intervals.
  *
  * @pre The duration is greater than 0 if it is not NULL
  */
@@ -886,8 +1043,9 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
   /* Singleton sequence set */
   if (ts->count == 1)
   {
-    TSequence *seq = tsequence_shift_tscale(tsequenceset_seq_n(ts, 0), start, duration);
-    result = tsequence_to_tsequenceset(seq);
+    TSequence *seq = tsequence_shift_tscale(tsequenceset_seq_n(ts, 0), start,
+      duration);
+    result = tsequence_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -929,16 +1087,18 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
  *****************************************************************************/
 
 /**
- * Returns the distinct base values of the temporal value with stepwise
- * interpolation
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of distinct base values of the temporal value with
+ * stepwise interpolation
  *
  * @param[in] ts Temporal value
  * @param[out] result Array of Datums
  * @result Number of elements in the output array
  */
-int
-tsequenceset_values(const TSequenceSet *ts, Datum *result)
+Datum *
+tsequenceset_values(const TSequenceSet *ts, int *count)
 {
+  Datum *result = palloc(sizeof(Datum *) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
@@ -952,52 +1112,38 @@ tsequenceset_values(const TSequenceSet *ts, Datum *result)
     datumarr_sort(result, k, basetype);
     k = datumarr_remove_duplicates(result, k, basetype);
   }
-  return k;
-}
-
-/**
- * Returns the distinct base values of the temporal value with stepwise
- * interpolation as a PostgreSQL array
- */
-ArrayType *
-tsequenceset_values_array(const TSequenceSet *ts)
-{
-  Datum *values = palloc(sizeof(Datum *) * ts->totalcount);
-  int count = tsequenceset_values(ts, values);
-  ArrayType *result = datumarr_to_array(values, count,
-    temptype_basetype(ts->temptype));
-  pfree(values);
+  *count = k;
   return result;
 }
 
 /**
- * Returns the ranges of base values of the temporal float value
- * as a PostgreSQL array
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of ranges of base values of the temporal float
+ * value.
  */
-ArrayType *
-tfloatseqset_ranges_array(const TSequenceSet *ts)
+RangeType **
+tfloatseqset_ranges(const TSequenceSet *ts, int *count)
 {
-  int count = MOBDB_FLAGS_GET_LINEAR(ts->flags) ? ts->count : ts->totalcount;
-  RangeType **ranges = palloc(sizeof(RangeType *) * count);
+  int count1 = MOBDB_FLAGS_GET_LINEAR(ts->flags) ?
+    ts->count : ts->totalcount;
+  RangeType **ranges = palloc(sizeof(RangeType *) * count1);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tfloatseq_ranges(seq, &ranges[k]);
+    k += tfloatseq_ranges1(seq, &ranges[k]);
   }
-  int newcount;
-  RangeType **normranges = rangearr_normalize(ranges, k, &newcount);
-  if (newcount > 1)
-    rangearr_sort(normranges, newcount);
-  ArrayType *result = rangearr_to_array(normranges, newcount, T_FLOATRANGE);
-  pfree_array((void **) normranges, newcount);
+  RangeType **result = rangearr_normalize(ranges, k, count);
+  if ((*count) > 1)
+    rangearr_sort(result, *count);
   pfree_array((void **) ranges, k);
   return result;
 }
 
 /**
- * Returns a pointer to the instant with minimum base value of the
- * temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a pointer to the instant with minimum base value of the
+ * temporal value.
  *
  * The function does not take into account whether the instant is at an
  * exclusive bound or not
@@ -1030,7 +1176,8 @@ tsequenceset_min_instant(const TSequenceSet *ts)
 }
 
 /**
- * Returns the minimum base value of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the minimum base value of the temporal value.
  */
 Datum
 tsequenceset_min_value(const TSequenceSet *ts)
@@ -1057,7 +1204,8 @@ tsequenceset_min_value(const TSequenceSet *ts)
 }
 
 /**
- * Returns the maximum base value of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the maximum base value of the temporal value.
  */
 Datum
 tsequenceset_max_value(const TSequenceSet *ts)
@@ -1084,10 +1232,12 @@ tsequenceset_max_value(const TSequenceSet *ts)
 }
 
 /**
- * Returns the time on which the temporal value is defined as a period set
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the time on which the temporal value is defined as a
+ * period set.
  */
 PeriodSet *
-tsequenceset_get_time(const TSequenceSet *ts)
+tsequenceset_time(const TSequenceSet *ts)
 {
   const Period **periods = palloc(sizeof(Period *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -1101,7 +1251,8 @@ tsequenceset_get_time(const TSequenceSet *ts)
 }
 
 /**
- * Returns the timespan of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the timespan of the temporal value.
  */
 Datum
 tsequenceset_timespan(const TSequenceSet *ts)
@@ -1109,12 +1260,14 @@ tsequenceset_timespan(const TSequenceSet *ts)
   const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
   const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
   Datum result = call_function2(timestamp_mi,
-    TimestampTzGetDatum(seq2->period.upper), TimestampTzGetDatum(seq1->period.lower));
+    TimestampTzGetDatum(seq2->period.upper),
+    TimestampTzGetDatum(seq1->period.lower));
   return result;
 }
 
 /**
- * Returns the duration of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the duration of the temporal value.
  */
 Datum
 tsequenceset_duration(const TSequenceSet *ts)
@@ -1135,7 +1288,8 @@ tsequenceset_duration(const TSequenceSet *ts)
 }
 
 /**
- * Returns the bounding period on which the temporal value is defined
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the bounding period on which the temporal value is defined.
  */
 void
 tsequenceset_period(const TSequenceSet *ts, Period *p)
@@ -1148,10 +1302,11 @@ tsequenceset_period(const TSequenceSet *ts, Period *p)
 }
 
 /**
- * Returns the sequences of the temporal value as a C array
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of pointers to the sequences of the temporal value.
  */
 const TSequence **
-tsequenceset_sequences(const TSequenceSet *ts)
+tsequenceset_sequences_p(const TSequenceSet *ts)
 {
   const TSequence **result = palloc(sizeof(TSequence *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -1160,50 +1315,39 @@ tsequenceset_sequences(const TSequenceSet *ts)
 }
 
 /**
- * Returns the sequences of the temporal value as a PostgreSQL array
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of sequences of the temporal value.
  */
-ArrayType *
-tsequenceset_sequences_array(const TSequenceSet *ts)
+TSequence **
+tsequenceset_sequences(const TSequenceSet *ts)
 {
-  const TSequence **sequences = tsequenceset_sequences(ts);
-  ArrayType *result = temporalarr_to_array((const Temporal **) sequences, ts->count);
-  pfree(sequences);
+  TSequence **result = palloc(sizeof(TSequence *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+    result[i] = tsequence_copy(tsequenceset_seq_n(ts, i));
   return result;
 }
 
 /**
- * Returns the segments of the temporal value as a C array
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of segments of the temporal value.
  */
-static int
-tsequenceset_segments(const TSequenceSet *ts, TSequence **result)
+TSequence **
+tsequenceset_segments(const TSequenceSet *ts, int *count)
 {
+  TSequence **result = palloc(sizeof(TSequence *) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_segments(seq, &result[k]);
+    k += tsequence_segments1(seq, &result[k]);
   }
-  return k;
-}
-
-/**
- * Returns the segments of the temporal value as a PostgreSQL array
- */
-ArrayType *
-tsequenceset_segments_array(const TSequenceSet *ts)
-{
-  if (ts->count == 1)
-    return tsequence_segments_array(tsequenceset_seq_n(ts, 0));
-
-  TSequence **segments = palloc(sizeof(TSequence *) * ts->totalcount);
-  int count = tsequenceset_segments(ts, segments);
-  ArrayType *result = temporalarr_to_array((const Temporal **) segments, count);
-  pfree_array((void **) segments, count);
+  *count = k;
   return result;
 }
 
 /**
- * Returns the number of distinct instants of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the number of distinct instants of the temporal value.
  */
 int
 tsequenceset_num_instants(const TSequenceSet *ts)
@@ -1215,7 +1359,7 @@ tsequenceset_num_instants(const TSequenceSet *ts)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     result += seq->count;
-    if (!first)
+    if (! first)
     {
       if (tinstant_eq(lastinst, tsequence_inst_n(seq, 0)))
         result --;
@@ -1227,7 +1371,8 @@ tsequenceset_num_instants(const TSequenceSet *ts)
 }
 
 /**
- * Returns the n-th distinct instant of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the n-th distinct instant of the temporal value.
  */
 const TInstant *
 tsequenceset_inst_n(const TSequenceSet *ts, int n)
@@ -1245,7 +1390,7 @@ tsequenceset_inst_n(const TSequenceSet *ts, int n)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     count += seq->count;
-    if (!first && tinstant_eq(prev, tsequence_inst_n(seq, 0)))
+    if (! first && tinstant_eq(prev, tsequence_inst_n(seq, 0)))
     {
         prevcount --;
         count --;
@@ -1261,16 +1406,17 @@ tsequenceset_inst_n(const TSequenceSet *ts, int n)
     first = false;
     i++;
   }
-  if (!found)
+  if (! found)
     return NULL;
   return next;
 }
 
 /**
- * Returns the distinct instants of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the distinct instants of the temporal value.
  */
 const TInstant **
-tsequenceset_instants(const TSequenceSet *ts, int *count)
+tsequenceset_instants(const TSequenceSet *ts)
 {
   const TInstant **result = palloc(sizeof(TInstant *) * ts->totalcount);
   int k = 0;
@@ -1280,26 +1426,12 @@ tsequenceset_instants(const TSequenceSet *ts, int *count)
     for (int j = 0; j < seq->count; j++)
       result[k++] = tsequence_inst_n(seq, j);
   }
-  *count = ts->totalcount;
   return result;
 }
 
 /**
- * Returns the distinct instants of the temporal value
- */
-ArrayType *
-tsequenceset_instants_array(const TSequenceSet *ts)
-{
-  int count;
-  const TInstant **instants = tsequenceset_instants(ts, &count);
-  count = tinstarr_remove_duplicates(instants, ts->totalcount);
-  ArrayType *result = temporalarr_to_array((const Temporal **)instants, count);
-  pfree(instants);
-  return result;
-}
-
-/**
- * Returns the start timestamp of the temporal value.
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the start timestamp of the temporal value.
  */
 TimestampTz
 tsequenceset_start_timestamp(const TSequenceSet *ts)
@@ -1309,7 +1441,8 @@ tsequenceset_start_timestamp(const TSequenceSet *ts)
 }
 
 /**
- * Returns the end timestamp of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end timestamp of the temporal value.
  */
 TimestampTz
 tsequenceset_end_timestamp(const TSequenceSet *ts)
@@ -1319,7 +1452,8 @@ tsequenceset_end_timestamp(const TSequenceSet *ts)
 }
 
 /**
- * Returns the number of distinct timestamps of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the number of distinct timestamps of the temporal value.
  */
 int
 tsequenceset_num_timestamps(const TSequenceSet *ts)
@@ -1331,7 +1465,7 @@ tsequenceset_num_timestamps(const TSequenceSet *ts)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     result += seq->count;
-    if (!first)
+    if (! first)
     {
       if (lasttime == tsequence_inst_n(seq, 0)->t)
         result --;
@@ -1343,7 +1477,8 @@ tsequenceset_num_timestamps(const TSequenceSet *ts)
 }
 
 /**
- * Returns the n-th distinct timestamp of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the n-th distinct timestamp of the temporal value.
  */
 bool
 tsequenceset_timestamp_n(const TSequenceSet *ts, int n, TimestampTz *result)
@@ -1366,7 +1501,7 @@ tsequenceset_timestamp_n(const TSequenceSet *ts, int n, TimestampTz *result)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     count += seq->count;
-    if (!first && prev == tsequence_inst_n(seq, 0)->t)
+    if (! first && prev == tsequence_inst_n(seq, 0)->t)
     {
         prevcount --;
         count --;
@@ -1382,56 +1517,104 @@ tsequenceset_timestamp_n(const TSequenceSet *ts, int n, TimestampTz *result)
     first = false;
     i++;
   }
-  if (!found)
+  if (! found)
     return false;
   *result = next;
   return true;
 }
 
 /**
- * Returns the distinct timestamps of the temporal value
- *
- * @param[out] result Array on which the timestamps are stored
- * @param[in] ts Temporal value
- * @result Number of elements in the output array
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of distinct timestamps of the temporal value.
  */
-int
-tsequenceset_timestamps(const TSequenceSet *ts, TimestampTz *result)
+TimestampTz *
+tsequenceset_timestamps(const TSequenceSet *ts, int *count)
 {
+  TimestampTz *result = palloc(sizeof(TimestampTz) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tsequence_timestamps(seq, &result[k]);
+    k += tsequence_timestamps1(seq, &result[k]);
   }
   if (k > 1)
   {
     timestamparr_sort(result, k);
     k = timestamparr_remove_duplicates(result, k);
   }
-  return k;
-}
-
-/**
- * Returns the distinct timestamps of the temporal value as a
- * PostgreSQL array
- */
-ArrayType *
-tsequenceset_timestamps_array(const TSequenceSet *ts)
-{
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->totalcount);
-  int count = tsequenceset_timestamps(ts, times);
-  ArrayType *result = timestamparr_to_array(times, count);
-  pfree(times);
+  *count = k;
   return result;
 }
 
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base value of the temporal value at the timestamp.
+ *
+ * @param[in] ts Temporal value
+ * @param[in] t Timestamp
+ * @param[out] result Base value
+ * @result Return true if the timestamp is contained in the temporal value
+ * @pre A bounding box test has been done before by the calling function
+ */
+bool
+tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t,
+  Datum *result)
+{
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, 0), t, result);
+
+  /* General case */
+  int loc;
+  if (! tsequenceset_find_timestamp(ts, t, &loc))
+    return false;
+  return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, loc), t, result);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base value of the temporal value at the timestamp when the
+ * timestamp may be at an exclusive bound.
+ *
+ * @param[in] ts Temporal value
+ * @param[in] t Timestamp
+ * @param[out] result Base value
+ * @result Return true if the timestamp is found in the temporal value
+ */
+bool
+tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
+  Datum *result)
+{
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tsequence_value_at_timestamp_inc(tsequenceset_seq_n(ts, 0),
+      t, result);
+
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    if (contains_period_timestamp(&seq->period, t))
+      return tsequence_value_at_timestamp(seq, t, result);
+    /* Test whether the timestamp is at one of the bounds */
+    const TInstant *inst = tsequence_inst_n(seq, 0);
+    if (inst->t == t)
+      return tinstant_value_at_timestamp(inst, t, result);
+    inst = tsequence_inst_n(seq, seq->count - 1);
+    if (inst->t == t)
+      return tinstant_value_at_timestamp(inst, t, result);
+  }
+  /* Since this function is always called with a timestamp that appears
+   * in the sequence set value the next statement is never reached */
+  return false;
+}
+
 /*****************************************************************************
- * Ever/always comparison operators
+ * Ever/always functions
  *****************************************************************************/
 
 /**
- * Returns true if the temporal value is ever equal to the base value
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
 tsequenceset_ever_eq(const TSequenceSet *ts, Datum value)
@@ -1447,7 +1630,8 @@ tsequenceset_ever_eq(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * Returns true if the temporal value is always equal to the base value
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return true if the temporal value is always equal to the base value.
  */
 bool
 tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
@@ -1462,7 +1646,7 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
     return true;
 
   for (int i = 0; i < ts->count; i++)
-    if (!tsequence_always_eq(tsequenceset_seq_n(ts, i), value))
+    if (! tsequence_always_eq(tsequenceset_seq_n(ts, i), value))
       return false;
   return true;
 }
@@ -1470,7 +1654,8 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 /*****************************************************************************/
 
 /**
- * Returns true if the temporal value is ever less than the base value
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return true if the temporal value is ever less than the base value.
  */
 bool
 tsequenceset_ever_lt(const TSequenceSet *ts, Datum value)
@@ -1489,8 +1674,9 @@ tsequenceset_ever_lt(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * Returns true if the temporal value is ever less than or equal
- * to the base value
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return true if the temporal value is ever less than or equal
+ * to the base value.
  */
 bool
 tsequenceset_ever_le(const TSequenceSet *ts, Datum value)
@@ -1509,7 +1695,8 @@ tsequenceset_ever_le(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * Returns true if the temporal value is always less than the base value
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return true if the temporal value is always less than the base value.
  */
 bool
 tsequenceset_always_lt(const TSequenceSet *ts, Datum value)
@@ -1528,8 +1715,9 @@ tsequenceset_always_lt(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * Returns true if the temporal value is always less than or equal
- * to the base value
+ * @ingroup libmeos_temporal_comparison
+ * @brief Return true if the temporal value is always less than or equal
+ * to the base value.
  */
 bool
 tsequenceset_always_le(const TSequenceSet *ts, Datum value)
@@ -1557,7 +1745,8 @@ tsequenceset_always_le(const TSequenceSet *ts, Datum value)
  *****************************************************************************/
 
 /**
- * Restricts the temporal value to the base value.
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to the base value.
  *
  * @note There is no bounding box test in this function, it is done in the
  * dispatch function for all temporal types.
@@ -1567,8 +1756,7 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tsequence_restrict_value(tsequenceset_seq_n(ts, 0), value,
-      atfunc);
+    return tsequence_restrict_value(tsequenceset_seq_n(ts, 0), value, atfunc);
 
   /* General case */
   int count = ts->totalcount;
@@ -1586,7 +1774,9 @@ tsequenceset_restrict_value(const TSequenceSet *ts, Datum value, bool atfunc)
 }
 
 /**
- * Restricts the temporal value to the (complement of the) array of base values
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to the (complement of the) array of
+ * base values.
  *
  * @param[in] ts Temporal value
  * @param[in] values Array of base values
@@ -1623,9 +1813,9 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
   if (k == 0)
     return tsequenceset_copy(ts);
 
-  PeriodSet *ps1 = tsequenceset_get_time(ts);
-  PeriodSet *ps2 = tsequenceset_get_time(atresult);
-  PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
+  PeriodSet *ps1 = tsequenceset_time(ts);
+  PeriodSet *ps2 = tsequenceset_time(atresult);
+  PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
   TSequenceSet *result = NULL;
   if (ps != NULL)
   {
@@ -1637,7 +1827,9 @@ tsequenceset_restrict_values(const TSequenceSet *ts, const Datum *values,
 }
 
 /**
- * Restricts the temporal number to the range of base values
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal number to the range of base values.
+ *
  * @note It is supposed that a bounding box test has been done in the dispatch
  * function.
  */
@@ -1666,8 +1858,9 @@ tnumberseqset_restrict_range(const TSequenceSet *ts, const RangeType *range,
 }
 
 /**
- * Restricts the temporal number to the (complement of the) array of ranges of
- * base values
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal number to the (complement of the) array of
+ * ranges of base values
  *
  * @param[in] ts Temporal number
  * @param[in] normranges Array of ranges of base values
@@ -1703,7 +1896,8 @@ tnumberseqset_restrict_ranges(const TSequenceSet *ts, RangeType **normranges,
 }
 
 /**
- * Restricts the temporal value to (the complement of) the
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to (the complement of) the
  * minimum/maximum base value
  */
 TSequenceSet *
@@ -1714,7 +1908,8 @@ tsequenceset_restrict_minmax(const TSequenceSet *ts, bool min, bool atfunc)
 }
 
 /**
- * Restricts the temporal value to the (the complement of) timestamp
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to the (the complement of) timestamp.
  */
 Temporal *
 tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
@@ -1723,7 +1918,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
   /* Bounding box test */
   Period p;
   tsequenceset_period(ts, &p);
-  if (!contains_period_timestamp_internal(&p, t))
+  if (! contains_period_timestamp(&p, t))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts);
 
   /* Singleton sequence set */
@@ -1737,7 +1932,7 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
   if (atfunc)
   {
     int loc;
-    if (!tsequenceset_find_timestamp(ts, t, &loc))
+    if (! tsequenceset_find_timestamp(ts, t, &loc))
       return NULL;
     seq = tsequenceset_seq_n(ts, loc);
     return (Temporal *) tsequence_at_timestamp(seq, t);
@@ -1768,66 +1963,8 @@ tsequenceset_restrict_timestamp(const TSequenceSet *ts, TimestampTz t,
 }
 
 /**
- * Returns the base value of the temporal value at the timestamp
- *
- * @param[in] ts Temporal value
- * @param[in] t Timestamp
- * @param[out] result Base value
- * @result Returns true if the timestamp is contained in the temporal value
- * @pre A bounding box test has been done before by the calling function
- */
-bool
-tsequenceset_value_at_timestamp(const TSequenceSet *ts, TimestampTz t, Datum *result)
-{
-  /* Singleton sequence set */
-  if (ts->count == 1)
-    return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, 0), t, result);
-
-  /* General case */
-  int loc;
-  if (!tsequenceset_find_timestamp(ts, t, &loc))
-    return false;
-  return tsequence_value_at_timestamp(tsequenceset_seq_n(ts, loc), t, result);
-}
-
-/**
- * Returns the base value of the temporal value at the timestamp when the
- * timestamp may be at an exclusive bound
- *
- * @param[in] ts Temporal value
- * @param[in] t Timestamp
- * @param[out] result Base value
- * @result Returns true if the timestamp is found in the temporal value
- */
-bool
-tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
-  Datum *result)
-{
-  /* Singleton sequence set */
-  if (ts->count == 1)
-    return tsequence_value_at_timestamp_inc(tsequenceset_seq_n(ts, 0),
-      t, result);
-
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    if (contains_period_timestamp_internal(&seq->period, t))
-      return tsequence_value_at_timestamp(seq, t, result);
-    /* Test whether the timestamp is at one of the bounds */
-    const TInstant *inst = tsequence_inst_n(seq, 0);
-    if (inst->t == t)
-      return tinstant_value_at_timestamp(inst, t, result);
-    inst = tsequence_inst_n(seq, seq->count - 1);
-    if (inst->t == t)
-      return tinstant_value_at_timestamp(inst, t, result);
-  }
-  /* Since this function is always called with a timestamp that appears
-   * in the sequence set value the next statement is never reached */
-  return false;
-}
-
-/**
- * Restricts the temporal value to the (complement of the) timestamp set
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to the (complement of the) timestamp set.
  */
 Temporal *
 tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
@@ -1841,7 +1978,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
     if (atfunc && temp != NULL)
     {
       TInstant *inst = (TInstant *) temp;
-      Temporal *result = (Temporal *) tinstantset_make((const TInstant **) &inst, 1, MERGE_NO);
+      Temporal *result = (Temporal *) tinstantset_make((const TInstant **) &inst,
+        1, MERGE_NO);
       pfree(inst);
       return result;
     }
@@ -1852,7 +1990,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   Period p1;
   tsequenceset_period(ts1, &p1);
   const Period *p2 = timestampset_bbox_ptr(ts2);
-  if (!overlaps_period_period_internal(&p1, p2))
+  if (! overlaps_period_period(&p1, p2))
     return atfunc ? NULL : (Temporal *) tsequenceset_copy(ts1);
 
   /* Singleton sequence set */
@@ -1872,7 +2010,7 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
     {
       seq = tsequenceset_seq_n(ts1, j);
       TimestampTz t = timestampset_time_n(ts2, i);
-      if (contains_period_timestamp_internal(&seq->period, t))
+      if (contains_period_timestamp(&seq->period, t))
       {
         instants[count++] = tsequence_at_timestamp(seq, t);
         i++;
@@ -1891,7 +2029,8 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   {
     /* For the minus case each timestamp will split at most one
      * composing sequence into two */
-    TSequence **sequences = palloc(sizeof(TSequence *) * (ts1->count + ts2->count + 1));
+    TSequence **sequences = palloc(sizeof(TSequence *) *
+      (ts1->count + ts2->count + 1));
     int k = 0;
     for (int i = 0; i < ts1->count; i++)
     {
@@ -1904,15 +2043,17 @@ tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
 }
 
 /**
- * Restricts the temporal value to the (complement of the) period
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to the (complement of the) period.
  */
 TSequenceSet *
-tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfunc)
+tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p,
+  bool atfunc)
 {
   /* Bounding box test */
   Period p1;
   tsequenceset_period(ts, &p1);
-  if (!overlaps_period_period_internal(&p1, p))
+  if (! overlaps_period_period(&p1, p))
     return atfunc ? NULL : tsequenceset_copy(ts);
 
   TSequence *seq;
@@ -1924,7 +2065,7 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
     if (atfunc)
     {
       seq = tsequence_at_period(tsequenceset_seq_n(ts, 0), p);
-      result = tsequence_to_tsequenceset(seq);
+      result = tsequence_tsequenceset(seq);
       pfree(seq);
       return result;
     }
@@ -1938,16 +2079,16 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
     /* AT */
     int loc;
     tsequenceset_find_timestamp(ts, p->lower, &loc);
-    /* We are sure that loc < ts->count because of the bounding period test above */
+    /* We are sure that loc < ts->count due to the bounding period test above */
     TSequence **sequences = palloc(sizeof(TSequence *) * (ts->count - loc));
     TSequence *tofree[2];
     int k = 0, l = 0;
     for (int i = loc; i < ts->count; i++)
     {
       seq = (TSequence *) tsequenceset_seq_n(ts, i);
-      if (contains_period_period_internal(p, &seq->period))
+      if (contains_period_period(p, &seq->period))
         sequences[k++] = seq;
-      else if (overlaps_period_period_internal(p, &seq->period))
+      else if (overlaps_period_period(p, &seq->period))
       {
         TSequence *newseq = tsequence_at_period(seq, p);
         sequences[k++] = tofree[l++] = newseq;
@@ -1972,8 +2113,8 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
   else
   {
     /* MINUS */
-    PeriodSet *ps = tsequenceset_get_time(ts);
-    PeriodSet *resultps = minus_periodset_period_internal(ps, p);
+    PeriodSet *ps = tsequenceset_time(ts);
+    PeriodSet *resultps = minus_periodset_period(ps, p);
     result = NULL;
     if (resultps != NULL)
     {
@@ -1986,7 +2127,8 @@ tsequenceset_restrict_period(const TSequenceSet *ts, const Period *p, bool atfun
 }
 
 /**
- * Restricts the temporal value to the (complement of the) period set
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal value to the (complement of the) period set.
  */
 TSequenceSet *
 tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
@@ -2000,7 +2142,7 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
   Period p1;
   tsequenceset_period(ts, &p1);
   const Period *p2 = periodset_bbox_ptr(ps);
-  if (!overlaps_period_period_internal(&p1, p2))
+  if (! overlaps_period_period(&p1, p2))
     return atfunc ? NULL : tsequenceset_copy(ts);
 
   /* Singleton sequence set */
@@ -2024,14 +2166,14 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     p2 = periodset_per_n(ps, j);
     /* The sequence and the period do not overlap */
-    if (before_period_period_internal(&seq->period, p2))
+    if (before_period_period(&seq->period, p2))
     {
-      if (!atfunc)
+      if (! atfunc)
         /* Copy the sequence */
         sequences[k++] = tsequence_copy(seq);
       i++;
     }
-    else if (overlaps_period_period_internal(&seq->period, p2))
+    else if (overlaps_period_period(&seq->period, p2))
     {
       if (atfunc)
       {
@@ -2044,7 +2186,8 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
         {
           i++; j++;
         }
-        else if (cmp < 0 || (cmp == 0 && ! seq->period.upper_inc && p2->upper_inc))
+        else if (cmp < 0 ||
+          (cmp == 0 && ! seq->period.upper_inc && p2->upper_inc))
           i++;
         else
           j++;
@@ -2078,7 +2221,8 @@ tsequenceset_restrict_periodset(const TSequenceSet *ts, const PeriodSet *ps,
  *****************************************************************************/
 
 /**
- * Returns true if the temporal value intersect the timestamp
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return true if the temporal value intersect the timestamp.
  */
 bool
 tsequenceset_intersects_timestamp(const TSequenceSet *ts, TimestampTz t)
@@ -2090,10 +2234,12 @@ tsequenceset_intersects_timestamp(const TSequenceSet *ts, TimestampTz t)
 }
 
 /**
- * Returns true if the temporal value intersect the timestamp set
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return true if the temporal value intersect the timestamp set.
  */
 bool
-tsequenceset_intersects_timestampset(const TSequenceSet *ts, const TimestampSet *ts1)
+tsequenceset_intersects_timestampset(const TSequenceSet *ts,
+  const TimestampSet *ts1)
 {
   for (int i = 0; i < ts1->count; i++)
     if (tsequenceset_intersects_timestamp(ts, timestampset_time_n(ts1, i)))
@@ -2102,7 +2248,8 @@ tsequenceset_intersects_timestampset(const TSequenceSet *ts, const TimestampSet 
 }
 
 /**
- * Returns true if the temporal value intersect the period
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return true if the temporal value intersect the period.
  */
 bool
 tsequenceset_intersects_period(const TSequenceSet *ts, const Period *p)
@@ -2116,7 +2263,7 @@ tsequenceset_intersects_period(const TSequenceSet *ts, const Period *p)
   for (int i = loc1; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    if (overlaps_period_period_internal(&seq->period, p))
+    if (overlaps_period_period(&seq->period, p))
       return true;
     if (p->upper < seq->period.upper)
       break;
@@ -2125,7 +2272,8 @@ tsequenceset_intersects_period(const TSequenceSet *ts, const Period *p)
 }
 
 /**
- * Returns true if the temporal value intersect the period set
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return true if the temporal value intersect the period set.
  */
 bool
 tsequenceset_intersects_periodset(const TSequenceSet *ts, const PeriodSet *ps)
@@ -2141,7 +2289,8 @@ tsequenceset_intersects_periodset(const TSequenceSet *ts, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * Returns the integral (area under the curve) of the temporal number
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the integral (area under the curve) of the temporal number
  */
 double
 tnumberseqset_integral(const TSequenceSet *ts)
@@ -2153,7 +2302,8 @@ tnumberseqset_integral(const TSequenceSet *ts)
 }
 
 /**
- * Returns the duration of the temporal value as a double
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the duration of the temporal value as a double
  */
 static double
 tsequenceset_interval_double(const TSequenceSet *ts)
@@ -2169,7 +2319,8 @@ tsequenceset_interval_double(const TSequenceSet *ts)
 
 
 /**
- * Returns the time-weighted average of the temporal number
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the time-weighted average of the temporal number
  */
 double
 tnumberseqset_twavg(const TSequenceSet *ts)
@@ -2193,7 +2344,8 @@ tnumberseqset_twavg(const TSequenceSet *ts)
  *****************************************************************************/
 
 /**
- * Returns true if the two temporal sequence set values are equal
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return true if the two temporal sequence set values are equal.
  *
  * @pre The arguments are of the same base type
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -2224,8 +2376,9 @@ tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal value
- * is less than, equal, or greater than the second one
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return -1, 0, or 1 depending on whether the first temporal value
+ * is less than, equal, or greater than the second one.
  *
  * @pre The arguments are of the same base type
  * @note Period and bounding box comparison have been done by the calling
@@ -2263,7 +2416,8 @@ tsequenceset_cmp(const TSequenceSet *ts1, const TSequenceSet *ts2)
  *****************************************************************************/
 
 /**
- * Returns the 32-bit hash value of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the 32-bit hash value of the temporal value.
  */
 uint32
 tsequenceset_hash(const TSequenceSet *ts)

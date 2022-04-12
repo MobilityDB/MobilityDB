@@ -58,18 +58,18 @@
  *****************************************************************************/
 
 /**
- * Returns the temporal disjoint/intersection relationship between the temporal
+ * Return the temporal disjoint/intersection relationship between the temporal
  * network point and the network point
  */
 static Temporal *
-tinterrel_tnpoint_npoint_internal(Temporal *temp, npoint *np, bool tinter,
+tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter,
   bool restr, Datum atvalue)
 {
-  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
+  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo_internal(tempgeom, gs, tinter,
+  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter,
     restr, atvalue);
   pfree(tempgeom);
   pfree(gs);
@@ -77,11 +77,11 @@ tinterrel_tnpoint_npoint_internal(Temporal *temp, npoint *np, bool tinter,
 }
 
 /**
- * Returns the temporal disjoint/intersection relationship between the temporal
+ * Return the temporal disjoint/intersection relationship between the temporal
  * network point and the network point
  */
 static Datum
-tinterrel_tnpoint_npoint(FunctionCallInfo fcinfo, bool tinter)
+tinterrel_tnpoint_npoint_generic(FunctionCallInfo fcinfo, bool tinter)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
@@ -92,7 +92,7 @@ tinterrel_tnpoint_npoint(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = tinterrel_tnpoint_npoint_internal(temp, np, tinter,
+  Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter,
     restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
@@ -101,7 +101,7 @@ tinterrel_tnpoint_npoint(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * Returns the temporal disjoint/intersection relationship between the network
+ * Return the temporal disjoint/intersection relationship between the network
  * point and the temporal network point
  */
 static Datum
@@ -116,7 +116,7 @@ tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = tinterrel_tnpoint_npoint_internal(temp, np, tinter, restr,
+  Temporal *result = tinterrel_tnpoint_npoint(temp, np, tinter, restr,
     atvalue);
   PG_FREE_IF_COPY(temp, 1);
   if (result == NULL)
@@ -127,24 +127,24 @@ tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
 /*****************************************************************************/
 
 /**
- * Returns the temporal disjoint/intersection relationship between the temporal
+ * Return the temporal disjoint/intersection relationship between the temporal
  * network point and the geometry
  */
 static Temporal *
-tinterrel_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs, bool tinter,
+tinterrel_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter,
   bool restr, Datum atvalue)
 {
-  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = tinterrel_tpoint_geo_internal(tempgeom, gs, tinter, restr,
+  Temporal *result = tinterrel_tpoint_geo(tempgeom, gs, tinter, restr,
     atvalue);
   pfree(tempgeom);
   return result;
 }
 
 /**
- * Returns the temporal disjoint/intersection relationship between the geometry
+ * Return the temporal disjoint/intersection relationship between the geometry
  * and the temporal network point
  */
 static Datum
@@ -162,7 +162,7 @@ tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
     restr = true;
   }
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tinterrel_tnpoint_geo_internal(temp, gs, tinter, restr,
+  Temporal *result = tinterrel_tnpoint_geo(temp, gs, tinter, restr,
     atvalue);
   pfree(tempgeom);
   PG_FREE_IF_COPY(gs, 0);
@@ -173,11 +173,11 @@ tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
 }
 
 /**
- * Returns the temporal disjoint/intersection relationship between the temporal
+ * Return the temporal disjoint/intersection relationship between the temporal
  * network point and the geometry
  */
 static Datum
-tinterrel_tnpoint_geo(FunctionCallInfo fcinfo, bool tinter)
+tinterrel_tnpoint_geo_generic(FunctionCallInfo fcinfo, bool tinter)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -191,7 +191,7 @@ tinterrel_tnpoint_geo(FunctionCallInfo fcinfo, bool tinter)
     restr = true;
   }
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tinterrel_tnpoint_geo_internal(temp, gs, tinter, restr,
+  Temporal *result = tinterrel_tnpoint_geo(temp, gs, tinter, restr,
     atvalue);
   pfree(tempgeom);
   PG_FREE_IF_COPY(gs, 1);
@@ -204,34 +204,34 @@ tinterrel_tnpoint_geo(FunctionCallInfo fcinfo, bool tinter)
 /*****************************************************************************/
 
 /**
- * Returns the temporal touches relationship between the temporal network point
+ * Return the temporal touches relationship between the temporal network point
  * and the geometry
  */
 static Temporal *
-ttouches_tnpoint_geo_internal(Temporal *temp, GSERIALIZED *gs,
+ttouches_tnpoint_geo(Temporal *temp, GSERIALIZED *gs,
   bool restr, Datum atvalue)
 {
-  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo_internal(tempgeom, gs, restr, atvalue);
+  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
   pfree(tempgeom);
   return result;
 }
 
 /**
- * Returns the temporal touches relationship between the temporal network point
+ * Return the temporal touches relationship between the temporal network point
  * and the network point
  */
 static Temporal *
-ttouches_tnpoint_npoint_internal(Temporal *temp, npoint *np,
+ttouches_tnpoint_npoint(Temporal *temp, npoint *np,
   bool restr, Datum atvalue)
 {
-  ensure_same_srid(tnpoint_srid_internal(temp), npoint_srid_internal(np));
+  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
   /* Result depends on whether we are computing tintersects or tdisjoint */
-  Temporal *result = ttouches_tpoint_geo_internal(tempgeom, gs, restr, atvalue);
+  Temporal *result = ttouches_tpoint_geo(tempgeom, gs, restr, atvalue);
   pfree(tempgeom);
   pfree(gs);
   return result;
@@ -241,13 +241,13 @@ ttouches_tnpoint_npoint_internal(Temporal *temp, npoint *np,
  * Temporal contains
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tcontains_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Tcontains_geo_tnpoint);
 /**
- * Returns the temporal contains relationship between the geometry and the
+ * Return the temporal contains relationship between the geometry and the
  * temporal network point
  */
 PGDLLEXPORT Datum
-tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
+Tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -261,7 +261,7 @@ tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
     restr = true;
   }
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tcontains_geo_tpoint_internal(gs, tempgeom, restr,
+  Temporal *result = tcontains_geo_tpoint(gs, tempgeom, restr,
     atvalue);
   pfree(tempgeom);
   PG_FREE_IF_COPY(gs, 0);
@@ -275,109 +275,109 @@ tcontains_geo_tnpoint(PG_FUNCTION_ARGS)
  * Temporal disjoint
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tdisjoint_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Tdisjoint_geo_tnpoint);
 /**
- * Returns the temporal disjoint relationship between the geometry and the
+ * Return the temporal disjoint relationship between the geometry and the
  * temporal network point
  */
 PGDLLEXPORT Datum
-tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
+Tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return tinterrel_geo_tnpoint(fcinfo, TDISJOINT);
 }
 
-PG_FUNCTION_INFO_V1(tdisjoint_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Tdisjoint_npoint_tnpoint);
 /**
- * Returns the temporal disjoint relationship between the network point and the
+ * Return the temporal disjoint relationship between the network point and the
  * temporal network point
  */
 PGDLLEXPORT Datum
-tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
+Tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return tinterrel_npoint_tnpoint(fcinfo, TDISJOINT);
 }
 
-PG_FUNCTION_INFO_V1(tdisjoint_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_geo);
 /**
- * Returns the temporal disjoint relationship between the temporal network point
+ * Return the temporal disjoint relationship between the temporal network point
  * and the geometry
  */
 PGDLLEXPORT Datum
-tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
+Tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_geo(fcinfo, TDISJOINT);
+  return tinterrel_tnpoint_geo_generic(fcinfo, TDISJOINT);
 }
 
-PG_FUNCTION_INFO_V1(tdisjoint_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_npoint);
 /**
- * Returns the temporal disjoint relationship between the temporal network point
+ * Return the temporal disjoint relationship between the temporal network point
  * and the network point
  */
 PGDLLEXPORT Datum
-tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
+Tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_npoint(fcinfo, TDISJOINT);
+  return tinterrel_tnpoint_npoint_generic(fcinfo, TDISJOINT);
 }
 
 /*****************************************************************************
  * Temporal intersects
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tintersects_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Tintersects_geo_tnpoint);
 /**
- * Returns the temporal intersects relationship between the geometry and the
+ * Return the temporal intersects relationship between the geometry and the
  * temporal network point
  */
 PGDLLEXPORT Datum
-tintersects_geo_tnpoint(PG_FUNCTION_ARGS)
+Tintersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return tinterrel_geo_tnpoint(fcinfo, TINTERSECTS);
 }
 
-PG_FUNCTION_INFO_V1(tintersects_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Tintersects_npoint_tnpoint);
 /**
- * Returns the temporal intersects relationship between the network point and
+ * Return the temporal intersects relationship between the network point and
  * the temporal network point
  */
 PGDLLEXPORT Datum
-tintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
+Tintersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return tinterrel_npoint_tnpoint(fcinfo, TINTERSECTS);
 }
 
-PG_FUNCTION_INFO_V1(tintersects_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Tintersects_tnpoint_geo);
 /**
- * Returns the temporal intersects relationship between the temporal network
+ * Return the temporal intersects relationship between the temporal network
  * point and the geometry
  */
 PGDLLEXPORT Datum
-tintersects_tnpoint_geo(PG_FUNCTION_ARGS)
+Tintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_geo(fcinfo, TINTERSECTS);
+  return tinterrel_tnpoint_geo_generic(fcinfo, TINTERSECTS);
 }
 
-PG_FUNCTION_INFO_V1(tintersects_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Tintersects_tnpoint_npoint);
 /**
- * Returns the temporal intersects relationship between the temporal network
+ * Return the temporal intersects relationship between the temporal network
  * point and the network point
  */
 PGDLLEXPORT Datum
-tintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
+Tintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_npoint(fcinfo, TINTERSECTS);
+  return tinterrel_tnpoint_npoint_generic(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************
  * Temporal touches
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(ttouches_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Ttouches_geo_tnpoint);
 /**
- * Returns the temporal touches relationship between the geometry and
+ * Return the temporal touches relationship between the geometry and
  * the temporal network point
  */
 PGDLLEXPORT Datum
-ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
+Ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -390,7 +390,7 @@ ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = ttouches_tnpoint_geo_internal(temp, gs, restr, atvalue);
+  Temporal *result = ttouches_tnpoint_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
    if (result == NULL)
@@ -398,13 +398,13 @@ ttouches_geo_tnpoint(PG_FUNCTION_ARGS)
  PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(ttouches_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Ttouches_npoint_tnpoint);
 /**
- * Returns the temporal touches relationship between the network point and
+ * Return the temporal touches relationship between the network point and
  * the temporal network point
  */
 PGDLLEXPORT Datum
-ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
+Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -415,20 +415,20 @@ ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = ttouches_tnpoint_npoint_internal(temp, np, restr, atvalue);
+  Temporal *result = ttouches_tnpoint_npoint(temp, np, restr, atvalue);
   PG_FREE_IF_COPY(temp, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(ttouches_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Ttouches_tnpoint_geo);
 /**
- * Returns the temporal touches relationship between the temporal network point and
+ * Return the temporal touches relationship between the temporal network point and
  * the geometry
  */
 PGDLLEXPORT Datum
-ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
+Ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -441,7 +441,7 @@ ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = ttouches_tnpoint_geo_internal(temp, gs, restr, atvalue);
+  Temporal *result = ttouches_tnpoint_geo(temp, gs, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result == NULL)
@@ -449,13 +449,13 @@ ttouches_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(ttouches_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Ttouches_tnpoint_npoint);
 /**
- * Returns the temporal touches relationship between the temporal network point and
+ * Return the temporal touches relationship between the temporal network point and
  * the network point
  */
 PGDLLEXPORT Datum
-ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
+Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
@@ -466,7 +466,7 @@ ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
     atvalue = PG_GETARG_DATUM(2);
     restr = true;
   }
-  Temporal *result = ttouches_tnpoint_npoint_internal(temp, np, restr, atvalue);
+  Temporal *result = ttouches_tnpoint_npoint(temp, np, restr, atvalue);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -477,13 +477,13 @@ ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
  * Temporal dwithin
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tdwithin_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Tdwithin_geo_tnpoint);
 /**
- * Returns a temporal Boolean that states whether the geometry and the
+ * Return a temporal Boolean that states whether the geometry and the
  * temporal network point are within the given distance
  */
 PGDLLEXPORT Datum
-tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
+Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -498,7 +498,7 @@ tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
     restr = true;
   }
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo_internal(tempgeom, gs, dist, restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
   pfree(tempgeom);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -507,13 +507,13 @@ tdwithin_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tdwithin_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Tdwithin_npoint_tnpoint);
 /**
- * Returns a temporal Boolean that states whether the network point and the
+ * Return a temporal Boolean that states whether the network point and the
  * temporal network point are within the given distance
  */
 PGDLLEXPORT Datum
-tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
+Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np  = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -528,7 +528,7 @@ tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo_internal(tempgeom, gs, dist, restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
   pfree(gs);
   PG_FREE_IF_COPY(temp, 1);
   if (result == NULL)
@@ -536,13 +536,13 @@ tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tdwithin_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_geo);
 /**
- * Returns a temporal Boolean that states whether the temporal network point
+ * Return a temporal Boolean that states whether the temporal network point
  * and the geometry are within the given distance
  */
 PGDLLEXPORT Datum
-tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
+Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -557,7 +557,7 @@ tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
     restr = true;
   }
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo_internal(tempgeom, gs, dist, restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
   pfree(tempgeom);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -566,13 +566,13 @@ tdwithin_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tdwithin_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_npoint);
 /**
- * Returns a temporal Boolean that states whether the temporal network point
+ * Return a temporal Boolean that states whether the temporal network point
  * and the network point are within the given distance
  */
 PGDLLEXPORT Datum
-tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
+Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np  = PG_GETARG_NPOINT(1);
@@ -587,7 +587,7 @@ tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *result = tdwithin_tpoint_geo_internal(tempgeom, gs, dist, restr, atvalue);
+  Temporal *result = tdwithin_tpoint_geo(tempgeom, gs, dist, restr, atvalue);
   pfree(tempgeom);
   pfree(gs);
   PG_FREE_IF_COPY(temp, 0);
@@ -596,13 +596,13 @@ tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tdwithin_tnpoint_tnpoint);
+PG_FUNCTION_INFO_V1(Tdwithin_tnpoint_tnpoint);
 /**
- * Returns a temporal Boolean that states whether the temporal network points
+ * Return a temporal Boolean that states whether the temporal network points
  * are within the given distance
  */
 PGDLLEXPORT Datum
-tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+Tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -616,7 +616,7 @@ tdwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   }
   Temporal *geomsync1 = tnpoint_tgeompoint(temp1);
   Temporal *geomsync2 = tnpoint_tgeompoint(temp2);
-  Temporal *result = tdwithin_tpoint_tpoint_internal(geomsync1, geomsync2, dist,
+  Temporal *result = tdwithin_tpoint_tpoint(geomsync1, geomsync2, dist,
     restr, atvalue);
   pfree(geomsync1); pfree(geomsync2);
   PG_FREE_IF_COPY(temp1, 0);

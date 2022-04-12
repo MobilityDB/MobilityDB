@@ -50,9 +50,8 @@
 extern const TInstant *tsequence_inst_n(const TSequence *seq, int index);
 extern void *tsequence_bbox_ptr(const TSequence *seq);
 extern void tsequence_bbox(const TSequence *seq, void *box);
-extern int *tsequenceset_make_valid_gaps(const TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, bool linear, double maxdist, Interval *maxt,
-  int *countsplits);
+extern void tsequence_make_valid1(const TInstant **instants, int count,
+  bool lower_inc, bool upper_inc, bool linear);
 extern TSequence *tsequence_make1(const TInstant **instants, int count,
   bool lower_inc, bool upper_inc, bool linear, bool normalize);
 extern TSequence *tsequence_make(const TInstant **instants,
@@ -109,47 +108,47 @@ extern TSequence *tsequence_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
-extern TSequence *tsequence_from_base_internal(Datum value,
+extern TSequence *tsequence_from_base(Datum value,
   CachedType temptype, const Period *p, bool linear);
 
-extern Datum tsequence_from_base(PG_FUNCTION_ARGS);
+extern Datum Tsequence_from_base(PG_FUNCTION_ARGS);
 
 /* Cast functions */
 
-extern TSequence *tintseq_to_tfloatseq(const TSequence *seq);
-extern TSequence *tfloatseq_to_tintseq(const TSequence *seq);
+extern TSequence *tintseq_tfloatseq(const TSequence *seq);
+extern TSequence *tfloatseq_tintseq(const TSequence *seq);
 
 /* Transformation functions */
 
-extern TSequence *tinstant_to_tsequence(const TInstant *inst, bool linear);
-extern TSequence *tinstantset_to_tsequence(const TInstantSet *ti, bool linear);
-extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ts);
-extern int tstepseq_to_linear1(const TSequence *seq, TSequence **result);
-extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
+extern TSequence *tinstant_tsequence(const TInstant *inst, bool linear);
+extern TSequence *tinstantset_tsequence(const TInstantSet *ti, bool linear);
+extern TSequence *tsequenceset_tsequence(const TSequenceSet *ts);
+extern int tstepseq_tlinearseq1(const TSequence *seq, TSequence **result);
+extern TSequenceSet *tstepseq_tlinearseq(const TSequence *seq);
 extern TSequence *tsequence_shift_tscale(const TSequence *seq,
   const Interval *start, const Interval *duration);
 
 /* Accessor functions */
 
-extern int tsequence_values(const TSequence *seq, Datum *result);
-extern ArrayType *tsequence_values_array(const TSequence *seq);
+extern int tsequence_values1(const TSequence *seq, Datum *result);
+extern Datum *tsequence_values(const TSequence *seq, int *count);
 extern RangeType *tfloatseq_range(const TSequence *seq);
-extern int tfloatseq_ranges(const TSequence *seq, RangeType **result);
-extern ArrayType *tfloatseq_ranges_array(const TSequence *seq);
-extern PeriodSet *tsequence_get_time(const TSequence *seq);
+extern int tfloatseq_ranges1(const TSequence *seq, RangeType **result);
+extern RangeType **tfloatseq_ranges(const TSequence *seq, int *count);
+extern PeriodSet *tsequence_time(const TSequence *seq);
 extern const TInstant *tsequence_min_instant(const TSequence *seq);
 extern Datum tsequence_min_value(const TSequence *seq);
 extern Datum tsequence_max_value(const TSequence *seq);
 extern Datum tsequence_duration(const TSequence *seq);
 extern void tsequence_period(const TSequence *seq, Period *p);
-extern int tsequence_segments(const TSequence *seq, TSequence **result);
-extern ArrayType *tsequence_segments_array(const TSequence *seq);
-extern const TInstant **tsequence_instants(const TSequence *seq, int *count);
-extern ArrayType *tsequence_instants_array(const TSequence *seq);
+extern int tsequence_segments1(const TSequence *seq, TSequence **result);
+extern TSequence **tsequence_sequences(const TSequence *seq);
+extern TSequence **tsequence_segments(const TSequence *seq, int *count);
+extern const TInstant **tsequence_instants(const TSequence *seq);
 extern TimestampTz tsequence_start_timestamp(const TSequence *seq);
 extern TimestampTz tsequence_end_timestamp(const TSequence *seq);
-extern int tsequence_timestamps(const TSequence *seq, TimestampTz *result);
-extern ArrayType *tsequence_timestamps_array(const TSequence *seq);
+extern int tsequence_timestamps1(const TSequence *seq, TimestampTz *result);
+extern TimestampTz *tsequence_timestamps(const TSequence *seq);
 
 /* Ever/always comparison operators */
 

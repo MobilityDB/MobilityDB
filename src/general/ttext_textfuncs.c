@@ -46,7 +46,7 @@
  *****************************************************************************/
 
 /**
- * Returns the concatenation of the two text values
+ * Return the concatenation of the two text values
  */
 static Datum
 datum_textcat(Datum l, Datum r)
@@ -136,12 +136,12 @@ textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
  * Text concatenation
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(textcat_base_ttext);
+PG_FUNCTION_INFO_V1(Textcat_base_ttext);
 /**
- * Returns the concatenation of the text value and the temporal text values
+ * Return the concatenation of the text value and the temporal text values
  */
 PGDLLEXPORT Datum
-textcat_base_ttext(PG_FUNCTION_ARGS)
+Textcat_base_ttext(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -150,12 +150,12 @@ textcat_base_ttext(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(textcat_ttext_base);
+PG_FUNCTION_INFO_V1(Textcat_ttext_base);
 /**
- * Returns the concatenation of the temporal text value and the text value
+ * Return the concatenation of the temporal text value and the text value
  */
 PGDLLEXPORT Datum
-textcat_ttext_base(PG_FUNCTION_ARGS)
+Textcat_ttext_base(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
@@ -164,12 +164,12 @@ textcat_ttext_base(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(textcat_ttext_ttext);
+PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
- * Returns the concatenation of the two temporal text values
+ * Return the concatenation of the two temporal text values
  */
 PGDLLEXPORT Datum
-textcat_ttext_ttext(PG_FUNCTION_ARGS)
+Textcat_ttext_ttext(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -183,12 +183,12 @@ textcat_ttext_ttext(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(ttext_upper);
+PG_FUNCTION_INFO_V1(Ttext_upper);
 /**
  * Transform the temporal text value into uppercase
  */
 PGDLLEXPORT Datum
-ttext_upper(PG_FUNCTION_ARGS)
+Ttext_upper(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_upper);
@@ -196,12 +196,12 @@ ttext_upper(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(ttext_lower);
+PG_FUNCTION_INFO_V1(Ttext_lower);
 /**
  * Transform the temporal text value into lowercase
  */
 PGDLLEXPORT Datum
-ttext_lower(PG_FUNCTION_ARGS)
+Ttext_lower(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = textfunc_ttext(temp, &datum_lower);

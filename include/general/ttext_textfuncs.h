@@ -42,11 +42,11 @@
 
 /*****************************************************************************/
 
-extern Datum textcat_base_ttext(PG_FUNCTION_ARGS);
-extern Datum textcat_ttext_base(PG_FUNCTION_ARGS);
-extern Datum textcat_ttext_ttext(PG_FUNCTION_ARGS);
-extern Datum ttext_upper(PG_FUNCTION_ARGS);
-extern Datum ttext_lower(PG_FUNCTION_ARGS);
+extern Datum Textcat_base_ttext(PG_FUNCTION_ARGS);
+extern Datum Textcat_ttext_base(PG_FUNCTION_ARGS);
+extern Datum Textcat_ttext_ttext(PG_FUNCTION_ARGS);
+extern Datum Ttext_upper(PG_FUNCTION_ARGS);
+extern Datum Ttext_lower(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

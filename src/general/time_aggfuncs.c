@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /**
- * Returns the sum of the two arguments
+ * Return the sum of the two arguments
  */
 Datum
 datum_sum_int32(Datum l, Datum r)
@@ -68,7 +68,7 @@ datum_sum_int32(Datum l, Datum r)
  * @param[in] count1 Number of elements in the accumulated state
  * @param[in] times2 Timestamps of the input timestamp set value
  * @param[in] count2 Number of elements in the timestamp set value
- * @note Returns new timestamps that must be freed by the calling function.
+ * @note Return new timestamps that must be freed by the calling function.
  */
 TimestampTz *
 timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
@@ -116,7 +116,7 @@ timestamp_agg(TimestampTz *times1, int count1, TimestampTz *times2,
  * @param[in] periods2 Periods of a period (set) value
  * @param[in] count2 Number of elements in the period set value
  * @param[out] newcount Number of elements in the result
- * @note Returns new periods that must be freed by the calling function.
+ * @note Return new periods that must be freed by the calling function.
  */
 Period **
 period_agg(Period **periods1, int count1, Period **periods2, int count2,
@@ -126,7 +126,7 @@ period_agg(Period **periods1, int count1, Period **periods2, int count2,
   int i = 0, j = 0, k = 0;
   while (i < count1 && j < count2)
   {
-    int cmp = period_cmp_internal(periods1[i], periods2[j]);
+    int cmp = period_cmp(periods1[i], periods2[j]);
     if (cmp == 0)
     {
       periods[k++] = periods1[i++];
@@ -161,7 +161,7 @@ static SkipList *
 timestampset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const TimestampSet *ts)
 {
-  TimestampTz *times = timestampset_timestamps_internal(ts);
+  TimestampTz *times = timestampset_timestamps(ts);
   SkipList *result;
   if (! state)
     result = skiplist_make(fcinfo, (void **) times, ts->count, TIMESTAMPTZ);
@@ -210,7 +210,7 @@ static SkipList *
 periodset_agg_transfn(FunctionCallInfo fcinfo, SkipList *state,
   const PeriodSet *ps)
 {
-  const Period **periods = periodset_periods_internal(ps);
+  const Period **periods = periodset_periods(ps);
   SkipList *result;
   if (! state)
     /* Periods are copies while constructing the skiplist */
@@ -257,13 +257,13 @@ time_agg_combinefn(FunctionCallInfo fcinfo, SkipList *state1,
  * Aggregate transition functions for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_extent_transfn);
+PG_FUNCTION_INFO_V1(Timestampset_extent_transfn);
 /**
  * Transition function for temporal extent aggregation of timestamp set values
  * with period bounding box
  */
 PGDLLEXPORT Datum
-timestampset_extent_transfn(PG_FUNCTION_ARGS)
+Timestampset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
   TimestampSet *ts = PG_ARGISNULL(1) ? NULL : PG_GETARG_TIMESTAMPSET_P(1);
@@ -295,13 +295,13 @@ timestampset_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(period_extent_transfn);
+PG_FUNCTION_INFO_V1(Period_extent_transfn);
 /**
  * Transition function for temporal extent aggregation of period values
  * with period bounding box
  */
 PGDLLEXPORT Datum
-period_extent_transfn(PG_FUNCTION_ARGS)
+Period_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
   const Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
@@ -325,13 +325,13 @@ period_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(periodset_extent_transfn);
+PG_FUNCTION_INFO_V1(Periodset_extent_transfn);
 /**
  * Transition function for temporal extent aggregation of period set values
  * with period bounding box
  */
 PGDLLEXPORT Datum
-periodset_extent_transfn(PG_FUNCTION_ARGS)
+Periodset_extent_transfn(PG_FUNCTION_ARGS)
 {
   Period *p = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
   PeriodSet *ps = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIODSET_P(1);
@@ -365,12 +365,12 @@ periodset_extent_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_tunion_transfn);
+PG_FUNCTION_INFO_V1(Timestampset_tunion_transfn);
 /**
  * Transition function for union aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
-timestampset_tunion_transfn(PG_FUNCTION_ARGS)
+Timestampset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -388,12 +388,12 @@ timestampset_tunion_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(period_tunion_transfn);
+PG_FUNCTION_INFO_V1(Period_tunion_transfn);
 /**
  * Transition function for union aggregate of periods
  */
 PGDLLEXPORT Datum
-period_tunion_transfn(PG_FUNCTION_ARGS)
+Period_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -410,12 +410,12 @@ period_tunion_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(periodset_tunion_transfn);
+PG_FUNCTION_INFO_V1(Periodset_tunion_transfn);
 /**
  * Transition function for union aggregate of period sets
  */
 PGDLLEXPORT Datum
-periodset_tunion_transfn(PG_FUNCTION_ARGS)
+Periodset_tunion_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -505,12 +505,12 @@ ensure_same_timetype_skiplist(SkipList *state, uint8 subtype)
   return;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_tcount_transfn);
+PG_FUNCTION_INFO_V1(Timestampset_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of timestamp sets
  */
 PGDLLEXPORT Datum
-timestampset_tcount_transfn(PG_FUNCTION_ARGS)
+Timestampset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -540,12 +540,12 @@ timestampset_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(period_tcount_transfn);
+PG_FUNCTION_INFO_V1(Period_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of periods
  */
 PGDLLEXPORT Datum
-period_tcount_transfn(PG_FUNCTION_ARGS)
+Period_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -574,12 +574,12 @@ period_tcount_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(state);
 }
 
-PG_FUNCTION_INFO_V1(periodset_tcount_transfn);
+PG_FUNCTION_INFO_V1(Periodset_tcount_transfn);
 /**
  * Transition function for temporal count aggregate of period sets
  */
 PGDLLEXPORT Datum
-periodset_tcount_transfn(PG_FUNCTION_ARGS)
+Periodset_tcount_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -613,12 +613,12 @@ periodset_tcount_transfn(PG_FUNCTION_ARGS)
  * Aggregate combine functions for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(time_extent_combinefn);
+PG_FUNCTION_INFO_V1(Time_extent_combinefn);
 /**
  * Combine function for temporal extent aggregation
  */
 PGDLLEXPORT Datum
-time_extent_combinefn(PG_FUNCTION_ARGS)
+Time_extent_combinefn(PG_FUNCTION_ARGS)
 {
   Period *p1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_PERIOD_P(0);
   Period *p2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_PERIOD_P(1);
@@ -636,12 +636,12 @@ time_extent_combinefn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(time_tunion_combinefn);
+PG_FUNCTION_INFO_V1(Time_tunion_combinefn);
 /**
  * Combine function for union aggregate of time types
  */
 PGDLLEXPORT Datum
-time_tunion_combinefn(PG_FUNCTION_ARGS)
+Time_tunion_combinefn(PG_FUNCTION_ARGS)
 {
   SkipList *state1 = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -658,12 +658,12 @@ time_tunion_combinefn(PG_FUNCTION_ARGS)
  * Aggregate final functions for time types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestamp_tunion_finalfn);
+PG_FUNCTION_INFO_V1(Timestamp_tunion_finalfn);
 /**
  * Final function for union aggregation of timestamp set values
  */
 PGDLLEXPORT Datum
-timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
+Timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
@@ -677,12 +677,12 @@ timestamp_tunion_finalfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(period_tunion_finalfn);
+PG_FUNCTION_INFO_V1(Period_tunion_finalfn);
 /**
  * Final function for union aggregation of period (set) values
  */
 PGDLLEXPORT Datum
-period_tunion_finalfn(PG_FUNCTION_ARGS)
+Period_tunion_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);

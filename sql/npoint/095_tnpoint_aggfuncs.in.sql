@@ -34,7 +34,7 @@
 
 CREATE FUNCTION tcount_transfn(internal, tnpoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(tnpoint) (
@@ -49,7 +49,7 @@ CREATE AGGREGATE tcount(tnpoint) (
 
 CREATE FUNCTION wcount_transfn(internal, tnpoint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_wcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wcount(tnpoint, interval) (
@@ -64,7 +64,7 @@ CREATE AGGREGATE wcount(tnpoint, interval) (
 
 CREATE FUNCTION tcentroid_transfn(internal, tnpoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnpoint_tcentroid_transfn'
+  AS 'MODULE_PATHNAME', 'Tnpoint_tcentroid_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tcentroid(tnpoint) (
@@ -81,11 +81,11 @@ CREATE AGGREGATE tcentroid(tnpoint) (
 
 CREATE FUNCTION temporal_merge_transfn(internal, tnpoint)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tnpoint_tagg_finalfn(internal)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE merge(tnpoint) (

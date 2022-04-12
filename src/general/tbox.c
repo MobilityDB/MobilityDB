@@ -57,7 +57,8 @@
  *****************************************************************************/
 
 /**
- * Constructs a newly allocated temporal box
+ * @ingroup libmeos_box_constructor
+ * @brief Constructs a newly allocated temporal box.
  */
 TBOX *
 tbox_make(bool hasx, bool hast, double xmin, double xmax,
@@ -70,7 +71,8 @@ tbox_make(bool hasx, bool hast, double xmin, double xmax,
 }
 
 /**
- * Set the temporal box from the argument values
+ * @ingroup libmeos_box_constructor
+ * @brief Set the temporal box from the argument values
  */
 void
 tbox_set(bool hasx, bool hast, double xmin, double xmax,
@@ -96,7 +98,8 @@ tbox_set(bool hasx, bool hast, double xmin, double xmax,
 }
 
 /**
- * Returns a copy of the temporal box value
+ * @ingroup libmeos_box_constructor
+ * @brief Return a copy of the temporal box value.
  */
 TBOX *
 tbox_copy(const TBOX *box)
@@ -107,7 +110,8 @@ tbox_copy(const TBOX *box)
 }
 
 /**
- * Expand the second temporal box value with the first one
+ * @ingroup libmeos_box_transf
+ * @brief Expand the second temporal box value with the first one
  */
 void
 tbox_expand(const TBOX *box1, TBOX *box2)
@@ -126,7 +130,8 @@ tbox_expand(const TBOX *box1, TBOX *box2)
 }
 
 /**
- * Shift and/or scale the time span of the temporal box by the interval
+ * @ingroup libmeos_box_transf
+ * @brief Shift and/or scale the time span of the temporal box by the interval
  */
 void
 tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
@@ -145,7 +150,8 @@ tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
 }
 
 /**
- * Returns the intersection of the temporal boxes
+ * @ingroup libmeos_box_oper
+ * @brief Return the intersection of the temporal boxes.
  */
 static bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
@@ -217,7 +223,7 @@ ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2)
  * Input/output functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_in);
+PG_FUNCTION_INFO_V1(Tbox_in);
 /**
  * Input function for temporal boxes.
  *
@@ -230,7 +236,7 @@ PG_FUNCTION_INFO_V1(tbox_in);
  * where the commas are optional
  */
 PGDLLEXPORT Datum
-tbox_in(PG_FUNCTION_ARGS)
+Tbox_in(PG_FUNCTION_ARGS)
 {
   char *input = PG_GETARG_CSTRING(0);
   TBOX *result = tbox_parse(&input);
@@ -238,7 +244,8 @@ tbox_in(PG_FUNCTION_ARGS)
 }
 
 /**
- * Returns the string representation of the temporal box
+ * @ingroup libmeos_box_input_output
+ * @brief Return the string representation of the temporal box.
  */
 static char *
 tbox_to_string(const TBOX *box)
@@ -281,12 +288,12 @@ tbox_to_string(const TBOX *box)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_out);
+PG_FUNCTION_INFO_V1(Tbox_out);
 /**
  * Output function for temporal boxes.
  */
 PGDLLEXPORT Datum
-tbox_out(PG_FUNCTION_ARGS)
+Tbox_out(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   char *result = tbox_to_string(box);
@@ -294,7 +301,8 @@ tbox_out(PG_FUNCTION_ARGS)
 }
 
 /**
- * Send function for TBOX (internal function)
+ * @ingroup libmeos_box_input_output
+ * @brief Write the binary representation of the box value into the buffer.
  */
 static void
 tbox_write(const TBOX *box, StringInfo buf)
@@ -317,12 +325,12 @@ tbox_write(const TBOX *box, StringInfo buf)
   return;
 }
 
-PG_FUNCTION_INFO_V1(tbox_send);
+PG_FUNCTION_INFO_V1(Tbox_send);
 /**
  * Send function for TBOX
  */
 PGDLLEXPORT Datum
-tbox_send(PG_FUNCTION_ARGS)
+Tbox_send(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   StringInfoData buf;
@@ -332,7 +340,9 @@ tbox_send(PG_FUNCTION_ARGS)
 }
 
 /**
- * Receive function for TBOX (internal function)
+ * @ingroup libmeos_box_input_output
+ * @brief Return a new box value from its binary representation read from
+ * the buffer.
  */
 static TBOX *
 tbox_read(StringInfo buf)
@@ -355,12 +365,12 @@ tbox_read(StringInfo buf)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_recv);
+PG_FUNCTION_INFO_V1(Tbox_recv);
 /**
  * Receive function for TBOX
  */
 PGDLLEXPORT Datum
-tbox_recv(PG_FUNCTION_ARGS)
+Tbox_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
   PG_RETURN_POINTER(tbox_read(buf));
@@ -370,12 +380,12 @@ tbox_recv(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_constructor);
+PG_FUNCTION_INFO_V1(Tbox_constructor);
 /**
  * Construct a temporal box value from the arguments
  */
 PGDLLEXPORT Datum
-tbox_constructor(PG_FUNCTION_ARGS)
+Tbox_constructor(PG_FUNCTION_ARGS)
 {
   double xmin = 0, xmax = 0; /* keep compiler quiet */
   TimestampTz tmin = 0, tmax = 0;
@@ -400,12 +410,12 @@ tbox_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tbox_constructor_t);
+PG_FUNCTION_INFO_V1(Tbox_constructor_t);
 /**
  * Construct a temporal box value from the timestamps
  */
 PGDLLEXPORT Datum
-tbox_constructor_t(PG_FUNCTION_ARGS)
+Tbox_constructor_t(PG_FUNCTION_ARGS)
 {
   TimestampTz tmin = PG_GETARG_TIMESTAMPTZ(0);
   TimestampTz tmax = PG_GETARG_TIMESTAMPTZ(1);
@@ -415,11 +425,12 @@ tbox_constructor_t(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Casting
- * The internal functions set the argument box to 0
+ * The functions set the argument box to 0
  *****************************************************************************/
 
 /**
- * Transform the value to a temporal box (internal function only)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the number to a temporal box.
  */
 void
 number_tbox(Datum value, CachedType basetype, TBOX *box)
@@ -437,7 +448,8 @@ number_tbox(Datum value, CachedType basetype, TBOX *box)
 }
 
 /**
- * Transform the integer to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the integer to a temporal box.
  */
 void
 int_tbox(int i, TBOX *box)
@@ -450,12 +462,12 @@ int_tbox(int i, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(int_to_tbox);
+PG_FUNCTION_INFO_V1(Int_to_tbox);
 /**
  * Transform the integer to a temporal box
  */
 PGDLLEXPORT Datum
-int_to_tbox(PG_FUNCTION_ARGS)
+Int_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -464,7 +476,8 @@ int_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the float to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the float to a temporal box.
  */
 void
 float_tbox(double d, TBOX *box)
@@ -477,12 +490,12 @@ float_tbox(double d, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(float_to_tbox);
+PG_FUNCTION_INFO_V1(Float_to_tbox);
 /**
  * Transform the float to a temporal box
  */
 PGDLLEXPORT Datum
-float_to_tbox(PG_FUNCTION_ARGS)
+Float_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -490,12 +503,12 @@ float_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(numeric_to_tbox);
+PG_FUNCTION_INFO_V1(Numeric_to_tbox);
 /**
  * Transform the numeric to a temporal box
  */
 PGDLLEXPORT Datum
-numeric_to_tbox(PG_FUNCTION_ARGS)
+Numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   double d = DatumGetFloat8(call_function1(numeric_float8, num));
@@ -505,7 +518,8 @@ numeric_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the range to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the range to a temporal box.
  */
 void
 range_tbox(const RangeType *range, TBOX *box)
@@ -519,12 +533,12 @@ range_tbox(const RangeType *range, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(range_to_tbox);
+PG_FUNCTION_INFO_V1(Range_to_tbox);
 /**
  * Transform the range to a temporal box
  */
 PGDLLEXPORT Datum
-range_to_tbox(PG_FUNCTION_ARGS)
+Range_to_tbox(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
   /* Return null on empty or unbounded range */
@@ -537,7 +551,8 @@ range_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the timestamp to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the timestamp to a temporal box.
  */
 void
 timestamp_tbox(TimestampTz t, TBOX *box)
@@ -550,12 +565,12 @@ timestamp_tbox(TimestampTz t, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(timestamp_to_tbox);
+PG_FUNCTION_INFO_V1(Timestamp_to_tbox);
 /**
  * Transform the timestamp to a temporal box
  */
 PGDLLEXPORT Datum
-timestamp_to_tbox(PG_FUNCTION_ARGS)
+Timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -564,7 +579,8 @@ timestamp_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the period set to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the period set to a temporal box.
  */
 void
 timestampset_tbox(const TimestampSet *ts, TBOX *box)
@@ -597,12 +613,12 @@ timestampset_tbox_slice(Datum tsdatum, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_to_tbox);
+PG_FUNCTION_INFO_V1(Timestampset_to_tbox);
 /**
  * Transform the period set to a temporal box
  */
 PGDLLEXPORT Datum
-timestampset_to_tbox(PG_FUNCTION_ARGS)
+Timestampset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -611,7 +627,8 @@ timestampset_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the period to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the period to a temporal box.
  */
 void
 period_tbox(const Period *p, TBOX *box)
@@ -625,12 +642,12 @@ period_tbox(const Period *p, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(period_to_tbox);
+PG_FUNCTION_INFO_V1(Period_to_tbox);
 /**
  * Transform the period to a temporal box
  */
 PGDLLEXPORT Datum
-period_to_tbox(PG_FUNCTION_ARGS)
+Period_to_tbox(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -639,7 +656,8 @@ period_to_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * Transform the period set to a temporal box (internal function)
+ * @ingroup libmeos_box_cast
+ * @brief Transform the period set to a temporal box.
  */
 void
 periodset_tbox(const PeriodSet *ps, TBOX *box)
@@ -672,12 +690,12 @@ periodset_tbox_slice(Datum psdatum, TBOX *box)
   return;
 }
 
-PG_FUNCTION_INFO_V1(periodset_to_tbox);
+PG_FUNCTION_INFO_V1(Periodset_to_tbox);
 /**
  * Transform the period set to a temporal box
  */
 PGDLLEXPORT Datum
-periodset_to_tbox(PG_FUNCTION_ARGS)
+Periodset_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -685,106 +703,187 @@ periodset_to_tbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(int_timestamp_to_tbox);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Transform the integer and the timestamp to a temporal box
+ */
+static TBOX *
+int_timestamp_to_tbox(int i, TimestampTz t)
+{
+  TBOX *result = tbox_make(true, true, (double) i, (double) i, t, t);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Int_timestamp_to_tbox);
 /**
  * Transform the integer and the timestamp to a temporal box
  */
 PGDLLEXPORT Datum
-int_timestamp_to_tbox(PG_FUNCTION_ARGS)
+Int_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = tbox_make(true, true, (double) i, (double) i, t, t);
+  TBOX *result = int_timestamp_to_tbox(i, t);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(float_timestamp_to_tbox);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Transform the integer and the timestamp to a temporal box
+ */
+static TBOX *
+float_timestamp_to_tbox(double d, TimestampTz t)
+{
+  TBOX *result = tbox_make(true, true, d, d, t, t);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Float_timestamp_to_tbox);
 /**
  * Transform the float and the timestamp to a temporal box
  */
 PGDLLEXPORT Datum
-float_timestamp_to_tbox(PG_FUNCTION_ARGS)
+Float_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TBOX *result = tbox_make(true, true, d, d, t, t);
+  TBOX *result = float_timestamp_to_tbox(d, t);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(int_period_to_tbox);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Transform the integer and the period to a temporal box
+ */
+static TBOX *
+int_period_to_tbox(int i, Period *p)
+{
+  TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
+    p->upper);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Int_period_to_tbox);
 /**
  *  Transform the integer and the period to a temporal box
  */
 PGDLLEXPORT Datum
-int_period_to_tbox(PG_FUNCTION_ARGS)
+Int_period_to_tbox(PG_FUNCTION_ARGS)
 {
   int i = PG_GETARG_INT32(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
-    p->upper);
+  TBOX *result = int_period_to_tbox(i, p);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(float_period_to_tbox);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Transform the float and the period to a temporal box
+ */
+static TBOX *
+float_period_to_tbox(double d, Period *p)
+{
+  TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Float_period_to_tbox);
 /**
  * Transform the float and the period to a temporal box
  */
 PGDLLEXPORT Datum
-float_period_to_tbox(PG_FUNCTION_ARGS)
+Float_period_to_tbox(PG_FUNCTION_ARGS)
 {
   double d = PG_GETARG_FLOAT8(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
+  TBOX *result = float_period_to_tbox(d, p);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(range_timestamp_to_tbox);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Transform the range and the timestamp to a temporal box
+ */
+static TBOX *
+range_timestamp_to_tbox(RangeType *range, TimestampTz t)
+{
+  /* Return null on empty or unbounded range */
+  char flags = range_get_flags(range);
+  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
+    return NULL;
+  double xmin, xmax;
+  range_bounds(range, &xmin, &xmax);
+  TBOX *result = tbox_make(true, true, xmin, xmax, t, t);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Range_timestamp_to_tbox);
 /**
  * Transform the range and the timestamp to a temporal box
  */
 PGDLLEXPORT Datum
-range_timestamp_to_tbox(PG_FUNCTION_ARGS)
+Range_timestamp_to_tbox(PG_FUNCTION_ARGS)
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return null on empty or unbounded range */
-  char flags = range_get_flags(range);
-  if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
-    PG_RETURN_NULL();
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  double xmin, xmax;
-  range_bounds(range, &xmin, &xmax);
-  TBOX *result = tbox_make(true, true, xmin, xmax, t, t);
+  TBOX *result = range_timestamp_to_tbox(range, t);
   PG_FREE_IF_COPY(range, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(range_period_to_tbox);
 /**
- * Transform the range and the period to a temporal box
+ * @ingroup libmeos_box_cast
+ * @brief Transform the range and the period to a temporal box
  */
-PGDLLEXPORT Datum
-range_period_to_tbox(PG_FUNCTION_ARGS)
+static TBOX *
+range_period_to_tbox(RangeType *range, Period *p)
 {
-  RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return null on empty or unbounded range */
   char flags = range_get_flags(range);
   if (flags & (RANGE_EMPTY | RANGE_LB_INF | RANGE_UB_INF))
-    PG_RETURN_NULL();
-  Period *p = PG_GETARG_PERIOD_P(1);
+    return NULL;
   ensure_tnumber_rangetype(oid_type(range->rangetypid));
   double xmin, xmax;
   range_bounds(range, &xmin, &xmax);
   TBOX *result = tbox_make(true, true, xmin, xmax, p->lower, p->upper);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Range_period_to_tbox);
+/**
+ * Transform the range and the period to a temporal box
+ */
+PGDLLEXPORT Datum
+Range_period_to_tbox(PG_FUNCTION_ARGS)
+{
+  RangeType *range = PG_GETARG_RANGE_P(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
+  TBOX *result = range_period_to_tbox(range, p);
+  if (! result)
+    PG_RETURN_NULL();
   PG_FREE_IF_COPY(range, 0);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_to_tbox);
 /**
- * Returns the bounding box of the temporal value
+ * @ingroup libmeos_box_cast
+ * @brief Return the bounding box of the temporal number.
+ */
+TBOX *
+tnumber_to_tbox(Temporal *temp)
+{
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  temporal_bbox(temp, result);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
+/**
+ * Return the bounding box of the temporal number
  */
 PGDLLEXPORT Datum
-tnumber_to_tbox(PG_FUNCTION_ARGS)
+Tnumber_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
@@ -794,32 +893,58 @@ tnumber_to_tbox(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_to_floatrange);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Cast the temporal box value as a float range value.
+ */
+static RangeType *
+tbox_to_floatrange(TBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    return NULL;
+  RangeType *result = range_make(Float8GetDatum(box->xmin),
+    Float8GetDatum(box->xmax), true, true, T_FLOAT8);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tbox_to_floatrange);
 /**
  * Cast the temporal box value as a float range value
  */
 PGDLLEXPORT Datum
-tbox_to_floatrange(PG_FUNCTION_ARGS)
+Tbox_to_floatrange(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  if (!MOBDB_FLAGS_GET_X(box->flags))
+  RangeType *result = tbox_to_floatrange(box);
+  if (! result)
     PG_RETURN_NULL();
-  RangeType *result = range_make(Float8GetDatum(box->xmin),
-    Float8GetDatum(box->xmax), true, true, T_FLOAT8);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tbox_to_period);
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Cast the temporal box value as a period value
+ */
+static Period *
+tbox_to_period(TBOX *box)
+{
+  if (! MOBDB_FLAGS_GET_T(box->flags))
+    return NULL;
+  Period *result = period_make(box->tmin, box->tmax, true, true);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tbox_to_period);
 /**
  * Cast the temporal box value as a period value
  */
 PGDLLEXPORT Datum
-tbox_to_period(PG_FUNCTION_ARGS)
+Tbox_to_period(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  if (!MOBDB_FLAGS_GET_T(box->flags))
+  Period *result = tbox_to_period(box);
+  if (! result)
     PG_RETURN_NULL();
-  Period *result = period_make(box->tmin, box->tmax, true, true);
   PG_RETURN_POINTER(result);
 }
 
@@ -827,80 +952,156 @@ tbox_to_period(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_hasx);
 /**
- * Returns true if the temporal box has X dimension
+ * @ingroup libmeos_box_accessor
+ * @brief Return true if the temporal box has X dimension
  */
-PGDLLEXPORT Datum
-tbox_hasx(PG_FUNCTION_ARGS)
+static bool
+tbox_hasx(TBOX *box)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
   bool result = MOBDB_FLAGS_GET_X(box->flags);
-  PG_RETURN_BOOL(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_hast);
+PG_FUNCTION_INFO_V1(Tbox_hasx);
 /**
- * Returns true if the temporal box has T dimension
+ * Return true if the temporal box has X dimension
  */
 PGDLLEXPORT Datum
-tbox_hast(PG_FUNCTION_ARGS)
+Tbox_hasx(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
+  PG_RETURN_BOOL(tbox_hasx(box));
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return true if the temporal box has T dimension
+ */
+static bool
+tbox_hast(TBOX *box)
+{
   bool result = MOBDB_FLAGS_GET_T(box->flags);
-  PG_RETURN_BOOL(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_xmin);
+PG_FUNCTION_INFO_V1(Tbox_hast);
 /**
- * Returns the minimum X value of the temporal box value
+ * Return true if the temporal box has T dimension
  */
 PGDLLEXPORT Datum
-tbox_xmin(PG_FUNCTION_ARGS)
+Tbox_hast(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  if (!MOBDB_FLAGS_GET_X(box->flags))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(box->xmin);
+  PG_RETURN_BOOL(tbox_hast(box));
 }
 
-PG_FUNCTION_INFO_V1(tbox_xmax);
 /**
- * Returns the maximum X value of the temporal box value
+ * @ingroup libmeos_box_accessor
+ * @brief Return the minimum X value of the temporal box value, if any.
  */
-PGDLLEXPORT Datum
-tbox_xmax(PG_FUNCTION_ARGS)
+static bool
+tbox_xmin(TBOX *box, double *result)
 {
-  TBOX *box = PG_GETARG_TBOX_P(0);
-  if (!MOBDB_FLAGS_GET_X(box->flags))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(box->xmax);
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    return false;
+  *result = box->xmin;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(tbox_tmin);
+PG_FUNCTION_INFO_V1(Tbox_xmin);
 /**
- * Returns the minimum timestamp of the temporal box value
+ * Return the minimum X value of the temporal box value
  */
 PGDLLEXPORT Datum
-tbox_tmin(PG_FUNCTION_ARGS)
+Tbox_xmin(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  if (!MOBDB_FLAGS_GET_T(box->flags))
+  double result;
+  if (! tbox_xmin(box, &result))
     PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(box->tmin);
+  PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(tbox_tmax);
 /**
- * Returns the maximum timestamp of the temporal box value
+ * @ingroup libmeos_box_accessor
+ * @brief Return the maximum X value of the temporal box value, if any.
+ */
+static bool
+tbox_xmax(TBOX *box, double *result)
+{
+  if (! MOBDB_FLAGS_GET_X(box->flags))
+    return false;
+  *result = box->xmax;
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(Tbox_xmax);
+/**
+ * Return the maximum X value of the temporal box value
  */
 PGDLLEXPORT Datum
-tbox_tmax(PG_FUNCTION_ARGS)
+Tbox_xmax(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
-  if (!MOBDB_FLAGS_GET_T(box->flags))
+  double result;
+  if (! tbox_xmax(box, &result))
     PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(box->tmax);
+  PG_RETURN_FLOAT8(result);
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return the minimum T value of the temporal box value, if any.
+ */
+static bool
+tbox_tmin(TBOX *box, TimestampTz *result)
+{
+  if (! MOBDB_FLAGS_GET_T(box->flags))
+    return false;
+  *result = box->tmin;
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(Tbox_tmin);
+/**
+ * Return the minimum timestamp of the temporal box value
+ */
+PGDLLEXPORT Datum
+Tbox_tmin(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  TimestampTz result;
+  if (! tbox_tmin(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_TIMESTAMPTZ(result);
+}
+
+/**
+ * @ingroup libmeos_box_accessor
+ * @brief Return the maximum T value of the temporal box value, if any.
+ */
+static bool
+tbox_tmax(TBOX *box, TimestampTz *result)
+{
+  if (! MOBDB_FLAGS_GET_T(box->flags))
+    return false;
+  *result = box->tmax;
+  return true;
+}
+
+PG_FUNCTION_INFO_V1(Tbox_tmax);
+/**
+ * Return the maximum timestamp of the temporal box value
+ */
+PGDLLEXPORT Datum
+Tbox_tmax(PG_FUNCTION_ARGS)
+{
+  TBOX *box = PG_GETARG_TBOX_P(0);
+  TimestampTz result;
+  if (! tbox_tmax(box, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 /*****************************************************************************
@@ -908,11 +1109,11 @@ tbox_tmax(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Expand the value dimension of the temporal box with the double value
- * (internal function)
+ * @ingroup libmeos_box_transf
+ * @brief Expand the value dimension of the temporal box with the double value.
  */
 static TBOX *
-tbox_expand_value_internal(const TBOX *box, const double d)
+tbox_expand_value(const TBOX *box, const double d)
 {
   ensure_has_X_tbox(box);
   TBOX *result = tbox_copy(box);
@@ -921,24 +1122,24 @@ tbox_expand_value_internal(const TBOX *box, const double d)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_expand_value);
+PG_FUNCTION_INFO_V1(Tbox_expand_value);
 /**
  * Expand the value dimension of the temporal box with the double value
  */
 PGDLLEXPORT Datum
-tbox_expand_value(PG_FUNCTION_ARGS)
+Tbox_expand_value(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_POINTER(tbox_expand_value_internal(box, d));
+  PG_RETURN_POINTER(tbox_expand_value(box, d));
 }
 
 /**
- * Expand the time dimension of the temporal box with the interval value
- * (internal function)
+ * @ingroup libmeos_box_transf
+ * @brief Expand the time dimension of the temporal box with the interval value.
  */
 static TBOX *
-tbox_expand_temporal_internal(const TBOX *box, const Datum interval)
+tbox_expand_temporal(const TBOX *box, const Datum interval)
 {
   ensure_has_T_tbox(box);
   TBOX *result = tbox_copy(box);
@@ -949,32 +1150,46 @@ tbox_expand_temporal_internal(const TBOX *box, const Datum interval)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tbox_expand_temporal);
+PG_FUNCTION_INFO_V1(Tbox_expand_temporal);
 /**
  * Expand the time dimension of the temporal box with the interval value
  */
 PGDLLEXPORT Datum
-tbox_expand_temporal(PG_FUNCTION_ARGS)
+Tbox_expand_temporal(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   Datum interval = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(tbox_expand_temporal_internal(box, interval));
+  PG_RETURN_POINTER(tbox_expand_temporal(box, interval));
 }
 
-PG_FUNCTION_INFO_V1(tbox_round);
+/**
+ * @ingroup libmeos_box_transf
+ * @brief Set the precision of the value dimension of the temporal box to
+ * the number of decimal places.
+ */
+static TBOX *
+tbox_round(TBOX *box, int size)
+{
+  ensure_has_X_tbox(box);
+  TBOX *result = tbox_copy(box);
+  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin),
+    size));
+  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax),
+    size));
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tbox_round);
 /**
  * Set the precision of the value dimension of the temporal box to the number
  * of decimal places
  */
 PGDLLEXPORT Datum
-tbox_round(PG_FUNCTION_ARGS)
+Tbox_round(PG_FUNCTION_ARGS)
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   Datum size = PG_GETARG_DATUM(1);
-  ensure_has_X_tbox(box);
-  TBOX *result = tbox_copy(box);
-  result->xmin = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmin), size));
-  result->xmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->xmax), size));
+  TBOX *result = tbox_round(box, size);
   PG_RETURN_POINTER(result);
 }
 
@@ -1012,11 +1227,11 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 }
 
 /**
- * Returns true if the first temporal box contains the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box contains the second one.
  */
 bool
-contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -1027,46 +1242,46 @@ contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(contains_tbox_tbox);
+PG_FUNCTION_INFO_V1(Contains_tbox_tbox);
 /**
- * Returns true if the first temporal box contains the second one
+ * Return true if the first temporal box contains the second one
  */
 PGDLLEXPORT Datum
-contains_tbox_tbox(PG_FUNCTION_ARGS)
+Contains_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(contains_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(contains_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box is contained by the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box is contained by the second one.
  */
 bool
-contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+contained_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
-  return contains_tbox_tbox_internal(box2, box1);
+  return contains_tbox_tbox(box2, box1);
 }
 
-PG_FUNCTION_INFO_V1(contained_tbox_tbox);
+PG_FUNCTION_INFO_V1(Contained_tbox_tbox);
 /**
- * Returns true if the first temporal box is contained by the second one
+ * Return true if the first temporal box is contained by the second one
  */
 PGDLLEXPORT Datum
-contained_tbox_tbox(PG_FUNCTION_ARGS)
+Contained_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(contained_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(contained_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the temporal boxes overlap
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the temporal boxes overlap.
  */
 bool
-overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -1077,24 +1292,24 @@ overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(overlaps_tbox_tbox);
+PG_FUNCTION_INFO_V1(Overlaps_tbox_tbox);
 /**
- * Returns true if the temporal boxes overlap
+ * Return true if the temporal boxes overlap
  */
 PGDLLEXPORT Datum
-overlaps_tbox_tbox(PG_FUNCTION_ARGS)
+Overlaps_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(overlaps_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(overlaps_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the temporal boxes are equal on the common dimensions
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the temporal boxes are equal on the common dimensions.
  */
 bool
-same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+same_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -1105,24 +1320,24 @@ same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(same_tbox_tbox);
+PG_FUNCTION_INFO_V1(Same_tbox_tbox);
 /**
- * Returns true if the temporal boxes are equal on the common dimensions
+ * Return true if the temporal boxes are equal on the common dimensions
  */
 PGDLLEXPORT Datum
-same_tbox_tbox(PG_FUNCTION_ARGS)
+Same_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(same_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(same_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the temporal boxes are adjacent
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the temporal boxes are adjacent.
  */
 bool
-adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   topo_tbox_tbox_init(box1, box2, &hasx, &hast);
@@ -1141,16 +1356,16 @@ adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(adjacent_tbox_tbox);
+PG_FUNCTION_INFO_V1(Adjacent_tbox_tbox);
 /**
- * Returns true if the temporal boxes are adjacent
+ * Return true if the temporal boxes are adjacent
  */
 PGDLLEXPORT Datum
-adjacent_tbox_tbox(PG_FUNCTION_ARGS)
+Adjacent_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(adjacent_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(adjacent_tbox_tbox(box1, box2));
 }
 
 /*****************************************************************************
@@ -1158,195 +1373,203 @@ adjacent_tbox_tbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the first temporal box is strictly to the left of the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box is strictly to the left of
+ * the second one.
  */
 bool
-left_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+left_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
   return (box1->xmax < box2->xmin);
 }
 
-PG_FUNCTION_INFO_V1(left_tbox_tbox);
+PG_FUNCTION_INFO_V1(Left_tbox_tbox);
 /**
- * Returns true if the first temporal box is strictly to the left of the second one
+ * Return true if the first temporal box is strictly to the left of the second one
  */
 PGDLLEXPORT Datum
-left_tbox_tbox(PG_FUNCTION_ARGS)
+Left_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(left_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(left_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box does not extend to the right of the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box does not extend to the right
+ * of the second one.
  */
 bool
-overleft_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
   return (box1->xmax <= box2->xmax);
 }
 
-PG_FUNCTION_INFO_V1(overleft_tbox_tbox);
+PG_FUNCTION_INFO_V1(Overleft_tbox_tbox);
 /**
- * Returns true if the first temporal box does not extend to the right of the second one
+ * Return true if the first temporal box does not extend to the right of the second one
  */
 PGDLLEXPORT Datum
-overleft_tbox_tbox(PG_FUNCTION_ARGS)
+Overleft_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(overleft_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(overleft_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box is strictly to the right of the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box is strictly to the right of
+ * the second one.
  */
 bool
-right_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+right_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
   return (box1->xmin > box2->xmax);
 }
 
-PG_FUNCTION_INFO_V1(right_tbox_tbox);
+PG_FUNCTION_INFO_V1(Right_tbox_tbox);
 /**
- * Returns true if the first temporal box is strictly to the right of the second one
+ * Return true if the first temporal box is strictly to the right of the second one
  */
 PGDLLEXPORT Datum
-right_tbox_tbox(PG_FUNCTION_ARGS)
+Right_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(right_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(right_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box does not extend to the left of the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box does not extend to the left of
+ * the second one.
  */
 bool
-overright_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_X_tbox(box1);
   ensure_has_X_tbox(box2);
   return (box1->xmin >= box2->xmin);
 }
 
-PG_FUNCTION_INFO_V1(overright_tbox_tbox);
+PG_FUNCTION_INFO_V1(Overright_tbox_tbox);
 /**
- * Returns true if the first temporal box does not extend to the left of the second one
+ * Return true if the first temporal box does not extend to the left of the second one
  */
 PGDLLEXPORT Datum
-overright_tbox_tbox(PG_FUNCTION_ARGS)
+Overright_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(overright_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(overright_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box is strictly before the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box is strictly before
+ * the second one.
  */
 bool
-before_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+before_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmax < box2->tmin);
 }
 
-PG_FUNCTION_INFO_V1(before_tbox_tbox);
+PG_FUNCTION_INFO_V1(Before_tbox_tbox);
 /**
- * Returns true if the first temporal box is strictly before the second one
+ * Return true if the first temporal box is strictly before the second one
  */
 PGDLLEXPORT Datum
-before_tbox_tbox(PG_FUNCTION_ARGS)
+Before_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(before_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(before_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box does not extend after the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box does not extend after
+ * the second one.
  */
 bool
-overbefore_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmax <= box2->tmax);
 }
 
-PG_FUNCTION_INFO_V1(overbefore_tbox_tbox);
+PG_FUNCTION_INFO_V1(Overbefore_tbox_tbox);
 /**
- * Returns true if the first temporal box does not extend after the second one
+ * Return true if the first temporal box does not extend after the second one
  */
 PGDLLEXPORT Datum
-overbefore_tbox_tbox(PG_FUNCTION_ARGS)
+Overbefore_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(overbefore_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(overbefore_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box is strictly after the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box is strictly after the
+ * second one.
  */
 bool
-after_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+after_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmin > box2->tmax);
 }
 
-PG_FUNCTION_INFO_V1(after_tbox_tbox);
+PG_FUNCTION_INFO_V1(After_tbox_tbox);
 /**
- * Returns true if the first temporal box is strictly after the second one
+ * Return true if the first temporal box is strictly after the second one
  */
 PGDLLEXPORT Datum
-after_tbox_tbox(PG_FUNCTION_ARGS)
+After_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(after_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(after_tbox_tbox(box1, box2));
 }
 
 /**
- * Returns true if the first temporal box does not extend before the second one
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return true if the first temporal box does not extend before
+ * the second one.
  */
 bool
-overafter_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_has_T_tbox(box1);
   ensure_has_T_tbox(box2);
   return (box1->tmin >= box2->tmin);
 }
 
-PG_FUNCTION_INFO_V1(overafter_tbox_tbox);
+PG_FUNCTION_INFO_V1(Overafter_tbox_tbox);
 /**
- * Returns true if the first temporal box does not extend before the second one
+ * Return true if the first temporal box does not extend before the second one
  */
 PGDLLEXPORT Datum
-overafter_tbox_tbox(PG_FUNCTION_ARGS)
+Overafter_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(overafter_tbox_tbox_internal(box1, box2));
+  PG_RETURN_BOOL(overafter_tbox_tbox(box1, box2));
 }
 
 /*****************************************************************************
@@ -1354,15 +1577,15 @@ overafter_tbox_tbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the union of the temporal boxes
- * (internal function)
+ * @ingroup libmeos_box_oper
+ * @brief Return the union of the temporal boxes.
  */
 static TBOX *
-union_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
+union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_same_dimensionality_tbox(box1, box2);
   /* The union of boxes that do not intersect cannot be represented by a box */
-  if (! overlaps_tbox_tbox_internal(box1, box2))
+  if (! overlaps_tbox_tbox(box1, box2))
     elog(ERROR, "Result of box union would not be contiguous");
 
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags);
@@ -1383,25 +1606,25 @@ union_tbox_tbox_internal(const TBOX *box1, const TBOX *box2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(union_tbox_tbox);
+PG_FUNCTION_INFO_V1(Union_tbox_tbox);
 /**
- * Returns the union of the temporal boxes
+ * Return the union of the temporal boxes
  */
 PGDLLEXPORT Datum
-union_tbox_tbox(PG_FUNCTION_ARGS)
+Union_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = union_tbox_tbox_internal(box1, box2);
+  TBOX *result = union_tbox_tbox(box1, box2);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(intersection_tbox_tbox);
+PG_FUNCTION_INFO_V1(Intersection_tbox_tbox);
 /**
- * Returns the intersection of the temporal boxes
+ * Return the intersection of the temporal boxes
  */
 PGDLLEXPORT Datum
-intersection_tbox_tbox(PG_FUNCTION_ARGS)
+Intersection_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
@@ -1418,12 +1641,12 @@ intersection_tbox_tbox(PG_FUNCTION_ARGS)
  * Extent aggregation
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_extent_transfn);
+PG_FUNCTION_INFO_V1(Tbox_extent_transfn);
 /**
  * Transition function for extent aggregation for boxes
  */
 PGDLLEXPORT Datum
-tbox_extent_transfn(PG_FUNCTION_ARGS)
+Tbox_extent_transfn(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
@@ -1450,12 +1673,12 @@ tbox_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tbox_extent_combinefn);
+PG_FUNCTION_INFO_V1(Tbox_extent_combinefn);
 /**
  * Combine function for extent aggregation for boxes
  */
 PGDLLEXPORT Datum
-tbox_extent_combinefn(PG_FUNCTION_ARGS)
+Tbox_extent_combinefn(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_TBOX_P(1);
@@ -1478,14 +1701,16 @@ tbox_extent_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal box value is
- * less than, equal to, or greater than the second one (internal function).
+ * @ingroup libmeos_box_comparison
+ * @brief Return -1, 0, or 1 depending on whether the first temporal box value
+ * is less than, equal to, or greater than the second one.
+ *
  * The time dimension is compared first and then the value dimension.
  *
  * @note Function used for B-tree comparison
  */
 int
-tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
+tbox_cmp(const TBOX *box1, const TBOX *box2)
 {
   bool hasx, hast;
   tbox_tbox_flags(box1, box2, &hasx, &hast);
@@ -1524,84 +1749,84 @@ tbox_cmp_internal(const TBOX *box1, const TBOX *box2)
   return 0;
 }
 
-PG_FUNCTION_INFO_V1(tbox_cmp);
+PG_FUNCTION_INFO_V1(Tbox_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first temporal box value
+ * Return -1, 0, or 1 depending on whether the first temporal box value
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
  */
 PGDLLEXPORT Datum
-tbox_cmp(PG_FUNCTION_ARGS)
+Tbox_cmp(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp(box1, box2);
   PG_RETURN_INT32(cmp);
 }
 
-PG_FUNCTION_INFO_V1(tbox_lt);
+PG_FUNCTION_INFO_V1(Tbox_lt);
 /**
- * Returns true if the first temporal box value is less than the second one
+ * Return true if the first temporal box value is less than the second one
  */
 PGDLLEXPORT Datum
-tbox_lt(PG_FUNCTION_ARGS)
+Tbox_lt(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp(box1, box2);
   PG_RETURN_BOOL(cmp < 0);
 }
 
-PG_FUNCTION_INFO_V1(tbox_le);
+PG_FUNCTION_INFO_V1(Tbox_le);
 /**
- * Returns true if the first temporal box value is less than or equal to
+ * Return true if the first temporal box value is less than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
-tbox_le(PG_FUNCTION_ARGS)
+Tbox_le(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp(box1, box2);
   PG_RETURN_BOOL(cmp <= 0);
 }
 
-PG_FUNCTION_INFO_V1(tbox_ge);
+PG_FUNCTION_INFO_V1(Tbox_ge);
 /**
- * Returns true if the first temporal box value is greater than or equal to
+ * Return true if the first temporal box value is greater than or equal to
  * the second one
  */
 PGDLLEXPORT Datum
-tbox_ge(PG_FUNCTION_ARGS)
+Tbox_ge(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp(box1, box2);
   PG_RETURN_BOOL(cmp >= 0);
 }
 
-PG_FUNCTION_INFO_V1(tbox_gt);
+PG_FUNCTION_INFO_V1(Tbox_gt);
 /**
- * Returns true if the first temporal box value is greater than the second one
+ * Return true if the first temporal box value is greater than the second one
  */
 PGDLLEXPORT Datum
-tbox_gt(PG_FUNCTION_ARGS)
+Tbox_gt(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  int cmp = tbox_cmp_internal(box1, box2);
+  int cmp = tbox_cmp(box1, box2);
   PG_RETURN_BOOL(cmp > 0);
 }
 
 /**
- * Returns true if the two temporal boxes are equal
- * (internal function)
+ * @ingroup libmeos_box_comparison
+ * @brief Return true if the two temporal boxes are equal
  *
  * @note The internal B-tree comparator is not used to increase efficiency
  */
 bool
-tbox_eq_internal(const TBOX *box1, const TBOX *box2)
+tbox_eq(const TBOX *box1, const TBOX *box2)
 {
   if (MOBDB_FLAGS_GET_X(box1->flags) != MOBDB_FLAGS_GET_X(box2->flags) ||
     MOBDB_FLAGS_GET_T(box1->flags) != MOBDB_FLAGS_GET_T(box2->flags))
@@ -1613,28 +1838,28 @@ tbox_eq_internal(const TBOX *box1, const TBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(tbox_eq);
+PG_FUNCTION_INFO_V1(Tbox_eq);
 /**
- * Returns true if the two temporal boxes are equal
+ * Return true if the two temporal boxes are equal
  */
 PGDLLEXPORT Datum
-tbox_eq(PG_FUNCTION_ARGS)
+Tbox_eq(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(tbox_eq_internal(box1, box2));
+  PG_RETURN_BOOL(tbox_eq(box1, box2));
 }
 
-PG_FUNCTION_INFO_V1(tbox_ne);
+PG_FUNCTION_INFO_V1(Tbox_ne);
 /**
- * Returns true if the two temporal boxes are different
+ * Return true if the two temporal boxes are different
  */
 PGDLLEXPORT Datum
-tbox_ne(PG_FUNCTION_ARGS)
+Tbox_ne(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  PG_RETURN_BOOL(! tbox_eq_internal(box1, box2));
+  PG_RETURN_BOOL(! tbox_eq(box1, box2));
 }
 
 /*****************************************************************************/

@@ -46,7 +46,8 @@
 /*****************************************************************************/
 
 /**
- * Parse a spatiotemporal box value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a spatiotemporal box value from the buffer.
  */
 STBOX *
 stbox_parse(char **str)
@@ -214,7 +215,8 @@ stbox_parse(char **str)
 /*****************************************************************************/
 
 /**
- * Parse a temporal point value of instant type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of instant type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -224,7 +226,8 @@ stbox_parse(char **str)
  * @param[in] tpoint_srid SRID of the temporal point
  */
 static TInstant *
-tpointinst_parse(char **str, CachedType temptype, bool end, bool make, int *tpoint_srid)
+tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
+  int *tpoint_srid)
 {
   p_whitespace(str);
   /* The next instruction will throw an exception if it fails */
@@ -256,7 +259,8 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make, int *tpoi
 }
 
 /**
- * Parse a temporal point value of instant set type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of instant set type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -297,7 +301,8 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
 }
 
 /**
- * Parse a temporal point value of sequence type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of sequence type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -308,7 +313,8 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
  * @param[in] tpoint_srid SRID of the temporal point
 */
 static TSequence *
-tpointseq_parse(char **str, CachedType temptype, bool linear, bool end, bool make, int *tpoint_srid)
+tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
+  bool make, int *tpoint_srid)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -354,7 +360,8 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end, bool mak
 }
 
 /**
- * Parse a temporal point value of sequence set type from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value of sequence set type from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -362,7 +369,8 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end, bool mak
  * @param[in] tpoint_srid SRID of the temporal point
  */
 static TSequenceSet *
-tpointseqset_parse(char **str, CachedType temptype, bool linear, int *tpoint_srid)
+tpointseqset_parse(char **str, CachedType temptype, bool linear,
+  int *tpoint_srid)
 {
   p_whitespace(str);
   /* We are sure to find an opening brace because that was the condition
@@ -397,7 +405,8 @@ tpointseqset_parse(char **str, CachedType temptype, bool linear, int *tpoint_sri
 }
 
 /**
- * Parse a temporal point value from the buffer (dispatch function)
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal point value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type

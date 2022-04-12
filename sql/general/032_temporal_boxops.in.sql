@@ -38,11 +38,11 @@
 
 CREATE FUNCTION tbox(tint)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tnumber_to_tbox'
+  AS 'MODULE_PATHNAME', 'Tnumber_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(tfloat)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tnumber_to_tbox'
+  AS 'MODULE_PATHNAME', 'Tnumber_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint);
@@ -54,39 +54,39 @@ CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);
 
 CREATE FUNCTION overlaps_bbox(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -148,39 +148,39 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION contains_bbox(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -242,39 +242,39 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contained_bbox(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -336,39 +336,39 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION same_bbox(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -430,39 +430,39 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION adjacent_bbox(timestamptz, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbool, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(timestampset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbool, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(period, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbool, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(periodset, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbool, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbool, tbool)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -526,35 +526,35 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION overlaps_bbox(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -610,43 +610,43 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION overlaps_bbox(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -714,35 +714,35 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION contains_bbox(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -798,43 +798,43 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contains_bbox(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -902,35 +902,35 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contained_bbox(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -986,43 +986,43 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION contained_bbox(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -1090,35 +1090,35 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION same_bbox(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -1174,43 +1174,43 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION same_bbox(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -1278,35 +1278,35 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION adjacent_bbox(timestamptz, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(timestampset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(period, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(periodset, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -1362,43 +1362,43 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION adjacent_bbox(int, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(float, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(intrange, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, intrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbox, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tint, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -1468,35 +1468,35 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION overlaps_bbox(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -1552,44 +1552,44 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION overlaps_bbox(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION overlaps_bbox(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -1657,35 +1657,35 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION contains_bbox(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -1741,43 +1741,43 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contains_bbox(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -1845,35 +1845,35 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contained_bbox(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -1929,43 +1929,43 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION contained_bbox(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -2033,35 +2033,35 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION same_bbox(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -2117,43 +2117,43 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION same_bbox(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Same_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -2221,35 +2221,35 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION adjacent_bbox(timestamptz, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(timestampset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(period, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(periodset, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -2305,43 +2305,43 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION adjacent_bbox(int, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, int)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(float, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_number_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, float)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_number'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_number'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(floatrange, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_range_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_range_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, floatrange)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_range'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_range'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tbox, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tbox_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tbox_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_tbox'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, tint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tfloat, tfloat)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tnumber_tnumber'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_tnumber_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -2411,39 +2411,39 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION overlaps_bbox(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -2505,39 +2505,39 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION contains_bbox(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -2599,39 +2599,39 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contained_bbox(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -2693,39 +2693,39 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION same_bbox(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Same_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -2787,39 +2787,39 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION adjacent_bbox(timestamptz, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(ttext, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(timestampset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(ttext, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(period, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(ttext, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(periodset, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(ttext, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(ttext, ttext)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_bbox_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (

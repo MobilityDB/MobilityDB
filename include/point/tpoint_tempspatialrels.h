@@ -48,30 +48,30 @@
 
 /*****************************************************************************/
 
-extern Datum tcontains_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tcontains_geo_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
 
-extern Datum tintersects_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tintersects_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tintersects_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tintersects_tpoint_geo(PG_FUNCTION_ARGS);
 
-extern Datum ttouches_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum ttouches_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Ttouches_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Ttouches_tpoint_geo(PG_FUNCTION_ARGS);
 
-extern Datum tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Temporal *tinterrel_tpoint_geo_internal(const Temporal *temp,
+extern Temporal *tinterrel_tpoint_geo(const Temporal *temp,
   GSERIALIZED *gs, bool tinter, bool atvalue, Datum value);
-extern Temporal *tcontains_geo_tpoint_internal(GSERIALIZED *gs,
+extern Temporal *tcontains_geo_tpoint(GSERIALIZED *gs,
   const Temporal *temp, bool atvalue, Datum value);
-extern Temporal *ttouches_tpoint_geo_internal(const Temporal *temp,
+extern Temporal *ttouches_tpoint_geo(const Temporal *temp,
   GSERIALIZED *gs, bool atvalue, Datum value);
-extern Temporal *tdwithin_tpoint_geo_internal(const Temporal *temp,
+extern Temporal *tdwithin_tpoint_geo(const Temporal *temp,
   GSERIALIZED *gs, Datum dist, bool atvalue, Datum value);
-extern Temporal *tdwithin_tpoint_tpoint_internal(const Temporal *temp1,
+extern Temporal *tdwithin_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2, Datum dist, bool atvalue, Datum value);
 
 extern int tdwithin_tpointsegm_tpointsegm(Datum sv1, Datum ev1, Datum sv2,

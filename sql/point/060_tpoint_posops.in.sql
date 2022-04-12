@@ -39,19 +39,19 @@
 
 CREATE FUNCTION temporal_before(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -82,19 +82,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -127,19 +127,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -170,19 +170,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'After_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -215,19 +215,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -258,19 +258,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_period_temporal'
+  AS 'MODULE_PATHNAME', 'Before_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_period_temporal'
+  AS 'MODULE_PATHNAME', 'After_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -303,19 +303,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'After_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -346,19 +346,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Before_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'After_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -390,51 +390,51 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Left_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Overleft_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Right_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Overright_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_below(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'below_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Below_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbelow(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbelow_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbelow_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_above(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'above_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Above_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overabove(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overabove_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Overabove_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_front(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'front_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Front_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overfront(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overfront_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Overfront_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_back(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'back_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Back_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overback(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overback_geom_tpoint'
+  AS 'MODULE_PATHNAME', 'Overback_geom_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -510,67 +510,67 @@ CREATE OPERATOR /&> (
 
 CREATE FUNCTION temporal_left(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Left_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overleft_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Right_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overright_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_below(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'below_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Below_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbelow(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbelow_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbelow_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_above(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'above_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Above_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overabove(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overabove_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overabove_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_front(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'front_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Front_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overfront(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overfront_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overfront_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_back(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'back_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Back_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overback(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overback_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overback_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Before_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbefore_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'After_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overafter_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -666,19 +666,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Before_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbefore_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'After_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overafter_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -711,19 +711,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -754,19 +754,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -797,19 +797,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -840,19 +840,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'After_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -883,51 +883,51 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Left_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Overleft_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Right_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Overright_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_below(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'below_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Below_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbelow(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbelow_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Overbelow_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_above(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'above_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Above_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overabove(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overabove_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Overabove_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_front(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'front_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Front_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overfront(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overfront_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Overfront_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_back(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'back_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Back_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overback(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overback_tpoint_geom'
+  AS 'MODULE_PATHNAME', 'Overback_tpoint_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1002,67 +1002,67 @@ CREATE OPERATOR /&> (
 
 CREATE FUNCTION temporal_left(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Left_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overleft_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Right_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overright_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_below(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'below_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Below_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbelow(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbelow_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overbelow_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_above(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'above_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Above_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overabove(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overabove_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overabove_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_front(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'front_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Front_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overfront(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overfront_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overfront_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_back(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'back_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Back_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overback(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overback_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overback_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Before_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overbefore_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'After_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overafter_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1159,67 +1159,67 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_left(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Left_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overleft_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Right_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overright_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_below(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'below_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Below_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbelow(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbelow_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbelow_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_above(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'above_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Above_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overabove(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overabove_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overabove_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_front(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'front_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Front_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overfront(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overfront_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overfront_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_back(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'back_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Back_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overback(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overback_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overback_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Before_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbefore_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'After_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overafter_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -1319,19 +1319,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1362,19 +1362,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'After_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1405,19 +1405,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_period'
+  AS 'MODULE_PATHNAME', 'Before_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_period'
+  AS 'MODULE_PATHNAME', 'After_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1448,19 +1448,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Before_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'After_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1491,19 +1491,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Before_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overbefore_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'After_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overafter_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1535,19 +1535,19 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION temporal_before(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Before_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overbefore_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'After_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overafter_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (

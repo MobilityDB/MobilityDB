@@ -40,19 +40,19 @@ CREATE TYPE tbox;
 
 CREATE FUNCTION tbox_in(cstring)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_out(tbox)
   RETURNS cstring
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_recv(internal)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_send(tbox)
   RETURNS bytea
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tbox (
@@ -71,15 +71,15 @@ CREATE TYPE tbox (
 
  CREATE FUNCTION tbox(float8, float8)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_constructor'
+  AS 'MODULE_PATHNAME', 'Tbox_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  CREATE FUNCTION tboxt(timestamptz, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_constructor_t'
+  AS 'MODULE_PATHNAME', 'Tbox_constructor_t'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
  CREATE FUNCTION tbox(float8, timestamptz, float8, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_constructor'
+  AS 'MODULE_PATHNAME', 'Tbox_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -88,39 +88,39 @@ CREATE TYPE tbox (
 
 CREATE FUNCTION tbox(integer)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'int_to_tbox'
+  AS 'MODULE_PATHNAME', 'Int_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'float_to_tbox'
+  AS 'MODULE_PATHNAME', 'Float_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(numeric)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'numeric_to_tbox'
+  AS 'MODULE_PATHNAME', 'Numeric_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intrange)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'range_to_tbox'
+  AS 'MODULE_PATHNAME', 'Range_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatrange)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'range_to_tbox'
+  AS 'MODULE_PATHNAME', 'Range_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Timestamp_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(period)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Period_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(timestampset)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'timestampset_to_tbox'
+  AS 'MODULE_PATHNAME', 'Timestampset_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(periodset)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'periodset_to_tbox'
+  AS 'MODULE_PATHNAME', 'Periodset_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (integer AS tbox) WITH FUNCTION tbox(integer);
@@ -138,46 +138,46 @@ CREATE CAST (floatrange AS tbox) WITH FUNCTION tbox(floatrange);
 
 CREATE FUNCTION tbox(integer, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'int_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Int_timestamp_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intrange, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'range_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Range_timestamp_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'float_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Float_timestamp_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatrange, timestamptz)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'range_timestamp_to_tbox'
+  AS 'MODULE_PATHNAME', 'Range_timestamp_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(integer, period)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'int_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Int_period_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(intrange, period)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'range_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Range_period_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(float, period)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'float_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Float_period_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox(floatrange, period)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'range_period_to_tbox'
+  AS 'MODULE_PATHNAME', 'Range_period_to_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION floatrange(tbox)
   RETURNS floatrange
-  AS 'MODULE_PATHNAME', 'tbox_to_floatrange'
+  AS 'MODULE_PATHNAME', 'Tbox_to_floatrange'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(tbox)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'tbox_to_period'
+  AS 'MODULE_PATHNAME', 'Tbox_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tbox AS floatrange) WITH FUNCTION floatrange(tbox);
@@ -189,28 +189,28 @@ CREATE CAST (tbox AS period) WITH FUNCTION period(tbox);
 
 CREATE FUNCTION hasX(tbox)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'tbox_hasx'
+  AS 'MODULE_PATHNAME', 'Tbox_hasx'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION hasT(tbox)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'tbox_hast'
+  AS 'MODULE_PATHNAME', 'Tbox_hast'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION Xmin(tbox)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'tbox_xmin'
+  AS 'MODULE_PATHNAME', 'Tbox_xmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Xmax(tbox)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'tbox_xmax'
+  AS 'MODULE_PATHNAME', 'Tbox_xmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Tmin(tbox)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'tbox_tmin'
+  AS 'MODULE_PATHNAME', 'Tbox_tmin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION Tmax(tbox)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'tbox_tmax'
+  AS 'MODULE_PATHNAME', 'Tbox_tmax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -219,15 +219,15 @@ CREATE FUNCTION Tmax(tbox)
 
 CREATE FUNCTION expandValue(tbox, float)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_expand_value'
+  AS 'MODULE_PATHNAME', 'Tbox_expand_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandTemporal(tbox, interval)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_expand_temporal'
+  AS 'MODULE_PATHNAME', 'Tbox_expand_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION round(tbox, integer DEFAULT 0)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'tbox_round'
+  AS 'MODULE_PATHNAME', 'Tbox_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -236,12 +236,12 @@ CREATE FUNCTION round(tbox, integer DEFAULT 0)
 
 CREATE FUNCTION tnumber_sel(internal, oid, internal, integer)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'tnumber_sel'
+  AS 'MODULE_PATHNAME', 'Tnumber_sel'
   LANGUAGE C IMMUTABLE STRICT;
 
 CREATE FUNCTION tnumber_joinsel(internal, oid, internal, smallint, internal)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'tnumber_joinsel'
+  AS 'MODULE_PATHNAME', 'Tnumber_joinsel'
   LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************
@@ -250,23 +250,23 @@ CREATE FUNCTION tnumber_joinsel(internal, oid, internal, smallint, internal)
 
 CREATE FUNCTION tbox_contains(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Contains_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_contained(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Contained_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_overlaps(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Overlaps_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_same(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Same_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_adjacent(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Adjacent_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -306,35 +306,35 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION temporal_left(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'left_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Left_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overleft(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overleft_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Overleft_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_right(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'right_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Right_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overright(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overright_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Overright_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_before(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'before_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Before_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overbefore(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overbefore_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Overbefore_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_after(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'after_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'After_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_overafter(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overafter_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Overafter_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -388,11 +388,11 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION tbox_union(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'union_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Union_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_intersection(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME', 'intersection_tbox_tbox'
+  AS 'MODULE_PATHNAME', 'Intersection_tbox_tbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR + (
@@ -412,11 +412,11 @@ CREATE OPERATOR * (
 
 CREATE FUNCTION tbox_extent_transfn(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbox_extent_combinefn(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tbox) (
@@ -432,31 +432,31 @@ CREATE AGGREGATE extent(tbox) (
 
 CREATE FUNCTION tbox_eq(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'tbox_eq'
+  AS 'MODULE_PATHNAME', 'Tbox_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_ne(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'tbox_ne'
+  AS 'MODULE_PATHNAME', 'Tbox_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_lt(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'tbox_lt'
+  AS 'MODULE_PATHNAME', 'Tbox_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_le(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'tbox_le'
+  AS 'MODULE_PATHNAME', 'Tbox_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_ge(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'tbox_ge'
+  AS 'MODULE_PATHNAME', 'Tbox_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gt(tbox, tbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'tbox_gt'
+  AS 'MODULE_PATHNAME', 'Tbox_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_cmp(tbox, tbox)
   RETURNS int4
-  AS 'MODULE_PATHNAME', 'tbox_cmp'
+  AS 'MODULE_PATHNAME', 'Tbox_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (

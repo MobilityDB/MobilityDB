@@ -47,18 +47,19 @@
 extern Datum datum_and(Datum l, Datum r);
 extern Datum datum_or(Datum l, Datum r);
 
-extern Datum tand_bool_tbool(PG_FUNCTION_ARGS);
-extern Datum tand_tbool_bool(PG_FUNCTION_ARGS);
-extern Datum tand_tbool_tbool(PG_FUNCTION_ARGS);
+extern Datum Tand_bool_tbool(PG_FUNCTION_ARGS);
+extern Datum Tand_tbool_bool(PG_FUNCTION_ARGS);
+extern Datum Tand_tbool_tbool(PG_FUNCTION_ARGS);
 
-extern Datum tor_bool_tbool(PG_FUNCTION_ARGS);
-extern Datum tor_tbool_bool(PG_FUNCTION_ARGS);
-extern Datum tor_tbool_tbool(PG_FUNCTION_ARGS);
+extern Datum Tor_bool_tbool(PG_FUNCTION_ARGS);
+extern Datum Tor_tbool_bool(PG_FUNCTION_ARGS);
+extern Datum Tor_tbool_tbool(PG_FUNCTION_ARGS);
 
-extern Datum tnot_tbool(PG_FUNCTION_ARGS);
+extern Datum Tnot_tbool(PG_FUNCTION_ARGS);
 
-extern Temporal *boolop_tbool_tbool(const Temporal *temp1, const Temporal *temp2, datum_func2 func);
-extern Temporal *tnot_tbool_internal(const Temporal *temp);
+extern Temporal *boolop_tbool_tbool(const Temporal *temp1,
+  const Temporal *temp2, datum_func2 func);
+extern Temporal *tnot_tbool(const Temporal *temp);
 
 /*****************************************************************************/
 

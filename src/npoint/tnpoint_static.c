@@ -187,7 +187,7 @@ nsegmentarr_geom(nsegment **segments, int count)
 static int
 npoint_sort_cmp(npoint **l, npoint **r)
 {
-  return npoint_cmp_internal(*l, *r);
+  return npoint_cmp(*l, *r);
 }
 
 void
@@ -204,7 +204,7 @@ npointarr_sort(npoint **points, int count)
 static int
 nsegment_sort_cmp(nsegment **l, nsegment **r)
 {
-  return nsegment_cmp_internal(*l, *r);
+  return nsegment_cmp(*l, *r);
 }
 
 /**
@@ -256,7 +256,7 @@ npoint_remove_duplicates(npoint **values, int count)
   assert (count > 0);
   int newcount = 0;
   for (int i = 1; i < count; i++)
-    if (npoint_ne_internal(values[newcount], values[i]))
+    if (npoint_ne(values[newcount], values[i]))
       values[++ newcount] = values[i];
   return newcount + 1;
 }
@@ -266,26 +266,26 @@ npoint_remove_duplicates(npoint **values, int count)
  * Input/Output functions for npoint
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(npoint_in);
+PG_FUNCTION_INFO_V1(Npoint_in);
 /**
  * Input function for network points
  * Example of input:
  *    (1, 0.5)
  */
 PGDLLEXPORT Datum
-npoint_in(PG_FUNCTION_ARGS)
+Npoint_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
   npoint *result = npoint_parse(&str);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(npoint_out);
+PG_FUNCTION_INFO_V1(Npoint_out);
 /**
  * Output function for network points
  */
 PGDLLEXPORT Datum
-npoint_out(PG_FUNCTION_ARGS)
+Npoint_out(PG_FUNCTION_ARGS)
 {
   static size_t size = MAXNPOINTLEN + 1;
   char *result = (char *) palloc(size);
@@ -296,32 +296,30 @@ npoint_out(PG_FUNCTION_ARGS)
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(npoint_recv);
+PG_FUNCTION_INFO_V1(Npoint_recv);
 /**
  * Receive function for network points
  */
 PGDLLEXPORT Datum
-npoint_recv(PG_FUNCTION_ARGS)
+Npoint_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
   npoint *result;
-
-  result = (npoint *) palloc(sizeof(npoint));
+  result = (npoint *) palloc0(sizeof(npoint));
   result->rid = pq_getmsgint64(buf);
   result->pos = pq_getmsgfloat8(buf);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(npoint_send);
+PG_FUNCTION_INFO_V1(Npoint_send);
 /**
  * Send function for network points
  */
 PGDLLEXPORT Datum
-npoint_send(PG_FUNCTION_ARGS)
+Npoint_send(PG_FUNCTION_ARGS)
 {
-  npoint  *np = PG_GETARG_NPOINT(0);
+  npoint *np = PG_GETARG_NPOINT(0);
   StringInfoData buf;
-
   pq_begintypsend(&buf);
   pq_sendint64(&buf, (uint64) np->rid);
   pq_sendfloat8(&buf, np->pos);
@@ -332,38 +330,38 @@ npoint_send(PG_FUNCTION_ARGS)
  * Input/Output functions for nsegment
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(nsegment_in);
+PG_FUNCTION_INFO_V1(Nsegment_in);
 /**
  * Input function for network segments
  * Example of input:
  *    (1, 0.5, 0.6)
  */
 PGDLLEXPORT Datum
-nsegment_in(PG_FUNCTION_ARGS)
+Nsegment_in(PG_FUNCTION_ARGS)
 {
   char *str = PG_GETARG_CSTRING(0);
   nsegment *result = nsegment_parse(&str);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_out);
+PG_FUNCTION_INFO_V1(Nsegment_out);
 /**
  * Output function for network segments
  */
 PGDLLEXPORT Datum
-nsegment_out(PG_FUNCTION_ARGS)
+Nsegment_out(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   char *result = psprintf("NSegment(%ld,%g,%g)", ns->rid, ns->pos1, ns->pos2);
   PG_RETURN_CSTRING(result);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_recv);
+PG_FUNCTION_INFO_V1(Nsegment_recv);
 /**
  * Receive function for network segments
  */
 PGDLLEXPORT Datum
-nsegment_recv(PG_FUNCTION_ARGS)
+Nsegment_recv(PG_FUNCTION_ARGS)
 {
   StringInfo  buf = (StringInfo) PG_GETARG_POINTER(0);
   nsegment *result;
@@ -375,12 +373,12 @@ nsegment_recv(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_send);
+PG_FUNCTION_INFO_V1(Nsegment_send);
 /**
  * Send function for network segments
  */
 PGDLLEXPORT Datum
-nsegment_send(PG_FUNCTION_ARGS)
+Nsegment_send(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   StringInfoData buf;
@@ -432,12 +430,12 @@ npoint_make(int64 rid, double pos)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(npoint_constructor);
+PG_FUNCTION_INFO_V1(Npoint_constructor);
 /**
  * Construct an network point value from the arguments
  */
 PGDLLEXPORT Datum
-npoint_constructor(PG_FUNCTION_ARGS)
+Npoint_constructor(PG_FUNCTION_ARGS)
 {
   int64 rid = PG_GETARG_INT64(0);
   double pos = PG_GETARG_FLOAT8(1);
@@ -483,12 +481,12 @@ nsegment_make(int64 rid, double pos1, double pos2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(nsegment_constructor);
+PG_FUNCTION_INFO_V1(Nsegment_constructor);
 /**
  * Construct an network segment value from the arguments
  */
 PGDLLEXPORT Datum
-nsegment_constructor(PG_FUNCTION_ARGS)
+Nsegment_constructor(PG_FUNCTION_ARGS)
 {
   int64 rid = PG_GETARG_INT64(0);
   double pos1 = PG_GETARG_FLOAT8(1);
@@ -497,12 +495,12 @@ nsegment_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(npoint_to_nsegment);
+PG_FUNCTION_INFO_V1(Npoint_to_nsegment);
 /**
  * Construct an network segment value from the network point
  */
 PGDLLEXPORT Datum
-npoint_to_nsegment(PG_FUNCTION_ARGS)
+Npoint_to_nsegment(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   nsegment *result = nsegment_make(np->rid, np->pos, np->pos);
@@ -513,57 +511,57 @@ npoint_to_nsegment(PG_FUNCTION_ARGS)
  * Accessor funcctions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(npoint_route);
+PG_FUNCTION_INFO_V1(Npoint_route);
 /**
- * Returns the route of the network point
+ * Return the route of the network point
  */
 PGDLLEXPORT Datum
-npoint_route(PG_FUNCTION_ARGS)
+Npoint_route(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   int64 result = np->rid;
   PG_RETURN_INT64(result);
 }
 
-PG_FUNCTION_INFO_V1(npoint_position);
+PG_FUNCTION_INFO_V1(Npoint_position);
 /**
- * Returns the position of the network point
+ * Return the position of the network point
  */
 PGDLLEXPORT Datum
-npoint_position(PG_FUNCTION_ARGS)
+Npoint_position(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   PG_RETURN_FLOAT8(np->pos);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_route);
+PG_FUNCTION_INFO_V1(Nsegment_route);
 /**
- * Returns the route of the network segment
+ * Return the route of the network segment
  */
 PGDLLEXPORT Datum
-nsegment_route(PG_FUNCTION_ARGS)
+Nsegment_route(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   PG_RETURN_INT64(ns->rid);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_start_position);
+PG_FUNCTION_INFO_V1(Nsegment_start_position);
 /**
- * Returns the start position of the network segment
+ * Return the start position of the network segment
  */
 PGDLLEXPORT Datum
-nsegment_start_position(PG_FUNCTION_ARGS)
+Nsegment_start_position(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   PG_RETURN_FLOAT8(ns->pos1);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_end_position);
+PG_FUNCTION_INFO_V1(Nsegment_end_position);
 /**
- * Returns the end position of the network segment
+ * Return the end position of the network segment
  */
 PGDLLEXPORT Datum
-nsegment_end_position(PG_FUNCTION_ARGS)
+Nsegment_end_position(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   PG_RETURN_FLOAT8(ns->pos2);
@@ -578,7 +576,7 @@ nsegment_end_position(PG_FUNCTION_ARGS)
  * decimal places
  */
 Datum
-npoint_round_internal(Datum npt, Datum size)
+npoint_round(Datum npt, Datum size)
 {
   /* Set precision of position */
   npoint *np = (npoint *) DatumGetPointer(npt);
@@ -586,13 +584,13 @@ npoint_round_internal(Datum npt, Datum size)
   return PointerGetDatum(npoint_make(np->rid, pos));
 }
 
-PG_FUNCTION_INFO_V1(npoint_round);
+PG_FUNCTION_INFO_V1(Npoint_round);
 /**
  * Set the precision of the position of a network point to the number of
  * decimal places
  */
 PGDLLEXPORT Datum
-npoint_round(PG_FUNCTION_ARGS)
+Npoint_round(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Datum size = PG_GETARG_DATUM(1);
@@ -602,13 +600,13 @@ npoint_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_round);
+PG_FUNCTION_INFO_V1(Nsegment_round);
 /**
  * Set the precision of the position of a network point to the number of
  * decimal places
  */
 PGDLLEXPORT Datum
-nsegment_round(PG_FUNCTION_ARGS)
+Nsegment_round(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   Datum size = PG_GETARG_DATUM(1);
@@ -624,7 +622,7 @@ nsegment_round(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the edge table contains a route with the route identifier
+ * Return true if the edge table contains a route with the route identifier
  */
 bool
 route_exists(int64 rid)
@@ -752,12 +750,12 @@ npoint_geom(const npoint *np)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(npoint_to_geom);
+PG_FUNCTION_INFO_V1(Npoint_to_geom);
 /**
  * Transforms the network point into a geometry
  */
 PGDLLEXPORT Datum
-npoint_to_geom(PG_FUNCTION_ARGS)
+Npoint_to_geom(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Datum result = npoint_geom(np);
@@ -802,12 +800,12 @@ geom_npoint(Datum geom)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(geom_to_npoint);
+PG_FUNCTION_INFO_V1(Geom_to_npoint);
 /**
  * Transforms the geometry into a network point
  */
 PGDLLEXPORT Datum
-geom_to_npoint(PG_FUNCTION_ARGS)
+Geom_to_npoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   /* Ensure validity of operation */
@@ -841,12 +839,12 @@ nsegment_geom(const nsegment *ns)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(nsegment_to_geom);
+PG_FUNCTION_INFO_V1(Nsegment_to_geom);
 /**
  * Transforms the network segment into a geometry
  */
 PGDLLEXPORT Datum
-nsegment_to_geom(PG_FUNCTION_ARGS)
+Nsegment_to_geom(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
   Datum result = nsegment_geom(ns);
@@ -909,12 +907,12 @@ geom_nsegment(Datum geom)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(geom_to_nsegment);
+PG_FUNCTION_INFO_V1(Geom_to_nsegment);
 /**
  * Transforms the geometry into a network segment
  */
 PGDLLEXPORT Datum
-geom_to_nsegment(PG_FUNCTION_ARGS)
+Geom_to_nsegment(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(gs);
@@ -932,10 +930,11 @@ geom_to_nsegment(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the SRID of the network point
+ * @ingroup libmeos_temporal_accesor
+ * Return the SRID of the network point
  */
 int
-npoint_srid_internal(const npoint *np)
+npoint_srid(const npoint *np)
 {
   Datum line = route_geom(np->rid);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
@@ -944,23 +943,24 @@ npoint_srid_internal(const npoint *np)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(npoint_srid);
+PG_FUNCTION_INFO_V1(Npoint_get_srid);
 /**
- * Returns the SRID of the network point
+ * Return the SRID of the network point
  */
 PGDLLEXPORT Datum
-npoint_srid(PG_FUNCTION_ARGS)
+Npoint_get_srid(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
-  int result = npoint_srid_internal(np);
+  int result = npoint_srid(np);
   PG_RETURN_INT32(result);
 }
 
 /**
- * Returns the SRID of the network segment
+ * @ingroup libmeos_temporal_accesor
+ * Return the SRID of the network segment
  */
 int
-nsegment_srid_internal(const nsegment *ns)
+nsegment_srid(const nsegment *ns)
 {
   Datum line = route_geom(ns->rid);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
@@ -969,15 +969,15 @@ nsegment_srid_internal(const nsegment *ns)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(nsegment_srid);
+PG_FUNCTION_INFO_V1(Nsegment_get_srid);
 /**
- * Returns the SRID of the network segment
+ * Return the SRID of the network segment
  */
 PGDLLEXPORT Datum
-nsegment_srid(PG_FUNCTION_ARGS)
+Nsegment_get_srid(PG_FUNCTION_ARGS)
 {
   nsegment *ns = PG_GETARG_NSEGMENT(0);
-  int result = nsegment_srid_internal(ns);
+  int result = nsegment_srid(ns);
   PG_RETURN_INT32(result);
 }
 
@@ -986,55 +986,55 @@ nsegment_srid(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the first network point is equal to the second one
+ * Return true if the first network point is equal to the second one
  */
 bool
-npoint_eq_internal(const npoint *np1, const npoint *np2)
+npoint_eq(const npoint *np1, const npoint *np2)
 {
   return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MOBDB_EPSILON;
 }
 
-PG_FUNCTION_INFO_V1(npoint_eq);
+PG_FUNCTION_INFO_V1(Npoint_eq);
 /**
- * Returns true if the first network point is equal to the second one
+ * Return true if the first network point is equal to the second one
  */
 PGDLLEXPORT Datum
-npoint_eq(PG_FUNCTION_ARGS)
+Npoint_eq(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  PG_RETURN_BOOL(npoint_eq_internal(np1, np2));
+  PG_RETURN_BOOL(npoint_eq(np1, np2));
 }
 
 /**
- * Returns true if the first network point is not equal to the second one
+ * Return true if the first network point is not equal to the second one
  */
 bool
-npoint_ne_internal(const npoint *np1, const npoint *np2)
+npoint_ne(const npoint *np1, const npoint *np2)
 {
-  return (!npoint_eq_internal(np1, np2));
+  return (!npoint_eq(np1, np2));
 }
 
-PG_FUNCTION_INFO_V1(npoint_ne);
+PG_FUNCTION_INFO_V1(Npoint_ne);
 /**
- * Returns true if the first network point is not equal to the second one
+ * Return true if the first network point is not equal to the second one
  */
 PGDLLEXPORT Datum
-npoint_ne(PG_FUNCTION_ARGS)
+Npoint_ne(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  PG_RETURN_BOOL(npoint_ne_internal(np1, np2));
+  PG_RETURN_BOOL(npoint_ne(np1, np2));
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first network point
+ * Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
  */
 int
-npoint_cmp_internal(const npoint *np1, const npoint *np2)
+npoint_cmp(const npoint *np1, const npoint *np2)
 {
   if (np1->rid < np2->rid)
     return -1;
@@ -1048,140 +1048,140 @@ npoint_cmp_internal(const npoint *np1, const npoint *np2)
   return 0;
 }
 
-PG_FUNCTION_INFO_V1(npoint_cmp);
+PG_FUNCTION_INFO_V1(Npoint_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first network point
+ * Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
  */
 PGDLLEXPORT Datum
-npoint_cmp(PG_FUNCTION_ARGS)
+Npoint_cmp(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  PG_RETURN_INT32(npoint_cmp_internal(np1, np2));
+  PG_RETURN_INT32(npoint_cmp(np1, np2));
 }
 
 /* Inequality operators using the npoint_cmp function */
 
 /**
- * Returns true if the first network point is less than the second one
+ * Return true if the first network point is less than the second one
  */
 bool
-npoint_lt_internal(const npoint *np1, const npoint *np2)
+npoint_lt(const npoint *np1, const npoint *np2)
 {
-  int cmp = npoint_cmp_internal(np1, np2);
+  int cmp = npoint_cmp(np1, np2);
   return (cmp < 0);
 }
 
-PG_FUNCTION_INFO_V1(npoint_lt);
+PG_FUNCTION_INFO_V1(Npoint_lt);
 /**
- * Returns true if the first network point is less than the second one
+ * Return true if the first network point is less than the second one
  */
 PGDLLEXPORT Datum
-npoint_lt(PG_FUNCTION_ARGS)
+Npoint_lt(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  int cmp = npoint_cmp_internal(np1, np2);
+  int cmp = npoint_cmp(np1, np2);
   PG_RETURN_BOOL(cmp < 0);
 }
 
-PG_FUNCTION_INFO_V1(npoint_le);
+PG_FUNCTION_INFO_V1(Npoint_le);
 /**
- * Returns true if the first network point is less than or equal to the
+ * Return true if the first network point is less than or equal to the
  * second one
  */
 PGDLLEXPORT Datum
-npoint_le(PG_FUNCTION_ARGS)
+Npoint_le(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  int cmp = npoint_cmp_internal(np1, np2);
+  int cmp = npoint_cmp(np1, np2);
   PG_RETURN_BOOL(cmp <= 0);
 }
 
-PG_FUNCTION_INFO_V1(npoint_ge);
+PG_FUNCTION_INFO_V1(Npoint_ge);
 /**
- * Returns true if the first network point is greater than or equal to the
+ * Return true if the first network point is greater than or equal to the
  * second one
  */
 PGDLLEXPORT Datum
-npoint_ge(PG_FUNCTION_ARGS)
+Npoint_ge(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  int cmp = npoint_cmp_internal(np1, np2);
+  int cmp = npoint_cmp(np1, np2);
   PG_RETURN_BOOL(cmp >= 0);
 }
 
-PG_FUNCTION_INFO_V1(npoint_gt);
+PG_FUNCTION_INFO_V1(Npoint_gt);
 /**
- * Returns true if the first network point is greater than the second one
+ * Return true if the first network point is greater than the second one
  */
 PGDLLEXPORT Datum
-npoint_gt(PG_FUNCTION_ARGS)
+Npoint_gt(PG_FUNCTION_ARGS)
 {
   npoint *np1 = PG_GETARG_NPOINT(0);
   npoint *np2 = PG_GETARG_NPOINT(1);
-  int cmp = npoint_cmp_internal(np1, np2);
+  int cmp = npoint_cmp(np1, np2);
   PG_RETURN_BOOL(cmp > 0);
 }
 
 /*****************************************************************************/
 
 /**
- * Returns true if the first network segment is equal to the second one
+ * Return true if the first network segment is equal to the second one
  */
 bool
-nsegment_eq_internal(const nsegment *ns1, const nsegment *ns2)
+nsegment_eq(const nsegment *ns1, const nsegment *ns2)
 {
   return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MOBDB_EPSILON &&
     fabs(ns1->pos2 - ns2->pos2) < MOBDB_EPSILON;
 }
 
-PG_FUNCTION_INFO_V1(nsegment_eq);
+PG_FUNCTION_INFO_V1(Nsegment_eq);
 /**
- * Returns true if the first network segment is equal to the second one
+ * Return true if the first network segment is equal to the second one
  */
 PGDLLEXPORT Datum
-nsegment_eq(PG_FUNCTION_ARGS)
+Nsegment_eq(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  PG_RETURN_BOOL(nsegment_eq_internal(ns1, ns2));
+  PG_RETURN_BOOL(nsegment_eq(ns1, ns2));
 }
 
 /**
- * Returns true if the first network segment is not equal to the second one
+ * Return true if the first network segment is not equal to the second one
  */
 bool
-nsegment_ne_internal(const nsegment *ns1, const nsegment *ns2)
+nsegment_ne(const nsegment *ns1, const nsegment *ns2)
 {
-  return (!nsegment_eq_internal(ns1, ns2));
+  return (!nsegment_eq(ns1, ns2));
 }
 
-PG_FUNCTION_INFO_V1(nsegment_ne);
+PG_FUNCTION_INFO_V1(Nsegment_ne);
 /**
- * Returns true if the first network segment is not equal to the second one
+ * Return true if the first network segment is not equal to the second one
  */
 PGDLLEXPORT Datum
-nsegment_ne(PG_FUNCTION_ARGS)
+Nsegment_ne(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  PG_RETURN_BOOL(nsegment_ne_internal(ns1, ns2));
+  PG_RETURN_BOOL(nsegment_ne(ns1, ns2));
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first network segment
+ * Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
  */
 int
-nsegment_cmp_internal(const nsegment *ns1, const nsegment *ns2)
+nsegment_cmp(const nsegment *ns1, const nsegment *ns2)
 {
   if (ns1->rid < ns2->rid)
     return -1;
@@ -1200,72 +1200,72 @@ nsegment_cmp_internal(const nsegment *ns1, const nsegment *ns2)
   return 0;
 }
 
-PG_FUNCTION_INFO_V1(nsegment_cmp);
+PG_FUNCTION_INFO_V1(Nsegment_cmp);
 /**
- * Returns -1, 0, or 1 depending on whether the first network segment
+ * Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal, or greater than the second one
  */
 PGDLLEXPORT Datum
-nsegment_cmp(PG_FUNCTION_ARGS)
+Nsegment_cmp(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  PG_RETURN_INT32(nsegment_cmp_internal(ns1, ns2));
+  PG_RETURN_INT32(nsegment_cmp(ns1, ns2));
 }
 
 /* Inequality operators using the nsegment_cmp function */
 
-PG_FUNCTION_INFO_V1(nsegment_lt);
+PG_FUNCTION_INFO_V1(Nsegment_lt);
 /**
- * Returns true if the first network segment is less than the second one
+ * Return true if the first network segment is less than the second one
  */
 PGDLLEXPORT Datum
-nsegment_lt(PG_FUNCTION_ARGS)
+Nsegment_lt(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  int cmp = nsegment_cmp_internal(ns1, ns2);
+  int cmp = nsegment_cmp(ns1, ns2);
   PG_RETURN_BOOL(cmp < 0);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_le);
+PG_FUNCTION_INFO_V1(Nsegment_le);
 /**
- * Returns true if the first network segment is less than or equal to the
+ * Return true if the first network segment is less than or equal to the
  * second one
  */
 PGDLLEXPORT Datum
-nsegment_le(PG_FUNCTION_ARGS)
+Nsegment_le(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  int cmp = nsegment_cmp_internal(ns1, ns2);
+  int cmp = nsegment_cmp(ns1, ns2);
   PG_RETURN_BOOL(cmp <= 0);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_ge);
+PG_FUNCTION_INFO_V1(Nsegment_ge);
 /**
- * Returns true if the first network segment is greater than or equal to the
+ * Return true if the first network segment is greater than or equal to the
  * second one
  */
 PGDLLEXPORT Datum
-nsegment_ge(PG_FUNCTION_ARGS)
+Nsegment_ge(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  int cmp = nsegment_cmp_internal(ns1, ns2);
+  int cmp = nsegment_cmp(ns1, ns2);
   PG_RETURN_BOOL(cmp >= 0);
 }
 
-PG_FUNCTION_INFO_V1(nsegment_gt);
+PG_FUNCTION_INFO_V1(Nsegment_gt);
 /**
- * Returns true if the first network segment is greater than the second one
+ * Return true if the first network segment is greater than the second one
  */
 PGDLLEXPORT Datum
-nsegment_gt(PG_FUNCTION_ARGS)
+Nsegment_gt(PG_FUNCTION_ARGS)
 {
   nsegment *ns1 = PG_GETARG_NSEGMENT(0);
   nsegment *ns2 = PG_GETARG_NSEGMENT(1);
-  int cmp = nsegment_cmp_internal(ns1, ns2);
+  int cmp = nsegment_cmp(ns1, ns2);
   PG_RETURN_BOOL(cmp > 0);
 }
 

@@ -44,12 +44,12 @@
 
 /*****************************************************************************/
 
-extern Datum stbox_spgist_config(PG_FUNCTION_ARGS);
-extern Datum stbox_spgist_choose(PG_FUNCTION_ARGS);
-extern Datum stbox_spgist_picksplit(PG_FUNCTION_ARGS);
-extern Datum stbox_spgist_inner_consistent(PG_FUNCTION_ARGS);
-extern Datum stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
-extern Datum sptpoint_gist_compress(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_config(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_choose(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_picksplit(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum Tpoint_spgist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

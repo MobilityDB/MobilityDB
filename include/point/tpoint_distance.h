@@ -48,12 +48,12 @@
 
 /* Distance functions */
 
-extern Datum distance_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum distance_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum distance_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Distance_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Distance_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Distance_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Temporal *distance_tpoint_geo_internal(const Temporal *temp, Datum geo);
-extern Temporal *distance_tpoint_tpoint_internal(const Temporal *temp1,
+extern Temporal *distance_tpoint_geo(const Temporal *temp, Datum geo);
+extern Temporal *distance_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 
 /* Nearest approach distance/instance and shortest line functions */
@@ -62,7 +62,7 @@ extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern TInstant *NAI_tpoint_geo_internal(FunctionCallInfo fcinfo,
+extern TInstant *nai_tpoint_geo(FunctionCallInfo fcinfo,
   const Temporal *temp, GSERIALIZED *gs);
 
 extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
@@ -74,13 +74,13 @@ extern Datum NAD_stbox_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern double NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern double nad_stbox_stbox(const STBOX *box1, const STBOX *box2);
 
-extern Datum shortestline_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Shortestline_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Shortestline_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern bool shortestline_tpoint_tpoint_internal(const Temporal *temp1,
+extern bool shortestline_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2, Datum *line);
 
 /*****************************************************************************/

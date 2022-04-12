@@ -164,7 +164,7 @@ overlap2D(const PeriodNode *nodebox, const Period *query)
   Period p;
   period_set(nodebox->left.lower, nodebox->right.upper,
     nodebox->left.lower_inc, nodebox->right.upper_inc, &p);
-  return overlaps_period_period_internal(&p, query);
+  return overlaps_period_period(&p, query);
 }
 
 /**
@@ -176,7 +176,7 @@ contain2D(const PeriodNode *nodebox, const Period *query)
   Period p;
   period_set(nodebox->left.lower, nodebox->right.upper,
     nodebox->left.lower_inc, nodebox->right.upper_inc, &p);
-  return contains_period_period_internal(&p, query);
+  return contains_period_period(&p, query);
 }
 
 /**
@@ -185,7 +185,7 @@ contain2D(const PeriodNode *nodebox, const Period *query)
 static bool
 before2D(const PeriodNode *nodebox, const Period *query)
 {
-  return before_period_period_internal(&nodebox->right, query);
+  return before_period_period(&nodebox->right, query);
 }
 
 /**
@@ -194,7 +194,7 @@ before2D(const PeriodNode *nodebox, const Period *query)
 static bool
 overBefore2D(const PeriodNode *nodebox, const Period *query)
 {
-  return overbefore_period_period_internal(&nodebox->right, query);
+  return overbefore_period_period(&nodebox->right, query);
 }
 
 /**
@@ -203,7 +203,7 @@ overBefore2D(const PeriodNode *nodebox, const Period *query)
 static bool
 after2D(const PeriodNode *nodebox, const Period *query)
 {
-  return after_period_period_internal(&nodebox->left, query);
+  return after_period_period(&nodebox->left, query);
 }
 
 /**
@@ -212,7 +212,7 @@ after2D(const PeriodNode *nodebox, const Period *query)
 static bool
 overAfter2D(const PeriodNode *nodebox, const Period *query)
 {
-  return overafter_period_period_internal(&nodebox->left, query);
+  return overafter_period_period(&nodebox->left, query);
 }
 
 #if POSTGRESQL_VERSION_NUMBER >= 120000
@@ -226,7 +226,7 @@ distance_period_nodeperiod(Period *query, PeriodNode *nodebox)
   Period p;
   period_set(nodebox->left.lower, nodebox->right.upper,
     nodebox->left.lower_inc, nodebox->right.upper_inc, &p);
-  if (overlaps_period_period_internal(query, &p))
+  if (overlaps_period_period(query, &p))
     return 0;
 
   /* If the query is to the left of the nodebox return the distance between
@@ -279,12 +279,12 @@ time_spgist_get_period(const ScanKeyData *scankey, Period *result)
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_spgist_config);
+PG_FUNCTION_INFO_V1(Period_spgist_config);
 /**
  * SP-GiST config function for time types
  */
 PGDLLEXPORT Datum
-period_spgist_config(PG_FUNCTION_ARGS)
+Period_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_PERIOD);  /* A type represented by its bounding box */
@@ -299,12 +299,12 @@ period_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_quadtree_choose);
+PG_FUNCTION_INFO_V1(Period_quadtree_choose);
 /**
  * SP-GiST choose function for time types
  */
 PGDLLEXPORT Datum
-period_quadtree_choose(PG_FUNCTION_ARGS)
+Period_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -325,7 +325,7 @@ period_quadtree_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_quadtree_picksplit);
+PG_FUNCTION_INFO_V1(Period_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for time types
  *
@@ -333,7 +333,7 @@ PG_FUNCTION_INFO_V1(period_quadtree_picksplit);
  * point as the median of the coordinates of the time types.
  */
 PGDLLEXPORT Datum
-period_quadtree_picksplit(PG_FUNCTION_ARGS)
+Period_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -385,12 +385,12 @@ period_quadtree_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_quadtree_inner_consistent);
+PG_FUNCTION_INFO_V1(Period_quadtree_inner_consistent);
 /**
  * SP-GiST inner consistent function function for time types
  */
 PGDLLEXPORT Datum
-period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+Period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -558,12 +558,12 @@ period_quadtree_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(period_spgist_leaf_consistent);
+PG_FUNCTION_INFO_V1(Period_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for time types
  */
 PGDLLEXPORT Datum
-period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
+Period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -611,7 +611,7 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     {
       /* Cast the order by argument to a period and perform the test */
       time_spgist_get_period(&in->orderbys[i], &period);
-      distances[i] = distance_secs_period_period_internal(&period, key);
+      distances[i] = distance_secs_period_period(&period, key);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
@@ -625,12 +625,12 @@ period_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(timestampset_spgist_compress);
+PG_FUNCTION_INFO_V1(Timestampset_spgist_compress);
 /**
  * SP-GiST compress function for timestamp sets
  */
 PGDLLEXPORT Datum
-timestampset_spgist_compress(PG_FUNCTION_ARGS)
+Timestampset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tsdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));
@@ -638,12 +638,12 @@ timestampset_spgist_compress(PG_FUNCTION_ARGS)
   PG_RETURN_PERIOD_P(result);
 }
 
-PG_FUNCTION_INFO_V1(periodset_spgist_compress);
+PG_FUNCTION_INFO_V1(Periodset_spgist_compress);
 /**
  * SP-GiST compress function for period sets
  */
 PGDLLEXPORT Datum
-periodset_spgist_compress(PG_FUNCTION_ARGS)
+Periodset_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum psdatum = PG_GETARG_DATUM(0);
   Period *result = (Period *) palloc(sizeof(Period));

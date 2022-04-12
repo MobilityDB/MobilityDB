@@ -131,23 +131,22 @@ typedef struct ValueTimeSplitState
 
 /*****************************************************************************/
 
-extern double float_bucket_internal(double value, double size,
-  double origin);
-extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
-  int64 tunits, TimestampTz torigin);
+extern double float_bucket(double value, double size, double origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+  TimestampTz torigin);
 extern int64 get_interval_units(Interval *interval);
 
-extern Datum number_bucket(PG_FUNCTION_ARGS);
-extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
-extern Datum range_bucket_list(PG_FUNCTION_ARGS);
-extern Datum range_bucket(PG_FUNCTION_ARGS);
-extern Datum period_bucket_list(PG_FUNCTION_ARGS);
-extern Datum period_bucket(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_split(PG_FUNCTION_ARGS);
-extern Datum temporal_time_split(PG_FUNCTION_ARGS);
-extern Datum tbox_multidim_grid(PG_FUNCTION_ARGS);
-extern Datum tbox_multidim_tile(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_time_split(PG_FUNCTION_ARGS);
+extern Datum Number_bucket(PG_FUNCTION_ARGS);
+extern Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
+extern Datum Range_bucket_list(PG_FUNCTION_ARGS);
+extern Datum Range_bucket(PG_FUNCTION_ARGS);
+extern Datum Period_bucket_list(PG_FUNCTION_ARGS);
+extern Datum Period_bucket(PG_FUNCTION_ARGS);
+extern Datum Tnumber_value_split(PG_FUNCTION_ARGS);
+extern Datum Temporal_time_split(PG_FUNCTION_ARGS);
+extern Datum Tbox_multidim_grid(PG_FUNCTION_ARGS);
+extern Datum Tbox_multidim_tile(PG_FUNCTION_ARGS);
+extern Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
 
 #endif /* __TEMPORAL_TILE_H__ */
 

@@ -239,7 +239,8 @@ basetype_parse(char **str, Oid basetypid)
 /*****************************************************************************/
 
 /**
- * Parse a temporal box value from the buffer
+ * @ingroup libmeos_box_input_output
+ * @brief Parse a temporal box value from the buffer.
  */
 TBOX *
 tbox_parse(char **str)
@@ -318,7 +319,8 @@ tbox_parse(char **str)
 /* Time Types */
 
 /**
- * Parse a timestamp value from the buffer
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a timestamp value from the buffer.
  */
 TimestampTz
 timestamp_parse(char **str)
@@ -337,7 +339,8 @@ timestamp_parse(char **str)
 }
 
 /**
- * Parse a period value from the buffer
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a period value from the buffer.
  */
 Period *
 period_parse(char **str, bool make)
@@ -369,7 +372,8 @@ period_parse(char **str, bool make)
 }
 
 /**
- * Parse a timestamp set value from the buffer
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a timestamp set value from the buffer.
  */
 TimestampSet *
 timestampset_parse(char **str)
@@ -403,7 +407,8 @@ timestampset_parse(char **str)
 }
 
 /**
- * Parse a period set value from the buffer
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a period set value from the buffer.
  */
 PeriodSet *
 periodset_parse(char **str)
@@ -442,7 +447,8 @@ periodset_parse(char **str)
 /* Temporal Types */
 
 /**
- * Parse a temporal instant value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal instant value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -464,7 +470,8 @@ tinstant_parse(char **str, CachedType temptype, bool end, bool make)
 }
 
 /**
- * Parse a temporal instant set value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal instant set value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Oid of the base type
@@ -504,7 +511,8 @@ tinstantset_parse(char **str, CachedType temptype)
 }
 
 /**
- * Parse a temporal sequence value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal sequence value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -560,7 +568,8 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end, bool mak
 }
 
 /**
- * Parse a temporal sequence set value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal sequence set value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -601,7 +610,8 @@ tsequenceset_parse(char **str, CachedType temptype, bool linear)
 }
 
 /**
- * Parse a temporal value from the buffer (dispatch function)
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal value from the buffer (dispatch function).
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type

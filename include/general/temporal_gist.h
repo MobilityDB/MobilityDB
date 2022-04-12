@@ -42,8 +42,7 @@
 
 /*****************************************************************************/
 
-extern Datum gist_temporal_consistent(PG_FUNCTION_ARGS);
-extern Datum temporal_gist_compress(PG_FUNCTION_ARGS);
+extern Datum Temporal_gist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

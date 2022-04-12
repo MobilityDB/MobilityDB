@@ -43,12 +43,12 @@
 
 /*****************************************************************************/
 
-extern Datum tbox_gist_union(PG_FUNCTION_ARGS);
-extern Datum tbox_gist_penalty(PG_FUNCTION_ARGS);
-extern Datum tbox_gist_picksplit(PG_FUNCTION_ARGS);
-extern Datum tnumber_gist_consistent(PG_FUNCTION_ARGS);
-extern Datum tnumber_gist_compress(PG_FUNCTION_ARGS);
-extern Datum tbox_gist_same(PG_FUNCTION_ARGS);
+extern Datum Tbox_gist_union(PG_FUNCTION_ARGS);
+extern Datum Tbox_gist_penalty(PG_FUNCTION_ARGS);
+extern Datum Tbox_gist_picksplit(PG_FUNCTION_ARGS);
+extern Datum Tnumber_gist_consistent(PG_FUNCTION_ARGS);
+extern Datum Tnumber_gist_compress(PG_FUNCTION_ARGS);
+extern Datum Tbox_gist_same(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by tpoint_gist.c */
 extern int interval_cmp_lower(const void *i1, const void *i2);

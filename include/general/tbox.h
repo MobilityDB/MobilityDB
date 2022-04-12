@@ -83,36 +83,36 @@ extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Input/output functions */
 
-extern Datum tbox_in(PG_FUNCTION_ARGS);
-extern Datum tbox_out(PG_FUNCTION_ARGS);
-extern Datum tbox_send(PG_FUNCTION_ARGS);
-extern Datum tbox_recv(PG_FUNCTION_ARGS);
+extern Datum Tbox_in(PG_FUNCTION_ARGS);
+extern Datum Tbox_out(PG_FUNCTION_ARGS);
+extern Datum Tbox_send(PG_FUNCTION_ARGS);
+extern Datum Tbox_recv(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
-extern Datum tbox_constructor(PG_FUNCTION_ARGS);
-extern Datum tbox_constructor_t(PG_FUNCTION_ARGS);
+extern Datum Tbox_constructor(PG_FUNCTION_ARGS);
+extern Datum Tbox_constructor_t(PG_FUNCTION_ARGS);
 
 /* Casting */
 
-extern Datum int_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_to_tbox(PG_FUNCTION_ARGS);
-extern Datum numeric_to_tbox(PG_FUNCTION_ARGS);
-extern Datum range_to_tbox(PG_FUNCTION_ARGS);
-extern Datum timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum periodset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum int_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum int_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum float_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum range_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum range_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum tnumber_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Int_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Float_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Range_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Timestampset_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Periodset_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Int_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Float_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Int_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Float_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Range_timestamp_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Range_period_to_tbox(PG_FUNCTION_ARGS);
+extern Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 
-extern Datum tbox_to_floatrange(PG_FUNCTION_ARGS);
-extern Datum tbox_to_period(PG_FUNCTION_ARGS);
+extern Datum Tbox_to_floatrange(PG_FUNCTION_ARGS);
+extern Datum Tbox_to_period(PG_FUNCTION_ARGS);
 
 extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
 extern void int_tbox(int i, TBOX *box);
@@ -127,70 +127,70 @@ extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
 /* Accessor functions */
 
-extern Datum tbox_hasx(PG_FUNCTION_ARGS);
-extern Datum tbox_hast(PG_FUNCTION_ARGS);
-extern Datum tbox_xmin(PG_FUNCTION_ARGS);
-extern Datum tbox_xmax(PG_FUNCTION_ARGS);
-extern Datum tbox_tmin(PG_FUNCTION_ARGS);
-extern Datum tbox_tmax(PG_FUNCTION_ARGS);
+extern Datum Tbox_hasx(PG_FUNCTION_ARGS);
+extern Datum Tbox_hast(PG_FUNCTION_ARGS);
+extern Datum Tbox_xmin(PG_FUNCTION_ARGS);
+extern Datum Tbox_xmax(PG_FUNCTION_ARGS);
+extern Datum Tbox_tmin(PG_FUNCTION_ARGS);
+extern Datum Tbox_tmax(PG_FUNCTION_ARGS);
 
 /* Transformation functions */
 
-extern Datum tbox_expand_value(PG_FUNCTION_ARGS);
-extern Datum tbox_expand_temporal(PG_FUNCTION_ARGS);
-extern Datum tbox_round(PG_FUNCTION_ARGS);
+extern Datum Tbox_expand_value(PG_FUNCTION_ARGS);
+extern Datum Tbox_expand_temporal(PG_FUNCTION_ARGS);
+extern Datum Tbox_round(PG_FUNCTION_ARGS);
 
 /* Topological functions */
 
-extern Datum contains_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum contained_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum same_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum adjacent_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Contains_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Contained_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Overlaps_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Same_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Adjacent_tbox_tbox(PG_FUNCTION_ARGS);
 
-extern bool contains_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool contained_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool overlaps_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool same_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool adjacent_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern bool contains_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool contained_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool same_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Relative position functions */
 
-extern Datum left_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum overleft_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum right_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum overright_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum before_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum overbefore_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum after_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum overafter_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Left_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Overleft_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Right_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Overright_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Before_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Overbefore_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum After_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Overafter_tbox_tbox(PG_FUNCTION_ARGS);
 
-extern bool left_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool overleft_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool right_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool overright_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool before_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool overbefore_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool after_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
-extern bool overafter_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern bool left_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool overleft_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool right_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool overright_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool before_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool after_tbox_tbox(const TBOX *box1, const TBOX *box2);
+extern bool overafter_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Set functions */
 
-extern Datum union_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum intersection_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Union_tbox_tbox(PG_FUNCTION_ARGS);
+extern Datum Intersection_tbox_tbox(PG_FUNCTION_ARGS);
 
 /* Comparison functions */
 
-extern Datum tbox_cmp(PG_FUNCTION_ARGS);
-extern Datum tbox_lt(PG_FUNCTION_ARGS);
-extern Datum tbox_le(PG_FUNCTION_ARGS);
-extern Datum tbox_gt(PG_FUNCTION_ARGS);
-extern Datum tbox_ge(PG_FUNCTION_ARGS);
-extern Datum tbox_eq(PG_FUNCTION_ARGS);
-extern Datum tbox_ne(PG_FUNCTION_ARGS);
+extern Datum Tbox_cmp(PG_FUNCTION_ARGS);
+extern Datum Tbox_lt(PG_FUNCTION_ARGS);
+extern Datum Tbox_le(PG_FUNCTION_ARGS);
+extern Datum Tbox_gt(PG_FUNCTION_ARGS);
+extern Datum Tbox_ge(PG_FUNCTION_ARGS);
+extern Datum Tbox_eq(PG_FUNCTION_ARGS);
+extern Datum Tbox_ne(PG_FUNCTION_ARGS);
 
-extern int tbox_cmp_internal(const TBOX *box1, const TBOX *box2);
-extern bool tbox_eq_internal(const TBOX *box1, const TBOX *box2);
+extern int tbox_cmp(const TBOX *box1, const TBOX *box2);
+extern bool tbox_eq(const TBOX *box1, const TBOX *box2);
 
 /*****************************************************************************/
 

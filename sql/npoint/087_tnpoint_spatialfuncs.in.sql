@@ -38,7 +38,7 @@
 
 CREATE FUNCTION SRID(tnpoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'tnpoint_srid'
+  AS 'MODULE_PATHNAME', 'Tnpoint_get_srid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -47,7 +47,7 @@ CREATE FUNCTION SRID(tnpoint)
 
 CREATE FUNCTION trajectory(tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'tnpoint_trajectory'
+  AS 'MODULE_PATHNAME', 'Tnpoint_get_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -56,7 +56,7 @@ CREATE FUNCTION trajectory(tnpoint)
 
 CREATE FUNCTION atGeometry(tnpoint, geometry)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tnpoint_at_geometry'
+  AS 'MODULE_PATHNAME', 'Tnpoint_at_geometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -65,7 +65,7 @@ CREATE FUNCTION atGeometry(tnpoint, geometry)
 
 CREATE FUNCTION minusGeometry(tnpoint, geometry)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tnpoint_minus_geometry'
+  AS 'MODULE_PATHNAME', 'Tnpoint_minus_geometry'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 
@@ -75,7 +75,7 @@ CREATE FUNCTION minusGeometry(tnpoint, geometry)
 
 CREATE FUNCTION equals(npoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'npoint_same'
+  AS 'MODULE_PATHNAME', 'Npoint_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -84,7 +84,7 @@ CREATE FUNCTION equals(npoint, npoint)
 
 CREATE FUNCTION length(tnpoint)
   RETURNS double precision
-  AS 'MODULE_PATHNAME', 'tnpoint_length'
+  AS 'MODULE_PATHNAME', 'Tnpoint_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -93,7 +93,7 @@ CREATE FUNCTION length(tnpoint)
 
 CREATE FUNCTION cumulativeLength(tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'tnpoint_cumulative_length'
+  AS 'MODULE_PATHNAME', 'Tnpoint_cumulative_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -102,7 +102,7 @@ CREATE FUNCTION cumulativeLength(tnpoint)
 
 CREATE FUNCTION speed(tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'tnpoint_speed'
+  AS 'MODULE_PATHNAME', 'Tnpoint_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -111,7 +111,7 @@ CREATE FUNCTION speed(tnpoint)
 
 CREATE FUNCTION twCentroid(tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'tnpoint_twcentroid'
+  AS 'MODULE_PATHNAME', 'Tnpoint_twcentroid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -120,7 +120,7 @@ CREATE FUNCTION twCentroid(tnpoint)
 
 CREATE FUNCTION azimuth(tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'tnpoint_azimuth'
+  AS 'MODULE_PATHNAME', 'Tnpoint_azimuth'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -207,23 +207,23 @@ CREATE OPERATOR |=| (
 
 CREATE FUNCTION shortestLine(geometry, tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tnpoint, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Shortestline_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(npoint, tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_npoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tnpoint, npoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_tnpoint_npoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tnpoint, tnpoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

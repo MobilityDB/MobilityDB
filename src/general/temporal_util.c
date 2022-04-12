@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Returns true if the temporal type is an EXTERNAL temporal type
+ * Return true if the temporal type is an EXTERNAL temporal type
  *
  * @note Function used in particular in the indexes
  */
@@ -96,7 +96,7 @@ ensure_temporal_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the temporal type is continuous
+ * Return true if the temporal type is continuous
  */
 bool
 temptype_continuous(CachedType temptype)
@@ -121,7 +121,7 @@ ensure_temptype_continuous(CachedType temptype)
 }
 
 /**
- * Returns true if the values of the type are passed by value.
+ * Return true if the values of the type are passed by value.
  *
  * This function is called only for the base types of the temporal types
  * To avoid a call of the slow function get_typbyval (which makes a lookup
@@ -137,7 +137,7 @@ basetype_byvalue(CachedType basetype)
 }
 
 /**
- * Returns the length of type
+ * Return the length of type
  *
  * This function is called only for the base types of the temporal types
  * passed by reference. To avoid a call of the slow function get_typlen
@@ -164,7 +164,7 @@ basetype_length(CachedType basetype)
 
 
 /**
- * Returns true if the type is a temporal alpha type (i.e., those whose
+ * Return true if the type is a temporal alpha type (i.e., those whose
  * bounding box is a period) supported by MobilityDB
  */
 bool
@@ -176,7 +176,7 @@ talpha_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is a temporal number type
+ * Return true if the type is a temporal number type
  */
 bool
 tnumber_type(CachedType temptype)
@@ -187,7 +187,7 @@ tnumber_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is a number base type supported by MobilityDB
+ * Return true if the type is a number base type supported by MobilityDB
  */
 void
 ensure_tnumber_type(CachedType temptype)
@@ -209,7 +209,7 @@ tnumber_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a number base type supported by MobilityDB
+ * Return true if the type is a number base type supported by MobilityDB
  */
 void
 ensure_tnumber_basetype(CachedType basetype)
@@ -220,7 +220,7 @@ ensure_tnumber_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a range number type
+ * Return true if the type is a range number type
  *
  * @note Function used in particular in the indexes
  */
@@ -244,7 +244,7 @@ ensure_tnumber_rangetype(CachedType rangetype)
 }
 
 /**
- * Returns true if the type is a spatiotemporal type
+ * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBOX. Therefore it is
@@ -260,7 +260,7 @@ tspatial_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is a spatiotemporal type
+ * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBOX
@@ -275,7 +275,7 @@ tspatial_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a point base type supported by MobilityDB
+ * Return true if the type is a point base type supported by MobilityDB
  */
 bool
 tgeo_basetype(CachedType basetype)
@@ -286,7 +286,7 @@ tgeo_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a temporal point type supported by MobilityDB
+ * Return true if the type is a temporal point type supported by MobilityDB
  */
 bool
 tgeo_type(CachedType temptype)
@@ -312,7 +312,7 @@ ensure_tgeo_type(CachedType temptype)
  *****************************************************************************/
 
 /**
- * Returns the Oid of the range type corresponding to the base type
+ * Return the Oid of the range type corresponding to the base type
  */
 Oid
 basetype_rangeoid(CachedType basetype)
@@ -332,7 +332,7 @@ basetype_rangeoid(CachedType basetype)
 /* Version of the functions where the types of both arguments is equal */
 
 /**
- * Returns true if the two values are equal
+ * Return true if the two values are equal
  */
 bool
 datum_eq(Datum l, Datum r, CachedType type)
@@ -341,7 +341,7 @@ datum_eq(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the two values are different
+ * Return true if the two values are different
  */
 bool
 datum_ne(Datum l, Datum r, CachedType type)
@@ -350,7 +350,7 @@ datum_ne(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is less than the second one
+ * Return true if the first value is less than the second one
  */
 bool
 datum_lt(Datum l, Datum r, CachedType type)
@@ -359,7 +359,7 @@ datum_lt(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is less than or equal to the second one
+ * Return true if the first value is less than or equal to the second one
  */
 bool
 datum_le(Datum l, Datum r, CachedType type)
@@ -368,7 +368,7 @@ datum_le(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is greater than the second one
+ * Return true if the first value is greater than the second one
  */
 bool
 datum_gt(Datum l, Datum r, CachedType type)
@@ -377,7 +377,7 @@ datum_gt(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is greater than or equal to the second one
+ * Return true if the first value is greater than or equal to the second one
  * This function is currently not used
 bool
 datum_ge(Datum l, Datum r, CachedType type)
@@ -394,7 +394,7 @@ datum_ge(Datum l, Datum r, CachedType type)
  */
 
 /**
- * Returns true if the two values are equal even if their type is not the same
+ * Return true if the two values are equal even if their type is not the same
  * (base type dispatch function)
  */
 bool
@@ -427,12 +427,12 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
     //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
   if (typel == T_NPOINT && typel == typer)
-    return npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+    return npoint_eq(DatumGetNpoint(l), DatumGetNpoint(r));
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
 }
 
 /**
- * Returns true if the two values are different
+ * Return true if the two values are different
  */
 bool
 datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -441,7 +441,7 @@ datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns true if the first value is less than the second one
+ * Return true if the first value is less than the second one
  * (base type dispatch function)
  */
 bool
@@ -467,13 +467,13 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_GEOGRAPHY && typel == typer)
     return DatumGetBool(call_function2(geography_lt, l, r));
   if (typel == T_NPOINT && typel == typer)
-    return npoint_lt_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+    return npoint_lt(DatumGetNpoint(l), DatumGetNpoint(r));
   elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
 }
 
 
 /**
- * Returns true if the first value is less than or equal to the second one
+ * Return true if the first value is less than or equal to the second one
  */
 bool
 datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -482,7 +482,7 @@ datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns true if the first value is greater than the second one
+ * Return true if the first value is greater than the second one
  */
 bool
 datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -491,7 +491,7 @@ datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns true if the first value is greater than or equal to the second one
+ * Return true if the first value is greater than or equal to the second one
  */
 bool
 datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -502,7 +502,7 @@ datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 /*****************************************************************************/
 
 /**
- * Returns a Datum true if the two values are equal
+ * Return a Datum true if the two values are equal
  */
 Datum
 datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -511,7 +511,7 @@ datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the two values are different
+ * Return a Datum true if the two values are different
  */
 Datum
 datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -520,7 +520,7 @@ datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is less than the second one
+ * Return a Datum true if the first value is less than the second one
  */
 Datum
 datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -529,7 +529,7 @@ datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is less than or equal to the second one
+ * Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
 datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -538,7 +538,7 @@ datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is greater than the second one
+ * Return a Datum true if the first value is greater than the second one
  */
 Datum
 datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -547,7 +547,7 @@ datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is greater than or equal to the second one
+ * Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
 datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -932,7 +932,7 @@ pfree_datumarr(Datum *array, int count)
 }
 
 /**
- * Returns the string resulting from assembling the array of strings.
+ * Return the string resulting from assembling the array of strings.
  * The function frees the memory of the input strings after finishing.
  */
 char *
@@ -1152,7 +1152,7 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 static int
 period_sort_cmp(const Period **l, const Period **r)
 {
-  return period_cmp_internal(*l, *r);
+  return period_cmp(*l, *r);
 }
 
 /**
@@ -1182,7 +1182,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Period lp = (*l)->period;
   Period rp = (*r)->period;
-  return period_cmp_internal(&lp, &rp);
+  return period_cmp(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -1348,7 +1348,7 @@ text_cmp(text *arg1, text *arg2, Oid collid)
  *****************************************************************************/
 
 /**
- * Returns the addition of the two numbers
+ * Return the addition of the two numbers
  */
 Datum
 datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1372,7 +1372,7 @@ datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns the subtraction of the two numbers
+ * Return the subtraction of the two numbers
  */
 Datum
 datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1396,7 +1396,7 @@ datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns the multiplication of the two numbers
+ * Return the multiplication of the two numbers
  */
 Datum
 datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1420,7 +1420,7 @@ datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns the division of the two numbers
+ * Return the division of the two numbers
  */
 Datum
 datum_div(Datum l, Datum r, CachedType typel, CachedType typer)

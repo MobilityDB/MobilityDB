@@ -67,7 +67,7 @@ static MemoryContext
 set_aggregation_context(FunctionCallInfo fcinfo)
 {
   MemoryContext ctx;
-  if (!AggCheckCallContext(fcinfo, &ctx))
+  if (! AggCheckCallContext(fcinfo, &ctx))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
       errmsg("Operation not supported")));
   return  MemoryContextSwitchTo(ctx);
@@ -336,7 +336,7 @@ skiplist_make(FunctionCallInfo fcinfo, void **values, int count,
 }
 
 /**
- * Returns the value at the head of the skiplist
+ * Return the value at the head of the skiplist
  */
 void *
 skiplist_headval(SkipList *list)
@@ -559,7 +559,7 @@ skiplist_splice(FunctionCallInfo fcinfo, SkipList *list, void **values,
 }
 
 /**
- * Returns the values contained in the skiplist
+ * Return the values contained in the skiplist
  */
 void **
 skiplist_values(SkipList *list)
@@ -689,12 +689,12 @@ aggstate_set_extra(FunctionCallInfo fcinfo, SkipList *state, void *data,
   MemoryContextSwitchTo(oldctx);
 }
 
-PG_FUNCTION_INFO_V1(tagg_serialize);
+PG_FUNCTION_INFO_V1(Tagg_serialize);
 /**
  * Serialize the state value
  */
 PGDLLEXPORT Datum
-tagg_serialize(PG_FUNCTION_ARGS)
+Tagg_serialize(PG_FUNCTION_ARGS)
 {
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);
   StringInfoData buf;
@@ -703,12 +703,12 @@ tagg_serialize(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
-PG_FUNCTION_INFO_V1(tagg_deserialize);
+PG_FUNCTION_INFO_V1(Tagg_deserialize);
 /**
  * Deserialize the state value
  */
 PGDLLEXPORT Datum
-tagg_deserialize(PG_FUNCTION_ARGS)
+Tagg_deserialize(PG_FUNCTION_ARGS)
 {
   bytea *data = PG_GETARG_BYTEA_P(0);
   StringInfoData buf =

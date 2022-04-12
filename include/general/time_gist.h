@@ -43,20 +43,20 @@
 
 /*****************************************************************************/
 
-extern Datum period_gist_union(PG_FUNCTION_ARGS);
-extern Datum timestampset_gist_compress(PG_FUNCTION_ARGS);
-extern Datum period_gist_compress(PG_FUNCTION_ARGS);
-extern Datum periodset_gist_compress(PG_FUNCTION_ARGS);
-extern Datum period_gist_penalty(PG_FUNCTION_ARGS);
-extern Datum period_gist_picksplit(PG_FUNCTION_ARGS);
-extern Datum period_gist_same(PG_FUNCTION_ARGS);
-extern Datum period_gist_fetch(PG_FUNCTION_ARGS);
+extern Datum Period_gist_union(PG_FUNCTION_ARGS);
+extern Datum Timestampset_gist_compress(PG_FUNCTION_ARGS);
+extern Datum Period_gist_compress(PG_FUNCTION_ARGS);
+extern Datum Periodset_gist_compress(PG_FUNCTION_ARGS);
+extern Datum Period_gist_penalty(PG_FUNCTION_ARGS);
+extern Datum Period_gist_picksplit(PG_FUNCTION_ARGS);
+extern Datum Period_gist_same(PG_FUNCTION_ARGS);
+extern Datum Period_gist_fetch(PG_FUNCTION_ARGS);
 
 extern int common_entry_cmp(const void *i1, const void *i2);
 
 extern bool period_index_consistent_leaf(const Period *key, const Period *query,
   StrategyNumber strategy);
-extern bool period_gist_consistent_internal(const Period *key, const Period *query,
+extern bool period_gist_consistent(const Period *key, const Period *query,
   StrategyNumber strategy);
 extern bool period_index_recheck(StrategyNumber strategy);
 

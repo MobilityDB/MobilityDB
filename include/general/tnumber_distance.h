@@ -47,9 +47,9 @@
 
 /* Distance functions */
 
-extern Datum distance_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum distance_tnumber_base(PG_FUNCTION_ARGS);
-extern Datum distance_tnumber_tnumber(PG_FUNCTION_ARGS);
+extern Datum Distance_base_tnumber(PG_FUNCTION_ARGS);
+extern Datum Distance_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Distance_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum number_distance(Datum l, Datum r, CachedType typel,
   CachedType typer);
@@ -63,7 +63,7 @@ extern Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern double NAD_tbox_tbox_internal(const TBOX *box1, const TBOX *box2);
+extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 // NAI and shortestline functions are not yet implemented
 // Are they useful ?

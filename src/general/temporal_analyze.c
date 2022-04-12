@@ -359,7 +359,7 @@ temp_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* Remember bounds and length for further usage in histograms */
     if (tnumber)
     {
-      RangeType *range = tnumber_value_range_internal(temp);
+      RangeType *range = tnumber_range(temp);
       range_deserialize(typcache, range, &range_lower, &range_upper, &isempty);
       value_lowers[non_null_cnt] = range_lower;
       value_uppers[non_null_cnt] = range_upper;
@@ -555,23 +555,23 @@ generic_analyze(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(true);
 }
 
-PG_FUNCTION_INFO_V1(temporal_analyze);
+PG_FUNCTION_INFO_V1(Temporal_analyze);
 /**
  * Compute the statistics for temporal columns where only the time dimension
  * is considered
  */
 PGDLLEXPORT Datum
-temporal_analyze(PG_FUNCTION_ARGS)
+Temporal_analyze(PG_FUNCTION_ARGS)
 {
   return generic_analyze(fcinfo, &temporal_compute_stats);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_analyze);
+PG_FUNCTION_INFO_V1(Tnumber_analyze);
 /**
  * Compute the statistics for temporal number columns
  */
 PGDLLEXPORT Datum
-tnumber_analyze(PG_FUNCTION_ARGS)
+Tnumber_analyze(PG_FUNCTION_ARGS)
 {
   return generic_analyze(fcinfo, &tnumber_compute_stats);
 }

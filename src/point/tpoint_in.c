@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /**
- * Returns the JSON member corresponding to the name
+ * Return the JSON member corresponding to the name
  *
  * @note Function taken from PostGIS file lwin_geojson.c
  */
@@ -92,7 +92,7 @@ findMemberByName(json_object *poObj, const char *pszName )
 }
 
 /**
- * Returns a single point from its MF-JSON coordinates. In this case the
+ * Return a single point from its MF-JSON coordinates. In this case the
  * coordinate array is a single array of cordinations such as
  * "coordinates":[1,1]
  */
@@ -141,7 +141,7 @@ parse_mfjson_coord(json_object *poObj, int srid, bool geodetic)
 
 /* TODO MAKE POSSIBLE TO CALL THIS FUNCTION */
 /**
- * Returns an array of points from its MF-JSON coordinates. In this case the
+ * Return an array of points from its MF-JSON coordinates. In this case the
  * coordinate array is an array of arrays of cordinates such as
  * "coordinates":[[1,1],[2,2]]
  */
@@ -176,7 +176,7 @@ parse_mfjson_points(json_object *mfjson, int srid, bool geodetic,
 }
 
 /**
- * Returns an array of timestamps from its MF-JSON datetimes values
+ * Return an array of timestamps from its MF-JSON datetimes values
  */
 static TimestampTz *
 parse_mfjson_datetimes(json_object *mfjson, int *count)
@@ -217,7 +217,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- * Returns a temporal instant point from its MF-JSON representation
+ * Return a temporal instant point from its MF-JSON representation
  */
 static TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -256,7 +256,7 @@ tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 }
 
 /**
- * Returns array of temporal instant points from its MF-JSON representation
+ * Return array of temporal instant points from its MF-JSON representation
  */
 static TInstant **
 tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -284,7 +284,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * Returns a temporal instant set point from its MF-JSON representation
+ * Return a temporal instant set point from its MF-JSON representation
  */
 static TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -296,7 +296,7 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 }
 
 /**
- * Returns a temporal sequence point from its MF-JSON representation
+ * Return a temporal sequence point from its MF-JSON representation
  */
 static TSequence *
 tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -329,7 +329,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * Returns a temporal sequence set point from its MF-JSON representation
+ * Return a temporal sequence set point from its MF-JSON representation
  */
 static TSequenceSet *
 tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -360,10 +360,10 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * Returns a temporal point from its MF-JSON representation
+ * Return a temporal point from its MF-JSON representation
  */
 static Temporal *
-tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
+tpoint_from_mfjson(FunctionCallInfo fcinfo, text *mfjson_input,
   CachedType temptype)
 {
   char *mfjson = text2cstring(mfjson_input);
@@ -408,8 +408,7 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
       errmsg("Invalid 'type' value in MFJSON string")));
 
   /*
-   * Determine type of temporal point and dispatch to the
-   *  corresponding parse function
+   * Determine type of temporal point and call the corresponding parse function
    */
   poObjInterp = findMemberByName(poObj, "interpolations");
   if (poObjInterp == NULL)
@@ -487,16 +486,16 @@ tpoint_from_mfjson_internal(FunctionCallInfo fcinfo, text *mfjson_input,
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_from_mfjson);
+PG_FUNCTION_INFO_V1(Tpoint_from_mfjson);
 /**
- * Returns a temporal point from its MF-JSON representation
+ * Return a temporal point from its MF-JSON representation
  */
 PGDLLEXPORT Datum
-tpoint_from_mfjson(PG_FUNCTION_ARGS)
+Tpoint_from_mfjson(PG_FUNCTION_ARGS)
 {
   text *mfjson_input = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Temporal *result = tpoint_from_mfjson_internal(fcinfo, mfjson_input,
+  Temporal *result = tpoint_from_mfjson(fcinfo, mfjson_input,
     oid_type(temptypid));
   PG_RETURN_POINTER(result);
 }
@@ -661,7 +660,7 @@ tpoint_type_from_wkb_state(wkb_parse_state *s, uint8_t wkb_type)
 }
 
 /**
- * Returns a point from its WKB representation. A WKB point has just a set of doubles,
+ * Return a point from its WKB representation. A WKB point has just a set of doubles,
  * with the quantity depending on the dimension of the point.
  */
 static Datum
@@ -681,7 +680,7 @@ point_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Returns a temporal instant point from its WKB representation.
+ * Return a temporal instant point from its WKB representation.
  *
  * It starts reading it just after the endian byte,
  * the type byte and the optional srid number.
@@ -705,7 +704,7 @@ tpointinst_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Returns a temporal instant array from its WKB representation
+ * Return a temporal instant array from its WKB representation
  */
 static TInstant **
 tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
@@ -724,7 +723,7 @@ tpointinstarr_from_wkb_state(wkb_parse_state *s, int count)
 }
 
 /**
- * Returns a temporal instant set point from its WKB representation
+ * Return a temporal instant set point from its WKB representation
  */
 static TInstantSet *
 tpointinstset_from_wkb_state(wkb_parse_state *s)
@@ -760,7 +759,7 @@ tpoint_bounds_from_wkb_state(uint8_t wkb_bounds, bool *lower_inc, bool *upper_in
 }
 
 /**
- * Returns a temporal sequence point from its WKB representation
+ * Return a temporal sequence point from its WKB representation
  */
 static TSequence *
 tpointseq_from_wkb_state(wkb_parse_state *s)
@@ -784,7 +783,7 @@ tpointseq_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Returns a temporal sequence set point from its WKB representation
+ * Return a temporal sequence set point from its WKB representation
  */
 static TSequenceSet *
 tpointseqset_from_wkb_state(wkb_parse_state *s)
@@ -825,7 +824,7 @@ tpointseqset_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Returns a temporal point from its WKB representation
+ * Return a temporal point from its WKB representation
  */
 static Temporal *
 tpoint_from_wkb_state(wkb_parse_state *s)
@@ -875,10 +874,10 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Returns a temporal point from its EWKB representation
+ * Return a temporal point from its EWKB representation
  */
 static Temporal *
-tpoint_from_ewkb_internal(uint8_t *wkb, int size)
+tpoint_from_ewkb(uint8_t *wkb, int size)
 {
   /* Initialize the state appropriately */
   wkb_parse_state s;
@@ -896,17 +895,16 @@ tpoint_from_ewkb_internal(uint8_t *wkb, int size)
   return tpoint_from_wkb_state(&s);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_from_ewkb);
+PG_FUNCTION_INFO_V1(Tpoint_from_ewkb);
 /**
- * Returns a temporal point from its EWKB representation
+ * Return a temporal point from its EWKB representation
  */
 PGDLLEXPORT Datum
-tpoint_from_ewkb(PG_FUNCTION_ARGS)
+Tpoint_from_ewkb(PG_FUNCTION_ARGS)
 {
   bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
   uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
-  Temporal *temp = tpoint_from_ewkb_internal(wkb,
-    VARSIZE(bytea_wkb) - VARHDRSZ);
+  Temporal *temp = tpoint_from_ewkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
   PG_FREE_IF_COPY(bytea_wkb, 0);
   PG_RETURN_POINTER(temp);
 }
@@ -915,18 +913,18 @@ tpoint_from_ewkb(PG_FUNCTION_ARGS)
  * Input in HEXEWKB format
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_from_hexewkb);
+PG_FUNCTION_INFO_V1(Tpoint_from_hexewkb);
 /**
- * Returns a temporal point from its HEXEWKB representation
+ * Return a temporal point from its HEXEWKB representation
  */
 PGDLLEXPORT Datum
-tpoint_from_hexewkb(PG_FUNCTION_ARGS)
+Tpoint_from_hexewkb(PG_FUNCTION_ARGS)
 {
   text *hexwkb_text = PG_GETARG_TEXT_P(0);
   char *hexwkb = text2cstring(hexwkb_text);
   int hexwkb_len = strlen(hexwkb);
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
-  Temporal *temp = tpoint_from_ewkb_internal(wkb, hexwkb_len/2);
+  Temporal *temp = tpoint_from_ewkb(wkb, hexwkb_len/2);
   pfree(hexwkb);
   pfree(wkb);
   PG_FREE_IF_COPY(hexwkb_text, 0);
@@ -937,12 +935,13 @@ tpoint_from_hexewkb(PG_FUNCTION_ARGS)
  * Input in EWKT format
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_from_ewkt);
+PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
 /**
  * This just does the same thing as the _in function, except it has to handle
  * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
 */
-Datum tpoint_from_ewkt(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
   Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);

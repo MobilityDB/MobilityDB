@@ -284,10 +284,10 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert,
   bool geomcoll __attribute__((unused)))
 {
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
-  Datum traj = tpoint_trajectory_internal(temp);
+  Datum traj = tpoint_trajectory(temp);
   Datum result;
 #if POSTGIS_VERSION_NUMBER < 30000
   /* PostGIS 2.5 does not allow GEOMETRYCOLLECTION for ST_Relate */
@@ -333,7 +333,7 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
 /*****************************************************************************/
 
 /**
- * Returns true if the temporal points ever satisfy the spatial relationship
+ * Return true if the temporal points ever satisfy the spatial relationship
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Spatial relationship
@@ -343,7 +343,7 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -394,12 +394,12 @@ geom_ever_contains(Datum geom1, Datum geom2)
       PointerGetDatum(cstring2text("***T*****")));
 }
 
-PG_FUNCTION_INFO_V1(contains_geo_tpoint);
+PG_FUNCTION_INFO_V1(Contains_geo_tpoint);
 /**
- * Returns true if the geometry ever contains the temporal point
+ * Return true if the geometry ever contains the temporal point
  */
 PGDLLEXPORT Datum
-contains_geo_tpoint(PG_FUNCTION_ARGS)
+Contains_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -419,7 +419,7 @@ contains_geo_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the temporal point and the geometry are ever disjoint
+ * Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] inst Temporal point
  * @param[in] geo Geometry
@@ -433,7 +433,7 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
 }
 
 /**
- * Returns true if the temporal point and the geometry are ever disjoint
+ * Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] ti Temporal point
  * @param[in] geo Geometry
@@ -453,7 +453,7 @@ disjoint_tpointinstset_geo(const TInstantSet *ti, Datum geo,
 }
 
 /**
- * Returns true if the temporal point and the geometry are ever disjoint
+ * Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
@@ -473,7 +473,7 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
 }
 
 /**
- * Returns true if the temporal point and the geometry are ever disjoint
+ * Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] ts Temporal point
  * @param[in] geo Geometry
@@ -493,16 +493,16 @@ disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
 }
 
 /**
- * Returns true if the temporal point and the geometry are ever disjoint
- * (dispatch function)
+ * @ingroup libmeos_temporal_spatial
+ * @brief Return true if the temporal point and the geometry are ever disjoint.
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  */
 static bool
-disjoint_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
+disjoint_tpoint_geo(Temporal *temp, GSERIALIZED *gs)
 {
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, GS_FLAGS(gs));
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -523,12 +523,12 @@ disjoint_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(disjoint_geo_tpoint);
+PG_FUNCTION_INFO_V1(Disjoint_geo_tpoint);
 /**
- * Returns true if the geometry and the temporal point are ever disjoint
+ * Return true if the geometry and the temporal point are ever disjoint
  */
 PGDLLEXPORT Datum
-disjoint_geo_tpoint(PG_FUNCTION_ARGS)
+Disjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -536,18 +536,18 @@ disjoint_geo_tpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  bool result = disjoint_tpoint_geo_internal(temp, gs);
+  bool result = disjoint_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(disjoint_tpoint_geo);
+PG_FUNCTION_INFO_V1(Disjoint_tpoint_geo);
 /**
- * Returns true if the temporal point and the geometry are ever disjoint
+ * Return true if the temporal point and the geometry are ever disjoint
  */
 PGDLLEXPORT Datum
-disjoint_tpoint_geo(PG_FUNCTION_ARGS)
+Disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -555,7 +555,7 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  bool result = disjoint_tpoint_geo_internal(temp, gs);
+  bool result = disjoint_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_BOOL(result);
@@ -563,12 +563,12 @@ disjoint_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(disjoint_tpoint_tpoint);
+PG_FUNCTION_INFO_V1(Disjoint_tpoint_tpoint);
 /**
- * Returns true if the temporal points are ever disjoint
+ * Return true if the temporal points are ever disjoint
  */
 PGDLLEXPORT Datum
-disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
+Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tpoint_tpoint(fcinfo, &datum2_point_ne);
 }
@@ -577,12 +577,12 @@ disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
  * Ever intersects (for both geometry and geography)
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(intersects_geo_tpoint);
+PG_FUNCTION_INFO_V1(Intersects_geo_tpoint);
 /**
- * Returns true if the geometry and the temporal point ever intersect
+ * Return true if the geometry and the temporal point ever intersect
  */
 PGDLLEXPORT Datum
-intersects_geo_tpoint(PG_FUNCTION_ARGS)
+Intersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -598,12 +598,12 @@ intersects_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(intersects_tpoint_geo);
+PG_FUNCTION_INFO_V1(Intersects_tpoint_geo);
 /**
- * Returns true if the temporal point and the geometry ever intersect
+ * Return true if the temporal point and the geometry ever intersect
  */
 PGDLLEXPORT Datum
-intersects_tpoint_geo(PG_FUNCTION_ARGS)
+Intersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -621,12 +621,12 @@ intersects_tpoint_geo(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(intersects_tpoint_tpoint);
+PG_FUNCTION_INFO_V1(Intersects_tpoint_tpoint);
 /**
- * Returns true if the temporal points ever intersect
+ * Return true if the temporal points ever intersect
  */
 PGDLLEXPORT Datum
-intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
+Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tpoint_tpoint(fcinfo, &datum2_point_eq);
 }
@@ -638,13 +638,13 @@ intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns true if the temporal point and the geometry ever touch
- * (dispatch function)
+ * @ingroup libmeos_temporal_spatial
+ * @brief Return true if the temporal point and the geometry ever touch.
  */
 static bool
-touches_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
+touches_tpoint_geo(Temporal *temp, GSERIALIZED *gs)
 {
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in
    * the SQL function definition */
   Datum bound = call_function1(boundary, PointerGetDatum(gs));
@@ -663,35 +663,35 @@ touches_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(touches_geo_tpoint);
+PG_FUNCTION_INFO_V1(Touches_geo_tpoint);
 /**
- * Returns true if the geometry and the temporal point ever touch
+ * Return true if the geometry and the temporal point ever touch
  */
 PGDLLEXPORT Datum
-touches_geo_tpoint(PG_FUNCTION_ARGS)
+Touches_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = touches_tpoint_geo_internal(temp, gs);
+  bool result = touches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 1);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(touches_tpoint_geo);
+PG_FUNCTION_INFO_V1(Touches_tpoint_geo);
 /**
- * Returns true if the temporal point and the geometry ever touch
+ * Return true if the temporal point and the geometry ever touch
  */
 PGDLLEXPORT Datum
-touches_tpoint_geo(PG_FUNCTION_ARGS)
+Touches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  bool result = touches_tpoint_geo_internal(temp, gs);
+  bool result = touches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_BOOL(result);
@@ -702,13 +702,13 @@ touches_tpoint_geo(PG_FUNCTION_ARGS)
  * The function only accepts points and not arbitrary geometries/geographies
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(dwithin_geo_tpoint);
+PG_FUNCTION_INFO_V1(Dwithin_geo_tpoint);
 /**
- * Returns true if the geometry and the temporal point are ever within the
+ * Return true if the geometry and the temporal point are ever within the
  * given distance
  */
 PGDLLEXPORT Datum
-dwithin_geo_tpoint(PG_FUNCTION_ARGS)
+Dwithin_geo_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -725,13 +725,13 @@ dwithin_geo_tpoint(PG_FUNCTION_ARGS)
   PG_RETURN_BOOL(result);
 }
 
-PG_FUNCTION_INFO_V1(dwithin_tpoint_geo);
+PG_FUNCTION_INFO_V1(Dwithin_tpoint_geo);
 /**
- * Returns true if the temporal point and the geometry are ever within the
+ * Return true if the temporal point and the geometry are ever within the
  * given distance
  */
 PGDLLEXPORT Datum
-dwithin_tpoint_geo(PG_FUNCTION_ARGS)
+Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -751,7 +751,7 @@ dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Returns true if the temporal points are ever within the given distance
+ * Return true if the temporal points are ever within the given distance
  *
  * @param[in] inst1,inst2 Temporal points
  * @param[in] dist Distance
@@ -768,7 +768,7 @@ dwithin_tpointinst_tpointinst(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Returns true if the two temporal points are ever within the given distance
+ * Return true if the two temporal points are ever within the given distance
  *
  * @param[in] ti1,ti2 Temporal points
  * @param[in] dist Distance
@@ -790,7 +790,7 @@ dwithin_tpointinstset_tpointinstset(const TInstantSet *ti1,
 }
 
 /**
- * Returns true if the two temporal points are ever within the given distance
+ * Return true if the two temporal points are ever within the given distance
  *
  * @param[in] seq1,seq2 Temporal points
  * @param[in] dist Distance
@@ -863,7 +863,7 @@ dwithin_tpointseq_tpointseq(const TSequence *seq1, const TSequence *seq2,
 }
 
 /**
- * Returns true if the two temporal points are ever within the given distance
+ * Return true if the two temporal points are ever within the given distance
  *
  * @param[in] ts1,ts2 Temporal points
  * @param[in] dist Distance
@@ -886,17 +886,17 @@ dwithin_tpointseqset_tpointseqset(const TSequenceSet *ts1,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(dwithin_tpoint_tpoint);
+PG_FUNCTION_INFO_V1(Dwithin_tpoint_tpoint);
 /**
- * Returns a temporal Boolean that states whether the temporal points
+ * Return a temporal Boolean that states whether the temporal points
  * are within the given distance
  */
 PGDLLEXPORT Datum
-dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
+Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   Datum dist = PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -904,7 +904,7 @@ dwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time
    * The operation is synchronization without adding crossings */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
     PG_RETURN_NULL();
 

@@ -451,16 +451,16 @@ stbox_tile_state_make(Temporal *temp, STBOX *box, double size, int64 tunits,
   state->i = 1;
   state->size = size;
   state->tunits = tunits;
-  state->box.xmin = float_bucket_internal(box->xmin, size, sorigin.x);
-  state->box.xmax = float_bucket_internal(box->xmax, size, sorigin.x);
-  state->box.ymin = float_bucket_internal(box->ymin, size, sorigin.y);
-  state->box.ymax = float_bucket_internal(box->ymax, size, sorigin.y);
-  state->box.zmin = float_bucket_internal(box->zmin, size, sorigin.z);
-  state->box.zmax = float_bucket_internal(box->zmax, size, sorigin.z);
+  state->box.xmin = float_bucket(box->xmin, size, sorigin.x);
+  state->box.xmax = float_bucket(box->xmax, size, sorigin.x);
+  state->box.ymin = float_bucket(box->ymin, size, sorigin.y);
+  state->box.ymax = float_bucket(box->ymax, size, sorigin.y);
+  state->box.zmin = float_bucket(box->zmin, size, sorigin.z);
+  state->box.zmax = float_bucket(box->zmax, size, sorigin.z);
   if (tunits)
   {
-    state->box.tmin = timestamptz_bucket_internal(box->tmin, tunits, torigin);
-    state->box.tmax = timestamptz_bucket_internal(box->tmax, tunits, torigin);
+    state->box.tmin = timestamptz_bucket(box->tmin, tunits, torigin);
+    state->box.tmax = timestamptz_bucket(box->tmax, tunits, torigin);
   }
   state->box.srid = box->srid;
   state->box.flags = box->flags;
@@ -587,11 +587,12 @@ stbox_tile_state_get(STboxGridState *state, STBOX *box)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(stbox_multidim_grid);
+PG_FUNCTION_INFO_V1(Stbox_multidim_grid);
 /**
  * Generate a multidimensional grid for temporal points.
  */
-Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Stbox_multidim_grid(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
@@ -690,11 +691,12 @@ Datum stbox_multidim_grid(PG_FUNCTION_ARGS)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
-PG_FUNCTION_INFO_V1(stbox_multidim_tile);
+PG_FUNCTION_INFO_V1(Stbox_multidim_tile);
 /**
  * Generate a tile in a multidimensional grid for temporal points.
 */
-Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Stbox_multidim_tile(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *point = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(point);
@@ -750,12 +752,12 @@ Datum stbox_multidim_tile(PG_FUNCTION_ARGS)
     ptorig.x = p2->x;
     ptorig.y = p2->y;
   }
-  double xmin = float_bucket_internal(pt.x, size, ptorig.x);
-  double ymin = float_bucket_internal(pt.y, size, ptorig.y);
-  double zmin = float_bucket_internal(pt.z, size, ptorig.z);
+  double xmin = float_bucket(pt.x, size, ptorig.x);
+  double ymin = float_bucket(pt.y, size, ptorig.y);
+  double zmin = float_bucket(pt.z, size, ptorig.z);
   TimestampTz tmin = 0; /* make compiler quiet */
   if (hast)
-    tmin = timestamptz_bucket_internal(t, tunits, torigin);
+    tmin = timestamptz_bucket(t, tunits, torigin);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   stbox_tile_set(result, xmin, ymin, zmin, tmin, size, tunits, hasz,
     hast, srid);
@@ -804,14 +806,14 @@ tpointinst_get_coords(int *coords, const TInstant *inst, bool hasz, bool hast,
   /* Read the point and compute the minimum values of the tile */
   POINT4D p;
   datum_point4d(tinstant_value(inst), &p);
-  double x = float_bucket_internal(p.x, state->size, state->box.xmin);
-  double y = float_bucket_internal(p.y, state->size, state->box.ymin);
+  double x = float_bucket(p.x, state->size, state->box.xmin);
+  double y = float_bucket(p.y, state->size, state->box.ymin);
   double z = 0;
   TimestampTz t = 0;
   if (hasz)
-    z = float_bucket_internal(p.z, state->size, state->box.zmin);
+    z = float_bucket(p.z, state->size, state->box.zmin);
   if (hast)
-    t = timestamptz_bucket_internal(inst->t, state->tunits, state->box.ymin);
+    t = timestamptz_bucket(inst->t, state->tunits, state->box.ymin);
   /* Transform the minimum values of the tile into matrix coordinates */
   tile_get_coords(coords, x, y, z, t, state);
   return;
@@ -941,11 +943,12 @@ tpoint_set_tiles(BitMatrix *bm, const Temporal *temp,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_space_split);
+PG_FUNCTION_INFO_V1(Tpoint_space_split);
 /**
  * Split a temporal point with respect to a spatial grid.
  */
-Datum tpoint_space_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_space_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
@@ -1058,7 +1061,7 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
     }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
+    Temporal *atstbox = tpoint_at_stbox(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */
@@ -1074,11 +1077,12 @@ Datum tpoint_space_split(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_space_time_split);
+PG_FUNCTION_INFO_V1(Tpoint_space_time_split);
 /**
  * Split a temporal point with respect to a spatiotemporal grid.
  */
-Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_space_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
   STboxGridState *state;
@@ -1194,7 +1198,7 @@ Datum tpoint_space_time_split(PG_FUNCTION_ARGS)
     }
     stbox_tile_state_next(state);
     /* Restrict the temporal point to the box */
-    Temporal *atstbox = tpoint_at_stbox_internal(state->temp, &box, UPPER_EXC);
+    Temporal *atstbox = tpoint_at_stbox(state->temp, &box, UPPER_EXC);
     if (atstbox == NULL)
       continue;
     /* Form tuple and return */

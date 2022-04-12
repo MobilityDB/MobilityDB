@@ -130,7 +130,7 @@ spatialrel_tnpoint_npoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 /*****************************************************************************/
 
 /**
- * Returns true if the temporal network points ever satisfy the spatial
+ * Return true if the temporal network points ever satisfy the spatial
  * relationship
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -141,7 +141,7 @@ spatialrel_tnpoint_tnpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tnpoint_srid_internal(temp1), tnpoint_srid_internal(temp2));
+  ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
   Temporal *tpoint1 = tnpoint_tgeompoint(temp1);
   Temporal *tpoint2 = tnpoint_tgeompoint(temp2);
   /* Fill the lifted structure */
@@ -215,13 +215,13 @@ spatialrel3_tnpoint_tnpoint(const Temporal *temp1,const  Temporal *temp2,
  * Ever contains
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Contains_geo_tnpoint);
 /**
- * Returns true if the geometry contains the trajectory of the temporal network
+ * Return true if the geometry contains the trajectory of the temporal network
  * point
  */
 PGDLLEXPORT Datum
-contains_geo_tnpoint(PG_FUNCTION_ARGS)
+Contains_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_geo_tnpoint(fcinfo, &geom_contains);
 }
@@ -230,58 +230,58 @@ contains_geo_tnpoint(PG_FUNCTION_ARGS)
  * Ever disjoint
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(disjoint_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Disjoint_geo_tnpoint);
 /**
- * Returns true if the geometry and the trajectory of the temporal network
+ * Return true if the geometry and the trajectory of the temporal network
  * point are disjoint
  */
 PGDLLEXPORT Datum
-disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
+Disjoint_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_geo_tnpoint(fcinfo, &geom_disjoint2d);
 }
 
-PG_FUNCTION_INFO_V1(disjoint_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Disjoint_npoint_tnpoint);
 /**
- * Returns true if the network point and the trajectory of the temporal
+ * Return true if the network point and the trajectory of the temporal
  * network point are disjoint
  */
 PGDLLEXPORT Datum
-disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
+Disjoint_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_npoint_tnpoint(fcinfo, &geom_disjoint2d);
 }
 
-PG_FUNCTION_INFO_V1(disjoint_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Disjoint_tnpoint_geo);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * geometry are disjoint
  */
 PGDLLEXPORT Datum
-disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
+Disjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_geo(fcinfo, &geom_disjoint2d);
 }
 
-PG_FUNCTION_INFO_V1(disjoint_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Disjoint_tnpoint_npoint);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * network point are disjoint
  */
 PGDLLEXPORT Datum
-disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
+Disjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_npoint(fcinfo, &geom_disjoint2d);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(disjoint_tnpoint_tnpoint);
+PG_FUNCTION_INFO_V1(Disjoint_tnpoint_tnpoint);
 /**
- * Returns true if the temporal points are ever disjoint
+ * Return true if the temporal points are ever disjoint
  */
 PGDLLEXPORT Datum
-disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+Disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_ne);
 }
@@ -290,58 +290,58 @@ disjoint_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Ever intersects
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(intersects_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Intersects_geo_tnpoint);
 /**
- * Returns true if the geometry and the trajectory of the temporal network
+ * Return true if the geometry and the trajectory of the temporal network
  * point intersect
  */
 PGDLLEXPORT Datum
-intersects_geo_tnpoint(PG_FUNCTION_ARGS)
+Intersects_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_geo_tnpoint(fcinfo, &geom_intersects2d);
 }
 
-PG_FUNCTION_INFO_V1(intersects_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Intersects_npoint_tnpoint);
 /**
- * Returns true if the network point and the trajectory of the temporal network
+ * Return true if the network point and the trajectory of the temporal network
  * point intersect
  */
 PGDLLEXPORT Datum
-intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
+Intersects_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_npoint_tnpoint(fcinfo, &geom_intersects2d);
 }
 
-PG_FUNCTION_INFO_V1(intersects_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Intersects_tnpoint_geo);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * geometry intersect
  */
 PGDLLEXPORT Datum
-intersects_tnpoint_geo(PG_FUNCTION_ARGS)
+Intersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_geo(fcinfo, &geom_intersects2d);
 }
 
-PG_FUNCTION_INFO_V1(intersects_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Intersects_tnpoint_npoint);
 /**
- * Returns true if the trajectory of the temporal network point and the network
+ * Return true if the trajectory of the temporal network point and the network
  * point intersect
  */
 PGDLLEXPORT Datum
-intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
+Intersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_npoint(fcinfo, &geom_intersects2d);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(intersects_tnpoint_tnpoint);
+PG_FUNCTION_INFO_V1(Intersects_tnpoint_tnpoint);
 /**
- * Returns true if the temporal points are ever disjoint
+ * Return true if the temporal points are ever disjoint
  */
 PGDLLEXPORT Datum
-intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+Intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_tnpoint(fcinfo, &datum2_point_eq);
 }
@@ -350,13 +350,13 @@ intersects_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Ever dwithin
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(dwithin_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Dwithin_geo_tnpoint);
 /**
- * Returns true if the geometry and the trajectory of the temporal network
+ * Return true if the geometry and the trajectory of the temporal network
  * point are within the given distance
  */
 PGDLLEXPORT Datum
-dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
+Dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   Datum geom = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -366,13 +366,13 @@ dwithin_geo_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(dwithin_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Dwithin_npoint_tnpoint);
 /**
- * Returns true if the network point and the trajectory of the temporal network
+ * Return true if the network point and the trajectory of the temporal network
  * point are within the given distance
  */
 PGDLLEXPORT Datum
-dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
+Dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np  = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -384,13 +384,13 @@ dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(dwithin_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Dwithin_tnpoint_geo);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * geometry are within the given distance
  */
 PGDLLEXPORT Datum
-dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
+Dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum geom = PG_GETARG_DATUM(1);
@@ -400,13 +400,13 @@ dwithin_tnpoint_geo(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(dwithin_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Dwithin_tnpoint_npoint);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * network point are within the given distance
  */
 PGDLLEXPORT Datum
-dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
+Dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np  = PG_GETARG_NPOINT(1);
@@ -418,13 +418,13 @@ dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(dwithin_tnpoint_tnpoint);
+PG_FUNCTION_INFO_V1(Dwithin_tnpoint_tnpoint);
 /**
- * Returns true if the trajectories of the temporal network points are within
+ * Return true if the trajectories of the temporal network points are within
  * the given distance
  */
 PGDLLEXPORT Datum
-dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
+Dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -449,46 +449,46 @@ dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Ever touches
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(touches_geo_tnpoint);
+PG_FUNCTION_INFO_V1(Touches_geo_tnpoint);
 /**
- * Returns true if the geometry and the trajectory of the temporal network
+ * Return true if the geometry and the trajectory of the temporal network
  * point touch
  */
 PGDLLEXPORT Datum
-touches_geo_tnpoint(PG_FUNCTION_ARGS)
+Touches_geo_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_geo_tnpoint(fcinfo, &geom_touches);
 }
 /**
- * Returns true if the network point and the trajectory of the temporal
+ * Return true if the network point and the trajectory of the temporal
  * network point touch
  */
-PG_FUNCTION_INFO_V1(touches_npoint_tnpoint);
+PG_FUNCTION_INFO_V1(Touches_npoint_tnpoint);
 
 PGDLLEXPORT Datum
-touches_npoint_tnpoint(PG_FUNCTION_ARGS)
+Touches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_npoint_tnpoint(fcinfo, &geom_touches);
 }
 
-PG_FUNCTION_INFO_V1(touches_tnpoint_geo);
+PG_FUNCTION_INFO_V1(Touches_tnpoint_geo);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * geometry touch
  */
 PGDLLEXPORT Datum
-touches_tnpoint_geo(PG_FUNCTION_ARGS)
+Touches_tnpoint_geo(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_geo(fcinfo, &geom_touches);
 }
 
-PG_FUNCTION_INFO_V1(touches_tnpoint_npoint);
+PG_FUNCTION_INFO_V1(Touches_tnpoint_npoint);
 /**
- * Returns true if the trajectory of the temporal network point and the
+ * Return true if the trajectory of the temporal network point and the
  * network point touch
  */
 PGDLLEXPORT Datum
-touches_tnpoint_npoint(PG_FUNCTION_ARGS)
+Touches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   return spatialrel_tnpoint_npoint(fcinfo, &geom_touches);
 }

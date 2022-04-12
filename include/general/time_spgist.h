@@ -43,13 +43,11 @@
 
 /*****************************************************************************/
 
-extern Datum period_spgist_config(PG_FUNCTION_ARGS);
-extern Datum period_spgist_choose(PG_FUNCTION_ARGS);
-extern Datum period_spgist_picksplit(PG_FUNCTION_ARGS);
-extern Datum period_spgist_inner_consistent(PG_FUNCTION_ARGS);
-extern Datum period_spgist_leaf_consistent(PG_FUNCTION_ARGS);
-
-extern int16 getQuadrant(const Period *centroid, const Period *tst);
+extern Datum Period_spgist_config(PG_FUNCTION_ARGS);
+extern Datum Period_spgist_choose(PG_FUNCTION_ARGS);
+extern Datum Period_spgist_picksplit(PG_FUNCTION_ARGS);
+extern Datum Period_spgist_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum Period_spgist_leaf_consistent(PG_FUNCTION_ARGS);
 
 #endif
 

@@ -362,14 +362,14 @@ tpointseqset_to_geo_segmentize(const TSequenceSet *ts)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_to_geo);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo);
 /**
  * Converts the temporal point into a PostGIS trajectory geometry/geography
  * where the M coordinates encode the timestamps in number of seconds since
  * '1970-01-01'
  */
 PGDLLEXPORT Datum
-tpoint_to_geo(PG_FUNCTION_ARGS)
+Tpoint_to_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
@@ -526,7 +526,7 @@ geo_to_tpointseq(GSERIALIZED *gs)
   TInstant **instants = palloc(sizeof(TInstant *) * npoints);
   for (int i = 0; i < npoints; i++)
   {
-    /* Returns freshly allocated LWPOINT */
+    /* Return freshly allocated LWPOINT */
     LWPOINT *lwpoint = lwline_get_lwpoint(lwline, (uint32_t) i);
     instants[i] = trajpoint_to_tpointinst(lwpoint);
     lwpoint_free(lwpoint);
@@ -568,7 +568,7 @@ geo_to_tpointseqset(GSERIALIZED *gs)
     {
       TInstant *inst = geo_to_tpointinst(gs1);
       /* The resulting sequence assumes linear interpolation */
-      sequences[i] = tinstant_to_tsequence(inst, LINEAR);
+      sequences[i] = tinstant_tsequence(inst, LINEAR);
       pfree(inst);
     }
     else /* lwgeom1->type == LINETYPE */
@@ -580,13 +580,13 @@ geo_to_tpointseqset(GSERIALIZED *gs)
   return tsequenceset_make_free(sequences, ngeoms, NORMALIZE_NO);
 }
 
-PG_FUNCTION_INFO_V1(geo_to_tpoint);
+PG_FUNCTION_INFO_V1(Geo_to_tpoint);
 /**
  * Converts the PostGIS trajectory geometry/geography where the M coordinates
  * encode the timestamps in Unix epoch into a temporal point.
  */
 PGDLLEXPORT Datum
-geo_to_tpoint(PG_FUNCTION_ARGS)
+Geo_to_tpoint(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   ensure_non_empty(gs);
@@ -927,13 +927,13 @@ tpointseqset_to_geo_measure_segmentize(const TSequenceSet *ts,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_to_geo_measure);
+PG_FUNCTION_INFO_V1(Tpoint_to_geo_measure);
 /**
  * Construct a geometry/geography with M measure from the temporal point and
  * the temporal float
  */
 PGDLLEXPORT Datum
-tpoint_to_geo_measure(PG_FUNCTION_ARGS)
+Tpoint_to_geo_measure(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   Temporal *measure = PG_GETARG_TEMPORAL_P(1);
@@ -944,7 +944,7 @@ tpoint_to_geo_measure(PG_FUNCTION_ARGS)
   Temporal *sync1, *sync2;
   /* Return false if the temporal values do not intersect in time
    * The operation is synchronization without adding crossings */
-  if (!intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE_NOCROSS,
+  if (! intersection_temporal_temporal(tpoint, measure, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
   {
     PG_FREE_IF_COPY(tpoint, 0);
@@ -1026,7 +1026,7 @@ tfloatseq_dp_findsplit(const TSequence *seq, int i1, int i2,
 }
 
 /**
- * Returns a negative or a positive value depending on whether the first number
+ * Return a negative or a positive value depending on whether the first number
  * is less than or greater than the second one
  */
 static int
@@ -1133,7 +1133,7 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
   {
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tfloatseq_simplify(seq, eps_dist, minpts);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1148,13 +1148,13 @@ tfloatseqset_simplify(const TSequenceSet *ts, double eps_dist, uint32_t minpts)
   return tsequenceset_make_free(sequences, ts->count, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(tfloat_simplify);
+PG_FUNCTION_INFO_V1(Tfloat_simplify);
 /**
  * Simplifies the temporal number using a
  * Douglas-Peucker-like line simplification algorithm.
  */
-Datum
-tfloat_simplify(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tfloat_simplify(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
@@ -1181,7 +1181,7 @@ tfloat_simplify(PG_FUNCTION_ARGS)
  ***********************************************************************/
 
 /**
- * Returns the speed of the temporal point in the segment
+ * Return the speed of the temporal point in the segment
  *
  * @param[in] inst1, inst2 Instants defining the segment
  * @param[in] func Distance function (2D, 3D, or geodetic)
@@ -1198,7 +1198,7 @@ tpointinst_speed(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Returns the 2D distance between the points
+ * Return the 2D distance between the points
  */
 static double
 dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
@@ -1209,7 +1209,7 @@ dist2d_pt_pt(POINT2D *p1, POINT2D *p2)
 }
 
 /**
- * Returns the 3D distance between the points
+ * Return the 3D distance between the points
  */
 static double
 dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
@@ -1221,7 +1221,7 @@ dist3d_pt_pt(POINT3DZ *p1, POINT3DZ *p2)
 }
 
 /**
- * Returns the 4D distance between the points
+ * Return the 4D distance between the points
  */
 static double
 dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
@@ -1234,7 +1234,7 @@ dist4d_pt_pt(POINT4D *p1, POINT4D *p2)
 }
 
 /**
- * Returns the 2D distance between the point the segment
+ * Return the 2D distance between the point the segment
  *
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
@@ -1268,7 +1268,7 @@ dist2d_pt_seg(POINT2D *p, POINT2D *A, POINT2D *B)
 }
 
 /**
- * Returns the 3D distance between the point the segment
+ * Return the 3D distance between the point the segment
  *
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
@@ -1305,7 +1305,7 @@ dist3d_pt_seg(POINT3DZ *p, POINT3DZ *A, POINT3DZ *B)
 }
 
 /**
- * Returns the 4D distance between the point the segment
+ * Return the 4D distance between the point the segment
  *
  * @param[in] p Point
  * @param[in] A,B Points defining the segment
@@ -1557,7 +1557,7 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
   {
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_simplify(seq, eps_dist, eps_speed, minpts);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1573,7 +1573,7 @@ tpointseqset_simplify(const TSequenceSet *ts, double eps_dist,
 }
 
 static Temporal *
-tpoint_simplify_internal(Temporal *temp, double eps_dist,
+tpoint_simplify(Temporal *temp, double eps_dist,
   double eps_speed)
 {
   Temporal *result;
@@ -1590,19 +1590,19 @@ tpoint_simplify_internal(Temporal *temp, double eps_dist,
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_simplify);
+PG_FUNCTION_INFO_V1(Tpoint_simplify);
 /**
  * Simplifies the temporal sequence (set) point using a spatio-temporal
  * extension of the Douglas-Peucker line simplification algorithm.
  */
-Datum
-tpoint_simplify(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_simplify(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double eps_dist = PG_GETARG_FLOAT8(1);
   double eps_speed = PG_GETARG_FLOAT8(2);
 
-  Temporal *result = tpoint_simplify_internal(temp, eps_dist, eps_speed);
+  Temporal *result = tpoint_simplify(temp, eps_dist, eps_speed);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1612,7 +1612,7 @@ tpoint_simplify(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns a temporal point with consecutive equal points removed.
+ * Return a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
 static TInstantSet *
@@ -1644,7 +1644,7 @@ tpointinstset_remove_repeated_points(const TInstantSet *ti, double tolerance,
         /* Only drop points that are within our tolerance */
         dsq = distance2d_sqr_pt_pt(last, pt);
         /* Allow any point but the last one to be dropped */
-        if (!last_point && dsq <= tolsq)
+        if (! last_point && dsq <= tolsq)
           continue;
       }
       else
@@ -1675,7 +1675,7 @@ tpointinstset_remove_repeated_points(const TInstantSet *ti, double tolerance,
 }
 
 /**
- * Returns a temporal point with consecutive equal points removed.
+ * Return a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
 static TSequence *
@@ -1707,7 +1707,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
         /* Only drop points that are within our tolerance */
         dsq = distance2d_sqr_pt_pt(last, pt);
         /* Allow any point but the last one to be dropped */
-        if (!last_point && dsq <= tolsq)
+        if (! last_point && dsq <= tolsq)
           continue;
       }
       else
@@ -1739,7 +1739,7 @@ tpointseq_remove_repeated_points(const TSequence *seq, double tolerance,
 }
 
 /**
- * Returns a temporal point with consecutive equal points removed.
+ * Return a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
 static TSequenceSet *
@@ -1754,7 +1754,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
     seq = tsequenceset_seq_n(ts, 0);
     TSequence *seq1 = tpointseq_remove_repeated_points(seq, tolerance,
       min_points);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq1);
+    TSequenceSet *result = tsequence_tsequenceset(seq1);
     pfree(seq1);
     return result;
   }
@@ -1786,7 +1786,7 @@ tpointseqset_remove_repeated_points(const TSequenceSet *ts, double tolerance,
 }
 
 /**
- * Returns a temporal point with consecutive equal points removed.
+ * Return a temporal point with consecutive equal points removed.
  * Equality test only on x and y dimensions of input.
  */
 static Temporal *
@@ -1913,7 +1913,7 @@ tpointseqset_affine(const TSequenceSet *ts, const AFFINE *a)
   if (ts->count == 1)
   {
     TSequence *seq = tpointseq_affine(tsequenceset_seq_n(ts, 0), a);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq);
+    TSequenceSet *result = tsequence_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -2097,7 +2097,7 @@ tpointseqset_grid(const TSequenceSet *ts, const gridspec *grid, bool filter_pts)
     TSequence *seq = tpointseq_grid(tsequenceset_seq_n(ts, 0), grid, filter_pts);
     if (seq == NULL)
       return NULL;
-    TSequenceSet *result = tsequence_to_tsequenceset(seq);
+    TSequenceSet *result = tsequence_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -2169,7 +2169,7 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   Temporal *tpoint1 = tpoint_remove_repeated_points(tpoint, res, 2);
 
   /* Epsilon speed is not taken into account, i.e., parameter set to 0 */
-  Temporal *tpoint2 = tpoint_simplify_internal(tpoint1, res, 0);
+  Temporal *tpoint2 = tpoint_simplify(tpoint1, res, 0);
   pfree(tpoint1);
 
   /* Transform to tile coordinate space */
@@ -2190,11 +2190,11 @@ tpoint_mvt(const Temporal *tpoint, const STBOX *box, uint32_t extent,
   /* Clip temporal point taking into account the buffer */
   double max = (double) extent + (double) buffer;
   double min = -(double) buffer;
-  int srid = tpoint_srid_internal(tpoint);
+  int srid = tpoint_srid(tpoint);
   STBOX clip_box;
   stbox_set(true, false, false, false, srid, min, max, min, max,
     0, 0, 0, 0, &clip_box);
-  Temporal *tpoint5 = tpoint_at_stbox_internal(tpoint4, &clip_box, UPPER_INC);
+  Temporal *tpoint5 = tpoint_at_stbox(tpoint4, &clip_box, UPPER_INC);
   pfree(tpoint4);
   if (tpoint5 == NULL)
     return NULL;
@@ -2373,12 +2373,12 @@ tpoint_decouple(const Temporal *temp, ArrayType **timesarr)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(AsMVTGeom);
+PG_FUNCTION_INFO_V1(Tpoint_AsMVTGeom);
 /**
  * Transform the temporal point to Mapbox Vector Tile format
  */
-Datum
-AsMVTGeom(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *bounds = PG_GETARG_STBOX_P(1);

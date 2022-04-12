@@ -91,8 +91,8 @@ typedef struct
 
 /*****************************************************************************/
 
-extern Datum tagg_serialize(PG_FUNCTION_ARGS);
-extern Datum tagg_deserialize(PG_FUNCTION_ARGS);
+extern Datum Tagg_serialize(PG_FUNCTION_ARGS);
+extern Datum Tagg_deserialize(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

@@ -59,7 +59,7 @@
 /*****************************************************************************/
 
 /**
- * Returns a default selectivity estimate for given operator, when we
+ * Return a default selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
 float8
@@ -70,7 +70,7 @@ period_sel_default(CachedOp cachedOp __attribute__((unused)))
 }
 
 /**
- * Returns a default join selectivity estimate for given operator, when we
+ * Return a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
 float8
@@ -112,7 +112,7 @@ time_cachedop(Oid operid, CachedOp *cachedOp)
 }
 
 /**
- * Binary search on an array of period bounds. Returns greatest index of period
+ * Binary search on an array of period bounds. Return greatest index of period
  * bound in array which is less (less or equal) than given period bound. If all
  * period bounds in array are greater or equal (greater) than given period bound,
  * return -1. When "equal" flag is set, the conditions in parenthesis are used.
@@ -167,7 +167,7 @@ period_position(const PeriodBound *value, const PeriodBound *hist1,
 }
 
 /**
- * Binary search on length histogram. Returns greatest index of period length in
+ * Binary search on length histogram. Return greatest index of period length in
  * histogram which is less than (less than or equal) the given length value. If
  * all lengths in the histogram are greater than (greater than or equal) the
  * given length, returns -1.
@@ -837,7 +837,7 @@ time_const_to_period(Node *other, Period *period)
  * Restriction selectivity for period operators (internal function)
  */
 float8
-period_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid)
+period_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
 {
   VariableStatData vardata;
   Node *other;
@@ -902,7 +902,7 @@ period_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid)
     return period_sel_default(operid);
 
   /*
-   * Estimate using statistics. Note that period_sel_internal need not handle
+   * Estimate using statistics. Note that period_sel need not handle
    * PERIOD_ELEM_CONTAINED_OP.
    */
   float4 null_frac;
@@ -945,18 +945,18 @@ period_sel_internal(PlannerInfo *root, Oid operid, List *args, int varRelid)
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(period_sel);
+PG_FUNCTION_INFO_V1(Period_sel);
 /**
  * Restriction selectivity for period operators
  */
 PGDLLEXPORT Datum
-period_sel(PG_FUNCTION_ARGS)
+Period_sel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
   List *args = (List *) PG_GETARG_POINTER(2);
   int varRelid = PG_GETARG_INT32(3);
-  float8 selec = period_sel_internal(root, operid, args, varRelid);
+  float8 selec = period_sel(root, operid, args, varRelid);
   PG_RETURN_FLOAT8((float8) selec);
 }
 
@@ -1389,7 +1389,7 @@ period_joinsel_hist(VariableStatData *vardata1, VariableStatData *vardata2,
  * Join selectivity for periods (internal function)
  */
 float8
-period_joinsel_internal(PlannerInfo *root, CachedOp cachedOp, List *args,
+period_joinsel(PlannerInfo *root, CachedOp cachedOp, List *args,
   JoinType jointype __attribute__((unused)), SpecialJoinInfo *sjinfo)
 {
   VariableStatData vardata1, vardata2;
@@ -1406,7 +1406,7 @@ period_joinsel_internal(PlannerInfo *root, CachedOp cachedOp, List *args,
   return selec;
 }
 
-PG_FUNCTION_INFO_V1(period_joinsel);
+PG_FUNCTION_INFO_V1(Period_joinsel);
 /**
  * Join selectivity for periods.
  *
@@ -1417,7 +1417,8 @@ PG_FUNCTION_INFO_V1(period_joinsel);
  *
  * This function is inspired from function eqjoinsel in file selfuncs.c
  */
-Datum period_joinsel(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Period_joinsel(PG_FUNCTION_ARGS)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -1447,7 +1448,7 @@ Datum period_joinsel(PG_FUNCTION_ARGS)
     /* Unknown operator */
     PG_RETURN_FLOAT8(period_joinsel_default(operid));
 
-  float8 selec = period_joinsel_internal(root, cachedOp, args, jointype, sjinfo);
+  float8 selec = period_joinsel(root, cachedOp, args, jointype, sjinfo);
 
   PG_RETURN_FLOAT8(selec);
 }

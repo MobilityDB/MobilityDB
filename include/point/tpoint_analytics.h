@@ -45,22 +45,22 @@
 
 /* Convert a temporal point into a PostGIS trajectory geometry/geography */
 
-extern Datum tpoint_to_geo(PG_FUNCTION_ARGS);
-extern Datum geo_to_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
+extern Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
 
 /* Convert a temporal point and a temporal float into a PostGIS geometry/geography */
 
-extern Datum point_to_geo_measure(PG_FUNCTION_ARGS);
+extern Datum Point_to_geo_measure(PG_FUNCTION_ARGS);
 
 /* Simple Douglas-Peucker-like value simplification for temporal floats and
  * temporal points. */
 
-extern Datum tfloat_simplify(PG_FUNCTION_ARGS);
-extern Datum tpoint_simplify(PG_FUNCTION_ARGS);
+extern Datum Tfloat_simplify(PG_FUNCTION_ARGS);
+extern Datum Tpoint_simplify(PG_FUNCTION_ARGS);
 
 /* Transform the temporal point to Mapbox Vector Tile format */
 
-extern Datum AsMVT(PG_FUNCTION_ARGS);
+extern Datum Tpoint_AsMVTGeom(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

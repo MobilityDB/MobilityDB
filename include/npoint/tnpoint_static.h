@@ -54,48 +54,48 @@ extern nsegment **nsegmentarr_normalize(nsegment **segments, int *count);
 
 /* Input/Output functions for npoint */
 
-extern Datum npoint_in(PG_FUNCTION_ARGS);
-extern Datum npoint_out(PG_FUNCTION_ARGS);
-extern Datum npoint_recv(PG_FUNCTION_ARGS);
-extern Datum npoint_send(PG_FUNCTION_ARGS);
+extern Datum Npoint_in(PG_FUNCTION_ARGS);
+extern Datum Npoint_out(PG_FUNCTION_ARGS);
+extern Datum Npoint_recv(PG_FUNCTION_ARGS);
+extern Datum Npoint_send(PG_FUNCTION_ARGS);
 
 /* Input/Output functions for nsegment */
 
-extern Datum nsegment_in(PG_FUNCTION_ARGS);
-extern Datum nsegment_out(PG_FUNCTION_ARGS);
-extern Datum nsegment_recv(PG_FUNCTION_ARGS);
-extern Datum nsegment_send(PG_FUNCTION_ARGS);
+extern Datum Nsegment_in(PG_FUNCTION_ARGS);
+extern Datum Nsegment_out(PG_FUNCTION_ARGS);
+extern Datum Nsegment_recv(PG_FUNCTION_ARGS);
+extern Datum Nsegment_send(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
-extern Datum npoint_constructor(PG_FUNCTION_ARGS);
-extern Datum nsegment_constructor(PG_FUNCTION_ARGS);
-extern Datum npoint_to_nsegment(PG_FUNCTION_ARGS);
+extern Datum Npoint_constructor(PG_FUNCTION_ARGS);
+extern Datum Nsegment_constructor(PG_FUNCTION_ARGS);
+extern Datum Npoint_to_nsegment(PG_FUNCTION_ARGS);
 
 extern npoint *npoint_make(int64 rid, double pos);
 extern nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 
 /* Accessor functions */
 
-extern Datum npoint_route(PG_FUNCTION_ARGS);
-extern Datum npoint_position(PG_FUNCTION_ARGS);
-extern Datum nsegment_route(PG_FUNCTION_ARGS);
-extern Datum nsegment_start_position(PG_FUNCTION_ARGS);
-extern Datum nsegment_end_position(PG_FUNCTION_ARGS);
+extern Datum Npoint_route(PG_FUNCTION_ARGS);
+extern Datum Npoint_position(PG_FUNCTION_ARGS);
+extern Datum Nsegment_route(PG_FUNCTION_ARGS);
+extern Datum Nsegment_start_position(PG_FUNCTION_ARGS);
+extern Datum Nsegment_end_position(PG_FUNCTION_ARGS);
 
 /* Transformation functions */
 
-extern Datum npoint_round(PG_FUNCTION_ARGS);
-extern Datum nsegment_round(PG_FUNCTION_ARGS);
+extern Datum Npoint_round(PG_FUNCTION_ARGS);
+extern Datum Nsegment_round(PG_FUNCTION_ARGS);
 
-extern Datum npoint_round_internal(Datum npoint, Datum size);
+extern Datum npoint_round(Datum npoint, Datum size);
 
 /* Conversions between network and Euclidean space */
 
-extern Datum npoint_to_geom(PG_FUNCTION_ARGS);
-extern Datum geom_to_npoint(PG_FUNCTION_ARGS);
-extern Datum nsegment_to_geom(PG_FUNCTION_ARGS);
-extern Datum geom_to_nsegment(PG_FUNCTION_ARGS);
+extern Datum Npoint_to_geom(PG_FUNCTION_ARGS);
+extern Datum Geom_to_npoint(PG_FUNCTION_ARGS);
+extern Datum Nsegment_to_geom(PG_FUNCTION_ARGS);
+extern Datum Geom_to_nsegment(PG_FUNCTION_ARGS);
 
 extern bool route_exists(int64 rid);
 extern double route_length(int64 rid);
@@ -107,41 +107,41 @@ extern nsegment *geom_nsegment(Datum line);
 
 /* SRID functions */
 
-extern Datum npoint_srid(PG_FUNCTION_ARGS);
+extern Datum Npoint_get_srid(PG_FUNCTION_ARGS);
 
-extern int npoint_srid_internal(const npoint *np);
+extern int npoint_srid(const npoint *np);
 
 /* Comparison functions */
 
-extern Datum npoint_eq(PG_FUNCTION_ARGS);
-extern Datum npoint_ne(PG_FUNCTION_ARGS);
-extern Datum npoint_lt(PG_FUNCTION_ARGS);
-extern Datum npoint_le(PG_FUNCTION_ARGS);
-extern Datum npoint_gt(PG_FUNCTION_ARGS);
-extern Datum npoint_ge(PG_FUNCTION_ARGS);
+extern Datum Npoint_eq(PG_FUNCTION_ARGS);
+extern Datum Npoint_ne(PG_FUNCTION_ARGS);
+extern Datum Npoint_lt(PG_FUNCTION_ARGS);
+extern Datum Npoint_le(PG_FUNCTION_ARGS);
+extern Datum Npoint_gt(PG_FUNCTION_ARGS);
+extern Datum Npoint_ge(PG_FUNCTION_ARGS);
 
-extern int npoint_cmp_internal(const npoint *np1, const npoint *np2);
-extern bool npoint_eq_internal(const npoint *np1, const npoint *np2);
-extern bool npoint_ne_internal(const npoint *np1, const npoint *np2);
-extern bool npoint_lt_internal(const npoint *np1, const npoint *np2);
-extern bool npoint_le_internal(const npoint *np1, const npoint *np2);
-extern bool npoint_gt_internal(const npoint *np1, const npoint *np2);
-extern bool npoint_ge_internal(const npoint *np1, const npoint *np2);
+extern int npoint_cmp(const npoint *np1, const npoint *np2);
+extern bool npoint_eq(const npoint *np1, const npoint *np2);
+extern bool npoint_ne(const npoint *np1, const npoint *np2);
+extern bool npoint_lt(const npoint *np1, const npoint *np2);
+extern bool npoint_le(const npoint *np1, const npoint *np2);
+extern bool npoint_gt(const npoint *np1, const npoint *np2);
+extern bool npoint_ge(const npoint *np1, const npoint *np2);
 
-extern Datum nsegment_eq(PG_FUNCTION_ARGS);
-extern Datum nsegment_ne(PG_FUNCTION_ARGS);
-extern Datum nsegment_lt(PG_FUNCTION_ARGS);
-extern Datum nsegment_le(PG_FUNCTION_ARGS);
-extern Datum nsegment_gt(PG_FUNCTION_ARGS);
-extern Datum nsegment_ge(PG_FUNCTION_ARGS);
+extern Datum Nsegment_eq(PG_FUNCTION_ARGS);
+extern Datum Nsegment_ne(PG_FUNCTION_ARGS);
+extern Datum Nsegment_lt(PG_FUNCTION_ARGS);
+extern Datum Nsegment_le(PG_FUNCTION_ARGS);
+extern Datum Nsegment_gt(PG_FUNCTION_ARGS);
+extern Datum Nsegment_ge(PG_FUNCTION_ARGS);
 
-extern int nsegment_cmp_internal(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_eq_internal(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_ne_internal(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_lt_internal(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_le_internal(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_gt_internal(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_ge_internal(const nsegment *ns1, const nsegment *ns2);
+extern int nsegment_cmp(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_eq(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_ne(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_lt(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_le(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_gt(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_ge(const nsegment *ns1, const nsegment *ns2);
 
 /*****************************************************************************/
 

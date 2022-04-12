@@ -36,65 +36,65 @@
 
 CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_union(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_gist_union'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_penalty(internal, internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_gist_penalty'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_picksplit(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_gist_picksplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_same(tbox, tbox, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tbox_gist_same'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbox_gist_distance'
+  AS 'MODULE_PATHNAME', 'Tbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
 
 CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbool_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
+  AS 'MODULE_PATHNAME', 'Temporal_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tint_gist_consistent(internal, tint, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tfloat_gist_consistent(internal, tfloat, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'tnumber_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_gist_compress'
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'period_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Period_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_gist_compress'
+  AS 'MODULE_PATHNAME', 'Temporal_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

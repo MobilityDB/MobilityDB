@@ -104,11 +104,11 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
 }
 
 /**
- * Output a temporal point in Well-Known Text (WKT) format
- * (dispatch function)
+ * @ingroup libmeos_temporal_input_output
+ * @brief Output a temporal point in Well-Known Text (WKT) format.
  */
 static char *
-tpoint_as_text_internal1(const Temporal *temp)
+tpoint_as_text1(const Temporal *temp)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -127,42 +127,43 @@ tpoint_as_text_internal1(const Temporal *temp)
  * Output a temporal point in Well-Known Text (WKT) format
  */
 static text *
-tpoint_as_text_internal(const Temporal *temp)
+tpoint_as_text(const Temporal *temp)
 {
-  char *str = tpoint_as_text_internal1(temp);
+  char *str = tpoint_as_text1(temp);
   text *result = cstring_to_text(str);
   pfree(str);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_as_text);
+PG_FUNCTION_INFO_V1(Tpoint_as_text);
 /**
  * Output a temporal point in Well-Known Text (WKT) format
  */
 PGDLLEXPORT Datum
-tpoint_as_text(PG_FUNCTION_ARGS)
+Tpoint_as_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *result = tpoint_as_text_internal(temp);
+  text *result = tpoint_as_text(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
 
 /**
- * Output a temporal point in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID (dispatch function)
+ * @ingroup libmeos_temporal_input_output
+ * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
+ * that is, in WKT format prefixed with the SRID.
  */
 static text *
-tpoint_as_ewkt_internal(const Temporal *temp)
+tpoint_as_ewkt(const Temporal *temp)
 {
-  int srid = tpoint_srid_internal(temp);
+  int srid = tpoint_srid(temp);
   char str1[20];
   if (srid > 0)
     sprintf(str1, "SRID=%d%c", srid,
       MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
   else
     str1[0] = '\0';
-  char *str2 = tpoint_as_text_internal1(temp);
+  char *str2 = tpoint_as_text1(temp);
   char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
   strcpy(str, str1);
   strcat(str, str2);
@@ -171,16 +172,16 @@ tpoint_as_ewkt_internal(const Temporal *temp)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_as_ewkt);
+PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
 /**
  * Output a temporal point in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
  */
 PGDLLEXPORT Datum
-tpoint_as_ewkt(PG_FUNCTION_ARGS)
+Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *result = tpoint_as_ewkt_internal(temp);
+  text *result = tpoint_as_ewkt(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -219,23 +220,23 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PG_FUNCTION_INFO_V1(geoarr_as_text);
+PG_FUNCTION_INFO_V1(Geoarr_as_text);
 /**
  * Output a geometry/geography array in Well-Known Text (WKT) format
  */
 PGDLLEXPORT Datum
-geoarr_as_text(PG_FUNCTION_ARGS)
+Geoarr_as_text(PG_FUNCTION_ARGS)
 {
   return geoarr_as_text1(fcinfo, false);
 }
 
-PG_FUNCTION_INFO_V1(geoarr_as_ewkt);
+PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 /**
  * Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
  */
 PGDLLEXPORT Datum
-geoarr_as_ewkt(PG_FUNCTION_ARGS)
+Geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
   return geoarr_as_text1(fcinfo, true);
 }
@@ -259,8 +260,8 @@ tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   Temporal **temparr = temporalarr_extract(array, &count);
   text **textarr = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    textarr[i] = extended ? tpoint_as_ewkt_internal(temparr[i]) :
-      tpoint_as_text_internal(temparr[i]);
+    textarr[i] = extended ? tpoint_as_ewkt(temparr[i]) :
+      tpoint_as_text(temparr[i]);
   ArrayType *result = textarr_to_array(textarr, count);
 
   pfree_array((void **) textarr, count);
@@ -269,23 +270,23 @@ tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PG_FUNCTION_INFO_V1(tpointarr_as_text);
+PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 /**
  * Output a temporal point array in Well-Known Text (WKT) format
  */
 PGDLLEXPORT Datum
-tpointarr_as_text(PG_FUNCTION_ARGS)
+Tpointarr_as_text(PG_FUNCTION_ARGS)
 {
   return tpointarr_as_text1(fcinfo, false);
 }
 
-PG_FUNCTION_INFO_V1(tpointarr_as_ewkt);
+PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 /**
  * Output a temporal point array in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID
  */
 PGDLLEXPORT Datum
-tpointarr_as_ewkt(PG_FUNCTION_ARGS)
+Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
   return tpointarr_as_text1(fcinfo, true);
 }
@@ -295,7 +296,7 @@ tpointarr_as_ewkt(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the maximum size in bytes of the coordinate array represented in
+ * Return the maximum size in bytes of the coordinate array represented in
  * MF-JSON format
  */
 static size_t
@@ -354,7 +355,7 @@ coordinates_mfjson_buf(char *output, const TInstant *inst, int precision)
 }
 
 /**
- * Returns the maximum size in bytes of the datetimes array represented
+ * Return the maximum size in bytes of the datetimes array represented
  * in MF-JSON format.
  *
  * For example `"datetimes":["2019-08-06T18:35:48.021455+02:30","2019-08-06T18:45:18.476983+02:30"]`
@@ -383,7 +384,7 @@ datetimes_mfjson_buf(char *output, const TInstant *inst)
 }
 
 /**
- * Returns the maximum size in bytes of the SRS represented in MF-JSON format
+ * Return the maximum size in bytes of the SRS represented in MF-JSON format
  */
 static size_t
 srs_mfjson_size(char *srs)
@@ -407,7 +408,7 @@ srs_mfjson_buf(char *output, char *srs)
 }
 
 /**
- * Returns the maximum size in bytes of the bouding box represented in
+ * Return the maximum size in bytes of the bouding box represented in
  * MF-JSON format
  */
 static size_t
@@ -416,7 +417,7 @@ bbox_mfjson_size(int hasz, int precision)
   /* The maximum size of a timestamptz is 35 characters, e.g., "2019-08-06 23:18:16.195062-09:30" */
   size_t size = sizeof("'stBoundedBy':{'period':{'begin':,'end':}},") +
     sizeof("\"2019-08-06T18:35:48.021455+02:30\",") * 2;
-  if (!hasz)
+  if (! hasz)
   {
     size += sizeof("'bbox':[,,,],");
     size +=  2 * 2 * (OUT_MAX_DIGS_DOUBLE + precision);
@@ -437,7 +438,7 @@ bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
 {
   char *ptr = output;
   ptr += sprintf(ptr, "\"stBoundedBy\":{");
-  if (!hasz)
+  if (! hasz)
     ptr += sprintf(ptr, "\"bbox\":[%.*f,%.*f,%.*f,%.*f],",
       precision, bbox->xmin, precision, bbox->ymin,
       precision, bbox->xmax, precision, bbox->ymax);
@@ -455,7 +456,7 @@ bbox_mfjson_buf(char *output, const STBOX *bbox, int hasz, int precision)
 /*****************************************************************************/
 
 /**
- * Returns the maximum size in bytes of a temporal instant point represented
+ * Return the maximum size in bytes of a temporal instant point represented
  * in MF-JSON format
  */
 static size_t
@@ -493,7 +494,7 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
 }
 
 /**
- * Returns the temporal instant point represented in MF-JSON format
+ * Return the temporal instant point represented in MF-JSON format
  */
 static char *
 tpointinst_as_mfjson(const TInstant *inst, int precision,
@@ -508,7 +509,7 @@ tpointinst_as_mfjson(const TInstant *inst, int precision,
 /*****************************************************************************/
 
 /**
- * Returns the maximum size in bytes of a temporal instant set point
+ * Return the maximum size in bytes of a temporal instant set point
  * represented in MF-JSON format
  */
 static size_t
@@ -553,7 +554,7 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
 }
 
 /**
- * Returns the temporal instant set point represented in MF-JSON format
+ * Return the temporal instant set point represented in MF-JSON format
  */
 static char *
 tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox, char *srs)
@@ -567,7 +568,7 @@ tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox,
 /*****************************************************************************/
 
 /**
- * Returns the maximum size in bytes of a temporal sequence point
+ * Return the maximum size in bytes of a temporal sequence point
  * represented in MF-JSON format
  */
 static size_t
@@ -615,7 +616,7 @@ tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
 }
 
 /**
- * Returns the temporal sequence point represented in MF-JSON format
+ * Return the temporal sequence point represented in MF-JSON format
  */
 static char *
 tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
@@ -630,7 +631,7 @@ tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
 /*****************************************************************************/
 
 /**
- * Returns the maximum size in bytes of a temporal sequence set point
+ * Return the maximum size in bytes of a temporal sequence set point
  * represented in MF-JSON format
  */
 static size_t
@@ -685,7 +686,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
 }
 
 /**
- * Returns the temporal sequence set point represented in MF-JSON format
+ * Return the temporal sequence set point represented in MF-JSON format
  */
 static char *
 tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
@@ -699,12 +700,12 @@ tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_as_mfjson);
+PG_FUNCTION_INFO_V1(Tpoint_as_mfjson);
 /**
- * Returns the temporal point represented in MF-JSON format
+ * Return the temporal point represented in MF-JSON format
  */
 PGDLLEXPORT Datum
-tpoint_as_mfjson(PG_FUNCTION_ARGS)
+Tpoint_as_mfjson(PG_FUNCTION_ARGS)
 {
   int has_bbox = 0;
   int precision = DBL_DIG;
@@ -737,7 +738,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
    * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
    * it is not possible to reconstruct the temporal point from the output
    * of this function without loosing the SRID */
-  int32_t srid = tpoint_srid_internal(temp);
+  int32_t srid = tpoint_srid(temp);
   if (srid != SRID_UNKNOWN && !(option & 2) && !(option & 4))
     option |= 2;
   if (srid != SRID_UNKNOWN)
@@ -746,7 +747,7 @@ tpoint_as_mfjson(PG_FUNCTION_ARGS)
       srs = getSRSbySRID(fcinfo, srid, true);
     else if (option & 4)
       srs = getSRSbySRID(fcinfo, srid, false);
-    if (!srs)
+    if (! srs)
     {
       elog(ERROR, "SRID %i unknown in spatial_ref_sys table", srid);
       PG_RETURN_NULL();
@@ -824,7 +825,7 @@ endian_to_wkb_buf(uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Returns true if the bytes must be swaped dependng of the variant
+ * Return true if the bytes must be swaped dependng of the variant
  */
 static inline bool
 wkb_swap_bytes(uint8_t variant)
@@ -966,13 +967,13 @@ timestamp_to_wkb_buf(TimestampTz t, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Returns true if the temporal point needs to output the SRID
+ * Return true if the temporal point needs to output the SRID
  */
 static bool
 tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 {
   /* Add an SRID if the WKB form is extended and if the geometry has one */
-  if ((variant & WKB_EXTENDED) && tpoint_srid_internal(temp) != SRID_UNKNOWN)
+  if ((variant & WKB_EXTENDED) && tpoint_srid(temp) != SRID_UNKNOWN)
     return true;
 
   /* Everything else doesn't get an SRID */
@@ -980,7 +981,7 @@ tpoint_wkb_needs_srid(const Temporal *temp, uint8_t variant)
 }
 
 /**
- * Returns the maximum size in bytes of an array of temporal instant points
+ * Return the maximum size in bytes of an array of temporal instant points
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -993,7 +994,7 @@ tpointinstarr_to_wkb_size(int npoints, bool hasz)
 }
 
 /**
- * Returns the maximum size in bytes of the temporal instant point
+ * Return the maximum size in bytes of the temporal instant point
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1010,7 +1011,7 @@ tpointinst_to_wkb_size(const TInstant *inst, uint8_t variant)
 }
 
 /**
- * Returns the maximum size in bytes of the temporal instant set point
+ * Return the maximum size in bytes of the temporal instant set point
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1029,7 +1030,7 @@ tpointinstset_to_wkb_size(const TInstantSet *ti, uint8_t variant)
 }
 
 /**
- * Returns the maximum size in bytes of the temporal sequence point
+ * Return the maximum size in bytes of the temporal sequence point
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1048,7 +1049,7 @@ tpointseq_to_wkb_size(const TSequence *seq, uint8_t variant)
 }
 
 /**
- * Returns the maximum size in bytes of the temporal sequence set point
+ * Return the maximum size in bytes of the temporal sequence set point
  * represented in Well-Known Binary (WKB) format
  */
 static size_t
@@ -1069,7 +1070,7 @@ tpointseqset_to_wkb_size(const TSequenceSet *ts, uint8_t variant)
 }
 
 /**
- * Returns the maximum size in bytes of the temporal point
+ * Return the maximum size in bytes of the temporal point
  * represented in Well-Known Binary (WKB) format (dispatch function)
  */
 static size_t
@@ -1460,35 +1461,35 @@ tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
   PG_RETURN_BYTEA_P(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_as_binary);
+PG_FUNCTION_INFO_V1(Tpoint_as_binary);
 /**
  * Output a temporal point in WKB format.
  * This will have no 'SRID=#;'
  */
 PGDLLEXPORT Datum
-tpoint_as_binary(PG_FUNCTION_ARGS)
+Tpoint_as_binary(PG_FUNCTION_ARGS)
 {
   return tpoint_as_binary1(fcinfo, false);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_as_ewkb);
+PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
 /**
  * Output the temporal point in EWKB format.
  * This will have 'SRID=#;'
  */
 PGDLLEXPORT Datum
-tpoint_as_ewkb(PG_FUNCTION_ARGS)
+Tpoint_as_ewkb(PG_FUNCTION_ARGS)
 {
   return tpoint_as_binary1(fcinfo, true);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_as_hexewkb);
+PG_FUNCTION_INFO_V1(Tpoint_as_hexewkb);
 /**
  * Output the temporal point in HexEWKB format.
  * This will have 'SRID=#;'
  */
 PGDLLEXPORT Datum
-tpoint_as_hexewkb(PG_FUNCTION_ARGS)
+Tpoint_as_hexewkb(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   char *hexwkb;

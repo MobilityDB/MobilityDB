@@ -45,8 +45,8 @@
 
 /*****************************************************************************/
 
-extern Datum tnumber_sel(PG_FUNCTION_ARGS);
-extern Datum tnumber_joinsel(PG_FUNCTION_ARGS);
+extern Datum Tnumber_sel(PG_FUNCTION_ARGS);
+extern Datum Tnumber_joinsel(PG_FUNCTION_ARGS);
 
 extern bool tnumber_cachedop(Oid operid, CachedOp *cachedOp);
 extern bool tnumber_const_to_tbox(const Node *other, TBOX *box);
