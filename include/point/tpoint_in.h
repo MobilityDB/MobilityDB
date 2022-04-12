@@ -41,8 +41,8 @@
 
 /*****************************************************************************/
 
-extern Datum tpoint_from_mfjson(PG_FUNCTION_ARGS);
-extern Datum tpoint_from_ewkb(PG_FUNCTION_ARGS);
+extern Datum Tpoint_from_mfjson(PG_FUNCTION_ARGS);
+extern Datum Tpoint_from_ewkb(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
