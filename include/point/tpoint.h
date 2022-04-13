@@ -111,35 +111,35 @@ extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
 
 /* Input/output functions */
 
-extern Datum tpoint_in(PG_FUNCTION_ARGS);
-extern Datum tgeompoint_typmod_in(PG_FUNCTION_ARGS);
-extern Datum tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
-extern Datum tpoint_typmod_out(PG_FUNCTION_ARGS);
-extern Datum tpoint_enforce_typmod(PG_FUNCTION_ARGS);
+extern Datum Tpoint_in(PG_FUNCTION_ARGS);
+extern Datum Tgeompoint_typmod_in(PG_FUNCTION_ARGS);
+extern Datum Tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
+extern Datum Tpoint_typmod_out(PG_FUNCTION_ARGS);
+extern Datum Tpoint_enforce_typmod(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
-extern Datum tpointinst_constructor(PG_FUNCTION_ARGS);
+extern Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
 
-extern Datum tpoint_to_stbox(PG_FUNCTION_ARGS);
+extern Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 
 /* Expand functions */
 
-extern Datum geo_expand_spatial(PG_FUNCTION_ARGS);
-extern Datum tpoint_expand_spatial(PG_FUNCTION_ARGS);
+extern Datum Geo_expand_spatial(PG_FUNCTION_ARGS);
+extern Datum Tpoint_expand_spatial(PG_FUNCTION_ARGS);
 
 /* Temporal comparisons */
 
-extern Datum teq_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum teq_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tne_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum tne_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Teq_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Teq_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Tne_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Tne_tpoint_geo(PG_FUNCTION_ARGS);
 
 /* Alias for the tpoint_trajectory function */
 
-extern Datum tpoint_values(PG_FUNCTION_ARGS);
+extern Datum Tpoint_values(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

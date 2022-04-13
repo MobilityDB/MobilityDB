@@ -104,7 +104,6 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_input_output
  * @brief Output a temporal point in Well-Known Text (WKT) format.
  */
 static char *
@@ -124,7 +123,8 @@ tpoint_as_text1(const Temporal *temp)
 }
 
 /**
- * Output a temporal point in Well-Known Text (WKT) format
+ * @ingroup libmeos_temporal_input_output
+ * @brief Output a temporal point in Well-Known Text (WKT) format
  */
 static text *
 tpoint_as_text(const Temporal *temp)
@@ -189,10 +189,29 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Output a geometry/geography array in Well-Known Text (WKT) format
+ */
+static text **
+geoarr_as_text(Datum *geoarr, int count, bool extended)
+{
+  text **result = palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    /* The wkt_out and ewkt_out functions do not use the first argument */
+    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) :
+      wkt_out(ANYOID, geoarr[i]);
+    result[i] = cstring_to_text(str);
+    pfree(str);
+  }
+  return result;
+}
+
+/**
  * Output a geometry/geography array in Well-Known Text (WKT) format
  */
 static Datum
-geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
+geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -204,15 +223,7 @@ geoarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   }
 
   Datum *geoarr = datumarr_extract(array, &count);
-  text **textarr = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-  {
-    /* The wkt_out and ewkt_out functions do not use the first argument */
-    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) :
-      wkt_out(ANYOID, geoarr[i]);
-    textarr[i] = cstring_to_text(str);
-    pfree(str);
-  }
+  text **textarr = geoarr_as_text(geoarr, count, extended);
   ArrayType *result = textarr_to_array(textarr, count);
   pfree_array((void **) textarr, count);
   pfree(geoarr);
@@ -227,7 +238,7 @@ PG_FUNCTION_INFO_V1(Geoarr_as_text);
 PGDLLEXPORT Datum
 Geoarr_as_text(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text1(fcinfo, false);
+  return geoarr_as_text_ext(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
@@ -238,7 +249,22 @@ PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
 PGDLLEXPORT Datum
 Geoarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return geoarr_as_text1(fcinfo, true);
+  return geoarr_as_text_ext(fcinfo, true);
+}
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Output a temporal point array in Well-Known Text (WKT) or
+ * Extended Well-Known Text (EWKT) format
+ */
+static text **
+tpointarr_as_text(Temporal **temparr, int count, bool extended)
+{
+  text **result = palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
+      tpoint_as_text(temparr[i]);
+  return result;
 }
 
 /**
@@ -246,7 +272,7 @@ Geoarr_as_ewkt(PG_FUNCTION_ARGS)
  * Extended Well-Known Text (EWKT) format
  */
 static Datum
-tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
+tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   /* Return NULL on empty array */
@@ -258,10 +284,7 @@ tpointarr_as_text1(FunctionCallInfo fcinfo, bool extended)
   }
 
   Temporal **temparr = temporalarr_extract(array, &count);
-  text **textarr = palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-    textarr[i] = extended ? tpoint_as_ewkt(temparr[i]) :
-      tpoint_as_text(temparr[i]);
+  text **textarr = tpointarr_as_text(temparr, count, extended);
   ArrayType *result = textarr_to_array(textarr, count);
 
   pfree_array((void **) textarr, count);
@@ -277,7 +300,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_text);
 PGDLLEXPORT Datum
 Tpointarr_as_text(PG_FUNCTION_ARGS)
 {
-  return tpointarr_as_text1(fcinfo, false);
+  return tpointarr_as_text_ext(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
@@ -288,7 +311,7 @@ PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
 PGDLLEXPORT Datum
 Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
 {
-  return tpointarr_as_text1(fcinfo, true);
+  return tpointarr_as_text_ext(fcinfo, true);
 }
 
 /*****************************************************************************
@@ -463,13 +486,13 @@ static size_t
 tpointinst_as_mfjson_size(const TInstant *inst, int precision,
   const STBOX *bbox, char *srs)
 {
-  size_t size = coordinates_mfjson_size(1,
-    MOBDB_FLAGS_GET_Z(inst->flags), precision);
+  bool hasz = MOBDB_FLAGS_GET_Z(inst->flags);
+  size_t size = coordinates_mfjson_size(1, hasz, precision);
   size += datetimes_mfjson_size(1);
   size += sizeof("{'type':'MovingPoint',");
   size += sizeof("'coordinates':,'datetimes':,'interpolations':['Discrete']}");
   if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(inst->flags), precision);
+  if (bbox) size += bbox_mfjson_size(hasz, precision);
   return size;
 }
 
@@ -483,8 +506,8 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
   char *ptr = output;
   ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
   if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox,
-    MOBDB_FLAGS_GET_Z(inst->flags), precision);
+  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(inst->flags),
+    precision);
   ptr += sprintf(ptr, "\"coordinates\":");
   ptr += coordinates_mfjson_buf(ptr, inst, precision);
   ptr += sprintf(ptr, ",\"datetimes\":");
@@ -494,7 +517,8 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
 }
 
 /**
- * Return the temporal instant point represented in MF-JSON format
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the temporal instant point represented in MF-JSON format
  */
 static char *
 tpointinst_as_mfjson(const TInstant *inst, int precision,
@@ -516,13 +540,13 @@ static size_t
 tpointinstset_as_mfjson_size(const TInstantSet *ti, int precision, const STBOX *bbox,
   char *srs)
 {
-  size_t size = coordinates_mfjson_size(ti->count,
-    MOBDB_FLAGS_GET_Z(ti->flags), precision);
+  bool hasz = MOBDB_FLAGS_GET_Z(ti->flags);
+  size_t size = coordinates_mfjson_size(ti->count, hasz, precision);
   size += datetimes_mfjson_size(ti->count);
   size += sizeof("{'type':'MovingPoint',");
   size += sizeof("'coordinates':[],'datetimes':[],'interpolations':['Discrete']}");
   if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(ti->flags), precision);
+  if (bbox) size += bbox_mfjson_size(hasz, precision);
   return size;
 }
 
@@ -536,7 +560,8 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
   char *ptr = output;
   ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
   if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags), precision);
+  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ti->flags),
+    precision);
   ptr += sprintf(ptr, "\"coordinates\":[");
   for (int i = 0; i < ti->count; i++)
   {
@@ -554,10 +579,12 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
 }
 
 /**
- * Return the temporal instant set point represented in MF-JSON format
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the temporal instant set point represented in MF-JSON format
  */
 static char *
-tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox, char *srs)
+tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox,
+  char *srs)
 {
   size_t size = tpointinstset_as_mfjson_size(ti, precision, bbox, srs);
   char *output = palloc(size);
@@ -575,14 +602,14 @@ static size_t
 tpointseq_as_mfjson_size(const TSequence *seq, int precision,
   const STBOX *bbox, char *srs)
 {
-  size_t size = coordinates_mfjson_size(seq->count,
-    MOBDB_FLAGS_GET_Z(seq->flags), precision);
+  bool hasz = MOBDB_FLAGS_GET_Z(seq->flags);
+  size_t size = coordinates_mfjson_size(seq->count, hasz, precision);
   size += datetimes_mfjson_size(seq->count);
   size += sizeof("{'type':'MovingPoint',");
   /* We reserve space for the largest strings, i.e., 'false' and "Stepwise" */
   size += sizeof("'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false,interpolations':['Stepwise']}");
   if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(seq->flags), precision);
+  if (bbox) size += bbox_mfjson_size(hasz, precision);
   return size;
 }
 
@@ -616,7 +643,8 @@ tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
 }
 
 /**
- * Return the temporal sequence point represented in MF-JSON format
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the temporal sequence point represented in MF-JSON format
  */
 static char *
 tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
@@ -638,14 +666,15 @@ static size_t
 tpointseqset_as_mfjson_size(const TSequenceSet *ts, int precision, const STBOX *bbox,
   char *srs)
 {
+  bool hasz = MOBDB_FLAGS_GET_Z(ts->flags);
   size_t size = sizeof("{'type':'MovingPoint','sequences':[],");
   size += sizeof("{'coordinates':[],'datetimes':[],'lower_inc':false,'upper_inc':false},") * ts->count;
-  size += coordinates_mfjson_size(ts->totalcount, MOBDB_FLAGS_GET_Z(ts->flags), precision);
+  size += coordinates_mfjson_size(ts->totalcount, hasz, precision);
   size += datetimes_mfjson_size(ts->totalcount);
   /* We reserve space for the largest interpolation string, i.e., "Stepwise" */
   size += sizeof(",interpolations':['Stepwise']}");
   if (srs) size += srs_mfjson_size(srs);
-  if (bbox) size += bbox_mfjson_size(MOBDB_FLAGS_GET_Z(ts->flags), precision);
+  if (bbox) size += bbox_mfjson_size(hasz, precision);
   return size;
 }
 
@@ -659,7 +688,8 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
   char *ptr = output;
   ptr += sprintf(ptr, "{\"type\":\"MovingPoint\",");
   if (srs) ptr += srs_mfjson_buf(ptr, srs);
-  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags), precision);
+  if (bbox) ptr += bbox_mfjson_buf(ptr, bbox, MOBDB_FLAGS_GET_Z(ts->flags),
+    precision);
   ptr += sprintf(ptr, "\"sequences\":[");
   for (int i = 0; i < ts->count; i++)
   {
@@ -686,7 +716,8 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
 }
 
 /**
- * Return the temporal sequence set point represented in MF-JSON format
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the temporal sequence set point represented in MF-JSON format
  */
 static char *
 tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
@@ -699,6 +730,35 @@ tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return the temporal point represented in MF-JSON format
+ */
+text *
+tpoint_as_mfjson(Temporal *temp, int precision, int has_bbox, char *srs)
+{
+  /* Get bounding box if needed */
+  STBOX *bbox = NULL, tmp;
+  if (has_bbox)
+  {
+    temporal_bbox(temp, &tmp);
+    bbox = &tmp;
+  }
+
+  char *mfjson;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    mfjson = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
+  else if (temp->subtype == INSTANTSET)
+    mfjson = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
+  else if (temp->subtype == SEQUENCE)
+    mfjson = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
+  else /* temp->subtype == SEQUENCESET */
+    mfjson = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
+  text *result = cstring_to_text(mfjson);
+  return result;
+}
 
 PG_FUNCTION_INFO_V1(Tpoint_as_mfjson);
 /**
@@ -756,25 +816,7 @@ Tpoint_as_mfjson(PG_FUNCTION_ARGS)
   if (option & 1)
     has_bbox = 1;
 
-  /* Get bounding box if needed */
-  STBOX *bbox = NULL, tmp;
-  if (has_bbox)
-  {
-    temporal_bbox(temp, &tmp);
-    bbox = &tmp;
-  }
-
-  char *mfjson;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    mfjson = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
-  else if (temp->subtype == INSTANTSET)
-    mfjson = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
-  else if (temp->subtype == SEQUENCE)
-    mfjson = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
-  else /* temp->subtype == SEQUENCESET */
-    mfjson = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
-  text *result = cstring_to_text(mfjson);
+  text *result = tpoint_as_mfjson(temp, precision, has_bbox, srs);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -1323,8 +1365,8 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
 }
 
 /**
- * Convert the temporal value to a char * in WKB format. Caller is responsible for freeing
- * the returned array.
+ * @ingroup libmeos_temporal_input_output
+ * @brief Convert the temporal value to a char * in WKB format.
  *
  * @param[in] temp Temporal value
  * @param[in] variant Unsigned bitmask value. Accepts one of: WKB_ISO, WKB_EXTENDED, WKB_SFSQL.
@@ -1333,7 +1375,8 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
  * @param[out] size_out If supplied, will return the size of the returned memory segment,
  * including the null terminator in the case of ASCII.
-*/
+ * @note Caller is responsible for freeing the returned array.
+ */
 static uint8_t *
 tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
@@ -1426,7 +1469,7 @@ ensure_valid_endian_flag(const char *endian)
  * Output the temporal point in WKB or EWKB format
  */
 Datum
-tpoint_as_binary1(FunctionCallInfo fcinfo, bool extended)
+tpoint_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   uint8_t *wkb;
@@ -1469,7 +1512,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_binary);
 PGDLLEXPORT Datum
 Tpoint_as_binary(PG_FUNCTION_ARGS)
 {
-  return tpoint_as_binary1(fcinfo, false);
+  return tpoint_as_binary_ext(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
@@ -1480,7 +1523,7 @@ PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
 PGDLLEXPORT Datum
 Tpoint_as_ewkb(PG_FUNCTION_ARGS)
 {
-  return tpoint_as_binary1(fcinfo, true);
+  return tpoint_as_binary_ext(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_as_hexewkb);

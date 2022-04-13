@@ -321,7 +321,7 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
  * @brief Set the precision of the fraction of the temporal network point to the
  * number of decimal places.
  */
-Temporal *
+static Temporal *
 tnpoint_round(Temporal *temp, Datum size)
 {
   /* We only need to fill these parameters for tfunc_temporal */
@@ -552,14 +552,29 @@ Tnpoint_positions(PG_FUNCTION_ARGS)
   int count;
   nsegment **segments = tnpoint_positions(temp, &count);
   ArrayType *result = nsegmentarr_to_array(segments, count);
-  for (int i = 0; i < count; i++)
-    pfree(segments[i]);
-  pfree(segments);
+  pfree_array((void **) segments, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the route of a temporal network point.
+ */
+static int64
+tnpoint_route(Temporal *temp)
+{
+  if (temp->subtype != INSTANT && temp->subtype != SEQUENCE)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Input must be a temporal instant or a temporal sequence")));
+
+  const TInstant *inst = (temp->subtype == INSTANT) ?
+    (TInstant *) temp : tsequence_inst_n((TSequence *) temp, 0);
+  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  return np->rid;
+}
 
 PG_FUNCTION_INFO_V1(Tnpoint_route);
 /**
@@ -569,20 +584,14 @@ PGDLLEXPORT Datum
 Tnpoint_route(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  if (temp->subtype != INSTANT && temp->subtype != SEQUENCE)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Input must be a temporal instant or a temporal sequence")));
-
-  const TInstant *inst = (temp->subtype == INSTANT) ?
-    (TInstant *) temp : tsequence_inst_n((TSequence *) temp, 0);
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
-  int64 result = np->rid;
+  int64 result = tnpoint_route(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT64(result);
 }
 
 /**
- * Return the array of routes of a temporal network point
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of routes of a temporal network point
  */
 static ArrayType *
 tnpointinst_routes(const TInstant *inst)
@@ -593,7 +602,8 @@ tnpointinst_routes(const TInstant *inst)
 }
 
 /**
- * Return the array of routes of a temporal network point
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of routes of a temporal network point
  */
 static ArrayType *
 tnpointinstset_routes(const TInstantSet *ti)
@@ -611,7 +621,8 @@ tnpointinstset_routes(const TInstantSet *ti)
 }
 
 /**
- * Return the array of routes of a temporal network point
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of routes of a temporal network point
  */
 static ArrayType *
 tnpointseq_routes(const TSequence *seq)
@@ -623,7 +634,8 @@ tnpointseq_routes(const TSequence *seq)
 }
 
 /**
- * Return the array of routes of a temporal network point
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of routes of a temporal network point
  */
 static ArrayType *
 tnpointseqset_routes(const TSequenceSet *ts)

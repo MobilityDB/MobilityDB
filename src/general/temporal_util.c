@@ -376,15 +376,16 @@ datum_gt(Datum l, Datum r, CachedType type)
   return datum_lt2(r, l, type, type);
 }
 
+#if 0 /* Not used */
 /**
  * Return true if the first value is greater than or equal to the second one
- * This function is currently not used
+ */
 bool
 datum_ge(Datum l, Datum r, CachedType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
 }
-*/
+#endif
 
 /*****************************************************************************/
 
@@ -1207,27 +1208,26 @@ timestamparr_sort(TimestampTz *times, int count)
     (qsort_comparator) &timestamp_sort_cmp);
 }
 
+#if 0 /* Not used */
 /**
  * Sort function for double2
- * This function is currently not used
+ */
 void
 double2arr_sort(double2 *doubles, int count)
 {
-  qsort(doubles, count, sizeof(double2),
-    (qsort_comparator) &double2_cmp);
+  qsort(doubles, count, sizeof(double2), (qsort_comparator) &double2_cmp);
 }
-*/
 
 /**
  * Sort function for double3
- * This function is currently not used
+ */
 void
 double3arr_sort(double3 *triples, int count)
 {
   qsort(triples, count, sizeof(double3),
     (qsort_comparator) &double3_cmp);
 }
-*/
+#endif
 
 /**
  * Sort function for periods

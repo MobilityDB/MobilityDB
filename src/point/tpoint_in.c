@@ -217,7 +217,8 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
 /*****************************************************************************/
 
 /**
- * Return a temporal instant point from its MF-JSON representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its MF-JSON representation.
  */
 static TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -284,7 +285,8 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * Return a temporal instant set point from its MF-JSON representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its MF-JSON representation.
  */
 static TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
@@ -296,7 +298,8 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 }
 
 /**
- * Return a temporal sequence point from its MF-JSON representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its MF-JSON representation.
  */
 static TSequence *
 tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -329,7 +332,8 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * Return a temporal sequence set point from its MF-JSON representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its MF-JSON representation.
  */
 static TSequenceSet *
 tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
@@ -360,7 +364,8 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
 }
 
 /**
- * Return a temporal point from its MF-JSON representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its MF-JSON representation
  */
 static Temporal *
 tpoint_from_mfjson(FunctionCallInfo fcinfo, text *mfjson_input,
@@ -874,7 +879,8 @@ tpoint_from_wkb_state(wkb_parse_state *s)
 }
 
 /**
- * Return a temporal point from its EWKB representation
+ * @ingroup libmeos_temporal_input_output
+ * @brief Return a temporal point from its EWKB representation.
  */
 static Temporal *
 tpoint_from_ewkb(uint8_t *wkb, int size)

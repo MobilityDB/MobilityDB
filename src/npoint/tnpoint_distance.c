@@ -143,7 +143,7 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
     return NULL;
 
@@ -183,8 +183,7 @@ Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * and the geometry
  */
 static TInstant *
-nai_tnpoint_geo(FunctionCallInfo fcinfo, Temporal *temp,
-  GSERIALIZED *gs)
+nai_tnpoint_geo(FunctionCallInfo fcinfo, Temporal *temp, GSERIALIZED *gs)
 {
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   TInstant *resultgeom = nai_tpoint_geo(fcinfo, tempgeom, gs);
@@ -242,8 +241,7 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
  * temporal network point.
  */
 static TInstant *
-nai_tnpoint_npoint(FunctionCallInfo fcinfo, Temporal *temp,
-  npoint *np)
+nai_tnpoint_npoint(FunctionCallInfo fcinfo, Temporal *temp, npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
@@ -507,7 +505,8 @@ Shortestline_tnpoint_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum traj = tnpoint_geom(temp);
-  Datum result = call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
+  Datum result = call_function2(LWGEOM_shortestline2d, traj,
+    PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -527,7 +526,8 @@ Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);
-  Datum result = call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
+  Datum result = call_function2(LWGEOM_shortestline2d, traj,
+    PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
   pfree(DatumGetPointer(geom));
@@ -549,7 +549,7 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal points do not intersect in time */
-  if (!intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
     &sync1, &sync2))
   {
     PG_FREE_IF_COPY(temp1, 0);
@@ -564,7 +564,7 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
   pfree(geomsync1); pfree(geomsync2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (!found)
+  if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }

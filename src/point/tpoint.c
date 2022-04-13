@@ -420,6 +420,18 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the bounding box of the temporal point value
+ */
+STBOX *
+tpoint_to_stbox(Temporal *temp)
+{
+  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
+  temporal_bbox(temp, result);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Tpoint_to_stbox);
 /**
  * Return the bounding box of the temporal point value
@@ -437,6 +449,22 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
  * Expand functions
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the bounding box of the temporal point value expanded on the
+ * spatial dimension
+ */
+STBOX *
+geo_expand_spatial(GSERIALIZED *gs, double d)
+{
+  if (gserialized_is_empty(gs))
+    return NULL;
+  STBOX box;
+  geo_stbox(gs, &box);
+  STBOX *result = stbox_expand_spatial(&box, d);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Geo_expand_spatial);
 /**
  * Return the bounding box of the temporal point value expanded on the
@@ -449,11 +477,26 @@ Geo_expand_spatial(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   double d = PG_GETARG_FLOAT8(1);
-  STBOX *box = (STBOX *) palloc(sizeof(STBOX));
-  geo_stbox(gs, box);
-  STBOX *result = stbox_expand_spatial(box, d);
+  STBOX *result = geo_expand_spatial(gs, d);
   PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
+}
+
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the bounding box of the temporal point value expanded on the
+ * spatial dimension
+ */
+static STBOX *
+tpoint_expand_spatial(Temporal *temp, double d)
+{
+  STBOX box;
+  temporal_bbox(temp, &box);
+  STBOX *result = stbox_expand_spatial(&box, d);
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_expand_spatial);
@@ -466,10 +509,10 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double d = PG_GETARG_FLOAT8(1);
-  STBOX *box = (STBOX *) palloc(sizeof(STBOX));
-  temporal_bbox(temp, box);
-  STBOX *result = stbox_expand_spatial(box, d);
+  STBOX *result = tpoint_expand_spatial(temp, d);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -478,24 +521,38 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return the temporal comparison of the base value and temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the temporal comparison of the base value and temporal value
+ */
+static Temporal *
+tcomp_tpoint_geo(Temporal *temp, GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
+{
+  if (gserialized_is_empty(gs))
+    return NULL;
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  CachedType basetype = temptype_basetype(temp->temptype);
+  Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs), basetype,
+    func, invert);
+  return result;
+}
+
+/**
+ * Return the temporal comparison of the temporal value and the base value
  */
 static Datum
-tcomp_geo_tpoint(FunctionCallInfo fcinfo,
+tcomp_geo_tpoint_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs),
-    basetype, func, true);
+  Temporal *result = tcomp_tpoint_geo(temp, gs, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -503,21 +560,16 @@ tcomp_geo_tpoint(FunctionCallInfo fcinfo,
  * Return the temporal comparison of the temporal value and the base value
  */
 static Datum
-tcomp_tpoint_geo(FunctionCallInfo fcinfo,
+tcomp_tpoint_geo_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType))
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  ensure_point_type(gs);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Temporal *result = tcomp_temporal_base(temp, PointerGetDatum(gs),
-    basetype, func, false);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = tcomp_tpoint_geo(temp, gs, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
@@ -530,7 +582,7 @@ PG_FUNCTION_INFO_V1(Teq_geo_tpoint);
 PGDLLEXPORT Datum
 Teq_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tcomp_geo_tpoint(fcinfo, &datum2_eq2);
+  return tcomp_geo_tpoint_ext(fcinfo, &datum2_eq2);
 }
 
 PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
@@ -540,7 +592,7 @@ PG_FUNCTION_INFO_V1(Teq_tpoint_geo);
 PGDLLEXPORT Datum
 Teq_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tcomp_tpoint_geo(fcinfo, &datum2_eq2);
+  return tcomp_tpoint_geo_ext(fcinfo, &datum2_eq2);
 }
 
 PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
@@ -550,7 +602,7 @@ PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
 PGDLLEXPORT Datum
 Tne_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tcomp_geo_tpoint(fcinfo, &datum2_ne2);
+  return tcomp_geo_tpoint_ext(fcinfo, &datum2_ne2);
 }
 
 PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
@@ -560,11 +612,11 @@ PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
 PGDLLEXPORT Datum
 Tne_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tcomp_tpoint_geo(fcinfo, &datum2_ne2);
+  return tcomp_tpoint_geo_ext(fcinfo, &datum2_ne2);
 }
 
 /*****************************************************************************
- * Assemble the Trajectory/values of a temporal point as a single
+ * Assemble the trajectory/values of a temporal point as a single
  * geometry/geography
  *****************************************************************************/
 

@@ -659,11 +659,14 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
   if (temp->subtype == INSTANT)
     result = (Temporal *) tfunc_tinstant_base((TInstant *) temp, value, lfinfo);
   else if (temp->subtype == INSTANTSET)
-    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp, value, lfinfo);
+    result = (Temporal *) tfunc_tinstantset_base((TInstantSet *) temp, value,
+      lfinfo);
   else if (temp->subtype == SEQUENCE)
-    result = (Temporal *) tfunc_tsequence_base((TSequence *) temp, value, lfinfo);
+    result = (Temporal *) tfunc_tsequence_base((TSequence *) temp, value,
+      lfinfo);
   else /* temp->subtype == SEQUENCESET */
-    result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value, lfinfo);
+    result = (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
+      lfinfo);
   return result;
 }
 

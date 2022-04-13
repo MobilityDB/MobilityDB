@@ -192,8 +192,8 @@ tpointseqarr_stbox(const TSequence **sequences, int count, STBOX *box)
 
 /*****************************************************************************
  * Boxes functions
- * These functions are currently not used but can be used for defining
- * VODKA indexes https://www.pgcon.org/2014/schedule/events/696.en.html
+ * These functions can be used for defining VODKA indexes
+ * https://www.pgcon.org/2014/schedule/events/696.en.html
  *****************************************************************************/
 
 /**
@@ -233,44 +233,42 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
 }
 
 /**
- * Return an array of spatiotemporal boxes from the segments of the
- * temporal sequence point value
+ * @ingroup libmeos_temporal_spatial
+ * @brief Return an array of spatiotemporal boxes from the segments of the
+ * temporal sequence point value.
  *
  * @param[in] seq Temporal value
  */
-static ArrayType *
-tpointseq_stboxes(const TSequence *seq)
+static STBOX *
+tpointseq_stboxes(const TSequence *seq, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
-  int count = seq->count - 1;
-  if (count == 0)
-    count = 1;
-  STBOX *boxes = palloc0(sizeof(STBOX) * count);
-  tpointseq_stboxes1(seq, boxes);
-  ArrayType *result = stboxarr_to_array(boxes, count);
-  pfree(boxes);
+  int newcount = seq->count == 1 ? 1 : seq->count - 1;
+  STBOX *result = palloc0(sizeof(STBOX) * newcount);
+  tpointseq_stboxes1(seq, result);
+  *count = newcount;
   return result;
 }
 
 /**
- * Return an array of spatiotemporal boxes from the segments of the
- * temporal sequence set point value
+ * @ingroup libmeos_temporal_spatial
+ * @brief Return an array of spatiotemporal boxes from the segments of the
+ * temporal sequence set point value.
  *
  * @param[in] ts Temporal value
  */
-static ArrayType *
-tpointseqset_stboxes(const TSequenceSet *ts)
+static STBOX *
+tpointseqset_stboxes(const TSequenceSet *ts, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
-  STBOX *boxes = palloc0(sizeof(STBOX) * ts->totalcount);
+  STBOX *result = palloc0(sizeof(STBOX) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tpointseq_stboxes1(seq, &boxes[k]);
+    k += tpointseq_stboxes1(seq, &result[k]);
   }
-  ArrayType *result = stboxarr_to_array(boxes, k);
-  pfree(boxes);
+  *count = k;
   return result;
 }
 
@@ -282,17 +280,18 @@ PGDLLEXPORT Datum
 Tpoint_stboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ArrayType *result = NULL;
+  STBOX *boxes;
   ensure_valid_tempsubtype(temp->subtype);
+  int count;
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
   else if (temp->subtype == SEQUENCE)
-    result = tpointseq_stboxes((TSequence *)temp);
+    boxes = tpointseq_stboxes((TSequence *)temp, &count);
   else /* temp->subtype == SEQUENCESET */
-    result = tpointseqset_stboxes((TSequenceSet *)temp);
+    boxes = tpointseqset_stboxes((TSequenceSet *)temp, &count);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
+  ArrayType *result = stboxarr_to_array(boxes, count);
+  pfree(boxes);
   PG_RETURN_POINTER(result);
 }
 
