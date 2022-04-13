@@ -60,12 +60,12 @@ extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
 
 /*****************************************************************************/
 
-extern Datum tpoint_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum tpoint_extent_combinefn(PG_FUNCTION_ARGS);
+extern Datum Tpoint_extent_transfn(PG_FUNCTION_ARGS);
+extern Datum Tpoint_extent_combinefn(PG_FUNCTION_ARGS);
 
-extern Datum tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
-extern Datum tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
-extern Datum tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
+extern Datum Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
+extern Datum Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
+extern Datum Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
 
 extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
 

@@ -49,25 +49,25 @@ SELECT geometry 'SRID=5676;Point empty' << tnpoint '{[NPoint(1,0.4)@2000-01-01, 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' << tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' << tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' << tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' << tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' << tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -288,7 +288,7 @@ SELECT tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0
 
 /* Errors */
 SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << geometry 'SRID=4326;Point(1 1)';
-ERROR:  The temporal network point and the geometry must be in the same SRID
+ERROR:  Operation on mixed SRID
 SELECT tnpoint 'NPoint(1,0.5)@2000-01-01' << stbox 'SRID=4326;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))';
 ERROR:  The temporal network point and the box must be in the same SRID
 SELECT geometry 'SRID=5676;Point(1 1)' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -342,25 +342,25 @@ SELECT geometry 'SRID=5676;Point empty' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' >> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' >> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' >> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' >> tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -630,25 +630,25 @@ SELECT geometry 'SRID=5676;Point empty' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &< tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &< tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &< tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' &< tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -918,25 +918,25 @@ SELECT geometry 'SRID=5676;Point empty' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' &> tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -1206,25 +1206,25 @@ SELECT geometry 'SRID=5676;Point empty' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01,
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' <<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' <<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' <<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' <<| tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -1494,25 +1494,25 @@ SELECT geometry 'SRID=5676;Point empty' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01,
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |>> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |>> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |>> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' |>> tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -1782,25 +1782,25 @@ SELECT geometry 'SRID=5676;Point empty' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01,
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &<| tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &<| tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' &<| tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' &<| tnpoint 'NPoint(1,0.5)@2000-01-01';
@@ -2070,25 +2070,25 @@ SELECT geometry 'SRID=5676;Point empty' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01,
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |&> tnpoint '{NPoint(1,0.5)@2000-01-01, NPoint(2,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |&> tnpoint '[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX T((1.0, 1.0,2000-01-01), (2.0, 2.0,2000-01-02))' |&> tnpoint '{[NPoint(1,0.4)@2000-01-01, NPoint(1,0.5)@2000-01-02, NPoint(1,0.7)@2000-01-03],[Npoint(3,0.5)@2000-01-04, NPoint(3,0.5)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT npoint 'NPoint(1,0.5)' |&> tnpoint 'NPoint(1,0.5)@2000-01-01';

@@ -425,7 +425,7 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
  * @brief Return the bounding box of the temporal point value
  */
 STBOX *
-tpoint_to_stbox(Temporal *temp)
+tpoint_stbox(Temporal *temp)
 {
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   temporal_bbox(temp, result);

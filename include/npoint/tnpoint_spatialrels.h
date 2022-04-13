@@ -42,28 +42,28 @@
 
 /*****************************************************************************/
 
-extern Datum contains_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Contains_geo_tnpoint(PG_FUNCTION_ARGS);
 
-extern Datum disjoint_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum disjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Disjoint_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Disjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Disjoint_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Disjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
 
-extern Datum intersects_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum intersects_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Intersects_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Intersects_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Intersects_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Intersects_tnpoint_npoint(PG_FUNCTION_ARGS);
 
-extern Datum touches_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum touches_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum touches_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum touches_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Touches_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Touches_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Touches_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Touches_tnpoint_npoint(PG_FUNCTION_ARGS);
 
-extern Datum dwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Dwithin_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Dwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Dwithin_tnpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Dwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

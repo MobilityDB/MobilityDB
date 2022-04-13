@@ -42,7 +42,7 @@
 
 /*****************************************************************************/
 
-extern Datum tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
+extern Datum Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

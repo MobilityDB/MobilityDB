@@ -64,7 +64,7 @@ PG_FUNCTION_INFO_V1(Left_geom_tpoint);
 PGDLLEXPORT Datum
 Left_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &left_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_geom_tpoint);
@@ -74,7 +74,7 @@ PG_FUNCTION_INFO_V1(Overleft_geom_tpoint);
 PGDLLEXPORT Datum
 Overleft_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &overleft_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_geom_tpoint);
@@ -84,7 +84,7 @@ PG_FUNCTION_INFO_V1(Right_geom_tpoint);
 PGDLLEXPORT Datum
 Right_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &right_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_geom_tpoint);
@@ -94,7 +94,7 @@ PG_FUNCTION_INFO_V1(Overright_geom_tpoint);
 PGDLLEXPORT Datum
 Overright_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &overright_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_geom_tpoint);
@@ -104,7 +104,7 @@ PG_FUNCTION_INFO_V1(Below_geom_tpoint);
 PGDLLEXPORT Datum
 Below_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &below_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_geom_tpoint);
@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Overbelow_geom_tpoint);
 PGDLLEXPORT Datum
 Overbelow_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &overbelow_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_geom_tpoint);
@@ -124,7 +124,7 @@ PG_FUNCTION_INFO_V1(Above_geom_tpoint);
 PGDLLEXPORT Datum
 Above_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &above_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_geom_tpoint);
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Overabove_geom_tpoint);
 PGDLLEXPORT Datum
 Overabove_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &overabove_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Front_geom_tpoint);
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Front_geom_tpoint);
 PGDLLEXPORT Datum
 Front_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &front_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &front_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overfront_geom_tpoint);
@@ -154,7 +154,7 @@ PG_FUNCTION_INFO_V1(Overfront_geom_tpoint);
 PGDLLEXPORT Datum
 Overfront_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &overfront_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &overfront_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Back_geom_tpoint);
@@ -164,7 +164,7 @@ PG_FUNCTION_INFO_V1(Back_geom_tpoint);
 PGDLLEXPORT Datum
 Back_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &back_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &back_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overback_geom_tpoint);
@@ -174,7 +174,7 @@ PG_FUNCTION_INFO_V1(Overback_geom_tpoint);
 PGDLLEXPORT Datum
 Overback_geom_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_geo_tpoint(fcinfo, &overback_stbox_stbox);
+  return boxop_geo_tpoint_ext(fcinfo, &overback_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -187,7 +187,7 @@ PG_FUNCTION_INFO_V1(Left_tpoint_geom);
 PGDLLEXPORT Datum
 Left_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &left_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tpoint_geom);
@@ -197,7 +197,7 @@ PG_FUNCTION_INFO_V1(Overleft_tpoint_geom);
 PGDLLEXPORT Datum
 Overleft_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &overleft_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tpoint_geom);
@@ -207,7 +207,7 @@ PG_FUNCTION_INFO_V1(Right_tpoint_geom);
 PGDLLEXPORT Datum
 Right_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &right_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tpoint_geom);
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(Overright_tpoint_geom);
 PGDLLEXPORT Datum
 Overright_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &overright_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tpoint_geom);
@@ -227,7 +227,7 @@ PG_FUNCTION_INFO_V1(Below_tpoint_geom);
 PGDLLEXPORT Datum
 Below_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &below_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tpoint_geom);
@@ -237,7 +237,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tpoint_geom);
 PGDLLEXPORT Datum
 Overbelow_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &overbelow_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tpoint_geom);
@@ -247,7 +247,7 @@ PG_FUNCTION_INFO_V1(Above_tpoint_geom);
 PGDLLEXPORT Datum
 Above_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &above_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tpoint_geom);
@@ -257,7 +257,7 @@ PG_FUNCTION_INFO_V1(Overabove_tpoint_geom);
 PGDLLEXPORT Datum
 Overabove_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &overabove_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Front_tpoint_geom);
@@ -267,7 +267,7 @@ PG_FUNCTION_INFO_V1(Front_tpoint_geom);
 PGDLLEXPORT Datum
 Front_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &front_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &front_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overfront_tpoint_geom);
@@ -277,7 +277,7 @@ PG_FUNCTION_INFO_V1(Overfront_tpoint_geom);
 PGDLLEXPORT Datum
 Overfront_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &overfront_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &overfront_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Back_tpoint_geom);
@@ -287,7 +287,7 @@ PG_FUNCTION_INFO_V1(Back_tpoint_geom);
 PGDLLEXPORT Datum
 Back_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &back_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &back_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overback_tpoint_geom);
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Overback_tpoint_geom);
 PGDLLEXPORT Datum
 Overback_tpoint_geom(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_geo(fcinfo, &overback_stbox_stbox);
+  return boxop_tpoint_geo_ext(fcinfo, &overback_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -310,7 +310,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_tpoint);
 PGDLLEXPORT Datum
 Left_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &left_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_stbox_tpoint);
@@ -320,7 +320,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_tpoint);
 PGDLLEXPORT Datum
 Overleft_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overleft_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_stbox_tpoint);
@@ -330,7 +330,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_tpoint);
 PGDLLEXPORT Datum
 Right_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &right_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_stbox_tpoint);
@@ -340,7 +340,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_tpoint);
 PGDLLEXPORT Datum
 Overright_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overright_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_stbox_tpoint);
@@ -350,7 +350,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_tpoint);
 PGDLLEXPORT Datum
 Below_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &below_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_stbox_tpoint);
@@ -360,7 +360,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_tpoint);
 PGDLLEXPORT Datum
 Overbelow_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overbelow_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_stbox_tpoint);
@@ -370,7 +370,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_tpoint);
 PGDLLEXPORT Datum
 Above_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &above_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_stbox_tpoint);
@@ -380,7 +380,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_tpoint);
 PGDLLEXPORT Datum
 Overabove_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overabove_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Front_stbox_tpoint);
@@ -390,7 +390,7 @@ PG_FUNCTION_INFO_V1(Front_stbox_tpoint);
 PGDLLEXPORT Datum
 Front_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &front_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &front_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overfront_stbox_tpoint);
@@ -400,7 +400,7 @@ PG_FUNCTION_INFO_V1(Overfront_stbox_tpoint);
 PGDLLEXPORT Datum
 Overfront_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overfront_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overfront_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Back_stbox_tpoint);
@@ -410,7 +410,7 @@ PG_FUNCTION_INFO_V1(Back_stbox_tpoint);
 PGDLLEXPORT Datum
 Back_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &back_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &back_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overback_stbox_tpoint);
@@ -420,7 +420,7 @@ PG_FUNCTION_INFO_V1(Overback_stbox_tpoint);
 PGDLLEXPORT Datum
 Overback_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overback_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overback_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Before_stbox_tpoint);
@@ -430,7 +430,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_tpoint);
 PGDLLEXPORT Datum
 Before_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &before_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &before_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_stbox_tpoint);
@@ -440,7 +440,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_tpoint);
 PGDLLEXPORT Datum
 Overbefore_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overbefore_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overbefore_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(After_stbox_tpoint);
@@ -450,7 +450,7 @@ PG_FUNCTION_INFO_V1(After_stbox_tpoint);
 PGDLLEXPORT Datum
 After_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &after_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &after_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overafter_stbox_tpoint);
@@ -460,7 +460,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_tpoint);
 PGDLLEXPORT Datum
 Overafter_stbox_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_stbox_tpoint(fcinfo, &overafter_stbox_stbox);
+  return boxop_stbox_tpoint_ext(fcinfo, &overafter_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -473,7 +473,7 @@ PG_FUNCTION_INFO_V1(Left_tpoint_stbox);
 PGDLLEXPORT Datum
 Left_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &left_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tpoint_stbox);
@@ -483,7 +483,7 @@ PG_FUNCTION_INFO_V1(Overleft_tpoint_stbox);
 PGDLLEXPORT Datum
 Overleft_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overleft_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tpoint_stbox);
@@ -493,7 +493,7 @@ PG_FUNCTION_INFO_V1(Right_tpoint_stbox);
 PGDLLEXPORT Datum
 Right_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &right_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tpoint_stbox);
@@ -503,7 +503,7 @@ PG_FUNCTION_INFO_V1(Overright_tpoint_stbox);
 PGDLLEXPORT Datum
 Overright_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overright_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tpoint_stbox);
@@ -513,7 +513,7 @@ PG_FUNCTION_INFO_V1(Below_tpoint_stbox);
 PGDLLEXPORT Datum
 Below_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &below_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tpoint_stbox);
@@ -523,7 +523,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tpoint_stbox);
 PGDLLEXPORT Datum
 Overbelow_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overbelow_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tpoint_stbox);
@@ -533,7 +533,7 @@ PG_FUNCTION_INFO_V1(Above_tpoint_stbox);
 PGDLLEXPORT Datum
 Above_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &above_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tpoint_stbox);
@@ -543,7 +543,7 @@ PG_FUNCTION_INFO_V1(Overabove_tpoint_stbox);
 PGDLLEXPORT Datum
 Overabove_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overabove_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Front_tpoint_stbox);
@@ -553,7 +553,7 @@ PG_FUNCTION_INFO_V1(Front_tpoint_stbox);
 PGDLLEXPORT Datum
 Front_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &front_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &front_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overfront_tpoint_stbox);
@@ -563,7 +563,7 @@ PG_FUNCTION_INFO_V1(Overfront_tpoint_stbox);
 PGDLLEXPORT Datum
 Overfront_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overfront_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overfront_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Back_tpoint_stbox);
@@ -573,7 +573,7 @@ PG_FUNCTION_INFO_V1(Back_tpoint_stbox);
 PGDLLEXPORT Datum
 Back_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &back_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &back_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overback_tpoint_stbox);
@@ -583,7 +583,7 @@ PG_FUNCTION_INFO_V1(Overback_tpoint_stbox);
 PGDLLEXPORT Datum
 Overback_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overback_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overback_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Before_tpoint_stbox);
@@ -593,7 +593,7 @@ PG_FUNCTION_INFO_V1(Before_tpoint_stbox);
 PGDLLEXPORT Datum
 Before_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &before_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &before_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_tpoint_stbox);
@@ -603,7 +603,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tpoint_stbox);
 PGDLLEXPORT Datum
 Overbefore_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overbefore_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overbefore_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(After_tpoint_stbox);
@@ -613,7 +613,7 @@ PG_FUNCTION_INFO_V1(After_tpoint_stbox);
 PGDLLEXPORT Datum
 After_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &after_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &after_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overafter_tpoint_stbox);
@@ -623,7 +623,7 @@ PG_FUNCTION_INFO_V1(Overafter_tpoint_stbox);
 PGDLLEXPORT Datum
 Overafter_tpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_stbox(fcinfo, &overafter_stbox_stbox);
+  return boxop_tpoint_stbox_ext(fcinfo, &overafter_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -636,7 +636,7 @@ PG_FUNCTION_INFO_V1(Left_tpoint_tpoint);
 PGDLLEXPORT Datum
 Left_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &left_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tpoint_tpoint);
@@ -646,7 +646,7 @@ PG_FUNCTION_INFO_V1(Overleft_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overleft_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overleft_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tpoint_tpoint);
@@ -656,7 +656,7 @@ PG_FUNCTION_INFO_V1(Right_tpoint_tpoint);
 PGDLLEXPORT Datum
 Right_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &right_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tpoint_tpoint);
@@ -666,7 +666,7 @@ PG_FUNCTION_INFO_V1(Overright_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overright_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overright_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tpoint_tpoint);
@@ -676,7 +676,7 @@ PG_FUNCTION_INFO_V1(Below_tpoint_tpoint);
 PGDLLEXPORT Datum
 Below_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &below_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tpoint_tpoint);
@@ -686,7 +686,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overbelow_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overbelow_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tpoint_tpoint);
@@ -696,7 +696,7 @@ PG_FUNCTION_INFO_V1(Above_tpoint_tpoint);
 PGDLLEXPORT Datum
 Above_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &above_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tpoint_tpoint);
@@ -706,7 +706,7 @@ PG_FUNCTION_INFO_V1(Overabove_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overabove_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overabove_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Front_tpoint_tpoint);
@@ -716,7 +716,7 @@ PG_FUNCTION_INFO_V1(Front_tpoint_tpoint);
 PGDLLEXPORT Datum
 Front_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &front_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &front_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overfront_tpoint_tpoint);
@@ -726,7 +726,7 @@ PG_FUNCTION_INFO_V1(Overfront_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overfront_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overfront_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overfront_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Back_tpoint_tpoint);
@@ -736,7 +736,7 @@ PG_FUNCTION_INFO_V1(Back_tpoint_tpoint);
 PGDLLEXPORT Datum
 Back_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &back_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &back_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overback_tpoint_tpoint);
@@ -746,7 +746,7 @@ PG_FUNCTION_INFO_V1(Overback_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overback_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overback_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overback_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Before_tpoint_tpoint);
@@ -756,7 +756,7 @@ PG_FUNCTION_INFO_V1(Before_tpoint_tpoint);
 PGDLLEXPORT Datum
 Before_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &before_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &before_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_tpoint_tpoint);
@@ -766,7 +766,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overbefore_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overbefore_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overbefore_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(After_tpoint_tpoint);
@@ -776,7 +776,7 @@ PG_FUNCTION_INFO_V1(After_tpoint_tpoint);
 PGDLLEXPORT Datum
 After_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &after_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &after_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overafter_tpoint_tpoint);
@@ -786,7 +786,7 @@ PG_FUNCTION_INFO_V1(Overafter_tpoint_tpoint);
 PGDLLEXPORT Datum
 Overafter_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return boxop_tpoint_tpoint(fcinfo, &overafter_stbox_stbox);
+  return boxop_tpoint_tpoint_ext(fcinfo, &overafter_stbox_stbox);
 }
 
 /*****************************************************************************/

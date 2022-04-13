@@ -57,7 +57,7 @@ typedef struct
   uint8_t expand_arg;   /* Radius argument for "within distance" search */
 } IndexableFunction;
 
-extern Datum time_supportfn(PG_FUNCTION_ARGS);
+extern Datum Time_supportfn(PG_FUNCTION_ARGS);
 
 extern Oid opFamilyAmOid(Oid opfamilyoid);
 extern bool func_needs_index(Oid funcid, const IndexableFunction *idxfn,

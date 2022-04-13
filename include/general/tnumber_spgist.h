@@ -45,12 +45,12 @@
 
 /*****************************************************************************/
 
-extern Datum sptbox_gist_config(PG_FUNCTION_ARGS);
-extern Datum sptbox_gist_choose(PG_FUNCTION_ARGS);
-extern Datum sptbox_gist_picksplit(PG_FUNCTION_ARGS);
-extern Datum sptbox_gist_inner_consistent(PG_FUNCTION_ARGS);
-extern Datum sptbox_gist_leaf_consistent(PG_FUNCTION_ARGS);
-extern Datum tnumber_spgist_compress(PG_FUNCTION_ARGS);
+extern Datum Tbox_spgist_config(PG_FUNCTION_ARGS);
+extern Datum Tbox_spgist_choose(PG_FUNCTION_ARGS);
+extern Datum Tbox_spgist_picksplit(PG_FUNCTION_ARGS);
+extern Datum Tbox_spgist_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum Tnumber_spgist_compress(PG_FUNCTION_ARGS);
 
 /* The following functions are also called by tpoint_spgist.c */
 extern int compareDoubles(const void *a, const void *b);

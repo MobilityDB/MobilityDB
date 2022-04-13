@@ -62,28 +62,48 @@
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_spatial
+ * @brief Generic box function for a temporal network point and a geometry.
+ *
+ * @param[in] temp Temporal network point
+ * @param[in] gs Geometry
+ * @param[in] func Function
+ * @param[in] invert True when the geometry is the first argument of the
+ * function
+ */
+static int
+posop_tnpoint_geom(Temporal *temp, GSERIALIZED *gs,
+  bool (*func)(const STBOX *, const STBOX *), bool invert)
+{
+  if (gserialized_is_empty(gs))
+    return -1;
+  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_has_not_Z_gs(gs);
+  STBOX box1, box2;
+  geo_stbox(gs, &box2);
+  temporal_bbox(temp, &box1);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return(result ? 1 : 0);
+}
+
+/**
  * Generic box function for a geometry and a temporal network point
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
  */
 static Datum
-posop_geom_tnpoint(FunctionCallInfo fcinfo,
+posop_geom_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_has_not_Z_gs(gs);
-  STBOX box1, box2;
-  geo_stbox(gs, &box1);
-  temporal_bbox(temp, &box2);
-  bool result = func(&box1, &box2);
+  int result = posop_tnpoint_geom(temp, gs, func, true);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_BOOL(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
 }
 
 /**
@@ -93,22 +113,46 @@ posop_geom_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_tnpoint_geom(FunctionCallInfo fcinfo,
+posop_tnpoint_geom_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_has_not_Z_gs(gs);
-  STBOX box1, box2;
-  geo_stbox(gs, &box2);
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, &box2);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  int result = posop_tnpoint_geom(temp, gs, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_BOOL(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_spatial
+ * @brief Generic box function for a temporal network point and an stbox.
+ *
+ * @param[in] temp Temporal network point
+ * @param[in] box Bounding box
+ * @param[in] func Function
+ * @param[in] spatial True when the function considers the spatial dimension,
+ * false when it considers the temporal dimension
+ * @param[in] invert True when the bounding box is the first argument of the
+ * function
+ */
+static int
+posop_tnpoint_stbox(Temporal *temp, STBOX *box,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial, bool invert)
+{
+  if ((spatial && ! MOBDB_FLAGS_GET_X(box->flags)) ||
+     (! spatial && ! MOBDB_FLAGS_GET_T(box->flags)))
+    return -1;
+  ensure_not_geodetic(box->flags);
+  ensure_same_srid_tnpoint_stbox(temp, box);
+  STBOX box1;
+  temporal_bbox(temp, &box1);
+  bool result = invert ? func(box, &box1) : func(&box1, box);
+  return result ? 1 : 0;
 }
 
 /**
@@ -118,46 +162,16 @@ posop_tnpoint_geom(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_stbox_tnpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  if (! MOBDB_FLAGS_GET_X(box->flags))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  ensure_not_geodetic(box->flags);
-  ensure_same_srid_tnpoint_stbox(temp, box);
-  STBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, box);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * Generic temporal box function for an stbox and a temporal network point
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-static Datum
-tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+posop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial)
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  bool result = false;
-  if (hast)
-  {
-    STBOX box1;
-    temporal_bbox(temp, &box1);
-    result = func(box, &box1);
-  }
+  int result = posop_tnpoint_stbox(temp, box, func, spatial, true);
   PG_FREE_IF_COPY(temp, 1);
-  if (!hast)
+  if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
+  PG_RETURN_BOOL(result ? true : false);
 }
 
 /**
@@ -167,46 +181,41 @@ tposop_stbox_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_tnpoint_stbox(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial)
 {
-  STBOX *box = PG_GETARG_STBOX_P(1);
-  if (! MOBDB_FLAGS_GET_X(box->flags))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_not_geodetic(box->flags);
-  ensure_same_srid_tnpoint_stbox(temp, box);
-  STBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, box);
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  int result = posop_tnpoint_stbox(temp, box, func, spatial, false);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BOOL(result);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result ? true : false);
 }
 
+/*****************************************************************************/
+
 /**
- * Generic temporal box function for a temporal network point and an stbox
+ * @ingroup libmeos_temporal_spatial
+ * @brief Generic box function for a temporal network point and a network point.
  *
- * @param[in] fcinfo Catalog information about the external function
+ * @param[in] temp Temporal network point
+ * @param[in] np network point
  * @param[in] func Function
+ * @param[in] invert True when the network point is the first argument of the
+ * function
  */
-static Datum
-tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *))
+static bool
+posop_tnpoint_npoint(Temporal *temp, npoint *np,
+  bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
-  bool hast = MOBDB_FLAGS_GET_T(box->flags);
-  bool result = false;
-  if (hast)
-  {
-    STBOX box1;
-    temporal_bbox(temp, &box1);
-    result = func(&box1, box);
-  }
-  PG_FREE_IF_COPY(temp, 0);
-  if (!hast)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
+  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
+  STBOX box1, box2;
+  /* Return an error if the geometry is not found, is null, or is empty */
+  npoint_stbox(np, &box2);
+  temporal_bbox(temp, &box1);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return result;
 }
 
 /**
@@ -216,17 +225,12 @@ tposop_tnpoint_stbox(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_npoint_tnpoint(FunctionCallInfo fcinfo,
+posop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
-  STBOX box1, box2;
-  /* Return an error if the geometry is not found, is null, or is empty */
-  npoint_stbox(np, &box1);
-  temporal_bbox(temp, &box2);
-  bool result = func(&box1, &box2);
+  bool result = posop_tnpoint_npoint(temp, np, func, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -238,19 +242,35 @@ posop_npoint_tnpoint(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_tnpoint_npoint(FunctionCallInfo fcinfo,
+posop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
-  STBOX box1, box2;
-  /* Return an error if the geometry is not found, is null, or is empty */
-  npoint_stbox(np, &box2);
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, &box2);
+  bool result = posop_tnpoint_npoint(temp, np, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_spatial
+ * @brief Generic box function for two temporal network points
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Function
+ */
+static bool
+posop_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2,
+  bool (*func)(const STBOX *, const STBOX *))
+{
+  ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
+  STBOX box1, box2;
+  temporal_bbox(temp1, &box1);
+  temporal_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
+  return result;
 }
 
 /**
@@ -260,16 +280,12 @@ posop_tnpoint_npoint(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
+posop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));
-  STBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
+  bool result = posop_tnpoint_tnpoint(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);
@@ -285,7 +301,7 @@ PG_FUNCTION_INFO_V1(Left_geom_tnpoint);
 PGDLLEXPORT Datum
 Left_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &left_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_geom_tnpoint);
@@ -295,7 +311,7 @@ PG_FUNCTION_INFO_V1(Overleft_geom_tnpoint);
 PGDLLEXPORT Datum
 Overleft_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &overleft_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_geom_tnpoint);
@@ -305,7 +321,7 @@ PG_FUNCTION_INFO_V1(Right_geom_tnpoint);
 PGDLLEXPORT Datum
 Right_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &right_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_geom_tnpoint);
@@ -315,7 +331,7 @@ PG_FUNCTION_INFO_V1(Overright_geom_tnpoint);
 PGDLLEXPORT Datum
 Overright_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &overright_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_geom_tnpoint);
@@ -325,7 +341,7 @@ PG_FUNCTION_INFO_V1(Below_geom_tnpoint);
 PGDLLEXPORT Datum
 Below_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &below_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_geom_tnpoint);
@@ -335,7 +351,7 @@ PG_FUNCTION_INFO_V1(Overbelow_geom_tnpoint);
 PGDLLEXPORT Datum
 Overbelow_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &overbelow_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_geom_tnpoint);
@@ -345,7 +361,7 @@ PG_FUNCTION_INFO_V1(Above_geom_tnpoint);
 PGDLLEXPORT Datum
 Above_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &above_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_geom_tnpoint);
@@ -355,7 +371,7 @@ PG_FUNCTION_INFO_V1(Overabove_geom_tnpoint);
 PGDLLEXPORT Datum
 Overabove_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint(fcinfo, &overabove_stbox_stbox);
+  return posop_geom_tnpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -368,7 +384,7 @@ PG_FUNCTION_INFO_V1(Left_tnpoint_geom);
 PGDLLEXPORT Datum
 Left_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &left_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_geom);
@@ -378,7 +394,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnpoint_geom);
 PGDLLEXPORT Datum
 Overleft_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &overleft_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_geom);
@@ -388,7 +404,7 @@ PG_FUNCTION_INFO_V1(Right_tnpoint_geom);
 PGDLLEXPORT Datum
 Right_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &right_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_geom);
@@ -398,7 +414,7 @@ PG_FUNCTION_INFO_V1(Overright_tnpoint_geom);
 PGDLLEXPORT Datum
 Overright_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &overright_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_geom);
@@ -408,7 +424,7 @@ PG_FUNCTION_INFO_V1(Below_tnpoint_geom);
 PGDLLEXPORT Datum
 Below_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &below_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_geom);
@@ -418,7 +434,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tnpoint_geom);
 PGDLLEXPORT Datum
 Overbelow_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &overbelow_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_geom);
@@ -428,7 +444,7 @@ PG_FUNCTION_INFO_V1(Above_tnpoint_geom);
 PGDLLEXPORT Datum
 Above_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &above_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_geom);
@@ -438,7 +454,7 @@ PG_FUNCTION_INFO_V1(Overabove_tnpoint_geom);
 PGDLLEXPORT Datum
 Overabove_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom(fcinfo, &overabove_stbox_stbox);
+  return posop_tnpoint_geom_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -451,7 +467,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_tnpoint);
 PGDLLEXPORT Datum
 Left_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &left_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &left_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_stbox_tnpoint);
@@ -461,7 +477,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_tnpoint);
 PGDLLEXPORT Datum
 Overleft_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &overleft_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &overleft_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Right_stbox_tnpoint);
@@ -471,7 +487,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_tnpoint);
 PGDLLEXPORT Datum
 Right_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &right_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &right_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overright_stbox_tnpoint);
@@ -481,7 +497,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_tnpoint);
 PGDLLEXPORT Datum
 Overright_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &overright_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &overright_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Below_stbox_tnpoint);
@@ -491,7 +507,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_tnpoint);
 PGDLLEXPORT Datum
 Below_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &below_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &below_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_stbox_tnpoint);
@@ -501,7 +517,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_tnpoint);
 PGDLLEXPORT Datum
 Overbelow_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &overbelow_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &overbelow_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Above_stbox_tnpoint);
@@ -511,7 +527,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_tnpoint);
 PGDLLEXPORT Datum
 Above_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &above_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &above_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_stbox_tnpoint);
@@ -521,7 +537,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_tnpoint);
 PGDLLEXPORT Datum
 Overabove_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_stbox_tnpoint(fcinfo, &overabove_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &overabove_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Before_stbox_tnpoint);
@@ -531,7 +547,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_tnpoint);
 PGDLLEXPORT Datum
 Before_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return tposop_stbox_tnpoint(fcinfo, &before_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &before_stbox_stbox, false);
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_stbox_tnpoint);
@@ -541,7 +557,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_tnpoint);
 PGDLLEXPORT Datum
 Overbefore_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return tposop_stbox_tnpoint(fcinfo, &overbefore_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &overbefore_stbox_stbox, false);
 }
 
 PG_FUNCTION_INFO_V1(After_stbox_tnpoint);
@@ -551,7 +567,7 @@ PG_FUNCTION_INFO_V1(After_stbox_tnpoint);
 PGDLLEXPORT Datum
 After_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return tposop_stbox_tnpoint(fcinfo, &after_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &after_stbox_stbox, false);
 }
 
 PG_FUNCTION_INFO_V1(Overafter_stbox_tnpoint);
@@ -561,7 +577,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_tnpoint);
 PGDLLEXPORT Datum
 Overafter_stbox_tnpoint(PG_FUNCTION_ARGS)
 {
-  return tposop_stbox_tnpoint(fcinfo, &overafter_stbox_stbox);
+  return posop_stbox_tnpoint_ext(fcinfo, &overafter_stbox_stbox, false);
 }
 
 /*****************************************************************************/
@@ -574,7 +590,7 @@ PG_FUNCTION_INFO_V1(Left_tnpoint_stbox);
 PGDLLEXPORT Datum
 Left_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &left_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &left_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_stbox);
@@ -584,7 +600,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnpoint_stbox);
 PGDLLEXPORT Datum
 Overleft_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &overleft_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &overleft_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_stbox);
@@ -594,7 +610,7 @@ PG_FUNCTION_INFO_V1(Right_tnpoint_stbox);
 PGDLLEXPORT Datum
 Right_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &right_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &right_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_stbox);
@@ -604,7 +620,7 @@ PG_FUNCTION_INFO_V1(Overright_tnpoint_stbox);
 PGDLLEXPORT Datum
 Overright_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &overright_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &overright_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_stbox);
@@ -614,7 +630,7 @@ PG_FUNCTION_INFO_V1(Below_tnpoint_stbox);
 PGDLLEXPORT Datum
 Below_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &below_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &below_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_stbox);
@@ -624,7 +640,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tnpoint_stbox);
 PGDLLEXPORT Datum
 Overbelow_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &overbelow_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &overbelow_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_stbox);
@@ -634,7 +650,7 @@ PG_FUNCTION_INFO_V1(Above_tnpoint_stbox);
 PGDLLEXPORT Datum
 Above_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &above_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &above_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_stbox);
@@ -644,7 +660,7 @@ PG_FUNCTION_INFO_V1(Overabove_tnpoint_stbox);
 PGDLLEXPORT Datum
 Overabove_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_stbox(fcinfo, &overabove_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &overabove_stbox_stbox, true);
 }
 
 PG_FUNCTION_INFO_V1(Before_tnpoint_stbox);
@@ -654,7 +670,7 @@ PG_FUNCTION_INFO_V1(Before_tnpoint_stbox);
 PGDLLEXPORT Datum
 Before_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return tposop_tnpoint_stbox(fcinfo, &before_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &before_stbox_stbox, false);
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_tnpoint_stbox);
@@ -664,7 +680,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tnpoint_stbox);
 PGDLLEXPORT Datum
 Overbefore_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return tposop_tnpoint_stbox(fcinfo, &overbefore_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &overbefore_stbox_stbox, false);
 }
 
 PG_FUNCTION_INFO_V1(After_tnpoint_stbox);
@@ -674,7 +690,7 @@ PG_FUNCTION_INFO_V1(After_tnpoint_stbox);
 PGDLLEXPORT Datum
 After_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return tposop_tnpoint_stbox(fcinfo, &after_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &after_stbox_stbox, false);
 }
 
 PG_FUNCTION_INFO_V1(Overafter_tnpoint_stbox);
@@ -684,7 +700,7 @@ PG_FUNCTION_INFO_V1(Overafter_tnpoint_stbox);
 PGDLLEXPORT Datum
 Overafter_tnpoint_stbox(PG_FUNCTION_ARGS)
 {
-  return tposop_tnpoint_stbox(fcinfo, &overafter_stbox_stbox);
+  return posop_tnpoint_stbox_ext(fcinfo, &overafter_stbox_stbox, false);
 }
 
 /*****************************************************************************/
@@ -697,7 +713,7 @@ PG_FUNCTION_INFO_V1(Left_npoint_tnpoint);
 PGDLLEXPORT Datum
 Left_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &left_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_npoint_tnpoint);
@@ -707,7 +723,7 @@ PG_FUNCTION_INFO_V1(Overleft_npoint_tnpoint);
 PGDLLEXPORT Datum
 Overleft_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &overleft_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_npoint_tnpoint);
@@ -717,7 +733,7 @@ PG_FUNCTION_INFO_V1(Right_npoint_tnpoint);
 PGDLLEXPORT Datum
 Right_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &right_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_npoint_tnpoint);
@@ -727,7 +743,7 @@ PG_FUNCTION_INFO_V1(Overright_npoint_tnpoint);
 PGDLLEXPORT Datum
 Overright_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &overright_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_npoint_tnpoint);
@@ -737,7 +753,7 @@ PG_FUNCTION_INFO_V1(Below_npoint_tnpoint);
 PGDLLEXPORT Datum
 Below_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &below_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_npoint_tnpoint);
@@ -747,7 +763,7 @@ PG_FUNCTION_INFO_V1(Overbelow_npoint_tnpoint);
 PGDLLEXPORT Datum
 Overbelow_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &overbelow_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_npoint_tnpoint);
@@ -757,7 +773,7 @@ PG_FUNCTION_INFO_V1(Above_npoint_tnpoint);
 PGDLLEXPORT Datum
 Above_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &above_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_npoint_tnpoint);
@@ -767,7 +783,7 @@ PG_FUNCTION_INFO_V1(Overabove_npoint_tnpoint);
 PGDLLEXPORT Datum
 Overabove_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_npoint_tnpoint(fcinfo, &overabove_stbox_stbox);
+  return posop_npoint_tnpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -780,7 +796,7 @@ PG_FUNCTION_INFO_V1(Left_tnpoint_npoint);
 PGDLLEXPORT Datum
 Left_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &left_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_npoint);
@@ -790,7 +806,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnpoint_npoint);
 PGDLLEXPORT Datum
 Overleft_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &overleft_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_npoint);
@@ -800,7 +816,7 @@ PG_FUNCTION_INFO_V1(Right_tnpoint_npoint);
 PGDLLEXPORT Datum
 Right_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &right_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_npoint);
@@ -810,7 +826,7 @@ PG_FUNCTION_INFO_V1(Overright_tnpoint_npoint);
 PGDLLEXPORT Datum
 Overright_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &overright_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_npoint);
@@ -820,7 +836,7 @@ PG_FUNCTION_INFO_V1(Below_tnpoint_npoint);
 PGDLLEXPORT Datum
 Below_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &below_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_npoint);
@@ -830,7 +846,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tnpoint_npoint);
 PGDLLEXPORT Datum
 Overbelow_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &overbelow_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_npoint);
@@ -840,7 +856,7 @@ PG_FUNCTION_INFO_V1(Above_tnpoint_npoint);
 PGDLLEXPORT Datum
 Above_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &above_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_npoint);
@@ -850,7 +866,7 @@ PG_FUNCTION_INFO_V1(Overabove_tnpoint_npoint);
 PGDLLEXPORT Datum
 Overabove_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_npoint(fcinfo, &overabove_stbox_stbox);
+  return posop_tnpoint_npoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -863,7 +879,7 @@ PG_FUNCTION_INFO_V1(Left_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Left_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &left_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_tnpoint);
@@ -873,7 +889,7 @@ PG_FUNCTION_INFO_V1(Overleft_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Overleft_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &overleft_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_tnpoint);
@@ -883,7 +899,7 @@ PG_FUNCTION_INFO_V1(Right_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Right_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &right_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_tnpoint);
@@ -893,7 +909,7 @@ PG_FUNCTION_INFO_V1(Overright_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Overright_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &overright_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_tnpoint);
@@ -903,7 +919,7 @@ PG_FUNCTION_INFO_V1(Below_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Below_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &below_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_tnpoint);
@@ -913,7 +929,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Overbelow_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &overbelow_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_tnpoint);
@@ -923,7 +939,7 @@ PG_FUNCTION_INFO_V1(Above_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Above_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &above_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_tnpoint);
@@ -933,7 +949,7 @@ PG_FUNCTION_INFO_V1(Overabove_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Overabove_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &overabove_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Before_tnpoint_tnpoint);
@@ -943,7 +959,7 @@ PG_FUNCTION_INFO_V1(Before_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Before_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &before_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &before_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbefore_tnpoint_tnpoint);
@@ -953,7 +969,7 @@ PG_FUNCTION_INFO_V1(Overbefore_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Overbefore_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &overbefore_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &overbefore_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(After_tnpoint_tnpoint);
@@ -963,7 +979,7 @@ PG_FUNCTION_INFO_V1(After_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 After_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &after_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &after_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overafter_tnpoint_tnpoint);
@@ -973,7 +989,7 @@ PG_FUNCTION_INFO_V1(Overafter_tnpoint_tnpoint);
 PGDLLEXPORT Datum
 Overafter_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_tnpoint(fcinfo, &overafter_stbox_stbox);
+  return posop_tnpoint_tnpoint_ext(fcinfo, &overafter_stbox_stbox);
 }
 
 /*****************************************************************************/

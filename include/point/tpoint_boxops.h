@@ -58,52 +58,52 @@ extern void tpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
 
 /* Boxes functions */
 
-extern Datum tpoint_stboxes(PG_FUNCTION_ARGS);
+extern Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
 
 /* Generic box functions */
 
-extern Datum boxop_geo_tpoint(FunctionCallInfo fcinfo,
+extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_geo(FunctionCallInfo fcinfo,
+extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_stbox_tpoint(FunctionCallInfo fcinfo,
+extern Datum boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_stbox(FunctionCallInfo fcinfo,
+extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_tpoint(FunctionCallInfo fcinfo,
+extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *));
 
 /*****************************************************************************/
 
-extern Datum overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

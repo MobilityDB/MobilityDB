@@ -121,8 +121,8 @@ extern void tsequenceset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc
 
 /*****************************************************************************/
 
-extern Datum temporal_analyze(PG_FUNCTION_ARGS);
-extern Datum tnumber_analyze(PG_FUNCTION_ARGS);
+extern Datum Temporal_analyze(PG_FUNCTION_ARGS);
+extern Datum Tnumber_analyze(PG_FUNCTION_ARGS);
 
 extern Datum generic_analyze(FunctionCallInfo fcinfo,
   void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));

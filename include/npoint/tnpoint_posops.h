@@ -42,22 +42,22 @@
 
 /*****************************************************************************/
 
-extern Datum left_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overleft_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum right_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overright_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum below_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overbelow_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum above_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overabove_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum left_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overleft_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum right_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overright_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum below_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overbelow_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum above_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overabove_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Left_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Overleft_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Right_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Overright_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Below_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Overbelow_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Above_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Overabove_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Left_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Overleft_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Right_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Overright_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Below_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Overbelow_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Above_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Overabove_tnpoint_npoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

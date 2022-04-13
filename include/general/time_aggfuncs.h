@@ -51,14 +51,14 @@ extern Period **period_agg(Period **periods1, int count1, Period **periods2,
   int count2, int *newcount);
 
 
-extern Datum timestampset_tunion_transfn(PG_FUNCTION_ARGS);
-extern Datum period_tunion_transfn(PG_FUNCTION_ARGS);
-extern Datum periodset_tunion_transfn(PG_FUNCTION_ARGS);
+extern Datum Timestampset_tunion_transfn(PG_FUNCTION_ARGS);
+extern Datum Period_tunion_transfn(PG_FUNCTION_ARGS);
+extern Datum Periodset_tunion_transfn(PG_FUNCTION_ARGS);
 
-extern Datum time_tunion_combinefn(PG_FUNCTION_ARGS);
+extern Datum Time_tunion_combinefn(PG_FUNCTION_ARGS);
 
-extern Datum timestamp_tunion_finalfn(PG_FUNCTION_ARGS);
-extern Datum period_tunion_finalfn(PG_FUNCTION_ARGS);
+extern Datum Timestamp_tunion_finalfn(PG_FUNCTION_ARGS);
+extern Datum Period_tunion_finalfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

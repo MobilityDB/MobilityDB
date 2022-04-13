@@ -58,21 +58,24 @@ typedef enum
 
 extern Datum datum_round_float(Datum value, Datum prec);
 
-extern Datum add_base_temporal(PG_FUNCTION_ARGS);
-extern Datum add_temporal_base(PG_FUNCTION_ARGS);
-extern Datum add_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum Add_base_tnumber(PG_FUNCTION_ARGS);
+extern Datum Add_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Add_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum sub_base_temporal(PG_FUNCTION_ARGS);
-extern Datum sub_temporal_base(PG_FUNCTION_ARGS);
-extern Datum sub_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum Sub_base_tnumber(PG_FUNCTION_ARGS);
+extern Datum Sub_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Sub_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum mult_base_temporal(PG_FUNCTION_ARGS);
-extern Datum mult_temporal_base(PG_FUNCTION_ARGS);
-extern Datum mult_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum Mult_base_tnumber(PG_FUNCTION_ARGS);
+extern Datum Mult_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Mult_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum div_base_temporal(PG_FUNCTION_ARGS);
-extern Datum div_temporal_base(PG_FUNCTION_ARGS);
-extern Datum div_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum Div_base_tnumber(PG_FUNCTION_ARGS);
+extern Datum Div_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
+
+extern Datum Tnumber_round(PG_FUNCTION_ARGS);
+extern Datum Tnumber_derivative(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
