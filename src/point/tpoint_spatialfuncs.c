@@ -4516,6 +4516,7 @@ tpointseq_make_simple(const TSequence *seq, int *count)
  * @brief Split a temporal point into an array of non self-intersecting pieces.
  *
  * @param[in] ts Temporal point
+ * @param[out] count Number of elements in the output array
  */
 static TSequence **
 tpointseqset_make_simple(const TSequenceSet *ts, int *count)

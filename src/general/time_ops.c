@@ -3033,7 +3033,7 @@ Union_timestampset_period(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  PeriodSet *ps = timestampset_to_periodset(ts);
+  PeriodSet *ps = timestampset_periodset(ts);
   PeriodSet *result = union_period_periodset(p, ps);
   pfree(ps);
   PG_FREE_IF_COPY(ts, 0);
@@ -3049,7 +3049,7 @@ Union_timestampset_periodset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *ps1 = timestampset_to_periodset(ts);
+  PeriodSet *ps1 = timestampset_periodset(ts);
   PeriodSet *result = union_periodset_periodset(ps, ps1);
   pfree(ps1);
   PG_FREE_IF_COPY(ts, 0);
@@ -3089,7 +3089,7 @@ union_period_period(const Period *p1, const Period *p2)
   Period p;
   period_set(p1->lower, p1->upper, p1->lower_inc, p1->upper_inc, &p);
   period_expand(p2, &p);
-  PeriodSet *result = period_to_periodset(&p);
+  PeriodSet *result = period_periodset(&p);
   return result;
 }
 
@@ -3117,7 +3117,7 @@ Union_period_timestampset(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  PeriodSet *ps = timestampset_to_periodset(ts);
+  PeriodSet *ps = timestampset_periodset(ts);
   PeriodSet *result = union_period_periodset(p, ps);
   pfree(ps);
   PG_FREE_IF_COPY(ts, 1);
@@ -3144,7 +3144,7 @@ PeriodSet *
 union_period_periodset(const Period *p, const PeriodSet *ps)
 {
   /* Transform the period into a period set */
-  PeriodSet *ps1 = period_to_periodset(p);
+  PeriodSet *ps1 = period_periodset(p);
   /* Call the function for the period set */
   PeriodSet *result = union_periodset_periodset(ps1, ps);
   pfree(ps1);
@@ -3192,7 +3192,7 @@ Union_periodset_timestampset(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  PeriodSet *ps1 = timestampset_to_periodset(ts);
+  PeriodSet *ps1 = timestampset_periodset(ts);
   PeriodSet *result = union_periodset_periodset(ps, ps1);
   pfree(ps1);
   PG_FREE_IF_COPY(ps, 0);
@@ -4008,7 +4008,7 @@ PeriodSet *
 minus_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   /* Transform the period into a period set */
-  PeriodSet *ps = period_to_periodset(p);
+  PeriodSet *ps = period_periodset(p);
   /* Bounding box test */
   const Period *p1 = timestampset_bbox_ptr(ts);
   if (! overlaps_period_period(p, p1))

@@ -245,7 +245,8 @@ period_copy(const Period *p)
 }
 
 /**
- * Return the number of seconds of the period as a float8 value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the number of seconds of the period as a float8 value
  */
 float8
 period_to_secs(TimestampTz upper, TimestampTz lower)
@@ -321,7 +322,8 @@ period_super_union(const Period *p1, const Period *p2)
 }
 
 /**
- * Expand the second period with the first one
+ * @ingroup libmeos_time_transf
+ * @brief Expand the second period with the first one
  */
 void
 period_expand(const Period *p1, Period *p2)
@@ -501,6 +503,18 @@ Period_constructor4(PG_FUNCTION_ARGS)
  * Casting
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_time_cast
+ * @brief Cast a timestamp value as a period
+ */
+static Period *
+timestamp_period(TimestampTz t)
+{
+  Period *result = period_make(t, t, true, true);
+  return result;
+}
+
+
 PG_FUNCTION_INFO_V1(Timestamp_to_period);
 /**
  * Cast the timestamp value as a period
@@ -509,7 +523,7 @@ PGDLLEXPORT Datum
 Timestamp_to_period(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *result = period_make(t, t, true, true);
+  Period *result = timestamp_period(t);
   PG_RETURN_POINTER(result);
 }
 

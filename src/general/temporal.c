@@ -1938,6 +1938,7 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
   ensure_valid_duration(duration);
   Temporal *result = temporal_shift_tscale(temp, true, true,
     start, duration);
+  PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 

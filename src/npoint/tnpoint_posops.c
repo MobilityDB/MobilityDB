@@ -160,6 +160,8 @@ posop_tnpoint_stbox(Temporal *temp, STBOX *box,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] spatial True when the function considers the spatial dimension,
+ * false when it considers the temporal dimension
  */
 static Datum
 posop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
@@ -179,6 +181,8 @@ posop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Function
+ * @param[in] spatial True when the function considers the spatial dimension,
+ * false when it considers the temporal dimension
  */
 static Datum
 posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
@@ -258,7 +262,7 @@ posop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
  * @ingroup libmeos_temporal_spatial
  * @brief Generic box function for two temporal network points
  *
- * @param[in] fcinfo Catalog information about the external function
+ * @param[in] temp1,temp2 Temporal network points
  * @param[in] func Function
  */
 static bool

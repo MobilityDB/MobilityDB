@@ -380,11 +380,11 @@ Periodset_constructor(PG_FUNCTION_ARGS)
  * @brief Cast the timestamp value as a period set value.
  */
 PeriodSet *
-timestamp_to_periodset(TimestampTz t)
+timestamp_periodset(TimestampTz t)
 {
   Period p;
   period_set(t, t, true, true, &p);
-  PeriodSet *result = period_to_periodset(&p);
+  PeriodSet *result = period_periodset(&p);
   return result;
 }
 
@@ -396,7 +396,7 @@ PGDLLEXPORT Datum
 Timestamp_to_periodset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *result = timestamp_to_periodset(t);
+  PeriodSet *result = timestamp_periodset(t);
   PG_RETURN_POINTER(result);
 }
 
@@ -405,7 +405,7 @@ Timestamp_to_periodset(PG_FUNCTION_ARGS)
  * @brief Cast the timestamp set value as a period set value.
  */
 PeriodSet *
-timestampset_to_periodset(const TimestampSet *ts)
+timestampset_periodset(const TimestampSet *ts)
 {
   Period **periods = palloc(sizeof(Period *) * ts->count);
   for (int i = 0; i < ts->count; i++)
@@ -425,7 +425,7 @@ PGDLLEXPORT Datum
 Timestampset_to_periodset(PG_FUNCTION_ARGS)
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *result = timestampset_to_periodset(ts);
+  PeriodSet *result = timestampset_periodset(ts);
   PG_RETURN_POINTER(result);
 }
 
@@ -434,7 +434,7 @@ Timestampset_to_periodset(PG_FUNCTION_ARGS)
  * @brief Construct a period set from a period.
  */
 PeriodSet *
-period_to_periodset(const Period *period)
+period_periodset(const Period *period)
 {
   return periodset_make((const Period **) &period, 1, NORMALIZE_NO);
 }
@@ -447,7 +447,7 @@ PGDLLEXPORT Datum
 Period_to_periodset(PG_FUNCTION_ARGS)
 {
   Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *result = period_to_periodset(p);
+  PeriodSet *result = period_periodset(p);
   PG_RETURN_POINTER(result);
 }
 
@@ -483,7 +483,7 @@ Periodset_to_period(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_time_accessor
  * @brief Return the size in bytes of the period set value
  */
 static int
@@ -506,7 +506,7 @@ Periodset_mem_size(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_time_accessor
  * @brief Return the timespan of the period set value
  */
 static Interval *
@@ -533,7 +533,7 @@ Periodset_timespan(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_time_accessor
  * @brief Return the duration of the period set value
  */
 static Interval *
@@ -568,7 +568,7 @@ Periodset_duration(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_time_accessor
  * @brief Return the number of periods of the period set value
  */
 static int
@@ -591,7 +591,7 @@ Periodset_num_periods(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_cast
+ * @ingroup libmeos_time_accessor
  * @brief Return the end period of the period set value
  */
 static Period *
@@ -615,7 +615,8 @@ Periodset_start_period(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return the end period of the period set value
+ * @ingroup libmeos_time_accessor
+ * @brief Return the end period of the period set value
  */
 static Period *
 periodset_end_period(PeriodSet *ps)
@@ -798,7 +799,7 @@ Periodset_end_timestamp(PG_FUNCTION_ARGS)
  *
  * @param[in] ps Period set
  * @param[in] n Number
- * @param[out] t Timestamp
+ * @param[out] result Timestamp
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  */

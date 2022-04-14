@@ -364,6 +364,27 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_oper
+ * @brief Generic bounding box operator for a temporal value and a timestamp.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] func Function
+ * @param[in] invert True when the timestamp is the first argument of the
+ * function
+ */
+Datum
+boxop_temporal_timestamp(Temporal *temp, TimestampTz t,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1, p2;
+  temporal_period(temp, &p1);
+  period_set(t, t, true, true, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  return result;
+}
+
+/**
  * Generic bounding box operator for a timestamp and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
@@ -375,10 +396,7 @@ boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  period_set(t, t, true, true, &p2);
-  bool result = func(&p2, &p1);
+  bool result = boxop_temporal_timestamp(temp, t, func, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -395,12 +413,32 @@ boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  period_set(t, t, true, true, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_timestamp(temp, t, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper
+ * @brief Generic bounding box operator for a period and a temporal value.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] ts Timestamp set
+ * @param[in] func Function
+ * @param[in] invert True when the timestamp set is the first argument of the
+ * function
+ */
+Datum
+boxop_temporal_timestampset(Temporal *temp, TimestampSet *ts,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1, p2;
+  temporal_period(temp, &p1);
+  timestampset_period(ts, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  return result;
 }
 
 /**
@@ -415,10 +453,7 @@ boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  timestampset_period(ts, &p2);
-  bool result = func(&p2, &p1);
+  bool result = boxop_temporal_timestampset(temp, ts, func, true);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -436,13 +471,32 @@ boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  timestampset_period(ts, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_timestampset(temp, ts, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper
+ * @brief Generic bounding box operator for a period and a temporal value.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] p Period
+ * @param[in] func Function
+ * @param[in] invert True when the period is the first argument of the
+ * function
+ */
+Datum
+boxop_temporal_period(Temporal *temp, Period *p,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1;
+  temporal_period(temp, &p1);
+  bool result = invert ? func(p, &p1) : func(&p1, p);
+  return result;
 }
 
 /**
@@ -457,9 +511,7 @@ boxop_period_temporal_ext(FunctionCallInfo fcinfo,
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1;
-  temporal_period(temp, &p1);
-  bool result = func(p, &p1);
+  bool result = boxop_temporal_period(temp, p, func, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -476,11 +528,32 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  temporal_period(temp, &p1);
-  bool result = func(&p1, p);
+  bool result = boxop_temporal_period(temp, p, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper
+ * @brief Generic bounding box operator for a temporal value and a periodset
+ *
+ * @param[in] temp Temporal value
+ * @param[in] ps Period set
+ * @param[in] func Function
+ * @param[in] invert True when the period set is the first argument of the
+ * function
+ */
+static bool
+boxop_temporal_periodset(Temporal *temp, PeriodSet *ps,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1, p2;
+  temporal_period(temp, &p1);
+  periodset_period(ps, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  return result;
 }
 
 /**
@@ -495,10 +568,7 @@ boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  periodset_period(ps, &p2);
-  bool result = func(&p2, &p1);
+  bool result = boxop_temporal_periodset(temp, ps, func, true);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -516,13 +586,30 @@ boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  periodset_period(ps, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_periodset(temp, ps, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper
+ * @brief Generic bounding box operator for two temporal values
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Function
+ */
+static bool
+boxop_temporal_temporal(Temporal *temp1, Temporal *temp2,
+  bool (*func)(const Period *, const Period *))
+{
+  Period p1, p2;
+  temporal_period(temp1, &p1);
+  temporal_period(temp2, &p2);
+  bool result = func(&p1, &p2);
+  return result;
 }
 
 /**
@@ -537,10 +624,7 @@ boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp1, &p1);
-  temporal_period(temp2, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_temporal(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);

@@ -238,6 +238,7 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
  * temporal sequence point value.
  *
  * @param[in] seq Temporal value
+ * @param[out] count Number of elements in the output array
  */
 static STBOX *
 tpointseq_stboxes(const TSequence *seq, int *count)
@@ -256,6 +257,7 @@ tpointseq_stboxes(const TSequence *seq, int *count)
  * temporal sequence set point value.
  *
  * @param[in] ts Temporal value
+ * @param[out] count Number of elements in the output array
  */
 static STBOX *
 tpointseqset_stboxes(const TSequenceSet *ts, int *count)
@@ -308,6 +310,8 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] func Function
+ * @param[in] invert True when the geometry is the first argument of the
+ * function
  */
 static int
 boxop_tpoint_geo(Temporal *temp, GSERIALIZED *gs,

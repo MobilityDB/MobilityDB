@@ -1802,7 +1802,7 @@ tfloatseq_ranges(const TSequence *seq, int *count)
 PeriodSet *
 tsequence_time(const TSequence *seq)
 {
-  return period_to_periodset(&seq->period);
+  return period_periodset(&seq->period);
 }
 
 /**

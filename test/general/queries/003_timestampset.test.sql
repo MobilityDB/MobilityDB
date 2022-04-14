@@ -85,6 +85,9 @@ SELECT timestamps(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}');
 SELECT shift(timestampset '{2000-01-01}', '5 min');
 SELECT shift(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '5 min');
 
+SELECT tscale(timestampset '{2000-01-01}', '1 hour');
+SELECT tscale(timestampset '{2000-01-01, 2000-01-02, 2000-01-03}', '1 hour');
+
 SELECT timestampset_cmp(timestampset '{2000-01-01}', timestampset '{2000-01-01, 2000-01-02, 2000-01-03}') = -1;
 SELECT timestampset '{2000-01-01}' = timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';
 SELECT timestampset '{2000-01-01}' <> timestampset '{2000-01-01, 2000-01-02, 2000-01-03}';

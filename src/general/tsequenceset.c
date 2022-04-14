@@ -1092,8 +1092,8 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
  * stepwise interpolation
  *
  * @param[in] ts Temporal value
- * @param[out] result Array of Datums
- * @result Number of elements in the output array
+ * @param[out] count Number of elements in the output array
+ * @result Array of Datums
  */
 Datum *
 tsequenceset_values(const TSequenceSet *ts, int *count)

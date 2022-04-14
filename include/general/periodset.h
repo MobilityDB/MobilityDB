@@ -77,9 +77,9 @@ extern Datum Timestampset_to_periodset(PG_FUNCTION_ARGS);
 extern Datum Period_to_periodset(PG_FUNCTION_ARGS);
 extern Datum Periodset_to_period(PG_FUNCTION_ARGS);
 
-extern PeriodSet *timestamp_to_periodset(TimestampTz t);
-extern PeriodSet *timestampset_to_periodset(const TimestampSet *ts);
-extern PeriodSet *period_to_periodset(const Period *p);
+extern PeriodSet *timestamp_periodset(TimestampTz t);
+extern PeriodSet *timestampset_periodset(const TimestampSet *ts);
+extern PeriodSet *period_periodset(const Period *p);
 extern void periodset_period(const PeriodSet *ps, Period *p);
 
 /* Accessor functions */

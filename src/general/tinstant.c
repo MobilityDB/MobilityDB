@@ -309,7 +309,7 @@ tfloatinst_ranges(const TInstant *inst)
 PeriodSet *
 tinstant_time(const TInstant *inst)
 {
-  PeriodSet *result = timestamp_to_periodset(inst->t);
+  PeriodSet *result = timestamp_periodset(inst->t);
   return result;
 }
 

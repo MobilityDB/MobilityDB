@@ -111,7 +111,7 @@ timestampset_bbox_slice(Datum tsdatum, Period *p)
 
 /**
  * @ingroup libmeos_time_constructor
- * @brief Construct a timestamp set from an array of timestamps
+ * @brief Construct a timestamp set from an array of timestamps.
  *
  * For example, the memory structure of a timestamp set with 3
  * timestamps is as follows
@@ -153,8 +153,8 @@ timestampset_make(const TimestampTz *times, int count)
 
 /**
  * @ingroup libmeos_time_constructor
- * @brief Construct a timestamp set from the array of timestamps and free the array
- * after the creation
+ * @brief Construct a timestamp set from the array of timestamps and free the
+ * array after the creation.
  *
  * @param[in] times Array of timestamps
  * @param[in] count Number of elements in the array
@@ -377,7 +377,7 @@ Timestampset_constructor(PG_FUNCTION_ARGS)
  * @brief Cast a timestamp value as a timestamp set value
  */
 static TimestampSet *
-timestamp_to_timestampset(TimestampTz t)
+timestamp_timestampset(TimestampTz t)
 {
   TimestampSet *result = timestampset_make(&t, 1);
   return result;
@@ -391,7 +391,7 @@ PGDLLEXPORT Datum
 Timestamp_to_timestampset(PG_FUNCTION_ARGS)
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *result = timestamp_to_timestampset(t);
+  TimestampSet *result = timestamp_timestampset(t);
   PG_RETURN_POINTER(result);
 }
 
@@ -553,7 +553,7 @@ Timestampset_end_timestamp(PG_FUNCTION_ARGS)
  *
  * @param[in] ts Timestamp set
  * @param[in] n Number
- * @param[out] t Timestamp
+ * @param[out] result Timestamp
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  */
@@ -585,7 +585,7 @@ Timestampset_timestamp_n(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_time_accessor
- * @brief Return the timestamps of the timestamp set value.
+ * @brief Return the array of timestamps of the timestamp set value.
  */
 TimestampTz *
 timestampset_timestamps(const TimestampSet *ts)
@@ -613,7 +613,7 @@ Timestampset_timestamps(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_time_transf
- * @brief Shift the period set value by the interval.
+ * @brief Shift the timeset set value by the interval.
  */
 TimestampSet *
 timestampset_shift(const TimestampSet *ts, const Interval *interval)
@@ -640,6 +640,61 @@ Timestampset_shift(PG_FUNCTION_ARGS)
   Interval *interval = PG_GETARG_INTERVAL_P(1);
   TimestampSet *result = timestampset_shift(ts, interval);
   PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Shift and/or scale the time span of the timestamp set value by the
+ * two intervals.
+ *
+ * @pre The duration is greater than 0 if it is not NULL
+ */
+TimestampSet *
+timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
+  const Interval *duration)
+{
+  assert(start != NULL || duration != NULL);
+  TimestampSet *result = timestampset_copy(ts);
+  /* Shift and/or scale the bounding period */
+  double orig_duration = (double) (ts->period.upper - ts->period.lower);
+  period_shift_tscale(&result->period, start, duration);
+  double new_duration = (double) (result->period.upper - result->period.lower);
+
+  /* Set the first timestamp */
+  result->elems[0] = result->period.lower;
+  if (ts->count > 1)
+  {
+    /* Shift and/or scale from the second to the penultimate timestamp */
+    for (int i = 1; i < ts->count - 1; i++)
+    {
+      TimestampTz t = result->elems[i];
+      /* Shift the timestamp */
+      if (start != NULL)
+        t = DatumGetTimestampTz(DirectFunctionCall2(
+          timestamptz_pl_interval, TimestampTzGetDatum(t),
+          PointerGetDatum(start)));
+      double fraction = (double) (t - ts->period.lower) / orig_duration;
+      result->elems[i] = result->period.lower +
+        (TimestampTz) (new_duration * fraction);
+    }
+    /* Set the last instant */
+    result->elems[ts->count - 1] = result->period.upper;
+  }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
+/**
+ * Shift and scale the time span of the temporal value by the two intervals
+ */
+PGDLLEXPORT Datum
+Timestampset_shift_tscale(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  TimestampSet *result = timestampset_shift_tscale(ts, start, duration);
   PG_RETURN_POINTER(result);
 }
 
