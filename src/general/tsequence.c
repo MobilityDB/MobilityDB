@@ -1648,14 +1648,19 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
   const Interval *duration)
 {
   assert(start != NULL || duration != NULL);
+
+  /* Copy the input sequence to the result */
   TSequence *result = tsequence_copy(seq);
+
   /* Shift and/or scale the bounding period */
   period_shift_tscale(start, duration, &result->period);
   TimestampTz shift;
   if (start != NULL)
     shift = result->period.lower - seq->period.lower;
   double scale;
-  if (duration != NULL)
+  bool instant = (result->period.lower == result->period.upper);
+  /* If the sequence set is instantaneous we cannot scale */
+  if (duration != NULL && ! instant)
   {
     scale =
       (double) (result->period.upper - result->period.lower) /
@@ -1673,7 +1678,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
       inst = (TInstant *) tsequence_inst_n(result, i);
       if (start != NULL)
         inst->t += shift;
-      if (duration != NULL)
+      if (duration != NULL && ! instant)
         inst->t = result->period.lower +
           (inst->t - result->period.lower) * scale;
     }

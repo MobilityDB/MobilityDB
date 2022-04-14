@@ -440,6 +440,44 @@ SELECT shift(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
 </programlisting>
 				</listitem>
 
+			<listitem id="time_tscale">
+				<indexterm><primary><varname>tscale</varname></primary></indexterm>
+				<para>Scale the time value to an interval. If the time span of the time value is zero (for example, for a singleton instant set), the result is the time value. The given interval must be strictly greater than zero.</para>
+				<para><varname>tscale({timestampset,period,periodset},interval): {timestampset,period,periodset}</varname></para>
+				<programlisting xml:space="preserve">
+SELECT tscale(timestampset '{2001-01-01}', '1 day');
+-- {2001-01-01}
+SELECT tscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '2 days');
+-- {2001-01-01, 2001-01-02, 2001-01-03}
+SELECT tscale(period '[2001-01-01, 2001-01-03]', '1 day');
+-- [2001-01-01, 2001-01-02]
+SELECT tscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}', '1 day');
+-- {[2001-01-01 00:00:00, 2001-01-01 12:00:00],
+  [2001-01-01 18:00:00, 2001-01-02 00:00:00]}
+SELECT tscale(timestampset '{2001-01-01}', '-1 day');
+-- ERROR:  The duration must be a positive interval: -1 days
+</programlisting>
+			</listitem>
+
+			<listitem id="time_shiftTscale">
+				<indexterm><primary><varname>shiftTscale</varname></primary></indexterm>
+				<para>Shift and scale the time value to the two intervals. This function combines in a single step the functions <link linkend="time_shift"><varname>shift</varname></link> and <link linkend="time_tscale"><varname>tscale</varname></link>.</para>
+				<para><varname>shiftTscale({timestampset,period,periodset},interval,interval):</varname></para>
+				<para><varname>  {timestampset,period,periodset}</varname></para>
+				<programlisting xml:space="preserve">
+SELECT shiftTscale(timestampset '{2001-01-01}', '1 day', '1 day');
+-- {2001-01-02}
+SELECT shiftTscale(timestampset '{2001-01-01, 2001-01-03, 2001-01-05}', '1 day','2 days');
+-- {2001-01-02, 2001-01-03, 2001-01-04}
+SELECT shiftTscale(period '[2001-01-01, 2001-01-03]', '1 day', '1 day');
+-- [2001-01-02, 2001-01-03]
+SELECT shiftTscale(periodset '{[2001-01-01, 2001-01-03], [2001-01-04, 2001-01-05]}',
+  '1 day', '1 day');
+-- {[2001-01-02 00:00:00, 2001-01-02 12:00:00],
+  [2001-01-02 18:00:00, 2001-01-03 00:00:00]}
+</programlisting>
+			</listitem>
+
 				<listitem id="floatrange_round">
 					<indexterm><primary><varname>round</varname></primary></indexterm>
 					<para>Round the bounds of a float range to a number of decimal places</para>

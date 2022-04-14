@@ -135,6 +135,16 @@ CREATE FUNCTION shift(period, interval)
   AS 'MODULE_PATHNAME', 'Period_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tscale(period, interval)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Period_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(period, interval, interval)
+  RETURNS period
+  AS 'MODULE_PATHNAME', 'Period_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION period_sel(internal, oid, internal, integer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Period_sel'

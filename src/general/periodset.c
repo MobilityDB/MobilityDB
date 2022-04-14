@@ -919,6 +919,9 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
   assert(start != NULL || duration != NULL);
   if (duration != NULL)
     ensure_valid_duration(duration);
+  bool instant = (ps->period.lower == ps->period.upper);
+
+  /* Copy the input period set to the output period set */
   PeriodSet *result = periodset_copy(ps);
   /* Shift and/or scale the bounding period */
   period_shift_tscale(start, duration, &result->period);
@@ -926,13 +929,12 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
   TimestampTz shift;
   if (start != NULL)
     shift = result->period.lower - ps->period.lower;
+  /* If the periodset is instantaneous we cannot scale */
   double scale;
-  if (duration != NULL)
-  {
+  if (duration != NULL && ! instant)
     scale =
       (double) (result->period.upper - result->period.lower) /
       (double) (ps->period.upper - ps->period.lower) ;
-  }
   for (int i = 0; i < ps->count; i++)
   {
     if (start != NULL)
@@ -940,7 +942,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
       result->elems[i].lower += shift;
       result->elems[i].upper += shift;
     }
-    if (duration != NULL)
+    if (duration != NULL && ! instant)
     {
       result->elems[i].lower = result->period.lower +
         (result->elems[i].lower - result->period.lower) * scale;

@@ -1038,47 +1038,58 @@ TSequenceSet *
 tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
   const Interval *duration)
 {
-  const TSequence *seq1, *seq2;
-  TSequenceSet *result;
-  /* Singleton sequence set */
-  if (ts->count == 1)
-  {
-    TSequence *seq = tsequence_shift_tscale(tsequenceset_seq_n(ts, 0), start,
-      duration);
-    result = tsequence_tsequenceset(seq);
-    pfree(seq);
-    return result;
-  }
+  assert(start != NULL || duration != NULL);
 
-  /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
-  /* Shift and/or scale the period of the sequence set */
+  /* Copy the input sequence set to the result */
+  TSequenceSet *result = tsequenceset_copy(ts);
+
+  /* Determine the shift and/or the scale values */
   Period p1, p2;
-  seq1 = tsequenceset_seq_n(ts, 0);
-  seq2 = tsequenceset_seq_n(ts, ts->count - 1);
-  period_set(tsequence_inst_n(seq1, 0)->t,
-    tsequence_inst_n(seq2, seq2->count - 1)->t, seq1->period.lower_inc,
+  const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
+  const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
+  const TInstant *inst1 = tsequence_inst_n(seq1, 0);
+  const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
+  period_set(inst1->t, inst2->t, seq1->period.lower_inc,
     seq2->period.upper_inc, &p1);
-  double orig_duration = (double) (p1.upper - p1.lower);
   period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
   period_shift_tscale(start, duration, &p2);
-  double new_duration = (double) (p2.upper - p2.lower);
+  TimestampTz shift;
+  if (start != NULL)
+    shift = p2.lower - p1.lower;
+  double scale;
+  bool instant = (p2.lower == p2.upper);
+  /* If the sequence set is instantaneous we cannot scale */
+  if (duration != NULL && ! instant)
+    scale = (double) (p2.upper - p2.lower) / (double) (p1.upper - p1.lower);
+
+  /* Shift and/or scale each composing sequence */
   for (int i = 0; i < ts->count; i++)
   {
-    seq1 = tsequenceset_seq_n(ts, i);
-    /* Shift and/or scale the period of the sequence */
-    double fraction = (double) (seq1->period.lower - p1.lower) / orig_duration;
-    TimestampTz lower = p2.lower + (TimestampTz) (new_duration * fraction);
-    fraction = (double) (seq1->period.upper - p1.lower) / orig_duration;
-    TimestampTz upper = p2.lower + (TimestampTz) (new_duration * fraction);
-    Interval *startseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
-      TimestampTzGetDatum(lower), TimestampTzGetDatum(seq1->period.lower)));
-    Interval *durationseq = DatumGetIntervalP(DirectFunctionCall2(timestamp_mi,
-      TimestampTzGetDatum(upper), TimestampTzGetDatum(lower)));
-    sequences[i] = tsequence_shift_tscale(seq1, startseq, durationseq);
+    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
+    /* Shift and/or scale the bounding period of the sequence */
+    if (start != NULL && (duration == NULL || seq->count == 1))
+    {
+      seq->period.lower += shift;
+      seq->period.upper += shift;
+    }
+    /* If the sequence is instantaneous we cannot scale */
+    if (duration != NULL && seq->count > 1)
+    {
+      seq->period.lower = p2.lower + (seq->period.lower - p1.lower) * scale;
+      seq->period.upper = p2.lower + (seq->period.upper - p1.lower) * scale;
+    }
+    /* Shift and/or scale each composing instant */
+    for (int j = 0; j < seq->count; j++)
+    {
+      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
+      /* Shift and/or scale the bounding period of the sequence */
+      if (start != NULL)
+        inst->t += shift;
+      /* If the sequence is instantaneous we cannot scale */
+      if (duration != NULL && seq->count > 1)
+        inst->t = p2.lower + (inst->t - p2.lower) * scale;
+    }
   }
-  result = tsequenceset_make_free(sequences, ts->count,
-    MOBDB_FLAGS_GET_LINEAR(ts->flags));
   return result;
 }
 

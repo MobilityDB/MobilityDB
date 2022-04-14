@@ -737,15 +737,25 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
   const Interval *duration)
 {
   assert(start != NULL || duration != NULL);
+
+  /* Copy the input instant set to the result */
   TInstantSet *result = tinstantset_copy(ti);
+
   /* Shift and/or scale the period */
   Period p1, p2;
-  period_set(tinstantset_inst_n(result, 0)->t,
-    tinstantset_inst_n(result, ti->count - 1)->t, true, true, &p1);
-  double orig_duration = (double) (p1.upper - p1.lower);
+  const TInstant *inst1 = tinstantset_inst_n(ti, 0);
+  const TInstant *inst2 = tinstantset_inst_n(ti, ti->count - 1);
+  period_set(inst1->t, inst2->t, true, true, &p1);
   period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
   period_shift_tscale(start, duration, &p2);
-  double new_duration = (double) (p2.upper - p2.lower);
+  TimestampTz shift;
+  if (start != NULL)
+    shift = p2.lower - p1.lower;
+  double scale;
+  bool instant = (p2.lower == p2.upper);
+  /* If the sequence set is instantaneous we cannot scale */
+  if (duration != NULL && ! instant)
+    scale = (double) (p2.upper - p2.lower) / (double) (p1.upper - p1.lower);
 
   /* Set the first instant */
   TInstant *inst = (TInstant *) tinstantset_inst_n(result, 0);
@@ -756,8 +766,10 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
     for (int i = 1; i < ti->count - 1; i++)
     {
       inst = (TInstant *) tinstantset_inst_n(result, i);
-      double fraction = (double) (inst->t - p1.lower) / orig_duration;
-      inst->t = p2.lower + (TimestampTz) (new_duration * fraction);
+      if (start != NULL && (duration == NULL || instant))
+        inst->t += shift;
+      if (duration != NULL && ! instant)
+        inst->t = p2.lower + (inst->t - p1.lower) * scale;
     }
     /* Set the last instant */
     inst = (TInstant *) tinstantset_inst_n(result, ti->count - 1);

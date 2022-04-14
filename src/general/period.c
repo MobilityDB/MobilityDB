@@ -653,36 +653,6 @@ Period_duration(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_time_transf
- * @brief Shift the period by the interval.
- */
-Period *
-period_shift(const Period *p, const Interval *start)
-{
-  TimestampTz t1 = DatumGetTimestampTz(
-    DirectFunctionCall2(timestamptz_pl_interval,
-    TimestampTzGetDatum(p->lower), PointerGetDatum(start)));
-  TimestampTz t2 = DatumGetTimestampTz(
-    DirectFunctionCall2(timestamptz_pl_interval,
-    TimestampTzGetDatum(p->upper), PointerGetDatum(start)));
-  Period *result = period_make(t1, t2, p->lower_inc, p->upper_inc);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(Period_shift);
-/**
- * Shift the period by the interval
- */
-PGDLLEXPORT Datum
-Period_shift(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Interval *interval = PG_GETARG_INTERVAL_P(1);
-  Period *result = period_shift(p, interval);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * @ingroup libmeos_time_transf
  * @brief Shift and/or scale the period by the two intervals.
  */
 void
@@ -690,16 +660,70 @@ period_shift_tscale(const Interval *start, const Interval *duration,
   Period *result)
 {
   assert(start != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
+  bool instant = (result->lower == result->upper);
+
   if (start != NULL)
+  {
     result->lower = DatumGetTimestampTz(DirectFunctionCall2(
       timestamptz_pl_interval, TimestampTzGetDatum(result->lower),
       PointerGetDatum(start)));
-  result->upper = (duration == NULL) ?
-    DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-      TimestampTzGetDatum(result->upper), PointerGetDatum(start))) :
-    DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
-       TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
+    if (instant)
+      result->upper = result->lower;
+    else
+      result->upper = DatumGetTimestampTz(DirectFunctionCall2(
+        timestamptz_pl_interval, TimestampTzGetDatum(result->upper),
+        PointerGetDatum(start)));
+  }
+  if (duration != NULL && ! instant)
+    result->upper =
+      DatumGetTimestampTz(DirectFunctionCall2(timestamptz_pl_interval,
+         TimestampTzGetDatum(result->lower), PointerGetDatum(duration)));
   return;
+}
+
+PG_FUNCTION_INFO_V1(Period_shift);
+/**
+ * Shift the period value by the interval
+ */
+PGDLLEXPORT Datum
+Period_shift(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Period *result = period_copy(p);
+  period_shift_tscale(start, NULL, result);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Period_tscale);
+/**
+ * Shift the period  value by the interval
+ */
+PGDLLEXPORT Datum
+Period_tscale(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  Period *result = period_copy(p);
+  period_shift_tscale(NULL, duration, result);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Period_shift_tscale);
+/**
+ * Shift the period value by the interval
+ */
+PGDLLEXPORT Datum
+Period_shift_tscale(PG_FUNCTION_ARGS)
+{
+  Period *p = PG_GETARG_PERIOD_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  Period *result = period_copy(p);
+  period_shift_tscale(start, duration, result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
