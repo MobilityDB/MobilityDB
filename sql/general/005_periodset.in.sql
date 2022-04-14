@@ -184,6 +184,16 @@ CREATE FUNCTION shift(periodset, interval)
   AS 'MODULE_PATHNAME', 'Periodset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tscale(periodset, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(periodset, interval, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Comparison functions and B-tree indexing
  ******************************************************************************/

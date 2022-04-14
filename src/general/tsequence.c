@@ -1651,7 +1651,7 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
   TSequence *result = tsequence_copy(seq);
   /* Shift and/or scale the period */
   double orig_duration = (double) (seq->period.upper - seq->period.lower);
-  period_shift_tscale(&result->period, start, duration);
+  period_shift_tscale(start, duration, &result->period);
   double new_duration = (double) (result->period.upper - result->period.lower);
 
   /* Set the first instant */

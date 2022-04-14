@@ -141,7 +141,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    period_shift_tscale((Period *) box, start, duration);
+    period_shift_tscale(start, duration, (Period *) box);
   else if (tnumber_type(temptype))
     tbox_shift_tscale(start, duration, (TBOX *) box);
   else if (tspatial_type(temptype))

@@ -1061,7 +1061,7 @@ tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
     seq2->period.upper_inc, &p1);
   double orig_duration = (double) (p1.upper - p1.lower);
   period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
-  period_shift_tscale(&p2, start, duration);
+  period_shift_tscale(start, duration, &p2);
   double new_duration = (double) (p2.upper - p2.lower);
   for (int i = 0; i < ts->count; i++)
   {

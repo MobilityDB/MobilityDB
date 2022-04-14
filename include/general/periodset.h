@@ -105,8 +105,11 @@ extern TimestampTz periodset_end_timestamp(const PeriodSet *ps);
 /* Modification functions */
 
 extern Datum Periodset_shift(PG_FUNCTION_ARGS);
+extern Datum Periodset_tscale(PG_FUNCTION_ARGS);
+extern Datum Periodset_shift_tscale(PG_FUNCTION_ARGS);
 
-extern PeriodSet *periodset_shift(const PeriodSet *ps, const Interval *interval);
+extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps,
+  const Interval *start, const Interval *duration);
 
 /* Comparison functions */
 

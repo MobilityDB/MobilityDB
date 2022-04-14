@@ -82,11 +82,18 @@ extern Datum Timestampset_start_timestamp(PG_FUNCTION_ARGS);
 extern Datum Timestampset_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum Timestampset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum Timestampset_timestamps(PG_FUNCTION_ARGS);
-extern Datum Timestampset_shift(PG_FUNCTION_ARGS);
 
 extern void timestampset_period(const TimestampSet *ts, Period *p);
 extern TimestampTz *timestampset_timestamps(const TimestampSet *ts);
-extern TimestampSet *timestampset_shift(const TimestampSet *ts, const Interval *interval);
+
+/* Modification functions */
+
+extern Datum Timestampset_shift(PG_FUNCTION_ARGS);
+extern Datum Timestampset_tscale(PG_FUNCTION_ARGS);
+extern Datum Timestampset_shift_tscale(PG_FUNCTION_ARGS);
+
+extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts,
+  const Interval *start, const Interval *duration);
 
 /* Comparison functions */
 

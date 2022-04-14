@@ -141,6 +141,16 @@ CREATE FUNCTION shift(timestampset, interval)
   AS 'MODULE_PATHNAME', 'Timestampset_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tscale(timestampset, interval)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(timestampset, interval, interval)
+  RETURNS timestampset
+  AS 'MODULE_PATHNAME', 'Timestampset_shift_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Comparison functions and B-tree indexing
  ******************************************************************************/

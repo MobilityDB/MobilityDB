@@ -909,18 +909,41 @@ Periodset_timestamps(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_time_transf
- * @brief Shift the period set value by the interval.
+ * @brief Shift and/or scale the period set value by the two intervals.
+ *
+ * @pre The duration is greater than 0 if it is not NULL
  */
 PeriodSet *
-periodset_shift(const PeriodSet *ps, const Interval *interval)
+periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
+  const Interval *duration)
 {
-  Period **periods = palloc(sizeof(Period *) * ps->count);
+  assert(start != NULL || duration != NULL);
+  PeriodSet *result = periodset_copy(ps);
+  /* Shift and/or scale the bounding period */
+  period_shift_tscale(start, duration, &result->period);
+  /* Shift and/or scale the periods of the period set */
+  TimestampTz shift;
+  if (start != NULL)
+    shift = result->period.lower - ps->period.lower;
+  double fraction;
+  if (duration != NULL)
+  {
+    fraction = (double) (ps->period.upper - ps->period.lower) /
+      (double) (result->period.upper - result->period.lower);
+  }
   for (int i = 0; i < ps->count; i++)
   {
-    const Period *p = periodset_per_n(ps, i);
-    periods[i] = period_shift(p, interval);
+    if (start != NULL)
+    {
+      result->elems[i].lower += shift;
+      result->elems[i].upper += shift;
+    }
+    if (duration != NULL)
+    {
+      result->elems[i].lower *= fraction;
+      result->elems[i].upper *= fraction;
+    }
   }
-  PeriodSet *result = periodset_make_free(periods, ps->count, NORMALIZE_NO);
   return result;
 }
 
@@ -932,8 +955,37 @@ PGDLLEXPORT Datum
 Periodset_shift(PG_FUNCTION_ARGS)
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Interval *interval = PG_GETARG_INTERVAL_P(1);
-  PeriodSet *result = periodset_shift(ps, interval);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  PeriodSet *result = periodset_shift_tscale(ps, start, NULL);
+  PG_FREE_IF_COPY(ps, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_tscale);
+/**
+ * Shift the period set value by the interval
+ */
+PGDLLEXPORT Datum
+Periodset_tscale(PG_FUNCTION_ARGS)
+{
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  PeriodSet *result = periodset_shift_tscale(ps, NULL, duration);
+  PG_FREE_IF_COPY(ps, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Periodset_shift_tscale);
+/**
+ * Shift the period set value by the interval
+ */
+PGDLLEXPORT Datum
+Periodset_shift_tscale(PG_FUNCTION_ARGS)
+{
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  PeriodSet *result = periodset_shift_tscale(ps, start, duration);
   PG_FREE_IF_COPY(ps, 0);
   PG_RETURN_POINTER(result);
 }
