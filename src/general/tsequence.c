@@ -1649,10 +1649,18 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
 {
   assert(start != NULL || duration != NULL);
   TSequence *result = tsequence_copy(seq);
-  /* Shift and/or scale the period */
-  double orig_duration = (double) (seq->period.upper - seq->period.lower);
-  period_shift_tscale(&result->period, start, duration);
-  double new_duration = (double) (result->period.upper - result->period.lower);
+  /* Shift and/or scale the bounding period */
+  period_shift_tscale(start, duration, &result->period);
+  TimestampTz shift;
+  if (start != NULL)
+    shift = result->period.lower - seq->period.lower;
+  double scale;
+  if (duration != NULL)
+  {
+    scale =
+      (double) (result->period.upper - result->period.lower) /
+      (double) (seq->period.upper - seq->period.lower) ;
+  }
 
   /* Set the first instant */
   TInstant *inst = (TInstant *) tsequence_inst_n(result, 0);
@@ -1663,8 +1671,11 @@ tsequence_shift_tscale(const TSequence *seq, const Interval *start,
     for (int i = 1; i < seq->count - 1; i++)
     {
       inst = (TInstant *) tsequence_inst_n(result, i);
-      double fraction = (double) (inst->t - seq->period.lower) / orig_duration;
-      inst->t = result->period.lower + (TimestampTz) (new_duration * fraction);
+      if (start != NULL)
+        inst->t += shift;
+      if (duration != NULL)
+        inst->t = result->period.lower +
+          (inst->t - result->period.lower) * scale;
     }
     /* Set the last instant */
     inst = (TInstant *) tsequence_inst_n(result, seq->count - 1);

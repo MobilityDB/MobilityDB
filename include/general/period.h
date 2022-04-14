@@ -99,10 +99,9 @@ extern Interval *period_duration(const Period *p);
 
 extern Datum Period_shift(PG_FUNCTION_ARGS);
 
-extern Period *period_shift(const Period *p,
-  const Interval *start);
-extern void period_shift_tscale(Period *result, const Interval *start,
-  const Interval *duration);
+extern Period *period_shift(const Period *p, const Interval *start);
+extern void period_shift_tscale(const Interval *start, const Interval *duration,
+  Period *result);
 
 /* Comparison functions */
 

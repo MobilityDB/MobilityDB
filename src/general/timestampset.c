@@ -613,70 +613,41 @@ Timestampset_timestamps(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_time_transf
- * @brief Shift the timeset set value by the interval.
- */
-TimestampSet *
-timestampset_shift(const TimestampSet *ts, const Interval *interval)
-{
-  TimestampTz *times = palloc(sizeof(TimestampTz) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TimestampTz t = timestampset_time_n(ts, i);
-    times[i] = DatumGetTimestampTz(
-      DirectFunctionCall2(timestamptz_pl_interval,
-      TimestampTzGetDatum(t), PointerGetDatum(interval)));
-  }
-  return timestampset_make_free(times, ts->count);
-}
-
-PG_FUNCTION_INFO_V1(Timestampset_shift);
-/**
- * Shift the period set value by the interval
- */
-PGDLLEXPORT Datum
-Timestampset_shift(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Interval *interval = PG_GETARG_INTERVAL_P(1);
-  TimestampSet *result = timestampset_shift(ts, interval);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Shift and/or scale the time span of the timestamp set value by the
- * two intervals.
- *
- * @pre The duration is greater than 0 if it is not NULL
+ * @brief Shift and/or scale the timestamp set value by the two intervals
  */
 TimestampSet *
 timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
   const Interval *duration)
 {
   assert(start != NULL || duration != NULL);
+  if (duration != NULL)
+    ensure_valid_duration(duration);
   TimestampSet *result = timestampset_copy(ts);
   /* Shift and/or scale the bounding period */
-  double orig_duration = (double) (ts->period.upper - ts->period.lower);
-  period_shift_tscale(&result->period, start, duration);
-  double new_duration = (double) (result->period.upper - result->period.lower);
+  period_shift_tscale(start, duration, &result->period);
 
-  /* Set the first timestamp */
+  /* Set the first instant */
   result->elems[0] = result->period.lower;
   if (ts->count > 1)
   {
-    /* Shift and/or scale from the second to the penultimate timestamp */
+    /* Shift and/or scale from the second to the penultimate instant */
+    TimestampTz shift;
+    if (start != NULL)
+      shift = result->period.lower - ts->period.lower;
+    double scale;
+    if (duration != NULL)
+    {
+      scale =
+        (double) (result->period.upper - result->period.lower) /
+        (double) (ts->period.upper - ts->period.lower) ;
+    }
     for (int i = 1; i < ts->count - 1; i++)
     {
-      TimestampTz t = result->elems[i];
-      /* Shift the timestamp */
       if (start != NULL)
-        t = DatumGetTimestampTz(DirectFunctionCall2(
-          timestamptz_pl_interval, TimestampTzGetDatum(t),
-          PointerGetDatum(start)));
-      double fraction = (double) (t - ts->period.lower) / orig_duration;
-      result->elems[i] = result->period.lower +
-        (TimestampTz) (new_duration * fraction);
+        result->elems[i] += shift;
+      if (duration != NULL)
+        result->elems[i] = result->period.lower +
+          (result->elems[i] - result->period.lower) * scale;
     }
     /* Set the last instant */
     result->elems[ts->count - 1] = result->period.upper;
@@ -684,9 +655,38 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
   return result;
 }
 
+PG_FUNCTION_INFO_V1(Timestampset_shift);
+/**
+ * Shift the timestamp set value by the interval
+ */
+PGDLLEXPORT Datum
+Timestampset_shift(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Interval *start = PG_GETARG_INTERVAL_P(1);
+  TimestampSet *result = timestampset_shift_tscale(ts, start, NULL);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Timestampset_tscale);
+/**
+ * Scale the timestamp set value by the interval
+ */
+PGDLLEXPORT Datum
+Timestampset_tscale(PG_FUNCTION_ARGS)
+{
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(1);
+  ensure_valid_duration(duration);
+  TimestampSet *result = timestampset_shift_tscale(ts, NULL, duration);
+  PG_FREE_IF_COPY(ts, 0);
+  PG_RETURN_POINTER(result);
+}
+
 PG_FUNCTION_INFO_V1(Timestampset_shift_tscale);
 /**
- * Shift and scale the time span of the temporal value by the two intervals
+ * Shift and scale the timestamp set value by the two intervals
  */
 PGDLLEXPORT Datum
 Timestampset_shift_tscale(PG_FUNCTION_ARGS)
@@ -694,6 +694,7 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
+  ensure_valid_duration(duration);
   TimestampSet *result = timestampset_shift_tscale(ts, start, duration);
   PG_RETURN_POINTER(result);
 }

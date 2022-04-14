@@ -1875,7 +1875,7 @@ static Temporal *
 temporal_shift_tscale(Temporal *temp, bool shift, bool tscale,
   Interval *start, Interval *duration)
 {
-  assert((!shift || start != NULL) && (!tscale || duration != NULL));
+  assert((! shift || start != NULL) && (! tscale || duration != NULL));
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -1903,8 +1903,7 @@ Temporal_shift(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *start = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_tscale(temp, true, false,
-    start, NULL);
+  Temporal *result = temporal_shift_tscale(temp, true, false, start, NULL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1919,8 +1918,7 @@ Temporal_tscale(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
   ensure_valid_duration(duration);
-  Temporal *result = temporal_shift_tscale(temp, false, true,
-    NULL, duration);
+  Temporal *result = temporal_shift_tscale(temp, false, true, NULL, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -1936,8 +1934,7 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
   Interval *start = PG_GETARG_INTERVAL_P(1);
   Interval *duration = PG_GETARG_INTERVAL_P(2);
   ensure_valid_duration(duration);
-  Temporal *result = temporal_shift_tscale(temp, true, true,
-    start, duration);
+  Temporal *result = temporal_shift_tscale(temp, true, true, start, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

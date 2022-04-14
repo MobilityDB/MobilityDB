@@ -49,13 +49,13 @@ CREATE AGGREGATE extent(tgeompoint) (
   SFUNC = tpoint_extent_transfn,
   STYPE = stbox,
   COMBINEFUNC = tpoint_extent_combinefn,
-  PARALLEL = safe
+  -- PARALLEL = safe
 );
 CREATE AGGREGATE extent(tgeogpoint) (
   SFUNC = tpoint_extent_transfn,
   STYPE = stbox,
   COMBINEFUNC = tpoint_extent_combinefn,
-  PARALLEL = safe
+  -- PARALLEL = safe
 );
 
 /*****************************************************************************/

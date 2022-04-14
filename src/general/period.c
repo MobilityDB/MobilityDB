@@ -686,8 +686,8 @@ Period_shift(PG_FUNCTION_ARGS)
  * @brief Shift and/or scale the period by the two intervals.
  */
 void
-period_shift_tscale(Period *result, const Interval *start,
-  const Interval *duration)
+period_shift_tscale(const Interval *start, const Interval *duration,
+  Period *result)
 {
   assert(start != NULL || duration != NULL);
   if (start != NULL)
