@@ -421,11 +421,11 @@ Tpointinst_constructor(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the bounding box of the temporal point value
  */
 STBOX *
-tpoint_stbox(Temporal *temp)
+tpoint_stbox(const Temporal *temp)
 {
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   temporal_bbox(temp, result);
@@ -450,12 +450,12 @@ Tpoint_to_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Return the bounding box of the temporal point value expanded on the
  * spatial dimension
  */
 STBOX *
-geo_expand_spatial(GSERIALIZED *gs, double d)
+geo_expand_spatial(const GSERIALIZED *gs, double d)
 {
   if (gserialized_is_empty(gs))
     return NULL;
@@ -486,12 +486,12 @@ Geo_expand_spatial(PG_FUNCTION_ARGS)
 
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Return the bounding box of the temporal point value expanded on the
  * spatial dimension
  */
-static STBOX *
-tpoint_expand_spatial(Temporal *temp, double d)
+STBOX *
+tpoint_expand_spatial(const Temporal *temp, double d)
 {
   STBOX box;
   temporal_bbox(temp, &box);
@@ -521,11 +521,11 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return the temporal comparison of the base value and temporal value
  */
-static Temporal *
-tcomp_tpoint_geo(Temporal *temp, GSERIALIZED *gs,
+Temporal *
+tcomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
 {
   if (gserialized_is_empty(gs))

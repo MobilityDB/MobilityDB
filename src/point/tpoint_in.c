@@ -220,7 +220,7 @@ parse_mfjson_datetimes(json_object *mfjson, int *count)
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its MF-JSON representation.
  */
-static TInstant *
+TInstant *
 tpointinst_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 {
   bool geodetic = (temptype == T_TGEOGPOINT);
@@ -288,7 +288,7 @@ tpointinstarr_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its MF-JSON representation.
  */
-static TInstantSet *
+TInstantSet *
 tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
 {
   int count;
@@ -301,7 +301,7 @@ tpointinstset_from_mfjson(json_object *mfjson, int srid, CachedType temptype)
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its MF-JSON representation.
  */
-static TSequence *
+TSequence *
 tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   bool linear)
 {
@@ -335,7 +335,7 @@ tpointseq_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its MF-JSON representation.
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
   bool linear)
 {
@@ -367,7 +367,7 @@ tpointseqset_from_mfjson(json_object *mfjson, int srid, CachedType temptype,
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its MF-JSON representation
  */
-static Temporal *
+Temporal *
 tpoint_from_mfjson(FunctionCallInfo fcinfo, text *mfjson_input,
   CachedType temptype)
 {
@@ -882,7 +882,7 @@ tpoint_from_wkb_state(wkb_parse_state *s)
  * @ingroup libmeos_temporal_input_output
  * @brief Return a temporal point from its EWKB representation.
  */
-static Temporal *
+Temporal *
 tpoint_from_ewkb(uint8_t *wkb, int size)
 {
   /* Initialize the state appropriately */

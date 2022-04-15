@@ -1540,10 +1540,9 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_api
+ * @ingroup libmeos_temporal_transf
  * Synchronizes the temporal values and applies to them the function
- * (dispatch function)
- *
+  *
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function
  */
@@ -2129,9 +2128,8 @@ efunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_api
+ * @ingroup libmeos_temporal_transf
  * Synchronizes the temporal values and applies to them the function
- * (dispatch function)
  *
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function

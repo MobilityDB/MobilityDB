@@ -139,11 +139,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tscale"><varname>tscale</varname></link>: Scale the time value to an interval</para>
+					<para><link linkend="time_tscale"><varname>tscale</varname></link>: Scale the time value to an interval</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time value with the intervals</para>
+					<para><link linkend="time_shiftTscale"><varname>shiftTscale</varname></link>: Shift and scale the time value with the intervals</para>
 				</listitem>
 
 				<listitem>

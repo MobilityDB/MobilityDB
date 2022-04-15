@@ -293,7 +293,7 @@ Periodset_out(PG_FUNCTION_ARGS)
  * @param[in] ps Time value
  * @param[in] buf Buffer
  */
-static void
+void
 periodset_write(const PeriodSet *ps, StringInfo buf)
 {
   pq_sendint32(buf, ps->count);
@@ -486,8 +486,8 @@ Periodset_to_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the size in bytes of the period set value
  */
-static int
-periodset_mem_size(PeriodSet *ps)
+int
+periodset_mem_size(const PeriodSet *ps)
 {
   return (int) VARSIZE(DatumGetPointer(ps));
 }
@@ -509,7 +509,7 @@ Periodset_mem_size(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the timespan of the period set value
  */
-static Interval *
+Interval *
 periodset_timespan(const PeriodSet *ps)
 {
   const Period *p1 = periodset_per_n(ps, 0);
@@ -536,7 +536,7 @@ Periodset_timespan(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the duration of the period set value
  */
-static Interval *
+Interval *
 periodset_duration(const PeriodSet *ps)
 {
   const Period *p = periodset_per_n(ps, 0);
@@ -571,8 +571,8 @@ Periodset_duration(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the number of periods of the period set value
  */
-static int
-periodset_num_periods(PeriodSet *ps)
+int
+periodset_num_periods(const PeriodSet *ps)
 {
   return ps->count;
 }
@@ -594,8 +594,8 @@ Periodset_num_periods(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the end period of the period set value
  */
-static Period *
-periodset_start_period(PeriodSet *ps)
+Period *
+periodset_start_period(const PeriodSet *ps)
 {
   Period *result = period_copy(periodset_per_n(ps, 0));
   return result;
@@ -618,8 +618,8 @@ Periodset_start_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the end period of the period set value
  */
-static Period *
-periodset_end_period(PeriodSet *ps)
+Period *
+periodset_end_period(const PeriodSet *ps)
 {
   Period *result = period_copy(periodset_per_n(ps, ps->count - 1));
   return result;
@@ -642,7 +642,7 @@ Periodset_end_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the n-th period of the period set value
  */
-static Period *
+Period *
 periodset_period_n(const PeriodSet *ps, int i)
 {
   Period *result = NULL;
@@ -699,8 +699,8 @@ Periodset_periods(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the number of timestamps of the period set value
  */
-static int
-periodset_num_timestamps(PeriodSet *ps)
+int
+periodset_num_timestamps(const PeriodSet *ps)
 {
   const Period *p = periodset_per_n(ps, 0);
   TimestampTz prev = p->lower;
@@ -803,8 +803,8 @@ Periodset_end_timestamp(PG_FUNCTION_ARGS)
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  */
-static bool
-periodset_timestamp_n(PeriodSet *ps, int n, TimestampTz *result)
+bool
+periodset_timestamp_n(const PeriodSet *ps, int n, TimestampTz *result)
 {
   int pernum = 0;
   const Period *p = periodset_per_n(ps, pernum);
@@ -868,7 +868,7 @@ Periodset_timestamp_n(PG_FUNCTION_ARGS)
  * @brief Return the timestamps of the period set value
  */
 TimestampTz *
-periodset_timestamps(PeriodSet *ps, int *count)
+periodset_timestamps(const PeriodSet *ps, int *count)
 {
   TimestampTz *result = palloc(sizeof(TimestampTz) * 2 * ps->count);
   const Period *p = periodset_per_n(ps, 0);
@@ -1001,7 +1001,7 @@ Periodset_shift_tscale(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first period set value
  * is less than, equal, or greater than the second temporal value.
  *
@@ -1052,7 +1052,7 @@ Periodset_cmp(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period set value is equal to the second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1090,7 +1090,7 @@ Periodset_eq(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period set value is different from the
  * second one.
  */
@@ -1189,7 +1189,7 @@ Periodset_gt(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the 32-bit hash value of a period set value.
  */
-static uint32
+uint32
 periodset_hash(const PeriodSet *ps)
 {
   uint32 result = 1;

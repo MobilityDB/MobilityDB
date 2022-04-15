@@ -507,7 +507,7 @@ Period_constructor4(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_cast
  * @brief Cast a timestamp value as a period
  */
-static Period *
+Period *
 timestamp_period(TimestampTz t)
 {
   Period *result = period_make(t, t, true, true);
@@ -731,7 +731,7 @@ Period_shift_tscale(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period is equal to the second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -758,7 +758,7 @@ Period_eq(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period is different from the second one.
  */
 bool
@@ -782,7 +782,7 @@ Period_ne(PG_FUNCTION_ARGS)
 /* B-tree comparator */
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first period
  * is less than, equal, or greater than the second one.
  *
@@ -820,7 +820,7 @@ Period_cmp(PG_FUNCTION_ARGS)
 /* Inequality operators using the period_cmp function */
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period is less than the second one.
  */
 bool
@@ -843,7 +843,7 @@ Period_lt(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period is less than or equal to the
  * second one.
  */
@@ -867,7 +867,7 @@ Period_le(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period is greater than or equal to the
  * second one.
  */
@@ -891,7 +891,7 @@ Period_ge(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first period is greater than the second one.
  */
 bool

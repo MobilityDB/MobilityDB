@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Set the spatiotemporal box from the network point value.
  *
  * @param[out] box Spatiotemporal box
@@ -183,10 +183,10 @@ Npoint_to_stbox(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return the bounding box of the network segment value
  */
-static bool
+bool
 nsegment_stbox(STBOX *box, const nsegment *ns)
 {
   Datum geom = nsegment_geom(DatumGetNsegment(ns));
@@ -213,10 +213,10 @@ Nsegment_to_stbox(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Transform a network point and a timestamp to a spatiotemporal box
  */
-static bool
+bool
 npoint_timestamp_stbox(const npoint *np, TimestampTz t, STBOX *box)
 {
   npoint_stbox(np, box);
@@ -242,10 +242,10 @@ Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Transform a network point and a period to a spatiotemporal box
  */
-static bool
+bool
 npoint_period_stbox(const npoint *np, const Period *p, STBOX *box)
 {
   npoint_stbox(np, box);

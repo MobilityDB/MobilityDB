@@ -59,19 +59,19 @@ typedef enum
 extern Datum datum_round_float(Datum value, Datum prec);
 
 extern Datum Add_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum Add_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Add_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Add_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Sub_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum Sub_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Sub_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Sub_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Mult_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum Mult_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Mult_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Mult_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Div_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum Div_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Div_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Div_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum Tnumber_round(PG_FUNCTION_ARGS);

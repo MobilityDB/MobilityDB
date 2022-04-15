@@ -164,7 +164,8 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  *****************************************************************************/
 
 /**
- * Generic arithmetic operator on a temporal number and a number
+ * @ingroup libmeos_temporal_oper_math
+ * @brief Generic arithmetic operator on a temporal number and a number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
@@ -175,10 +176,10 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[in] invert True when the base value is the first argument
  * of the function
  */
-static Temporal *
-arithop_tnumber_base1(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, CachedType, CachedType), TArithmetic oper,
-  Temporal *temp, Datum value, CachedType basetype, bool invert)
+Temporal *
+arithop_tnumber_number(Temporal *temp, Datum value, CachedType basetype,
+  CachedType restype, TArithmetic oper,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
 {
   ensure_tnumber_basetype(basetype);
   /* If division test whether the denominator is zero */
@@ -199,7 +200,6 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
     }
   }
 
-  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -225,14 +225,15 @@ arithop_tnumber_base1(FunctionCallInfo fcinfo,
  * @param[in] oper Enumeration that states the arithmetic operator
  */
 static Datum
-arithop_base_tnumber(FunctionCallInfo fcinfo,
+arithop_base_tnumber_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType), TArithmetic oper)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
-    temp, value, basetype, INVERT);
+  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  Temporal *result = arithop_tnumber_number(temp, value, basetype, restype,
+    oper, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -245,34 +246,36 @@ arithop_base_tnumber(FunctionCallInfo fcinfo,
  * @param[in] oper Enumeration that states the arithmetic operator
  */
 static Datum
-arithop_tnumber_base(FunctionCallInfo fcinfo,
+arithop_tnumber_base_ext(FunctionCallInfo fcinfo,
   Datum (*func)(Datum, Datum, CachedType, CachedType), TArithmetic oper)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  Temporal *result = arithop_tnumber_base1(fcinfo, func, oper,
-    temp, value, basetype, INVERT_NO);
+  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  Temporal *result = arithop_tnumber_number(temp, value, basetype, restype,
+    oper, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
+/*****************************************************************************/
+
 /**
- * Generic arithmetic operator on a temporal numbers
+ * @ingroup libmeos_temporal_oper_math
+ * @brief Generic arithmetic operator on two temporal numbers
  *
- * @param[in] fcinfo Catalog information about the external function
+ * @param[in] temp1,temp2 Temporal numbers
  * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] tpfunc Function determining the turning point
  */
-static Datum
-arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
-  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
+Temporal *
+arithop_tnumber_tnumber(Temporal *temp1, Temporal *temp2, TArithmetic oper,
+  Datum (*func)(Datum, Datum, Oid, Oid),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   bool linear1 = MOBDB_FLAGS_GET_LINEAR(temp1->flags);
   bool linear2 = MOBDB_FLAGS_GET_LINEAR(temp2->flags);
 
@@ -283,13 +286,16 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
     PeriodSet *ps = temporal_time(temp1);
     Temporal *projtemp2 = temporal_restrict_periodset(temp2, ps, REST_AT);
     if (projtemp2 == NULL)
-      PG_RETURN_NULL();
+      return NULL;
     if (temporal_ever_eq(projtemp2, Float8GetDatum(0.0)))
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Division by zero")));
   }
 
-  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  /* If the temporal points are not of the same type, the result type is a
+   * temporal float */
+  CachedType restype = (temp1->temptype = temp2->temptype) ?
+    temp1->temptype : T_TFLOAT;
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) func;
@@ -305,6 +311,26 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
   lfinfo.tpfunc = (oper == MULT || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  return result;
+}
+
+/**
+ * Generic arithmetic operator on a temporal numbers
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Arithmetic function
+ * @param[in] oper Enumeration that states the arithmetic operator
+ * @param[in] tpfunc Function determining the turning point
+ */
+static Datum
+arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum, Oid, Oid), TArithmetic oper,
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
+    const TInstant *, Datum *, TimestampTz *))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = arithop_tnumber_tnumber(temp1, temp2, oper, func, tpfunc);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
@@ -316,24 +342,24 @@ arithop_tnumber_tnumber(FunctionCallInfo fcinfo,
  * Temporal addition
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Add_base_tnumber);
+PG_FUNCTION_INFO_V1(Add_number_tnumber);
 /**
  * Return the temporal addition of the number and the temporal number
  */
 PGDLLEXPORT Datum
-Add_base_tnumber(PG_FUNCTION_ARGS)
+Add_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_add, ADD);
+  return arithop_base_tnumber_ext(fcinfo, &datum_add, ADD);
 }
 
-PG_FUNCTION_INFO_V1(Add_tnumber_base);
+PG_FUNCTION_INFO_V1(Add_tnumber_number);
 /**
  * Return the temporal addition of the temporal number and the number
  */
 PGDLLEXPORT Datum
-Add_tnumber_base(PG_FUNCTION_ARGS)
+Add_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_add, ADD);
+  return arithop_tnumber_base_ext(fcinfo, &datum_add, ADD);
 }
 
 PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
@@ -343,31 +369,31 @@ PG_FUNCTION_INFO_V1(Add_tnumber_tnumber);
 PGDLLEXPORT Datum
 Add_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber(fcinfo, &datum_add, ADD, NULL);
+  return arithop_tnumber_tnumber_ext(fcinfo, &datum_add, ADD, NULL);
 }
 
 /*****************************************************************************
  * Temporal subtraction
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Sub_base_tnumber);
+PG_FUNCTION_INFO_V1(Sub_number_tnumber);
 /**
  * Return the temporal subtraction of the number and the temporal number
  */
 PGDLLEXPORT Datum
-Sub_base_tnumber(PG_FUNCTION_ARGS)
+Sub_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_sub, SUB);
+  return arithop_base_tnumber_ext(fcinfo, &datum_sub, SUB);
 }
 
-PG_FUNCTION_INFO_V1(Sub_tnumber_base);
+PG_FUNCTION_INFO_V1(Sub_tnumber_number);
 /**
  * Return the temporal subtraction of the temporal number and the number
  */
 PGDLLEXPORT Datum
-Sub_tnumber_base(PG_FUNCTION_ARGS)
+Sub_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_sub, SUB);
+  return arithop_tnumber_base_ext(fcinfo, &datum_sub, SUB);
 }
 
 PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
@@ -377,31 +403,31 @@ PG_FUNCTION_INFO_V1(Sub_tnumber_tnumber);
 PGDLLEXPORT Datum
 Sub_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber(fcinfo, &datum_sub, SUB, NULL);
+  return arithop_tnumber_tnumber_ext(fcinfo, &datum_sub, SUB, NULL);
 }
 
 /*****************************************************************************
  * Temporal multiplication
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Mult_base_tnumber);
+PG_FUNCTION_INFO_V1(Mult_number_tnumber);
 /**
  * Return the temporal multiplication of the number and the temporal number
  */
 PGDLLEXPORT Datum
-Mult_base_tnumber(PG_FUNCTION_ARGS)
+Mult_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_mult, MULT);
+  return arithop_base_tnumber_ext(fcinfo, &datum_mult, MULT);
 }
 
-PG_FUNCTION_INFO_V1(Mult_tnumber_base);
+PG_FUNCTION_INFO_V1(Mult_tnumber_number);
 /**
  * Return the temporal multiplication of the temporal number and the number
  */
 PGDLLEXPORT Datum
-Mult_tnumber_base(PG_FUNCTION_ARGS)
+Mult_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_mult, MULT);
+  return arithop_tnumber_base_ext(fcinfo, &datum_mult, MULT);
 }
 
 PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
@@ -411,7 +437,7 @@ PG_FUNCTION_INFO_V1(Mult_tnumber_tnumber);
 PGDLLEXPORT Datum
 Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber(fcinfo, &datum_mult, MULT,
+  return arithop_tnumber_tnumber_ext(fcinfo, &datum_mult, MULT,
     &tnumber_mult_tp_at_timestamp);
 }
 
@@ -419,24 +445,24 @@ Mult_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Temporal division
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Div_base_tnumber);
+PG_FUNCTION_INFO_V1(Div_number_tnumber);
 /**
  * Return the temporal division of the number and the temporal number
  */
 PGDLLEXPORT Datum
-Div_base_tnumber(PG_FUNCTION_ARGS)
+Div_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_base_tnumber(fcinfo, &datum_div, DIV);
+  return arithop_base_tnumber_ext(fcinfo, &datum_div, DIV);
 }
 
-PG_FUNCTION_INFO_V1(Div_tnumber_base);
+PG_FUNCTION_INFO_V1(Div_tnumber_number);
 /**
  * Return the temporal division of the temporal number and the number
  */
 PGDLLEXPORT Datum
-Div_tnumber_base(PG_FUNCTION_ARGS)
+Div_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_base(fcinfo, &datum_div, DIV);
+  return arithop_tnumber_base_ext(fcinfo, &datum_div, DIV);
 }
 
 PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
@@ -446,7 +472,7 @@ PG_FUNCTION_INFO_V1(Div_tnumber_tnumber);
 PGDLLEXPORT Datum
 Div_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return arithop_tnumber_tnumber(fcinfo, &datum_div, DIV,
+  return arithop_tnumber_tnumber_ext(fcinfo, &datum_div, DIV,
     &tnumber_div_tp_at_timestamp);
 }
 

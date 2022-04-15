@@ -195,7 +195,7 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_similarity
  * @brief Compute the similarity distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
@@ -492,7 +492,7 @@ similarity_path_state_next(SimilarityPathState *state)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_similarity
  * @brief Compute the similarity path between two temporal values
  */
 Match *

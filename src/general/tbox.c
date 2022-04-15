@@ -150,10 +150,10 @@ tbox_shift_tscale(const Interval *start, const Interval *duration, TBOX *box)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_set
  * @brief Return the intersection of the temporal boxes.
  */
-static bool
+bool
 inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
 {
   bool hasx = MOBDB_FLAGS_GET_X(box1->flags) && MOBDB_FLAGS_GET_X(box2->flags);
@@ -247,7 +247,7 @@ Tbox_in(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_input_output
  * @brief Return the string representation of the temporal box.
  */
-static char *
+char *
 tbox_to_string(const TBOX *box)
 {
   static size_t size = MAXTBOXLEN + 1;
@@ -304,7 +304,7 @@ Tbox_out(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_input_output
  * @brief Write the binary representation of the box value into the buffer.
  */
-static void
+void
 tbox_write(const TBOX *box, StringInfo buf)
 {
   pq_sendbyte(buf, MOBDB_FLAGS_GET_X(box->flags) ? (uint8) 1 : (uint8) 0);
@@ -344,7 +344,7 @@ Tbox_send(PG_FUNCTION_ARGS)
  * @brief Return a new box value from its binary representation read from
  * the buffer.
  */
-static TBOX *
+TBOX *
 tbox_read(StringInfo buf)
 {
   TBOX *result = (TBOX *) palloc0(sizeof(TBOX));
@@ -707,7 +707,7 @@ Periodset_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Transform the integer and the timestamp to a temporal box
  */
-static TBOX *
+TBOX *
 int_timestamp_to_tbox(int i, TimestampTz t)
 {
   TBOX *result = tbox_make(true, true, (double) i, (double) i, t, t);
@@ -731,7 +731,7 @@ Int_timestamp_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Transform the integer and the timestamp to a temporal box
  */
-static TBOX *
+TBOX *
 float_timestamp_to_tbox(double d, TimestampTz t)
 {
   TBOX *result = tbox_make(true, true, d, d, t, t);
@@ -755,7 +755,7 @@ Float_timestamp_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Transform the integer and the period to a temporal box
  */
-static TBOX *
+TBOX *
 int_period_to_tbox(int i, Period *p)
 {
   TBOX *result = tbox_make(true, true, (double) i, (double)i, p->lower,
@@ -780,7 +780,7 @@ Int_period_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Transform the float and the period to a temporal box
  */
-static TBOX *
+TBOX *
 float_period_to_tbox(double d, Period *p)
 {
   TBOX *result = tbox_make(true, true, d, d, p->lower, p->upper);
@@ -804,7 +804,7 @@ Float_period_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Transform the range and the timestamp to a temporal box
  */
-static TBOX *
+TBOX *
 range_timestamp_to_tbox(RangeType *range, TimestampTz t)
 {
   /* Return null on empty or unbounded range */
@@ -837,7 +837,7 @@ Range_timestamp_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Transform the range and the period to a temporal box
  */
-static TBOX *
+TBOX *
 range_period_to_tbox(RangeType *range, Period *p)
 {
   char flags = range_get_flags(range);
@@ -897,7 +897,7 @@ Tnumber_to_tbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Cast the temporal box value as a float range value.
  */
-static RangeType *
+RangeType *
 tbox_to_floatrange(TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
@@ -925,7 +925,7 @@ Tbox_to_floatrange(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Cast the temporal box value as a period value
  */
-static Period *
+Period *
 tbox_to_period(TBOX *box)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
@@ -956,8 +956,8 @@ Tbox_to_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the temporal box has X dimension
  */
-static bool
-tbox_hasx(TBOX *box)
+bool
+tbox_hasx(const TBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_X(box->flags);
   return result;
@@ -978,8 +978,8 @@ Tbox_hasx(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the temporal box has T dimension
  */
-static bool
-tbox_hast(TBOX *box)
+bool
+tbox_hast(const TBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_T(box->flags);
   return result;
@@ -1000,8 +1000,8 @@ Tbox_hast(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum X value of the temporal box value, if any.
  */
-static bool
-tbox_xmin(TBOX *box, double *result)
+bool
+tbox_xmin(const TBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -1027,8 +1027,8 @@ Tbox_xmin(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum X value of the temporal box value, if any.
  */
-static bool
-tbox_xmax(TBOX *box, double *result)
+bool
+tbox_xmax(const TBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -1054,8 +1054,8 @@ Tbox_xmax(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum T value of the temporal box value, if any.
  */
-static bool
-tbox_tmin(TBOX *box, TimestampTz *result)
+bool
+tbox_tmin(const TBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
@@ -1081,8 +1081,8 @@ Tbox_tmin(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum T value of the temporal box value, if any.
  */
-static bool
-tbox_tmax(TBOX *box, TimestampTz *result)
+bool
+tbox_tmax(const TBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
@@ -1112,7 +1112,7 @@ Tbox_tmax(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_transf
  * @brief Expand the value dimension of the temporal box with the double value.
  */
-static TBOX *
+TBOX *
 tbox_expand_value(const TBOX *box, const double d)
 {
   ensure_has_X_tbox(box);
@@ -1138,7 +1138,7 @@ Tbox_expand_value(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_transf
  * @brief Expand the time dimension of the temporal box with the interval value.
  */
-static TBOX *
+TBOX *
 tbox_expand_temporal(const TBOX *box, const Datum interval)
 {
   ensure_has_T_tbox(box);
@@ -1167,8 +1167,8 @@ Tbox_expand_temporal(PG_FUNCTION_ARGS)
  * @brief Set the precision of the value dimension of the temporal box to
  * the number of decimal places.
  */
-static TBOX *
-tbox_round(TBOX *box, int size)
+TBOX *
+tbox_round(const TBOX *box, int size)
 {
   ensure_has_X_tbox(box);
   TBOX *result = tbox_copy(box);
@@ -1227,7 +1227,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the first temporal box contains the second one.
  */
 bool
@@ -1255,7 +1255,7 @@ Contains_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the first temporal box is contained by the second one.
  */
 bool
@@ -1277,7 +1277,7 @@ Contained_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the temporal boxes overlap.
  */
 bool
@@ -1305,7 +1305,7 @@ Overlaps_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the temporal boxes are equal on the common dimensions.
  */
 bool
@@ -1333,7 +1333,7 @@ Same_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the temporal boxes are adjacent.
  */
 bool
@@ -1373,7 +1373,7 @@ Adjacent_tbox_tbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box is strictly to the left of
  * the second one.
  */
@@ -1398,7 +1398,7 @@ Left_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
  */
@@ -1423,7 +1423,7 @@ Overleft_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box is strictly to the right of
  * the second one.
  */
@@ -1448,7 +1448,7 @@ Right_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one.
  */
@@ -1473,7 +1473,7 @@ Overright_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box is strictly before
  * the second one.
  */
@@ -1498,7 +1498,7 @@ Before_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend after
  * the second one.
  */
@@ -1523,7 +1523,7 @@ Overbefore_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box is strictly after the
  * second one.
  */
@@ -1548,7 +1548,7 @@ After_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend before
  * the second one.
  */
@@ -1577,10 +1577,10 @@ Overafter_tbox_tbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_set
  * @brief Return the union of the temporal boxes.
  */
-static TBOX *
+TBOX *
 union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 {
   ensure_same_dimensionality_tbox(box1, box2);
@@ -1701,7 +1701,7 @@ Tbox_extent_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_comparison
+ * @ingroup libmeos_box_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box value
  * is less than, equal to, or greater than the second one.
  *
@@ -1820,7 +1820,7 @@ Tbox_gt(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_comparison
+ * @ingroup libmeos_box_oper_comp
  * @brief Return true if the two temporal boxes are equal
  *
  * @note The internal B-tree comparator is not used to increase efficiency

@@ -178,15 +178,15 @@ Distance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_dist
  * @brief Return the nearest approach instant of the temporal network point
  * and the geometry
  */
-static TInstant *
-nai_tnpoint_geo(FunctionCallInfo fcinfo, Temporal *temp, GSERIALIZED *gs)
+TInstant *
+nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(fcinfo, tempgeom, gs);
+  TInstant *resultgeom = nai_tpoint_geo(tempgeom, gs);
   /* We do not call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -209,7 +209,9 @@ NAI_geo_tnpoint(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = nai_tnpoint_geo(fcinfo, temp, gs);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tnpoint_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
@@ -227,7 +229,9 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
   if (gserialized_is_empty(gs))
     PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = nai_tnpoint_geo(fcinfo, temp, gs);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tnpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_POINTER(result);
@@ -236,17 +240,17 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_dist
  * @brief Return the nearest approach instant of the network point and the
  * temporal network point.
  */
-static TInstant *
-nai_tnpoint_npoint(FunctionCallInfo fcinfo, Temporal *temp, npoint *np)
+TInstant *
+nai_tnpoint_npoint(const Temporal *temp, const npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  TInstant *resultgeom = nai_tpoint_geo(fcinfo, tempgeom, gs);
+  TInstant *resultgeom = nai_tpoint_geo(tempgeom, gs);
   /* We do not call the function tgeompointinst_to_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
@@ -269,7 +273,9 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = nai_tnpoint_npoint(fcinfo, temp, np);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -284,7 +290,9 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  TInstant *result = nai_tnpoint_npoint(fcinfo, temp, np);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

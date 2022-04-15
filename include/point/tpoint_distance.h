@@ -62,8 +62,7 @@ extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern TInstant *nai_tpoint_geo(FunctionCallInfo fcinfo,
-  const Temporal *temp, GSERIALIZED *gs);
+extern TInstant *nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
 extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);

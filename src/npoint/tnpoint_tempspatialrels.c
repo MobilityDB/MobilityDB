@@ -58,11 +58,12 @@
  *****************************************************************************/
 
 /**
- * Return the temporal disjoint/intersection relationship between the temporal
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal disjoint/intersection relationship between the temporal
  * network point and the network point
  */
-static Temporal *
-tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter,
+Temporal *
+tinterrel_tnpoint_npoint(const Temporal *temp, const npoint *np, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
@@ -81,7 +82,7 @@ tinterrel_tnpoint_npoint(Temporal *temp, npoint *np, bool tinter,
  * network point and the network point
  */
 static Datum
-tinterrel_tnpoint_npoint_generic(FunctionCallInfo fcinfo, bool tinter)
+tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
@@ -127,11 +128,12 @@ tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
 /*****************************************************************************/
 
 /**
- * Return the temporal disjoint/intersection relationship between the temporal
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal disjoint/intersection relationship between the temporal
  * network point and the geometry
  */
-static Temporal *
-tinterrel_tnpoint_geo(Temporal *temp, GSERIALIZED *gs, bool tinter,
+Temporal *
+tinterrel_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
@@ -177,7 +179,7 @@ tinterrel_geo_tnpoint(FunctionCallInfo fcinfo, bool tinter)
  * network point and the geometry
  */
 static Datum
-tinterrel_tnpoint_geo_generic(FunctionCallInfo fcinfo, bool tinter)
+tinterrel_tnpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
@@ -204,11 +206,12 @@ tinterrel_tnpoint_geo_generic(FunctionCallInfo fcinfo, bool tinter)
 /*****************************************************************************/
 
 /**
- * Return the temporal touches relationship between the temporal network point
- * and the geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal touches relationship between the temporal network
+ * point and the geometry
  */
-static Temporal *
-ttouches_tnpoint_geo(Temporal *temp, GSERIALIZED *gs,
+Temporal *
+ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
@@ -220,11 +223,12 @@ ttouches_tnpoint_geo(Temporal *temp, GSERIALIZED *gs,
 }
 
 /**
- * Return the temporal touches relationship between the temporal network point
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal touches relationship between the temporal network point
  * and the network point
  */
-static Temporal *
-ttouches_tnpoint_npoint(Temporal *temp, npoint *np,
+Temporal *
+ttouches_tnpoint_npoint(const Temporal *temp, const npoint *np,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
@@ -305,7 +309,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_geo);
 PGDLLEXPORT Datum
 Tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_geo_generic(fcinfo, TDISJOINT);
+  return tinterrel_tnpoint_geo_ext(fcinfo, TDISJOINT);
 }
 
 PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_npoint);
@@ -316,7 +320,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tnpoint_npoint);
 PGDLLEXPORT Datum
 Tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_npoint_generic(fcinfo, TDISJOINT);
+  return tinterrel_tnpoint_npoint_ext(fcinfo, TDISJOINT);
 }
 
 /*****************************************************************************
@@ -353,7 +357,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tnpoint_geo);
 PGDLLEXPORT Datum
 Tintersects_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_geo_generic(fcinfo, TINTERSECTS);
+  return tinterrel_tnpoint_geo_ext(fcinfo, TINTERSECTS);
 }
 
 PG_FUNCTION_INFO_V1(Tintersects_tnpoint_npoint);
@@ -364,7 +368,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tnpoint_npoint);
 PGDLLEXPORT Datum
 Tintersects_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tnpoint_npoint_generic(fcinfo, TINTERSECTS);
+  return tinterrel_tnpoint_npoint_ext(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************

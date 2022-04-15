@@ -1624,7 +1624,7 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
@@ -1641,7 +1641,7 @@ tsequenceset_ever_eq(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always equal to the base value.
  */
 bool
@@ -1665,7 +1665,7 @@ tsequenceset_always_eq(const TSequenceSet *ts, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than the base value.
  */
 bool
@@ -1685,7 +1685,7 @@ tsequenceset_ever_lt(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than or equal
  * to the base value.
  */
@@ -1706,7 +1706,7 @@ tsequenceset_ever_le(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than the base value.
  */
 bool
@@ -1726,7 +1726,7 @@ tsequenceset_always_lt(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than or equal
  * to the base value.
  */
@@ -2316,7 +2316,7 @@ tnumberseqset_integral(const TSequenceSet *ts)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of the temporal value as a double
  */
-static double
+double
 tsequenceset_interval_double(const TSequenceSet *ts)
 {
   double result = 0;
@@ -2355,7 +2355,7 @@ tnumberseqset_twavg(const TSequenceSet *ts)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return true if the two temporal sequence set values are equal.
  *
  * @pre The arguments are of the same base type
@@ -2387,7 +2387,7 @@ tsequenceset_eq(const TSequenceSet *ts1, const TSequenceSet *ts2)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal, or greater than the second one.
  *

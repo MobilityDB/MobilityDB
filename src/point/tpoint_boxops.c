@@ -233,14 +233,14 @@ tpointseq_stboxes1(const TSequence *seq, STBOX *result)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of the
  * temporal sequence point value.
  *
  * @param[in] seq Temporal value
  * @param[out] count Number of elements in the output array
  */
-static STBOX *
+STBOX *
 tpointseq_stboxes(const TSequence *seq, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -252,14 +252,14 @@ tpointseq_stboxes(const TSequence *seq, int *count)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_accessor
  * @brief Return an array of spatiotemporal boxes from the segments of the
  * temporal sequence set point value.
  *
  * @param[in] ts Temporal value
  * @param[out] count Number of elements in the output array
  */
-static STBOX *
+STBOX *
 tpointseqset_stboxes(const TSequenceSet *ts, int *count)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
@@ -271,6 +271,25 @@ tpointseqset_stboxes(const TSequenceSet *ts, int *count)
     k += tpointseq_stboxes1(seq, &result[k]);
   }
   *count = k;
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return an array of spatiotemporal boxes from the temporal point
+ */
+STBOX *
+tpoint_stboxes(const Temporal *temp)
+{
+  STBOX *result = NULL;
+  ensure_valid_tempsubtype(temp->subtype);
+  int count;
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+    ;
+  else if (temp->subtype == SEQUENCE)
+    result = tpointseq_stboxes((TSequence *)temp, &count);
+  else /* temp->subtype == SEQUENCESET */
+    result = tpointseqset_stboxes((TSequenceSet *)temp, &count);
   return result;
 }
 
@@ -304,17 +323,17 @@ Tpoint_stboxes(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
- * @brief Generic topological function for a temporal point and a geometry.
+ * @ingroup libmeos_temporal_oper_bbox
+ * @brief Generic bounding box function for a temporal point and a geometry.
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[in] func Function
+ * @param[in] func Bounding box function
  * @param[in] invert True when the geometry is the first argument of the
  * function
  */
-static int
-boxop_tpoint_geo(Temporal *temp, GSERIALIZED *gs,
+int
+boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
   if (gserialized_is_empty(gs))
@@ -327,10 +346,10 @@ boxop_tpoint_geo(Temporal *temp, GSERIALIZED *gs,
 }
 
 /**
- * Generic box function for a geometry and a temporal point
+ * Generic bounding box function for a geometry and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
@@ -347,10 +366,10 @@ boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic topological function for a temporal point and a geometry
+ * Generic bounding box function for a temporal point and a geometry.
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
@@ -366,12 +385,33 @@ boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(result ? true : false);
 }
 
+/*****************************************************************************/
 
 /**
- * Generic topological function for a spatiotemporal box and a temporal point
+ * @ingroup libmeos_temporal_oper_box
+ * @brief Generic bounding box function for a temporal point and a
+ * spatiotemporal box
+ *
+ * @param[in] temp Temporal point
+ * @param[in] box Box
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the geometry is the first argument of the
+ */
+Datum
+boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
+  bool (*func)(const STBOX *, const STBOX *), bool invert)
+{
+  STBOX box1;
+  temporal_bbox(temp, &box1);
+  bool result = invert ? func(box, &box1) : func(&box1, box);
+  return result;
+}
+
+/**
+ * Generic bounding box function for a spatiotemporal box and a temporal point
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
@@ -387,10 +427,10 @@ boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * Generic topological function for a temporal point and a spatiotemporal box
+ * Generic bounding box function for a temporal point and a spatiotemporal box
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
@@ -405,18 +445,17 @@ boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(result);
 }
 
-
-
+/*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
- * @brief Generic topological function for two temporal points.
+ * @ingroup libmeos_temporal_oper_box
+ * @brief Generic bounding box function for two temporal points.
  *
  * @param[in] temp1,temp2 Temporal points
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
-static bool
-boxop_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
+bool
+boxop_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBOX *, const STBOX *))
 {
   STBOX box1, box2;
@@ -430,7 +469,7 @@ boxop_tpoint_tpoint(Temporal *temp1, Temporal *temp2,
  * Generic topological function for two temporal points
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,

@@ -2207,7 +2207,7 @@ tsequence_value_at_timestamp_inc(const TSequence *seq, TimestampTz t,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
@@ -2267,7 +2267,7 @@ tsequence_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always equal to the base value.
  */
 bool
@@ -2350,7 +2350,7 @@ tlinearseq_always_lt1(Datum value1, Datum value2, CachedType basetype,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than the base value.
  */
 bool
@@ -2371,7 +2371,7 @@ tsequence_ever_lt(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than or equal to the
  * base value
  */
@@ -2415,7 +2415,7 @@ tsequence_ever_le(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than the base value.
  */
 bool
@@ -2458,7 +2458,7 @@ tsequence_always_lt(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than or equal to the
  * base value
  */
@@ -4055,7 +4055,7 @@ tnumberseq_twavg(const TSequence *seq)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return true if the two temporal sequence values are equal.
  *
  * @pre The arguments are of the same base type
@@ -4088,7 +4088,7 @@ tsequence_eq(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  *

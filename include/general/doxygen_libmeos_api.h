@@ -71,6 +71,26 @@
  * @defgroup libmeos_time_oper Operators
  * @ingroup libmeos_time
  * @brief Operators for time types.
+ *
+ * @defgroup libmeos_time_oper_topo Topological operators
+ * @ingroup libmeos_time_oper
+ * @brief Topological operators for time types.
+ *
+ * @defgroup libmeos_time_oper_pos Position operators
+ * @ingroup libmeos_time_oper
+ * @brief Position operators for time types.
+ *
+ * @defgroup libmeos_time_oper_set Set operators
+ * @ingroup libmeos_time_oper
+ * @brief Set operators for time types.
+ *
+ * @defgroup libmeos_time_oper_dist Distance operators
+ * @ingroup libmeos_time_oper
+ * @brief Distance operators for time types.
+ *
+ * @defgroup libmeos_time_oper_comp Comparison operators
+ * @ingroup libmeos_time_oper
+ * @brief Comparison operators for time types.
  */
 
 /**
@@ -102,9 +122,21 @@
  * @ingroup libmeos_box
  * @brief Operators for box types.
  *
- * @defgroup libmeos_box_comparison Comparison functions
- * @ingroup libmeos_box
- * @brief Comparison functions for box types.
+ * @defgroup libmeos_box_oper_topo Topological operators
+ * @ingroup libmeos_box_oper
+ * @brief Topological operators for box types.
+ *
+ * @defgroup libmeos_box_oper_pos Position operators
+ * @ingroup libmeos_box_oper
+ * @brief Position operators for box types.
+ *
+ * @defgroup libmeos_box_oper_set Set operators
+ * @ingroup libmeos_box_oper
+ * @brief Set operators for box types.
+ *
+ * @defgroup libmeos_box_oper_comp Comparison operators
+ * @ingroup libmeos_box_oper
+ * @brief Comparison operators for box types.
  */
 
 /**
@@ -136,17 +168,57 @@
  * @ingroup libmeos_temporal
  * @brief Restriction functions for temporal types.
  *
- * @defgroup libmeos_temporal_comparison Comparison functions
- * @ingroup libmeos_temporal
- * @brief Comparison functions for temporal types.
- *
  * @defgroup libmeos_temporal_spatial Spatial functions
  * @ingroup libmeos_temporal
- * @brief Spatial functions for temporal types.
+ * @brief Spatial functions for temporal point types.
+ *
+ * @defgroup libmeos_temporal_spatial_accessor Spatial accessor functions
+ * @ingroup libmeos_temporal_spatial
+ * @brief Spatial accessor functions for temporal point types.
+ *
+ * @defgroup libmeos_temporal_spatial_transf Spatial transformation functions
+ * @ingroup libmeos_temporal_spatial
+ * @brief Spatial transformation functions for temporal point types.
+ *
+ * @defgroup libmeos_temporal_spatial_rel Spatial relationship functions
+ * @ingroup libmeos_temporal_spatial
+ * @brief Spatial relationship functions for temporal point types.
  *
  * @defgroup libmeos_temporal_tiling Multidimensional tiling functions
  * @ingroup libmeos_temporal
  * @brief Multidimensional tiling functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_similarity Similarity functions
+ * @ingroup libmeos_temporal
+ * @brief Similarity functions for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper Operators
+ * @ingroup libmeos_temporal
+ * @brief Operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_bool Boolean operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Boolean operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_math Mathematical operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Mathematical operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_bbox Bounding box operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Bounding box operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_dist Distance operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Distance operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_ever Ever/always operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Comparison operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_comp Comparison operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Comparison operators for temporal types.
  */
 
 /*****************************************************************************/

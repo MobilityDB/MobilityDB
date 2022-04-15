@@ -74,7 +74,7 @@ datum_not(Datum d)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bool
  * @brief Return the not boolean operator of the temporal value.
  */
 Temporal *
@@ -92,10 +92,10 @@ tnot_tbool(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bool
  * @brief Return the temporal boolean operator of the temporal value and the value.
  */
-static Temporal *
+Temporal *
 boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 {
   LiftedFunctionInfo lfinfo;
@@ -110,7 +110,7 @@ boolop_tbool_bool(const Temporal *temp, Datum b, datum_func2 func, bool invert)
 }
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bool
  * @brief Return the temporal boolean operator of the temporal values.
  */
 Temporal *

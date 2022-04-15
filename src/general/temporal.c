@@ -855,7 +855,7 @@ Temporal_in(PG_FUNCTION_ARGS)
  * @param[in] value_out Function called to output the base value
  * depending on its Oid
  */
-static char *
+char *
 temporal_to_string(const Temporal *temp, char *(*value_out)(Oid, Datum))
 {
   char *result;
@@ -1178,7 +1178,7 @@ temporal_from_base(const Temporal *temp, Datum value, CachedType temptype,
  * @brief Append an instant to the end of a temporal value.
  */
 Temporal *
-temporal_append_tinstant(Temporal *temp, Temporal *inst)
+temporal_append_tinstant(const Temporal *temp, const Temporal *inst)
 {
   /* Validity tests */
   if (inst->subtype != INSTANT)
@@ -1310,7 +1310,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
  * @result Merged value. Return NULL if both arguments are NULL.
  * If one argument is null the other argument is output.
  */
-static Temporal *
+Temporal *
 temporal_merge(const Temporal *temp1, const Temporal *temp2)
 {
   Temporal *result;
@@ -1502,7 +1502,7 @@ Temporal_merge_array(PG_FUNCTION_ARGS)
  *
  * @note Note that the temporal subtype INSTANT does not have bounding box.
  */
-static RangeType *
+RangeType *
 tint_range(const Temporal *temp)
 {
   ensure_valid_tempsubtype(temp->subtype);
@@ -1543,7 +1543,7 @@ Tint_to_range(PG_FUNCTION_ARGS)
  *
  * @note Note that the temporal subtype INSTANT does not have bounding box.
  */
-static RangeType *
+RangeType *
 tfloat_range(const Temporal *temp)
 {
   ensure_valid_tempsubtype(temp->subtype);
@@ -1584,8 +1584,8 @@ Tfloat_to_range(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_cast
  * @brief Cast the temporal integer value as a temporal float value.
  */
-static Temporal *
-tint_tfloat(Temporal *temp)
+Temporal *
+tint_tfloat(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1617,8 +1617,8 @@ Tint_to_tfloat(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_cast
  * @brief Cast the temporal float value as a temporal integer value.
  */
-static Temporal *
-tfloat_tint(Temporal *temp)
+Temporal *
+tfloat_tint(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1690,7 +1690,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_transf
  * @brief Transform the temporal value into a temporal instant value.
  */
-static Temporal *
+Temporal *
 temporal_tinstant(const Temporal *temp)
 {
   Temporal *result;
@@ -1723,7 +1723,7 @@ Temporal_to_tinstant(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_transf
  * @brief Transform the temporal value into a temporal instant set value.
  */
-static Temporal *
+Temporal *
 temporal_tinstantset(const Temporal *temp)
 {
   Temporal *result;
@@ -1756,7 +1756,7 @@ Temporal_to_tinstantset(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_transf
  * @brief Transform the temporal value into a temporal sequence value.
  */
-static Temporal *
+Temporal *
 temporal_tsequence(const Temporal *temp)
 {
   Temporal *result;
@@ -1791,7 +1791,7 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_transf
  * @brief Transform the temporal value into a temporal sequence set value.
  */
-static Temporal *
+Temporal *
 temporal_tsequenceset(const Temporal *temp)
 {
   Temporal *result;
@@ -1827,7 +1827,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
  * @brief Transform the temporal value with continuous base type from stepwise
  * to linear interpolation.
  */
-static Temporal *
+Temporal *
 tstep_tlinear(const Temporal *temp)
 {
   ensure_seq_subtypes(temp->subtype);
@@ -1871,8 +1871,8 @@ Tstep_to_tlinear(PG_FUNCTION_ARGS)
  * @param[in] duration Interval for scale
  * @pre The duration is greater than 0 if is not NULL
  */
-static Temporal *
-temporal_shift_tscale(Temporal *temp, bool shift, bool tscale,
+Temporal *
+temporal_shift_tscale(const Temporal *temp, bool shift, bool tscale,
   Interval *start, Interval *duration)
 {
   assert((! shift || start != NULL) && (! tscale || duration != NULL));
@@ -1948,7 +1948,7 @@ Temporal_shift_tscale(PG_FUNCTION_ARGS)
  * @brief Return the string representation of the temporal type.
  */
 char *
-temporal_subtype(Temporal *temp)
+temporal_subtype(const Temporal *temp)
 {
   char *result = palloc(sizeof(char) * 12);
   ensure_valid_tempsubtype(temp->subtype);
@@ -1983,7 +1983,7 @@ Temporal_subtype(PG_FUNCTION_ARGS)
  * @brief Return the string representation of the temporal type.
  */
 char *
-temporal_interpolation(Temporal *temp)
+temporal_interpolation(const Temporal *temp)
 {
   char *result = palloc(sizeof(char) * 12);
   ensure_valid_tempsubtype(temp->subtype);
@@ -2029,8 +2029,8 @@ Temporal_memory_size(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of base values of the temporal value.
  */
-static Datum *
-temporal_values(Temporal *temp, int *count)
+Datum *
+temporal_values(const Temporal *temp, int *count)
 {
   Datum *result;  /* make the compiler quiet */
   ensure_valid_tempsubtype(temp->subtype);
@@ -2070,7 +2070,7 @@ Temporal_values(PG_FUNCTION_ARGS)
  * @brief Return the base values of the temporal float value as an array of
  * ranges.
  */
-static RangeType **
+RangeType **
 tfloat_ranges(const Temporal *temp, int *count)
 {
   RangeType **result;
@@ -2374,8 +2374,8 @@ Temporal_max_value(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the timespan of the temporal value.
  */
-static Datum
-temporal_timespan(Temporal *temp)
+Datum
+temporal_timespan(const Temporal *temp)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2412,8 +2412,8 @@ Temporal_timespan(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of the temporal value.
  */
-static Datum
-temporal_duration(Temporal *temp)
+Datum
+temporal_duration(const Temporal *temp)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2448,8 +2448,8 @@ Temporal_duration(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of sequences of the temporal sequence (set) value.
  */
-static int
-temporal_num_sequences(Temporal *temp)
+int
+temporal_num_sequences(const Temporal *temp)
 {
   ensure_seq_subtypes(temp->subtype);
   int result = 1;
@@ -2544,7 +2544,7 @@ Temporal_sequence_n(PG_FUNCTION_ARGS)
  * @brief Return the array of sequences of the temporal value.
  */
 TSequence **
-temporal_sequences(Temporal *temp, int *count)
+temporal_sequences(const Temporal *temp, int *count)
 {
   TSequence **result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2593,7 +2593,7 @@ Temporal_sequences(PG_FUNCTION_ARGS)
  * @brief Return the array of sequences of the temporal value.
  */
 TSequence **
-temporal_segments(Temporal *temp, int *count)
+temporal_segments(const Temporal *temp, int *count)
 {
   TSequence **result;
   if (temp->subtype == INSTANT)
@@ -2638,8 +2638,8 @@ Temporal_segments(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct instants of the temporal value.
  */
-static int
-temporal_num_instants(Temporal *temp)
+int
+temporal_num_instants(const Temporal *temp)
 {
   int result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2710,7 +2710,7 @@ Temporal_start_instant(PG_FUNCTION_ARGS)
  * @note This function is used for validity testing and thus returns a
  * pointer to the last instant.
  */
-static const TInstant *
+const TInstant *
 temporal_end_instant(const Temporal *temp)
 {
   const TInstant *result;
@@ -2854,8 +2854,8 @@ Temporal_instants(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the number of distinct timestamps of the temporal value.
  */
-static int
-temporal_num_timestamps(Temporal *temp)
+int
+temporal_num_timestamps(const Temporal *temp)
 {
   int result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -2887,7 +2887,7 @@ Temporal_num_timestamps(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start timestamp of the temporal value.
  */
-static TimestampTz
+TimestampTz
 temporal_start_timestamp(const Temporal *temp)
 {
   TimestampTz result;
@@ -3108,7 +3108,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
@@ -3128,10 +3128,10 @@ temporal_ever_eq(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always equal to the base value.
  */
-static bool
+bool
 temporal_always_eq(const Temporal *temp, Datum value)
 {
   bool result;
@@ -3148,10 +3148,10 @@ temporal_always_eq(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than the base value.
  */
-static bool
+bool
 temporal_ever_lt(const Temporal *temp, Datum value)
 {
   bool result;
@@ -3168,10 +3168,10 @@ temporal_ever_lt(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than the base value.
  */
-static bool
+bool
 temporal_always_lt(const Temporal *temp, Datum value)
 {
   bool result;
@@ -3188,11 +3188,11 @@ temporal_always_lt(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than or equal to the
  * base value.
  */
-static bool
+bool
 temporal_ever_le(const Temporal *temp, Datum value)
 {
   bool result;
@@ -3209,11 +3209,11 @@ temporal_ever_le(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than or equal to the
  * base value.
  */
-static bool
+bool
 temporal_always_le(const Temporal *temp, Datum value)
 {
   bool result;
@@ -4559,12 +4559,12 @@ Tnumber_twavg(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return true if the two temporal values are equal.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
  */
-static bool
+bool
 temporal_eq(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1->temptype == temp2->temptype);
@@ -4697,13 +4697,13 @@ Temporal_ne(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  *
  * @note Function used for B-tree comparison
  */
-static int
+int
 temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1->temptype == temp2->temptype);

@@ -289,7 +289,7 @@ Timestampset_out(PG_FUNCTION_ARGS)
  * @param[in] ts Time value
  * @param[in] buf Buffer
  */
-static void
+void
 timestampset_write(const TimestampSet *ts, StringInfo buf)
 {
   pq_sendint32(buf, ts->count);
@@ -376,7 +376,7 @@ Timestampset_constructor(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_cast
  * @brief Cast a timestamp value as a timestamp set value
  */
-static TimestampSet *
+TimestampSet *
 timestamp_timestampset(TimestampTz t)
 {
   TimestampSet *result = timestampset_make(&t, 1);
@@ -431,8 +431,8 @@ Timestampset_to_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the size in bytes of the timestamp set value.
  */
-static int
-timestampset_mem_size(TimestampSet *ts)
+int
+timestampset_mem_size(const TimestampSet *ts)
 {
   return (int) VARSIZE(DatumGetPointer(ts));
 }
@@ -455,7 +455,7 @@ Timestampset_mem_size(PG_FUNCTION_ARGS)
  * @brief Return the timespan of the timestamp set value.
  */
 Interval *
-timestampset_timespan(TimestampSet *ts)
+timestampset_timespan(const TimestampSet *ts)
 {
   TimestampTz start = timestampset_time_n(ts, 0);
   TimestampTz end = timestampset_time_n(ts, ts->count - 1);
@@ -481,8 +481,8 @@ Timestampset_timespan(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the number of timestamps of the timestamp set value.
  */
-static int
-timestampset_num_timestamps(TimestampSet *ts)
+int
+timestampset_num_timestamps(const TimestampSet *ts)
 {
   return ts->count;
 }
@@ -503,8 +503,8 @@ Timestampset_num_timestamps(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the start timestamp of the timestamp set value.
  */
-static TimestampTz
-timestampset_start_timestamp(TimestampSet *ts)
+TimestampTz
+timestampset_start_timestamp(const TimestampSet *ts)
 {
   TimestampTz result = timestampset_time_n(ts, 0);
   return result;
@@ -527,8 +527,8 @@ Timestampset_start_timestamp(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the end timestamp of the timestamp set value.
  */
-static TimestampTz
-timestampset_end_timestamp(TimestampSet *ts)
+TimestampTz
+timestampset_end_timestamp(const TimestampSet *ts)
 {
   TimestampTz result = timestampset_time_n(ts, ts->count - 1);
   return result;
@@ -557,8 +557,8 @@ Timestampset_end_timestamp(PG_FUNCTION_ARGS)
  * @result Return true if the timestamp is found
  * @note It is assumed that n is 1-based
  */
-static bool
-timestampset_timestamp_n(TimestampSet *ts, int n, TimestampTz *result)
+bool
+timestampset_timestamp_n(const TimestampSet *ts, int n, TimestampTz *result)
 {
   if (n < 1 || n > ts->count)
     return false;
@@ -703,7 +703,7 @@ Timestampset_shift_tscale(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_comparison
+ * @ingroup libmeos_time_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  *
@@ -752,7 +752,7 @@ Timestampset_cmp(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_oper_comp
  * @brief Return true if the first timestamp set value is equal to the
  * second one.
  *
@@ -771,7 +771,7 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
     if (t1 != t2)
       return false;
   }
-  /* All timestamps of the two TimestampSet are equal */
+  /* All timestamps of the two timestamp set are equal */
   return true;
 }
 
@@ -891,7 +891,7 @@ Timestampset_gt(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the 32-bit hash value of a timestamp set.
  */
-static uint32
+uint32
 timestampset_hash(const TimestampSet *ts)
 {
   uint32 result = 1;
@@ -917,10 +917,10 @@ Timestampset_hash(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_accessor
  * @brief Return the 64-bit hash value of a timestamp set using a seed.
  */
-static uint64
+uint64
 timestampset_hash_extended(const TimestampSet *ts, Datum seed)
 {
   uint64 result = 1;

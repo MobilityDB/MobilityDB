@@ -268,7 +268,8 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  *****************************************************************************/
 
 /**
- * Generic ever spatial relationship for a temporal point and a geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Generic ever spatial relationship for a temporal point and a geometry
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -279,10 +280,14 @@ get_dwithin_fn_gs(int16 flags1, uint8_t flags2)
  * @param[in] geomcoll True if for PostGIS 2.5 we cannot call the function
  * with a trajectory of type GEOMETRYCOLLECTION
  */
-static Datum
-spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
+Datum
+spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
   Datum (*func)(Datum, ...), int numparam, bool invert,
+#if POSTGIS_VERSION_NUMBER < 30000
+  bool geomcoll)
+#else
   bool geomcoll __attribute__((unused)))
+#endif
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   assert(numparam == 2 || numparam == 3);
@@ -333,20 +338,19 @@ spatialrel_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param,
 /*****************************************************************************/
 
 /**
- * Return true if the temporal points ever satisfy the spatial relationship
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal points ever satisfy the spatial
+ * relationship.
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Spatial relationship
  */
-static Datum
-spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
+int
+spatialrel_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  Datum (*func)(Datum, Datum))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -363,7 +367,23 @@ spatialrel_tpoint_tpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   int result = efunc_temporal_temporal(temp1, temp2, &lfinfo);
-  /* Finish */
+  return result;
+}
+
+/**
+ * Return true if the temporal points ever satisfy the spatial relationship
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Spatial relationship
+ */
+static Datum
+spatialrel_tpoint_tpoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  int result = spatialrel_tpoint_tpoint(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)
@@ -419,13 +439,14 @@ Contains_geo_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return true if the temporal point and the geometry are ever disjoint
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] inst Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be called
  */
-static bool
+bool
 disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
   Datum (*func)(Datum, ...))
 {
@@ -433,13 +454,14 @@ disjoint_tpointinst_geo(const TInstant *inst, Datum geo,
 }
 
 /**
- * Return true if the temporal point and the geometry are ever disjoint
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] ti Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be called
  */
-static bool
+bool
 disjoint_tpointinstset_geo(const TInstantSet *ti, Datum geo,
   Datum (*func)(Datum, ...))
 {
@@ -453,13 +475,14 @@ disjoint_tpointinstset_geo(const TInstantSet *ti, Datum geo,
 }
 
 /**
- * Return true if the temporal point and the geometry are ever disjoint
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] seq Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be called
  */
-static bool
+bool
 disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
   Datum (*func)(Datum, ...))
 {
@@ -473,13 +496,14 @@ disjoint_tpointseq_geo(const TSequence *seq, Datum geo,
 }
 
 /**
- * Return true if the temporal point and the geometry are ever disjoint
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal point and the geometry are ever disjoint
  *
  * @param[in] ts Temporal point
  * @param[in] geo Geometry
  * @param[in] func PostGIS function to be used for instantaneous sequences
  */
-static bool
+bool
 disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
   Datum (*func)(Datum, ...))
 {
@@ -493,14 +517,14 @@ disjoint_tpointseqset_geo(const TSequenceSet *ts, Datum geo,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return true if the temporal point and the geometry are ever disjoint.
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  */
-static bool
-disjoint_tpoint_geo(Temporal *temp, GSERIALIZED *gs)
+bool
+disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   varfunc func = (varfunc) get_disjoint_fn_gs(temp->flags, GS_FLAGS(gs));
@@ -570,7 +594,7 @@ PG_FUNCTION_INFO_V1(Disjoint_tpoint_tpoint);
 PGDLLEXPORT Datum
 Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_tpoint(fcinfo, &datum2_point_ne);
+  return spatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_ne);
 }
 
 /*****************************************************************************
@@ -628,7 +652,7 @@ PG_FUNCTION_INFO_V1(Intersects_tpoint_tpoint);
 PGDLLEXPORT Datum
 Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
-  return spatialrel_tpoint_tpoint(fcinfo, &datum2_point_eq);
+  return spatialrel_tpoint_tpoint_ext(fcinfo, &datum2_point_eq);
 }
 
 /*****************************************************************************
@@ -638,11 +662,11 @@ Intersects_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return true if the temporal point and the geometry ever touch.
  */
-static bool
-touches_tpoint_geo(Temporal *temp, GSERIALIZED *gs)
+bool
+touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   /* There is no need to do a bounding box test since this is done in

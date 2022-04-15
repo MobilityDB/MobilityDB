@@ -126,7 +126,7 @@ tpoint_as_text1(const Temporal *temp)
  * @ingroup libmeos_temporal_input_output
  * @brief Output a temporal point in Well-Known Text (WKT) format
  */
-static text *
+text *
 tpoint_as_text(const Temporal *temp)
 {
   char *str = tpoint_as_text1(temp);
@@ -153,7 +153,7 @@ Tpoint_as_text(PG_FUNCTION_ARGS)
  * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID.
  */
-static text *
+text *
 tpoint_as_ewkt(const Temporal *temp)
 {
   int srid = tpoint_srid(temp);
@@ -192,8 +192,8 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_input_output
  * @brief Output a geometry/geography array in Well-Known Text (WKT) format
  */
-static text **
-geoarr_as_text(Datum *geoarr, int count, bool extended)
+text **
+geoarr_as_text(const Datum *geoarr, int count, bool extended)
 {
   text **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
@@ -257,8 +257,8 @@ Geoarr_as_ewkt(PG_FUNCTION_ARGS)
  * @brief Output a temporal point array in Well-Known Text (WKT) or
  * Extended Well-Known Text (EWKT) format
  */
-static text **
-tpointarr_as_text(Temporal **temparr, int count, bool extended)
+text **
+tpointarr_as_text(const Temporal **temparr, int count, bool extended)
 {
   text **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
@@ -284,7 +284,7 @@ tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
   }
 
   Temporal **temparr = temporalarr_extract(array, &count);
-  text **textarr = tpointarr_as_text(temparr, count, extended);
+  text **textarr = tpointarr_as_text((const Temporal **) temparr, count, extended);
   ArrayType *result = textarr_to_array(textarr, count);
 
   pfree_array((void **) textarr, count);
@@ -520,7 +520,7 @@ tpointinst_as_mfjson_buf(const TInstant *inst, int precision,
  * @ingroup libmeos_temporal_input_output
  * @brief Return the temporal instant point represented in MF-JSON format
  */
-static char *
+char *
 tpointinst_as_mfjson(const TInstant *inst, int precision,
   const STBOX *bbox, char *srs)
 {
@@ -582,7 +582,7 @@ tpointinstset_as_mfjson_buf(const TInstantSet *ti, int precision, const STBOX *b
  * @ingroup libmeos_temporal_input_output
  * @brief Return the temporal instant set point represented in MF-JSON format
  */
-static char *
+char *
 tpointinstset_as_mfjson(const TInstantSet *ti, int precision, const STBOX *bbox,
   char *srs)
 {
@@ -646,7 +646,7 @@ tpointseq_as_mfjson_buf(const TSequence *seq, int precision, const STBOX *bbox,
  * @ingroup libmeos_temporal_input_output
  * @brief Return the temporal sequence point represented in MF-JSON format
  */
-static char *
+char *
 tpointseq_as_mfjson(const TSequence *seq, int precision, const STBOX *bbox,
   char *srs)
 {
@@ -719,7 +719,7 @@ tpointseqset_as_mfjson_buf(const TSequenceSet *ts, int precision, const STBOX *b
  * @ingroup libmeos_temporal_input_output
  * @brief Return the temporal sequence set point represented in MF-JSON format
  */
-static char *
+char *
 tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
   char *srs)
 {
@@ -735,8 +735,8 @@ tpointseqset_as_mfjson(const TSequenceSet *ts, int precision, const STBOX *bbox,
  * @ingroup libmeos_temporal_input_output
  * @brief Return the temporal point represented in MF-JSON format
  */
-text *
-tpoint_as_mfjson(Temporal *temp, int precision, int has_bbox, char *srs)
+char *
+tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
 {
   /* Get bounding box if needed */
   STBOX *bbox = NULL, tmp;
@@ -746,17 +746,16 @@ tpoint_as_mfjson(Temporal *temp, int precision, int has_bbox, char *srs)
     bbox = &tmp;
   }
 
-  char *mfjson;
+  char *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    mfjson = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
+    result = tpointinst_as_mfjson((TInstant *) temp, precision, bbox, srs);
   else if (temp->subtype == INSTANTSET)
-    mfjson = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
+    result = tpointinstset_as_mfjson((TInstantSet *) temp, precision, bbox, srs);
   else if (temp->subtype == SEQUENCE)
-    mfjson = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
+    result = tpointseq_as_mfjson((TSequence *) temp, precision, bbox, srs);
   else /* temp->subtype == SEQUENCESET */
-    mfjson = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
-  text *result = cstring_to_text(mfjson);
+    result = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
   return result;
 }
 
@@ -816,7 +815,8 @@ Tpoint_as_mfjson(PG_FUNCTION_ARGS)
   if (option & 1)
     has_bbox = 1;
 
-  text *result = tpoint_as_mfjson(temp, precision, has_bbox, srs);
+  char *mfjson = tpoint_as_mfjson(temp, precision, has_bbox, srs);
+  text *result = cstring_to_text(mfjson);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEXT_P(result);
 }
@@ -1377,7 +1377,7 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * including the null terminator in the case of ASCII.
  * @note Caller is responsible for freeing the returned array.
  */
-static uint8_t *
+uint8_t *
 tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 {
   size_t buf_size;

@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -136,21 +136,13 @@ tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
 }
 
 /**
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return the temporal comparison of the temporal values.
  */
-Datum
-tcomp_temporal_temporal(FunctionCallInfo fcinfo,
+Temporal *
+tcomp_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, Oid, Oid))
 {
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  bool restr = false;
-  Datum atvalue = (Datum) NULL;
-  if (PG_NARGS() == 3)
-  {
-    atvalue = PG_GETARG_DATUM(2);
-    restr = true;
-  }
   if (tgeo_type(temp1->temptype))
   {
     ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
@@ -171,6 +163,26 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+  return result;
+}
+
+/**
+ * @brief Return the temporal comparison of the temporal values.
+ */
+Datum
+tcomp_temporal_temporal_ext(FunctionCallInfo fcinfo,
+  Datum (*func)(Datum, Datum, Oid, Oid))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool restr = false;
+  Datum atvalue = (Datum) NULL;
+  if (PG_NARGS() == 3)
+  {
+    atvalue = PG_GETARG_DATUM(2);
+    restr = true;
+  }
+  Temporal *result = tcomp_temporal_temporal(temp1, temp2, func);
   /* Restrict the result to the Boolean value in the fourth argument if any */
   if (result != NULL && restr)
   {
@@ -184,6 +196,7 @@ tcomp_temporal_temporal(FunctionCallInfo fcinfo,
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
+
 /*****************************************************************************
  * Temporal eq
  *****************************************************************************/
@@ -215,7 +228,7 @@ PG_FUNCTION_INFO_V1(Teq_temporal_temporal);
 PGDLLEXPORT Datum
 Teq_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_temporal(fcinfo, &datum2_eq2);
+  return tcomp_temporal_temporal_ext(fcinfo, &datum2_eq2);
 }
 
 /*****************************************************************************
@@ -249,7 +262,7 @@ PG_FUNCTION_INFO_V1(Tne_temporal_temporal);
 PGDLLEXPORT Datum
 Tne_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_temporal(fcinfo, &datum2_ne2);
+  return tcomp_temporal_temporal_ext(fcinfo, &datum2_ne2);
 }
 
 /*****************************************************************************
@@ -283,7 +296,7 @@ PG_FUNCTION_INFO_V1(Tlt_temporal_temporal);
 PGDLLEXPORT Datum
 Tlt_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_temporal(fcinfo, &datum2_lt2);
+  return tcomp_temporal_temporal_ext(fcinfo, &datum2_lt2);
 }
 
 /*****************************************************************************
@@ -317,7 +330,7 @@ PG_FUNCTION_INFO_V1(Tle_temporal_temporal);
 PGDLLEXPORT Datum
 Tle_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_temporal(fcinfo, &datum2_le2);
+  return tcomp_temporal_temporal_ext(fcinfo, &datum2_le2);
 }
 
 /*****************************************************************************
@@ -351,7 +364,7 @@ PG_FUNCTION_INFO_V1(Tgt_temporal_temporal);
 PGDLLEXPORT Datum
 Tgt_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_temporal(fcinfo, &datum2_gt2);
+  return tcomp_temporal_temporal_ext(fcinfo, &datum2_gt2);
 }
 
 /*****************************************************************************
@@ -385,7 +398,7 @@ PG_FUNCTION_INFO_V1(Tge_temporal_temporal);
 PGDLLEXPORT Datum
 Tge_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return tcomp_temporal_temporal(fcinfo, &datum2_ge2);
+  return tcomp_temporal_temporal_ext(fcinfo, &datum2_ge2);
 }
 
 /*****************************************************************************/

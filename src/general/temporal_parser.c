@@ -319,8 +319,7 @@ tbox_parse(char **str)
 /* Time Types */
 
 /**
- * @ingroup libmeos_time_input_output
- * @brief Parse a timestamp value from the buffer.
+ * Parse a timestamp value from the buffer.
  */
 TimestampTz
 timestamp_parse(char **str)
@@ -476,7 +475,7 @@ tinstant_parse(char **str, CachedType temptype, bool end, bool make)
  * @param[in] str Input string
  * @param[in] temptype Oid of the base type
  */
-static TInstantSet *
+TInstantSet *
 tinstantset_parse(char **str, CachedType temptype)
 {
   p_whitespace(str);
@@ -521,7 +520,7 @@ tinstantset_parse(char **str, CachedType temptype)
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
  */
-static TSequence *
+TSequence *
 tsequence_parse(char **str, CachedType temptype, bool linear, bool end, bool make)
 {
   p_whitespace(str);
@@ -575,7 +574,7 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end, bool mak
  * @param[in] temptype Temporal type
  * @param[in] linear True when the interpolation is linear
  */
-static TSequenceSet *
+TSequenceSet *
 tsequenceset_parse(char **str, CachedType temptype, bool linear)
 {
   p_whitespace(str);

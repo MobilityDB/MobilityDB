@@ -125,7 +125,7 @@ extern Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 
 extern Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 
-extern STBOX *tpoint_stbox(Temporal *temp);
+extern STBOX *tpoint_stbox(const Temporal *temp);
 
 /* Expand functions */
 

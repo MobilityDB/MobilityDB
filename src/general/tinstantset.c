@@ -786,7 +786,7 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
@@ -807,7 +807,7 @@ tinstantset_ever_eq(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always equal to the base value.
  */
 bool
@@ -835,7 +835,7 @@ tinstantset_always_eq(const TInstantSet *ti, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than the base value.
  */
 bool
@@ -856,7 +856,7 @@ tinstantset_ever_lt(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is ever less than or equal to the
  * base value
  */
@@ -878,7 +878,7 @@ tinstantset_ever_le(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than the base value.
  */
 bool
@@ -899,7 +899,7 @@ tinstantset_always_lt(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_ever
  * @brief Return true if the temporal value is always less than or equal to the
  * base value
  */
@@ -1590,7 +1590,7 @@ tnumberinstset_twavg(const TInstantSet *ti)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return true if the two temporal instant set values are equal.
  *
  * @pre The arguments are of the same base type
@@ -1622,7 +1622,7 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
 }
 
 /**
- * @ingroup libmeos_temporal_comparison
+ * @ingroup libmeos_temporal_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  *

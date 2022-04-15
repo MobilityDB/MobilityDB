@@ -225,7 +225,7 @@ stbox_parse(char **str)
  * @param[in] make Set to false for the first pass to do not create the instant
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TInstant *
+TInstant *
 tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
   int *tpoint_srid)
 {
@@ -266,7 +266,7 @@ tpointinst_parse(char **str, CachedType temptype, bool end, bool make,
  * @param[in] temptype Temporal type
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TInstantSet *
+TInstantSet *
 tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
 {
   p_whitespace(str);
@@ -312,7 +312,7 @@ tpointinstset_parse(char **str, CachedType temptype, int *tpoint_srid)
  * @param[in] make Set to false for the first pass to do not create the instant
  * @param[in] tpoint_srid SRID of the temporal point
 */
-static TSequence *
+TSequence *
 tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
   bool make, int *tpoint_srid)
 {
@@ -368,7 +368,7 @@ tpointseq_parse(char **str, CachedType temptype, bool linear, bool end,
  * @param[in] linear True when the interpolation is linear
  * @param[in] tpoint_srid SRID of the temporal point
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseqset_parse(char **str, CachedType temptype, bool linear,
   int *tpoint_srid)
 {

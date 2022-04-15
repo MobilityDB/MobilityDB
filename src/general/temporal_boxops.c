@@ -364,17 +364,17 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bbox
  * @brief Generic bounding box operator for a temporal value and a timestamp.
  *
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
- * @param[in] func Function
+ * @param[in] func Bounding box function
  * @param[in] invert True when the timestamp is the first argument of the
  * function
  */
 Datum
-boxop_temporal_timestamp(Temporal *temp, TimestampTz t,
+boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1, p2;
@@ -388,7 +388,7 @@ boxop_temporal_timestamp(Temporal *temp, TimestampTz t,
  * Generic bounding box operator for a timestamp and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
@@ -405,7 +405,7 @@ boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a timestamp
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
@@ -421,17 +421,17 @@ boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bbox
  * @brief Generic bounding box operator for a period and a temporal value.
  *
  * @param[in] temp Temporal value
  * @param[in] ts Timestamp set
- * @param[in] func Function
+ * @param[in] func Bounding box function
  * @param[in] invert True when the timestamp set is the first argument of the
  * function
  */
 Datum
-boxop_temporal_timestampset(Temporal *temp, TimestampSet *ts,
+boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1, p2;
@@ -445,7 +445,7 @@ boxop_temporal_timestampset(Temporal *temp, TimestampSet *ts,
  * Generic bounding box operator for a timestampset and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
@@ -463,7 +463,7 @@ boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a timestampset
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
@@ -480,17 +480,17 @@ boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bbox
  * @brief Generic bounding box operator for a period and a temporal value.
  *
  * @param[in] temp Temporal value
  * @param[in] p Period
- * @param[in] func Function
+ * @param[in] func Bounding box function
  * @param[in] invert True when the period is the first argument of the
  * function
  */
 Datum
-boxop_temporal_period(Temporal *temp, Period *p,
+boxop_temporal_period(const Temporal *temp, const Period *p,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1;
@@ -503,7 +503,7 @@ boxop_temporal_period(Temporal *temp, Period *p,
  * Generic bounding box operator for a period and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_period_temporal_ext(FunctionCallInfo fcinfo,
@@ -520,7 +520,7 @@ boxop_period_temporal_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a period
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_temporal_period_ext(FunctionCallInfo fcinfo,
@@ -536,17 +536,17 @@ boxop_temporal_period_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bbox
  * @brief Generic bounding box operator for a temporal value and a periodset
  *
  * @param[in] temp Temporal value
  * @param[in] ps Period set
- * @param[in] func Function
+ * @param[in] func Bounding box function
  * @param[in] invert True when the period set is the first argument of the
  * function
  */
-static bool
-boxop_temporal_periodset(Temporal *temp, PeriodSet *ps,
+bool
+boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
   bool (*func)(const Period *, const Period *), bool invert)
 {
   Period p1, p2;
@@ -560,7 +560,7 @@ boxop_temporal_periodset(Temporal *temp, PeriodSet *ps,
  * Generic bounding box operator for a periodset and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
@@ -578,7 +578,7 @@ boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a periodset
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
@@ -595,14 +595,14 @@ boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper
+ * @ingroup libmeos_temporal_oper_bbox
  * @brief Generic bounding box operator for two temporal values
  *
  * @param[in] temp1,temp2 Temporal values
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
-static bool
-boxop_temporal_temporal(Temporal *temp1, Temporal *temp2,
+bool
+boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const Period *, const Period *))
 {
   Period p1, p2;
@@ -616,7 +616,7 @@ boxop_temporal_temporal(Temporal *temp1, Temporal *temp2,
  * Generic bounding box operator for two temporal values
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
@@ -1137,10 +1137,32 @@ Adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * @ingroup libmeos_temporal_oper_bbox
+ * @brief Generic bounding box operator for a temporal number and a number
+ *
+ * @param[in] temp Temporal number
+ * @param[in] value Type
+ * @param[in] basetype Base type value
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the base value is the first argument of the
+ * function
+ */
+bool
+boxop_tnumber_number(const Temporal *temp, Datum value, CachedType basetype,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  TBOX box1, box2;
+  temporal_bbox(temp, &box1);
+  number_tbox(value, basetype, &box2);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return result;
+}
+
+/**
  * Generic bounding box operator for a number and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
@@ -1149,10 +1171,7 @@ boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TBOX box1, box2;
-  number_tbox(value, basetype, &box1);
-  temporal_bbox(temp, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_number(temp, value, basetype, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -1161,7 +1180,7 @@ boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal number and a number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
@@ -1170,34 +1189,51 @@ boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  number_tbox(value, basetype, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_number(temp, value, basetype, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper_bbox
+ * @brief Generic bounding box operator for a temporal number and a range
+ *
+ * @param[in] temp Temporal number
+ * @param[in] range Range
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the range is the first argument of the function.
+ */
+bool
+boxop_tnumber_range(const Temporal *temp, const RangeType *range,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  /* Return false on empty range excepted for contains */
+  char flags = range_get_flags(range);
+  if (flags & RANGE_EMPTY)
+    return (func == &contains_tbox_tbox);
+  TBOX box1, box2;
+  temporal_bbox(temp, &box1);
+  range_tbox(range, &box2);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return result;
+}
+
 
 /**
  * Generic bounding box operator for a range and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return false on empty range excepted for contained */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
-    PG_RETURN_BOOL(func == &contained_tbox_tbox);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TBOX box1, box2;
-  range_tbox(range, &box1);
-  temporal_bbox(temp, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_range(temp, range, func, INVERT);
   PG_FREE_IF_COPY(range, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -1207,7 +1243,7 @@ boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal number and a range
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
@@ -1215,24 +1251,36 @@ boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   RangeType *range = PG_GETARG_RANGE_P(1);
-  /* Return false on empty range excepted for contains */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
-    PG_RETURN_BOOL(func == &contains_tbox_tbox);
-  TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  range_tbox(range, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_range(temp, range, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(range, 1);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper_bbox
+ * @brief Generic bounding box operator for a temporal number and a temporal box
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
+boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  TBOX box1;
+  temporal_bbox(temp, &box1);
+  bool result = invert ? func(box, &box1) : func(&box1, box);
+  return result;
 }
 
 /**
  * Generic bounding box operator for a temporal box and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
@@ -1240,9 +1288,7 @@ boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(box, &box1);
+  bool result = boxop_tnumber_tbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -1251,7 +1297,7 @@ boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal number and a temporal box
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
@@ -1259,18 +1305,36 @@ boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
-  TBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, box);
+  bool result = boxop_tnumber_tbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_oper_bbox
+ * @brief Generic bounding box operator for two temporal numbers
+ *
+ * @param[in] temp1,temp2 Temporal numbers
+ * @param[in] func Bounding box function
+ */
+Datum
+boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const TBOX *, const TBOX *))
+{
+  TBOX box1, box2;
+  temporal_bbox(temp1, &box1);
+  temporal_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
+  return result;
 }
 
 /**
  * Generic bounding box operator for two temporal numbers
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
 boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
@@ -1278,10 +1342,7 @@ boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  TBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_tnumber(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);

@@ -62,7 +62,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_box
  * @brief Generic box function for a temporal network point and a geometry.
  *
  * @param[in] temp Temporal network point
@@ -71,8 +71,8 @@
  * @param[in] invert True when the geometry is the first argument of the
  * function
  */
-static int
-posop_tnpoint_geom(Temporal *temp, GSERIALIZED *gs,
+int
+posop_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
   if (gserialized_is_empty(gs))
@@ -129,7 +129,7 @@ posop_tnpoint_geom_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_box
  * @brief Generic box function for a temporal network point and an stbox.
  *
  * @param[in] temp Temporal network point
@@ -141,7 +141,7 @@ posop_tnpoint_geom_ext(FunctionCallInfo fcinfo,
  * function
  */
 static int
-posop_tnpoint_stbox(Temporal *temp, STBOX *box,
+posop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
   bool (*func)(const STBOX *, const STBOX *), bool spatial, bool invert)
 {
   if ((spatial && ! MOBDB_FLAGS_GET_X(box->flags)) ||
@@ -200,7 +200,7 @@ posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_box
  * @brief Generic box function for a temporal network point and a network point.
  *
  * @param[in] temp Temporal network point
@@ -210,7 +210,7 @@ posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
  * function
  */
 static bool
-posop_tnpoint_npoint(Temporal *temp, npoint *np,
+posop_tnpoint_npoint(const Temporal *temp, const npoint *np,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
@@ -259,14 +259,14 @@ posop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_box
  * @brief Generic box function for two temporal network points
  *
  * @param[in] temp1,temp2 Temporal network points
  * @param[in] func Function
  */
-static bool
-posop_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2,
+bool
+posop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const STBOX *, const STBOX *))
 {
   ensure_same_srid(tnpoint_srid(temp1), tnpoint_srid(temp2));

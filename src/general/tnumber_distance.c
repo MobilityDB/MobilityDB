@@ -82,16 +82,16 @@ number_distance(Datum l, Datum r, CachedType typel, CachedType typer)
 /*****************************************************************************/
 
 /**
- * Return the temporal distance between the temporal number and the
- * value (distpatch function)
+ * @ingroup libmeos_temporal_oper_dist
+ * @brief Return the temporal distance between the temporal number and the value.
  *
  * @param[in] temp Temporal number
  * @param[in] value Value
  * @param[in] valuetype Type of the value
  * @param[in] restype Type of the result
  */
-static Temporal *
-distance_tnumber_base(const Temporal *temp, Datum value,
+Temporal *
+distance_tnumber_number(const Temporal *temp, Datum value,
   CachedType valuetype, CachedType restype)
 {
   LiftedFunctionInfo lfinfo;
@@ -111,36 +111,36 @@ distance_tnumber_base(const Temporal *temp, Datum value,
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Distance_base_tnumber);
+PG_FUNCTION_INFO_V1(Distance_number_tnumber);
 /**
  * Return the temporal distance between the value and the temporal number
  */
 PGDLLEXPORT Datum
-Distance_base_tnumber(PG_FUNCTION_ARGS)
+Distance_number_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
-  Temporal *result = distance_tnumber_base(temp, value,
+  Temporal *result = distance_tnumber_number(temp, value,
     oid_type(valuetypid), oid_type(restypid));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Distance_tnumber_base);
+PG_FUNCTION_INFO_V1(Distance_tnumber_number);
 /**
  * Return the temporal distance between the temporal number and the
  * value
  */
 PGDLLEXPORT Datum
-Distance_tnumber_base(PG_FUNCTION_ARGS)
+Distance_tnumber_number(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid restypid = get_fn_expr_rettype(fcinfo->flinfo);
   Oid valuetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  Temporal *result = distance_tnumber_base(temp, value,
+  Temporal *result = distance_tnumber_number(temp, value,
     oid_type(valuetypid), oid_type(restypid));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -169,13 +169,13 @@ tnumber_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_oper_dist
  * @brief Return the temporal distance between the two temporal points
  *
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] restype Type of the result
  */
-static Temporal *
+Temporal *
 distance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   CachedType restype)
 {
@@ -220,12 +220,12 @@ Distance_tnumber_tnumber(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_dist
  * @brief Return the nearest approach distance between the temporal number
  * and the base value.
  */
-static double
-nad_tnumber_base(Temporal *temp, Datum value, CachedType basetype)
+double
+nad_tnumber_number(const Temporal *temp, Datum value, CachedType basetype)
 {
   ensure_tnumber_basetype(basetype);
   TBOX box1, box2;
@@ -237,41 +237,41 @@ nad_tnumber_base(Temporal *temp, Datum value, CachedType basetype)
   return nad_tbox_tbox(&box1, &box2);
 }
 
-PG_FUNCTION_INFO_V1(NAD_base_tnumber);
+PG_FUNCTION_INFO_V1(NAD_number_tnumber);
 /**
  * Return the temporal distance between the value and the temporal number
  */
 PGDLLEXPORT Datum
-NAD_base_tnumber(PG_FUNCTION_ARGS)
+NAD_number_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tnumber_base(temp, value,
+  double result = nad_tnumber_number(temp, value,
     oid_type(basetypid));
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(NAD_tnumber_base);
+PG_FUNCTION_INFO_V1(NAD_tnumber_number);
 /**
  * Return the temporal distance between the temporal number and the
  * value
  */
 PGDLLEXPORT Datum
-NAD_tnumber_base(PG_FUNCTION_ARGS)
+NAD_tnumber_number(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   Oid basetypid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-  double result = nad_tnumber_base(temp, value,
+  double result = nad_tnumber_number(temp, value,
     oid_type(basetypid));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
 }
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_dist
  * @brief Return the nearest approach distance between the temporal boxes.
  */
 double
@@ -313,12 +313,12 @@ NAD_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_oper_dist
  * @brief Return the nearest approach distance between the temporal number
  * and the temporal box.
  */
-static double
-nad_tnumber_tbox(const Temporal *temp, TBOX *box)
+double
+nad_tnumber_tbox(const Temporal *temp, const TBOX *box)
 {
   /* Test the validity of the arguments */
   ensure_has_X_tbox(box);

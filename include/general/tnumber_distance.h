@@ -48,7 +48,7 @@
 /* Distance functions */
 
 extern Datum Distance_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum Distance_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum Distance_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Distance_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 extern Datum number_distance(Datum l, Datum r, CachedType typel,
@@ -57,7 +57,7 @@ extern Datum number_distance(Datum l, Datum r, CachedType typel,
 /* Nearest approach distance */
 
 extern Datum NAD_base_tnumber(PG_FUNCTION_ARGS);
-extern Datum NAD_tnumber_base(PG_FUNCTION_ARGS);
+extern Datum NAD_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);

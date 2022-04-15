@@ -200,10 +200,10 @@ gbox_set(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_set
  * @brief Return the intersection of the spatiotemporal boxes in the third argument
  */
-static bool
+bool
 inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
@@ -310,7 +310,7 @@ Stbox_in(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_input_output
  * @brief Return the string representation of the spatiotemporal box.
  */
-static char *
+char *
 stbox_to_string(const STBOX *box)
 {
   static size_t size = MAXSTBOXLEN + 1;
@@ -412,7 +412,7 @@ Stbox_out(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_input_output
  * @brief Write the binary representation of the box value into the buffer.
  */
-static void
+void
 stbox_write(const STBOX *box, StringInfo buf)
 {
   pq_sendint32(buf, box->flags);
@@ -459,7 +459,7 @@ Stbox_send(PG_FUNCTION_ARGS)
  * @brief Return a new box value from its binary representation read from
  * the buffer.
  */
-static STBOX *
+STBOX *
 stbox_read(StringInfo buf)
 {
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
@@ -796,7 +796,7 @@ Box3d_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_temporal_cast
+ * @ingroup libmeos_box_cast
  * @brief Transform a geometry/geography to a spatiotemporal box.
  */
 bool
@@ -1079,8 +1079,8 @@ Geo_period_to_stbox(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the spatiotemporal box has X dimension
  */
-static bool
-stbox_hasx(STBOX *box)
+bool
+stbox_hasx(const STBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_X(box->flags);
   return result;
@@ -1101,8 +1101,8 @@ Stbox_hasx(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the spatiotemporal box has Z dimension
  */
-static bool
-stbox_hasz(STBOX *box)
+bool
+stbox_hasz(const STBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_Z(box->flags);
   return result;
@@ -1123,8 +1123,8 @@ Stbox_hasz(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the spatiotemporal box has T dimension
  */
-static bool
-stbox_hast(STBOX *box)
+bool
+stbox_hast(const STBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_T(box->flags);
   return result;
@@ -1145,8 +1145,8 @@ Stbox_hast(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return true if the spatiotemporal box is geodetic
  */
-static bool
-stbox_isgeodetic(STBOX *box)
+bool
+stbox_isgeodetic(const STBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   return result;
@@ -1167,8 +1167,8 @@ Stbox_isgeodetic(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum X value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_xmin(STBOX *box, double *result)
+bool
+stbox_xmin(const STBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -1194,8 +1194,8 @@ Stbox_xmin(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum X value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_xmax(STBOX *box, double *result)
+bool
+stbox_xmax(const STBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -1221,8 +1221,8 @@ Stbox_xmax(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum Y value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_ymin(STBOX *box, double *result)
+bool
+stbox_ymin(const STBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -1248,8 +1248,8 @@ Stbox_ymin(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum Y value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_ymax(STBOX *box, double *result)
+bool
+stbox_ymax(const STBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_X(box->flags))
     return false;
@@ -1275,8 +1275,8 @@ Stbox_ymax(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum Z value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_zmin(STBOX *box, double *result)
+bool
+stbox_zmin(const STBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_Z(box->flags))
     return false;
@@ -1302,8 +1302,8 @@ Stbox_zmin(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum X value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_zmax(STBOX *box, double *result)
+bool
+stbox_zmax(const STBOX *box, double *result)
 {
   if (! MOBDB_FLAGS_GET_Z(box->flags))
     return false;
@@ -1329,8 +1329,8 @@ Stbox_zmax(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the minimum T value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_tmin(STBOX *box, TimestampTz *result)
+bool
+stbox_tmin(const STBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
@@ -1356,8 +1356,8 @@ Stbox_tmin(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum T value of the spatiotemporal box value, if any.
  */
-static bool
-stbox_tmax(STBOX *box, TimestampTz *result)
+bool
+stbox_tmax(const STBOX *box, TimestampTz *result)
 {
   if (! MOBDB_FLAGS_GET_T(box->flags))
     return false;
@@ -1387,8 +1387,8 @@ Stbox_tmax(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_accessor
  * @brief Return the SRID of the spatiotemporal box.
  */
-static int32
-stbox_get_srid(STBOX *box)
+int32
+stbox_get_srid(const STBOX *box)
 {
   PG_RETURN_INT32(box->srid);
 }
@@ -1408,8 +1408,8 @@ Stbox_get_srid(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_transf
  * @brief Sets the SRID of the spatiotemporal box.
  */
-static STBOX *
-stbox_set_srid(STBOX *box, int32 srid)
+STBOX *
+stbox_set_srid(const STBOX *box, int32 srid)
 {
   STBOX *result = stbox_copy(box);
   result->srid = srid;
@@ -1433,8 +1433,8 @@ Stbox_set_srid(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_transf
  * @brief Transform a spatiotemporal box into another spatial reference system
  */
-static STBOX *
-stbox_transform(STBOX *box, int32 srid)
+STBOX *
+stbox_transform(const STBOX *box, int32 srid)
 {
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
@@ -1558,8 +1558,8 @@ Stbox_expand_temporal(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_transf
  * @brief Sets the precision of the coordinates of the spatiotemporal box.
  */
-static STBOX *
-stbox_round(STBOX *box, Datum prec)
+STBOX *
+stbox_round(const STBOX *box, Datum prec)
 {
   ensure_has_X_stbox(box);
   STBOX *result = stbox_copy(box);
@@ -1632,7 +1632,7 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the first spatiotemporal box contains the second one.
  */
 bool
@@ -1663,7 +1663,7 @@ Contains_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the first spatiotemporal box is contained by the
  * second one
  */
@@ -1686,7 +1686,7 @@ Contained_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the spatiotemporal boxes overlap
  */
 bool
@@ -1717,7 +1717,7 @@ Overlaps_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the spatiotemporal boxes are equal on the common
  * dimensions.
  */
@@ -1749,7 +1749,7 @@ Same_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_topo
  * @brief Return true if the spatiotemporal boxes are adjacent.
  */
 bool
@@ -1814,7 +1814,7 @@ pos_stbox_stbox_test(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly to the
  * left of the second one
  */
@@ -1840,7 +1840,7 @@ Left_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
  */
@@ -1866,7 +1866,7 @@ Overleft_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly to the right
  * of the second one
  */
@@ -1892,7 +1892,7 @@ Right_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one.
  */
@@ -1918,7 +1918,7 @@ Overright_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly below of
  * the second one.
  */
@@ -1944,7 +1944,7 @@ Below_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one.
  */
@@ -1970,7 +1970,7 @@ Overbelow_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly above of the
  * second one.
  */
@@ -1996,7 +1996,7 @@ Above_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one.
  */
@@ -2022,7 +2022,7 @@ Overabove_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly in front of
  * the second one.
  */
@@ -2048,7 +2048,7 @@ Front_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one.
  */
@@ -2074,7 +2074,7 @@ Overfront_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly back of the
  * second one
  */
@@ -2100,7 +2100,7 @@ Back_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one.
  */
@@ -2126,7 +2126,7 @@ Overback_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly before the
  * second one
  */
@@ -2151,7 +2151,7 @@ Before_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend after the
  * second one
  */
@@ -2176,7 +2176,7 @@ Overbefore_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box is strictly after
  * the second one.
  */
@@ -2201,7 +2201,7 @@ After_stbox_stbox(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend before the
  * second one.
  */
@@ -2230,10 +2230,10 @@ Overafter_stbox_stbox(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper
+ * @ingroup libmeos_box_oper_set
  * @brief Return the union of the spatiotemporal boxes.
  */
-static STBOX *
+STBOX *
 union_stbox_stbox(const STBOX *box1, const STBOX *box2, bool strict)
 {
   ensure_same_geodetic(box1->flags, box2->flags);
@@ -2344,7 +2344,7 @@ Stbox_extent_combinefn(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_comparison
+ * @ingroup libmeos_box_oper_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal, or greater than the second one
  */
@@ -2487,7 +2487,7 @@ Stbox_gt(PG_FUNCTION_ARGS)
 }
 
 /**
- * @ingroup libmeos_box_comparison
+ * @ingroup libmeos_box_oper_comp
  * @brief Return true if the two spatiotemporal boxes are equal.
  *
  * @note The internal B-tree comparator is not used to increase efficiency

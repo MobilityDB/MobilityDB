@@ -126,14 +126,15 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  *****************************************************************************/
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal point and a geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] inst Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func PostGIS function to be called
  */
-static TInstant *
+TInstant *
 tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
   Datum (*func)(Datum, Datum))
 {
@@ -146,14 +147,15 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal point and a geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] ti Temporal point
  * @param[in] geom Geometry
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func PostGIS function to be called
  */
-static TInstantSet *
+TInstantSet *
 tinterrel_tpointinstset_geom(const TInstantSet *ti, Datum geom, bool tinter,
   Datum (*func)(Datum, Datum))
 {
@@ -223,7 +225,7 @@ tinterrel_tpointseq_step_geom(const TSequence *seq, Datum geom, bool tinter,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal sequence point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] seq Temporal point
  * @param[in] geom Geometry
@@ -333,7 +335,7 @@ tinterrel_tpointseq_simple_geom(const TSequence *seq, Datum geom, const STBOX *b
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal sequence point and a geometry
+ * Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -385,7 +387,8 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal sequence point and a geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -396,7 +399,7 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] func PostGIS function to be used for instantaneous sequences
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  */
-static TSequenceSet *
+TSequenceSet *
 tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
   bool tinter, Datum (*func)(Datum, Datum))
 {
@@ -409,7 +412,8 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal sequence set point and a geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] ts Temporal point
  * @param[in] geom Geometry
@@ -417,7 +421,7 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
  * @param[in] tinter True when computing tintersects, false for tdisjoint
  * @param[in] func PostGIS function to be used for instantaneous sequences
  */
-static TSequenceSet *
+TSequenceSet *
 tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
   const STBOX *box, bool tinter, Datum (*func)(Datum, Datum))
 {
@@ -443,7 +447,8 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
 }
 
 /**
- * Evaluates tintersects/tdisjoint for a temporal point and a geometry
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
@@ -456,7 +461,7 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
  * provided by PostGIS
  */
 Temporal *
-tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter,
+tinterrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -505,7 +510,7 @@ tinterrel_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, bool tinter,
  * and the temporal point
  */
 static Datum
-tinterrel_geo_tpoint_generic(FunctionCallInfo fcinfo, bool tinter)
+tinterrel_geo_tpoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
@@ -533,7 +538,7 @@ tinterrel_geo_tpoint_generic(FunctionCallInfo fcinfo, bool tinter)
  * and the temporal point
  */
 static Datum
-tinterrel_tpoint_geo_generic(FunctionCallInfo fcinfo, bool tinter)
+tinterrel_tpoint_geo_ext(FunctionCallInfo fcinfo, bool tinter)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -1303,12 +1308,12 @@ tdwithin_tpointseqset_point(const TSequenceSet *ts, Datum point, Datum dist,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return the temporal contains relationship between the geometry and
  * the temporal point
  */
 Temporal *
-tcontains_geo_tpoint(GSERIALIZED *gs, const Temporal *temp, bool restr,
+tcontains_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp, bool restr,
   Datum atvalue)
 {
   Temporal *inter = tinterrel_tpoint_geo(temp, gs, TINTERSECTS,
@@ -1379,7 +1384,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_geo_tpoint);
 PGDLLEXPORT Datum
 Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_geo_tpoint_generic(fcinfo, TDISJOINT);
+  return tinterrel_geo_tpoint_ext(fcinfo, TDISJOINT);
 }
 
 PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
@@ -1390,7 +1395,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tpoint_geo);
 PGDLLEXPORT Datum
 Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tpoint_geo_generic(fcinfo, TDISJOINT);
+  return tinterrel_tpoint_geo_ext(fcinfo, TDISJOINT);
 }
 
 /*****************************************************************************
@@ -1406,7 +1411,7 @@ PG_FUNCTION_INFO_V1(Tintersects_geo_tpoint);
 PGDLLEXPORT Datum
 Tintersects_geo_tpoint(PG_FUNCTION_ARGS)
 {
-  return tinterrel_geo_tpoint_generic(fcinfo, TINTERSECTS);
+  return tinterrel_geo_tpoint_ext(fcinfo, TINTERSECTS);
 }
 
 PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
@@ -1417,7 +1422,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tpoint_geo);
 PGDLLEXPORT Datum
 Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
 {
-  return tinterrel_tpoint_geo_generic(fcinfo, TINTERSECTS);
+  return tinterrel_tpoint_geo_ext(fcinfo, TINTERSECTS);
 }
 
 /*****************************************************************************
@@ -1425,11 +1430,12 @@ Tintersects_tpoint_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return the temporal touches relationship between the geometry and the
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return the temporal touches relationship between the geometry and the
  * temporal point (internal version)
  */
 Temporal *
-ttouches_tpoint_geo(const Temporal *temp, GSERIALIZED *gs,
+ttouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
@@ -1516,12 +1522,12 @@ Ttouches_tpoint_geo(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the temporal point and
  * the geometry are within the given distance.
  */
 Temporal *
-tdwithin_tpoint_geo(const Temporal *temp, GSERIALIZED *gs, Datum dist,
+tdwithin_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum dist,
   bool restr, Datum atvalue)
 {
   ensure_point_type(gs);
@@ -1626,7 +1632,7 @@ Tdwithin_tpoint_geo(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial
+ * @ingroup libmeos_temporal_spatial_rel
  * @brief Return a temporal Boolean that states whether the temporal points
  * are within the given distance.
  */
