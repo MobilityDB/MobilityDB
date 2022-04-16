@@ -38,11 +38,14 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-/* PostgreSQL */
+/* MobilityDB */
 #include "general/temporal.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 
+extern TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const npoint *np);
 
 /*****************************************************************************/
 

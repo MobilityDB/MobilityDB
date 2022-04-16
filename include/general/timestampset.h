@@ -47,13 +47,15 @@
 /* assorted support functions */
 
 extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
-extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
-extern void timestampset_bbox(const TimestampSet *ts, Period *p);
-extern void timestampset_bbox_slice(Datum tsdatum, Period *p);
 extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
 extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
 extern TimestampSet *timestampset_copy(const TimestampSet *ts);
-extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc);
+
+extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
+extern void timestampset_bbox(const TimestampSet *ts, Period *p);
+extern void timestampset_bbox_slice(Datum tsdatum, Period *p);
+extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t,
+  int *loc);
 
 /* Input/output functions */
 
@@ -96,6 +98,6 @@ extern bool timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2);
 extern uint32 timestampset_hash(const TimestampSet *ts);
 extern uint64 timestampset_hash_extended(const TimestampSet *ts, Datum seed);
 
-#endif
-
 /*****************************************************************************/
+
+#endif

@@ -39,8 +39,20 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
+/* MobilityDB */
+#include "general/temporal.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
+
+extern Temporal *tinterrel_tnpoint_npoint(const Temporal *temp,
+  const npoint *np, bool tinter, bool restr, Datum atvalue);
+extern Temporal *tinterrel_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool tinter, bool restr, Datum atvalue);
+extern Temporal *ttouches_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool restr, Datum atvalue);
+extern Temporal *ttouches_tnpoint_npoint(const Temporal *temp,
+  const npoint *np, bool restr, Datum atvalue);
 
 /*****************************************************************************/
 

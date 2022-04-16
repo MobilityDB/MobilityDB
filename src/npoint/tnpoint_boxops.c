@@ -148,8 +148,7 @@ tnpointinstarr_linear_stbox(const TInstant **instants, int count,
 }
 
 /**
- * @ingroup libmeos_temporal_accesor
- * @brief Set the spatiotemporal box from the array of temporal network point values.
+ * Set the spatiotemporal box from the array of temporal network point values.
  *
  * @param[in] instants Temporal instant values
  * @param[in] count Number of elements in the array

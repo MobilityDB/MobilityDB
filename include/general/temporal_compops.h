@@ -44,9 +44,11 @@
 
 /*****************************************************************************/
 
-extern Temporal * tcomp_temporal_base(const Temporal *temp, Datum value,
+extern Temporal *tcomp_temporal_base(const Temporal *temp, Datum value,
   Oid datumtypid, Datum (*func)(Datum, Datum, CachedType, CachedType),
   bool invert);
+extern Temporal *tcomp_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum, Oid, Oid));
 
 /*****************************************************************************/
 

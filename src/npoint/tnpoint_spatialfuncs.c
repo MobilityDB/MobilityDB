@@ -133,7 +133,7 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * @ingroup libmeos_temporal_accesor
  * @brief Return the SRID of a temporal network point of subtype instant.
  */
-static int
+int
 tnpointinst_srid(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
@@ -156,7 +156,7 @@ tnpoint_srid(const Temporal *temp)
   int result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tnpointinst_srid((TInstant *) temp);
+    result = tnpointinst_srid((const TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
     result = tpointinstset_srid((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
@@ -260,7 +260,7 @@ tnpointseqset_step_npoints(const TSequenceSet *ts, int *count)
  *
  * @param[in] inst Temporal network point
  */
-static Datum
+Datum
 tnpointinst_geom(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
@@ -273,7 +273,7 @@ tnpointinst_geom(const TInstant *inst)
  *
  * @param[in] ti Temporal network point
  */
-static Datum
+Datum
 tnpointinstset_geom(const TInstantSet *ti)
 {
   /* Instantaneous sequence */
@@ -294,7 +294,7 @@ tnpointinstset_geom(const TInstantSet *ti)
  *
  * @param[in] seq Temporal network point
  */
-static Datum
+Datum
 tnpointseq_geom(const TSequence *seq)
 {
   /* Instantaneous sequence */
@@ -325,7 +325,7 @@ tnpointseq_geom(const TSequence *seq)
  *
  * @param[in] ts Temporal network point
  */
-static Datum
+Datum
 tnpointseqset_geom(const TSequenceSet *ts)
 {
   /* Singleton sequence set */

@@ -39,8 +39,20 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
+/* MobilityDB */
+#include "general/temporal.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
+
+extern int posop_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
+  bool (*func)(const STBOX *, const STBOX *), bool invert);
+extern int posop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial, bool invert);
+extern bool posop_tnpoint_npoint(const Temporal *temp, const npoint *np,
+  bool (*func)(const STBOX *, const STBOX *), bool invert);
+extern bool posop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const STBOX *, const STBOX *));
 
 
 /*****************************************************************************/

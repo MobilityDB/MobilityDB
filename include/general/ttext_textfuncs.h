@@ -39,9 +39,16 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+/* PostgreSQL */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
+extern Temporal *textfunc_ttext(Temporal *temp, Datum (*func)(Datum value));
+extern Temporal *textfunc_ttext_text(Temporal *temp, Datum value,
+  datum_func2 func, bool invert);
+extern Temporal *textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2,
+  datum_func2 func);
 
 /*****************************************************************************/
 

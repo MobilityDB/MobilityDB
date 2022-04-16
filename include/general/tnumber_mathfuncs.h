@@ -40,6 +40,8 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+/* PostgreSQL */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -55,6 +57,14 @@ typedef enum
 } TArithmetic;
 
 /*****************************************************************************/
+
+extern Temporal *arithop_tnumber_number(Temporal *temp, Datum value,
+  CachedType basetype, CachedType restype, TArithmetic oper,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert);
+extern Temporal *arithop_tnumber_tnumber(Temporal *temp1, Temporal *temp2,
+  TArithmetic oper, CachedType restype, Datum (*func)(Datum, Datum, Oid, Oid),
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
+    const TInstant *, Datum *, TimestampTz *));
 
 extern Datum datum_round_float(Datum value, Datum prec);
 

@@ -140,7 +140,7 @@ posop_tnpoint_geom_ext(FunctionCallInfo fcinfo,
  * @param[in] invert True when the bounding box is the first argument of the
  * function
  */
-static int
+int
 posop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
   bool (*func)(const STBOX *, const STBOX *), bool spatial, bool invert)
 {
@@ -209,7 +209,7 @@ posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
  * @param[in] invert True when the network point is the first argument of the
  * function
  */
-static bool
+bool
 posop_tnpoint_npoint(const Temporal *temp, const npoint *np,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {

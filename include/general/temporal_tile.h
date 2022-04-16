@@ -136,6 +136,10 @@ extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern int64 get_interval_units(Interval *interval);
 
+extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
+
 /*****************************************************************************/
 
 #endif /* __TEMPORAL_TILE_H__ */

@@ -358,17 +358,6 @@ Tnpoint_round(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the route of the temporal network point.
- */
-int64
-tnpointinst_route(const TInstant *inst)
-{
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
-  return np->rid;
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point.
  */
 nsegment **
@@ -557,6 +546,17 @@ Tnpoint_positions(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_temporal_accessor
+ * @brief Return the route of the temporal network point.
+ */
+int64
+tnpointinst_route(const TInstant *inst)
+{
+  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  return np->rid;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
  * @brief Return the route of a temporal network point.
  */
 int64
@@ -567,7 +567,7 @@ tnpoint_route(const Temporal *temp)
       errmsg("Input must be a temporal instant or a temporal sequence")));
 
   const TInstant *inst = (temp->subtype == INSTANT) ?
-    (TInstant *) temp : tsequence_inst_n((TSequence *) temp, 0);
+    (const TInstant *) temp : tsequence_inst_n((const TSequence *) temp, 0);
   npoint *np = DatumGetNpoint(tinstant_value(inst));
   return np->rid;
 }
@@ -589,11 +589,12 @@ Tnpoint_route(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of routes of a temporal network point
  */
-ArrayType *
+int64 *
 tnpointinst_routes(const TInstant *inst)
 {
   npoint *np = DatumGetNpoint(tinstant_value(inst));
-  ArrayType *result = int64arr_to_array(&np->rid, 1);
+  int64 *result = palloc(sizeof(int64));
+  result[0]= np->rid;
   return result;
 }
 
@@ -601,18 +602,16 @@ tnpointinst_routes(const TInstant *inst)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of routes of a temporal network point
  */
-ArrayType *
+int64 *
 tnpointinstset_routes(const TInstantSet *ti)
 {
-  int64 *routes = palloc(sizeof(int64) * ti->count);
+  int64 *result = palloc(sizeof(int64) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
     npoint *np = DatumGetNpoint(tinstant_value(inst));
-    routes[i] = np->rid;
+    result[i] = np->rid;
   }
-  ArrayType *result = int64arr_to_array(routes, ti->count);
-  pfree(routes);
   return result;
 }
 
@@ -620,12 +619,13 @@ tnpointinstset_routes(const TInstantSet *ti)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of routes of a temporal network point
  */
-ArrayType *
+int64 *
 tnpointseq_routes(const TSequence *seq)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
   npoint *np = DatumGetNpoint(tinstant_value(inst));
-  ArrayType *result = int64arr_to_array(&np->rid, 1);
+  int64 *result = palloc(sizeof(int64));
+  result[0]= np->rid;
   return result;
 }
 
@@ -633,19 +633,49 @@ tnpointseq_routes(const TSequence *seq)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the array of routes of a temporal network point
  */
-ArrayType *
+int64 *
 tnpointseqset_routes(const TSequenceSet *ts)
 {
-  int64 *routes = palloc(sizeof(int64) * ts->count);
+  int64 *result = palloc(sizeof(int64) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     const TInstant *inst = tsequence_inst_n(seq, 0);
     npoint *np = DatumGetNpoint(tinstant_value(inst));
-    routes[i] = np->rid;
+    result[i] = np->rid;
   }
-  ArrayType *result = int64arr_to_array(routes, ts->count);
-  pfree(routes);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the array of routes of a temporal network point
+ */
+int64 *
+tnpoint_routes(const Temporal *temp, int *count)
+{
+  int64 *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+  {
+    result = tnpointinst_routes((TInstant *) temp);
+    *count = 1;
+  }
+  else if (temp->subtype == INSTANTSET)
+  {
+    result = tnpointinstset_routes((TInstantSet *) temp);
+    *count = ((TInstantSet *) temp)->count;
+  }
+  else if (temp->subtype == SEQUENCE)
+  {
+    result = tnpointseq_routes((TSequence *) temp);
+    *count = 1;
+  }
+  else /* temp->subtype == SEQUENCESET */
+  {
+    result = tnpointseqset_routes((TSequenceSet *) temp);
+    *count = ((TSequenceSet *) temp)->count;
+  }
   return result;
 }
 
@@ -657,16 +687,10 @@ PGDLLEXPORT Datum
 Tnpoint_routes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ArrayType *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = tnpointinst_routes((TInstant *) temp);
-  else if (temp->subtype == INSTANTSET)
-    result = tnpointinstset_routes((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
-    result = tnpointseq_routes((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = tnpointseqset_routes((TSequenceSet *) temp);
+  int count;
+  int64 *routes = tnpoint_routes(temp, &count);
+  ArrayType *result = int64arr_to_array(routes, count);
+  pfree(routes);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

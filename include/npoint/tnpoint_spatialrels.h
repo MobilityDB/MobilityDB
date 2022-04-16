@@ -39,8 +39,15 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
+
+extern Datum spatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
+  Datum (*func)(Datum, Datum), bool invert);
+extern int spatialrel_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2,
+  Datum (*func)(Datum, Datum));
 
 /*****************************************************************************/
 

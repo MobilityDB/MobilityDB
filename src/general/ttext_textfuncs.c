@@ -77,9 +77,10 @@ datum_upper(Datum value)
  *****************************************************************************/
 
 /**
- * Applies the function to transform the temporal text value
+ * @ingroup libmeos_temporal_transf
+ * @brief Apply the function to transform the temporal text value
  */
-static Temporal *
+Temporal *
 textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
 {
   /* We only need to fill these parameters for tfunc_temporal */
@@ -94,9 +95,10 @@ textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
 }
 
 /**
- * Applies the function to the temporal text value and the base text value
+ * @ingroup libmeos_temporal_transf
+ * @brief Apply the function to the temporal text value and the base text value
  */
-static Temporal *
+Temporal *
 textfunc_ttext_text(Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
@@ -114,9 +116,10 @@ textfunc_ttext_text(Temporal *temp, Datum value, datum_func2 func,
 }
 
 /**
- * Applies the function to the temporal text value and the base text value
+ * @ingroup libmeos_temporal_transf
+ * @brief Apply the function to the temporal text value and the base text value.
  */
-static Temporal *
+Temporal *
 textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
 {
   LiftedFunctionInfo lfinfo;

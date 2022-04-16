@@ -339,39 +339,6 @@ timestamp_parse(char **str)
 
 /**
  * @ingroup libmeos_time_input_output
- * @brief Parse a period value from the buffer.
- */
-Period *
-period_parse(char **str, bool make)
-{
-  bool lower_inc = false, upper_inc = false;
-  if (p_obracket(str))
-    lower_inc = true;
-  else if (p_oparen(str))
-    lower_inc = false;
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period")));
-
-  TimestampTz lower = timestamp_parse(str);
-  p_comma(str);
-  TimestampTz upper = timestamp_parse(str);
-
-  if (p_cbracket(str))
-    upper_inc = true;
-  else if (p_cparen(str))
-    upper_inc = false;
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period")));
-
-  if (! make)
-    return NULL;
-  return period_make(lower, upper, lower_inc, upper_inc);
-}
-
-/**
- * @ingroup libmeos_time_input_output
  * @brief Parse a timestamp set value from the buffer.
  */
 TimestampSet *
@@ -403,6 +370,39 @@ timestampset_parse(char **str)
   }
   p_cbrace(str);
   return timestampset_make_free(times, count);
+}
+
+/**
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a period value from the buffer.
+ */
+Period *
+period_parse(char **str, bool make)
+{
+  bool lower_inc = false, upper_inc = false;
+  if (p_obracket(str))
+    lower_inc = true;
+  else if (p_oparen(str))
+    lower_inc = false;
+  else
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+      errmsg("Could not parse period")));
+
+  TimestampTz lower = timestamp_parse(str);
+  p_comma(str);
+  TimestampTz upper = timestamp_parse(str);
+
+  if (p_cbracket(str))
+    upper_inc = true;
+  else if (p_cparen(str))
+    upper_inc = false;
+  else
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+      errmsg("Could not parse period")));
+
+  if (! make)
+    return NULL;
+  return period_make(lower, upper, lower_inc, upper_inc);
 }
 
 /**
@@ -521,7 +521,8 @@ tinstantset_parse(char **str, CachedType temptype)
  * @param[in] make Set to false for the first pass to do not create the instant
  */
 TSequence *
-tsequence_parse(char **str, CachedType temptype, bool linear, bool end, bool make)
+tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
+  bool make)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;

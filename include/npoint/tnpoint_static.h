@@ -84,24 +84,25 @@ extern nsegment *geom_nsegment(Datum line);
 /* SRID functions */
 
 extern int npoint_srid(const npoint *np);
+extern int nsegment_srid(const nsegment *ns);
 
 /* Comparison functions */
 
-extern int npoint_cmp(const npoint *np1, const npoint *np2);
 extern bool npoint_eq(const npoint *np1, const npoint *np2);
 extern bool npoint_ne(const npoint *np1, const npoint *np2);
+extern int npoint_cmp(const npoint *np1, const npoint *np2);
 extern bool npoint_lt(const npoint *np1, const npoint *np2);
-extern bool npoint_le(const npoint *np1, const npoint *np2);
-extern bool npoint_gt(const npoint *np1, const npoint *np2);
-extern bool npoint_ge(const npoint *np1, const npoint *np2);
+// extern bool npoint_le(const npoint *np1, const npoint *np2);
+// extern bool npoint_gt(const npoint *np1, const npoint *np2);
+// extern bool npoint_ge(const npoint *np1, const npoint *np2);
 
-extern int nsegment_cmp(const nsegment *ns1, const nsegment *ns2);
 extern bool nsegment_eq(const nsegment *ns1, const nsegment *ns2);
 extern bool nsegment_ne(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_lt(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_le(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_gt(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_ge(const nsegment *ns1, const nsegment *ns2);
+extern int nsegment_cmp(const nsegment *ns1, const nsegment *ns2);
+// extern bool nsegment_lt(const nsegment *ns1, const nsegment *ns2);
+// extern bool nsegment_le(const nsegment *ns1, const nsegment *ns2);
+// extern bool nsegment_gt(const nsegment *ns1, const nsegment *ns2);
+// extern bool nsegment_ge(const nsegment *ns1, const nsegment *ns2);
 
 /*****************************************************************************/
 

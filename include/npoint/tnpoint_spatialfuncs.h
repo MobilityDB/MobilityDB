@@ -58,12 +58,15 @@ extern bool tnpointsegm_intersection_value(const TInstant *inst1,
 
 /* Functions for spatial reference systems */
 
+extern int tnpointinst_srid(const TInstant *inst);
 extern int tnpoint_srid(const Temporal *temp);
-
-extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
-
+extern Datum tnpointinst_geom(const TInstant *inst);
+extern Datum tnpointinstset_geom(const TInstantSet *ti);
+extern Datum tnpointseq_geom(const TSequence *seq);
+extern Datum tnpointseqset_geom(const TSequenceSet *ts);
 extern Datum tnpoint_geom(const Temporal *temp);
 
+extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
 
 /*****************************************************************************/
 

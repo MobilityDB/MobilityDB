@@ -931,7 +931,7 @@ Geom_to_nsegment(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_temporal_accesor
- * Return the SRID of the network point
+ * @brief Return the SRID of the network point
  */
 int
 npoint_srid(const npoint *np)
@@ -957,7 +957,7 @@ Npoint_get_srid(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_temporal_accesor
- * Return the SRID of the network segment
+ * @brief Return the SRID of the network segment.
  */
 int
 nsegment_srid(const nsegment *ns)
@@ -986,7 +986,8 @@ Nsegment_get_srid(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return true if the first network point is equal to the second one
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network point is equal to the second one
  */
 bool
 npoint_eq(const npoint *np1, const npoint *np2)
@@ -1007,7 +1008,8 @@ Npoint_eq(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return true if the first network point is not equal to the second one
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network point is not equal to the second one
  */
 bool
 npoint_ne(const npoint *np1, const npoint *np2)
@@ -1028,7 +1030,8 @@ Npoint_ne(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return -1, 0, or 1 depending on whether the first network point
+ * @ingroup libmeos_temporal_comp
+ * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison
@@ -1066,7 +1069,8 @@ Npoint_cmp(PG_FUNCTION_ARGS)
 /* Inequality operators using the npoint_cmp function */
 
 /**
- * Return true if the first network point is less than the second one
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network point is less than the second one
  */
 bool
 npoint_lt(const npoint *np1, const npoint *np2)
@@ -1132,7 +1136,8 @@ Npoint_gt(PG_FUNCTION_ARGS)
 /*****************************************************************************/
 
 /**
- * Return true if the first network segment is equal to the second one
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network segment is equal to the second one
  */
 bool
 nsegment_eq(const nsegment *ns1, const nsegment *ns2)
@@ -1154,7 +1159,8 @@ Nsegment_eq(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return true if the first network segment is not equal to the second one
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network segment is not equal to the second one
  */
 bool
 nsegment_ne(const nsegment *ns1, const nsegment *ns2)
@@ -1175,7 +1181,8 @@ Nsegment_ne(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return -1, 0, or 1 depending on whether the first network segment
+ * @ingroup libmeos_temporal_comp
+ * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal, or greater than the second one
  *
  * @note Function used for B-tree comparison

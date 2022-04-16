@@ -1270,7 +1270,7 @@ boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
-Datum
+bool
 boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
@@ -1323,7 +1323,7 @@ boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] func Bounding box function
  */
-Datum
+bool
 boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *))
 {
