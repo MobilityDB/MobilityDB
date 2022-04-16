@@ -38,7 +38,6 @@
 /* PostgreSQL */
 #include <assert.h>
 #include <access/hash.h>
-#include <libpq/pqformat.h>
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/periodset.h"

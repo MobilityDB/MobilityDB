@@ -311,7 +311,7 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
  * so that we know what index search strategy we want to apply.
  */
 Datum
-temporal_supportfn_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_supportfn_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
@@ -557,7 +557,7 @@ PG_FUNCTION_INFO_V1(Temporal_supportfn);
 PGDLLEXPORT Datum
 Temporal_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_generic(fcinfo, TEMPORALTYPE);
+  return temporal_supportfn_ext(fcinfo, TEMPORALTYPE);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_supportfn);
@@ -567,7 +567,7 @@ PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 PGDLLEXPORT Datum
 Tnumber_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_generic(fcinfo, TNUMBERTYPE);
+  return temporal_supportfn_ext(fcinfo, TNUMBERTYPE);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_supportfn);
@@ -577,7 +577,7 @@ PG_FUNCTION_INFO_V1(Tpoint_supportfn);
 PGDLLEXPORT Datum
 Tpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_generic(fcinfo, TPOINTTYPE);
+  return temporal_supportfn_ext(fcinfo, TPOINTTYPE);
 }
 
 PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
@@ -587,7 +587,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_supportfn);
 PGDLLEXPORT Datum
 Tnpoint_supportfn(PG_FUNCTION_ARGS)
 {
-  return temporal_supportfn_generic(fcinfo, TNPOINTTYPE);
+  return temporal_supportfn_ext(fcinfo, TNPOINTTYPE);
 }
 
 #endif /* POSTGRESQL_VERSION_NUMBER >= 120000 */

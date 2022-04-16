@@ -279,17 +279,16 @@ tpointseqset_stboxes(const TSequenceSet *ts, int *count)
  * @brief Return an array of spatiotemporal boxes from the temporal point
  */
 STBOX *
-tpoint_stboxes(const Temporal *temp)
+tpoint_stboxes(const Temporal *temp, int *count)
 {
   STBOX *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
-  int count;
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
     ;
   else if (temp->subtype == SEQUENCE)
-    result = tpointseq_stboxes((TSequence *)temp, &count);
+    result = tpointseq_stboxes((TSequence *)temp, count);
   else /* temp->subtype == SEQUENCESET */
-    result = tpointseqset_stboxes((TSequenceSet *)temp, &count);
+    result = tpointseqset_stboxes((TSequenceSet *)temp, count);
   return result;
 }
 
@@ -301,15 +300,8 @@ PGDLLEXPORT Datum
 Tpoint_stboxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *boxes = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
   int count;
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-    ;
-  else if (temp->subtype == SEQUENCE)
-    boxes = tpointseq_stboxes((TSequence *)temp, &count);
-  else /* temp->subtype == SEQUENCESET */
-    boxes = tpointseqset_stboxes((TSequenceSet *)temp, &count);
+  STBOX *boxes = tpoint_stboxes(temp, &count);
   PG_FREE_IF_COPY(temp, 0);
   if (! boxes)
     PG_RETURN_NULL();
@@ -419,9 +411,7 @@ boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  STBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(box, &box1);
+  bool result = boxop_tpoint_stbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -438,9 +428,7 @@ boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
-  STBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, box);
+  bool result = boxop_tpoint_stbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }

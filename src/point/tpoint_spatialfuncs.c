@@ -5231,7 +5231,7 @@ tpoint_restrict_geometry(const Temporal *temp, Datum geom, bool atfunc)
  * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  */
 static Datum
-tpoint_restrict_geometry_generic(FunctionCallInfo fcinfo, bool atfunc)
+tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
@@ -5267,7 +5267,7 @@ PG_FUNCTION_INFO_V1(Tpoint_at_geometry);
 PGDLLEXPORT Datum
 Tpoint_at_geometry(PG_FUNCTION_ARGS)
 {
-  return tpoint_restrict_geometry_generic(fcinfo, REST_AT);
+  return tpoint_restrict_geometry_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_minus_geometry);
@@ -5277,7 +5277,7 @@ PG_FUNCTION_INFO_V1(Tpoint_minus_geometry);
 PGDLLEXPORT Datum
 Tpoint_minus_geometry(PG_FUNCTION_ARGS)
 {
-  return tpoint_restrict_geometry_generic(fcinfo, REST_MINUS);
+  return tpoint_restrict_geometry_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

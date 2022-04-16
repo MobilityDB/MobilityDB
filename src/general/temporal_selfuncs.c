@@ -518,7 +518,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
  * various families of temporal types.
  */
 float8
-temporal_sel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_sel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -543,7 +543,7 @@ PG_FUNCTION_INFO_V1(Temporal_sel);
 PGDLLEXPORT Datum
 Temporal_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_generic(fcinfo, TEMPORALTYPE);
+  return temporal_sel_ext(fcinfo, TEMPORALTYPE);
 }
 
 /*****************************************************************************
@@ -631,7 +631,7 @@ temporal_joinsel(PlannerInfo *root, Oid operid, List *args,
  * alphanumeric types and temporal number types.
  */
 float8
-temporal_joinsel_generic(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_joinsel_ext(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   PlannerInfo *root = (PlannerInfo *) PG_GETARG_POINTER(0);
   Oid operid = PG_GETARG_OID(1);
@@ -670,7 +670,7 @@ PG_FUNCTION_INFO_V1(Temporal_joinsel);
 PGDLLEXPORT Datum
 Temporal_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_generic(fcinfo, TEMPORALTYPE);
+  return temporal_joinsel_ext(fcinfo, TEMPORALTYPE);
 }
 
 /*****************************************************************************/

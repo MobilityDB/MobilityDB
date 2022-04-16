@@ -926,7 +926,7 @@ PG_FUNCTION_INFO_V1(Tnumber_sel);
 PGDLLEXPORT Datum
 Tnumber_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_generic(fcinfo, TNUMBERTYPE);
+  return temporal_sel_ext(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/
@@ -992,7 +992,7 @@ PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 PGDLLEXPORT Datum
 Tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_generic(fcinfo, TNUMBERTYPE);
+  return temporal_joinsel_ext(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/

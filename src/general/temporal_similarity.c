@@ -221,7 +221,7 @@ temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
  *****************************************************************************/
 
 Datum
-temporal_similarity_generic(FunctionCallInfo fcinfo, SimFunc simfunc)
+temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
@@ -241,7 +241,7 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
 PGDLLEXPORT Datum
 Temporal_frechet_distance(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_generic(fcinfo, FRECHET);
+  return temporal_similarity_ext(fcinfo, FRECHET);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
@@ -251,7 +251,7 @@ PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
 PGDLLEXPORT Datum
 Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_generic(fcinfo, DYNTIMEWARP);
+  return temporal_similarity_ext(fcinfo, DYNTIMEWARP);
 }
 
 /*****************************************************************************
@@ -518,7 +518,7 @@ temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
  * Compute the Dynamic Time Match (DTW) path between two temporal values.
  */
 Datum
-temporal_similarity_path_generic(FunctionCallInfo fcinfo, SimFunc simfunc)
+temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   FuncCallContext *funcctx;
   SimilarityPathState *state;
@@ -592,7 +592,7 @@ PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 PGDLLEXPORT Datum
 Temporal_frechet_path(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_path_generic(fcinfo, FRECHET);
+  return temporal_similarity_path_ext(fcinfo, FRECHET);
 }
 
 /*****************************************************************************
@@ -606,7 +606,7 @@ PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 PGDLLEXPORT Datum
 Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_path_generic(fcinfo, DYNTIMEWARP);
+  return temporal_similarity_path_ext(fcinfo, DYNTIMEWARP);
 }
 
 /*****************************************************************************/

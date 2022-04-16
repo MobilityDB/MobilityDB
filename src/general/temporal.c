@@ -1002,7 +1002,7 @@ Tinstantset_constructor(PG_FUNCTION_ARGS)
  * instant values
  */
 static Datum
-tsequence_constructor_generic(FunctionCallInfo fcinfo, bool get_interp)
+tsequence_constructor_ext(FunctionCallInfo fcinfo, bool get_interp)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   bool lower_inc = PG_GETARG_BOOL(1);
@@ -1026,7 +1026,7 @@ PG_FUNCTION_INFO_V1(Tstepseq_constructor);
 PGDLLEXPORT Datum
 Tstepseq_constructor(PG_FUNCTION_ARGS)
 {
-  return tsequence_constructor_generic(fcinfo, false);
+  return tsequence_constructor_ext(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
@@ -1037,7 +1037,7 @@ PG_FUNCTION_INFO_V1(Tlinearseq_constructor);
 PGDLLEXPORT Datum
 Tlinearseq_constructor(PG_FUNCTION_ARGS)
 {
-  return tsequence_constructor_generic(fcinfo, true);
+  return tsequence_constructor_ext(fcinfo, true);
 }
 
 PG_FUNCTION_INFO_V1(Tsequenceset_constructor);
@@ -1065,7 +1065,7 @@ Tsequenceset_constructor(PG_FUNCTION_ARGS)
  * instants have a spatial or temporal gap defined by the arguments
  */
 PGDLLEXPORT Datum
-tsequenceset_constructor_gaps_generic(FunctionCallInfo fcinfo, bool get_interp)
+tsequenceset_constructor_gaps_ext(FunctionCallInfo fcinfo, bool get_interp)
 {
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   ensure_non_empty_array(array);
@@ -1105,7 +1105,7 @@ PG_FUNCTION_INFO_V1(Tstepseqset_constructor_gaps);
 PGDLLEXPORT Datum
 Tstepseqset_constructor_gaps(PG_FUNCTION_ARGS)
 {
-  return tsequenceset_constructor_gaps_generic(fcinfo, false);
+  return tsequenceset_constructor_gaps_ext(fcinfo, false);
 }
 
 PG_FUNCTION_INFO_V1(Tlinearseqset_constructor_gaps);
@@ -1116,7 +1116,7 @@ PG_FUNCTION_INFO_V1(Tlinearseqset_constructor_gaps);
 PGDLLEXPORT Datum
 Tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS)
 {
-  return tsequenceset_constructor_gaps_generic(fcinfo, true);
+  return tsequenceset_constructor_gaps_ext(fcinfo, true);
 }
 
 /*****************************************************************************/
@@ -1742,6 +1742,7 @@ Temporal_to_period(PG_FUNCTION_ARGS)
  * @ingroup libmeos_box_cast
  * @brief Return the bounding box of the temporal number.
  */
+#if 0 /* not used */
 TBOX *
 tnumber_to_tbox(Temporal *temp)
 {
@@ -1749,6 +1750,7 @@ tnumber_to_tbox(Temporal *temp)
   temporal_bbox(temp, result);
   return result;
 }
+#endif
 
 PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
 /**
@@ -3679,7 +3681,7 @@ temporal_restrict_value(const Temporal *temp, Datum value,
  * Restricts the temporal value to the (complement of the) array of base values
  */
 static Datum
-temporal_restrict_value_generic(FunctionCallInfo fcinfo, bool atfunc)
+temporal_restrict_value_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_ANYDATUM(1);
@@ -3699,7 +3701,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_value);
 PGDLLEXPORT Datum
 Temporal_at_value(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_value_generic(fcinfo, REST_AT);
+  return temporal_restrict_value_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_minus_value);
@@ -3709,7 +3711,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_value);
 PGDLLEXPORT Datum
 Temporal_minus_value(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_value_generic(fcinfo, REST_MINUS);
+  return temporal_restrict_value_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -3758,7 +3760,7 @@ temporal_restrict_values(const Temporal *temp, Datum *values,
  * Restricts the temporal value to the (complement of the) array of base values
  */
 static Datum
-temporal_restrict_values_generic(FunctionCallInfo fcinfo, bool atfunc)
+temporal_restrict_values_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
@@ -3802,7 +3804,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_values);
 PGDLLEXPORT Datum
 Temporal_at_values(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_values_generic(fcinfo, REST_AT);
+  return temporal_restrict_values_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_minus_values);
@@ -3812,7 +3814,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_values);
 PGDLLEXPORT Datum
 Temporal_minus_values(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_values_generic(fcinfo, REST_MINUS);
+  return temporal_restrict_values_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -3855,7 +3857,7 @@ tnumber_restrict_range(const Temporal *temp, RangeType *range,
 }
 
 static Datum
-tnumber_restrict_range_generic(FunctionCallInfo fcinfo, bool atfunc)
+tnumber_restrict_range_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   RangeType *range = PG_GETARG_RANGE_P(1);
@@ -3874,7 +3876,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_range);
 PGDLLEXPORT Datum
 Tnumber_at_range(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_range_generic(fcinfo, REST_AT);
+  return tnumber_restrict_range_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_minus_range);
@@ -3884,7 +3886,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_range);
 PGDLLEXPORT Datum
 Tnumber_minus_range(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_range_generic(fcinfo, REST_MINUS);
+  return tnumber_restrict_range_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -3938,7 +3940,7 @@ tnumber_restrict_ranges(const Temporal *temp, RangeType **ranges,
  * of base values
  */
 static Datum
-tnumber_restrict_ranges_generic(FunctionCallInfo fcinfo, bool atfunc)
+tnumber_restrict_ranges_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(1);
@@ -3978,7 +3980,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_ranges);
 PGDLLEXPORT Datum
 Tnumber_at_ranges(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_ranges_generic(fcinfo, REST_AT);
+  return tnumber_restrict_ranges_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_minus_ranges);
@@ -3989,7 +3991,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_ranges);
 PGDLLEXPORT Datum
 Tnumber_minus_ranges(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_ranges_generic(fcinfo, REST_MINUS);
+  return tnumber_restrict_ranges_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -4104,7 +4106,7 @@ temporal_restrict_timestamp(const Temporal *temp, TimestampTz t,
  * Restricts the temporal value to the (complement of the) timestamp
  */
 static Datum
-temporal_restrict_timestamp_generic(FunctionCallInfo fcinfo, bool atfunc)
+temporal_restrict_timestamp_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
@@ -4122,7 +4124,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_timestamp);
 PGDLLEXPORT Datum
 Temporal_at_timestamp(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_timestamp_generic(fcinfo, REST_AT);
+  return temporal_restrict_timestamp_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_minus_timestamp);
@@ -4132,7 +4134,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_timestamp);
 PGDLLEXPORT Datum
 Temporal_minus_timestamp(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_timestamp_generic(fcinfo, REST_MINUS);
+  return temporal_restrict_timestamp_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -4272,7 +4274,7 @@ temporal_restrict_period(const Temporal *temp, const Period *p,
 }
 
 static Datum
-temporal_restrict_period_generic(FunctionCallInfo fcinfo, bool atfunc)
+temporal_restrict_period_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *p = PG_GETARG_PERIOD_P(1);
@@ -4290,7 +4292,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_period);
 PGDLLEXPORT Datum
 Temporal_at_period(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_period_generic(fcinfo, REST_AT);
+  return temporal_restrict_period_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Temporal_minus_period);
@@ -4300,7 +4302,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_period);
 PGDLLEXPORT Datum
 Temporal_minus_period(PG_FUNCTION_ARGS)
 {
-  return temporal_restrict_period_generic(fcinfo, REST_MINUS);
+  return temporal_restrict_period_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -4458,7 +4460,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
  * Restricts the temporal value to the (complement of the) temporal box
   */
 static Datum
-tnumber_restrict_tbox_generic(FunctionCallInfo fcinfo, bool atfunc)
+tnumber_restrict_tbox_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
@@ -4477,7 +4479,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_tbox);
 PGDLLEXPORT Datum
 Tnumber_at_tbox(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_tbox_generic(fcinfo, REST_AT);
+  return tnumber_restrict_tbox_ext(fcinfo, REST_AT);
 }
 
 PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
@@ -4487,7 +4489,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_tbox);
 PGDLLEXPORT Datum
 Tnumber_minus_tbox(PG_FUNCTION_ARGS)
 {
-  return tnumber_restrict_tbox_generic(fcinfo, REST_MINUS);
+  return tnumber_restrict_tbox_ext(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************

@@ -930,7 +930,7 @@ PG_FUNCTION_INFO_V1(Tpoint_sel);
 PGDLLEXPORT Datum
 Tpoint_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_generic(fcinfo, TPOINTTYPE);
+  return temporal_sel_ext(fcinfo, TPOINTTYPE);
 }
 
 /*****************************************************************************
@@ -1361,7 +1361,7 @@ PG_FUNCTION_INFO_V1(Tpoint_joinsel);
 PGDLLEXPORT Datum
 Tpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_generic(fcinfo, TPOINTTYPE);
+  return temporal_joinsel_ext(fcinfo, TPOINTTYPE);
 }
 
 /*****************************************************************************/
