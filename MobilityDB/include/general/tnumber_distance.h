@@ -37,11 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <float.h>
-/* MobilityDB */
-#include "general/tempcache.h"
-#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -51,9 +46,6 @@ extern Datum Distance_base_tnumber(PG_FUNCTION_ARGS);
 extern Datum Distance_tnumber_number(PG_FUNCTION_ARGS);
 extern Datum Distance_tnumber_tnumber(PG_FUNCTION_ARGS);
 
-extern Datum number_distance(Datum l, Datum r, CachedType typel,
-  CachedType typer);
-
 /* Nearest approach distance */
 
 extern Datum NAD_base_tnumber(PG_FUNCTION_ARGS);
@@ -62,8 +54,6 @@ extern Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);
 extern Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern double nad_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 // NAI and shortestline functions are not yet implemented
 // Are they useful ?

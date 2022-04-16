@@ -48,14 +48,15 @@
 /* General functions */
 
 extern const TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
-extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
-extern void tinstantset_bbox(const TInstantSet *ti, void *box);
-extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern TInstantSet *tinstantset_make(const TInstant **instants, int count,
   bool merge);
 extern TInstantSet *tinstantset_make_free(TInstant **instants, int count,
   bool merge);
 extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
+
+extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
+extern void tinstantset_bbox(const TInstantSet *ti, void *box);
+extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
   int *pos);
 
@@ -68,8 +69,8 @@ extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
-extern TInstantSet *tinstantset_from_base(Datum value,
-  CachedType temptype, const TimestampSet *ts);
+extern TInstantSet *tinstantset_from_base(Datum value, CachedType temptype,
+  const TimestampSet *ts);
 
 /* Accessor functions */
 
@@ -79,7 +80,7 @@ extern PeriodSet *tinstantset_time(const TInstantSet *ti);
 extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
 extern void tinstantset_period(const TInstantSet *ti, Period *p);
-extern Datum tinstantset_timespan(const TInstantSet *ti);
+extern Interval *tinstantset_timespan(const TInstantSet *ti);
 extern TSequence **tinstantset_sequences(const TInstantSet *ti);
 extern const TInstant **tinstantset_instants(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
@@ -119,10 +120,9 @@ extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti,
 extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti,
   RangeType **normranges, int count, bool atfunc);
 extern const TInstant *tinstantset_min_instant(const TInstantSet *ti);
+extern const TInstant *tinstantset_max_instant(const TInstantSet *ti);
 extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *ti,
   bool min, bool atfunc);
-extern bool tinstantset_value_at_timestamp(const TInstantSet *ti,
-  TimestampTz t, Datum *result);
 extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti,
   TimestampTz t, bool atfunc);
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti,
@@ -131,6 +131,9 @@ extern TInstantSet *tinstantset_restrict_period(const TInstantSet *ti,
   const Period *p, bool atfunc);
 extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *ti,
   const PeriodSet *ps, bool atfunc);
+
+extern bool tinstantset_value_at_timestamp(const TInstantSet *ti,
+  TimestampTz t, Datum *result);
 
 /* Append and merge functions */
 

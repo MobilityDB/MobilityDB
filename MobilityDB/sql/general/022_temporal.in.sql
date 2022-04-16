@@ -494,7 +494,7 @@ CREATE FUNCTION ttext_seqset(ttext)
 
 CREATE FUNCTION toLinear(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tstep_to_tlinear'
+  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
@@ -711,6 +711,32 @@ CREATE FUNCTION maxValue(tfloat)
 CREATE FUNCTION maxValue(ttext)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_max_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minInstant(tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_min_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minInstant(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_min_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION minInstant(ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_min_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION maxInstant(tint)
+  RETURNS tint
+  AS 'MODULE_PATHNAME', 'Temporal_max_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION maxInstant(tfloat)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Temporal_max_instant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION maxInstant(ttext)
+  RETURNS ttext
+  AS 'MODULE_PATHNAME', 'Temporal_max_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- timestamp is a reserved word in SQL

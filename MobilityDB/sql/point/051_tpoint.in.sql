@@ -271,11 +271,11 @@ CREATE FUNCTION tgeogpoint_seqset(geography, periodset, linear boolean DEFAULT t
 
 CREATE FUNCTION toLinear(tgeompoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tstep_to_tlinear'
+  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION toLinear(tgeogpoint)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tstep_to_tlinear'
+  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION appendInstant(tgeompoint, tgeompoint)

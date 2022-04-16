@@ -35,43 +35,8 @@
 #ifndef __TPOINT_TILE_H__
 #define __TPOINT_TILE_H__
 
-/* MobilityDB */
-#include "general/temporal.h"
-
-#define MAXDIMS 4
-
-/*****************************************************************************/
-
-/**
- * Structure for storing a bit matrix
- */
-typedef struct
-{
-  int numdims;           /**< Number of dimensions */
-  int count[MAXDIMS];    /**< Number of elements in each dimension */
-  uint8_t byte[1];       /**< beginning of variable-length data */
-} BitMatrix;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * a multidimensional grid
- */
-typedef struct STboxGridState
-{
-  bool done;           /**< True when all the tiles have been processed */
-  int i;               /**< Number of current tile */
-  double size;         /**< Size of the x, y, and z dimension */
-  int64 tunits;        /**< Size of the time dimension */
-  STBOX box;           /**< Bounding box of the grid */
-  Temporal *temp;      /**< Optional temporal point to be split */
-  BitMatrix *bm;       /**< Optional bit matrix for speeding up
-                            the computation of the split functions */
-  double x;            /**< Minimum x value of the current tile */
-  double y;            /**< Minimum y value of the current tile */
-  double z;            /**< Minimum z value of the current tile */
-  TimestampTz t;       /**< Minimum t value of the current tile */
-  int coords[MAXDIMS]; /**< Coordinates of the current tile */
-} STboxGridState;
+/* PostgreSQL */
+#include <postgres.h>
 
 /*****************************************************************************/
 

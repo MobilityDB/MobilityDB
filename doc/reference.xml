@@ -697,6 +697,14 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="minInstant"><varname>minInstant</varname></link>: Get the instant with the minimum value</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="maxInstant"><varname>maxInstant</varname></link>: Get the instant with the maximum value</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="valueRange"><varname>valueRange</varname></link>: Get the value range</para>
 				</listitem>
 

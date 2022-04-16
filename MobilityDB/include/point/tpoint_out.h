@@ -37,8 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 
 /*****************************************************************************/
 
@@ -52,8 +50,6 @@ extern Datum Tpoint_as_mfjson(PG_FUNCTION_ARGS);
 extern Datum Tpoint_as_binary(PG_FUNCTION_ARGS);
 extern Datum Tpoint_as_ewkb(PG_FUNCTION_ARGS);
 extern Datum Tpoint_as_hexewkb(PG_FUNCTION_ARGS);
-
-extern char *ewkt_out(Oid typid, Datum value);
 
 /*****************************************************************************/
 

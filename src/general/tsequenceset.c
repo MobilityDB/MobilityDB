@@ -803,111 +803,6 @@ tsequenceset_read(StringInfo buf, CachedType temptype)
 }
 
 /*****************************************************************************
- * Cast functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_cast
- * @brief Cast a temporal float value as a floatrange.
- */
-RangeType *
-tfloatseqset_range(const TSequenceSet *ts)
-{
-  /* Singleton sequence set */
-  if (ts->count == 1)
-    return tfloatseq_range(tsequenceset_seq_n(ts, 0));
-
-  /* General case */
-  TBOX *box = tsequenceset_bbox_ptr(ts);
-  Datum min = Float8GetDatum(box->xmin);
-  Datum max = Float8GetDatum(box->xmax);
-  /* It step interpolation */
-  if(! MOBDB_FLAGS_GET_LINEAR(ts->flags))
-    return range_make(min, max, true, true, T_FLOAT8);
-
-  /* Linear interpolation */
-  RangeType **ranges = palloc(sizeof(RangeType *) * ts->count);
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    ranges[i] = tfloatseq_range(seq);
-  }
-  int newcount;
-  RangeType **normranges = rangearr_normalize(ranges, ts->count, &newcount);
-  RangeType *result;
-  if (newcount == 1)
-  {
-    result = normranges[0];
-    pfree_array((void **) ranges, ts->count);
-    pfree(normranges);
-    return result;
-  }
-
-  RangeType *start = normranges[0];
-  RangeType *end = normranges[newcount - 1];
-  result = range_make(lower_datum(start), upper_datum(end),
-    lower_inc(start), upper_inc(end), T_FLOAT8);
-  pfree_array((void **) normranges, newcount);
-  pfree_array((void **) ranges, ts->count);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_cast
- * @brief Cast the temporal integer value as a temporal float value.
- */
-TSequenceSet *
-tintseqset_tfloatseqset(const TSequenceSet *ts)
-{
-  TSequenceSet *result = tsequenceset_copy(ts);
-  result->temptype = T_TFLOAT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
-    seq->temptype = T_TFLOAT;
-    for (int j = 0; j < seq->count; j++)
-    {
-      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
-      inst->temptype = T_TFLOAT;
-      Datum *value_ptr = tinstant_value_ptr(inst);
-      *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
-    }
-  }
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_cast
- * @brief Cast the temporal float value as a temporal integer value.
- */
-TSequenceSet *
-tfloatseqset_tintseqset(const TSequenceSet *ts)
-{
-  if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
-  TSequenceSet *result = tsequenceset_copy(ts);
-  result->temptype = T_TINT;
-  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
-  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
-    seq->temptype = T_TINT;
-    for (int j = 0; j < seq->count; j++)
-    {
-      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
-      inst->temptype = T_TINT;
-      Datum *value_ptr = tinstant_value_ptr(inst);
-      *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
-    }
-  }
-  return result;
-}
-
-/*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
@@ -922,8 +817,8 @@ tfloatseqset_tintseqset(const TSequenceSet *ts)
  * @param[in] linear True when the resulting value has linear interpolation
 */
 TSequenceSet *
-tsequenceset_from_base(Datum value, CachedType temptype,
-  const PeriodSet *ps, bool linear)
+tsequenceset_from_base(Datum value, CachedType temptype, const PeriodSet *ps,
+  bool linear)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ps->count);
   for (int i = 0; i < ps->count; i++)
@@ -932,143 +827,6 @@ tsequenceset_from_base(Datum value, CachedType temptype,
     sequences[i] = tsequence_from_base(value, temptype, p, linear);
   }
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
-}
-
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Transform the temporal instant value into a temporal sequence set.
- * value.
- */
-TSequenceSet *
-tinstant_tsequenceset(const TInstant *inst, bool linear)
-{
-  TSequence *seq = tinstant_tsequence(inst, linear);
-  TSequenceSet *result = tsequence_tsequenceset(seq);
-  pfree(seq);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Transform the temporal instant set value into a temporal sequence set
- * value.
- */
-TSequenceSet *
-tinstantset_tsequenceset(const TInstantSet *ti, bool linear)
-{
-  TSequence **sequences = palloc(sizeof(TSequence *) * ti->count);
-  for (int i = 0; i < ti->count; i++)
-  {
-    const TInstant *inst = tinstantset_inst_n(ti, i);
-    sequences[i] = tinstant_tsequence(inst, linear);
-  }
-  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
-    ti->count, NORMALIZE_NO);
-  pfree(sequences);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Transform the temporal sequence set value from the temporal sequence.
- */
-TSequenceSet *
-tsequence_tsequenceset(const TSequence *seq)
-{
-  return tsequenceset_make(&seq, 1, NORMALIZE_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Transform the temporal value with continuous base type from stepwise
- * to linear interpolation.
- */
-TSequenceSet *
-tstepseqset_tlinearseqset(const TSequenceSet *ts)
-{
-  /* Singleton sequence set */
-  if (ts->count == 1)
-    return tstepseq_tlinearseq(tsequenceset_seq_n(ts, 0));
-
-  /* General case */
-  TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount);
-  int k = 0;
-  for (int i = 0; i < ts->count; i++)
-  {
-    const TSequence *seq = tsequenceset_seq_n(ts, i);
-    k += tstepseq_tlinearseq1(seq, &sequences[k]);
-  }
-  return tsequenceset_make_free(sequences, k, NORMALIZE);
-}
-
-/**
- * @ingroup libmeos_temporal_transf
- * @brief Shift and/or scale the time span of the temporal value by the two
- * intervals.
- *
- * @pre The duration is greater than 0 if it is not NULL
- */
-TSequenceSet *
-tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
-  const Interval *duration)
-{
-  assert(start != NULL || duration != NULL);
-
-  /* Copy the input sequence set to the result */
-  TSequenceSet *result = tsequenceset_copy(ts);
-
-  /* Determine the shift and/or the scale values */
-  Period p1, p2;
-  const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
-  const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
-  const TInstant *inst1 = tsequence_inst_n(seq1, 0);
-  const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
-  period_set(inst1->t, inst2->t, seq1->period.lower_inc,
-    seq2->period.upper_inc, &p1);
-  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
-  period_shift_tscale(start, duration, &p2);
-  TimestampTz shift;
-  if (start != NULL)
-    shift = p2.lower - p1.lower;
-  double scale;
-  bool instant = (p2.lower == p2.upper);
-  /* If the sequence set is instantaneous we cannot scale */
-  if (duration != NULL && ! instant)
-    scale = (double) (p2.upper - p2.lower) / (double) (p1.upper - p1.lower);
-
-  /* Shift and/or scale each composing sequence */
-  for (int i = 0; i < ts->count; i++)
-  {
-    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
-    /* Shift and/or scale the bounding period of the sequence */
-    if (start != NULL && (duration == NULL || seq->count == 1))
-    {
-      seq->period.lower += shift;
-      seq->period.upper += shift;
-    }
-    /* If the sequence is instantaneous we cannot scale */
-    if (duration != NULL && seq->count > 1)
-    {
-      seq->period.lower = p2.lower + (seq->period.lower - p1.lower) * scale;
-      seq->period.upper = p2.lower + (seq->period.upper - p1.lower) * scale;
-    }
-    /* Shift and/or scale each composing instant */
-    for (int j = 0; j < seq->count; j++)
-    {
-      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
-      /* Shift and/or scale the bounding period of the sequence */
-      if (start != NULL)
-        inst->t += shift;
-      /* If the sequence is instantaneous we cannot scale */
-      if (duration != NULL && seq->count > 1)
-        inst->t = p2.lower + (inst->t - p2.lower) * scale;
-    }
-  }
-  return result;
 }
 
 /*****************************************************************************
@@ -1134,9 +892,8 @@ tfloatseqset_ranges(const TSequenceSet *ts, int *count)
  * @brief Return a pointer to the instant with minimum base value of the
  * temporal value.
  *
- * The function does not take into account whether the instant is at an
+ * @note The function does not take into account whether the instant is at an
  * exclusive bound or not
- *
  * @note Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance.
  */
@@ -1157,6 +914,38 @@ tsequenceset_min_instant(const TSequenceSet *ts)
       if (datum_lt(value, min, basetype))
       {
         min = value;
+        result = inst;
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a pointer to the instant with maximum base value of the
+ * temporal value.
+ *
+ * @note The function does not take into account whether the instant is at an
+ * exclusive bound or not
+ */
+const TInstant *
+tsequenceset_max_instant(const TSequenceSet *ts)
+{
+  const TSequence *seq = tsequenceset_seq_n(ts, 0);
+  const TInstant *result = tsequence_inst_n(seq, 0);
+  Datum max = tinstant_value(result);
+  CachedType basetype = temptype_basetype(seq->temptype);
+  for (int i = 0; i < ts->count; i++)
+  {
+    seq = tsequenceset_seq_n(ts, i);
+    for (int j = 0; j < seq->count; j++)
+    {
+      const TInstant *inst = tsequence_inst_n(seq, j);
+      Datum value = tinstant_value(inst);
+      if (datum_gt(value, max, basetype))
+      {
+        max = value;
         result = inst;
       }
     }
@@ -1243,14 +1032,14 @@ tsequenceset_time(const TSequenceSet *ts)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the timespan of the temporal value.
  */
-Datum
+Interval *
 tsequenceset_timespan(const TSequenceSet *ts)
 {
   const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
   const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
-  Datum result = call_function2(timestamp_mi,
+  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
     TimestampTzGetDatum(seq2->period.upper),
-    TimestampTzGetDatum(seq1->period.lower));
+    TimestampTzGetDatum(seq1->period.lower)));
   return result;
 }
 
@@ -1258,7 +1047,7 @@ tsequenceset_timespan(const TSequenceSet *ts)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of the temporal value.
  */
-Datum
+Interval *
 tsequenceset_duration(const TSequenceSet *ts)
 {
   const TSequence *seq = tsequenceset_seq_n(ts, 0);
@@ -1273,7 +1062,7 @@ tsequenceset_duration(const TSequenceSet *ts)
     pfree(DatumGetPointer(result)); pfree(DatumGetPointer(interval1));
     result = interval2;
   }
-  return result;
+  return (Interval *) DatumGetPointer(result);
 }
 
 /**
@@ -1595,6 +1384,248 @@ tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts, TimestampTz t,
   /* Since this function is always called with a timestamp that appears
    * in the sequence set value the next statement is never reached */
   return false;
+}
+
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_cast
+ * @brief Cast a temporal float value as a floatrange.
+ */
+RangeType *
+tfloatseqset_range(const TSequenceSet *ts)
+{
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tfloatseq_range(tsequenceset_seq_n(ts, 0));
+
+  /* General case */
+  TBOX *box = tsequenceset_bbox_ptr(ts);
+  Datum min = Float8GetDatum(box->xmin);
+  Datum max = Float8GetDatum(box->xmax);
+  /* It step interpolation */
+  if(! MOBDB_FLAGS_GET_LINEAR(ts->flags))
+    return range_make(min, max, true, true, T_FLOAT8);
+
+  /* Linear interpolation */
+  RangeType **ranges = palloc(sizeof(RangeType *) * ts->count);
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    ranges[i] = tfloatseq_range(seq);
+  }
+  int newcount;
+  RangeType **normranges = rangearr_normalize(ranges, ts->count, &newcount);
+  RangeType *result;
+  if (newcount == 1)
+  {
+    result = normranges[0];
+    pfree_array((void **) ranges, ts->count);
+    pfree(normranges);
+    return result;
+  }
+
+  RangeType *start = normranges[0];
+  RangeType *end = normranges[newcount - 1];
+  result = range_make(lower_datum(start), upper_datum(end),
+    lower_inc(start), upper_inc(end), T_FLOAT8);
+  pfree_array((void **) normranges, newcount);
+  pfree_array((void **) ranges, ts->count);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_cast
+ * @brief Cast the temporal integer value as a temporal float value.
+ */
+TSequenceSet *
+tintseqset_tfloatseqset(const TSequenceSet *ts)
+{
+  TSequenceSet *result = tsequenceset_copy(ts);
+  result->temptype = T_TFLOAT;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, true);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
+    seq->temptype = T_TFLOAT;
+    for (int j = 0; j < seq->count; j++)
+    {
+      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
+      inst->temptype = T_TFLOAT;
+      Datum *value_ptr = tinstant_value_ptr(inst);
+      *value_ptr = Float8GetDatum((double)DatumGetInt32(tinstant_value(inst)));
+    }
+  }
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_cast
+ * @brief Cast the temporal float value as a temporal integer value.
+ */
+TSequenceSet *
+tfloatseqset_tintseqset(const TSequenceSet *ts)
+{
+  if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("Cannot cast temporal float with linear interpolation to temporal integer")));
+  TSequenceSet *result = tsequenceset_copy(ts);
+  result->temptype = T_TINT;
+  MOBDB_FLAGS_SET_CONTINUOUS(result->flags, false);
+  MOBDB_FLAGS_SET_LINEAR(result->flags, false);
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
+    seq->temptype = T_TINT;
+    for (int j = 0; j < seq->count; j++)
+    {
+      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
+      inst->temptype = T_TINT;
+      Datum *value_ptr = tinstant_value_ptr(inst);
+      *value_ptr = Int32GetDatum((double)DatumGetFloat8(tinstant_value(inst)));
+    }
+  }
+  return result;
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal instant value into a temporal sequence set.
+ * value.
+ */
+TSequenceSet *
+tinstant_tsequenceset(const TInstant *inst, bool linear)
+{
+  TSequence *seq = tinstant_tsequence(inst, linear);
+  TSequenceSet *result = tsequence_tsequenceset(seq);
+  pfree(seq);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal instant set value into a temporal sequence set
+ * value.
+ */
+TSequenceSet *
+tinstantset_tsequenceset(const TInstantSet *ti, bool linear)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ti->count);
+  for (int i = 0; i < ti->count; i++)
+  {
+    const TInstant *inst = tinstantset_inst_n(ti, i);
+    sequences[i] = tinstant_tsequence(inst, linear);
+  }
+  TSequenceSet *result = tsequenceset_make((const TSequence **) sequences,
+    ti->count, NORMALIZE_NO);
+  pfree(sequences);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal sequence set value from the temporal sequence.
+ */
+TSequenceSet *
+tsequence_tsequenceset(const TSequence *seq)
+{
+  return tsequenceset_make(&seq, 1, NORMALIZE_NO);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal value with continuous base type from stepwise
+ * to linear interpolation.
+ */
+TSequenceSet *
+tstepseqset_tlinearseqset(const TSequenceSet *ts)
+{
+  /* Singleton sequence set */
+  if (ts->count == 1)
+    return tstepseq_tlinearseq(tsequenceset_seq_n(ts, 0));
+
+  /* General case */
+  TSequence **sequences = palloc(sizeof(TSequence *) * ts->totalcount);
+  int k = 0;
+  for (int i = 0; i < ts->count; i++)
+  {
+    const TSequence *seq = tsequenceset_seq_n(ts, i);
+    k += tstepseq_tlinearseq1(seq, &sequences[k]);
+  }
+  return tsequenceset_make_free(sequences, k, NORMALIZE);
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Shift and/or scale the time span of the temporal value by the two
+ * intervals.
+ *
+ * @pre The duration is greater than 0 if it is not NULL
+ */
+TSequenceSet *
+tsequenceset_shift_tscale(const TSequenceSet *ts, const Interval *start,
+  const Interval *duration)
+{
+  assert(start != NULL || duration != NULL);
+
+  /* Copy the input sequence set to the result */
+  TSequenceSet *result = tsequenceset_copy(ts);
+
+  /* Determine the shift and/or the scale values */
+  Period p1, p2;
+  const TSequence *seq1 = tsequenceset_seq_n(ts, 0);
+  const TSequence *seq2 = tsequenceset_seq_n(ts, ts->count - 1);
+  const TInstant *inst1 = tsequence_inst_n(seq1, 0);
+  const TInstant *inst2 = tsequence_inst_n(seq2, seq2->count - 1);
+  period_set(inst1->t, inst2->t, seq1->period.lower_inc,
+    seq2->period.upper_inc, &p1);
+  period_set(p1.lower, p1.upper, p1.lower_inc, p1.upper_inc, &p2);
+  period_shift_tscale(start, duration, &p2);
+  TimestampTz shift;
+  if (start != NULL)
+    shift = p2.lower - p1.lower;
+  double scale;
+  bool instant = (p2.lower == p2.upper);
+  /* If the sequence set is instantaneous we cannot scale */
+  if (duration != NULL && ! instant)
+    scale = (double) (p2.upper - p2.lower) / (double) (p1.upper - p1.lower);
+
+  /* Shift and/or scale each composing sequence */
+  for (int i = 0; i < ts->count; i++)
+  {
+    TSequence *seq = (TSequence *) tsequenceset_seq_n(result, i);
+    /* Shift and/or scale the bounding period of the sequence */
+    if (start != NULL && (duration == NULL || seq->count == 1))
+    {
+      seq->period.lower += shift;
+      seq->period.upper += shift;
+    }
+    /* If the sequence is instantaneous we cannot scale */
+    if (duration != NULL && seq->count > 1)
+    {
+      seq->period.lower = p2.lower + (seq->period.lower - p1.lower) * scale;
+      seq->period.upper = p2.lower + (seq->period.upper - p1.lower) * scale;
+    }
+    /* Shift and/or scale each composing instant */
+    for (int j = 0; j < seq->count; j++)
+    {
+      TInstant *inst = (TInstant *) tsequence_inst_n(seq, j);
+      /* Shift and/or scale the bounding period of the sequence */
+      if (start != NULL)
+        inst->t += shift;
+      /* If the sequence is instantaneous we cannot scale */
+      if (duration != NULL && seq->count > 1)
+        inst->t = p2.lower + (inst->t - p2.lower) * scale;
+    }
+  }
+  return result;
 }
 
 /*****************************************************************************
@@ -2291,10 +2322,9 @@ tnumberseqset_integral(const TSequenceSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
- * @brief Return the duration of the temporal value as a double
+ * Return the duration of the temporal value as a double
  */
-double
+static double
 tsequenceset_interval_double(const TSequenceSet *ts)
 {
   double result = 0;
@@ -2305,7 +2335,6 @@ tsequenceset_interval_double(const TSequenceSet *ts)
   }
   return result;
 }
-
 
 /**
  * @ingroup libmeos_temporal_accessor

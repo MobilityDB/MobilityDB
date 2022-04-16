@@ -1437,8 +1437,8 @@ tsequence_read(StringInfo buf, CachedType temptype)
  * @param[in] linear True when the resulting value has linear interpolation
  */
 TSequence *
-tsequence_from_base(Datum value, CachedType temptype,
-  const Period *p, bool linear)
+tsequence_from_base(Datum value, CachedType temptype, const Period *p,
+  bool linear)
 {
   int count;
   TInstant *instants[2];
@@ -1807,9 +1807,8 @@ tsequence_time(const TSequence *seq)
  * @brief Return a pointer to the instant with minimum base value of the
  * temporal value.
  *
- * The function does not take into account whether the instant is at an
+ * @note The function does not take into account whether the instant is at an
  * exclusive bound or not
- *
  * @note Function used, e.g., for computing the shortest line between two
  * temporal points from their temporal distance
  */
@@ -1825,6 +1824,32 @@ tsequence_min_instant(const TSequence *seq)
     if (datum_lt(value, min, basetype))
     {
       min = value;
+      k = i;
+    }
+  }
+  return tsequence_inst_n(seq, k);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a pointer to the instant with minimum base value of the
+ * temporal value.
+ *
+ * @note The function does not take into account whether the instant is at an
+ * exclusive bound or not.
+ */
+const TInstant *
+tsequence_max_instant(const TSequence *seq)
+{
+  Datum max = tinstant_value(tsequence_inst_n(seq, 0));
+  int k = 0;
+  CachedType basetype = temptype_basetype(seq->temptype);
+  for (int i = 1; i < seq->count; i++)
+  {
+    Datum value = tinstant_value(tsequence_inst_n(seq, i));
+    if (datum_gt(value, max, basetype))
+    {
+      max = value;
       k = i;
     }
   }
@@ -1891,11 +1916,10 @@ tsequence_max_value(const TSequence *seq)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of the temporal value.
  */
-Datum
+Interval *
 tsequence_duration(const TSequence *seq)
 {
-  Interval *result = period_duration(&seq->period);
-  return PointerGetDatum(result);
+  return period_duration(&seq->period);
 }
 
 /**

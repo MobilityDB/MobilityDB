@@ -32,109 +32,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-/* MobilityDB */
-#include "general/temporal.h"
 
 /*****************************************************************************/
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the bucket list
- */
-typedef struct RangeBucketState
-{
-  bool done;
-  int i;
-  CachedType basetype;
-  Temporal *temp; /* NULL when generating bucket list, used for splitting */
-  Datum size;
-  Datum origin;
-  Datum minvalue;
-  Datum maxvalue;
-  Datum value;
-} RangeBucketState;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the bucket list
- */
-typedef struct PeriodBucketState
-{
-  bool done;
-  int i;
-  int64 tunits;
-  int64 torigin;
-  TimestampTz mint;
-  TimestampTz maxt;
-  TimestampTz t;
-} PeriodBucketState;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the multidimensional grid
- */
-typedef struct TboxGridState
-{
-  bool done;
-  int i;
-  double xsize;
-  int64 tunits;
-  TBOX box;
-  double value;
-  TimestampTz t;
-} TboxGridState;
-
-/*****************************************************************************/
-
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
-typedef struct ValueSplitState
-{
-  bool done;
-  Datum size;
-  Datum *buckets;
-  Temporal **fragments;
-  int i;
-  int count;
-} ValueSplitState;
-
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
-typedef struct TimeSplitState
-{
-  bool done;
-  int64 tunits;
-  TimestampTz *buckets;
-  Temporal **fragments;
-  int i;
-  int count;
-} TimeSplitState;
-
-/**
- * Struct for storing the state that persists across multiple calls to output
- * the temporal fragments
- */
-typedef struct ValueTimeSplitState
-{
-  bool done;
-  Datum *value_buckets;
-  TimestampTz *time_buckets;
-  Temporal **fragments;
-  int i;
-  int count;
-} ValueTimeSplitState;
-
-/*****************************************************************************/
-
-extern double float_bucket(double value, double size, double origin);
-extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
-  TimestampTz torigin);
-extern int64 get_interval_units(Interval *interval);
 
 extern Datum Number_bucket(PG_FUNCTION_ARGS);
 extern Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
@@ -148,6 +47,6 @@ extern Datum Tbox_multidim_grid(PG_FUNCTION_ARGS);
 extern Datum Tbox_multidim_tile(PG_FUNCTION_ARGS);
 extern Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
 
-#endif /* __TEMPORAL_TILE_H__ */
-
 /*****************************************************************************/
+
+#endif /* __TEMPORAL_TILE_H__ */

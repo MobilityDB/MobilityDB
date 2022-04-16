@@ -37,61 +37,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_operator.h>
-#include <commands/vacuum.h>
-#include <utils/lsyscache.h>
-#include <utils/rangetypes.h>
-#include <utils/selfuncs.h>
-#include <utils/typcache.h>
-/* MobilityDB */
-#include "general/tempcache.h"
-#include "general/temporal.h"
-
-#define BTREE_AM_OID   403
-
-/**
-* Default temporal selectivity factor
-*/
-#define DEFAULT_TEMP_SEL 0.0001
-#define DEFAULT_TEMP_JOINSEL 0.001
-
-/*****************************************************************************
- * Internal selectivity functions for Temporal types.
- *****************************************************************************/
-
-extern Selectivity scalarineqsel(PlannerInfo *root, Oid operid, bool isgt,
-  bool iseq, VariableStatData *vardata, Datum constval,
-  Oid consttypid);
-extern Selectivity temporal_sel_period(VariableStatData *vardata,
-  Period *period, CachedOp cachedOp);
-
-
-/*****************************************************************************
- * Some other helper functions.
- *****************************************************************************/
-
-#if POSTGRESQL_VERSION_NUMBER < 120000
-extern double var_eq_const(VariableStatData *vardata, Oid operid,
-  Datum constval, bool constisnull, bool varonleft, bool negate);
-#endif
 
 /*****************************************************************************/
 
 extern Datum Temporal_sel(PG_FUNCTION_ARGS);
 extern Datum Temporal_joinsel(PG_FUNCTION_ARGS);
-
-extern float8 temporal_sel(PlannerInfo *root, Oid operid, List *args,
-  int varRelid, TemporalFamily tempfamily);
-extern double temporal_sel_ext(FunctionCallInfo fcinfo,
-  TemporalFamily tempfamily);
-
-extern double temporal_joinsel(PlannerInfo *root, Oid operid,
-  List *args, JoinType jointype, SpecialJoinInfo *sjinfo,
-  TemporalFamily tempfamily);
-
-extern double temporal_joinsel_ext(FunctionCallInfo fcinfo,
-  TemporalFamily tempfamily);
 
 /*****************************************************************************/
 

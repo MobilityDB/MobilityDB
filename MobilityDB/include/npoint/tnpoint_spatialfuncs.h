@@ -37,35 +37,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
-#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 
-/* Parameter tests */
-
-extern void ensure_same_srid_tnpoint_stbox(const Temporal *temp,
-  const STBOX *box);
-extern void ensure_same_rid_tnpointinst(const TInstant *inst1,
-  const TInstant *inst2);
-
-/* Interpolation functions */
-
-extern bool tnpointsegm_intersection_value(const TInstant *inst1,
-  const TInstant *inst2, Datum value, TimestampTz *t);
-
-/* Functions for spatial reference systems */
-
-extern int tnpoint_srid(const Temporal *temp);
-
 extern Datum Tnpoint_get_trajectory(PG_FUNCTION_ARGS);
-
-extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
-
-extern Datum tnpoint_geom(const Temporal *temp);
-
 extern Datum Tnpoint_length(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_cumulative_length(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_speed(PG_FUNCTION_ARGS);

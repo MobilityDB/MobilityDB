@@ -37,10 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/builtins.h>
-/* MobilityDB */
-#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -50,11 +46,6 @@ extern Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 extern Datum Stbox_gist_picksplit(PG_FUNCTION_ARGS);
 extern Datum Stbox_gist_same(PG_FUNCTION_ARGS);
 extern Datum Tpoint_gist_compress(PG_FUNCTION_ARGS);
-
-/* The following functions are also called by tpoint_spgist.c */
-extern bool tpoint_index_recheck(StrategyNumber strategy);
-extern bool stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
-  StrategyNumber strategy);
 
 /*****************************************************************************/
 

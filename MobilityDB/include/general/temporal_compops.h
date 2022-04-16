@@ -37,10 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -67,10 +63,6 @@ extern Datum Tgt_temporal_temporal(PG_FUNCTION_ARGS);
 extern Datum Tge_base_temporal(PG_FUNCTION_ARGS);
 extern Datum Tge_temporal_base(PG_FUNCTION_ARGS);
 extern Datum Tge_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Temporal * tcomp_temporal_base(const Temporal *temp, Datum value,
-  Oid datumtypid, Datum (*func)(Datum, Datum, CachedType, CachedType),
-  bool invert);
 
 /*****************************************************************************/
 

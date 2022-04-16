@@ -37,29 +37,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-/* MobilityDB */
-#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 
 /* Generic functions */
-
-extern Datum lower_datum(const RangeType *range);
-extern Datum upper_datum(const RangeType *range);
-#if POSTGRESQL_VERSION_NUMBER < 130000
-extern bool lower_inc(RangeType *range);
-extern bool upper_inc(RangeType *range);
-#else
-extern bool lower_inc(const RangeType *range);
-extern bool upper_inc(const RangeType *range);
-#endif
-extern void range_bounds(const RangeType *range, double *xmin, double *xmax);
-extern RangeType *range_make(Datum from, Datum to, bool lower_inc,
-  bool upper_inc, CachedType basetype);
-extern RangeType **rangearr_normalize(RangeType **ranges, int count,
-  int *newcount);
 
 extern Datum intrange_canonical(PG_FUNCTION_ARGS);
 

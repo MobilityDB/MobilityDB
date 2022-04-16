@@ -37,45 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
-
-/*****************************************************************************
- * Struct definitions
- *****************************************************************************/
-
-/* Network-based point */
-
-typedef struct
-{
-  int64 rid;        /**< route identifier */
-  double pos;       /**< position */
-} npoint;
-
-/* Network-based segment */
-
-typedef struct
-{
-  int64 rid;       /**< route identifier */
-  double pos1;     /**< position1 */
-  double pos2;     /**< position2 */
-} nsegment;
-
-/*****************************************************************************
- * fmgr macros
- *****************************************************************************/
-
-/* npoint */
-#define DatumGetNpoint(X)          ((npoint *) DatumGetPointer(X))
-#define NpointGetDatum(X)          PointerGetDatum(X)
-#define PG_GETARG_NPOINT(X)        DatumGetNpoint(PG_GETARG_DATUM(X))
-#define PG_RETURN_NPOINT(X)        PG_RETURN_POINTER(X)
-
-/* nsegment */
-#define DatumGetNsegment(X)   ((nsegment *) DatumGetPointer(X))
-#define NsegmentGetDatum(X)   PointerGetDatum(X)
-#define PG_GETARG_NSEGMENT(X) DatumGetNsegment(PG_GETARG_DATUM(X))
 
 /*****************************************************************************/
 
@@ -88,8 +49,6 @@ extern Datum Tnpoint_in(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 extern Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 
-extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
-
 /* Transformation functions */
 
 extern Datum Tnpoint_round(PG_FUNCTION_ARGS);
@@ -99,11 +58,6 @@ extern Datum Tnpoint_round(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_positions(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_route(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_routes(PG_FUNCTION_ARGS);
-
-extern int64 tnpointinst_route(const TInstant *inst);
-
-extern nsegment *tnpointseq_linear_positions(const TSequence *seq);
-extern nsegment **tnpointseqset_positions(const TSequenceSet *ts, int *count);
 
 /*****************************************************************************/
 

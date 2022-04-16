@@ -37,95 +37,11 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <commands/vacuum.h>
-#include <utils/rangetypes.h>
-#include <parser/parse_oper.h>
-#include <statistics/extended_stats_internal.h>
-
-/*****************************************************************************/
-
-/*
- * Extra data for compute_stats function
- * Structure based on the ArrayAnalyzeExtraData from file array_typanalyze.c
- */
-typedef struct
-{
-  /* Information about array element type */
-  Oid typid;           /**< element type's OID */
-  Oid eq_opr;          /**< default equality operator's OID */
-  Oid lt_opr;          /**< default less than operator's OID */
-  bool typbyval;       /**< physical properties of element type */
-  int16 typlen;
-  char typalign;
-
-  /* Information about the value part of array element */
-  Oid value_typid;     /**< element type's OID */
-  Oid value_eq_opr;    /**< default equality operator's OID */
-  Oid value_lt_opr;    /**< default less than operator's OID */
-  bool value_typbyval; /**< physical properties of element type */
-  int16 value_typlen;
-  char value_typalign;
-
-  /* Information about the temporal part of array element */
-  Oid time_typid;      /**< element type's OID */
-  Oid time_eq_opr;     /**< default equality operator's OID */
-  Oid time_lt_opr;     /**< default less than operator's OID */
-  bool time_typbyval;  /**< physical properties of element type */
-  int16 time_typlen;
-  char time_typalign;
-
-  /*
-   * Lookup data for element type's comparison and hash functions (these are
-   * in the type's typcache entry, which we expect to remain valid over the
-   * lifespan of the ANALYZE run)
-   */
-  FmgrInfo *cmp;
-  FmgrInfo *hash;
-  FmgrInfo *value_cmp;
-  FmgrInfo *value_hash;
-  FmgrInfo *time_cmp;
-  FmgrInfo *time_hash;
-
-  /* Saved state from std_typanalyze() */
-  AnalyzeAttrComputeStatsFunc std_compute_stats;
-  void *std_extra_data;
-} TemporalAnalyzeExtraData;
-
-/*
- * Extra information used by the default analysis routines
- */
-typedef struct
-{
-  int count;    /**< # of duplicates */
-  int first;    /**< values[] index of first occurrence */
-} ScalarMCVItem;
-
-typedef struct
-{
-  SortSupport ssup;
-  int *tupnoLink;
-} CompareScalarsContext;
-
-/*****************************************************************************
- * Statistics information for temporal types
- *****************************************************************************/
-
-extern void temporal_extra_info(VacAttrStats *stats);
-
-extern void tinstant_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows);
-
-extern void tsequenceset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
-  int samplerows, double totalrows);
 
 /*****************************************************************************/
 
 extern Datum Temporal_analyze(PG_FUNCTION_ARGS);
 extern Datum Tnumber_analyze(PG_FUNCTION_ARGS);
-
-extern Datum generic_analyze(FunctionCallInfo fcinfo,
-  void (*functemp)(VacAttrStats *, AnalyzeAttrFetchFunc, int, double));
 
 /*****************************************************************************/
 

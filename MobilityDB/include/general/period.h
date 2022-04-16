@@ -38,30 +38,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <lib/stringinfo.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/timetypes.h"
 
 /*****************************************************************************/
-
-/* General functions */
-
-extern void period_deserialize(const Period *p, PeriodBound *lower,
-  PeriodBound *upper);
-extern int period_bound_cmp(const PeriodBound *b1, const PeriodBound *b2);
-extern int period_bound_qsort_cmp(const void *a1, const void *a2);
-extern int period_lower_cmp(const Period *a, const Period *b);
-extern int period_upper_cmp(const Period *a, const Period *b);
-extern Period *period_make(TimestampTz lower, TimestampTz upper,
-  bool lower_inc, bool upper_inc);
-  extern void period_set(TimestampTz lower, TimestampTz upper, bool lower_inc,
-  bool upper_inc, Period *p);
-extern Period *period_copy(const Period *p);
-extern float8 period_to_secs(TimestampTz t1, TimestampTz t2);
-extern Period **periodarr_normalize(Period **periods, int count, int *newcount);
-extern Period *period_super_union(const Period *p1, const Period *p2);
-extern void period_expand(const Period *p2, Period *p1);
 
 /* Input/output functions */
 
@@ -69,10 +47,6 @@ extern Datum Period_in(PG_FUNCTION_ARGS);
 extern Datum Period_out(PG_FUNCTION_ARGS);
 extern Datum Period_recv(PG_FUNCTION_ARGS);
 extern Datum Period_send(PG_FUNCTION_ARGS);
-
-extern char *period_to_string(const Period *p);
-extern void period_write(const Period *p, StringInfo buf);
-extern Period *period_read(StringInfo buf);
 
 /* Constructors */
 
@@ -93,14 +67,9 @@ extern Datum Period_lower_inc(PG_FUNCTION_ARGS);
 extern Datum Period_upper_inc(PG_FUNCTION_ARGS);
 extern Datum Period_duration(PG_FUNCTION_ARGS);
 
-extern Interval *period_duration(const Period *p);
-
 /* Modification functions */
 
 extern Datum Period_shift(PG_FUNCTION_ARGS);
-
-extern void period_shift_tscale(const Interval *start, const Interval *duration,
-  Period *result);
 
 /* Comparison functions */
 
@@ -112,22 +81,11 @@ extern Datum Period_le(PG_FUNCTION_ARGS);
 extern Datum Period_ge(PG_FUNCTION_ARGS);
 extern Datum Period_gt(PG_FUNCTION_ARGS);
 
-extern bool period_eq(const Period *p1, const Period *p2);
-extern bool period_ne(const Period *p1, const Period *p2);
-extern int period_cmp(const Period *p1, const Period *p2);
-extern bool period_lt(const Period *p1, const Period *p2);
-extern bool period_le(const Period *p1, const Period *p2);
-extern bool period_ge(const Period *p1, const Period *p2);
-extern bool period_gt(const Period *p1, const Period *p2);
-
 /* Hash functions */
 
 extern Datum Period_hash(PG_FUNCTION_ARGS);
 extern Datum Period_hash_extended(PG_FUNCTION_ARGS);
 
-extern uint32 period_hash(const Period *p);
-extern uint64 period_hash_extended(const Period *p, Datum seed);
+/*****************************************************************************/
 
 #endif
-
-/*****************************************************************************/

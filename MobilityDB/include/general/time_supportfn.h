@@ -37,31 +37,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
 
 /*****************************************************************************/
 
-
-/*
-* Depending on the function, we will deploy different index enhancement
-* strategies. Containment functions can use a more strict index strategy
-* than overlapping functions. We store the metadata to drive these choices
-* in the IndexableFunctions array.
-*/
-typedef struct
-{
-  const char *fn_name;  /* Name of the function */
-  uint16_t index;       /* Position of the strategy in the arrays */
-  uint8_t nargs;        /* Expected number of function arguments */
-  uint8_t expand_arg;   /* Radius argument for "within distance" search */
-} IndexableFunction;
-
 extern Datum Time_supportfn(PG_FUNCTION_ARGS);
-
-extern Oid opFamilyAmOid(Oid opfamilyoid);
-extern bool func_needs_index(Oid funcid, const IndexableFunction *idxfn,
-  IndexableFunction *result);
 
 /*****************************************************************************/
 

@@ -720,6 +720,14 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="minInstant"><varname>minInstant</varname></link>: Obtener el instante con el valor mínimo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="maxInstant"><varname>maxInstant</varname></link>: Obtener el instante con el valor máximo</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="valueRange"><varname>valueRange</varname></link>: Obtener el rango de valores</para>
 				</listitem>
 

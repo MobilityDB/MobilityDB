@@ -37,49 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <utils/rangetypes.h>
-/* MobilityDB */
-#include "general/tempcache.h"
-#include "general/timetypes.h"
 
 /*****************************************************************************/
-
-/**
- * Structure to represent temporal boxes
- */
-typedef struct
-{
-  double      xmin;   /**< minimum number value */
-  double      xmax;   /**< maximum number value */
-  TimestampTz tmin;   /**< minimum timestamp */
-  TimestampTz tmax;   /**< maximum timestamp */
-  int16       flags;  /**< flags */
-} TBOX;
-
-/* fmgr macros temporal types */
-
-#define DatumGetTboxP(X)    ((TBOX *) DatumGetPointer(X))
-#define TboxPGetDatum(X)    PointerGetDatum(X)
-#define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
-#define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
-
-/* General functions */
-
-extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax);
-extern void tbox_set(bool hasx, bool hast, double xmin, double xmax,
-  TimestampTz tmin, TimestampTz tmax, TBOX *box);
-extern TBOX *tbox_copy(const TBOX *box);
-extern void tbox_expand(const TBOX *box1, TBOX *box2);
-extern void tbox_shift_tscale(const Interval *start, const Interval *duration,
-  TBOX *box);
-
-/* Parameter tests */
-
-extern void ensure_has_X_tbox(const TBOX *box);
-extern void ensure_has_T_tbox(const TBOX *box);
-extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Input/output functions */
 
@@ -114,17 +73,6 @@ extern Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
 extern Datum Tbox_to_floatrange(PG_FUNCTION_ARGS);
 extern Datum Tbox_to_period(PG_FUNCTION_ARGS);
 
-extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
-extern void int_tbox(int i, TBOX *box);
-extern void float_tbox(double d, TBOX *box);
-extern void range_tbox(const RangeType *r, TBOX *box);
-extern void timestamp_tbox(TimestampTz t, TBOX *box);
-extern void timestampset_tbox(const TimestampSet *ts, TBOX *box);
-extern void timestampset_tbox_slice(Datum tsdatum, TBOX *box);
-extern void period_tbox(const Period *p, TBOX *box);
-extern void periodset_tbox(const PeriodSet *ps, TBOX *box);
-extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
-
 /* Accessor functions */
 
 extern Datum Tbox_hasx(PG_FUNCTION_ARGS);
@@ -148,12 +96,6 @@ extern Datum Overlaps_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum Same_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum Adjacent_tbox_tbox(PG_FUNCTION_ARGS);
 
-extern bool contains_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool contained_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool same_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2);
-
 /* Relative position functions */
 
 extern Datum Left_tbox_tbox(PG_FUNCTION_ARGS);
@@ -164,15 +106,6 @@ extern Datum Before_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum Overbefore_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum After_tbox_tbox(PG_FUNCTION_ARGS);
 extern Datum Overafter_tbox_tbox(PG_FUNCTION_ARGS);
-
-extern bool left_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overleft_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool right_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overright_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool before_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool after_tbox_tbox(const TBOX *box1, const TBOX *box2);
-extern bool overafter_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Set functions */
 
@@ -188,9 +121,6 @@ extern Datum Tbox_gt(PG_FUNCTION_ARGS);
 extern Datum Tbox_ge(PG_FUNCTION_ARGS);
 extern Datum Tbox_eq(PG_FUNCTION_ARGS);
 extern Datum Tbox_ne(PG_FUNCTION_ARGS);
-
-extern int tbox_cmp(const TBOX *box1, const TBOX *box2);
-extern bool tbox_eq(const TBOX *box1, const TBOX *box2);
 
 /*****************************************************************************/
 

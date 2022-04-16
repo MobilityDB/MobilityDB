@@ -785,6 +785,20 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
+/**
+ * Return the n-th instant of the temporal instant set or
+ * a temporal sequence value.
+ */
+const TInstant *
+tinstarr_inst_n(const Temporal *temp, int n)
+{
+  assert(temp->subtype == INSTANTSET || temp->subtype == SEQUENCE);
+  if (temp->subtype == INSTANTSET)
+    return tinstantset_inst_n((TInstantSet *) temp, n);
+  else /* temp->subtype == SEQUENCE */
+    return tsequence_inst_n((TSequence *) temp, n);
+}
+
 /*****************************************************************************
  * Version functions
  *****************************************************************************/
@@ -1911,7 +1925,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
  * to linear interpolation.
  */
 Temporal *
-tstep_tlinear(const Temporal *temp)
+tempstep_templinear(const Temporal *temp)
 {
   ensure_seq_subtypes(temp->subtype);
   ensure_temptype_continuous(temp->temptype);
@@ -1927,17 +1941,17 @@ tstep_tlinear(const Temporal *temp)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Tstep_to_tlinear);
+PG_FUNCTION_INFO_V1(Tempstep_to_templinear);
 /**
  * Transform the temporal value with continuous base type from stepwise
  * to linear interpolation
  */
 PGDLLEXPORT Datum
-Tstep_to_tlinear(PG_FUNCTION_ARGS)
+Tempstep_to_templinear(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ensure_seq_subtypes(temp->subtype);
-  Temporal *result = tstep_tlinear(temp);
+  Temporal *result = tempstep_templinear(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2305,14 +2319,13 @@ Tnumber_range(PG_FUNCTION_ARGS)
   PG_RETURN_RANGE_P(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_start_value);
 /**
- * Return the start base value of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the start base value of the temporal value
  */
-PGDLLEXPORT Datum
-Temporal_start_value(PG_FUNCTION_ARGS)
+Datum
+temporal_start_value(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -2326,18 +2339,29 @@ Temporal_start_value(PG_FUNCTION_ARGS)
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
     result = tinstant_value_copy(tsequence_inst_n(seq, 0));
   }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_start_value);
+/**
+ * Return the start base value of the temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_start_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = temporal_start_value(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_end_value);
 /**
- * Return the end base value of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end base value of the temporal value
  */
-PGDLLEXPORT Datum
-Temporal_end_value(PG_FUNCTION_ARGS)
+Datum
+temporal_end_value(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -2354,40 +2378,26 @@ Temporal_end_value(PG_FUNCTION_ARGS)
       ((TSequenceSet *) temp)->count - 1);
     result = tinstant_value_copy(tsequence_inst_n(seq, seq->count - 1));
   }
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_end_value);
+/**
+ * Return the end base value of the temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_end_value(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = temporal_end_value(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return a pointer to the instant with minimum base value of the
- * temporal value.
- *
- * The function does not take into account whether the
- * instant is at an exclusive bound or not.
- *
- * @note Function used, e.g., for computing the shortest line between two
- *temporal points from their temporal distance
- */
-const TInstant *
-temporal_min_instant(const Temporal *temp)
-{
-  const TInstant *result;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-    result = (TInstant *) temp;
-  else if (temp->subtype == INSTANTSET)
-    result = tinstantset_min_instant((TInstantSet *) temp);
-  else if (temp->subtype == SEQUENCE)
-    result = tsequence_min_instant((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = tsequenceset_min_instant((TSequenceSet *) temp);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
- * @brief Return the minimum base value of the temporal value
+ * @brief Return a pointer to the instant with the minimum base value of
+ * the temporal value
  */
 Datum
 temporal_min_value(const Temporal *temp)
@@ -2455,20 +2465,90 @@ Temporal_max_value(PG_FUNCTION_ARGS)
 
 /**
  * @ingroup libmeos_temporal_accessor
- * @brief Return the timespan of the temporal value.
+ * @brief Return a pointer to the instant with minimum base value of the
+ * temporal value.
+ *
+ * @note The function does not take into account whether the instant is at
+ * an exclusive bound or not.
+ * @note Function used, e.g., for computing the shortest line between two
+ * temporal points from their temporal distance
  */
-Datum
-temporal_timespan(const Temporal *temp)
+const TInstant *
+temporal_min_instant(const Temporal *temp)
 {
-  Datum result;
+  const TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-  {
-    Interval *interval = (Interval *) palloc(sizeof(Interval));
-    interval->month = interval->day =  0;
-    interval->time = (TimeOffset) 0;
-    result = PointerGetDatum(interval);
-  }
+    result = (TInstant *) temp;
+  else if (temp->subtype == INSTANTSET)
+    result = tinstantset_min_instant((TInstantSet *) temp);
+  else if (temp->subtype == SEQUENCE)
+    result = tsequence_min_instant((TSequence *) temp);
+  else /* temp->subtype == SEQUENCESET */
+    result = tsequenceset_min_instant((TSequenceSet *) temp);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_min_instant);
+/**
+ * Return a pointer to the instant with the minimum base value of the
+ * temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_min_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = tinstant_copy(temporal_min_instant(temp));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a pointer to the instant with maximum base value of the
+ * temporal value.
+ */
+const TInstant *
+temporal_max_instant(const Temporal *temp)
+{
+  const TInstant *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = (TInstant *) temp;
+  else if (temp->subtype == INSTANTSET)
+    result = tinstantset_max_instant((TInstantSet *) temp);
+  else if (temp->subtype == SEQUENCE)
+    result = tsequence_min_instant((TSequence *) temp);
+  else /* temp->subtype == SEQUENCESET */
+    result = tsequenceset_max_instant((TSequenceSet *) temp);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_max_instant);
+/**
+ * Return a pointer to the instant with maximum base value of the
+ * temporal value.
+ */
+PGDLLEXPORT Datum
+Temporal_max_instant(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TInstant *result = tinstant_copy(temporal_max_instant(temp));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the timespan of the temporal value.
+ */
+Interval *
+temporal_timespan(const Temporal *temp)
+{
+  Interval *result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = (Interval *) palloc0(sizeof(Interval));
   else if (temp->subtype == INSTANTSET)
     result = tinstantset_timespan((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
@@ -2486,27 +2566,22 @@ PGDLLEXPORT Datum
 Temporal_timespan(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = temporal_timespan(temp);
+  Interval *result = temporal_timespan(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /**
  * @ingroup libmeos_temporal_accessor
  * @brief Return the duration of the temporal value.
  */
-Datum
+Interval *
 temporal_duration(const Temporal *temp)
 {
-  Datum result;
+  Interval *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-  {
-    Interval *interval = (Interval *) palloc(sizeof(Interval));
-    interval->month = interval->day = 0;
-    interval->time = (TimeOffset) 0;
-    result = PointerGetDatum(interval);
-  }
+    result = (Interval *) palloc0(sizeof(Interval));
   else if (temp->subtype == SEQUENCE)
     result = tsequence_duration((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
@@ -2522,9 +2597,9 @@ PGDLLEXPORT Datum
 Temporal_duration(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = temporal_duration(temp);
+  Interval *result = temporal_duration(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -2555,6 +2630,25 @@ Temporal_num_sequences(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(result);
 }
 
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end sequence of the temporal sequence (set) value.
+ */
+TSequence *
+temporal_start_sequence(const Temporal *temp)
+{
+  ensure_seq_subtypes(temp->subtype);
+  TSequence *result;
+  if (temp->subtype == SEQUENCE)
+    result = tsequence_copy((TSequence *) temp);
+  else /* temp->subtype == SEQUENCESET */
+  {
+    const TSequenceSet *ts = (const TSequenceSet *) temp;
+    result = tsequence_copy(tsequenceset_seq_n(ts, 0));
+  }
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Temporal_start_sequence);
 /**
  * Return the start sequence of the temporal sequence (set) value
@@ -2563,14 +2657,28 @@ PGDLLEXPORT Datum
 Temporal_start_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TSequence *result = temporal_start_sequence(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end sequence of the temporal sequence (set) value.
+ */
+TSequence *
+temporal_end_sequence(const Temporal *temp)
+{
   ensure_seq_subtypes(temp->subtype);
   TSequence *result;
   if (temp->subtype == SEQUENCE)
     result = tsequence_copy((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
-    result = tsequence_copy(tsequenceset_seq_n((TSequenceSet *) temp, 0));
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  {
+    const TSequenceSet *ts = (const TSequenceSet *) temp;
+    result = tsequence_copy(tsequenceset_seq_n(ts, ts->count - 1));
+  }
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Temporal_end_sequence);
@@ -2581,17 +2689,34 @@ PGDLLEXPORT Datum
 Temporal_end_sequence(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
-  TSequence *result;
-  if (temp->subtype == SEQUENCE)
-    result = tsequence_copy((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-  {
-    TSequenceSet *ts = (TSequenceSet *) temp;
-    result = tsequence_copy(tsequenceset_seq_n(ts, ts->count - 1));
-  }
+  TSequence *result = temporal_end_sequence(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the n-th sequence of the temporal sequence (set) value.
+ *
+ * @note n is assumed to be 1-based.
+ */
+TSequence *
+temporal_sequence_n(const Temporal *temp, int i)
+{
+  ensure_seq_subtypes(temp->subtype);
+  TSequence *result = NULL;
+  if (temp->subtype == SEQUENCE)
+  {
+    if (i == 1)
+      result = tsequence_copy((TSequence *) temp);
+  }
+  else /* temp->subtype == SEQUENCESET */
+  {
+    const TSequenceSet *ts = (const TSequenceSet *) temp;
+    if (i >= 1 && i <= ts->count)
+      result = tsequence_copy(tsequenceset_seq_n(ts, i - 1));
+  }
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Temporal_sequence_n);
@@ -2602,20 +2727,8 @@ PGDLLEXPORT Datum
 Temporal_sequence_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_seq_subtypes(temp->subtype);
-  int i = PG_GETARG_INT32(1); /* Assume 1-based */
-  TSequence *result = NULL;
-  if (temp->subtype == SEQUENCE)
-  {
-    if (i == 1)
-      result = tsequence_copy((TSequence *) temp);
-  }
-  else /* temp->subtype == SEQUENCESET */
-  {
-    TSequenceSet *ts = (TSequenceSet *) temp;
-    if (i >= 1 && i <= ts->count)
-      result = tsequence_copy(tsequenceset_seq_n(ts, i - 1));
-  }
+  int n = PG_GETARG_INT32(1); /* Assume 1-based */
+  TSequence *result = temporal_sequence_n(temp, n);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -2667,6 +2780,7 @@ Temporal_sequences(PG_FUNCTION_ARGS)
   TSequence **sequences = temporal_sequences(temp, &count);
   ArrayType *result = temporalarr_to_array((const Temporal **) sequences,
     count);
+  pfree_array((void **) sequences, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -2754,21 +2868,21 @@ Temporal_num_instants(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the start instant of the temporal value.
  */
-TInstant *
+const TInstant *
 temporal_start_instant(const Temporal *temp)
 {
-  TInstant *result;
+  const TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tinstant_copy((TInstant *) temp);
+    result = (TInstant *) temp;
   else if (temp->subtype == INSTANTSET)
-    result = tinstant_copy(tinstantset_inst_n((TInstantSet *) temp, 0));
+    result = tinstantset_inst_n((TInstantSet *) temp, 0);
   else if (temp->subtype == SEQUENCE)
-    result = tinstant_copy(tsequence_inst_n((TSequence *) temp, 0));
+    result = tsequence_inst_n((TSequence *) temp, 0);
   else /* temp->subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp, 0);
-    result = tinstant_copy(tsequence_inst_n(seq, 0));
+    result = tsequence_inst_n(seq, 0);
   }
   return result;
 }
@@ -2781,7 +2895,7 @@ PGDLLEXPORT Datum
 Temporal_start_instant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = temporal_start_instant(temp);
+  TInstant *result = tinstant_copy(temporal_start_instant(temp));
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -2801,9 +2915,11 @@ temporal_end_instant(const Temporal *temp)
   if (temp->subtype == INSTANT)
     result = (TInstant *) temp;
   else if (temp->subtype == INSTANTSET)
-    result = tinstantset_inst_n((TInstantSet *) temp, ((TInstantSet *) temp)->count - 1);
+    result = tinstantset_inst_n((TInstantSet *) temp,
+      ((TInstantSet *) temp)->count - 1);
   else if (temp->subtype == SEQUENCE)
-    result = tsequence_inst_n((TSequence *) temp, ((TSequence *) temp)->count - 1);
+    result = tsequence_inst_n((TSequence *) temp,
+      ((TSequence *) temp)->count - 1);
   else /* temp->subtype == SEQUENCESET */
   {
     const TSequence *seq = tsequenceset_seq_n((TSequenceSet *) temp,
@@ -2827,17 +2943,38 @@ Temporal_end_instant(PG_FUNCTION_ARGS)
 }
 
 /**
- * Return the n-th instant of the temporal instant set or
- * a temporal sequence value.
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the n-th instant of the temporal value.
+ *
+ * @note n is assumed 1-based
  */
 const TInstant *
-tinstarr_inst_n(const Temporal *temp, int n)
+temporal_instant_n(Temporal *temp, int n)
 {
-  assert(temp->subtype == INSTANTSET || temp->subtype == SEQUENCE);
-  if (temp->subtype == INSTANTSET)
-    return tinstantset_inst_n((TInstantSet *) temp, n);
-  else /* temp->subtype == SEQUENCE */
-    return tsequence_inst_n((TSequence *) temp, n);
+  const TInstant *result = NULL;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+  {
+    if (n == 1)
+      result = (const TInstant *) temp;
+  }
+  else if (temp->subtype == INSTANTSET)
+  {
+    if (n >= 1 && n <= ((TInstantSet *) temp)->count)
+      result = tinstantset_inst_n((TInstantSet *) temp, n - 1);
+  }
+  else if (temp->subtype == SEQUENCE)
+  {
+    if (n >= 1 && n <= ((TSequence *) temp)->count)
+      result = tsequence_inst_n((TSequence *) temp, n - 1);
+  }
+  else /* temp->subtype == SEQUENCESET */
+  {
+    /* This test is necessary since the n-th DISTINCT instant is requested */
+    if (n >= 1 && n <= ((TSequenceSet *) temp)->totalcount)
+      result = tsequenceset_inst_n((TSequenceSet *) temp, n);
+  }
+  return result;
 }
 
 PG_FUNCTION_INFO_V1(Temporal_instant_n);
@@ -2849,35 +2986,8 @@ Temporal_instant_n(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
-  TInstant *result = NULL;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-  {
-    if (n == 1)
-      result = tinstant_copy((TInstant *) temp);
-  }
-  else if (temp->subtype == INSTANTSET)
-  {
-    if (n >= 1 && n <= ((TInstantSet *) temp)->count)
-      result = tinstant_copy(
-        tinstantset_inst_n((TInstantSet *) temp, n - 1));
-  }
-  else if (temp->subtype == SEQUENCE)
-  {
-    if (n >= 1 && n <= ((TSequence *) temp)->count)
-      result = tinstant_copy(
-        tsequence_inst_n((TSequence *) temp, n - 1));
-  }
-  else /* temp->subtype == SEQUENCESET */
-  {
-    /* This test is necessary since the n-th DISTINCT instant is requested */
-    if (n >= 1 && n <= ((TSequenceSet *) temp)->totalcount)
-    {
-      const TInstant *inst = tsequenceset_inst_n((TSequenceSet *) temp, n);
-      if (inst != NULL)
-        result = tinstant_copy(inst);
-    }
-  }
+  const TInstant *inst = temporal_instant_n(temp, n);
+  TInstant *result = (inst == NULL) ? NULL : tinstant_copy(inst);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -2999,14 +3109,13 @@ Temporal_start_timestamp(PG_FUNCTION_ARGS)
   PG_RETURN_TIMESTAMPTZ(result);
 }
 
-PG_FUNCTION_INFO_V1(Temporal_end_timestamp);
 /**
- * Return the end timestamp of the temporal value
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the end timestamp of the temporal value.
  */
-PGDLLEXPORT Datum
-Temporal_end_timestamp(PG_FUNCTION_ARGS)
+TimestampTz
+temporal_end_timestamp(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -3017,8 +3126,59 @@ Temporal_end_timestamp(PG_FUNCTION_ARGS)
     result = tsequence_end_timestamp((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = tsequenceset_end_timestamp((TSequenceSet *) temp);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Temporal_end_timestamp);
+/**
+ * Return the end timestamp of the temporal value
+ */
+PGDLLEXPORT Datum
+Temporal_end_timestamp(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  TimestampTz result = temporal_end_timestamp(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TIMESTAMPTZ(result);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the n-th distinct timestamp of the temporal value.
+ *
+ * @note n is assume 1-based
+ */
+bool
+temporal_timestamp_n(Temporal *temp, int n, TimestampTz *result)
+{
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+  {
+    if (n == 1)
+    {
+      *result = ((TInstant *) temp)->t;
+      return true;
+    }
+  }
+  else if (temp->subtype == INSTANTSET)
+  {
+    if (n >= 1 && n <= ((TInstantSet *) temp)->count)
+    {
+      *result = (tinstantset_inst_n((TInstantSet *) temp, n - 1))->t;
+      return true;
+    }
+  }
+  else if (temp->subtype == SEQUENCE)
+  {
+    if (n >= 1 && n <= ((TSequence *) temp)->count)
+    {
+      *result = (tsequence_inst_n((TSequence *) temp, n - 1))->t;
+      return true;
+    }
+  }
+  else /* temp->subtype == SEQUENCESET */
+    return tsequenceset_timestamp_n((TSequenceSet *) temp, n, result);
+  return false;
 }
 
 PG_FUNCTION_INFO_V1(Temporal_timestamp_n);
@@ -3031,35 +3191,7 @@ Temporal_timestamp_n(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int n = PG_GETARG_INT32(1); /* Assume 1-based */
   TimestampTz result;
-  bool found = false;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT)
-  {
-    if (n == 1)
-    {
-      found = true;
-      result = ((TInstant *) temp)->t;
-    }
-  }
-  else if (temp->subtype == INSTANTSET)
-  {
-    if (n >= 1 && n <= ((TInstantSet *) temp)->count)
-    {
-      found = true;
-      result = (tinstantset_inst_n((TInstantSet *) temp, n - 1))->t;
-    }
-  }
-  else if (temp->subtype == SEQUENCE)
-  {
-    if (n >= 1 && n <= ((TSequence *) temp)->count)
-    {
-      found = true;
-      result = (tsequence_inst_n((TSequence *) temp, n - 1))->t;
-    }
-  }
-  else /* temp->subtype == SEQUENCESET */
-    found = tsequenceset_timestamp_n((TSequenceSet *) temp, n, &result);
-  PG_FREE_IF_COPY(temp, 0);
+  bool found = temporal_timestamp_n(temp, n, &result);
   if (! found)
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
@@ -3096,19 +3228,6 @@ temporal_timestamps(const Temporal *temp, int *count)
   return result;
 }
 
-/**
- * Return the distinct timestamps of the temporal value as an array
- */
-static ArrayType *
-temporal_timestamps_array(const Temporal *temp)
-{
-  int count;
-  TimestampTz *times = temporal_timestamps(temp, &count);
-  ArrayType *result = timestamparr_to_array(times, count);
-  pfree(times);
-  return result;
-}
-
 PG_FUNCTION_INFO_V1(Temporal_timestamps);
 /**
  * Return the distinct timestamps of the temporal value as an array
@@ -3117,7 +3236,10 @@ PGDLLEXPORT Datum
 Temporal_timestamps(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ArrayType *result = temporal_timestamps_array(temp);
+  int count;
+  TimestampTz *times = temporal_timestamps(temp, &count);
+  ArrayType *result = timestamparr_to_array(times, count);
+  pfree(times);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
@@ -4594,6 +4716,25 @@ Temporal_intersects_periodset(PG_FUNCTION_ARGS)
  * Local aggregate functions
  *****************************************************************************/
 
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the integral (area under the curve) of the temporal
+ * number value
+ */
+double
+tnumber_integral(const Temporal *temp)
+{
+  double result = 0.0;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
+    ;
+  else if (temp->subtype == SEQUENCE)
+    result = tnumberseq_integral((TSequence *) temp);
+  else /* temp->subtype == SEQUENCESET */
+    result = tnumberseqset_integral((TSequenceSet *) temp);
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Tnumber_integral);
 /**
  * Return the integral (area under the curve) of the temporal
@@ -4603,26 +4744,18 @@ PGDLLEXPORT Datum
 Tnumber_integral(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  double result = 0.0;
-  ensure_valid_tempsubtype(temp->subtype);
-  if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
-    ;
-  else if (temp->subtype == SEQUENCE)
-    result = tnumberseq_integral((TSequence *) temp);
-  else /* temp->subtype == SEQUENCESET */
-    result = tnumberseqset_integral((TSequenceSet *) temp);
+  double result = tnumber_integral(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_twavg);
 /**
- * Return the time-weighted average of the temporal number
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the time-weighted average of the temporal number
  */
-PGDLLEXPORT Datum
-Tnumber_twavg(PG_FUNCTION_ARGS)
+double
+tnumber_twavg(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -4633,6 +4766,18 @@ Tnumber_twavg(PG_FUNCTION_ARGS)
     result = tnumberseq_twavg((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = tnumberseqset_twavg((TSequenceSet *) temp);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_twavg);
+/**
+ * Return the time-weighted average of the temporal number
+ */
+PGDLLEXPORT Datum
+Tnumber_twavg(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tnumber_twavg(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_FLOAT8(result);
 }

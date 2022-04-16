@@ -169,7 +169,7 @@ CREATE FUNCTION tnpoint_seqset(tnpoint)
 
 CREATE FUNCTION toLinear(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Tstep_to_tlinear'
+  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(tnpoint, int DEFAULT 0)

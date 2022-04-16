@@ -58,7 +58,8 @@ extern void tinstant_set(TInstant *inst, Datum value, TimestampTz t);
 
 /* Input/output functions */
 
-extern char *tinstant_to_string(const TInstant *inst, char *(*value_out)(Oid, Datum));
+extern char *tinstant_to_string(const TInstant *inst,
+  char *(*value_out)(Oid, Datum));
 extern void tinstant_write(const TInstant *inst, StringInfo buf);
 extern TInstant *tinstant_read(StringInfo buf, CachedType temptype);
 
@@ -71,8 +72,8 @@ extern void tinstant_period(const TInstant *inst, Period *p);
 extern TSequence **tinstant_sequences(const TInstant *inst);
 extern TimestampTz *tinstant_timestamps(const TInstant *inst);
 extern const TInstant **tinstant_instants(const TInstant *inst);
-extern bool tinstant_value_at_timestamp(const TInstant *inst,
-  TimestampTz t, Datum *result);
+extern bool tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t,
+  Datum *result);
 
 /* Cast functions */
 
@@ -98,9 +99,9 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 
 /* Restriction Functions */
 
-extern TInstant *tinstant_restrict_value(const TInstant *inst,
-  Datum value, bool atfunc);
-  extern TInstant *tinstant_restrict_values(const TInstant *inst,
+extern TInstant *tinstant_restrict_value(const TInstant *inst, Datum value,
+  bool atfunc);
+extern TInstant *tinstant_restrict_values(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst,
   const RangeType *range, bool atfunc);
@@ -140,14 +141,16 @@ extern bool intersection_tinstant_tinstant(const TInstant *inst1,
 /* Intersects Functions */
 
 extern bool tinstant_intersects_timestamp(const TInstant *inst, TimestampTz t);
-extern bool tinstant_intersects_timestampset(const TInstant *inst, const TimestampSet *ts);
+extern bool tinstant_intersects_timestampset(const TInstant *inst,
+  const TimestampSet *ts);
 extern bool tinstant_intersects_period(const TInstant *inst, const Period *p);
-extern bool tinstant_intersects_periodset(const TInstant *inst, const PeriodSet *ps);
+extern bool tinstant_intersects_periodset(const TInstant *inst,
+  const PeriodSet *ps);
 
 /* Comparison functions */
 
-extern int tinstant_cmp(const TInstant *inst1, const TInstant *inst2);
 extern bool tinstant_eq(const TInstant *inst1, const TInstant *inst2);
+extern int tinstant_cmp(const TInstant *inst1, const TInstant *inst2);
 
 /* Function for defining hash index */
 

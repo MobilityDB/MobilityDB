@@ -32,36 +32,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-
-/*****************************************************************************/
-
-typedef enum
-{
-  FRECHET,
-  DYNTIMEWARP
-} SimFunc;
-
-/**
- * Struct for storing a match
- */
-typedef struct
-{
-  int i;
-  int j;
-} Match;
-
-/**
- * Struct for storing the state that persists across multiple calls generating
- * the bucket list
- */
-typedef struct
-{
-  bool done;
-  int i;
-  int size;
-  Match *path;
-} SimilarityPathState;
 
 /*****************************************************************************/
 
@@ -73,5 +43,3 @@ extern Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
 /*****************************************************************************/
 
 #endif /* __TEMPORAL_SIMILARITY_H__ */
-
-/*****************************************************************************/

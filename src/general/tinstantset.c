@@ -532,13 +532,13 @@ tinstantset_period(const TInstantSet *ti, Period *p)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the timespan of the timestamp set value.
  */
-Datum
+Interval *
 tinstantset_timespan(const TInstantSet *ti)
 {
   TimestampTz lower = tinstantset_start_timestamp(ti);
   TimestampTz upper = tinstantset_end_timestamp(ti);
-  Datum result = call_function2(timestamp_mi, TimestampTzGetDatum(upper),
-    TimestampTzGetDatum(lower));
+  Interval *result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
+    TimestampTzGetDatum(upper), TimestampTzGetDatum(lower)));
   return result;
 }
 
@@ -1073,7 +1073,8 @@ tnumberinstset_restrict_ranges(const TInstantSet *ti, RangeType **normranges,
 }
 
 /**
- * Return a pointer to the instant with minimum base value of the
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a pointer to the instant with minimum base value of the
  * temporal value
  *
  * @note Function used, e.g., for computing the shortest line between two
@@ -1091,6 +1092,29 @@ tinstantset_min_instant(const TInstantSet *ti)
     if (datum_lt(value, min, basetype))
     {
       min = value;
+      k = i;
+    }
+  }
+  return tinstantset_inst_n(ti, k);
+}
+
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return a pointer to the instant with minimum base value of the
+ * temporal value
+ */
+const TInstant *
+tinstantset_max_instant(const TInstantSet *ti)
+{
+  Datum max = tinstant_value(tinstantset_inst_n(ti, 0));
+  int k = 0;
+  CachedType basetype = temptype_basetype(ti->temptype);
+  for (int i = 1; i < ti->count; i++)
+  {
+    Datum value = tinstant_value(tinstantset_inst_n(ti, i));
+    if (datum_gt(value, max, basetype))
+    {
+      max = value;
       k = i;
     }
   }
@@ -1181,8 +1205,8 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
  * @brief Restrict the temporal value to the (complement of the) timestamp set.
  */
 TInstantSet *
-tinstantset_restrict_timestampset(const TInstantSet *ti,
-  const TimestampSet *ts, bool atfunc)
+tinstantset_restrict_timestampset(const TInstantSet *ti, const TimestampSet *ts,
+  bool atfunc)
 {
   TInstantSet *result;
   const TInstant *inst;
@@ -1512,7 +1536,8 @@ tinstantset_intersects_timestamp(const TInstantSet *ti, TimestampTz t)
  * @brief Return true if the temporal value intersects the timestamp set.
  */
 bool
-tinstantset_intersects_timestampset(const TInstantSet *ti, const TimestampSet *ts)
+tinstantset_intersects_timestampset(const TInstantSet *ti,
+  const TimestampSet *ts)
 {
   for (int i = 0; i < ts->count; i++)
     if (tinstantset_intersects_timestamp(ti, timestampset_time_n(ts, i)))
@@ -1554,7 +1579,8 @@ tinstantset_intersects_periodset(const TInstantSet *ti, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * Return the time-weighted average of the temporal number
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the time-weighted average of the temporal number
  */
 double
 tnumberinstset_twavg(const TInstantSet *ti)

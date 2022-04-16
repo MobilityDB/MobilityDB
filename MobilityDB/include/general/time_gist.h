@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file time_gist.c
+ * @file time_gist.h
  * R-tree GiST index for time types.
  */
 
@@ -37,9 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/timetypes.h"
 
 /*****************************************************************************/
 
@@ -52,14 +49,6 @@ extern Datum Period_gist_picksplit(PG_FUNCTION_ARGS);
 extern Datum Period_gist_same(PG_FUNCTION_ARGS);
 extern Datum Period_gist_fetch(PG_FUNCTION_ARGS);
 
-extern int common_entry_cmp(const void *i1, const void *i2);
-
-extern bool period_index_consistent_leaf(const Period *key, const Period *query,
-  StrategyNumber strategy);
-extern bool period_gist_consistent(const Period *key, const Period *query,
-  StrategyNumber strategy);
-extern bool period_index_recheck(StrategyNumber strategy);
+/*****************************************************************************/
 
 #endif
-
-/*****************************************************************************/

@@ -37,25 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/timetypes.h"
 
 /*****************************************************************************/
-
-/* General functions */
-
-extern const Period *periodset_per_n(const PeriodSet *ps, int index);
-extern const Period *periodset_bbox_ptr(const PeriodSet *ps);
-extern void periodset_bbox(const PeriodSet *ps, Period *p);
-extern void periodset_bbox_slice(Datum psdatum, Period *p);
-extern PeriodSet *periodset_make(const Period **periods, int count,
-  bool normalize);
-extern PeriodSet *periodset_make_free(Period **periods, int count,
-  bool normalize);
-extern PeriodSet *periodset_copy(const PeriodSet *ps);
-extern bool periodset_find_timestamp(const PeriodSet *ps, TimestampTz t,
-  int *loc);
 
 /* Input/output functions */
 
@@ -63,8 +46,6 @@ extern Datum Periodset_in(PG_FUNCTION_ARGS);
 extern Datum Periodset_out(PG_FUNCTION_ARGS);
 extern Datum Periodset_send(PG_FUNCTION_ARGS);
 extern Datum Periodset_recv(PG_FUNCTION_ARGS);
-
-extern char *periodset_to_string(const PeriodSet *ps);
 
 /* Constructor function */
 
@@ -76,11 +57,6 @@ extern Datum Timestamp_to_periodset(PG_FUNCTION_ARGS);
 extern Datum Timestampset_to_periodset(PG_FUNCTION_ARGS);
 extern Datum Period_to_periodset(PG_FUNCTION_ARGS);
 extern Datum Periodset_to_period(PG_FUNCTION_ARGS);
-
-extern PeriodSet *timestamp_periodset(TimestampTz t);
-extern PeriodSet *timestampset_periodset(const TimestampSet *ts);
-extern PeriodSet *period_periodset(const Period *p);
-extern void periodset_period(const PeriodSet *ps, Period *p);
 
 /* Accessor functions */
 
@@ -98,18 +74,11 @@ extern Datum Periodset_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum Periodset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum Periodset_timestamps(PG_FUNCTION_ARGS);
 
-extern const Period **periodset_periods(const PeriodSet *ps);
-extern TimestampTz periodset_start_timestamp(const PeriodSet *ps);
-extern TimestampTz periodset_end_timestamp(const PeriodSet *ps);
-
 /* Modification functions */
 
 extern Datum Periodset_shift(PG_FUNCTION_ARGS);
 extern Datum Periodset_tscale(PG_FUNCTION_ARGS);
 extern Datum Periodset_shift_tscale(PG_FUNCTION_ARGS);
-
-extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps,
-  const Interval *start, const Interval *duration);
 
 /* Comparison functions */
 
@@ -121,15 +90,11 @@ extern Datum Periodset_le(PG_FUNCTION_ARGS);
 extern Datum Periodset_ge(PG_FUNCTION_ARGS);
 extern Datum Periodset_gt(PG_FUNCTION_ARGS);
 
-extern int periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2);
-extern bool periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2);
-
 /* Hash functions */
 
 extern Datum Periodset_hash(PG_FUNCTION_ARGS);
 extern Datum Periodset_hash_extended(PG_FUNCTION_ARGS);
 
-#endif
-
 /*****************************************************************************/
+
+#endif

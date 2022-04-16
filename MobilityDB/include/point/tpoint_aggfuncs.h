@@ -37,26 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
-#include "general/skiplist.h"
-
-/*****************************************************************************/
-
-/**
- * Structure storing the SRID and the dimensionality of the temporal point
- * values for aggregation. Notice that for the moment we do not aggregate
- * temporal geographic points.
- */
-struct GeoAggregateState
-{
-  int32_t srid;
-  bool hasz;
-};
-
-extern void geoaggstate_check_temp(const SkipList *state, const Temporal *t);
 
 /*****************************************************************************/
 
@@ -66,8 +46,6 @@ extern Datum Tpoint_extent_combinefn(PG_FUNCTION_ARGS);
 extern Datum Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS);
 extern Datum Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS);
 extern Datum Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS);
-
-extern Temporal **tpoint_transform_tcentroid(const Temporal *temp, int *count);
 
 /*****************************************************************************/
 

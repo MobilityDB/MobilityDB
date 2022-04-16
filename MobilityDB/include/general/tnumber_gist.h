@@ -37,9 +37,6 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -49,15 +46,6 @@ extern Datum Tbox_gist_picksplit(PG_FUNCTION_ARGS);
 extern Datum Tnumber_gist_consistent(PG_FUNCTION_ARGS);
 extern Datum Tnumber_gist_compress(PG_FUNCTION_ARGS);
 extern Datum Tbox_gist_same(PG_FUNCTION_ARGS);
-
-/* The following functions are also called by tpoint_gist.c */
-extern int interval_cmp_lower(const void *i1, const void *i2);
-extern int interval_cmp_upper(const void *i1, const void *i2);
-extern float non_negative(float val);
-
-/* The following functions are also called by tnumber_spgist.c */
-extern bool tbox_index_consistent_leaf(const TBOX *key, const TBOX *query,
-  StrategyNumber strategy);
 
 /*****************************************************************************/
 

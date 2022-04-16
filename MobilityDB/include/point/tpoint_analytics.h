@@ -37,18 +37,15 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <fmgr.h>
-/* MobilityDB */
-#include "general/temporaltypes.h"
 
 /*****************************************************************************/
 
-/* Convert a temporal point into a PostGIS trajectory geometry/geography */
+/* Convert a temporal point into a trajectory geometry/geography */
 
 extern Datum Tpoint_to_geo(PG_FUNCTION_ARGS);
 extern Datum Geo_to_tpoint(PG_FUNCTION_ARGS);
 
-/* Convert a temporal point and a temporal float into a PostGIS geometry/geography */
+/* Convert a temporal point and a temporal float into a geometry/geography */
 
 extern Datum Point_to_geo_measure(PG_FUNCTION_ARGS);
 

@@ -37,22 +37,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* MobilityDB */
-#include "general/timetypes.h"
 
 /*****************************************************************************/
-
-/* assorted support functions */
-
-extern TimestampTz timestampset_time_n(const TimestampSet *ts, int index);
-extern const Period *timestampset_bbox_ptr(const TimestampSet *ts);
-extern void timestampset_bbox(const TimestampSet *ts, Period *p);
-extern void timestampset_bbox_slice(Datum tsdatum, Period *p);
-extern TimestampSet *timestampset_make(const TimestampTz *times, int count);
-extern TimestampSet *timestampset_make_free(TimestampTz *times, int count);
-extern TimestampSet *timestampset_copy(const TimestampSet *ts);
-extern bool timestampset_find_timestamp(const TimestampSet *ts, TimestampTz t, int *loc);
 
 /* Input/output functions */
 
@@ -60,8 +46,6 @@ extern Datum Timestampset_in(PG_FUNCTION_ARGS);
 extern Datum Timestampset_out(PG_FUNCTION_ARGS);
 extern Datum Timestampset_send(PG_FUNCTION_ARGS);
 extern Datum Timestampset_recv(PG_FUNCTION_ARGS);
-
-extern char *timestampset_to_string(const TimestampSet *ts);
 
 /* Constructor function */
 
@@ -82,17 +66,11 @@ extern Datum Timestampset_end_timestamp(PG_FUNCTION_ARGS);
 extern Datum Timestampset_timestamp_n(PG_FUNCTION_ARGS);
 extern Datum Timestampset_timestamps(PG_FUNCTION_ARGS);
 
-extern void timestampset_period(const TimestampSet *ts, Period *p);
-extern TimestampTz *timestampset_timestamps(const TimestampSet *ts);
-
 /* Modification functions */
 
 extern Datum Timestampset_shift(PG_FUNCTION_ARGS);
 extern Datum Timestampset_tscale(PG_FUNCTION_ARGS);
 extern Datum Timestampset_shift_tscale(PG_FUNCTION_ARGS);
-
-extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts,
-  const Interval *start, const Interval *duration);
 
 /* Comparison functions */
 
@@ -103,10 +81,6 @@ extern Datum Timestampset_lt(PG_FUNCTION_ARGS);
 extern Datum Timestampset_le(PG_FUNCTION_ARGS);
 extern Datum Timestampset_ge(PG_FUNCTION_ARGS);
 extern Datum Timestampset_gt(PG_FUNCTION_ARGS);
-
-extern int timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2);
-extern bool timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2);
 
 /* Comparison functions */
 

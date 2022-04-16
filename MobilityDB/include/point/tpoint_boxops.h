@@ -37,43 +37,10 @@
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-/* PostGIS */
-#include <liblwgeom.h>
-/* MobilityDB */
-#include "general/temporal.h"
-#include "general/temporal_util.h"
-#include "point/stbox.h"
 
 /*****************************************************************************/
-
-/* Functions computing the bounding box at the creation of a temporal point */
-
-extern void tpointinst_stbox(const TInstant *inst, STBOX *box);
-extern void tgeompointinstarr_stbox(const TInstant **inst, int count,
-  STBOX *box);
-extern void tgeogpointinstarr_stbox(const TInstant **instants, int count,
-  STBOX *box);
-extern void tpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
-
-/* Boxes functions */
 
 extern Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
-
-/* Generic box functions */
-
-extern Datum boxop_geo_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_geo_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_stbox_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_stbox_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const STBOX *, const STBOX *));
-
-/*****************************************************************************/
 
 extern Datum Overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum Overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
