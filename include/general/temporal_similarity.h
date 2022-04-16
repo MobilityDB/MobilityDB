@@ -65,13 +65,8 @@ typedef struct
 
 /*****************************************************************************/
 
-extern Datum Temporal_frechet_distance(PG_FUNCTION_ARGS);
-extern Datum Temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
-extern Datum Temporal_frechet_path(PG_FUNCTION_ARGS);
-extern Datum Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
 #endif /* __TEMPORAL_SIMILARITY_H__ */
 
-/*****************************************************************************/

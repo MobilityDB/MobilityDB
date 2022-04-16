@@ -48,36 +48,15 @@
 
 /* Distance functions */
 
-extern Datum Distance_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Distance_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Distance_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 extern Temporal *distance_tpoint_geo(const Temporal *temp, Datum geo);
 extern Temporal *distance_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 
 /* Nearest approach distance/instance and shortest line functions */
 
-extern Datum NAI_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum NAI_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 extern TInstant *nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
 
-extern Datum NAD_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum NAD_geo_stbox(PG_FUNCTION_ARGS);
-extern Datum NAD_stbox_geo(PG_FUNCTION_ARGS);
-extern Datum NAD_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum NAD_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum NAD_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 extern double nad_stbox_stbox(const STBOX *box1, const STBOX *box2);
-
-extern Datum Shortestline_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Shortestline_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Shortestline_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern bool shortestline_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2, Datum *line);

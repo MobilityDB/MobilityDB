@@ -1218,7 +1218,7 @@ Periodset_hash(PG_FUNCTION_ARGS)
  * @ingroup libmeos_time_accessor
  * @brief Return the 64-bit hash value of a period set using a seed
  */
-static uint64
+uint64
 periodset_hash_extended(const PeriodSet *ps, Datum seed)
 {
   uint64 result = 1;

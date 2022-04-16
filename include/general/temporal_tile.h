@@ -136,18 +136,7 @@ extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
   TimestampTz torigin);
 extern int64 get_interval_units(Interval *interval);
 
-extern Datum Number_bucket(PG_FUNCTION_ARGS);
-extern Datum Timestamptz_bucket(PG_FUNCTION_ARGS);
-extern Datum Range_bucket_list(PG_FUNCTION_ARGS);
-extern Datum Range_bucket(PG_FUNCTION_ARGS);
-extern Datum Period_bucket_list(PG_FUNCTION_ARGS);
-extern Datum Period_bucket(PG_FUNCTION_ARGS);
-extern Datum Tnumber_value_split(PG_FUNCTION_ARGS);
-extern Datum Temporal_time_split(PG_FUNCTION_ARGS);
-extern Datum Tbox_multidim_grid(PG_FUNCTION_ARGS);
-extern Datum Tbox_multidim_tile(PG_FUNCTION_ARGS);
-extern Datum Tnumber_value_time_split(PG_FUNCTION_ARGS);
+/*****************************************************************************/
 
 #endif /* __TEMPORAL_TILE_H__ */
 
-/*****************************************************************************/

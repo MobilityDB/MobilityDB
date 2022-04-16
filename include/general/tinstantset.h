@@ -71,8 +71,6 @@ extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
 extern TInstantSet *tinstantset_from_base(Datum value,
   CachedType temptype, const TimestampSet *ts);
 
-extern Datum Tinstantset_from_base(PG_FUNCTION_ARGS);
-
 /* Accessor functions */
 
 extern Datum *tinstantset_values(const TInstantSet *ti, int *count);

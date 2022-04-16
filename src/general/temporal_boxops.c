@@ -1205,19 +1205,19 @@ boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
  * @param[in] func Bounding box function
  * @param[in] invert True when the range is the first argument of the function.
  */
-bool
+int
 boxop_tnumber_range(const Temporal *temp, const RangeType *range,
   bool (*func)(const TBOX *, const TBOX *), bool invert)
 {
   /* Return false on empty range excepted for contains */
   char flags = range_get_flags(range);
   if (flags & RANGE_EMPTY)
-    return (func == &contains_tbox_tbox);
+    return -1;
   TBOX box1, box2;
   temporal_bbox(temp, &box1);
   range_tbox(range, &box2);
   bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
-  return result;
+  return (result ? 1 : 0);
 }
 
 
@@ -1233,9 +1233,11 @@ boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = boxop_tnumber_range(temp, range, func, INVERT);
+  int result = boxop_tnumber_range(temp, range, func, INVERT);
   PG_FREE_IF_COPY(range, 0);
   PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
@@ -1251,9 +1253,11 @@ boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   RangeType *range = PG_GETARG_RANGE_P(1);
-  bool result = boxop_tnumber_range(temp, range, func, INVERT_NO);
+  int result = boxop_tnumber_range(temp, range, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(range, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 

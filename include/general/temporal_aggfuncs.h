@@ -71,37 +71,6 @@ extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo,
 
 /*****************************************************************************/
 
-extern Datum Temporal_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum Temporal_extent_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_extent_combinefn(PG_FUNCTION_ARGS);
-
-extern Datum Tbool_tand_transfn(PG_FUNCTION_ARGS);
-extern Datum Tbool_tand_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tbool_tor_transfn(PG_FUNCTION_ARGS);
-extern Datum Tbool_tor_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tint_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum Tint_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tint_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum Tint_tmax_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_tmax_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tint_tsum_transfn(PG_FUNCTION_ARGS);
-extern Datum Tint_tsum_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_tsum_transfn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
-extern Datum Temporal_tcount_transfn(PG_FUNCTION_ARGS);
-extern Datum Temporal_tcount_combinefn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_tavg_transfn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
-extern Datum Temporal_tagg_finalfn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
-extern Datum Ttext_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum Ttext_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum Ttext_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum Ttext_tmax_combinefn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

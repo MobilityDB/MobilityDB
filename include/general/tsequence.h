@@ -111,8 +111,6 @@ extern TSequence *tsequence_read(StringInfo buf, CachedType temptype);
 extern TSequence *tsequence_from_base(Datum value,
   CachedType temptype, const Period *p, bool linear);
 
-extern Datum Tsequence_from_base(PG_FUNCTION_ARGS);
-
 /* Cast functions */
 
 extern TSequence *tintseq_tfloatseq(const TSequence *seq);

@@ -60,19 +60,10 @@ extern bool tnpointsegm_intersection_value(const TInstant *inst1,
 
 extern int tnpoint_srid(const Temporal *temp);
 
-extern Datum Tnpoint_get_trajectory(PG_FUNCTION_ARGS);
-
 extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
 
 extern Datum tnpoint_geom(const Temporal *temp);
 
-extern Datum Tnpoint_length(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_cumulative_length(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_speed(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_twcentroid(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_azimuth(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_at_geometry(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_minus_geometry(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

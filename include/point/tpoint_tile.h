@@ -75,10 +75,6 @@ typedef struct STboxGridState
 
 /*****************************************************************************/
 
-extern Datum Stbox_multidim_grid(PG_FUNCTION_ARGS);
-extern Datum Stbox_multidim_tile(PG_FUNCTION_ARGS);
-extern Datum Tpoint_space_split(PG_FUNCTION_ARGS);
-extern Datum Tpoint_space_time_split(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

@@ -5400,11 +5400,11 @@ tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
   if (hasx)
   {
     /* Split the temporal point into temporal floats for each coordinate */
-    Temporal *temp_x = tpoint_get_coord(temp1, 'x');
-    Temporal *temp_y = tpoint_get_coord(temp1, 'y');
+    Temporal *temp_x = tpoint_get_coord(temp1, 0);
+    Temporal *temp_y = tpoint_get_coord(temp1, 1);
     Temporal *temp_z = NULL;
     if (hasz)
-      temp_z = tpoint_get_coord(temp1, 'z');
+      temp_z = tpoint_get_coord(temp1, 2);
     RangeType *range_x = range_make(Float8GetDatum(box->xmin),
       Float8GetDatum(box->xmax), true, upper_inc, T_FLOAT8);
     RangeType *range_y = range_make(Float8GetDatum(box->ymin),

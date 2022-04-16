@@ -116,7 +116,6 @@ extern void ensure_non_empty(const GSERIALIZED *gs);
 
 /* Ever equal comparison operator */
 
-extern Datum Tpoint_ever_eq(PG_FUNCTION_ARGS);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
@@ -155,8 +154,6 @@ extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
 
 /* Trajectory functions */
 
-extern Datum Tpoint_get_trajectory(PG_FUNCTION_ARGS);
-
 extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
   bool linear);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
@@ -166,10 +163,6 @@ extern Datum tpointseq_trajectory(const TSequence *seq);
 extern Datum tpoint_trajectory(const Temporal *temp);
 
 /* Functions for spatial reference systems */
-
-extern Datum Tpoint_get_srid(PG_FUNCTION_ARGS);
-extern Datum Tpoint_set_srid(PG_FUNCTION_ARGS);
-extern Datum Tpoint_transform(PG_FUNCTION_ARGS);
 
 extern int tpointinst_srid(const TInstant *inst);
 extern int tpointinstset_srid(const TInstantSet *ti);
@@ -181,49 +174,23 @@ extern TInstant *tpointinst_transform(const TInstant *inst, Datum srid);
 
 /* Cast functions */
 
-extern Datum Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS);
-extern Datum Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 
 /* Set precision of the coordinates */
 
-extern Datum Geo_round(PG_FUNCTION_ARGS);
-extern Datum Tpoint_round(PG_FUNCTION_ARGS);
 
 /* Functions for extracting coordinates */
 
-extern Datum Tpoint_get_x(PG_FUNCTION_ARGS);
-extern Datum Tpoint_get_y(PG_FUNCTION_ARGS);
-extern Datum Tpoint_get_z(PG_FUNCTION_ARGS);
 
 /* Length, speed, time-weighted centroid, temporal azimuth, and
  * temporal bearing functions */
 
-extern Datum Tpoint_length(PG_FUNCTION_ARGS);
-extern Datum Tpoint_cumulative_length(PG_FUNCTION_ARGS);
-extern Datum Tpoint_speed(PG_FUNCTION_ARGS);
-extern Datum Tpoint_twcentroid(PG_FUNCTION_ARGS);
-extern Datum Tpoint_azimuth(PG_FUNCTION_ARGS);
-
 extern Datum tpoint_twcentroid(const Temporal *temp);
 
-extern Datum Bearing_geo_geo(PG_FUNCTION_ARGS);
-extern Datum Bearing_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Bearing_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Bearing_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 /* Non self-intersecting (a.k.a. simple) functions */
-
-extern Datum Tpoint_is_simple(PG_FUNCTION_ARGS);
-extern Datum Tpoint_make_simple(PG_FUNCTION_ARGS);
 
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
 
 /* Restriction functions */
-
-extern Datum Tpoint_at_geometry(PG_FUNCTION_ARGS);
-extern Datum Tpoint_at_stbox(PG_FUNCTION_ARGS);
-extern Datum Tpoint_minus_geometry(PG_FUNCTION_ARGS);
-extern Datum Tpoint_minus_stbox(PG_FUNCTION_ARGS);
 
 extern Period **tpointseq_interperiods(const TSequence *seq,
   GSERIALIZED *gsinter, int *count);

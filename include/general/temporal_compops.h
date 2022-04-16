@@ -44,30 +44,6 @@
 
 /*****************************************************************************/
 
-extern Datum Teq_base_temporal(PG_FUNCTION_ARGS);
-extern Datum Teq_temporal_base(PG_FUNCTION_ARGS);
-extern Datum Teq_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Tne_base_temporal(PG_FUNCTION_ARGS);
-extern Datum Tne_temporal_base(PG_FUNCTION_ARGS);
-extern Datum Tne_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Tlt_base_temporal(PG_FUNCTION_ARGS);
-extern Datum Tlt_temporal_base(PG_FUNCTION_ARGS);
-extern Datum Tlt_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Tle_base_temporal(PG_FUNCTION_ARGS);
-extern Datum Tle_temporal_base(PG_FUNCTION_ARGS);
-extern Datum Tle_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Tgt_base_temporal(PG_FUNCTION_ARGS);
-extern Datum Tgt_temporal_base(PG_FUNCTION_ARGS);
-extern Datum Tgt_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Tge_base_temporal(PG_FUNCTION_ARGS);
-extern Datum Tge_temporal_base(PG_FUNCTION_ARGS);
-extern Datum Tge_temporal_temporal(PG_FUNCTION_ARGS);
-
 extern Temporal * tcomp_temporal_base(const Temporal *temp, Datum value,
   Oid datumtypid, Datum (*func)(Datum, Datum, CachedType, CachedType),
   bool invert);

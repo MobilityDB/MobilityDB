@@ -81,24 +81,13 @@ typedef struct
 
 /* Input/output functions */
 
-extern Datum Tnpoint_in(PG_FUNCTION_ARGS);
-
 /* Cast functions */
-
-extern Datum Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS);
-extern Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 
 extern Temporal *tnpoint_tgeompoint(const Temporal *temp);
 
 /* Transformation functions */
 
-extern Datum Tnpoint_round(PG_FUNCTION_ARGS);
-
 /* Accessor functions */
-
-extern Datum Tnpoint_positions(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_route(PG_FUNCTION_ARGS);
-extern Datum Tnpoint_routes(PG_FUNCTION_ARGS);
 
 extern int64 tnpointinst_route(const TInstant *inst);
 

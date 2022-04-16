@@ -111,37 +111,22 @@ extern GSERIALIZED * gserialized_copy(const GSERIALIZED *g);
 
 /* Input/output functions */
 
-extern Datum Tpoint_in(PG_FUNCTION_ARGS);
-extern Datum Tgeompoint_typmod_in(PG_FUNCTION_ARGS);
-extern Datum Tgeogpoint_typmod_in(PG_FUNCTION_ARGS);
-extern Datum Tpoint_typmod_out(PG_FUNCTION_ARGS);
-extern Datum Tpoint_enforce_typmod(PG_FUNCTION_ARGS);
 
 /* Constructor functions */
 
-extern Datum Tpointinst_constructor(PG_FUNCTION_ARGS);
 
 /* Accessor functions */
-
-extern Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 
 extern STBOX *tpoint_stbox(const Temporal *temp);
 
 /* Expand functions */
 
-extern Datum Geo_expand_spatial(PG_FUNCTION_ARGS);
-extern Datum Tpoint_expand_spatial(PG_FUNCTION_ARGS);
 
 /* Temporal comparisons */
 
-extern Datum Teq_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Teq_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Tne_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Tne_tpoint_geo(PG_FUNCTION_ARGS);
 
 /* Alias for the tpoint_trajectory function */
 
-extern Datum Tpoint_values(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

@@ -1458,25 +1458,6 @@ tsequence_from_base(Datum value, CachedType temptype,
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Tsequence_from_base);
-/**
- * Construct a temporal sequence value from a base value and a period
- */
-PGDLLEXPORT Datum
-Tsequence_from_base(PG_FUNCTION_ARGS)
-{
-  Datum value = PG_GETARG_ANYDATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool linear;
-  if (PG_NARGS() == 2)
-    linear = false;
-  else
-    linear = PG_GETARG_BOOL(2);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequence *result = tsequence_from_base(value, temptype, p, linear);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/

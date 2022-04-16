@@ -41,6 +41,7 @@
 #include <utils/builtins.h>
 #include <utils/timestamp.h>
 /* MobilityDB */
+#include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
 #include "general/period.h"
@@ -49,17 +50,6 @@
 /*****************************************************************************
  * General functions
  *****************************************************************************/
-
-/**
- * Return the size in bytes to read from toast to get the basic information
- * from a variable-length time type: Time struct (i.e., TimestampSet
- * or PeriodSet) and bounding box size
-*/
-uint32_t
-time_max_header_size(void)
-{
-  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
-}
 
 /**
  * @ingroup libmeos_time_accessor
@@ -611,6 +601,10 @@ Timestampset_timestamps(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+/*****************************************************************************
+ * Modification functions
+ *****************************************************************************/
+
 /**
  * @ingroup libmeos_time_transf
  * @brief Shift and/or scale the timestamp set value by the two intervals
@@ -800,7 +794,7 @@ Timestampset_eq(PG_FUNCTION_ARGS)
 bool
 timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 {
-  return !timestampset_eq(ts1, ts2);
+  return ! timestampset_eq(ts1, ts2);
 }
 
 PG_FUNCTION_INFO_V1(Timestampset_ne);

@@ -123,8 +123,6 @@ extern int nd_stats_value_index(const ND_STATS *stats, const int *indexes);
 extern void gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   int sample_rows, double total_rows, int mode);
 
-extern Datum Tpoint_analyze(PG_FUNCTION_ARGS);
-
 /*****************************************************************************/
 
 #endif

@@ -59,22 +59,6 @@ extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
 
 /*****************************************************************************/
 
-extern Datum Contains_geo_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Disjoint_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Disjoint_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Disjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Intersects_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Intersects_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Intersects_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Touches_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Touches_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum Dwithin_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Dwithin_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Dwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

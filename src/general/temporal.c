@@ -1169,6 +1169,62 @@ temporal_from_base(const Temporal *temp, Datum value, CachedType temptype,
   return result;
 }
 
+PG_FUNCTION_INFO_V1(Tinstantset_from_base);
+/**
+ * Construct a temporal instant set value from a base value and a timestamp set
+ */
+PGDLLEXPORT Datum
+Tinstantset_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
+  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  TInstantSet *result = tinstantset_from_base(value, temptype, ts);
+  PG_FREE_IF_COPY(ts, 1);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tsequence_from_base);
+/**
+ * Construct a temporal sequence value from a base value and a period
+ */
+PGDLLEXPORT Datum
+Tsequence_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  Period *p = PG_GETARG_PERIOD_P(1);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
+  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  TSequence *result = tsequence_from_base(value, temptype, p, linear);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
+/**
+ * Construct a temporal sequence set value from from a base value and a
+ * timestamp set
+ */
+PGDLLEXPORT Datum
+Tsequenceset_from_base(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_ANYDATUM(0);
+  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
+  bool linear;
+  if (PG_NARGS() == 2)
+    linear = false;
+  else
+    linear = PG_GETARG_BOOL(2);
+  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
+  TSequenceSet *result = tsequenceset_from_base(value, temptype,
+    ps, linear);
+  PG_FREE_IF_COPY(ps, 1);
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Append and merge functions
  ****************************************************************************/
@@ -1680,6 +1736,31 @@ Temporal_to_period(PG_FUNCTION_ARGS)
   temporal_period(temp, result);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_PERIOD_P(result);
+}
+
+/**
+ * @ingroup libmeos_box_cast
+ * @brief Return the bounding box of the temporal number.
+ */
+TBOX *
+tnumber_to_tbox(Temporal *temp)
+{
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  temporal_bbox(temp, result);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
+/**
+ * Return the bounding box of the temporal number
+ */
+PGDLLEXPORT Datum
+Tnumber_to_tbox(PG_FUNCTION_ARGS)
+{
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
+  temporal_bbox_slice(tempdatum, result);
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

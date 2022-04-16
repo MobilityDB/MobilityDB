@@ -101,8 +101,6 @@ extern TSequenceSet *tsequenceset_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
-extern Datum Tsequenceset_from_base(PG_FUNCTION_ARGS);
-
 extern TSequenceSet *tsequenceset_from_base(Datum value,
   CachedType temptype, const PeriodSet *ps, bool linear);
 

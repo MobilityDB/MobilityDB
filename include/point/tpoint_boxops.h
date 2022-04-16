@@ -58,7 +58,6 @@ extern void tpointseqarr_stbox(const TSequence **seq, int count, STBOX *box);
 
 /* Boxes functions */
 
-extern Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
 
 /* Generic box functions */
 
@@ -75,35 +74,6 @@ extern Datum boxop_tpoint_tpoint_ext(FunctionCallInfo fcinfo,
 
 /*****************************************************************************/
 
-extern Datum Overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

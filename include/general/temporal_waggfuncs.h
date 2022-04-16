@@ -42,14 +42,6 @@
 
 /*****************************************************************************/
 
-extern Datum Tint_wmin_transfn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_wmin_transfn(PG_FUNCTION_ARGS);
-extern Datum Tint_wmax_transfn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_wmax_transfn(PG_FUNCTION_ARGS);
-extern Datum Tint_wsum_transfn(PG_FUNCTION_ARGS);
-extern Datum Tfloat_wsum_transfn(PG_FUNCTION_ARGS);
-extern Datum Temporal_wcount_transfn(PG_FUNCTION_ARGS);
-extern Datum Tnumber_wavg_transfn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

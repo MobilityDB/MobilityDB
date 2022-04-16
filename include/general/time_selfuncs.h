@@ -59,11 +59,6 @@ extern double get_len_position(double value, double hist1, double hist2);
 extern double calc_length_hist_frac(Datum *length_hist_values, int length_hist_nvalues,
   double length1, double length2, bool equal);
 
-extern Datum Period_sel(PG_FUNCTION_ARGS);
-extern Datum Period_joinsel(PG_FUNCTION_ARGS);
-extern Datum _mobdb_period_sel(PG_FUNCTION_ARGS);
-extern Datum _mobdb_period_joinsel(PG_FUNCTION_ARGS);
-
 extern float8 period_sel_default(CachedOp cachedOp);
 extern float8 period_joinsel_default(CachedOp cachedOp);
 

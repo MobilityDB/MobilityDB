@@ -72,46 +72,6 @@ extern void tsequenceset_make_bbox(const TSequence **seqs, int count,
 
 /* Bounding box operators for temporal types */
 
-extern Datum Contains_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Contained_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Overlaps_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Same_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum Contains_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum Contained_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum Same_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
 extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,

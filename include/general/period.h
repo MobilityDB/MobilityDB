@@ -65,52 +65,27 @@ extern void period_expand(const Period *p2, Period *p1);
 
 /* Input/output functions */
 
-extern Datum Period_in(PG_FUNCTION_ARGS);
-extern Datum Period_out(PG_FUNCTION_ARGS);
-extern Datum Period_recv(PG_FUNCTION_ARGS);
-extern Datum Period_send(PG_FUNCTION_ARGS);
-
 extern char *period_to_string(const Period *p);
 extern void period_write(const Period *p, StringInfo buf);
 extern Period *period_read(StringInfo buf);
 
 /* Constructors */
 
-extern Datum Period_constructor2(PG_FUNCTION_ARGS);
-extern Datum Period_constructor4(PG_FUNCTION_ARGS);
 
 /* Casting */
 
-extern Datum Timestamp_to_period(PG_FUNCTION_ARGS);
-extern Datum Period_to_tstzrange(PG_FUNCTION_ARGS);
-extern Datum Tstzrange_to_period(PG_FUNCTION_ARGS);
+extern Period *timestamp_period(TimestampTz t);
 
 /* Accessor functions */
-
-extern Datum Period_lower(PG_FUNCTION_ARGS);
-extern Datum Period_upper(PG_FUNCTION_ARGS);
-extern Datum Period_lower_inc(PG_FUNCTION_ARGS);
-extern Datum Period_upper_inc(PG_FUNCTION_ARGS);
-extern Datum Period_duration(PG_FUNCTION_ARGS);
 
 extern Interval *period_duration(const Period *p);
 
 /* Modification functions */
 
-extern Datum Period_shift(PG_FUNCTION_ARGS);
-
 extern void period_shift_tscale(const Interval *start, const Interval *duration,
   Period *result);
 
 /* Comparison functions */
-
-extern Datum Period_eq(PG_FUNCTION_ARGS);
-extern Datum Period_ne(PG_FUNCTION_ARGS);
-extern Datum Period_cmp(PG_FUNCTION_ARGS);
-extern Datum Period_lt(PG_FUNCTION_ARGS);
-extern Datum Period_le(PG_FUNCTION_ARGS);
-extern Datum Period_ge(PG_FUNCTION_ARGS);
-extern Datum Period_gt(PG_FUNCTION_ARGS);
 
 extern bool period_eq(const Period *p1, const Period *p2);
 extern bool period_ne(const Period *p1, const Period *p2);
@@ -121,9 +96,6 @@ extern bool period_ge(const Period *p1, const Period *p2);
 extern bool period_gt(const Period *p1, const Period *p2);
 
 /* Hash functions */
-
-extern Datum Period_hash(PG_FUNCTION_ARGS);
-extern Datum Period_hash_extended(PG_FUNCTION_ARGS);
 
 extern uint32 period_hash(const Period *p);
 extern uint64 period_hash_extended(const Period *p, Datum seed);

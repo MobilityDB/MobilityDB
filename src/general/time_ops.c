@@ -54,6 +54,17 @@ typedef enum
 /*****************************************************************************/
 
 /**
+ * Return the size in bytes to read from toast to get the basic information
+ * from a variable-length time type: Time struct (i.e., TimestampSet
+ * or PeriodSet) and bounding box size
+*/
+uint32_t
+time_max_header_size(void)
+{
+  return double_pad(Max(sizeof(TimestampSet), sizeof(PeriodSet)));
+}
+
+/**
  * Return true if the type is a time type
  */
 bool
@@ -3805,7 +3816,7 @@ Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
   TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
   TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
   TimestampTz result;
-  if (minus_timestamp_timestamp(t1, t2, &result))
+  if (! minus_timestamp_timestamp(t1, t2, &result))
     PG_RETURN_NULL();
   PG_RETURN_TIMESTAMPTZ(result);
 }

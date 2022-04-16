@@ -368,28 +368,12 @@ tinstantset_read(StringInfo buf, CachedType temptype)
  * timestamp set.
  */
 TInstantSet *
-tinstantset_from_base(Datum value, CachedType temptype,
-  const TimestampSet *ts)
+tinstantset_from_base(Datum value, CachedType temptype, const TimestampSet *ts)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ts->count);
   for (int i = 0; i < ts->count; i++)
     instants[i] = tinstant_make(value, timestampset_time_n(ts, i), temptype);
   return tinstantset_make_free(instants, ts->count, MERGE_NO);
-}
-
-PG_FUNCTION_INFO_V1(Tinstantset_from_base);
-/**
- * Construct a temporal instant set value from a base value and a timestamp set
- */
-PGDLLEXPORT Datum
-Tinstantset_from_base(PG_FUNCTION_ARGS)
-{
-  Datum value = PG_GETARG_ANYDATUM(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TInstantSet *result = tinstantset_from_base(value, temptype, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

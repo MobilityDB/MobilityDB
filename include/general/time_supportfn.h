@@ -42,7 +42,6 @@
 
 /*****************************************************************************/
 
-
 /*
 * Depending on the function, we will deploy different index enhancement
 * strategies. Containment functions can use a more strict index strategy
@@ -57,7 +56,7 @@ typedef struct
   uint8_t expand_arg;   /* Radius argument for "within distance" search */
 } IndexableFunction;
 
-extern Datum Time_supportfn(PG_FUNCTION_ARGS);
+/*****************************************************************************/
 
 extern Oid opFamilyAmOid(Oid opfamilyoid);
 extern bool func_needs_index(Oid funcid, const IndexableFunction *idxfn,

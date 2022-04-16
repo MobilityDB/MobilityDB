@@ -36,12 +36,12 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <libpq/pqformat.h>
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/period.h"
 #include "general/timestampset.h"
 #include "general/periodset.h"
+#include "general/time_ops.h"
 #include "general/temporal_util.h"
 #include "general/tnumber_mathfuncs.h"
 #include "point/tpoint.h"
@@ -2262,6 +2262,25 @@ Union_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+/**
+ * @ingroup libmeos_box_oper_set
+ * @brief Return the union of the spatiotemporal boxes.
+ */
+STBOX *
+intersection_stbox_stbox(const STBOX *box1, const STBOX *box2)
+{
+  ensure_same_geodetic(box1->flags, box2->flags);
+  // ensure_same_dimensionality(box1->flags, box2->flags);
+  ensure_same_srid_stbox(box1, box2);
+  STBOX *result = palloc(sizeof(STBOX));
+  if (! inter_stbox_stbox(box1, box2, result))
+  {
+    pfree(result);
+    return NULL;
+  }
+  return result;
+}
+
 PG_FUNCTION_INFO_V1(Intersection_stbox_stbox);
 /**
  * Return the intersection of the spatiotemporal boxes
@@ -2271,12 +2290,9 @@ Intersection_stbox_stbox(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_GETARG_STBOX_P(1);
-  STBOX *result = palloc(sizeof(STBOX));
-  if (! inter_stbox_stbox(box1, box2, result))
-  {
-    pfree(result);
+  STBOX *result = intersection_stbox_stbox(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  }
   PG_RETURN_POINTER(result);
 }
 

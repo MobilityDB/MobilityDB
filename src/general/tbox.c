@@ -36,13 +36,13 @@
 
 /* PostgreSQL */
 #include <assert.h>
-#include <libpq/pqformat.h>
 #include <utils/builtins.h>
 /* MobilityDB */
 #include "general/tempcache.h"
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
+#include "general/time_ops.h"
 #include "general/rangetypes_ext.h"
 #include "general/temporal.h"
 #include "general/temporal_parser.h"
@@ -863,31 +863,6 @@ Range_period_to_tbox(PG_FUNCTION_ARGS)
   if (! result)
     PG_RETURN_NULL();
   PG_FREE_IF_COPY(range, 0);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * @ingroup libmeos_box_cast
- * @brief Return the bounding box of the temporal number.
- */
-TBOX *
-tnumber_to_tbox(Temporal *temp)
-{
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  temporal_bbox(temp, result);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(Tnumber_to_tbox);
-/**
- * Return the bounding box of the temporal number
- */
-PGDLLEXPORT Datum
-Tnumber_to_tbox(PG_FUNCTION_ARGS)
-{
-  Datum tempdatum = PG_GETARG_DATUM(0);
-  TBOX *result = (TBOX *) palloc(sizeof(TBOX));
-  temporal_bbox_slice(tempdatum, result);
   PG_RETURN_POINTER(result);
 }
 

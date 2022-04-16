@@ -48,21 +48,6 @@
 
 /*****************************************************************************/
 
-extern Datum Tcontains_geo_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum Tdisjoint_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Tdisjoint_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum Tintersects_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Tintersects_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum Ttouches_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Ttouches_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum Tdwithin_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Tdwithin_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
-
 extern Temporal *tinterrel_tpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool tinter, bool atvalue, Datum value);
 extern Temporal *tcontains_geo_tpoint(const GSERIALIZED *gs,

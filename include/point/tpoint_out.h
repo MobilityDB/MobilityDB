@@ -42,17 +42,6 @@
 
 /*****************************************************************************/
 
-extern Datum Tpoint_as_text(PG_FUNCTION_ARGS);
-extern Datum Tpoint_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum Geoarr_as_text(PG_FUNCTION_ARGS);
-extern Datum Geoarr_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum Tpointarr_as_text(PG_FUNCTION_ARGS);
-extern Datum Tpointarr_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum Tpoint_as_mfjson(PG_FUNCTION_ARGS);
-extern Datum Tpoint_as_binary(PG_FUNCTION_ARGS);
-extern Datum Tpoint_as_ewkb(PG_FUNCTION_ARGS);
-extern Datum Tpoint_as_hexewkb(PG_FUNCTION_ARGS);
-
 extern char *ewkt_out(Oid typid, Datum value);
 
 /*****************************************************************************/

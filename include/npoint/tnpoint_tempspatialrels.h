@@ -42,28 +42,6 @@
 
 /*****************************************************************************/
 
-extern Datum Tcontains_geo_tnpoint(PG_FUNCTION_ARGS);
-
-extern Datum Tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum Tintersects_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Tintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Tintersects_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Tintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum Ttouches_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Ttouches_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum Tdwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Tdwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
-
 /*****************************************************************************/
 
 #endif /* __TNPOINT_TEMPSPATIALRELS_H__ */

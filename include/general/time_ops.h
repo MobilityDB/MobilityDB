@@ -54,8 +54,11 @@ typedef enum
   AFTER
 } RelativeTimePos;
 
+/*****************************************************************************/
+
 /* Miscellaneous */
 
+extern uint32_t time_max_header_size(void);
 extern bool time_type(CachedType timetype);
 extern void ensure_time_type(CachedType timetype);
 
@@ -65,17 +68,6 @@ extern RelativeTimePos pos_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
 extern RelativeTimePos pos_period_timestamp(const Period *p, TimestampTz t);
 
 /* contains? */
-
-extern Datum Contains_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Contains_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Contains_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Contains_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Contains_period_period(PG_FUNCTION_ARGS);
-extern Datum Contains_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Contains_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Contains_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Contains_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Contains_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern bool contains_timestampset_timestamp(const TimestampSet *ts,
   TimestampTz t);
@@ -100,29 +92,10 @@ extern bool contains_periodset_periodset(const PeriodSet *ps1,
 
 /* contained? */
 
-extern Datum Contained_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Contained_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Contained_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Contained_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Contained_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Contained_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Contained_period_period(PG_FUNCTION_ARGS);
-extern Datum Contained_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Contained_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Contained_periodset_periodset(PG_FUNCTION_ARGS);
-
 extern bool contained_period_period(const Period *p1,
   const Period *p2);
 
 /* overlaps? */
-
-extern Datum Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overlaps_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overlaps_period_period(PG_FUNCTION_ARGS);
-extern Datum Overlaps_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overlaps_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Overlaps_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Overlaps_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern bool overlaps_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2);
@@ -138,22 +111,6 @@ extern bool overlaps_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
 /* before */
-
-extern Datum Before_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Before_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Before_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Before_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Before_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Before_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Before_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Before_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Before_period_period(PG_FUNCTION_ARGS);
-extern Datum Before_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Before_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Before_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Before_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Before_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Before_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern bool before_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
@@ -185,22 +142,6 @@ extern bool before_periodset_periodset(const PeriodSet *ps1,
 
 /* after */
 
-extern Datum After_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum After_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum After_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum After_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum After_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum After_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum After_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum After_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum After_period_period(PG_FUNCTION_ARGS);
-extern Datum After_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum After_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum After_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum After_periodset_period(PG_FUNCTION_ARGS);
-extern Datum After_period_periodset(PG_FUNCTION_ARGS);
-extern Datum After_periodset_periodset(PG_FUNCTION_ARGS);
-
 extern bool after_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
 extern bool after_timestamp_period(TimestampTz t, const Period *p);
@@ -230,22 +171,6 @@ extern bool after_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
 /* overbefore */
-
-extern Datum Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Overbefore_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Overbefore_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Overbefore_period_period(PG_FUNCTION_ARGS);
-extern Datum Overbefore_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Overbefore_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Overbefore_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Overbefore_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern bool overbefore_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
@@ -280,22 +205,6 @@ extern bool overbefore_periodset_periodset(const PeriodSet *ps1,
 
 /* overafter */
 
-extern Datum Overafter_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overafter_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Overafter_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Overafter_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Overafter_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overafter_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Overafter_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Overafter_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Overafter_period_period(PG_FUNCTION_ARGS);
-extern Datum Overafter_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overafter_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Overafter_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Overafter_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Overafter_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Overafter_periodset_periodset(PG_FUNCTION_ARGS);
-
 extern bool overafter_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
 extern bool overafter_timestamp_period(TimestampTz t,
@@ -329,19 +238,6 @@ extern bool overafter_periodset_periodset(const PeriodSet *ps1,
 
 /* adjacent */
 
-extern Datum Adjacent_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Adjacent_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Adjacent_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Adjacent_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Adjacent_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Adjacent_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Adjacent_period_period(PG_FUNCTION_ARGS);
-extern Datum Adjacent_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Adjacent_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Adjacent_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Adjacent_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Adjacent_periodset_periodset(PG_FUNCTION_ARGS);
-
 extern bool adjacent_timestamp_period(TimestampTz t,
   const Period *p);
 extern bool adjacent_timestamp_periodset(TimestampTz t,
@@ -369,23 +265,6 @@ extern bool adjacent_periodset_periodset(const PeriodSet *ps1,
 
 /* union */
 
-extern Datum Union_timestamp_timestamp(PG_FUNCTION_ARGS);
-extern Datum Union_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Union_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Union_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Union_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Union_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Union_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Union_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Union_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Union_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Union_period_period(PG_FUNCTION_ARGS);
-extern Datum Union_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Union_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Union_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Union_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Union_periodset_periodset(PG_FUNCTION_ARGS);
-
 extern TimestampSet *union_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
 extern TimestampSet *union_timestampset_timestampset(const TimestampSet *ts1,
@@ -399,53 +278,20 @@ extern PeriodSet *union_periodset_periodset(const PeriodSet *ps1,
 
 /* intersection */
 
-extern Datum Intersection_timestamp_timestamp(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Intersection_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Intersection_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Intersection_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Intersection_period_period(PG_FUNCTION_ARGS);
-extern Datum Intersection_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Intersection_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Intersection_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Intersection_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Intersection_periodset_periodset(PG_FUNCTION_ARGS);
-
-extern TimestampSet *intersection_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2);
+extern TimestampSet *intersection_timestampset_timestampset(
+  const TimestampSet *ts1, const TimestampSet *ts2);
 extern TimestampSet *intersection_timestampset_period(const TimestampSet *ts,
   const Period *p);
 extern Period *intersection_period_period(const Period *p1,
   const Period *p2);
-extern bool inter_period_period(const Period *p1, const Period *p2, Period *result);
+extern bool inter_period_period(const Period *p1, const Period *p2,
+  Period *result);
 extern PeriodSet *intersection_period_periodset(const Period *p,
   const PeriodSet *ps);
 extern PeriodSet *intersection_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
 /* minus */
-
-extern Datum Minus_timestamp_timestamp(PG_FUNCTION_ARGS);
-extern Datum Minus_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Minus_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Minus_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Minus_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Minus_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Minus_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Minus_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Minus_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Minus_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Minus_period_period(PG_FUNCTION_ARGS);
-extern Datum Minus_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Minus_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Minus_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Minus_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Minus_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern TimestampSet *minus_timestampset_timestamp(const TimestampSet *ts,
   TimestampTz t);
@@ -473,23 +319,6 @@ extern PeriodSet *minus_periodset_periodset(const PeriodSet *ps1,
 
 /* Distance returning an Interval */
 
-extern Datum Distance_timestamp_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Distance_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Distance_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Distance_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Distance_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_period_period(PG_FUNCTION_ARGS);
-extern Datum Distance_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Distance_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Distance_periodset_periodset(PG_FUNCTION_ARGS);
-
 extern Interval *distance_period_timestamp(const Period *p,
   TimestampTz t);
 extern Interval *distance_period_period(const Period *p1,
@@ -497,23 +326,6 @@ extern Interval *distance_period_period(const Period *p1,
 
 /* Distance returning a float in seconds for use with indexes in
  * nearest neighbor searches */
-
-extern Datum Distance_secs_timestamp_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestamp_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestamp_period(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestamp_periodset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestampset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestampset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestampset_period(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_timestampset_periodset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_period_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_period_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_period_period(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_period_periodset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_periodset_timestamp(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_periodset_timestampset(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_periodset_period(PG_FUNCTION_ARGS);
-extern Datum Distance_secs_periodset_periodset(PG_FUNCTION_ARGS);
 
 extern double distance_secs_period_timestamp(const Period *p,
   TimestampTz t);

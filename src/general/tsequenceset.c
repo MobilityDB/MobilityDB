@@ -934,28 +934,6 @@ tsequenceset_from_base(Datum value, CachedType temptype,
   return tsequenceset_make_free(sequences, ps->count, NORMALIZE_NO);
 }
 
-PG_FUNCTION_INFO_V1(Tsequenceset_from_base);
-/**
- * Construct a temporal sequence set value from from a base value and a
- * timestamp set
- */
-PGDLLEXPORT Datum
-Tsequenceset_from_base(PG_FUNCTION_ARGS)
-{
-  Datum value = PG_GETARG_ANYDATUM(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool linear;
-  if (PG_NARGS() == 2)
-    linear = false;
-  else
-    linear = PG_GETARG_BOOL(2);
-  CachedType temptype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  TSequenceSet *result = tsequenceset_from_base(value, temptype,
-    ps, linear);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/

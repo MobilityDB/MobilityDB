@@ -38,6 +38,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include <libpq/pqformat.h>
 #include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/tempcache.h"
@@ -64,6 +65,8 @@ typedef struct
 #define PG_GETARG_TBOX_P(n) DatumGetTboxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_TBOX_P(x) return TboxPGetDatum(x)
 
+/*****************************************************************************/
+
 /* General functions */
 
 extern TBOX *tbox_make(bool hasx, bool hast, double xmin, double xmax,
@@ -74,6 +77,7 @@ extern TBOX *tbox_copy(const TBOX *box);
 extern void tbox_expand(const TBOX *box1, TBOX *box2);
 extern void tbox_shift_tscale(const Interval *start, const Interval *duration,
   TBOX *box);
+extern bool inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result);
 
 /* Parameter tests */
 
@@ -83,36 +87,14 @@ extern void ensure_same_dimensionality_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Input/output functions */
 
-extern Datum Tbox_in(PG_FUNCTION_ARGS);
-extern Datum Tbox_out(PG_FUNCTION_ARGS);
-extern Datum Tbox_send(PG_FUNCTION_ARGS);
-extern Datum Tbox_recv(PG_FUNCTION_ARGS);
+extern char *tbox_to_string(const TBOX *box);
+extern void tbox_write(const TBOX *box, StringInfo buf);
+extern TBOX *tbox_read(StringInfo buf);
 
 /* Constructor functions */
 
-extern Datum Tbox_constructor(PG_FUNCTION_ARGS);
-extern Datum Tbox_constructor_t(PG_FUNCTION_ARGS);
 
 /* Casting */
-
-extern Datum Int_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Float_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Range_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Timestampset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Periodset_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Int_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Float_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Int_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Float_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Range_timestamp_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Range_period_to_tbox(PG_FUNCTION_ARGS);
-extern Datum Tnumber_to_tbox(PG_FUNCTION_ARGS);
-
-extern Datum Tbox_to_floatrange(PG_FUNCTION_ARGS);
-extern Datum Tbox_to_period(PG_FUNCTION_ARGS);
 
 extern void number_tbox(Datum value, CachedType basetype, TBOX *box);
 extern void int_tbox(int i, TBOX *box);
@@ -125,28 +107,31 @@ extern void period_tbox(const Period *p, TBOX *box);
 extern void periodset_tbox(const PeriodSet *ps, TBOX *box);
 extern void periodset_tbox_slice(Datum psdatum, TBOX *box);
 
+extern TBOX *int_timestamp_to_tbox(int i, TimestampTz t);
+extern TBOX *float_timestamp_to_tbox(double d, TimestampTz t);
+extern TBOX *int_period_to_tbox(int i, Period *p);
+extern TBOX *float_period_to_tbox(double d, Period *p);
+extern TBOX *range_timestamp_to_tbox(RangeType *range, TimestampTz t);
+extern TBOX *range_period_to_tbox(RangeType *range, Period *p);
+extern RangeType *tbox_to_floatrange(TBOX *box);
+extern Period *tbox_to_period(TBOX *box);
+
 /* Accessor functions */
 
-extern Datum Tbox_hasx(PG_FUNCTION_ARGS);
-extern Datum Tbox_hast(PG_FUNCTION_ARGS);
-extern Datum Tbox_xmin(PG_FUNCTION_ARGS);
-extern Datum Tbox_xmax(PG_FUNCTION_ARGS);
-extern Datum Tbox_tmin(PG_FUNCTION_ARGS);
-extern Datum Tbox_tmax(PG_FUNCTION_ARGS);
+extern bool tbox_hasx(const TBOX *box);
+extern bool tbox_hast(const TBOX *box);
+extern bool tbox_xmin(const TBOX *box, double *result);
+extern bool tbox_xmax(const TBOX *box, double *result);
+extern bool tbox_tmin(const TBOX *box, TimestampTz *result);
+extern bool tbox_tmax(const TBOX *box, TimestampTz *result);
 
 /* Transformation functions */
 
-extern Datum Tbox_expand_value(PG_FUNCTION_ARGS);
-extern Datum Tbox_expand_temporal(PG_FUNCTION_ARGS);
-extern Datum Tbox_round(PG_FUNCTION_ARGS);
+extern TBOX *tbox_expand_value(const TBOX *box, const double d);
+extern TBOX *tbox_expand_temporal(const TBOX *box, const Datum interval);
+extern TBOX *tbox_round(const TBOX *box, int size);
 
 /* Topological functions */
-
-extern Datum Contains_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Contained_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Overlaps_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Same_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Adjacent_tbox_tbox(PG_FUNCTION_ARGS);
 
 extern bool contains_tbox_tbox(const TBOX *box1, const TBOX *box2);
 extern bool contained_tbox_tbox(const TBOX *box1, const TBOX *box2);
@@ -155,15 +140,6 @@ extern bool same_tbox_tbox(const TBOX *box1, const TBOX *box2);
 extern bool adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Relative position functions */
-
-extern Datum Left_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Overleft_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Right_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Overright_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Before_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Overbefore_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum After_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Overafter_tbox_tbox(PG_FUNCTION_ARGS);
 
 extern bool left_tbox_tbox(const TBOX *box1, const TBOX *box2);
 extern bool overleft_tbox_tbox(const TBOX *box1, const TBOX *box2);
@@ -176,18 +152,9 @@ extern bool overafter_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Set functions */
 
-extern Datum Union_tbox_tbox(PG_FUNCTION_ARGS);
-extern Datum Intersection_tbox_tbox(PG_FUNCTION_ARGS);
+extern TBOX *union_tbox_tbox(const TBOX *box1, const TBOX *box2);
 
 /* Comparison functions */
-
-extern Datum Tbox_cmp(PG_FUNCTION_ARGS);
-extern Datum Tbox_lt(PG_FUNCTION_ARGS);
-extern Datum Tbox_le(PG_FUNCTION_ARGS);
-extern Datum Tbox_gt(PG_FUNCTION_ARGS);
-extern Datum Tbox_ge(PG_FUNCTION_ARGS);
-extern Datum Tbox_eq(PG_FUNCTION_ARGS);
-extern Datum Tbox_ne(PG_FUNCTION_ARGS);
 
 extern int tbox_cmp(const TBOX *box1, const TBOX *box2);
 extern bool tbox_eq(const TBOX *box1, const TBOX *box2);

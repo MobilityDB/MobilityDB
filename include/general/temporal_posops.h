@@ -43,59 +43,6 @@
 
 /*****************************************************************************/
 
-extern Datum Before_period_temporal(PG_FUNCTION_ARGS);
-extern Datum Overbefore_period_temporal(PG_FUNCTION_ARGS);
-extern Datum After_period_temporal(PG_FUNCTION_ARGS);
-extern Datum Overafter_period_temporal(PG_FUNCTION_ARGS);
-
-extern Datum Before_temporal_period(PG_FUNCTION_ARGS);
-extern Datum Overbefore_temporal_period(PG_FUNCTION_ARGS);
-extern Datum After_temporal_period(PG_FUNCTION_ARGS);
-extern Datum Overafter_temporal_period(PG_FUNCTION_ARGS);
-
-extern Datum Before_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum Overbefore_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum After_temporal_temporal(PG_FUNCTION_ARGS);
-extern Datum Overafter_temporal_temporal(PG_FUNCTION_ARGS);
-
-/*****************************************************************************/
-
-extern Datum Left_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overleft_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Right_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overright_range_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum Left_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Overleft_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Overright_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum Right_tnumber_range(PG_FUNCTION_ARGS);
-
-extern Datum Left_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overleft_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Right_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overright_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Before_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overbefore_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum After_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overafter_tbox_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum Left_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overleft_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Right_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overright_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Before_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overbefore_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum After_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum Overafter_tnumber_tbox(PG_FUNCTION_ARGS);
-
-extern Datum Left_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overleft_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum Right_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overright_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum Before_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overbefore_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum After_tnumber_tnumber(PG_FUNCTION_ARGS);
-extern Datum Overafter_tnumber_tnumber(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
