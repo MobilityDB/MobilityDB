@@ -360,6 +360,22 @@ tinstant_instants(const TInstant *inst)
   return result;
 }
 
+/**
+ * @ingroup libmeos_temporal_accessor
+ * @brief Return the base value of the temporal value at the timestamp.
+ *
+ * @note Since the corresponding function for temporal sequences need to
+ * interpolate the value, it is necessary to return a copy of the value
+ */
+bool
+tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
+{
+  if (t != inst->t)
+    return false;
+  *result = tinstant_value_copy(inst);
+  return true;
+}
+
 /*****************************************************************************
  * Cast functions
  *****************************************************************************/
@@ -675,22 +691,6 @@ tinstant_restrict_timestamp(const TInstant *inst, TimestampTz t, bool atfunc)
   if (t == inst->t)
     return atfunc ? tinstant_copy(inst) : NULL;
   return atfunc ? NULL : tinstant_copy(inst);
-}
-
-/**
- * @ingroup libmeos_temporal_accessor
- * @brief Return the base value of the temporal value at the timestamp.
- *
- * @note Since the corresponding function for temporal sequences need to
- * interpolate the value, it is necessary to return a copy of the value
- */
-bool
-tinstant_value_at_timestamp(const TInstant *inst, TimestampTz t, Datum *result)
-{
-  if (t != inst->t)
-    return false;
-  *result = tinstant_value_copy(inst);
-  return true;
 }
 
 /**

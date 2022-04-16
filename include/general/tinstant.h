@@ -71,6 +71,8 @@ extern void tinstant_period(const TInstant *inst, Period *p);
 extern TSequence **tinstant_sequences(const TInstant *inst);
 extern TimestampTz *tinstant_timestamps(const TInstant *inst);
 extern const TInstant **tinstant_instants(const TInstant *inst);
+extern bool tinstant_value_at_timestamp(const TInstant *inst,
+  TimestampTz t, Datum *result);
 
 /* Cast functions */
 
@@ -98,31 +100,30 @@ extern bool tinstant_always_le(const TInstant *inst, Datum value);
 
 extern TInstant *tinstant_restrict_value(const TInstant *inst,
   Datum value, bool atfunc);
-extern bool tinstant_restrict_values_test(const TInstant *inst,
-  const Datum *values, int count, bool atfunc);
   extern TInstant *tinstant_restrict_values(const TInstant *inst,
   const Datum *values, int count, bool atfunc);
-extern bool tnumberinst_restrict_range_test(const TInstant *inst,
-  const RangeType *range, bool atfunc);
 extern TInstant *tnumberinst_restrict_range(const TInstant *inst,
   const RangeType *range, bool atfunc);
-extern bool tnumberinst_restrict_ranges_test(const TInstant *inst,
-  RangeType **normranges, int count, bool atfunc);
 extern TInstant *tnumberinst_restrict_ranges(const TInstant *inst,
   RangeType **normranges, int count, bool atfunc);
 extern TInstant *tinstant_restrict_timestamp(const TInstant *inst,
   TimestampTz t, bool atfunc);
-extern bool tinstant_value_at_timestamp(const TInstant *inst,
-  TimestampTz t, Datum *result);
-extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
-  const TimestampSet *ts, bool atfunc);
 extern TInstant *tinstant_restrict_timestampset(const TInstant *inst,
   const TimestampSet *ts, bool atfunc);
 extern TInstant *tinstant_restrict_period(const TInstant *inst,
   const Period *p, bool atfunc);
-extern bool tinstant_restrict_periodset_test(const TInstant *inst,
-  const PeriodSet *ps, bool atfunc);
 extern TInstant *tinstant_restrict_periodset(const TInstant *inst,
+  const PeriodSet *ps, bool atfunc);
+
+extern bool tinstant_restrict_values_test(const TInstant *inst,
+  const Datum *values, int count, bool atfunc);
+extern bool tnumberinst_restrict_range_test(const TInstant *inst,
+  const RangeType *range, bool atfunc);
+extern bool tnumberinst_restrict_ranges_test(const TInstant *inst,
+  RangeType **normranges, int count, bool atfunc);
+extern bool tinstant_restrict_timestampset_test(const TInstant *inst,
+  const TimestampSet *ts, bool atfunc);
+extern bool tinstant_restrict_periodset_test(const TInstant *inst,
   const PeriodSet *ps, bool atfunc);
 
 /* Merge functions
