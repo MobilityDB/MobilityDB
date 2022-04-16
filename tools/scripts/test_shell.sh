@@ -10,11 +10,7 @@ code="0"
 
 for f in $(git ls-files | grep '\.sh')
 do
-  if [ "${f}" = "/MobilityDB/test/scripts/test.sh" ] ; then
-    result=$(shellcheck --exclude=SC2089,SC2090 "${f}")
-  else
-    result=$(shellcheck "${f}")
-  fi
+  result=$(shellcheck --exclude=SC2089,SC2090 "${f}")
 
   if [[ $result ]]; then
     echo "$result"
