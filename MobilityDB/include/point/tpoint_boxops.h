@@ -42,11 +42,11 @@
 
 extern Datum Tpoint_stboxes(PG_FUNCTION_ARGS);
 
-extern Datum Overlaps_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Overlaps_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Overlaps_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 extern Datum Contains_bbox_geo_tpoint(PG_FUNCTION_ARGS);
 extern Datum Contains_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
@@ -54,23 +54,23 @@ extern Datum Contains_bbox_tpoint_geo(PG_FUNCTION_ARGS);
 extern Datum Contains_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
 extern Datum Contains_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum Contained_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Contained_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Contained_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum Same_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Same_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Same_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Same_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Same_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Same_tpoint_tpoint(PG_FUNCTION_ARGS);
 
-extern Datum Adjacent_bbox_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_stbox_tpoint(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tpoint_stbox(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_geo_tpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_stbox_tpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_tpoint_geo(PG_FUNCTION_ARGS);
+extern Datum Adjacent_tpoint_stbox(PG_FUNCTION_ARGS);
+extern Datum Adjacent_tpoint_tpoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

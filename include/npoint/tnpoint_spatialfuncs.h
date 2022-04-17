@@ -66,7 +66,7 @@ extern Datum tnpointseq_geom(const TSequence *seq);
 extern Datum tnpointseqset_geom(const TSequenceSet *ts);
 extern Datum tnpoint_geom(const Temporal *temp);
 
-extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
+extern bool npoint_same_internal(const Npoint *np1, const Npoint *np2);
 
 /*****************************************************************************/
 

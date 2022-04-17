@@ -44,10 +44,10 @@
 
 /*****************************************************************************/
 
-extern bool npoint_stbox(const npoint *np, STBOX *box);
+extern bool npoint_stbox(const Npoint *np, STBOX *box);
 extern bool nsegment_stbox(STBOX *box, const nsegment *ns);
-extern bool npoint_timestamp_stbox(const npoint *np, TimestampTz t, STBOX *box);
-extern bool npoint_period_stbox(const npoint *np, const Period *p, STBOX *box);
+extern bool npoint_timestamp_stbox(const Npoint *np, TimestampTz t, STBOX *box);
+extern bool npoint_period_stbox(const Npoint *np, const Period *p, STBOX *box);
 
 extern void tnpointinst_make_stbox(const TInstant *inst, STBOX *box);
 extern void tnpointinstarr_stbox(const TInstant **inst, int count, STBOX *box);

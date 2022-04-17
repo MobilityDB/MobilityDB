@@ -317,7 +317,7 @@ Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_trasnf
+ * @ingroup libmeos_temporal_transf
  * @brief Set the precision of the fraction of the temporal network point to the
  * number of decimal places.
  */

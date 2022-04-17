@@ -72,7 +72,7 @@
  * function
  */
 int
-posop_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
+posop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
   if (gserialized_is_empty(gs))
@@ -93,12 +93,12 @@ posop_tnpoint_geom(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] func Function
  */
 static Datum
-posop_geom_tnpoint_ext(FunctionCallInfo fcinfo,
+posop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = posop_tnpoint_geom(temp, gs, func, true);
+  int result = posop_tnpoint_geo(temp, gs, func, INVERT);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
@@ -113,12 +113,12 @@ posop_geom_tnpoint_ext(FunctionCallInfo fcinfo,
  * @param[in] func Function
  */
 static Datum
-posop_tnpoint_geom_ext(FunctionCallInfo fcinfo,
+posop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  int result = posop_tnpoint_geom(temp, gs, func, false);
+  int result = posop_tnpoint_geo(temp, gs, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
@@ -169,7 +169,7 @@ posop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
 {
   STBOX *box = PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  int result = posop_tnpoint_stbox(temp, box, func, spatial, true);
+  int result = posop_tnpoint_stbox(temp, box, func, spatial, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
@@ -190,7 +190,7 @@ posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBOX *box = PG_GETARG_STBOX_P(1);
-  int result = posop_tnpoint_stbox(temp, box, func, spatial, false);
+  int result = posop_tnpoint_stbox(temp, box, func, spatial, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   if (result < 0)
     PG_RETURN_NULL();
@@ -234,7 +234,7 @@ posop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
 {
   npoint *np = PG_GETARG_NPOINT(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = posop_tnpoint_npoint(temp, np, func, true);
+  bool result = posop_tnpoint_npoint(temp, np, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -251,7 +251,7 @@ posop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   npoint *np = PG_GETARG_NPOINT(1);
-  bool result = posop_tnpoint_npoint(temp, np, func, false);
+  bool result = posop_tnpoint_npoint(temp, np, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -296,7 +296,7 @@ posop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
 }
 
 /*****************************************************************************/
-/* geom op Temporal */
+/* geo op Temporal */
 
 PG_FUNCTION_INFO_V1(Left_geom_tnpoint);
 /**
@@ -305,7 +305,7 @@ PG_FUNCTION_INFO_V1(Left_geom_tnpoint);
 PGDLLEXPORT Datum
 Left_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &left_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_geom_tnpoint);
@@ -315,7 +315,7 @@ PG_FUNCTION_INFO_V1(Overleft_geom_tnpoint);
 PGDLLEXPORT Datum
 Overleft_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &overleft_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_geom_tnpoint);
@@ -325,7 +325,7 @@ PG_FUNCTION_INFO_V1(Right_geom_tnpoint);
 PGDLLEXPORT Datum
 Right_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &right_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_geom_tnpoint);
@@ -335,7 +335,7 @@ PG_FUNCTION_INFO_V1(Overright_geom_tnpoint);
 PGDLLEXPORT Datum
 Overright_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &overright_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_geom_tnpoint);
@@ -345,7 +345,7 @@ PG_FUNCTION_INFO_V1(Below_geom_tnpoint);
 PGDLLEXPORT Datum
 Below_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &below_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_geom_tnpoint);
@@ -355,7 +355,7 @@ PG_FUNCTION_INFO_V1(Overbelow_geom_tnpoint);
 PGDLLEXPORT Datum
 Overbelow_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &overbelow_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_geom_tnpoint);
@@ -365,7 +365,7 @@ PG_FUNCTION_INFO_V1(Above_geom_tnpoint);
 PGDLLEXPORT Datum
 Above_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &above_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_geom_tnpoint);
@@ -375,50 +375,54 @@ PG_FUNCTION_INFO_V1(Overabove_geom_tnpoint);
 PGDLLEXPORT Datum
 Overabove_geom_tnpoint(PG_FUNCTION_ARGS)
 {
-  return posop_geom_tnpoint_ext(fcinfo, &overabove_stbox_stbox);
+  return posop_geo_tnpoint_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 /*****************************************************************************/
-/* Temporal op geom */
+/* Temporal op geo */
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_geom);
 /**
- * Return true if the temporal network point is strictly to the left of the geometry
+ * Return true if the temporal network point is strictly to the left of the
+ * geometry
  */
 PGDLLEXPORT Datum
 Left_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &left_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &left_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_geom);
 /**
- * Return true if the temporal network point does not extend to the right of the geometry
+ * Return true if the temporal network point does not extend to the right of
+ * the geometry
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &overleft_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &overleft_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_geom);
 /**
- * Return true if the temporal network point is strictly to the right of the geometry
+ * Return true if the temporal network point is strictly to the right of the
+ * geometry
  */
 PGDLLEXPORT Datum
 Right_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &right_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &right_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_geom);
 /**
- * Return true if the temporal network point does not extend to the left of the geometry
+ * Return true if the temporal network point does not extend to the left of
+ * the geometry
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &overright_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &overright_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_geom);
@@ -428,7 +432,7 @@ PG_FUNCTION_INFO_V1(Below_tnpoint_geom);
 PGDLLEXPORT Datum
 Below_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &below_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &below_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_geom);
@@ -438,7 +442,7 @@ PG_FUNCTION_INFO_V1(Overbelow_tnpoint_geom);
 PGDLLEXPORT Datum
 Overbelow_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &overbelow_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &overbelow_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_geom);
@@ -448,7 +452,7 @@ PG_FUNCTION_INFO_V1(Above_tnpoint_geom);
 PGDLLEXPORT Datum
 Above_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &above_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &above_stbox_stbox);
 }
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_geom);
@@ -458,7 +462,7 @@ PG_FUNCTION_INFO_V1(Overabove_tnpoint_geom);
 PGDLLEXPORT Datum
 Overabove_tnpoint_geom(PG_FUNCTION_ARGS)
 {
-  return posop_tnpoint_geom_ext(fcinfo, &overabove_stbox_stbox);
+  return posop_tnpoint_geo_ext(fcinfo, &overabove_stbox_stbox);
 }
 
 /*****************************************************************************/
@@ -466,7 +470,8 @@ Overabove_tnpoint_geom(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly to the left of the temporal network point
+ * Return true if the spatiotemporal box is strictly to the left of the
+ * temporal network point
  */
 PGDLLEXPORT Datum
 Left_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -476,7 +481,8 @@ Left_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend to the right of the temporal network point
+ * Return true if the spatiotemporal box does not extend to the right of the
+ * temporal network point
  */
 PGDLLEXPORT Datum
 Overleft_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -486,7 +492,8 @@ Overleft_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly to the right of the temporal network point
+ * Return true if the spatiotemporal box is strictly to the right of the
+ * temporal network point
  */
 PGDLLEXPORT Datum
 Right_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -496,7 +503,8 @@ Right_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend to the left of the temporal network point
+ * Return true if the spatiotemporal box does not extend to the left of the
+ * temporal network point
  */
 PGDLLEXPORT Datum
 Overright_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -506,7 +514,8 @@ Overright_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly below the temporal network point
+ * Return true if the spatiotemporal box is strictly below the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Below_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -516,7 +525,8 @@ Below_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend above the temporal network point
+ * Return true if the spatiotemporal box does not extend above the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Overbelow_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -526,7 +536,8 @@ Overbelow_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly above the temporal network point
+ * Return true if the spatiotemporal box is strictly above the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Above_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -536,7 +547,8 @@ Above_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend below the temporal network point
+ * Return true if the spatiotemporal box does not extend below the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Overabove_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -546,7 +558,8 @@ Overabove_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly before of the temporal network point
+ * Return true if the spatiotemporal box is strictly before of the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Before_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -556,7 +569,8 @@ Before_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend after the temporal network point
+ * Return true if the spatiotemporal box does not extend after the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Overbefore_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -566,7 +580,8 @@ Overbefore_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box is strictly after the temporal network point
+ * Return true if the spatiotemporal box is strictly after the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 After_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -576,7 +591,8 @@ After_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_stbox_tnpoint);
 /**
- * Return true if the spatiotemporal box does not extend before the temporal network point
+ * Return true if the spatiotemporal box does not extend before the temporal
+ * network point
  */
 PGDLLEXPORT Datum
 Overafter_stbox_tnpoint(PG_FUNCTION_ARGS)
@@ -589,7 +605,8 @@ Overafter_stbox_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly to the left of the spatiotemporal box
+ * Return true if the temporal network point is strictly to the left of the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Left_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -599,7 +616,8 @@ Left_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend to the right of the spatiotemporal box
+ * Return true if the temporal network point does not extend to the right of
+ * the spatiotemporal box
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -609,7 +627,8 @@ Overleft_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly to the right of the spatiotemporal box
+ * Return true if the temporal network point is strictly to the right of the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Right_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -619,7 +638,8 @@ Right_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend to the left of the spatiotemporal box
+ * Return true if the temporal network point does not extend to the left of
+ * the spatiotemporal box
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -629,7 +649,8 @@ Overright_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly below the spatiotemporal box
+ * Return true if the temporal network point is strictly below the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Below_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -639,7 +660,8 @@ Below_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend above the spatiotemporal box
+ * Return true if the temporal network point does not extend above the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Overbelow_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -649,7 +671,8 @@ Overbelow_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly above the spatiotemporal box
+ * Return true if the temporal network point is strictly above the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Above_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -659,7 +682,8 @@ Above_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend below the spatiotemporal box
+ * Return true if the temporal network point does not extend below the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Overabove_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -669,7 +693,8 @@ Overabove_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly before the spatiotemporal box
+ * Return true if the temporal network point is strictly before the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Before_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -679,7 +704,8 @@ Before_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend after the spatiotemporal box
+ * Return true if the temporal network point does not extend after the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Overbefore_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -689,7 +715,8 @@ Overbefore_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_tnpoint_stbox);
 /**
- * Return true if the temporal network point is strictly after the spatiotemporal box
+ * Return true if the temporal network point is strictly after the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 After_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -699,7 +726,8 @@ After_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_tnpoint_stbox);
 /**
- * Return true if the temporal network point does not extend before the spatiotemporal box
+ * Return true if the temporal network point does not extend before the
+ * spatiotemporal box
  */
 PGDLLEXPORT Datum
 Overafter_tnpoint_stbox(PG_FUNCTION_ARGS)
@@ -712,7 +740,8 @@ Overafter_tnpoint_stbox(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_npoint_tnpoint);
 /**
- * Return true if the network point is strictly to the left of the temporal point
+ * Return true if the network point is strictly to the left of the
+ * temporal point
  */
 PGDLLEXPORT Datum
 Left_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -722,7 +751,8 @@ Left_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_npoint_tnpoint);
 /**
- * Return true if the network point does not extend to the right of the temporal point
+ * Return true if the network point does not extend to the right of the
+ * temporal point
  */
 PGDLLEXPORT Datum
 Overleft_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -732,7 +762,8 @@ Overleft_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_npoint_tnpoint);
 /**
- * Return true if the network point is strictly to the right of the temporal point
+ * Return true if the network point is strictly to the right of the
+ * temporal point
  */
 PGDLLEXPORT Datum
 Right_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -742,7 +773,8 @@ Right_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_npoint_tnpoint);
 /**
- * Return true if the network point does not extend to the left of the temporal point
+ * Return true if the network point does not extend to the left of the
+ * temporal point
  */
 PGDLLEXPORT Datum
 Overright_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -795,7 +827,8 @@ Overabove_npoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_npoint);
 /**
- * Return true if the temporal point is strictly to the left of the network point
+ * Return true if the temporal point is strictly to the left of the
+ * network point
  */
 PGDLLEXPORT Datum
 Left_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -805,7 +838,8 @@ Left_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_npoint);
 /**
- * Return true if the temporal point does not extend to the right of the network point
+ * Return true if the temporal point does not extend to the right of the
+ * network point
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -815,7 +849,8 @@ Overleft_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_npoint);
 /**
- * Return true if the temporal point is strictly to the right of the network point
+ * Return true if the temporal point is strictly to the right of the
+ * network point
  */
 PGDLLEXPORT Datum
 Right_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -825,7 +860,8 @@ Right_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_npoint);
 /**
- * Return true if the temporal point does not extend to the left of the network point
+ * Return true if the temporal point does not extend to the left of the
+ * network point
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -878,7 +914,8 @@ Overabove_tnpoint_npoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly to the left of the second one
+ * Return true if the first temporal network point is strictly to the left of
+ * the second one
  */
 PGDLLEXPORT Datum
 Left_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -888,7 +925,8 @@ Left_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overleft_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend to the right of the second one
+ * Return true if the first temporal network point does not extend to the right
+ * of the second one
  */
 PGDLLEXPORT Datum
 Overleft_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -898,7 +936,8 @@ Overleft_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Right_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly to the right of the second one
+ * Return true if the first temporal network point is strictly to the right of
+ * the second one
  */
 PGDLLEXPORT Datum
 Right_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -908,7 +947,8 @@ Right_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overright_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend to the left of the second one
+ * Return true if the first temporal network point does not extend to the left
+ * of the second one
  */
 PGDLLEXPORT Datum
 Overright_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -918,7 +958,8 @@ Overright_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Below_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly below the second one
+ * Return true if the first temporal network point is strictly below the
+ * second one
  */
 PGDLLEXPORT Datum
 Below_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -928,7 +969,8 @@ Below_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbelow_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend above the second one
+ * Return true if the first temporal network point does not extend above the
+ * second one
  */
 PGDLLEXPORT Datum
 Overbelow_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -938,7 +980,8 @@ Overbelow_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Above_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly above the second one
+ * Return true if the first temporal network point is strictly above the
+ * second one
  */
 PGDLLEXPORT Datum
 Above_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -948,7 +991,8 @@ Above_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overabove_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend below the second one
+ * Return true if the first temporal network point does not extend below the
+ * second one
  */
 PGDLLEXPORT Datum
 Overabove_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -958,7 +1002,8 @@ Overabove_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Before_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly before the second one
+ * Return true if the first temporal network point is strictly before the
+ * second one
  */
 PGDLLEXPORT Datum
 Before_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -968,7 +1013,8 @@ Before_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overbefore_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend after the second one
+ * Return true if the first temporal network point does not extend after the
+ * second one
  */
 PGDLLEXPORT Datum
 Overbefore_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -978,7 +1024,8 @@ Overbefore_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(After_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point is strictly after the second one
+ * Return true if the first temporal network point is strictly after the
+ * second one
  */
 PGDLLEXPORT Datum
 After_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -988,7 +1035,8 @@ After_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Overafter_tnpoint_tnpoint);
 /**
- * Return true if the first temporal network point does not extend before the second one
+ * Return true if the first temporal network point does not extend before the
+ * second one
  */
 PGDLLEXPORT Datum
 Overafter_tnpoint_tnpoint(PG_FUNCTION_ARGS)

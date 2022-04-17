@@ -45,16 +45,16 @@ extern Datum Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS);
 extern Datum Npoint_period_to_stbox(PG_FUNCTION_ARGS);
 extern Datum Tnpoint_to_stbox(PG_FUNCTION_ARGS);
 
-extern Datum Overlaps_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Overlaps_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Contains_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Contained_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Same_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum Adjacent_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Overlaps_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Contains_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Contains_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Contained_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Contained_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Same_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Same_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_npoint_tnpoint(PG_FUNCTION_ARGS);
+extern Datum Adjacent_tnpoint_npoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

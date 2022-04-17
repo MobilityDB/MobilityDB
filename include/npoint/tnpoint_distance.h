@@ -45,7 +45,7 @@
 /*****************************************************************************/
 
 extern TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const npoint *np);
+extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 
 /*****************************************************************************/
 

@@ -47,7 +47,6 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -136,7 +135,6 @@ tcomp_temporal_base_ext(FunctionCallInfo fcinfo,
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *

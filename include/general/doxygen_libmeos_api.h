@@ -204,9 +204,13 @@
  * @ingroup libmeos_temporal_oper
  * @brief Mathematical operators for temporal types.
  *
- * @defgroup libmeos_temporal_oper_bbox Bounding box operators
+ * @defgroup libmeos_temporal_oper_topo Topological operators
  * @ingroup libmeos_temporal_oper
- * @brief Bounding box operators for temporal types.
+ * @brief Topological operators for temporal types.
+ *
+ * @defgroup libmeos_temporal_oper_pos Position operators
+ * @ingroup libmeos_temporal_oper
+ * @brief Position operators for temporal types.
  *
  * @defgroup libmeos_temporal_oper_dist Distance operators
  * @ingroup libmeos_temporal_oper

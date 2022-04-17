@@ -51,7 +51,7 @@ typedef struct
 {
   int64 rid;        /**< route identifier */
   double pos;       /**< position */
-} npoint;
+} Npoint;
 
 /* Network-based segment */
 
@@ -60,14 +60,14 @@ typedef struct
   int64 rid;       /**< route identifier */
   double pos1;     /**< position1 */
   double pos2;     /**< position2 */
-} nsegment;
+} Nsegment;
 
 /*****************************************************************************
  * fmgr macros
  *****************************************************************************/
 
-/* npoint */
-#define DatumGetNpoint(X)          ((npoint *) DatumGetPointer(X))
+/* Npoint */
+#define DatumGetNpoint(X)          ((Npoint *) DatumGetPointer(X))
 #define NpointGetDatum(X)          PointerGetDatum(X)
 #define PG_GETARG_NPOINT(X)        DatumGetNpoint(PG_GETARG_DATUM(X))
 #define PG_RETURN_NPOINT(X)        PG_RETURN_POINTER(X)

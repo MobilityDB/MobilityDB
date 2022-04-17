@@ -41,8 +41,8 @@
 
 /*****************************************************************************/
 
-extern npoint *npoint_parse(char **str);
-extern nsegment *nsegment_parse(char **str);
+extern Npoint *npoint_parse(char **str);
+extern Nsegment *nsegment_parse(char **str);
 
 /*****************************************************************************/
 

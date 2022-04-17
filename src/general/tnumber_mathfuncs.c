@@ -164,8 +164,7 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
- * @brief Generic arithmetic operator on a temporal number and a number
+ * Generic arithmetic operator on a temporal number and a number
  *
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Arithmetic function
@@ -262,8 +261,7 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
- * @brief Generic arithmetic operator on two temporal numbers
+ * Generic arithmetic operator on two temporal numbers
  *
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] func Arithmetic function
@@ -505,14 +503,13 @@ Tnumber_round(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_degrees);
 /**
- * Convert the temporal number from radians to degrees
+ * @ingroup libmeos_temporal_oper_math
+ * @brief Convert the temporal number from radians to degrees
  */
-PGDLLEXPORT Datum
-Tnumber_degrees(PG_FUNCTION_ARGS)
+Temporal *
+tnumber_degrees(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -524,6 +521,18 @@ Tnumber_degrees(PG_FUNCTION_ARGS)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_degrees);
+/**
+ * Convert the temporal number from radians to degrees
+ */
+PGDLLEXPORT Datum
+Tnumber_degrees(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnumber_degrees(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -533,8 +542,8 @@ Tnumber_degrees(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Return the derivative of the temporal number
- * @pre The temporal number has linear interpolation
+ * @ingroup libmeos_temporal_oper_math
+ * @brief Return the derivative of the temporal number.
  */
 static TSequence *
 tnumberseq_derivative(const TSequence *seq)
@@ -572,7 +581,8 @@ tnumberseq_derivative(const TSequence *seq)
 }
 
 /**
- * Return the derivative of the temporal number
+ * @ingroup libmeos_temporal_oper_math
+ * @brief Return the derivative of the temporal number
  */
 static TSequenceSet *
 tnumberseqset_derivative(const TSequenceSet *ts)
@@ -589,14 +599,13 @@ tnumberseqset_derivative(const TSequenceSet *ts)
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(Tnumber_derivative);
 /**
- * Return the derivative of the temporal number
+ * @ingroup libmeos_temporal_oper_math
+ * @brief Return the derivative of the temporal number
  */
-PGDLLEXPORT Datum
-Tnumber_derivative(PG_FUNCTION_ARGS)
+Temporal *
+tnumber_derivative(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
@@ -606,6 +615,18 @@ Tnumber_derivative(PG_FUNCTION_ARGS)
     result = (Temporal *)tnumberseq_derivative((TSequence *)temp);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *)tnumberseqset_derivative((TSequenceSet *)temp);
+  return result;
+}
+
+PG_FUNCTION_INFO_V1(Tnumber_derivative);
+/**
+ * Return the derivative of the temporal number
+ */
+PGDLLEXPORT Datum
+Tnumber_derivative(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnumber_derivative(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();

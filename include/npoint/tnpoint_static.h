@@ -46,22 +46,22 @@
 /* General functions */
 
 extern ArrayType *int64arr_to_array(const int64 *int64arr, int count);
-extern ArrayType *nsegmentarr_to_array(nsegment **nsegmentarr, int count);
+extern ArrayType *nsegmentarr_to_array(Nsegment **nsegmentarr, int count);
 extern int32_t get_srid_ways();
-extern Datum npointarr_geom(npoint **points, int count);
-extern Datum nsegmentarr_geom(nsegment **segments, int count);
-extern nsegment **nsegmentarr_normalize(nsegment **segments, int *count);
+extern Datum npointarr_geom(Npoint **points, int count);
+extern Datum nsegmentarr_geom(Nsegment **segments, int count);
+extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
-/* Input/Output functions for npoint */
+/* Input/Output functions for Npoint */
 
 
-/* Input/Output functions for nsegment */
+/* Input/Output functions for Nsegment */
 
 
 /* Constructor functions */
 
-extern npoint *npoint_make(int64 rid, double pos);
-extern nsegment *nsegment_make(int64 rid, double pos1, double pos2);
+extern Npoint *npoint_make(int64 rid, double pos);
+extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 
 /* Accessor functions */
 
@@ -76,33 +76,33 @@ extern Datum npoint_round(Datum npoint, Datum size);
 extern bool route_exists(int64 rid);
 extern double route_length(int64 rid);
 extern Datum route_geom(int64 rid);
-extern Datum npoint_geom(const npoint *np);
-extern npoint *geom_npoint(Datum geom);
-extern Datum nsegment_geom(const nsegment *ns);
-extern nsegment *geom_nsegment(Datum line);
+extern Datum npoint_geom(const Npoint *np);
+extern Npoint *geom_npoint(Datum geom);
+extern Datum nsegment_geom(const Nsegment *ns);
+extern Nsegment *geom_nsegment(Datum line);
 
 /* SRID functions */
 
-extern int npoint_srid(const npoint *np);
-extern int nsegment_srid(const nsegment *ns);
+extern int npoint_srid(const Npoint *np);
+extern int nsegment_srid(const Nsegment *ns);
 
 /* Comparison functions */
 
-extern bool npoint_eq(const npoint *np1, const npoint *np2);
-extern bool npoint_ne(const npoint *np1, const npoint *np2);
-extern int npoint_cmp(const npoint *np1, const npoint *np2);
-extern bool npoint_lt(const npoint *np1, const npoint *np2);
-// extern bool npoint_le(const npoint *np1, const npoint *np2);
-// extern bool npoint_gt(const npoint *np1, const npoint *np2);
-// extern bool npoint_ge(const npoint *np1, const npoint *np2);
+extern bool npoint_eq(const Npoint *np1, const Npoint *np2);
+extern bool npoint_ne(const Npoint *np1, const Npoint *np2);
+extern int npoint_cmp(const Npoint *np1, const Npoint *np2);
+extern bool npoint_lt(const Npoint *np1, const Npoint *np2);
+// extern bool npoint_le(const Npoint *np1, const Npoint *np2);
+// extern bool npoint_gt(const Npoint *np1, const Npoint *np2);
+// extern bool npoint_ge(const Npoint *np1, const Npoint *np2);
 
-extern bool nsegment_eq(const nsegment *ns1, const nsegment *ns2);
-extern bool nsegment_ne(const nsegment *ns1, const nsegment *ns2);
-extern int nsegment_cmp(const nsegment *ns1, const nsegment *ns2);
-// extern bool nsegment_lt(const nsegment *ns1, const nsegment *ns2);
-// extern bool nsegment_le(const nsegment *ns1, const nsegment *ns2);
-// extern bool nsegment_gt(const nsegment *ns1, const nsegment *ns2);
-// extern bool nsegment_ge(const nsegment *ns1, const nsegment *ns2);
+extern bool nsegment_eq(const Nsegment *ns1, const Nsegment *ns2);
+extern bool nsegment_ne(const Nsegment *ns1, const Nsegment *ns2);
+extern int nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2);
+// extern bool nsegment_lt(const Nsegment *ns1, const Nsegment *ns2);
+// extern bool nsegment_le(const Nsegment *ns1, const Nsegment *ns2);
+// extern bool nsegment_gt(const Nsegment *ns1, const Nsegment *ns2);
+// extern bool nsegment_ge(const Nsegment *ns1, const Nsegment *ns2);
 
 /*****************************************************************************/
 

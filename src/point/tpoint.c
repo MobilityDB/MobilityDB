@@ -521,7 +521,6 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
  * @brief Return the temporal comparison of the base value and temporal value
  */
 Temporal *
@@ -597,7 +596,7 @@ Teq_tpoint_geo(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tne_geo_tpoint);
 /**
- * Return the temporal difference of the base value and the temporal value
+ * Return the temporal inequality of the base value and the temporal value
  */
 PGDLLEXPORT Datum
 Tne_geo_tpoint(PG_FUNCTION_ARGS)
@@ -607,7 +606,7 @@ Tne_geo_tpoint(PG_FUNCTION_ARGS)
 
 PG_FUNCTION_INFO_V1(Tne_tpoint_geo);
 /**
- * Return the temporal difference of the temporal value and base value
+ * Return the temporal inequality of the temporal value and base value
  */
 PGDLLEXPORT Datum
 Tne_tpoint_geo(PG_FUNCTION_ARGS)
