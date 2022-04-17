@@ -50,7 +50,7 @@
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Generic binary functions for tnpoint <rel> (geo | npoint)
+ * Generic binary functions for tnpoint <rel> (geo | Npoint)
  *****************************************************************************/
 
 /**
@@ -104,7 +104,7 @@ spatialrel_geo_tnpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 static Datum
 spatialrel_npoint_tnpoint(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 {
-  npoint *np  = PG_GETARG_NPOINT(0);
+  Npoint *np  = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_geom(np);
   Datum result = spatialrel_tnpoint_geo(temp, geom, func, true);
@@ -120,7 +120,7 @@ static Datum
 spatialrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, Datum (*func)(Datum, Datum))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np  = PG_GETARG_NPOINT(1);
+  Npoint *np  = PG_GETARG_NPOINT_P(1);
   Datum geom = npoint_geom(np);
   Datum result = spatialrel_tnpoint_geo(temp, geom, func, true);
   pfree(DatumGetPointer(geom));
@@ -388,7 +388,7 @@ PG_FUNCTION_INFO_V1(Dwithin_npoint_tnpoint);
 PGDLLEXPORT Datum
 Dwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np  = PG_GETARG_NPOINT(0);
+  Npoint *np  = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   Datum geom = npoint_geom(np);
@@ -423,7 +423,7 @@ PGDLLEXPORT Datum
 Dwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np  = PG_GETARG_NPOINT(1);
+  Npoint *np  = PG_GETARG_NPOINT_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   Datum geom = npoint_geom(np);
   Datum result = spatialrel3_tnpoint_geom(temp, geom, dist, &geom_dwithin2d, false);

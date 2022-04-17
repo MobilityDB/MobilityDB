@@ -81,7 +81,7 @@ PG_FUNCTION_INFO_V1(Distance_npoint_tnpoint);
 PGDLLEXPORT Datum
 Distance_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_geom(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
@@ -124,7 +124,7 @@ PGDLLEXPORT Datum
 Distance_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   Datum geom = npoint_geom(np);
   Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo(tempgeom, geom);
@@ -245,7 +245,7 @@ NAI_tnpoint_geo(PG_FUNCTION_ARGS)
  * temporal network point.
  */
 TInstant *
-nai_tnpoint_npoint(const Temporal *temp, const npoint *np)
+nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
@@ -271,7 +271,7 @@ PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
 PGDLLEXPORT Datum
 NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
@@ -289,7 +289,7 @@ PGDLLEXPORT Datum
 NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   TInstant *result = nai_tnpoint_npoint(temp, np);
@@ -387,7 +387,7 @@ NAD_tnpoint_geo(PG_FUNCTION_ARGS)
  * network point
  */
 static Datum
-nad_tnpoint_npoint(Temporal *temp, npoint *np)
+nad_tnpoint_npoint(Temporal *temp, Npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
@@ -407,7 +407,7 @@ PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
 PGDLLEXPORT Datum
 NAD_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum result = nad_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
@@ -423,7 +423,7 @@ PGDLLEXPORT Datum
 NAD_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   Datum result = nad_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -487,7 +487,7 @@ PG_FUNCTION_INFO_V1(Shortestline_npoint_tnpoint);
 PGDLLEXPORT Datum
 Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
@@ -530,7 +530,7 @@ PGDLLEXPORT Datum
 Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   Datum traj = tnpoint_geom(temp);

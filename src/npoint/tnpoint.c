@@ -74,7 +74,7 @@ Tnpoint_in(PG_FUNCTION_ARGS)
 TInstant *
 tnpointinst_tgeompointinst(const TInstant *inst)
 {
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum geom = npoint_geom(np);
   TInstant *result = tinstant_make(geom, inst->t, T_TGEOMPOINT);
   pfree(DatumGetPointer(geom));
@@ -106,7 +106,7 @@ TSequence *
 tnpointseq_tgeompointseq(const TSequence *seq)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  npoint *np = DatumGetNpoint(tinstant_value(tsequence_inst_n(seq, 0)));
+  Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, 0)));
   Datum line = route_geom(np->rid);
   /* We are sure line is not empty */
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
@@ -115,7 +115,7 @@ tnpointseq_tgeompointseq(const TSequence *seq)
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = tsequence_inst_n(seq, i);
-    np = DatumGetNpoint(tinstant_value(inst));
+    np = DatumGetNpointP(tinstant_value(inst));
     POINTARRAY* opa = lwline_interpolate_points(lwline, np->pos, 0);
     LWGEOM *lwpoint;
     assert(opa->npoints <= 1);
@@ -191,7 +191,7 @@ TInstant *
 tgeompointinst_tnpointinst(const TInstant *inst)
 {
   Datum geom = tinstant_value(inst);
-  npoint *np = geom_npoint(geom);
+  Npoint *np = geom_npoint(geom);
   if (np == NULL)
     return NULL;
   TInstant *result = tinstant_make(PointerGetDatum(np), inst->t, T_TNPOINT);
@@ -360,11 +360,11 @@ Tnpoint_round(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointinst_positions(const TInstant *inst)
 {
-  nsegment **result = palloc(sizeof(nsegment *));
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Nsegment **result = palloc(sizeof(Nsegment *));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   result[0] = nsegment_make(np->rid, np->pos, np->pos);
   return result;
 }
@@ -373,16 +373,16 @@ tnpointinst_positions(const TInstant *inst)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointinstset_positions(const TInstantSet *ti, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
   Datum *values = tinstantset_values(ti, &count1);
-  nsegment **result = palloc(sizeof(nsegment *) * count1);
+  Nsegment **result = palloc(sizeof(Nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
-    npoint *np = DatumGetNpoint(values[i]);
+    Npoint *np = DatumGetNpointP(values[i]);
     result[i] = nsegment_make(np->rid, np->pos, np->pos);
   }
   pfree(values);
@@ -393,16 +393,16 @@ tnpointinstset_positions(const TInstantSet *ti, int *count)
 /**
  * Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointseq_step_positions(const TSequence *seq, int *count)
 {
   int count1;
   /* The following function removes duplicate values */
   Datum *values = tsequence_values(seq, &count1);
-  nsegment **result = palloc(sizeof(nsegment *) * count1);
+  Nsegment **result = palloc(sizeof(Nsegment *) * count1);
   for (int i = 0; i < count1; i++)
   {
-    npoint *np = DatumGetNpoint(values[i]);
+    Npoint *np = DatumGetNpointP(values[i]);
     result[i] = nsegment_make(np->rid, np->pos, np->pos);
   }
   pfree(values);
@@ -413,17 +413,17 @@ tnpointseq_step_positions(const TSequence *seq, int *count)
 /**
  * Return the network segments covered by the temporal network point.
  */
-nsegment *
+Nsegment *
 tnpointseq_linear_positions(const TSequence *seq)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   int64 rid = np->rid;
   double minPos = np->pos, maxPos = np->pos;
   for (int i = 1; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    np = DatumGetNpoint(tinstant_value(inst));
+    np = DatumGetNpointP(tinstant_value(inst));
     minPos = Min(minPos, np->pos);
     maxPos = Max(maxPos, np->pos);
   }
@@ -434,12 +434,12 @@ tnpointseq_linear_positions(const TSequence *seq)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointseq_positions(const TSequence *seq, int *count)
 {
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
-    nsegment **result = palloc(sizeof(nsegment *));
+    Nsegment **result = palloc(sizeof(Nsegment *));
     result[0] = tnpointseq_linear_positions(seq);
     *count = 1;
     return result;
@@ -451,16 +451,16 @@ tnpointseq_positions(const TSequence *seq, int *count)
 /**
  * Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
 {
-  nsegment **segments = palloc(sizeof(nsegment *) * ts->count);
+  Nsegment **segments = palloc(sizeof(Nsegment *) * ts->count);
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     segments[i] = tnpointseq_linear_positions(seq);
   }
-  nsegment **result = segments;
+  Nsegment **result = segments;
   int count1 = ts->count;
   if (count1 > 1)
     result = nsegmentarr_normalize(segments, &count1);
@@ -471,16 +471,16 @@ tnpointseqset_linear_positions(const TSequenceSet *ts, int *count)
 /**
  * Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
 {
   /* The following function removes duplicate values */
   int newcount;
   Datum *values = tsequenceset_values(ts, &newcount);
-  nsegment **result = palloc(sizeof(nsegment *) * newcount);
+  Nsegment **result = palloc(sizeof(Nsegment *) * newcount);
   for (int i = 0; i < newcount; i++)
   {
-    npoint *np = DatumGetNpoint(values[i]);
+    Npoint *np = DatumGetNpointP(values[i]);
     result[i] = nsegment_make(np->rid, np->pos, np->pos);
   }
   pfree(values);
@@ -492,10 +492,10 @@ tnpointseqset_step_positions(const TSequenceSet *ts, int *count)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpointseqset_positions(const TSequenceSet *ts, int *count)
 {
-  nsegment **result;
+  Nsegment **result;
   if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
     result = tnpointseqset_linear_positions(ts, count);
   else
@@ -507,10 +507,10 @@ tnpointseqset_positions(const TSequenceSet *ts, int *count)
  * @ingroup libmeos_temporal_accessor
  * @brief Return the network segments covered by the temporal network point.
  */
-nsegment **
+Nsegment **
 tnpoint_positions(const Temporal *temp, int *count)
 {
-  nsegment **result;
+  Nsegment **result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
   {
@@ -535,7 +535,7 @@ Tnpoint_positions(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  nsegment **segments = tnpoint_positions(temp, &count);
+  Nsegment **segments = tnpoint_positions(temp, &count);
   ArrayType *result = nsegmentarr_to_array(segments, count);
   pfree_array((void **) segments, count);
   PG_FREE_IF_COPY(temp, 0);
@@ -551,7 +551,7 @@ Tnpoint_positions(PG_FUNCTION_ARGS)
 int64
 tnpointinst_route(const TInstant *inst)
 {
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   return np->rid;
 }
 
@@ -568,7 +568,7 @@ tnpoint_route(const Temporal *temp)
 
   const TInstant *inst = (temp->subtype == INSTANT) ?
     (const TInstant *) temp : tsequence_inst_n((const TSequence *) temp, 0);
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   return np->rid;
 }
 
@@ -592,7 +592,7 @@ Tnpoint_route(PG_FUNCTION_ARGS)
 int64 *
 tnpointinst_routes(const TInstant *inst)
 {
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   int64 *result = palloc(sizeof(int64));
   result[0]= np->rid;
   return result;
@@ -609,7 +609,7 @@ tnpointinstset_routes(const TInstantSet *ti)
   for (int i = 0; i < ti->count; i++)
   {
     const TInstant *inst = tinstantset_inst_n(ti, i);
-    npoint *np = DatumGetNpoint(tinstant_value(inst));
+    Npoint *np = DatumGetNpointP(tinstant_value(inst));
     result[i] = np->rid;
   }
   return result;
@@ -623,7 +623,7 @@ int64 *
 tnpointseq_routes(const TSequence *seq)
 {
   const TInstant *inst = tsequence_inst_n(seq, 0);
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   int64 *result = palloc(sizeof(int64));
   result[0]= np->rid;
   return result;
@@ -641,7 +641,7 @@ tnpointseqset_routes(const TSequenceSet *ts)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     const TInstant *inst = tsequence_inst_n(seq, 0);
-    npoint *np = DatumGetNpoint(tinstant_value(inst));
+    Npoint *np = DatumGetNpointP(tinstant_value(inst));
     result[i] = np->rid;
   }
   return result;

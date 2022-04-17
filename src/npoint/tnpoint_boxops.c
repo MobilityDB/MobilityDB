@@ -54,7 +54,7 @@
 #include "npoint/tnpoint_spatialfuncs.h"
 
 /*****************************************************************************
- * Transform a temporal npoint to a STBOX
+ * Transform a temporal Npoint to a STBOX
  *****************************************************************************/
 
 /**
@@ -65,9 +65,9 @@
  * @param[in] np Network point
  */
 bool
-npoint_stbox(const npoint *np, STBOX *box)
+npoint_stbox(const Npoint *np, STBOX *box)
 {
-  Datum geom = npoint_geom(DatumGetNpoint(np));
+  Datum geom = npoint_geom(DatumGetNpointP(np));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
@@ -84,7 +84,7 @@ npoint_stbox(const npoint *np, STBOX *box)
 void
 tnpointinst_make_stbox(const TInstant *inst, STBOX *box)
 {
-  npoint_stbox(DatumGetNpoint(tinstant_value(inst)), box);
+  npoint_stbox(DatumGetNpointP(tinstant_value(inst)), box);
   box->tmin = box->tmax = inst->t;
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
@@ -121,13 +121,13 @@ void
 tnpointinstarr_linear_stbox(const TInstant **instants, int count,
   STBOX *box)
 {
-  npoint *np = DatumGetNpoint(tinstant_value(instants[0]));
+  Npoint *np = DatumGetNpointP(tinstant_value(instants[0]));
   int64 rid = np->rid;
   double posmin = np->pos, posmax = np->pos;
   TimestampTz tmin = instants[0]->t, tmax = instants[count - 1]->t;
   for (int i = 1; i < count; i++)
   {
-    np = DatumGetNpoint(tinstant_value(instants[i]));
+    np = DatumGetNpointP(tinstant_value(instants[i]));
     posmin = Min(posmin, np->pos);
     posmax = Max(posmax, np->pos);
   }
@@ -173,7 +173,7 @@ PG_FUNCTION_INFO_V1(Npoint_to_stbox);
 PGDLLEXPORT Datum
 Npoint_to_stbox(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_stbox(np, result);
   PG_RETURN_POINTER(result);
@@ -186,9 +186,9 @@ Npoint_to_stbox(PG_FUNCTION_ARGS)
  * @brief Return the bounding box of the network segment value
  */
 bool
-nsegment_stbox(STBOX *box, const nsegment *ns)
+nsegment_stbox(STBOX *box, const Nsegment *ns)
 {
-  Datum geom = nsegment_geom(DatumGetNsegment(ns));
+  Datum geom = nsegment_geom(DatumGetNsegmentP(ns));
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
   bool result = geo_stbox(gs, box);
   PG_FREE_IF_COPY_P(gs, DatumGetPointer(geom));
@@ -203,7 +203,7 @@ PG_FUNCTION_INFO_V1(Nsegment_to_stbox);
 PGDLLEXPORT Datum
 Nsegment_to_stbox(PG_FUNCTION_ARGS)
 {
-  nsegment *ns = PG_GETARG_NSEGMENT(0);
+  Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   nsegment_stbox(result, ns);
   PG_RETURN_POINTER(result);
@@ -216,7 +216,7 @@ Nsegment_to_stbox(PG_FUNCTION_ARGS)
  * @brief Transform a network point and a timestamp to a spatiotemporal box
  */
 bool
-npoint_timestamp_stbox(const npoint *np, TimestampTz t, STBOX *box)
+npoint_timestamp_stbox(const Npoint *np, TimestampTz t, STBOX *box)
 {
   npoint_stbox(np, box);
   box->tmin = box->tmax = t;
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Npoint_timestamp_to_stbox);
 PGDLLEXPORT Datum
 Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_timestamp_stbox(np, t, result);
@@ -245,7 +245,7 @@ Npoint_timestamp_to_stbox(PG_FUNCTION_ARGS)
  * @brief Transform a network point and a period to a spatiotemporal box
  */
 bool
-npoint_period_stbox(const npoint *np, const Period *p, STBOX *box)
+npoint_period_stbox(const Npoint *np, const Period *p, STBOX *box)
 {
   npoint_stbox(np, box);
   box->tmin = p->lower;
@@ -261,7 +261,7 @@ PG_FUNCTION_INFO_V1(Npoint_period_to_stbox);
 PGDLLEXPORT Datum
 Npoint_period_to_stbox(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Period *p = PG_GETARG_PERIOD_P(1);
   STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
   npoint_period_stbox(np, p, result);
@@ -297,7 +297,7 @@ static Datum
 boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   STBOX box1, box2;
@@ -320,7 +320,7 @@ boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
   STBOX box1, box2;
   temporal_bbox(temp, &box1);

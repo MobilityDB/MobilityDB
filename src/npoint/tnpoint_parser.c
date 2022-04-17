@@ -46,7 +46,7 @@
  * @ingroup libmeos_temporal_input_output
  * @brief Parse a network point value from the buffer.
  */
-npoint *
+Npoint *
 npoint_parse(char **str)
 {
   p_whitespace(str);
@@ -83,12 +83,12 @@ npoint_parse(char **str)
  * @ingroup libmeos_temporal_input_output
  * @brief Parse a network segment value from the buffer.
  */
-nsegment *
+Nsegment *
 nsegment_parse(char **str)
 {
   p_whitespace(str);
 
-  if (strncasecmp(*str,"NSEGMENT",8) != 0)
+  if (strncasecmp(*str, "NSEGMENT", 8) != 0)
     ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
       errmsg("Could not parse network segment")));
 

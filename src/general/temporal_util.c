@@ -428,7 +428,7 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
     //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
   if (typel == T_NPOINT && typel == typer)
-    return npoint_eq(DatumGetNpoint(l), DatumGetNpoint(r));
+    return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
 }
 
@@ -468,7 +468,7 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_GEOGRAPHY && typel == typer)
     return DatumGetBool(call_function2(geography_lt, l, r));
   if (typel == T_NPOINT && typel == typer)
-    return npoint_lt(DatumGetNpoint(l), DatumGetNpoint(r));
+    return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
   elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
 }
 

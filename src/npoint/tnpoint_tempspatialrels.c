@@ -63,7 +63,7 @@
  * network point and the network point
  */
 Temporal *
-tinterrel_tnpoint_npoint(const Temporal *temp, const npoint *np, bool tinter,
+tinterrel_tnpoint_npoint(const Temporal *temp, const Npoint *np, bool tinter,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
@@ -85,7 +85,7 @@ static Datum
 tinterrel_tnpoint_npoint_ext(FunctionCallInfo fcinfo, bool tinter)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -109,7 +109,7 @@ static Datum
 tinterrel_npoint_tnpoint(FunctionCallInfo fcinfo, bool tinter)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -228,7 +228,7 @@ ttouches_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
  * and the network point
  */
 Temporal *
-ttouches_tnpoint_npoint(const Temporal *temp, const npoint *np,
+ttouches_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool restr, Datum atvalue)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
@@ -410,7 +410,7 @@ PG_FUNCTION_INFO_V1(Ttouches_npoint_tnpoint);
 PGDLLEXPORT Datum
 Ttouches_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
@@ -462,7 +462,7 @@ PGDLLEXPORT Datum
 Ttouches_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   bool restr = false;
   Datum atvalue = (Datum) NULL;
   if (PG_NARGS() == 3)
@@ -519,7 +519,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_npoint_tnpoint);
 PGDLLEXPORT Datum
 Tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  npoint *np  = PG_GETARG_NPOINT(0);
+  Npoint *np  = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   bool restr = false;
@@ -579,7 +579,7 @@ PGDLLEXPORT Datum
 Tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np  = PG_GETARG_NPOINT(1);
+  Npoint *np  = PG_GETARG_NPOINT_P(1);
   Datum dist = PG_GETARG_DATUM(2);
   bool restr = false;
   Datum atvalue = (Datum) NULL;

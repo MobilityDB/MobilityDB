@@ -342,7 +342,7 @@ spatialrel_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, Datum param,
  * @brief Return true if the temporal points ever satisfy the spatial
  * relationship.
  *
- * @param[in] fcinfo Catalog information about the external function
+ * @param[in] temp1,temp2 Temporal points
  * @param[in] func Spatial relationship
  */
 int

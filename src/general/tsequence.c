@@ -152,7 +152,7 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
  * of the timestamps associated to `np1` and `np3`
  */
 static bool
-npoint_collinear(npoint *np1, npoint *np2, npoint *np3, double ratio)
+npoint_collinear(Npoint *np1, Npoint *np2, Npoint *np3, double ratio)
 {
   return float_collinear(np1->pos, np2->pos, np3->pos, ratio);
 }
@@ -191,8 +191,8 @@ datum_collinear(CachedType basetype, Datum value1, Datum value2, Datum value3,
     return double4_collinear(DatumGetDouble4P(value1), DatumGetDouble4P(value2),
       DatumGetDouble4P(value3), ratio);
   if (basetype == T_NPOINT)
-    return npoint_collinear(DatumGetNpoint(value1), DatumGetNpoint(value2),
-      DatumGetNpoint(value3), ratio);
+    return npoint_collinear(DatumGetNpointP(value1), DatumGetNpointP(value2),
+      DatumGetNpointP(value3), ratio);
   elog(ERROR, "unknown collinear operation for base type: %d", basetype);
 }
 
@@ -2136,10 +2136,10 @@ tsegment_value_at_timestamp(const TInstant *inst1, const TInstant *inst2,
   }
   if (inst1->temptype == T_TNPOINT)
   {
-    npoint *np1 = DatumGetNpoint(value1);
-    npoint *np2 = DatumGetNpoint(value2);
+    Npoint *np1 = DatumGetNpointP(value1);
+    Npoint *np2 = DatumGetNpointP(value2);
     double pos = np1->pos + (double) ((long double)(np2->pos - np1->pos) * ratio);
-    npoint *result = npoint_make(np1->rid, pos);
+    Npoint *result = npoint_make(np1->rid, pos);
     return PointerGetDatum(result);
   }
   elog(ERROR, "unknown interpolation function for continuous temporal type: %d",

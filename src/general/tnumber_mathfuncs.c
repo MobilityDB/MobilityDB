@@ -166,12 +166,12 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
 /**
  * Generic arithmetic operator on a temporal number and a number
  *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Arithmetic function
- * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] temp Temporal number
  * @param[in] value Number
  * @param[in] basetype Base type
+ * @param[in] restype Temporal type of the result
+ * @param[in] oper Enumeration that states the arithmetic operator
+ * @param[in] func Arithmetic function
  * @param[in] invert True when the base value is the first argument
  * of the function
  */
@@ -264,8 +264,8 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  * Generic arithmetic operator on two temporal numbers
  *
  * @param[in] temp1,temp2 Temporal numbers
- * @param[in] func Arithmetic function
  * @param[in] oper Enumeration that states the arithmetic operator
+ * @param[in] restype Temporal type of the result
  * @param[in] func Arithmetic function
  * @param[in] tpfunc Function determining the turning point
  */

@@ -210,7 +210,7 @@ posop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
  * function
  */
 bool
-posop_tnpoint_npoint(const Temporal *temp, const npoint *np,
+posop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
   bool (*func)(const STBOX *, const STBOX *), bool invert)
 {
   ensure_same_srid(tnpoint_srid(temp), npoint_srid(np));
@@ -232,7 +232,7 @@ static Datum
 posop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
-  npoint *np = PG_GETARG_NPOINT(0);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   bool result = posop_tnpoint_npoint(temp, np, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
@@ -250,7 +250,7 @@ posop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
   bool (*func)(const STBOX *, const STBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  npoint *np = PG_GETARG_NPOINT(1);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
   bool result = posop_tnpoint_npoint(temp, np, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
@@ -736,7 +736,7 @@ Overafter_tnpoint_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* npoint op Temporal */
+/* Npoint op Temporal */
 
 PG_FUNCTION_INFO_V1(Left_npoint_tnpoint);
 /**
@@ -823,7 +823,7 @@ Overabove_npoint_tnpoint(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* Temporal op npoint */
+/* Temporal op Npoint */
 
 PG_FUNCTION_INFO_V1(Left_tnpoint_npoint);
 /**

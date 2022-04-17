@@ -67,15 +67,15 @@ typedef struct
  *****************************************************************************/
 
 /* Npoint */
-#define DatumGetNpoint(X)          ((Npoint *) DatumGetPointer(X))
-#define NpointGetDatum(X)          PointerGetDatum(X)
-#define PG_GETARG_NPOINT(X)        DatumGetNpoint(PG_GETARG_DATUM(X))
-#define PG_RETURN_NPOINT(X)        PG_RETURN_POINTER(X)
+#define DatumGetNpointP(X)         ((Npoint *) DatumGetPointer(X))
+#define NpointPGetDatum(X)         PointerGetDatum(X)
+#define PG_GETARG_NPOINT_P(X)      DatumGetNpointP(PG_GETARG_DATUM(X))
+#define PG_RETURN_NPOINT_P(X)      PG_RETURN_POINTER(X)
 
-/* nsegment */
-#define DatumGetNsegment(X)   ((nsegment *) DatumGetPointer(X))
-#define NsegmentGetDatum(X)   PointerGetDatum(X)
-#define PG_GETARG_NSEGMENT(X) DatumGetNsegment(PG_GETARG_DATUM(X))
+/* Nsegment */
+#define DatumGetNsegmentP(X)       ((Nsegment *) DatumGetPointer(X))
+#define NsegmentPGetDatum(X)       PointerGetDatum(X)
+#define PG_GETARG_NSEGMENT_P(X)    DatumGetNsegmentP(PG_GETARG_DATUM(X))
 
 /*****************************************************************************/
 
@@ -101,11 +101,11 @@ extern Temporal *tnpoint_round(const Temporal *temp, Datum size);
 
 /* Accessor functions */
 
-extern nsegment **tnpointinst_positions(const TInstant *inst);
-extern nsegment **tnpointinstset_positions(const TInstantSet *ti, int *count);
-extern nsegment **tnpointseq_positions(const TSequence *seq, int *count);
-extern nsegment **tnpointseqset_positions(const TSequenceSet *ts, int *count);
-extern nsegment **tnpoint_positions(const Temporal *temp, int *count);
+extern Nsegment **tnpointinst_positions(const TInstant *inst);
+extern Nsegment **tnpointinstset_positions(const TInstantSet *ti, int *count);
+extern Nsegment **tnpointseq_positions(const TSequence *seq, int *count);
+extern Nsegment **tnpointseqset_positions(const TSequenceSet *ts, int *count);
+extern Nsegment **tnpoint_positions(const Temporal *temp, int *count);
 extern int64 tnpointinst_route(const TInstant *inst);
 extern int64 tnpoint_route(const Temporal *temp);
 extern int64 *tnpointinst_routes(const TInstant *inst);
@@ -114,7 +114,7 @@ extern int64 *tnpointseq_routes(const TSequence *seq);
 extern int64 *tnpointseqset_routes(const TSequenceSet *ts);
 extern int64 *tnpoint_routes(const Temporal *temp, int *count);
 
-extern nsegment *tnpointseq_linear_positions(const TSequence *seq);
+extern Nsegment *tnpointseq_linear_positions(const TSequence *seq);
 
 /*****************************************************************************/
 
