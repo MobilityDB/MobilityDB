@@ -169,7 +169,6 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  * @param[in] temp Temporal number
  * @param[in] value Number
  * @param[in] basetype Base type
- * @param[in] restype Temporal type of the result
  * @param[in] oper Enumeration that states the arithmetic operator
  * @param[in] func Arithmetic function
  * @param[in] invert True when the base value is the first argument
@@ -177,7 +176,7 @@ tnumber_div_tp_at_timestamp(const TInstant *start1, const TInstant *end1,
  */
 Temporal *
 arithop_tnumber_number(Temporal *temp, Datum value, CachedType basetype,
-  CachedType restype, TArithmetic oper,
+  TArithmetic oper,
   Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert)
 {
   ensure_tnumber_basetype(basetype);
@@ -206,7 +205,8 @@ arithop_tnumber_number(Temporal *temp, Datum value, CachedType basetype,
   lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.argtype[1] = basetype;
-  lfinfo.restype = restype;
+  lfinfo.restype = (temp->temptype == T_TINT && basetype == T_INT4) ?
+    T_TINT : T_TFLOAT;
   /* This parameter is not used for tnumber <op> base */
   lfinfo.reslinear = false;
   lfinfo.invert = invert;
@@ -230,9 +230,8 @@ arithop_number_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = arithop_tnumber_number(temp, value, basetype, restype,
-    oper, func, INVERT);
+  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
+    func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }
@@ -251,9 +250,8 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = arithop_tnumber_number(temp, value, basetype, restype,
-    oper, func, INVERT_NO);
+  Temporal *result = arithop_tnumber_number(temp, value, basetype, oper,
+    func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -265,13 +263,12 @@ arithop_tnumber_number_ext(FunctionCallInfo fcinfo, TArithmetic oper,
  *
  * @param[in] temp1,temp2 Temporal numbers
  * @param[in] oper Enumeration that states the arithmetic operator
- * @param[in] restype Temporal type of the result
  * @param[in] func Arithmetic function
  * @param[in] tpfunc Function determining the turning point
  */
 Temporal *
 arithop_tnumber_tnumber(Temporal *temp1, Temporal *temp2, TArithmetic oper,
-  CachedType restype, Datum (*func)(Datum, Datum, Oid, Oid),
+  Datum (*func)(Datum, Datum, Oid, Oid),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *))
 {
@@ -298,7 +295,8 @@ arithop_tnumber_tnumber(Temporal *temp1, Temporal *temp2, TArithmetic oper,
   lfinfo.args = true;
   lfinfo.argtype[0] = temptype_basetype(temp1->temptype);
   lfinfo.argtype[1] = temptype_basetype(temp2->temptype);
-  lfinfo.restype = restype;
+  lfinfo.restype = (temp1->temptype == T_TINT && temp2->temptype == T_TINT) ?
+    T_TINT : T_TFLOAT;
   lfinfo.reslinear = linear1 || linear2;
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
@@ -325,9 +323,7 @@ arithop_tnumber_tnumber_ext(FunctionCallInfo fcinfo, TArithmetic oper,
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  CachedType restype = oid_type(get_fn_expr_rettype(fcinfo->flinfo));
-  Temporal *result = arithop_tnumber_tnumber(temp1, temp2, oper, restype,
-    func, tpfunc);
+  Temporal *result = arithop_tnumber_tnumber(temp1, temp2, oper, func, tpfunc);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result == NULL)
