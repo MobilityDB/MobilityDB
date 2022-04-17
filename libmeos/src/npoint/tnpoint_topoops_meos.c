@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_boxops_meos.c
+ * @file tnpoint_topoops_meos.c
  * @brief Topological operators for temporal network points.
  *
  * These operators test the bounding boxes of temporal npoints, which are

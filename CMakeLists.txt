@@ -161,8 +161,8 @@ if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   add_subdirectory("postgis")
 endif()
 
-include_directories("include")
-add_subdirectory("src")
+include_directories("libmeos/include")
+add_subdirectory("libmeos/src")
 
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")

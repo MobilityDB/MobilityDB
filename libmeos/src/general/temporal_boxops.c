@@ -1259,7 +1259,10 @@ boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
 /**
  * Generic bounding box operator for a temporal number and a temporal box
  *
- * @param[in] fcinfo Catalog information about the external function
+ * @param[in] temp Temporal number
+ * @param[in] box Bounding box
+ * @param[in] invert True when the bounding box is the first argument of the
+ * function
  * @param[in] func Bounding box function
  */
 bool
