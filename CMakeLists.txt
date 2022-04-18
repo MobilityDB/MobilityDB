@@ -26,7 +26,7 @@ set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
 set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION}${PROJECT_VERSION_DEV}")
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql")
-set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/MobilityDB/test_${MOBILITYDB_EXTENSION_FILE}")
+set(MOBILITYDB_TEST_EXTENSION_FILE "${CMAKE_BINARY_DIR}/test_${MOBILITYDB_EXTENSION_FILE}")
 add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
 
 # Comment out code used for debugging purposes so it is not concerned by the coverage
@@ -161,8 +161,8 @@ if(POSTGIS_VERSION_NUMBER GREATER_EQUAL 30000)
   add_subdirectory("postgis")
 endif()
 
-include_directories("libmeos/include")
-add_subdirectory("libmeos/src")
+include_directories("include")
+add_subdirectory("src")
 
 set(PROJECT_OBJECTS "$<TARGET_OBJECTS:general>")
 set(PROJECT_OBJECTS ${PROJECT_OBJECTS} "$<TARGET_OBJECTS:point>")
@@ -194,8 +194,8 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 #--------------------------------
 # Belongs to MobilityDB
 
-add_subdirectory(MobilityDB/sql)
-add_subdirectory(MobilityDB/test)
+add_subdirectory(sql)
+add_subdirectory(test)
 
 add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)
