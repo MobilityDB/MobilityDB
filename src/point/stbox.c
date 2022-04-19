@@ -278,34 +278,6 @@ ensure_has_T_stbox(const STBOX *box)
  * Input/Ouput functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_in);
-/**
- * Input function for spatiotemporal boxes.
- *
- * Examples of input:
- * @code
- * STBOX((1.0, 2.0), (3.0, 4.0)) -> only spatial
- * STBOX Z((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * STBOX T((1.0, 2.0, 2001-01-01), (3.0, 4.0, 2001-01-02)) -> spatiotemporal
- * STBOX ZT((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
- * STBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
- * SRID=xxxx;STBOX... (any of the above)
- * GEODSTBOX((1.0, 2.0, 3.0), (4.0, 5.0, 6.0)) -> only spatial
- * GEODSTBOX T((1.0, 2.0, 3.0, 2001-01-01), (4.0, 5.0, 6.0, 2001-01-02)) -> spatiotemporal
- * GEODSTBOX T(( , , 2001-01-01), ( , , 2001-01-02)) -> only temporal
- * SRID=xxxx;GEODSTBOX... (any of the above)
- * @endcode
- * where the commas are optional and the SRID is optional. If the SRID is not
- * stated it is by default 0 for non geodetic boxes and 4326 for geodetic boxes
- */
-PGDLLEXPORT Datum
-Stbox_in(PG_FUNCTION_ARGS)
-{
-  char *input = PG_GETARG_CSTRING(0);
-  STBOX *result = stbox_parse(&input);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_box_input_output
  * @brief Return the string representation of the spatiotemporal box.
@@ -396,18 +368,6 @@ stbox_to_string(const STBOX *box)
   return str;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_out);
-/**
- * Output function for spatiotemporal boxes.
- */
-PGDLLEXPORT Datum
-Stbox_out(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  char *result = stbox_to_string(box);
-  PG_RETURN_CSTRING(result);
-}
-
 /**
  * @ingroup libmeos_box_input_output
  * @brief Write the binary representation of the box value into the buffer.
@@ -438,20 +398,6 @@ stbox_write(const STBOX *box, StringInfo buf)
     pfree(tmin); pfree(tmax);
   }
   return;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_send);
-/**
- * Send function for STBOX
- */
-PGDLLEXPORT Datum
-Stbox_send(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  stbox_write(box, &buf);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 /**
@@ -485,193 +431,18 @@ stbox_read(StringInfo buf)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_recv);
-/**
- * Receive function for STBOX
- */
-PGDLLEXPORT Datum
-Stbox_recv(PG_FUNCTION_ARGS)
-{
-  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_POINTER(stbox_read(buf));
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
-
-/**
- * Construct a spatiotemporal box from the arguments
- */
-static Datum
-stbox_constructor1(FunctionCallInfo fcinfo, bool hasx, bool hasz, bool hast,
-  bool geodetic)
-{
-  double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
-  TimestampTz tmin = 0, tmax = 0;
-  int srid = 0; /* make Codacy quiet */
-
-  if (! hasx && hast)
-  {
-    tmin = PG_GETARG_TIMESTAMPTZ(0);
-    tmax = PG_GETARG_TIMESTAMPTZ(1);
-    srid = PG_GETARG_INT32(2);
-  }
-  else if (hasx && !hasz && !geodetic && !hast)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    xmax = PG_GETARG_FLOAT8(2);
-    ymax = PG_GETARG_FLOAT8(3);
-    srid = PG_GETARG_INT32(4);
-  }
-  else if (hasx && (hasz || geodetic) && !hast)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    zmin = PG_GETARG_FLOAT8(2);
-    xmax = PG_GETARG_FLOAT8(3);
-    ymax = PG_GETARG_FLOAT8(4);
-    zmax = PG_GETARG_FLOAT8(5);
-    srid = PG_GETARG_INT32(6);
-  }
-  else if (hasx && !hasz && !geodetic && hast)
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    tmin = PG_GETARG_TIMESTAMPTZ(2);
-    xmax = PG_GETARG_FLOAT8(3);
-    ymax = PG_GETARG_FLOAT8(4);
-    tmax = PG_GETARG_TIMESTAMPTZ(5);
-    srid = PG_GETARG_INT32(6);
-  }
-  else /* hasx && (hasz || geodetic) && hast) */
-  {
-    xmin = PG_GETARG_FLOAT8(0);
-    ymin = PG_GETARG_FLOAT8(1);
-    zmin = PG_GETARG_FLOAT8(2);
-    tmin = PG_GETARG_TIMESTAMPTZ(3);
-    xmax = PG_GETARG_FLOAT8(4);
-    ymax = PG_GETARG_FLOAT8(5);
-    zmax = PG_GETARG_FLOAT8(6);
-    tmax = PG_GETARG_TIMESTAMPTZ(7);
-    srid = PG_GETARG_INT32(8);
-  }
-
-  /* Construct the box */
-  STBOX *result = stbox_make(hasx, hasz, hast, geodetic, srid,
-    xmin, xmax, ymin, ymax, zmin, zmax, tmin, tmax);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Stbox_constructor_t);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Stbox_constructor_t(PG_FUNCTION_ARGS)
-{
-  if (PG_NARGS() > 3)
-    return stbox_constructor1(fcinfo, true, false, true, false);
-  return stbox_constructor1(fcinfo, false, false, true, false);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_constructor);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Stbox_constructor(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor1(fcinfo, true, false, false, false);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_constructor_z);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Stbox_constructor_z(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor1(fcinfo, true, true, false, false);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Stbox_constructor_zt(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor1(fcinfo, true, true, true, false);
-}
-
-/* The names of the SQL and C functions are different, otherwise there is
- * ambiguity and explicit casting of the arguments to ::timestamptz is needed */
-
-PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Geodstbox_constructor_t(PG_FUNCTION_ARGS)
-{
-  if (PG_NARGS() > 3)
-    return stbox_constructor1(fcinfo, true, false, true, true);
-  return stbox_constructor1(fcinfo, false, false, true, true);
-}
-
-PG_FUNCTION_INFO_V1(Geodstbox_constructor);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Geodstbox_constructor(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor1(fcinfo, true, false, false, true);
-}
-
-PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Geodstbox_constructor_z(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor1(fcinfo, true, true, false, true);
-}
-
-PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
-/**
- * Construct a spatiotemporal box from the arguments
- */
-PGDLLEXPORT Datum
-Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
-{
-  return stbox_constructor1(fcinfo, true, true, true, true);
-}
 
 /*****************************************************************************
  * Casting
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Stbox_to_period);
-/**
- * Cast the spatiotemporal box as a period
- */
-PGDLLEXPORT Datum
-Stbox_to_period(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_T_stbox(box);
-  Period *result = period_make(box->tmin, box->tmax, true, true);
-  PG_RETURN_POINTER(result);
-}
 
 /**
- * Cast the spatiotemporal box as a GBOX value for PostGIS
+ * @ingroup libmeos_box_cast
+ * @brief Cast the spatiotemporal box as a GBOX value for PostGIS
  */
 void
 stbox_gbox(const STBOX *box, GBOX *gbox)
@@ -683,22 +454,9 @@ stbox_gbox(const STBOX *box, GBOX *gbox)
   return;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_to_box2d);
 /**
- * Cast the spatiotemporal box as a GBOX value for PostGIS
- */
-PGDLLEXPORT Datum
-Stbox_to_box2d(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_X_stbox(box);
-  GBOX *result = (GBOX *) palloc0(sizeof(GBOX));
-  stbox_gbox(box, result);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * Cast the spatiotemporal box as a BOX3D value for PostGIS
+ * @ingroup libmeos_box_cast
+ * @brief Cast the spatiotemporal box as a BOX3D value for PostGIS
  */
 void
 stbox_box3d(const STBOX *box, BOX3D *box3d)
@@ -720,28 +478,13 @@ stbox_box3d(const STBOX *box, BOX3D *box3d)
   return;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_to_box3d);
 /**
- * Cast the spatiotemporal box as a BOX3D value for PostGIS
+ * @ingroup libmeos_box_cast
+ * @brief Cast the spatiotemporal box as a GBOX value for PostGIS
  */
-PGDLLEXPORT Datum
-Stbox_to_box3d(PG_FUNCTION_ARGS)
+Datum
+stbox_geometry(const STBOX *box)
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  ensure_has_X_stbox(box);
-  BOX3D *result = (BOX3D *) palloc0(sizeof(BOX3D));
-  stbox_box3d(box, result);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_to_geometry);
-/**
- * Cast the spatiotemporal box as a GBOX value for PostGIS
- */
-PGDLLEXPORT Datum
-Stbox_to_geometry(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
   ensure_has_X_stbox(box);
   Datum result;
   if (MOBDB_FLAGS_GET_Z(box->flags))
@@ -761,39 +504,13 @@ Stbox_to_geometry(PG_FUNCTION_ARGS)
     PG_FREE_IF_COPY_P(g, DatumGetPointer(geom));
     pfree(DatumGetPointer(geom));
   }
-  PG_RETURN_DATUM(result);
+  return result;
 }
 
 /*****************************************************************************
  * Transform a <Type> to a STBOX
  * The functions assume that the argument box is set to 0 before with palloc0
  *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Box2d_to_stbox);
-/**
- * Transform a box2d to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Box2d_to_stbox(PG_FUNCTION_ARGS)
-{
-  GBOX *box = (GBOX *) PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(true, false, false, false, 0,
-    box->xmin, box->xmax, box->ymin, box->ymax, 0, 0, 0, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Box3d_to_stbox);
-/**
- * Transform a box3d to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Box3d_to_stbox(PG_FUNCTION_ARGS)
-{
-  BOX3D *box = (BOX3D *) PG_GETARG_POINTER(0);
-  STBOX *result = stbox_make(true, true, false, false, box->srid, box->xmin,
-    box->xmax, box->ymin, box->ymax, box->zmin, box->zmax, 0, 0);
-  PG_RETURN_POINTER(result);
-}
 
 /**
  * @ingroup libmeos_box_cast
@@ -802,11 +519,11 @@ Box3d_to_stbox(PG_FUNCTION_ARGS)
 bool
 geo_stbox(const GSERIALIZED *gs, STBOX *box)
 {
-  /* Note: zero-fill is required here, just as in heap tuples */
-  memset(box, 0, sizeof(STBOX));
   if (gserialized_is_empty(gs))
     return false;
 
+  /* Note: zero-fill is required here, just as in heap tuples */
+  memset(box, 0, sizeof(STBOX));
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool geodetic = (bool) FLAGS_GET_GEODETIC(GS_FLAGS(gs));
   box->srid = gserialized_get_srid(gs);
@@ -865,22 +582,6 @@ geo_stbox(const GSERIALIZED *gs, STBOX *box)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Geo_to_stbox);
-/**
- * Transform a geometry/geography to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Geo_to_stbox(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  geo_stbox(gs, result);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_box_cast
  * @brief Transform a timestamptz to a spatiotemporal box.
@@ -895,19 +596,6 @@ timestamp_stbox(TimestampTz t, STBOX *box)
   MOBDB_FLAGS_SET_Z(box->flags, false);
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
-}
-
-PG_FUNCTION_INFO_V1(Timestamp_to_stbox);
-/**
- * Transform a timestampt to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Timestamp_to_stbox(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  timestamp_stbox(t, result);
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -927,37 +615,6 @@ timestampset_stbox(const TimestampSet *ts, STBOX *box)
 }
 
 /**
- * Peak into a timestamp set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
- */
-void
-timestampset_stbox_slice(Datum tsdatum, STBOX *box)
-{
-  TimestampSet *ts = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) tsdatum))
-    ts = (TimestampSet *) PG_DETOAST_DATUM_SLICE(tsdatum, 0,
-      time_max_header_size());
-  else
-    ts = (TimestampSet *) tsdatum;
-  timestampset_stbox(ts, box);
-  PG_FREE_IF_COPY_P(ts, DatumGetPointer(tsdatum));
-  return;
-}
-
-PG_FUNCTION_INFO_V1(Timestampset_to_stbox);
-/**
- * Transform a timestamp set to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Timestampset_to_stbox(PG_FUNCTION_ARGS)
-{
-  Datum tsdatum = PG_GETARG_DATUM(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  timestampset_stbox_slice(tsdatum, result);
-  PG_RETURN_POINTER(result);
-}
-
-/**
  * @ingroup libmeos_box_cast
  * @brief Transform a period to a spatiotemporal box.
  */
@@ -970,19 +627,6 @@ period_stbox(const Period *p, STBOX *box)
   box->tmax = p->upper;
   MOBDB_FLAGS_SET_T(box->flags, true);
   return;
-}
-
-PG_FUNCTION_INFO_V1(Period_to_stbox);
-/**
- * Transform a period to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Period_to_stbox(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  period_stbox(p, result);
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -1002,73 +646,36 @@ periodset_stbox(const PeriodSet *ps, STBOX *box)
 }
 
 /**
- * Peak into a period set datum to find the bounding box. If the datum needs
- * to be detoasted, extract only the header and not the full object.
+ * @ingroup libmeos_box_constructor
+ * @brief Transform a geometry/geography and a timestamp to a spatiotemporal box
  */
-void
-periodset_stbox_slice(Datum psdatum, STBOX *box)
+STBOX *
+geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t)
 {
-  PeriodSet *ps = NULL;
-  if (PG_DATUM_NEEDS_DETOAST((struct varlena *) psdatum))
-    ps = (PeriodSet *) PG_DETOAST_DATUM_SLICE(psdatum, 0,
-      time_max_header_size());
-  else
-    ps = (PeriodSet *) psdatum;
-  periodset_stbox(ps, box);
-  PG_FREE_IF_COPY_P(ps, DatumGetPointer(psdatum));
-  return;
-}
-
-PG_FUNCTION_INFO_V1(Periodset_to_stbox);
-/**
- * Transform a period set to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Periodset_to_stbox(PG_FUNCTION_ARGS)
-{
-  Datum psdatum = PG_GETARG_DATUM(0);
-  STBOX *result = (STBOX *) palloc(sizeof(STBOX));
-  periodset_stbox_slice(psdatum, result);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Geo_timestamp_to_stbox);
-/**
- * Transform a geometry/geography and a timestamp to a spatiotemporal box
- */
-PGDLLEXPORT Datum
-Geo_timestamp_to_stbox(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+    return NULL;
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, result);
   result->tmin = result->tmax = t;
   MOBDB_FLAGS_SET_T(result->flags, true);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(Geo_period_to_stbox);
 /**
- * Transform a geometry/geography and a period to a spatiotemporal box
+ * @ingroup libmeos_box_constructor
+ * @brief Transform a geometry/geography and a period to a spatiotemporal box
  */
-PGDLLEXPORT Datum
-Geo_period_to_stbox(PG_FUNCTION_ARGS)
+STBOX *
+geo_period_to_stbox(const GSERIALIZED *gs, const Period *p)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Period *p = PG_GETARG_PERIOD_P(1);
+    return NULL;
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));
   geo_stbox(gs, result);
   result->tmin = p->lower;
   result->tmax = p->upper;
   MOBDB_FLAGS_SET_T(result->flags, true);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -1086,17 +693,6 @@ stbox_hasx(const STBOX *box)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_hasx);
-/**
- * Return true if the spatiotemporal box has X dimension
- */
-PGDLLEXPORT Datum
-Stbox_hasx(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_BOOL(stbox_hasx(box));
-}
-
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if the spatiotemporal box has Z dimension
@@ -1106,17 +702,6 @@ stbox_hasz(const STBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_Z(box->flags);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_hasz);
-/**
- * Return true if the spatiotemporal box has Z dimension
- */
-PGDLLEXPORT Datum
-Stbox_hasz(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_BOOL(stbox_hasz(box));
 }
 
 /**
@@ -1130,17 +715,6 @@ stbox_hast(const STBOX *box)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_hast);
-/**
- * Return true if the spatiotemporal box has T dimension
- */
-PGDLLEXPORT Datum
-Stbox_hast(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_BOOL(stbox_hast(box));
-}
-
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return true if the spatiotemporal box is geodetic
@@ -1150,17 +724,6 @@ stbox_isgeodetic(const STBOX *box)
 {
   bool result = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_isgeodetic);
-/**
- * Return true if the spatiotemporal box is geodetic
- */
-PGDLLEXPORT Datum
-Stbox_isgeodetic(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_BOOL(stbox_isgeodetic(box));
 }
 
 /**
@@ -1176,20 +739,6 @@ stbox_xmin(const STBOX *box, double *result)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_xmin);
-/**
- * Return the minimum X value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_xmin(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double result;
-  if (! stbox_xmin(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum X value of the spatiotemporal box value, if any.
@@ -1201,20 +750,6 @@ stbox_xmax(const STBOX *box, double *result)
     return false;
   *result = box->xmax;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_xmax);
-/**
- * Return the maximum X value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_xmax(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double result;
-  if (! stbox_xmax(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
 }
 
 /**
@@ -1230,20 +765,6 @@ stbox_ymin(const STBOX *box, double *result)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_ymin);
-/**
- * Return the minimum Y value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_ymin(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double result;
-  if (! stbox_ymin(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum Y value of the spatiotemporal box value, if any.
@@ -1255,20 +776,6 @@ stbox_ymax(const STBOX *box, double *result)
     return false;
   *result = box->ymax;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_ymax);
-/**
- * Return the maximum Y value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_ymax(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double result;
-  if (! stbox_ymax(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
 }
 
 /**
@@ -1284,20 +791,6 @@ stbox_zmin(const STBOX *box, double *result)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_zmin);
-/**
- * Return the minimum Z value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_zmin(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double result;
-  if (! stbox_zmin(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum X value of the spatiotemporal box value, if any.
@@ -1309,20 +802,6 @@ stbox_zmax(const STBOX *box, double *result)
     return false;
   *result = box->zmax;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_zmax);
-/**
- * Return the maximum Z value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_zmax(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double result;
-  if (! stbox_zmax(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
 }
 
 /**
@@ -1338,20 +817,6 @@ stbox_tmin(const STBOX *box, TimestampTz *result)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_tmin);
-/**
- * Return the minimum T value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_tmin(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  TimestampTz result;
-  if (! stbox_tmin(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
 /**
  * @ingroup libmeos_box_accessor
  * @brief Return the maximum T value of the spatiotemporal box value, if any.
@@ -1363,20 +828,6 @@ stbox_tmax(const STBOX *box, TimestampTz *result)
     return false;
   *result = box->tmax;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_tmax);
-/**
- * Return the maximum T value of the spatiotemporal box, if any.
- */
-PGDLLEXPORT Datum
-Stbox_tmax(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  TimestampTz result;
-  if (! stbox_tmax(box, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 /*****************************************************************************
@@ -1393,17 +844,6 @@ stbox_get_srid(const STBOX *box)
   PG_RETURN_INT32(box->srid);
 }
 
-PG_FUNCTION_INFO_V1(Stbox_get_srid);
-/**
- * Return the SRID of the spatiotemporal box
- */
-PGDLLEXPORT Datum
-Stbox_get_srid(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  PG_RETURN_INT32(stbox_get_srid(box));
-}
-
 /**
  * @ingroup libmeos_box_transf
  * @brief Sets the SRID of the spatiotemporal box.
@@ -1414,19 +854,6 @@ stbox_set_srid(const STBOX *box, int32 srid)
   STBOX *result = stbox_copy(box);
   result->srid = srid;
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_set_srid);
-/**
- * Sets the SRID of the spatiotemporal box
- */
-PGDLLEXPORT Datum
-Stbox_set_srid(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  STBOX *result = stbox_set_srid(box, srid);
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -1472,21 +899,6 @@ stbox_transform(const STBOX *box, int32 srid)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_transform);
-/**
- * Transform a spatiotemporal box into another spatial reference system
- */
-PGDLLEXPORT Datum
-Stbox_transform(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  STBOX *result = stbox_transform(box, srid);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
@@ -1513,18 +925,6 @@ stbox_expand_spatial(const STBOX *box, double d)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_expand_spatial);
-/**
- * Expand the spatial dimension of the spatiotemporal box with the double value
- */
-PGDLLEXPORT Datum
-Stbox_expand_spatial(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  double d = PG_GETARG_FLOAT8(1);
-  PG_RETURN_POINTER(stbox_expand_spatial(box, d));
-}
-
 /**
  * @ingroup libmeos_box_transf
  * @brief Expand the temporal dimension of the spatiotemporal box with the
@@ -1540,18 +940,6 @@ stbox_expand_temporal(const STBOX *box, Datum interval)
   result->tmax = DatumGetTimestampTz(call_function2(timestamp_pl_interval,
     TimestampTzGetDatum(box->tmax), interval));
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_expand_temporal);
-/**
- * Expand the temporal dimension of the spatiotemporal box with the interval value
- */
-PGDLLEXPORT Datum
-Stbox_expand_temporal(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum interval = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(stbox_expand_temporal(box, interval));
 }
 
 /**
@@ -1573,18 +961,6 @@ stbox_round(const STBOX *box, Datum prec)
     result->zmax = DatumGetFloat8(datum_round_float(Float8GetDatum(box->zmax), prec));
   }
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Stbox_round);
-/**
- * Sets the precision of the coordinates of the spatiotemporal box
- */
-PGDLLEXPORT Datum
-Stbox_round(PG_FUNCTION_ARGS)
-{
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(stbox_round(box, prec));
 }
 
 /*****************************************************************************
@@ -1650,18 +1026,6 @@ contains_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Contains_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box contains the second one
- */
-PGDLLEXPORT Datum
-Contains_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(contains_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_topo
  * @brief Return true if the first spatiotemporal box is contained by the
@@ -1671,18 +1035,6 @@ bool
 contained_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   return contains_stbox_stbox(box2, box1);
-}
-
-PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(contained_stbox_stbox(box1, box2));
 }
 
 /**
@@ -1704,18 +1056,6 @@ overlaps_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_stbox_stbox);
-/**
- * Return true if the spatiotemporal boxes overlap
- */
-PGDLLEXPORT Datum
-Overlaps_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overlaps_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_topo
  * @brief Return true if the spatiotemporal boxes are equal on the common
@@ -1734,18 +1074,6 @@ same_stbox_stbox(const STBOX *box1, const STBOX *box2)
   if (hast && (box1->tmin != box2->tmin || box1->tmax != box2->tmax))
     return false;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Same_stbox_stbox);
-/**
- * Return true if the spatiotemporal boxes are equal on the common dimensions
- */
-PGDLLEXPORT Datum
-Same_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(same_stbox_stbox(box1, box2));
 }
 
 /**
@@ -1784,18 +1112,6 @@ adjacent_stbox_stbox(const STBOX *box1, const STBOX *box2)
   }
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_stbox_stbox);
-/**
- * Return true if the spatiotemporal boxes are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(adjacent_stbox_stbox(box1, box2));
-}
-
 /*****************************************************************************
  * Position operators
  *****************************************************************************/
@@ -1827,18 +1143,6 @@ left_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->xmax < box2->xmin);
 }
 
-PG_FUNCTION_INFO_V1(Left_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly to the left of the second one
- */
-PGDLLEXPORT Datum
-Left_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(left_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
@@ -1851,18 +1155,6 @@ overleft_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->xmax <= box2->xmax);
-}
-
-PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box does not extend to the right of the second one
- */
-PGDLLEXPORT Datum
-Overleft_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overleft_stbox_stbox(box1, box2));
 }
 
 /**
@@ -1879,18 +1171,6 @@ right_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->xmin > box2->xmax);
 }
 
-PG_FUNCTION_INFO_V1(Right_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly to the right of the second one
- */
-PGDLLEXPORT Datum
-Right_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(right_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatio temporal box does not extend to the
@@ -1903,18 +1183,6 @@ overright_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->xmin >= box2->xmin);
-}
-
-PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
-/**
- * Return true if the first spatio temporal box does not extend to the left of the second one
- */
-PGDLLEXPORT Datum
-Overright_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overright_stbox_stbox(box1, box2));
 }
 
 /**
@@ -1931,18 +1199,6 @@ below_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->ymax < box2->ymin);
 }
 
-PG_FUNCTION_INFO_V1(Below_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly below of the second one
- */
-PGDLLEXPORT Datum
-Below_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(below_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
@@ -1955,18 +1211,6 @@ overbelow_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->ymax <= box2->ymax);
-}
-
-PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box does not extend above of the second one
- */
-PGDLLEXPORT Datum
-Overbelow_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overbelow_stbox_stbox(box1, box2));
 }
 
 /**
@@ -1983,18 +1227,6 @@ above_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->ymin > box2->ymax);
 }
 
-PG_FUNCTION_INFO_V1(Above_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly above of the second one
- */
-PGDLLEXPORT Datum
-Above_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(above_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
@@ -2007,18 +1239,6 @@ overabove_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_X_stbox(box2);
   pos_stbox_stbox_test(box1, box2);
   return (box1->ymin >= box2->ymin);
-}
-
-PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box does not extend below of the second one
- */
-PGDLLEXPORT Datum
-Overabove_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overabove_stbox_stbox(box1, box2));
 }
 
 /**
@@ -2035,18 +1255,6 @@ front_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->zmax < box2->zmin);
 }
 
-PG_FUNCTION_INFO_V1(Front_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly in front of the second one
- */
-PGDLLEXPORT Datum
-Front_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(front_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
@@ -2059,18 +1267,6 @@ overfront_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_Z(box2->flags);
   pos_stbox_stbox_test(box1, box2);
   return (box1->zmax <= box2->zmax);
-}
-
-PG_FUNCTION_INFO_V1(Overfront_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box does not extend to the back of the second one
- */
-PGDLLEXPORT Datum
-Overfront_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overfront_stbox_stbox(box1, box2));
 }
 
 /**
@@ -2087,18 +1283,6 @@ back_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->zmin > box2->zmax);
 }
 
-PG_FUNCTION_INFO_V1(Back_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly back of the second one
- */
-PGDLLEXPORT Datum
-Back_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(back_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
@@ -2111,18 +1295,6 @@ overback_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_Z(box2->flags);
   pos_stbox_stbox_test(box1, box2);
   return (box1->zmin >= box2->zmin);
-}
-
-PG_FUNCTION_INFO_V1(Overback_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box does not extend to the front of the second one
- */
-PGDLLEXPORT Datum
-Overback_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overback_stbox_stbox(box1, box2));
 }
 
 /**
@@ -2138,18 +1310,6 @@ before_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->tmax < box2->tmin);
 }
 
-PG_FUNCTION_INFO_V1(Before_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(before_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend after the
@@ -2161,18 +1321,6 @@ overbefore_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
   return (box1->tmax <= box2->tmax);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
-/**
- * Return true if the first temporal box does not extend after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overbefore_stbox_stbox(box1, box2));
 }
 
 /**
@@ -2188,18 +1336,6 @@ after_stbox_stbox(const STBOX *box1, const STBOX *box2)
   return (box1->tmin > box2->tmax);
 }
 
-PG_FUNCTION_INFO_V1(After_stbox_stbox);
-/**
- * Return true if the first spatiotemporal box is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(after_stbox_stbox(box1, box2));
-}
-
 /**
  * @ingroup libmeos_box_oper_pos
  * @brief Return true if the first temporal box does not extend before the
@@ -2211,18 +1347,6 @@ overafter_stbox_stbox(const STBOX *box1, const STBOX *box2)
   ensure_has_T_stbox(box1);
   ensure_has_T_stbox(box2);
   return (box1->tmin >= box2->tmin);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
-/**
- * Return true if the first temporal box does not extend before the second one
- */
-PGDLLEXPORT Datum
-Overafter_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(overafter_stbox_stbox(box1, box2));
 }
 
 /*****************************************************************************
@@ -2249,19 +1373,6 @@ union_stbox_stbox(const STBOX *box1, const STBOX *box2, bool strict)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_stbox_stbox);
-/**
- * Return the union of the spatiotemporal boxes
- */
-PGDLLEXPORT Datum
-Union_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  STBOX *result = union_stbox_stbox(box1, box2, true);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_box_oper_set
  * @brief Return the union of the spatiotemporal boxes.
@@ -2279,80 +1390,6 @@ intersection_stbox_stbox(const STBOX *box1, const STBOX *box2)
     return NULL;
   }
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Intersection_stbox_stbox);
-/**
- * Return the intersection of the spatiotemporal boxes
- */
-PGDLLEXPORT Datum
-Intersection_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  STBOX *result = intersection_stbox_stbox(box1, box2);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Extent aggregation
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Stbox_extent_transfn);
-/**
- * Transition function for extent aggregation for boxes
- */
-PGDLLEXPORT Datum
-Stbox_extent_transfn(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-
-  /* Can't do anything with null inputs */
-  if (!box1 && !box2)
-    PG_RETURN_NULL();
-  STBOX *result = (STBOX *) palloc0(sizeof(STBOX));
-  /* One of the boxes is null, return the other one */
-  if (!box1)
-  {
-    memcpy(result, box2, sizeof(STBOX));
-    PG_RETURN_POINTER(result);
-  }
-  if (!box2)
-  {
-    memcpy(result, box1, sizeof(STBOX));
-    PG_RETURN_POINTER(result);
-  }
-
-  /* Both boxes are not null */
-  memcpy(result, box1, sizeof(STBOX));
-  stbox_expand(box2, result);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_extent_combinefn);
-/**
- * Combine function for extent aggregation for boxes
- */
-PGDLLEXPORT Datum
-Stbox_extent_combinefn(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-
-  if (!box2 && !box1)
-    PG_RETURN_NULL();
-  if (box1 && !box2)
-    PG_RETURN_POINTER(box1);
-  if (box2 && !box1)
-    PG_RETURN_POINTER(box2);
-  /* Both boxes are not null */
-  ensure_same_dimensionality(box1->flags, box2->flags);
-  STBOX *result = stbox_copy(box1);
-  stbox_expand(box2, result);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -2432,74 +1469,50 @@ stbox_cmp(const STBOX *box1, const STBOX *box2)
   return 0;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_cmp);
 /**
- * Return -1, 0, or 1 depending on whether the first spatiotemporal box
- * is less than, equal, or greater than the second one
- *
- * @note Function used for B-tree comparison
+ * @ingroup libmeos_box_oper_comp
+ * @brief Return true if the first spatiotemporal box is less than the second one
  */
-PGDLLEXPORT Datum
-Stbox_cmp(PG_FUNCTION_ARGS)
+bool
+stbox_lt(const STBOX *box1, const STBOX *box2)
 {
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
   int cmp = stbox_cmp(box1, box2);
-  PG_RETURN_INT32(cmp);
+  return cmp < 0;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_lt);
 /**
- * Return true if the first spatiotemporal box is less than the second one
- */
-PGDLLEXPORT Datum
-Stbox_lt(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  int cmp = stbox_cmp(box1, box2);
-  PG_RETURN_BOOL(cmp < 0);
-}
-
-PG_FUNCTION_INFO_V1(Stbox_le);
-/**
- * Return true if the first spatiotemporal box is less than or equal to
+ * @ingroup libmeos_box_oper_comp
+ * @brief Return true if the first spatiotemporal box is less than or equal to
  * the second one
  */
-PGDLLEXPORT Datum
-Stbox_le(PG_FUNCTION_ARGS)
+bool
+stbox_le(const STBOX *box1, const STBOX *box2)
 {
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
   int cmp = stbox_cmp(box1, box2);
-  PG_RETURN_BOOL(cmp <= 0);
+  return cmp <= 0;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_ge);
 /**
- * Return true if the first spatiotemporal box is greater than or equal to
+ * @ingroup libmeos_box_oper_comp
+ * @brief Return true if the first spatiotemporal box is greater than or equal to
  * the second one
  */
-PGDLLEXPORT Datum
-Stbox_ge(PG_FUNCTION_ARGS)
+bool
+stbox_ge(const STBOX *box1, const STBOX *box2)
 {
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
   int cmp = stbox_cmp(box1, box2);
-  PG_RETURN_BOOL(cmp >= 0);
+  return cmp >= 0;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_gt);
 /**
- * Return true if the first spatiotemporal box is greater than the second one
+ * @ingroup libmeos_box_oper_comp
+ * @brief Return true if the first spatiotemporal box is greater than the second one
  */
-PGDLLEXPORT Datum
-Stbox_gt(PG_FUNCTION_ARGS)
+bool
+stbox_gt(const STBOX *box1, const STBOX *box2)
 {
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
   int cmp = stbox_cmp(box1, box2);
-  PG_RETURN_BOOL(cmp > 0);
+  return cmp > 0;
 }
 
 /**
@@ -2521,29 +1534,14 @@ stbox_eq(const STBOX *box1, const STBOX *box2)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Stbox_eq);
 /**
- * Return true if the two spatiotemporal boxes are equal
+ * @ingroup libmeos_box_oper_comp
+ * @brief Return true if the two spatiotemporal boxes are different
  */
-PGDLLEXPORT Datum
-Stbox_eq(PG_FUNCTION_ARGS)
+bool
+stbox_ne(const STBOX *box1, const STBOX *box2)
 {
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(stbox_eq(box1, box2));
-}
-
-PG_FUNCTION_INFO_V1(Stbox_ne);
-/**
- * Return true if the two spatiotemporal boxes are different
- */
-PGDLLEXPORT Datum
-Stbox_ne(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  PG_RETURN_BOOL(! stbox_eq(box1, box2));
+  return ! stbox_eq(box1, box2);
 }
 
 /*****************************************************************************/
-

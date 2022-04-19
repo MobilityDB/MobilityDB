@@ -43,17 +43,25 @@
 
 /*****************************************************************************/
 
-/* Convert a temporal point into a trajectory geometry/geography */
+/* Convert a temporal point from/to a trajectory geometry/geography */
 
-
-/* Convert a temporal point and a temporal float into a geometry/geography */
+extern Datum tpoint_to_geo(const Temporal *temp, bool segmentize);
+extern Temporal *geo_to_tpoint(const GSERIALIZED *gs);
+extern bool tpoint_to_geo_measure(const Temporal *tpoint,
+  const Temporal *measure, bool segmentize, Datum *result);
 
 /* Simple Douglas-Peucker-like value simplification for temporal floats and
  * temporal points. */
 
+extern Temporal *tfloat_simplify(Temporal *temp, double eps_dist);
+extern Temporal *tpoint_simplify(Temporal *temp, double eps_dist,
+  double eps_speed);
 
 /* Transform the temporal point to Mapbox Vector Tile format */
 
+extern bool tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds,
+  int32_t extent, int32_t buffer, bool clip_geom, Datum *geom,
+  TimestampTz **timesarr, int *count);
 
 /*****************************************************************************/
 

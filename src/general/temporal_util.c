@@ -1078,11 +1078,15 @@ rangearr_to_array(RangeType **ranges, int count, CachedType type)
  * Convert a C array of text values into a PostgreSQL array
  */
 ArrayType *
-textarr_to_array(text **textarr, int count)
+strarr_to_textarray(char **strarr, int count)
 {
   assert(count > 0);
+  text **textarr = (text **) palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    textarr[i] = cstring_to_text(strarr[i]);
   ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
     false, 'i');
+  pfree_array((void **)textarr, count);
   return result;
 }
 

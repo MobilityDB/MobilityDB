@@ -107,6 +107,7 @@ extern STBOX *stbox_read(StringInfo buf);
 
 extern void stbox_gbox(const STBOX *box, GBOX * gbox);
 extern void stbox_box3d(const STBOX *box, BOX3D *box3d);
+extern Datum stbox_geometry(const STBOX *box);
 
 /* Transform a <Type> to a STBOX */
 
@@ -117,6 +118,8 @@ extern void timestampset_stbox_slice(Datum tsdatum, STBOX *box);
 extern void period_stbox(const Period *p, STBOX *box);
 extern void periodset_stbox(const PeriodSet *ps, STBOX *box);
 extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
+extern STBOX *geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t);
+extern STBOX *geo_period_to_stbox(const GSERIALIZED *gs, const Period *p);
 
 /* Accessor functions */
 
@@ -180,13 +183,15 @@ extern STBOX *intersection_stbox_stbox(const STBOX *box1, const STBOX *box2);
 extern bool inter_stbox_stbox(const STBOX *box1, const STBOX *box2,
   STBOX *result);
 
-/* Extent aggregation */
-
-
 /* Comparison functions */
 
-extern int stbox_cmp(const STBOX *box1, const STBOX *box2);
 extern bool stbox_eq(const STBOX *box1, const STBOX *box2);
+extern bool stbox_ne(const STBOX *box1, const STBOX *box2);
+extern int stbox_cmp(const STBOX *box1, const STBOX *box2);
+extern bool stbox_lt(const STBOX *box1, const STBOX *box2);
+extern bool stbox_le(const STBOX *box1, const STBOX *box2);
+extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
+extern bool stbox_ge(const STBOX *box1, const STBOX *box2);
 
 /*****************************************************************************/
 

@@ -48,16 +48,25 @@
 
 /* Distance functions */
 
-extern Temporal *distance_tpoint_geo(const Temporal *temp, Datum geo);
+extern Temporal *distance_tpoint_geo(const Temporal *temp,
+  const GSERIALIZED *geo);
 extern Temporal *distance_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 
 /* Nearest approach distance/instance and shortest line functions */
 
 extern TInstant *nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern TInstant *nai_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
+extern double nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern double nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs);
 extern double nad_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern double nad_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern double nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2);
 
+extern bool shortestline_tpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs, Datum *result);
 extern bool shortestline_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2, Datum *line);
 

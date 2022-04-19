@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_posops.c
+ * @file tpoint_posops_meos.c
  * @brief Relative position operators for temporal geometry points.
  *
  * The following operators are defined for the spatial dimension:
@@ -46,8 +46,6 @@
 
 #include "point/tpoint_posops.h"
 
-/* PostgreSQL */
-#include <assert.h>
 /* MobilityDB */
 #include "point/postgis.h"
 #include "point/tpoint.h"
@@ -65,7 +63,7 @@
 bool
 left_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &left_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &left_stbox_stbox, INVERT);
 }
 
 /**
@@ -76,7 +74,7 @@ left_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overleft_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overleft_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overleft_stbox_stbox, INVERT);
 }
 
 /**
@@ -87,7 +85,7 @@ overleft_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 right_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &right_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &right_stbox_stbox, INVERT);
 }
 
 /**
@@ -98,7 +96,7 @@ right_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overright_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overright_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overright_stbox_stbox, INVERT);
 }
 
 /**
@@ -108,7 +106,7 @@ overright_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 below_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &below_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &below_stbox_stbox, INVERT);
 }
 
 /**
@@ -118,7 +116,7 @@ below_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overbelow_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overbelow_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overbelow_stbox_stbox, INVERT);
 }
 
 /**
@@ -128,7 +126,7 @@ overbelow_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 above_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &above_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &above_stbox_stbox, INVERT);
 }
 
 /**
@@ -138,7 +136,7 @@ above_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overabove_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overabove_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overabove_stbox_stbox, INVERT);
 }
 
 /**
@@ -148,7 +146,7 @@ overabove_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 front_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &front_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &front_stbox_stbox, INVERT);
 }
 
 /**
@@ -159,7 +157,7 @@ front_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overfront_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overfront_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overfront_stbox_stbox, INVERT);
 }
 
 /**
@@ -169,7 +167,7 @@ overfront_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 back_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &back_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &back_stbox_stbox, INVERT);
 }
 
 /**
@@ -180,7 +178,7 @@ back_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overback_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overback_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overback_stbox_stbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -194,7 +192,7 @@ overback_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 left_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &left_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &left_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -205,7 +203,7 @@ left_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 overleft_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overleft_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overleft_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -216,7 +214,7 @@ overleft_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 right_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &right_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &right_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -227,7 +225,7 @@ right_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 overright_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overright_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overright_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -237,7 +235,7 @@ overright_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 below_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &below_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &below_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -247,7 +245,7 @@ below_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 overbelow_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overbelow_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overbelow_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -257,7 +255,7 @@ overbelow_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 above_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &above_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &above_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -267,7 +265,7 @@ above_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 overabove_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overabove_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overabove_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -277,7 +275,7 @@ overabove_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 front_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &front_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &front_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -288,7 +286,7 @@ front_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 overfront_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overfront_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overfront_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -298,7 +296,7 @@ overfront_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 back_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &back_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &back_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -309,7 +307,7 @@ back_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 overback_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overback_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overback_stbox_stbox, INVERT_NO);
 }
 
 /*****************************************************************************/
@@ -323,7 +321,7 @@ overback_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 left_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &left_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &left_stbox_stbox, INVERT);
 }
 
 /**
@@ -334,7 +332,7 @@ left_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overleft_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overleft_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overleft_stbox_stbox, INVERT);
 }
 
 /**
@@ -345,7 +343,7 @@ overleft_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 right_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &right_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &right_stbox_stbox, INVERT);
 }
 
 /**
@@ -356,7 +354,7 @@ right_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overright_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overright_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overright_stbox_stbox, INVERT);
 }
 
 /**
@@ -367,7 +365,7 @@ overright_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 below_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &below_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &below_stbox_stbox, INVERT);
 }
 
 /**
@@ -378,7 +376,7 @@ below_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overbelow_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overbelow_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overbelow_stbox_stbox, INVERT);
 }
 
 /**
@@ -389,7 +387,7 @@ overbelow_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 above_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &above_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &above_stbox_stbox, INVERT);
 }
 
 /**
@@ -400,7 +398,7 @@ above_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overabove_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overabove_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overabove_stbox_stbox, INVERT);
 }
 
 /**
@@ -411,7 +409,7 @@ overabove_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 front_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &front_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &front_stbox_stbox, INVERT);
 }
 
 /**
@@ -422,7 +420,7 @@ front_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overfront_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overfront_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overfront_stbox_stbox, INVERT);
 }
 
 /**
@@ -433,7 +431,7 @@ overfront_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 back_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &back_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &back_stbox_stbox, INVERT);
 }
 
 /**
@@ -444,7 +442,7 @@ back_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overback_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overback_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overback_stbox_stbox, INVERT);
 }
 
 /**
@@ -455,7 +453,7 @@ overback_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 before_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &before_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &before_stbox_stbox, INVERT);
 }
 
 /**
@@ -466,7 +464,7 @@ before_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overbefore_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overbefore_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overbefore_stbox_stbox, INVERT);
 }
 
 /**
@@ -477,7 +475,7 @@ overbefore_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 after_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &after_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &after_stbox_stbox, INVERT);
 }
 
 /**
@@ -488,7 +486,7 @@ after_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overafter_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overafter_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overafter_stbox_stbox, INVERT);
 }
 
 /*****************************************************************************/
@@ -502,7 +500,7 @@ overafter_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 left_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &left_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &left_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -513,7 +511,7 @@ left_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overleft_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overleft_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overleft_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -524,7 +522,7 @@ overleft_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 right_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &right_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &right_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -535,17 +533,18 @@ right_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overright_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overright_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overright_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_bbox
- * @brief Return true if the temporal point is strictly below the spatiotemporal box
+ * @brief Return true if the temporal point is strictly below the
+ * spatiotemporal box
  */
 bool
 below_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &below_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &below_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -556,7 +555,7 @@ below_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overbelow_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overbelow_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overbelow_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -567,7 +566,7 @@ overbelow_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 above_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &above_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &above_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -578,7 +577,7 @@ above_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overabove_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overabove_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overabove_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -589,7 +588,7 @@ overabove_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 front_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &front_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &front_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -600,7 +599,7 @@ front_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overfront_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overfront_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overfront_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -611,7 +610,7 @@ overfront_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 back_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &back_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &back_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -622,7 +621,7 @@ back_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overback_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overback_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overback_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -633,7 +632,7 @@ overback_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 before_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &before_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &before_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -644,7 +643,7 @@ before_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overbefore_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overbefore_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overbefore_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -655,7 +654,7 @@ overbefore_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 after_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &after_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &after_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -666,7 +665,7 @@ after_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 bool
 overafter_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overafter_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overafter_stbox_stbox, INVERT_NO);
 }
 
 /*****************************************************************************/

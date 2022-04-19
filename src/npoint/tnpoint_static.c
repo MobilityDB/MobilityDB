@@ -276,7 +276,7 @@ npoint_read(StringInfo buf)
  * @brief Write the binary representation of the network point value into the
  * buffer.
  *
- * @param[in] temp Temporal value
+ * @param[in] np Network point value
  * @param[in] buf Buffer
  */
 void

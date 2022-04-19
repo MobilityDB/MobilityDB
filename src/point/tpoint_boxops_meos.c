@@ -32,6 +32,13 @@
  * @brief Bounding box operators for temporal points.
  */
 
+#include "point/tpoint_boxops.h"
+
+/* PostgreSQL */
+#include <postgres.h>
+/* MobilityDB */
+#include "general/timetypes.h"
+
 /*****************************************************************************
  * overlaps
  *****************************************************************************/
@@ -44,7 +51,7 @@
 bool
 overlaps_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &overlaps_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overlaps_stbox_stbox, INVERT);
 }
 
 /**
@@ -55,7 +62,7 @@ overlaps_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 overlaps_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &overlaps_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overlaps_stbox_stbox, INVERT);
 }
 
 /**
@@ -66,17 +73,18 @@ overlaps_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 overlaps_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &overlaps_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &overlaps_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box of the temporal point and the spatiotemporal box overlap
+ * @brief Return true if the spatiotemporal box of the temporal point and the
+ * spatiotemporal box overlap
  */
 bool
 overlaps_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &overlaps_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &overlaps_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -101,7 +109,7 @@ overlaps_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 bool
 contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &contains_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &contains_stbox_stbox, INVERT);
 }
 
 /**
@@ -112,7 +120,7 @@ contains_bbox_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 bool
 contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &contains_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &contains_stbox_stbox, INVERT);
 }
 
 /**
@@ -123,24 +131,24 @@ contains_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 contains_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &contains_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &contains_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box of the temporal point contains the
- * spatiotemporal box
+ * @brief Return true if the spatiotemporal box of the temporal point contains
+ * the spatiotemporal box
  */
 bool
 contains_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &contains_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &contains_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box of the first temporal point contains
- * the one of the second temporal point
+ * @brief Return true if the spatiotemporal box of the first temporal point
+ * contains the one of the second temporal point
  */
 bool
 contains_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
@@ -160,46 +168,46 @@ contains_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 bool
 contained_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &contained_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &contained_stbox_stbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box is contained in the spatiotemporal
- * box of the temporal point
+ * @brief Return true if the spatiotemporal box is contained in the
+ * spatiotemporal box of the temporal point
  */
 bool
 contained_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &contained_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &contained_stbox_stbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box of the temporal point is contained
- * in the one of the geometry/geography
+ * @brief Return true if the spatiotemporal box of the temporal point is
+ * contained in the one of the geometry/geography
  */
 bool
 contained_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &contained_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &contained_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box of the temporal point is contained
- * in the spatiotemporal box
+ * @brief Return true if the spatiotemporal box of the temporal point is
+ * contained in the spatiotemporal box
  */
 bool
 contained_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &contained_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &contained_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box of the first temporal point is contained
- * in the one of the second temporal point
+ * @brief Return true if the spatiotemporal box of the first temporal point is
+ * contained in the one of the second temporal point
  */
 bool
 contained_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
@@ -219,18 +227,18 @@ contained_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 bool
 same_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &same_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &same_stbox_stbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
- * temporal point are equal in the common dimensions
+ * @brief Return true if the spatiotemporal box and the spatiotemporal box of
+ * the temporal point are equal in the common dimensions
  */
 bool
 same_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &same_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &same_stbox_stbox, INVERT);
 }
 
 /**
@@ -241,7 +249,7 @@ same_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 same_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &same_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &same_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -252,13 +260,13 @@ same_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 same_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &same_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &same_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal boxes of the temporal points are equal
- * in the common dimensions
+ * @brief Return true if the spatiotemporal boxes of the temporal points are
+ * equal in the common dimensions
  */
 bool
 same_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
@@ -278,18 +286,18 @@ same_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 bool
 adjacent_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 {
-  return boxop_geo_tpoint(geo, tpoint, &adjacent_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &adjacent_stbox_stbox, INVERT);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
- * temporal point are adjacent
+ * @brief Return true if the spatiotemporal box and the spatiotemporal box of
+ * the temporal point are adjacent
  */
 bool
 adjacent_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 {
-  return boxop_stbox_tpoint(stbox, tpoint, &adjacent_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &adjacent_stbox_stbox, INVERT);
 }
 
 /**
@@ -300,7 +308,7 @@ adjacent_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 bool
 adjacent_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 {
-  return boxop_tpoint_geo(tpoint, geo, &adjacent_stbox_stbox);
+  return boxop_tpoint_geo(tpoint, geo, &adjacent_stbox_stbox, INVERT_NO);
 }
 
 /**
@@ -311,12 +319,13 @@ adjacent_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 bool
 adjacent_tpoint_stbox(const Temporal* tpoint, const STBOX *stbox)
 {
-  return boxop_tpoint_stbox(tpoint, stbox, &adjacent_stbox_stbox);
+  return boxop_tpoint_stbox(tpoint, stbox, &adjacent_stbox_stbox, INVERT_NO);
 }
 
 /**
  * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal boxes of the temporal points are adjacent
+ * @brief Return true if the spatiotemporal boxes of the temporal points are
+ * adjacent
  */
 bool
 adjacent_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)

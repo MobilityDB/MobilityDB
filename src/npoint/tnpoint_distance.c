@@ -63,8 +63,7 @@ distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
     return NULL;
   ensure_point_type(geo);
   Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
-  Temporal *result = distance_tpoint_geo((const Temporal *) tempgeom,
-    PointerGetDatum(geo));
+  Temporal *result = distance_tpoint_geo((const Temporal *) tempgeom, geo);
   pfree(tempgeom);
   return result;
 }
@@ -77,7 +76,7 @@ distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 Temporal *
 distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
-  Datum geom = npoint_geom(np);
+  GSERIALIZED *geom = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
   Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo(tempgeom, geom);
   pfree(DatumGetPointer(geom));

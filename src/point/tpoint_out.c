@@ -104,10 +104,11 @@ ewkt_out(Oid typid __attribute__((unused)), Datum value)
 }
 
 /**
+ * @ingroup libmeos_temporal_input_output
  * @brief Output a temporal point in Well-Known Text (WKT) format.
  */
-static char *
-tpoint_as_text1(const Temporal *temp)
+char *
+tpoint_as_text(const Temporal *temp)
 {
   char *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -124,36 +125,10 @@ tpoint_as_text1(const Temporal *temp)
 
 /**
  * @ingroup libmeos_temporal_input_output
- * @brief Output a temporal point in Well-Known Text (WKT) format
- */
-text *
-tpoint_as_text(const Temporal *temp)
-{
-  char *str = tpoint_as_text1(temp);
-  text *result = cstring_to_text(str);
-  pfree(str);
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_text);
-/**
- * Output a temporal point in Well-Known Text (WKT) format
- */
-PGDLLEXPORT Datum
-Tpoint_as_text(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *result = tpoint_as_text(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
-}
-
-/**
- * @ingroup libmeos_temporal_input_output
  * @brief Output a temporal point in Extended Well-Known Text (EWKT) format,
  * that is, in WKT format prefixed with the SRID.
  */
-text *
+char *
 tpoint_as_ewkt(const Temporal *temp)
 {
   int srid = tpoint_srid(temp);
@@ -163,27 +138,12 @@ tpoint_as_ewkt(const Temporal *temp)
       MOBDB_FLAGS_GET_LINEAR(temp->flags) ? ';' : ',');
   else
     str1[0] = '\0';
-  char *str2 = tpoint_as_text1(temp);
-  char *str = (char *) palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(str, str1);
-  strcat(str, str2);
-  text *result = cstring_to_text(str);
-  pfree(str2); pfree(str);
+  char *str2 = tpoint_as_text(temp);
+  char *result = (char *) palloc(strlen(str1) + strlen(str2) + 1);
+  strcpy(result, str1);
+  strcat(result, str2);
+  pfree(str2);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_ewkt);
-/**
- * Output a temporal point in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-Tpoint_as_ewkt(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  text *result = tpoint_as_ewkt(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************/
@@ -192,64 +152,15 @@ Tpoint_as_ewkt(PG_FUNCTION_ARGS)
  * @ingroup libmeos_temporal_input_output
  * @brief Output a geometry/geography array in Well-Known Text (WKT) format
  */
-text **
+char **
 geoarr_as_text(const Datum *geoarr, int count, bool extended)
 {
-  text **result = palloc(sizeof(text *) * count);
+  char **result = palloc(sizeof(char *) * count);
   for (int i = 0; i < count; i++)
-  {
     /* The wkt_out and ewkt_out functions do not use the first argument */
-    char *str = extended ? ewkt_out(ANYOID, geoarr[i]) :
-      wkt_out(ANYOID, geoarr[i]);
-    result[i] = cstring_to_text(str);
-    pfree(str);
-  }
+    result[i] = extended ?
+      ewkt_out(ANYOID, geoarr[i]) : wkt_out(ANYOID, geoarr[i]);
   return result;
-}
-
-/**
- * Output a geometry/geography array in Well-Known Text (WKT) format
- */
-static Datum
-geoarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-
-  Datum *geoarr = datumarr_extract(array, &count);
-  text **textarr = geoarr_as_text(geoarr, count, extended);
-  ArrayType *result = textarr_to_array(textarr, count);
-  pfree_array((void **) textarr, count);
-  pfree(geoarr);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Geoarr_as_text);
-/**
- * Output a geometry/geography array in Well-Known Text (WKT) format
- */
-PGDLLEXPORT Datum
-Geoarr_as_text(PG_FUNCTION_ARGS)
-{
-  return geoarr_as_text_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Geoarr_as_ewkt);
-/**
- * Output a geometry/geography array in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-Geoarr_as_ewkt(PG_FUNCTION_ARGS)
-{
-  return geoarr_as_text_ext(fcinfo, true);
 }
 
 /**
@@ -257,61 +168,14 @@ Geoarr_as_ewkt(PG_FUNCTION_ARGS)
  * @brief Output a temporal point array in Well-Known Text (WKT) or
  * Extended Well-Known Text (EWKT) format
  */
-text **
+char **
 tpointarr_as_text(const Temporal **temparr, int count, bool extended)
 {
-  text **result = palloc(sizeof(text *) * count);
+  char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
     result[i] = extended ? tpoint_as_ewkt(temparr[i]) :
       tpoint_as_text(temparr[i]);
   return result;
-}
-
-/**
- * Output a temporal point array in Well-Known Text (WKT) or
- * Extended Well-Known Text (EWKT) format
- */
-static Datum
-tpointarr_as_text_ext(FunctionCallInfo fcinfo, bool extended)
-{
-  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
-  /* Return NULL on empty array */
-  int count = ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array));
-  if (count == 0)
-  {
-    PG_FREE_IF_COPY(array, 0);
-    PG_RETURN_NULL();
-  }
-
-  Temporal **temparr = temporalarr_extract(array, &count);
-  text **textarr = tpointarr_as_text((const Temporal **) temparr, count, extended);
-  ArrayType *result = textarr_to_array(textarr, count);
-
-  pfree_array((void **) textarr, count);
-  pfree(temparr);
-  PG_FREE_IF_COPY(array, 0);
-  PG_RETURN_ARRAYTYPE_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpointarr_as_text);
-/**
- * Output a temporal point array in Well-Known Text (WKT) format
- */
-PGDLLEXPORT Datum
-Tpointarr_as_text(PG_FUNCTION_ARGS)
-{
-  return tpointarr_as_text_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Tpointarr_as_ewkt);
-/**
- * Output a temporal point array in Extended Well-Known Text (EWKT) format,
- * that is, in WKT format prefixed with the SRID
- */
-PGDLLEXPORT Datum
-Tpointarr_as_ewkt(PG_FUNCTION_ARGS)
-{
-  return tpointarr_as_text_ext(fcinfo, true);
 }
 
 /*****************************************************************************
@@ -757,68 +621,6 @@ tpoint_as_mfjson(const Temporal *temp, int precision, int has_bbox, char *srs)
   else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_as_mfjson((TSequenceSet *) temp, precision, bbox, srs);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_mfjson);
-/**
- * Return the temporal point represented in MF-JSON format
- */
-PGDLLEXPORT Datum
-Tpoint_as_mfjson(PG_FUNCTION_ARGS)
-{
-  int has_bbox = 0;
-  int precision = DBL_DIG;
-  int option = 0;
-  char *srs = NULL;
-
-  /* Get the temporal point */
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-
-  /* Retrieve precision if any (default is max) */
-  if (PG_NARGS() > 1 && !PG_ARGISNULL(1))
-  {
-    precision = PG_GETARG_INT32(1);
-    if (precision > DBL_DIG)
-      precision = DBL_DIG;
-    else if (precision < 0)
-      precision = 0;
-  }
-
-  /* Retrieve output option
-   * 0 = without option (default)
-   * 1 = bbox
-   * 2 = short crs
-   * 4 = long crs
-   */
-  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-    option = PG_GETARG_INT32(2);
-
-  /* Even if the option does not request to output the crs, we output the
-   * short crs when the SRID is different from SRID_UNKNOWN. Otherwise,
-   * it is not possible to reconstruct the temporal point from the output
-   * of this function without loosing the SRID */
-  int32_t srid = tpoint_srid(temp);
-  if (srid != SRID_UNKNOWN && !(option & 2) && !(option & 4))
-    option |= 2;
-  if (srid != SRID_UNKNOWN)
-  {
-    if (option & 2)
-      srs = getSRSbySRID(fcinfo, srid, true);
-    else if (option & 4)
-      srs = getSRSbySRID(fcinfo, srid, false);
-    if (! srs)
-    {
-      elog(ERROR, "SRID %i unknown in spatial_ref_sys table", srid);
-      PG_RETURN_NULL();
-    }
-  }
-  if (option & 1)
-    has_bbox = 1;
-
-  char *mfjson = tpoint_as_mfjson(temp, precision, has_bbox, srs);
-  text *result = cstring_to_text(mfjson);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
 }
 
 /*****************************************************************************
@@ -1373,8 +1175,8 @@ tpoint_to_wkb_buf(const Temporal *temp, uint8_t *buf, uint8_t variant)
  * Accepts any of: WKB_NDR, WKB_HEX. For example: Variant = (WKB_ISO | WKB_NDR) would
  * return the little-endian ISO form of WKB. For Example: Variant = (WKB_EXTENDED | WKB_HEX)
  * would return the big-endian extended form of WKB, as hex-encoded ASCII (the "canonical form").
- * @param[out] size_out If supplied, will return the size of the returned memory segment,
- * including the null terminator in the case of ASCII.
+ * @param[out] size_out If supplied, will return the size of the returned
+ * memory segment, including the null terminator in the case of ASCII.
  * @note Caller is responsible for freeing the returned array.
  */
 uint8_t *
@@ -1454,118 +1256,20 @@ tpoint_to_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
 }
 
 /**
- * Ensures that the spatiotemporal boxes have the same type of coordinates,
- * either planar or geodetic
+ * @ingroup libmeos_temporal_input_output
+ * @brief Output the temporal point in HexEWKB format.
+ * @note This will have 'SRID=#;'
  */
-static void
-ensure_valid_endian_flag(const char *endian)
+char *
+tpoint_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size)
 {
-  if (strncasecmp(endian, "ndr", 3) != 0 && strncasecmp(endian, "xdr", 3) != 0)
-    elog(ERROR, "Invalid value for endian flag");
-  return;
-}
-
-/**
- * Output the temporal point in WKB or EWKB format
- */
-Datum
-tpoint_as_binary_ext(FunctionCallInfo fcinfo, bool extended)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  uint8_t *wkb;
-  size_t wkb_size;
-  uint8_t variant = 0;
-   bytea *result;
-  /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
-  {
-    text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text2cstring(type);
-    ensure_valid_endian_flag(endian);
-    if (strncasecmp(endian, "ndr", 3) == 0)
-      variant = variant | (uint8_t) WKB_NDR;
-    else /* type = XDR */
-      variant = variant | (uint8_t) WKB_XDR;
-  }
-  wkb_size = VARSIZE_ANY_EXHDR(temp);
-  /* Create WKB hex string */
-  wkb = extended ?
-    tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED, &wkb_size) :
-    tpoint_to_wkb(temp, variant, &wkb_size);
-
-  /* Prepare the PgSQL text return type */
-  result = palloc(wkb_size + VARHDRSZ);
-  memcpy(VARDATA(result), wkb, wkb_size);
-  SET_VARSIZE(result, wkb_size + VARHDRSZ);
-
-  /* Clean up and return */
-  pfree(wkb);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BYTEA_P(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_binary);
-/**
- * Output a temporal point in WKB format.
- * This will have no 'SRID=#;'
- */
-PGDLLEXPORT Datum
-Tpoint_as_binary(PG_FUNCTION_ARGS)
-{
-  return tpoint_as_binary_ext(fcinfo, false);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_ewkb);
-/**
- * Output the temporal point in EWKB format.
- * This will have 'SRID=#;'
- */
-PGDLLEXPORT Datum
-Tpoint_as_ewkb(PG_FUNCTION_ARGS)
-{
-  return tpoint_as_binary_ext(fcinfo, true);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_as_hexewkb);
-/**
- * Output the temporal point in HexEWKB format.
- * This will have 'SRID=#;'
- */
-PGDLLEXPORT Datum
-Tpoint_as_hexewkb(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *hexwkb;
   size_t hexwkb_size;
-  uint8_t variant = 0;
-  text *result;
-  size_t text_size;
-  /* If user specified endianness, respect it */
-  if ((PG_NARGS() > 1) && (!PG_ARGISNULL(1)))
-  {
-    text *type = PG_GETARG_TEXT_P(1);
-    const char *endian = text2cstring(type);
-    ensure_valid_endian_flag(endian);
-    if (strncasecmp(endian, "ndr", 3) == 0)
-      variant = variant | (uint8_t) WKB_NDR;
-    else
-      variant = variant | (uint8_t) WKB_XDR;
-  }
-
   /* Create WKB hex string */
-  hexwkb = (char *) tpoint_to_wkb(temp, variant | (uint8_t) WKB_EXTENDED |
-    (uint8_t) WKB_HEX, &hexwkb_size);
+  char *result = (char *) tpoint_to_wkb(temp,
+    variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, &hexwkb_size);
 
-  /* Prepare the PgSQL text return type */
-  text_size = hexwkb_size - 1 + VARHDRSZ;
-  result = palloc(text_size);
-  memcpy(VARDATA(result), hexwkb, hexwkb_size - 1);
-  SET_VARSIZE(result, text_size);
-
-  /* Clean up and return */
-  pfree(hexwkb);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_TEXT_P(result);
+  *size = hexwkb_size;
+  return result;
 }
 
 /*****************************************************************************/

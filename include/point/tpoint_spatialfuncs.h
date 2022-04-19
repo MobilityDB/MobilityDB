@@ -50,6 +50,10 @@
 #define GS_FLAGS(gs) (gs->gflags)
 #endif
 
+/** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
+#define GEOM_TO_GEOG        true
+#define GEOG_TO_GEOM        false
+
 /*****************************************************************************/
 
 /* Fetch from and store in the cache the fcinfo of the external function */
@@ -88,14 +92,17 @@ extern Datum geom_intersection2d(Datum geom1, Datum geom2);
 
 /* Parameter tests */
 
-extern void ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2);
+extern void ensure_spatial_validity(const Temporal *temp1,
+  const Temporal *temp2);
 // extern void ensure_not_geodetic_gs(const GSERIALIZED *gs);
 extern void ensure_not_geodetic(int16 flags);
 extern void ensure_same_geodetic(int16 flags1, int16 flags2);
-extern void ensure_same_geodetic_gs(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern void ensure_same_geodetic_gs(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
 extern void ensure_same_srid(int32_t srid1, int32_t srid2);
 extern void ensure_same_srid_stbox(const STBOX *box1, const STBOX *box2);
-extern void ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box);
+extern void ensure_same_srid_tpoint_stbox(const Temporal *temp,
+  const STBOX *box);
 extern void ensure_same_srid_stbox_gs(const STBOX *box, const GSERIALIZED *gs);
 extern void ensure_same_dimensionality(int16 flags1, int16 flags2);
 extern void ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
@@ -116,6 +123,11 @@ extern void ensure_non_empty(const GSERIALIZED *gs);
 
 /* Ever equal comparison operator */
 
+extern bool tpointinst_ever_eq(const TInstant *inst, Datum value);
+extern bool tpointinstset_ever_eq(const TInstantSet *ti, Datum value);
+extern bool tpointseq_ever_eq(const TSequence *seq, Datum value);
+extern bool tpointseqset_ever_eq(const TSequenceSet *ts, Datum value);
+extern bool tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
@@ -159,7 +171,9 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **lwpoints, int count,
 extern LWLINE *lwline_make(Datum value1, Datum value2);
 extern Datum line_make(Datum value1, Datum value2);
 
+extern Datum tpointinstset_trajectory(const TInstantSet *ti);
 extern Datum tpointseq_trajectory(const TSequence *seq);
+extern Datum tpointseqset_trajectory(const TSequenceSet *ts);
 extern Datum tpoint_trajectory(const Temporal *temp);
 
 /* Functions for spatial reference systems */
@@ -170,37 +184,107 @@ extern int tpointseq_srid(const TSequence *seq);
 extern int tpointseqset_srid(const TSequenceSet *ts);
 extern int tpoint_srid(const Temporal *t);
 
+extern TInstant *tpointinst_set_srid(const TInstant *inst, int32 srid);
+extern TInstantSet *tpointinstset_set_srid(const TInstantSet *ti, int32 srid);
+extern TSequence *tpointseq_set_srid(const TSequence *seq, int32 srid);
+extern TSequenceSet *tpointseqset_set_srid(const TSequenceSet *ts, int32 srid);
+extern Temporal *tpoint_set_srid(const Temporal *temp, int32 srid);
+
 extern TInstant *tpointinst_transform(const TInstant *inst, Datum srid);
+extern TInstantSet *tpointinstset_transform(const TInstantSet *ti, Datum srid);
+extern TSequence *tpointseq_transform(const TSequence *seq, Datum srid);
+extern TSequenceSet *tpointseqset_transform(const TSequenceSet *ts, Datum srid);
+extern Temporal *tpoint_transform(const Temporal *temp, Datum srid);
 
 /* Cast functions */
 
+extern TInstant *tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper);
+extern TInstantSet *tgeompointinstset_tgeogpointinstset(const TInstantSet *ti,
+  bool oper);
+extern TSequence *tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper);
+extern TSequenceSet *tgeompointseqset_tgeogpointseqset(const TSequenceSet *ts,
+  bool oper);
+extern Temporal *tgeompoint_tgeogpoint(const Temporal *temp, bool oper);
 
 /* Set precision of the coordinates */
 
+extern Datum datum_round_geo(Datum value, Datum prec);
+extern Temporal *tpoint_round(const Temporal *temp, Datum prec);
 
 /* Functions for extracting coordinates */
 
+extern Temporal *tpoint_get_coord(const Temporal *temp, int coord);
 
 /* Length, speed, time-weighted centroid, temporal azimuth, and
  * temporal bearing functions */
 
+extern double tpointseq_length(const TSequence *seq);
+extern double tpointseqset_length(const TSequenceSet *ts);
+extern double tpoint_length(const Temporal *temp);
+
+extern TInstant *tpointinst_cumulative_length(const TInstant *inst);
+extern TInstantSet *tpointinstset_cumulative_length(const TInstantSet *ti);
+extern TSequence *tpointseq_cumulative_length(const TSequence *seq,
+  double prevlength);
+extern TSequenceSet *tpointseqset_cumulative_length(const TSequenceSet *ts);
+extern Temporal *tpoint_cumulative_length(const Temporal *temp);
+
+extern TSequence *tpointseq_speed(const TSequence *seq);
+extern TSequenceSet *tpointseqset_speed(const TSequenceSet *ts);
+extern Temporal *tpoint_speed(const Temporal *temp);
+
+extern Datum tpointinstset_twcentroid(const TInstantSet *ti);
+extern Datum tpointseq_twcentroid(const TSequence *seq);
+extern Datum tpointseqset_twcentroid(const TSequenceSet *ts);
 extern Datum tpoint_twcentroid(const Temporal *temp);
+
+extern TSequenceSet *tpointseq_azimuth(const TSequence *seq);
+extern TSequenceSet *tpointseqset_azimuth(const TSequenceSet *ts);
+extern Temporal *tpoint_azimuth(const Temporal *temp);
+
+extern bool bearing_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  Datum *result);
+extern Temporal *bearing_tpoint_geo(const Temporal *temp,
+  const GSERIALIZED *gs, bool invert);
+extern Temporal *bearing_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
 /* Non self-intersecting (a.k.a. simple) functions */
 
+extern bool tpointinstset_is_simple(const TInstantSet *ti);
+extern bool tpointseq_is_simple(const TSequence *seq);
+extern bool tpointseqset_is_simple(const TSequenceSet *ts);
+extern bool tpoint_is_simple(const Temporal *temp);
+extern TInstantSet **tpointinstset_make_simple(const TInstantSet *ti,
+  int *count);
 extern TSequence **tpointseq_make_simple(const TSequence *seq, int *count);
+extern TSequence **tpointseqset_make_simple(const TSequenceSet *ts,
+  int *count);
+extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 
 /* Restriction functions */
 
-extern Period **tpointseq_interperiods(const TSequence *seq,
-  GSERIALIZED *gsinter, int *count);
+extern TInstant *tpointinst_restrict_geometry(const TInstant *inst,
+  Datum geom, bool atfunc);
+extern TInstantSet *tpointinstset_restrict_geometry(const TInstantSet *ti,
+  Datum geom, bool atfunc);
+extern TSequenceSet *tpointseq_restrict_geometry(const TSequence *seq,
+  Datum geom, bool atfunc);
+extern TSequenceSet *tpointseqset_restrict_geometry(const TSequenceSet *ts,
+  Datum geom, const STBOX *box, bool atfunc);
 extern TSequence **tpointseq_at_geometry(const TSequence *seq, Datum geo,
   int *count);
 extern Temporal *tpoint_restrict_geometry(const Temporal *temp,
-  Datum geom, bool atfunc);
-extern Temporal *tpoint_at_stbox(const Temporal *temp,
-  const STBOX *box, bool exc_upper);
+  const GSERIALIZED *gs, bool atfunc);
 
+extern Temporal *tpoint_at_stbox(const Temporal *temp, const STBOX *box,
+  bool upper_inc);
+extern Temporal *tpoint_minus_stbox(const Temporal *temp, const STBOX *box);
+extern Temporal *tpoint_restrict_stbox(const Temporal *temp, const STBOX *box,
+  bool atfunc);
+
+extern Period **tpointseq_interperiods(const TSequence *seq,
+  GSERIALIZED *gsinter, int *count);
 
 /*****************************************************************************/
 

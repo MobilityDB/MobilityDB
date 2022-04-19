@@ -898,21 +898,20 @@ tnpoint_azimuth(Temporal *temp)
  * Restrict a temporal network point to (the complement of) a geometry
  */
 Temporal *
-tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *gs, bool atfunc)
+tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *geo, bool atfunc)
 {
-  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(gs));
-  if (gserialized_is_empty(gs))
+  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
+  if (gserialized_is_empty(geo))
   {
     Temporal *result = atfunc ? NULL : temporal_copy(temp);
     if (atfunc)
       return NULL;
     return result;
   }
-  ensure_has_not_Z_gs(gs);
+  ensure_has_not_Z_gs(geo);
 
   Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom,
-    PointerGetDatum(gs), atfunc);
+  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)
   {

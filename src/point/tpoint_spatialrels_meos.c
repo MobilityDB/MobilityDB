@@ -28,68 +28,62 @@
  *****************************************************************************/
 
 /**
- * @file tpoint_meos.c
- * @brief General functions for temporal points.
+ * @file tpoint_spatialrels.c
+ * @brief Ever spatial relationships for temporal points.
+ *
+ * These relationships compute the ever spatial relationship between the
+ * arguments and return a Boolean. These functions may be used for filtering
+ * purposes before applying the corresponding temporal spatial relationship.
+ *
+ * The following relationships are supported for geometries: `contains`,
+ * `disjoint`, `intersects`, `touches`, and `dwithin`.
+ *
+ * The following relationships are supported for geographies: `disjoint`,
+ * `intersects`, `dwithin`.
+ *
+ * Only `disjoint`, `dwithin`, and `intersects` are supported for 3D geometries.
  */
 
-#include "point/tpoint.h"
+#include "point/tpoint_spatialrels.h"
 
 /* PostgreSQL */
-#include <utils/builtins.h>
-#include <utils/timestamp.h>
+#include <assert.h>
 /* MobilityDB */
 #include "general/temporaltypes.h"
 #include "general/tempcache.h"
 #include "general/temporal_util.h"
-#include "general/lifting.h"
-#include "general/temporal_compops.h"
-#include "point/stbox.h"
-#include "point/tpoint_parser.h"
-#include "point/tpoint_boxops.h"
+#include "point/tpoint.h"
 #include "point/tpoint_spatialfuncs.h"
+#include "point/tpoint_distance.h"
+#include "point/tpoint_tempspatialrels.h"
 
 /*****************************************************************************
- * Temporal comparisons
+ * Ever disjoint
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
- * @brief Return the temporal equality of the base value and the temporal value
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal points are ever disjoint
  */
-Temporal *
-teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
+int
+disjoint_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_eq2, INVERT);
+  int result = spatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_ne);
+  return result;
 }
 
-/**
- * @ingroup libmeos_temporal_oper_comp
- * @brief Return the temporal equality of the temporal value and base value
- */
-Temporal *
-teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
-{
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_eq2, INVERT_NO);
-}
+/*****************************************************************************
+ * Ever intersects (for both geometry and geography)
+ *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
- * @brief Return the temporal inequality of the base value and the temporal value
+ * @ingroup libmeos_temporal_spatial_rel
+ * @brief Return true if the temporal points ever intersect
  */
-Temporal *
-tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
+int
+intersects_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_ne2, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_oper_comp
- * @brief Return the temporal inequality of the temporal value and base value
- */
-Temporal *
-tne_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
-{
-  return tcomp_tpoint_geo(tpoint, geo, &datum2_ne2, INVERT_NO);
+  return spatialrel_tpoint_tpoint(temp1, temp2, &datum2_point_eq);
 }
 
 /*****************************************************************************/

@@ -262,6 +262,30 @@ geometry_transform_gk(GSERIALIZED *gs)
   return result;
 }
 
+/**
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ */
+Temporal *
+tgeompoint_transform_gk(Temporal *temp)
+{
+  /* We only need to fill these parameters for tfunc_temporal */
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &gk;
+  lfinfo.numparam = 0;
+  lfinfo.restype = temp->temptype;
+  lfinfo.tpfunc_base = NULL;
+  lfinfo.tpfunc = NULL;
+  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
 PG_FUNCTION_INFO_V1(Geometry_transform_gk);
 /**
  * Transform a geometry into the Gauss-Krueger projection used in Secondo
@@ -283,15 +307,7 @@ PGDLLEXPORT Datum
 Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* We only need to fill these parameters for tfunc_temporal */
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &gk;
-  lfinfo.numparam = 0;
-  lfinfo.restype = temp->temptype;
-  lfinfo.tpfunc_base = NULL;
-  lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
+  Temporal *result = tgeompoint_transform_gk(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

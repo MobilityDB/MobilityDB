@@ -121,9 +121,13 @@ extern STBOX *tpoint_stbox(const Temporal *temp);
 
 /* Expand functions */
 
+extern STBOX *geo_expand_spatial(const GSERIALIZED *gs, double d);
+extern STBOX *tpoint_expand_spatial(const Temporal *temp, double d);
 
 /* Temporal comparisons */
 
+extern Temporal *tcomp_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert);
 
 /* Alias for the tpoint_trajectory function */
 
