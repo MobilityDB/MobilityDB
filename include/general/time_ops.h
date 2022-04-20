@@ -243,31 +243,84 @@ extern bool adjacent_periodset_periodset(const PeriodSet *ps1,
 
 /* union */
 
+extern TimestampSet *union_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
 extern TimestampSet *union_timestamp_timestampset(TimestampTz t,
   const TimestampSet *ts);
+extern PeriodSet *union_timestamp_period(TimestampTz t, const Period *p);
+extern PeriodSet *union_timestamp_periodset(TimestampTz t, const PeriodSet *ps);
+
+extern TimestampSet *union_timestampset_timestamp(const TimestampSet *ts,
+  const TimestampTz t);
 extern TimestampSet *union_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2);
+extern PeriodSet *union_timestampset_period(const TimestampSet *ts,
+  const Period *p);
+extern PeriodSet *union_timestampset_periodset(const TimestampSet *ts,
+  const PeriodSet *ps);
+
+extern PeriodSet *union_period_timestamp(const Period *p, TimestampTz t);
+extern PeriodSet *union_period_timestampset(const Period *p,
+  const TimestampSet *ts);
 extern PeriodSet *union_period_period(const Period *p1, const Period *p2);
 extern PeriodSet *union_period_periodset(const Period *p, const PeriodSet *ps);
+
+extern PeriodSet *union_periodset_timestamp(PeriodSet *ps, TimestampTz t);
+extern PeriodSet *union_periodset_timestampset(PeriodSet *ps,
+  TimestampSet *ts);
+extern PeriodSet *union_periodset_period(const PeriodSet *ps, const Period *p);
 extern PeriodSet *union_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
 /* intersection */
 
+extern bool intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
+  TimestampTz *result);
+extern bool intersection_timestamp_timestampset(TimestampTz t,
+  const TimestampSet *ts, TimestampTz *result);
+extern bool intersection_timestamp_period(TimestampTz t, const Period *p,
+  TimestampTz *result);
+extern bool intersection_timestamp_periodset(TimestampTz t,
+  const PeriodSet *ps, TimestampTz *result);
+
+extern bool intersection_timestampset_timestamp(const TimestampSet *ts,
+  const TimestampTz t, TimestampTz *result);
 extern TimestampSet *intersection_timestampset_timestampset(
   const TimestampSet *ts1, const TimestampSet *ts2);
 extern TimestampSet *intersection_timestampset_period(const TimestampSet *ts,
   const Period *p);
+extern TimestampSet *intersection_timestampset_periodset(const TimestampSet *ts,
+  const PeriodSet *ps);
+
+extern bool intersection_period_timestamp(const Period *p, TimestampTz t,
+  TimestampTz *result);
+extern TimestampSet *intersection_period_timestampset(const Period *ps,
+  const TimestampSet *ts);
 extern Period *intersection_period_period(const Period *p1,
   const Period *p2);
 extern bool inter_period_period(const Period *p1, const Period *p2,
   Period *result);
 extern PeriodSet *intersection_period_periodset(const Period *p,
   const PeriodSet *ps);
+
+extern bool intersection_periodset_timestamp(const PeriodSet *ps,
+  TimestampTz t, TimestampTz *result);
+extern TimestampSet *intersection_periodset_timestampset(const PeriodSet *ps,
+  const TimestampSet *ts);
+extern PeriodSet *intersection_periodset_period(const PeriodSet *ps,
+  const Period *p);
 extern PeriodSet *intersection_periodset_periodset(const PeriodSet *ps1,
   const PeriodSet *ps2);
 
 /* minus */
+
+extern bool minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
+  TimestampTz *result);
+extern bool minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
+  TimestampTz *result);
+extern bool minus_timestamp_period(TimestampTz t, const Period *p,
+  TimestampTz *result);
+extern bool minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
+  TimestampTz *result);
 
 extern TimestampSet *minus_timestampset_timestamp(const TimestampSet *ts,
   TimestampTz t);
@@ -277,12 +330,14 @@ extern TimestampSet *minus_timestampset_period(const TimestampSet *ts,
   const Period *p);
 extern TimestampSet *minus_timestampset_periodset(const TimestampSet *ts,
   const PeriodSet *ps);
+
 extern PeriodSet *minus_period_timestamp(const Period *p, TimestampTz t);
 extern PeriodSet *minus_period_timestampset(const Period *p,
   const TimestampSet *ts);
 extern PeriodSet *minus_period_period(const Period *p1, const Period *p2);
 extern PeriodSet *minus_period_periodset(const Period *p,
   const PeriodSet *ps);
+
 extern PeriodSet *minus_periodset_timestamp(const PeriodSet *ps,
   TimestampTz t);
 extern PeriodSet *minus_periodset_timestampset(const PeriodSet *ps,
@@ -293,17 +348,76 @@ extern PeriodSet *minus_periodset_periodset(const PeriodSet *ps1,
 
 /* Distance returning an Interval */
 
-extern Interval *distance_period_timestamp(const Period *p,
+extern Interval *distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2);
+extern Interval *distance_timestamp_timestampset(TimestampTz t,
+  const TimestampSet *ts);
+extern Interval *distance_timestamp_period(TimestampTz t, const Period *p);
+extern Interval *distance_timestamp_periodset(TimestampTz t,
+  const PeriodSet *ps);
+
+extern Interval *distance_timestampset_timestamp(const TimestampSet *ts,
   TimestampTz t);
+extern Interval *distance_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2);
+extern Interval *distance_timestampset_period(const TimestampSet *ts,
+  const Period *p);
+extern Interval *distance_timestampset_periodset(const TimestampSet *ts,
+  const PeriodSet *ps);
+
+extern Interval *distance_period_timestamp(const Period *p, TimestampTz t);
+extern Interval *distance_period_timestampset(const Period *p,
+  const TimestampSet *ts);
 extern Interval *distance_period_period(const Period *p1, const Period *p2);
+extern Interval *distance_period_periodset(const Period *p,
+  const PeriodSet *ps);
+
+extern Interval *distance_periodset_timestamp(const PeriodSet *ps,
+  TimestampTz t);
+extern Interval *distance_periodset_timestampset(const PeriodSet *ps,
+  TimestampSet *ts);
+extern Interval *distance_periodset_period(const PeriodSet *ps,
+  const Period *p);
+extern Interval *distance_periodset_periodset(const PeriodSet *ps1,
+  const PeriodSet *ps2);
 
 /* Distance returning a float in seconds for use with indexes in
  * nearest neighbor searches */
 
+extern double distance_secs_timestamp_timestamp(TimestampTz t1,
+  TimestampTz t2);
+extern double distance_secs_timestamp_timestampset(TimestampTz t,
+  const TimestampSet *ts);
+extern double distance_secs_timestamp_period(TimestampTz t, const Period *p);
+extern double distance_secs_timestamp_periodset(TimestampTz t,
+  const PeriodSet *ps);
+
+extern double distance_secs_timestampset_timestamp(const TimestampSet *ts,
+  TimestampTz t);
+extern double distance_secs_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2);
+extern double distance_secs_timestampset_period(const TimestampSet *ts,
+  const Period *p);
+extern double distance_secs_timestampset_periodset(const TimestampSet *ts,
+  const PeriodSet *ps)
+;
+
 extern double distance_secs_period_timestamp(const Period *p,
   TimestampTz t);
+extern double distance_secs_period_timestampset(const Period *p,
+  const TimestampSet *ts);
 extern double distance_secs_period_period(const Period *p1,
   const Period *p2);
+extern double distance_secs_period_periodset(const Period *p,
+  const PeriodSet *ps);
+
+extern double distance_secs_periodset_timestamp(const PeriodSet *ps,
+  TimestampTz t);
+extern double distance_secs_periodset_timestampset(const PeriodSet *ps,
+  const TimestampSet *ts);
+extern double distance_secs_periodset_period(const PeriodSet *ps,
+  const Period *p);
+extern double distance_secs_periodset_periodset(const PeriodSet *ps1,
+  const PeriodSet *ps2);
 
 /*****************************************************************************/
 

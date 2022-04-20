@@ -100,6 +100,10 @@ extern PeriodSet *periodset_shift_tscale(const PeriodSet *ps,
 extern int periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2);
 extern bool periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2);
 extern bool periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2);
+extern bool periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2);
+extern bool periodset_le(const PeriodSet *ps1, const PeriodSet *ps2);
+extern bool periodset_gt(const PeriodSet *ps1, const PeriodSet *ps2);
+extern bool periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2);
 
 /* Hash functions */
 

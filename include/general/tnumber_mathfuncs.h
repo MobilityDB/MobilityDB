@@ -58,15 +58,30 @@ typedef enum
 
 /*****************************************************************************/
 
-extern Temporal *arithop_tnumber_number(Temporal *temp, Datum value,
+extern bool tnumber_mult_tp_at_timestamp(const TInstant *start1,
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  Datum *value, TimestampTz *t);
+extern bool tnumber_div_tp_at_timestamp(const TInstant *start1,
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  Datum *value, TimestampTz *t);
+
+extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
   CachedType basetype, TArithmetic oper,
   Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert);
-extern Temporal *arithop_tnumber_tnumber(Temporal *temp1, Temporal *temp2,
-  TArithmetic oper, Datum (*func)(Datum, Datum, Oid, Oid),
+extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
+  const Temporal *temp2, TArithmetic oper,
+  Datum (*func)(Datum, Datum, Oid, Oid),
   bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
     const TInstant *, Datum *, TimestampTz *));
 
 extern Datum datum_round_float(Datum value, Datum prec);
+
+extern Temporal *tnumber_round(const Temporal *temp, Datum digits);
+extern Temporal *tnumber_degrees(const Temporal *temp);
+
+extern TSequence *tnumberseq_derivative(const TSequence *seq);
+extern TSequenceSet *tnumberseqset_derivative(const TSequenceSet *ts);
+extern Temporal *tnumber_derivative(const Temporal *temp);
 
 /*****************************************************************************/
 

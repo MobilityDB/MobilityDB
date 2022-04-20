@@ -48,7 +48,7 @@
 /**
  * Return the concatenation of the two text values
  */
-static Datum
+Datum
 datum_textcat(Datum l, Datum r)
 {
   return call_function2(textcat, l, r);
@@ -57,7 +57,7 @@ datum_textcat(Datum l, Datum r)
 /**
  * Convert the text value to lowercase
  */
-static Datum
+Datum
 datum_lower(Datum value)
 {
   return call_function1(lower, value);
@@ -66,7 +66,7 @@ datum_lower(Datum value)
 /**
  * Convert the text value to uppercase
  */
-static Datum
+Datum
 datum_upper(Datum value)
 {
   return call_function1(upper, value);
@@ -77,11 +77,10 @@ datum_upper(Datum value)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Apply the function to transform the temporal text value
+ * Apply the function to transform the temporal text value
  */
 Temporal *
-textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
+textfunc_ttext(const Temporal *temp, Datum (*func)(Datum value))
 {
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
@@ -95,11 +94,10 @@ textfunc_ttext(Temporal *temp, Datum (*func)(Datum value))
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Apply the function to the temporal text value and the base text value
+ * Apply the function to the temporal text value and the base text value
  */
 Temporal *
-textfunc_ttext_text(Temporal *temp, Datum value, datum_func2 func,
+textfunc_ttext_text(const Temporal *temp, Datum value, datum_func2 func,
   bool invert)
 {
   LiftedFunctionInfo lfinfo;
@@ -116,11 +114,11 @@ textfunc_ttext_text(Temporal *temp, Datum value, datum_func2 func,
 }
 
 /**
- * @ingroup libmeos_temporal_transf
- * @brief Apply the function to the temporal text value and the base text value.
+ * Apply the function to the temporal text value and the base text value.
  */
 Temporal *
-textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
+textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
+  datum_func2 func)
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -133,83 +131,6 @@ textfunc_ttext_ttext(Temporal *temp1, Temporal *temp2, datum_func2 func)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
-}
-
-/*****************************************************************************
- * Text concatenation
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Textcat_base_ttext);
-/**
- * Return the concatenation of the text value and the temporal text values
- */
-PGDLLEXPORT Datum
-Textcat_base_ttext(PG_FUNCTION_ARGS)
-{
-  Datum value = PG_GETARG_DATUM(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Textcat_ttext_base);
-/**
- * Return the concatenation of the temporal text value and the text value
- */
-PGDLLEXPORT Datum
-Textcat_ttext_base(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum value = PG_GETARG_DATUM(1);
-  Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
-/**
- * Return the concatenation of the two temporal text values
- */
-PGDLLEXPORT Datum
-Textcat_ttext_ttext(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(Ttext_upper);
-/**
- * Transform the temporal text value into uppercase
- */
-PGDLLEXPORT Datum
-Ttext_upper(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = textfunc_ttext(temp, &datum_upper);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Ttext_lower);
-/**
- * Transform the temporal text value into lowercase
- */
-PGDLLEXPORT Datum
-Ttext_lower(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = textfunc_ttext(temp, &datum_lower);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/

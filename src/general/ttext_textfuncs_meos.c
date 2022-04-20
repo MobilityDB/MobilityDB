@@ -28,83 +28,77 @@
  *****************************************************************************/
 
 /**
- * @file tbool_boolops.c
- * @brief Temporal Boolean operators: and, or, not.
+ * @file ttext_textfuncs.c
+ * @brief Temporal text functions: `textcat`, `lower`, `upper`.
  */
 
-#include "general/tbool_boolops.h"
+#include "general/ttext_textfuncs.h"
 
+/* PostgreSQL */
+#include <utils/builtins.h>
 /* MobilityDB */
-#include "general/temporaltypes.h"
-#include "general/lifting.h"
+#include "general/temporal.h"
+#include "general/temporal_util.h"
 
 /*****************************************************************************
- * Temporal and
+ * Text concatenation
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_bool
- * @brief Return the temporal boolean and of the value and the temporal value
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the concatenation of the text value and the temporal text values
  */
 Temporal *
-tand_bool_tbool(bool b, const Temporal *temp)
+textcat_base_ttext(Datum value, Temporal *temp)
 {
-  return boolop_tbool_bool(temp, b, &datum_and, INVERT);
+  Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
+  return result;
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bool
- * @brief Return the temporal boolean and of the temporal value and the value
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the concatenation of the temporal text value and the text value
  */
 Temporal *
-tand_tbool_bool(const Temporal *temp, bool b)
+textcat_ttext_base(const Temporal *temp, Datum value)
 {
-  return boolop_tbool_bool(temp, b, &datum_and, INVERT_NO);
+  Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
+  return result;
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bool
- * @brief Return the temporal boolean and of the temporal values
+ * @ingroup libmeos_temporal_transf
+ * @brief Return the concatenation of the two temporal text values
  */
 Temporal *
-tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
+textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 {
-  return boolop_tbool_tbool(temp1, temp2, &datum_and);
-}
-
-/*****************************************************************************
- * Temporal or
- *****************************************************************************/
-
-/**
- * @ingroup libmeos_temporal_oper_bool
- * @brief Return the temporal boolean or of the value and the temporal value
- */
-Temporal *
-tor_bool_tbool(bool b, const Temporal *temp)
-{
-  return boolop_tbool_bool(temp, b, &datum_or, INVERT);
-}
-
-/**
- * @ingroup libmeos_temporal_oper_bool
- * @brief Return the temporal boolean or of the temporal value and the value
- */
-Temporal *
-tor_tbool_bool(const Temporal *temp, bool b)
-{
-  return boolop_tbool_bool(temp, b, &datum_or, INVERT_NO);
-}
-
-/**
- * @ingroup libmeos_temporal_oper_bool
- * @brief Return the temporal boolean or of the temporal values
- */
-Temporal *
-tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2)
-{
-  return boolop_tbool_tbool(temp1, temp2, &datum_or);
+  Temporal *result = textfunc_ttext_ttext(temp1, temp2, &datum_textcat);
+  return result;
 }
 
 /*****************************************************************************/
 
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal text value into uppercase
+ */
+Temporal *
+ttext_upper(const Temporal *temp)
+{
+  Temporal *result = textfunc_ttext(temp, &datum_upper);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_transf
+ * @brief Transform the temporal text value into lowercase
+ */
+Temporal *
+ttext_lower(const Temporal *temp)
+{
+  Temporal *result = textfunc_ttext(temp, &datum_lower);
+  return result;
+}
+
+/*****************************************************************************/

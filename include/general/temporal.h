@@ -613,15 +613,26 @@ extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
+extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
+  bool atfunc);
 
 extern Temporal *temporal_restrict_value(const Temporal *temp,
   Datum value, bool atfunc);
+extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values,
+  int count, bool atfunc);
 extern Temporal *tnumber_restrict_range(const Temporal *temp,
  RangeType *range, bool atfunc);
-extern Temporal *temporal_restrict_timestamp(const Temporal *temp,
-  TimestampTz t, bool atfunc);
+extern Temporal *tnumber_restrict_ranges(const Temporal *temp,
+  RangeType **ranges, int count, bool atfunc);
 extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
   TimestampTz t, Datum *value);
+extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t,
+  Datum *result);
+
+extern Temporal *temporal_restrict_timestamp(const Temporal *temp,
+  TimestampTz t, bool atfunc);
+extern Temporal *temporal_restrict_timestampset(const Temporal *temp,
+  const TimestampSet *ts, bool atfunc);
 extern Temporal *temporal_restrict_period(const Temporal *temp,
   const Period *ps, bool atfunc);
 extern Temporal *temporal_restrict_periodset(const Temporal *temp,
@@ -631,6 +642,12 @@ extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBOX *box);
 
 /* Intersects functions */
 
+extern bool temporal_intersects_timestamp(const Temporal *temp, TimestampTz t);
+extern bool temporal_intersects_timestampset(const Temporal *temp,
+  const TimestampSet *ts);
+extern bool temporal_intersects_period(const Temporal *temp, const Period *p);
+extern bool temporal_intersects_periodset(const Temporal *temp,
+  const PeriodSet *ps);
 
 /* Local aggregate functions */
 
@@ -640,7 +657,12 @@ extern double tnumber_twavg(const Temporal *temp);
 /* Comparison functions */
 
 extern bool temporal_eq(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
 extern int temporal_cmp(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_lt(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_le(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_gt(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_ge(const Temporal *temp1, const Temporal *temp2);
 
 /* Functions for defining hash index */
 

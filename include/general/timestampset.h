@@ -92,6 +92,10 @@ extern TimestampSet *timestampset_shift_tscale(const TimestampSet *ts,
 extern int timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2);
 extern bool timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2);
 extern bool timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_gt(const TimestampSet *ts1, const TimestampSet *ts2);
+extern bool timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2);
 
 /* Hash functions */
 

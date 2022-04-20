@@ -219,7 +219,7 @@ overafter_periodset_temporal(const PeriodSet *ps, const Temporal *temp)
  * value
  */
 bool
-before_temporal_timestamp(const Temporal *temp, TimestampTz t))
+before_temporal_timestamp(const Temporal *temp, TimestampTz t)
 {
   return boxop_temporal_timestamp(temp, t, &before_period_period, INVERT_NO);
 }
@@ -229,7 +229,7 @@ before_temporal_timestamp(const Temporal *temp, TimestampTz t))
  * @brief Return true if the temporal value is not after the timestamptz value
  */
 bool
-overbefore_temporal_timestamp(const Temporal *temp, TimestampTz t))
+overbefore_temporal_timestamp(const Temporal *temp, TimestampTz t)
 {
   return boxop_temporal_timestamp(temp, t, &overbefore_period_period, INVERT_NO);
 }
@@ -240,7 +240,7 @@ overbefore_temporal_timestamp(const Temporal *temp, TimestampTz t))
  * value
  */
 bool
-after_temporal_timestamp(const Temporal *temp, TimestampTz t))
+after_temporal_timestamp(const Temporal *temp, TimestampTz t)
 {
   return boxop_temporal_timestamp(temp, t, &after_period_period, INVERT_NO);
 }
@@ -250,7 +250,7 @@ after_temporal_timestamp(const Temporal *temp, TimestampTz t))
  * @brief Return true if the temporal value is not before the timestamptz value
  */
 bool
-overafter_temporal_timestamp(const Temporal *temp, TimestampTz t))
+overafter_temporal_timestamp(const Temporal *temp, TimestampTz t)
 {
   return boxop_temporal_timestamp(temp, t, &overafter_period_period, INVERT_NO);
 }
@@ -499,7 +499,7 @@ overright_number_tnumber(Datum number, CachedType basetype,
  * temporal number
  */
 bool
-left_range_tnumber(const RangeType range, const Temporal *temp)
+left_range_tnumber(const RangeType *range, const Temporal *tnumber)
 {
   return boxop_tnumber_range(tnumber, range, &left_tbox_tbox, INVERT);
 }
@@ -510,7 +510,7 @@ left_range_tnumber(const RangeType range, const Temporal *temp)
  * temporal number
  */
 bool
-overleft_range_tnumber(const RangeType range, const Temporal *temp)
+overleft_range_tnumber(const RangeType *range, const Temporal *tnumber)
 {
   return boxop_tnumber_range(tnumber, range, &overleft_tbox_tbox, INVERT);
 }
@@ -521,7 +521,7 @@ overleft_range_tnumber(const RangeType range, const Temporal *temp)
  * temporal number
  */
 bool
-right_range_tnumber(const RangeType range, const Temporal *temp)
+right_range_tnumber(const RangeType *range, const Temporal *tnumber)
 {
   return boxop_tnumber_range(tnumber, range, &right_tbox_tbox, INVERT);
 }
@@ -532,7 +532,7 @@ right_range_tnumber(const RangeType range, const Temporal *temp)
  * temporal number
  */
 bool
-overright_range_tnumber(const RangeType range, const Temporal *temp)
+overright_range_tnumber(const RangeType *range, const Temporal *tnumber)
 {
   return boxop_tnumber_range(tnumber, range, &overright_tbox_tbox, INVERT);
 }
@@ -600,7 +600,7 @@ overright_tnumber_number(const Temporal *tnumber, Datum number,
  * number range value
  */
 bool
-left_tnumber_range(const Temporal *temp, const RangeType *range)
+left_tnumber_range(const Temporal *tnumber, const RangeType *range)
 {
   return boxop_tnumber_range(tnumber, range, &left_tbox_tbox, INVERT_NO);
 }
@@ -611,7 +611,7 @@ left_tnumber_range(const Temporal *temp, const RangeType *range)
  * number range value
  */
 bool
-overleft_tnumber_range(const Temporal *temp, const RangeType *range)
+overleft_tnumber_range(const Temporal *tnumber, const RangeType *range)
 {
   return boxop_tnumber_range(tnumber, range, &overleft_tbox_tbox, INVERT_NO);
 }
@@ -622,7 +622,7 @@ overleft_tnumber_range(const Temporal *temp, const RangeType *range)
  * number range value
  */
 bool
-right_tnumber_range(const Temporal *temp, const RangeType *range)
+right_tnumber_range(const Temporal *tnumber, const RangeType *range)
 {
   return boxop_tnumber_range(tnumber, range, &right_tbox_tbox, INVERT_NO);
 }
@@ -633,7 +633,7 @@ right_tnumber_range(const Temporal *temp, const RangeType *range)
  * number range value
  */
 bool
-overright_tnumber_range(const Temporal *temp, const RangeType *range)
+overright_tnumber_range(const Temporal *tnumber, const RangeType *range)
 {
   return boxop_tnumber_range(tnumber, range, &overright_tbox_tbox, INVERT_NO);
 }
@@ -784,7 +784,7 @@ overright_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 bool
 before_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
 {
-  return boxop_tnumber_tbox(tnumber, tbox, &before_tbox_tbo, INVERT_NO);
+  return boxop_tnumber_tbox(tnumber, tbox, &before_tbox_tbox, INVERT_NO);
 }
 
 /**
@@ -829,7 +829,7 @@ overafter_tnumber_tbox(const Temporal *tnumber, const TBOX *tbox)
  * the second one
  */
 bool
-left_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+left_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &left_tbox_tbox);
 }
@@ -840,7 +840,7 @@ left_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-overleft_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+overleft_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &overleft_tbox_tbox);
 }
@@ -851,7 +851,7 @@ overleft_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-right_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+right_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &right_tbox_tbox);
 }
@@ -862,7 +862,7 @@ right_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-overright_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+overright_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &overright_tbox_tbox);
 }
@@ -873,7 +873,7 @@ overright_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-before_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+before_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &before_tbox_tbox);
 }
@@ -884,7 +884,7 @@ before_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-overbefore_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+overbefore_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &overbefore_tbox_tbox);
 }
@@ -895,7 +895,7 @@ overbefore_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-after_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+after_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &after_tbox_tbox);
 }
@@ -906,7 +906,7 @@ after_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
  * the second one
  */
 bool
-overafter_tnumber_tnumber(const Temporal *tnumber1, const Temporal *temp2)
+overafter_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
 {
   return boxop_tnumber_tnumber(tnumber1, tnumber2, &overafter_tbox_tbox);
 }

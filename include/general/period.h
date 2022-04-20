@@ -78,12 +78,16 @@ extern Period *timestamp_period(TimestampTz t);
 
 /* Accessor functions */
 
+extern TimestampTz period_lower(Period *p);
+extern TimestampTz period_upper(Period *p);
+extern bool period_lower_inc(Period *p);
+extern bool period_upper_inc(Period *p);
 extern Interval *period_duration(const Period *p);
 
 /* Modification functions */
 
-extern void period_shift_tscale(const Interval *start, const Interval *duration,
-  Period *result);
+extern void period_shift_tscale(const Interval *start,
+  const Interval *duration, Period *result);
 
 /* Comparison functions */
 
@@ -100,6 +104,6 @@ extern bool period_gt(const Period *p1, const Period *p2);
 extern uint32 period_hash(const Period *p);
 extern uint64 period_hash_extended(const Period *p, Datum seed);
 
-#endif
-
 /*****************************************************************************/
+
+#endif

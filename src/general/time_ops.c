@@ -297,20 +297,6 @@ contains_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
   return timestampset_find_timestamp(ts, t, &loc);
 }
 
-PG_FUNCTION_INFO_V1(Contains_timestampset_timestamp);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = contains_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the first time value contains the second one.
@@ -343,21 +329,6 @@ contains_timestampset_timestampset(const TimestampSet *ts1,
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Contains_timestampset_timestampset);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the first time value contains the second one.
@@ -376,18 +347,6 @@ contains_period_timestamp(const Period *p, TimestampTz t)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Contains_period_timestamp);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_BOOL(contains_period_timestamp(p, t));
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the first time value contains the second one.
@@ -400,20 +359,6 @@ contains_period_timestampset(const Period *p, const TimestampSet *ts)
   if (! contains_period_period(p, p1))
     return false;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Contains_period_timestampset);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_period_timestampset(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -433,18 +378,6 @@ contains_period_period(const Period *p1, const Period *p2)
   return false;
 }
 
-PG_FUNCTION_INFO_V1(Contains_period_period);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(contains_period_period(p1, p2));
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the first time value contains the second one.
@@ -461,20 +394,6 @@ contains_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
   if (! periodset_find_timestamp(ps, t, &loc))
     return false;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Contains_periodset_timestamp);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = contains_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -508,21 +427,6 @@ contains_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Contains_periodset_timestampset);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the first time value contains the second one.
@@ -541,20 +445,6 @@ contains_periodset_period(const PeriodSet *ps, const Period *p)
   return contains_period_period(p1, p);
 }
 
-PG_FUNCTION_INFO_V1(Contains_periodset_period);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = contains_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the first time value contains the second one.
@@ -564,20 +454,6 @@ contains_period_periodset(const Period *p, const PeriodSet *ps)
 {
   const Period *p1 = periodset_bbox_ptr(ps);
   return contains_period_period(p, p1);
-}
-
-PG_FUNCTION_INFO_V1(Contains_period_periodset);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -623,111 +499,73 @@ contains_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   return (j == ps2->count);
 }
 
-PG_FUNCTION_INFO_V1(Contains_periodset_periodset);
-/**
- * Return true if the first time value contains the second one
- */
-PGDLLEXPORT Datum
-Contains_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /*****************************************************************************/
 /* contained? */
 
-PG_FUNCTION_INFO_V1(Contained_timestamp_timestampset);
 /**
- * Return true if the first time value is contained by the second one
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
  */
-PGDLLEXPORT Datum
-Contained_timestamp_timestampset(PG_FUNCTION_ARGS)
+bool
+contained_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_timestamp_period);
-/**
- * Return true if the first time value is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(contains_period_timestamp(p, t));
-}
-
-PG_FUNCTION_INFO_V1(Contained_timestamp_periodset);
-/**
- * Return true if the first time value is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_timestampset_timestampset);
-/**
- * Return true if the first time value is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = contains_timestampset_timestampset(ts2, ts1);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_timestampset_period);
-/**
- * Return true if the first time value is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = contains_period_timestampset(p, ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_timestampset_periodset);
-/**
- * Return true if the first time value is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
+  return contains_timestampset_timestamp(ts, t);
 }
 
 /**
  * @ingroup libmeos_time_oper_topo
- * @brief Return true if the first time value is contained by the second one.
+ * @brief Return true if the first time value is contained by the second one
+ */
+bool
+contained_timestamp_period(TimestampTz t, const Period *p)
+{
+  return contains_period_timestamp(p, t);
+}
+
+/**
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
+ */
+bool
+contained_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+{
+  return contains_periodset_timestamp(ps, t);
+}
+
+/**
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
+ */
+bool
+contained_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
+{
+  return contains_timestampset_timestampset(ts2, ts1);
+}
+
+/**
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
+ */
+bool
+contained_timestampset_period(const TimestampSet *ts, const Period *p)
+{
+  return contains_period_timestampset(p, ts);
+}
+
+/**
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
+ */
+bool
+contained_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
+{
+  return contains_periodset_timestampset(ps, ts);
+}
+
+/**
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
  */
 bool
 contained_period_period(const Period *p1, const Period *p2)
@@ -735,59 +573,34 @@ contained_period_period(const Period *p1, const Period *p2)
   return contains_period_period(p2, p1);
 }
 
-PG_FUNCTION_INFO_V1(Contained_period_period);
 /**
- * Return true if the first time value is contained by the second one
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
  */
-PGDLLEXPORT Datum
-Contained_period_period(PG_FUNCTION_ARGS)
+bool
+contained_period_periodset(const Period *p, const PeriodSet *ps)
 {
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(contains_period_period(p2, p1));
+  return contains_periodset_period(ps, p);
 }
 
-PG_FUNCTION_INFO_V1(Contained_period_periodset);
 /**
- * Return true if the first time value is contained by the second one
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
  */
-PGDLLEXPORT Datum
-Contained_period_periodset(PG_FUNCTION_ARGS)
+bool
+contained_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
+  return contains_period_periodset(p, ps);
 }
 
-PG_FUNCTION_INFO_V1(Contained_periodset_period);
 /**
- * Return true if the first time value is contained by the second one
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the first time value is contained by the second one
  */
-PGDLLEXPORT Datum
-Contained_periodset_period(PG_FUNCTION_ARGS)
+bool
+contained_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = contains_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Contained_periodset_periodset);
-/**
- * Return true if the first time value is contained by the second one
- */
-PGDLLEXPORT Datum
-Contained_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = contains_periodset_periodset(ps2, ps1);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
+  return contains_periodset_periodset(ps2, ps1);
 }
 
 /*****************************************************************************/
@@ -823,21 +636,6 @@ overlaps_timestampset_timestampset(const TimestampSet *ts1,
   return false;
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_timestampset_timestampset);
-/**
- * Return true if the two time values overlap
- */
-PGDLLEXPORT Datum
-Overlaps_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overlaps_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the two time values overlap.
@@ -857,20 +655,6 @@ overlaps_timestampset_period(const TimestampSet *ts, const Period *p)
       return true;
   }
   return false;
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_timestampset_period);
-/**
- * Return true if the two time values overlap
- */
-PGDLLEXPORT Datum
-Overlaps_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = overlaps_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -901,33 +685,14 @@ overlaps_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return false;
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_timestampset_periodset);
 /**
- * Return true if the two time values overlap
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time values overlap
  */
-PGDLLEXPORT Datum
-Overlaps_timestampset_periodset(PG_FUNCTION_ARGS)
+bool
+overlaps_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overlaps_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_period_timestampset);
-/**
- * Return true if the two time values overlap
- */
-PGDLLEXPORT Datum
-Overlaps_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overlaps_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
+  return overlaps_timestampset_period(ts, p);
 }
 
 /**
@@ -945,18 +710,6 @@ overlaps_period_period(const Period *p1, const Period *p2)
   )
     return true;
   return false;
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_period_period);
-/**
- * Return true if the two time values overlap
- */
-PGDLLEXPORT Datum
-Overlaps_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overlaps_period_period(p1, p2));
 }
 
 /**
@@ -985,47 +738,24 @@ overlaps_period_periodset(const Period *p, const PeriodSet *ps)
   return false;
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_period_periodset);
 /**
- * Return true if the two time values overlap
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time values overlap
  */
-PGDLLEXPORT Datum
-Overlaps_period_periodset(PG_FUNCTION_ARGS)
+bool
+overlaps_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overlaps_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
+  return overlaps_timestampset_periodset(ts, ps);
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_periodset_timestampset);
 /**
- * Return true if the two time values overlap
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time values overlap
  */
-PGDLLEXPORT Datum
-Overlaps_periodset_timestampset(PG_FUNCTION_ARGS)
+bool
+overlaps_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overlaps_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Overlaps_periodset_period);
-/**
- * Return true if the two time values overlap
- */
-PGDLLEXPORT Datum
-Overlaps_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = overlaps_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
+  return overlaps_period_periodset(p, ps);
 }
 
 /**
@@ -1061,21 +791,6 @@ overlaps_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   return false;
 }
 
-PG_FUNCTION_INFO_V1(Overlaps_periodset_periodset);
-/**
- * Return true if the two time values overlap
- */
-PGDLLEXPORT Datum
-Overlaps_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = overlaps_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /*****************************************************************************/
 /* adjacent to (but not overlapping)? */
 
@@ -1092,18 +807,6 @@ adjacent_timestamp_period(TimestampTz t, const Period *p)
    */
   return (t == p->lower && ! p->lower_inc) ||
     (p->upper == t && ! p->upper_inc);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_timestamp_period);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(adjacent_timestamp_period(t, p));
 }
 
 /**
@@ -1123,20 +826,6 @@ adjacent_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
        (p2->upper == t && ! p2->upper_inc);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_timestamp_periodset);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = adjacent_timestamp_periodset(t, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_topo
  * @brief Return true if the two time value are adjacent.
@@ -1152,20 +841,6 @@ adjacent_timestampset_period(const TimestampSet *ts, const Period *p)
   TimestampTz t2 = timestampset_time_n(ts, ts->count - 1);
   return (t2 == p->lower && ! p->lower_inc) ||
        (p->upper == t1 && ! p->upper_inc);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_timestampset_period);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = adjacent_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1187,45 +862,24 @@ adjacent_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
        (p2->upper == t1 && ! p2->upper_inc);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_timestampset_periodset);
 /**
- * Return true if the two time value are adjacent
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time value are adjacent
  */
-PGDLLEXPORT Datum
-Adjacent_timestampset_periodset(PG_FUNCTION_ARGS)
+bool
+adjacent_period_timestamp(const Period *p, TimestampTz t)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = adjacent_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
+  return adjacent_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_period_timestamp);
 /**
- * Return true if the two time value are adjacent
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time value are adjacent
  */
-PGDLLEXPORT Datum
-Adjacent_period_timestamp(PG_FUNCTION_ARGS)
+bool
+adjacent_period_timestampset(const Period *p, const TimestampSet *ts)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_BOOL(adjacent_timestamp_period(t, p));
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_period_timestampset);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = adjacent_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
+  return adjacent_timestampset_period(ts, p);
 }
 
 /**
@@ -1241,18 +895,6 @@ adjacent_period_period(const Period *p1, const Period *p2)
    */
   return (p1->upper == p2->lower && p1->upper_inc != p2->lower_inc) ||
        (p2->upper == p1->lower && p2->upper_inc != p1->lower_inc);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_period_period);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(adjacent_period_period(p1, p2));
 }
 
 /**
@@ -1272,61 +914,34 @@ adjacent_period_periodset(const Period *p, const PeriodSet *ps)
        (p->upper == p1->lower && p->upper_inc != p1->lower_inc);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_period_periodset);
 /**
- * Return true if the two time value are adjacent
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time value are adjacent
  */
-PGDLLEXPORT Datum
-Adjacent_period_periodset(PG_FUNCTION_ARGS)
+bool
+adjacent_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = adjacent_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
+  return adjacent_timestamp_periodset(t, ps);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_periodset_timestamp);
 /**
- * Return true if the two time value are adjacent
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time value are adjacent
  */
-PGDLLEXPORT Datum
-Adjacent_periodset_timestamp(PG_FUNCTION_ARGS)
+bool
+adjacent_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = adjacent_timestamp_periodset(t, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
+  return adjacent_timestampset_periodset(ts, ps);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_periodset_timestampset);
 /**
- * Return true if the two time value are adjacent
+ * @ingroup libmeos_time_oper_topo
+ * @brief Return true if the two time value are adjacent
  */
-PGDLLEXPORT Datum
-Adjacent_periodset_timestampset(PG_FUNCTION_ARGS)
+bool
+adjacent_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = adjacent_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Adjacent_periodset_period);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = adjacent_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
+  return adjacent_period_periodset(p, ps);
 }
 
 /**
@@ -1348,21 +963,6 @@ adjacent_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
     (endps2->upper == startps1 ->lower && endps2->upper_inc != startps1 ->lower_inc);
 }
 
-PG_FUNCTION_INFO_V1(Adjacent_periodset_periodset);
-/**
- * Return true if the two time value are adjacent
- */
-PGDLLEXPORT Datum
-Adjacent_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = adjacent_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /*****************************************************************************/
 /* strictly before of? */
 
@@ -1378,20 +978,6 @@ before_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t < t1);
 }
 
-PG_FUNCTION_INFO_V1(Before_timestamp_timestampset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = before_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1401,18 +987,6 @@ before_timestamp_period(TimestampTz t, const Period *p)
 {
   int cmp = timestamp_cmp_internal(t, p->lower);
   return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
-}
-
-PG_FUNCTION_INFO_V1(Before_timestamp_period);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(before_timestamp_period(t, p));
 }
 
 /**
@@ -1426,20 +1000,6 @@ before_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
   return before_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(Before_timestamp_periodset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = before_timestamp_periodset(t, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1449,20 +1009,6 @@ before_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   TimestampTz t1 = timestampset_time_n(ts, ts->count - 1);
   return (t1 < t);
-}
-
-PG_FUNCTION_INFO_V1(Before_timestampset_timestamp);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = before_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1478,21 +1024,6 @@ before_timestampset_timestampset(const TimestampSet *ts1,
   return (t1 < t2);
 }
 
-PG_FUNCTION_INFO_V1(Before_timestampset_timestampset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = before_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1502,20 +1033,6 @@ before_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
   return before_timestamp_period(t, p);
-}
-
-PG_FUNCTION_INFO_V1(Before_timestampset_period);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = before_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1530,21 +1047,6 @@ before_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return before_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(Before_timestampset_periodset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = before_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1557,18 +1059,6 @@ before_period_timestamp(const Period *p, TimestampTz t)
   return (cmp < 0 || (cmp == 0 && ! p->upper_inc));
 }
 
-PG_FUNCTION_INFO_V1(Before_period_timestamp);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_BOOL(before_period_timestamp(p, t));
-}
-
 /**
  * Return true if the first time value is strictly before the second one
  */
@@ -1577,20 +1067,6 @@ before_period_timestampset(const Period *p, const TimestampSet *ts)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
   return before_period_timestamp(p, t);
-}
-
-PG_FUNCTION_INFO_V1(Before_period_timestampset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = before_period_timestampset(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1604,18 +1080,6 @@ before_period_period(const Period *p1, const Period *p2)
   return (cmp < 0 || (cmp == 0 && (! p1->upper_inc || ! p2->lower_inc)));
 }
 
-PG_FUNCTION_INFO_V1(Before_period_period);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(before_period_period(p1, p2));
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1627,20 +1091,6 @@ before_period_periodset(const Period *p, const PeriodSet *ps)
   return before_period_period(p, p1);
 }
 
-PG_FUNCTION_INFO_V1(Before_period_periodset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = before_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1650,20 +1100,6 @@ before_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = periodset_per_n(ps, ps->count - 1);
   return before_period_timestamp(p, t);
-}
-
-PG_FUNCTION_INFO_V1(Before_periodset_timestamp);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = before_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1678,21 +1114,6 @@ before_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return before_period_timestamp(p, t);
 }
 
-PG_FUNCTION_INFO_V1(Before_periodset_timestampset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = before_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly before the second one.
@@ -1702,20 +1123,6 @@ before_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, ps->count - 1);
   return before_period_period(p1, p);
-}
-
-PG_FUNCTION_INFO_V1(Before_periodset_period);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = before_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1728,21 +1135,6 @@ before_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   const Period *p1 = periodset_per_n(ps1, ps1->count - 1);
   const Period *p2 = periodset_per_n(ps2, 0);
   return before_period_period(p1, p2);
-}
-
-PG_FUNCTION_INFO_V1(Before_periodset_periodset);
-/**
- * Return true if the first time value is strictly before the second one
- */
-PGDLLEXPORT Datum
-Before_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = before_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -1759,20 +1151,6 @@ after_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t > t1);
 }
 
-PG_FUNCTION_INFO_V1(After_timestamp_timestampset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = after_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the second one.
@@ -1782,18 +1160,6 @@ after_timestamp_period(TimestampTz t, const Period *p)
 {
   int cmp = timestamp_cmp_internal(t, p->upper);
   return (cmp > 0 || (cmp == 0 && ! p->upper_inc));
-}
-
-PG_FUNCTION_INFO_V1(After_timestamp_period);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(after_timestamp_period(t, p));
 }
 
 /**
@@ -1807,20 +1173,6 @@ after_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
   return after_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(After_timestamp_periodset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = after_timestamp_periodset(t, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the second one.
@@ -1830,20 +1182,6 @@ after_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   TimestampTz t1 = timestampset_time_n(ts, 0);
   return (t1 > t);
-}
-
-PG_FUNCTION_INFO_V1(After_timestampset_timestamp);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = after_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1859,21 +1197,6 @@ after_timestampset_timestampset(const TimestampSet *ts1,
   return (t1 > t2);
 }
 
-PG_FUNCTION_INFO_V1(After_timestampset_timestampset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = after_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the second one.
@@ -1883,20 +1206,6 @@ after_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
   return after_timestamp_period(t, p);
-}
-
-PG_FUNCTION_INFO_V1(After_timestampset_period);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = after_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -1911,21 +1220,6 @@ after_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return after_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(After_timestampset_periodset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = after_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the
@@ -1936,18 +1230,6 @@ after_period_timestamp(const Period *p, TimestampTz t)
 {
   int cmp = timestamp_cmp_internal(t, p->lower);
   return (cmp < 0 || (cmp == 0 && ! p->lower_inc));
-}
-
-PG_FUNCTION_INFO_V1(After_period_timestamp);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_BOOL(after_period_timestamp(p, t));
 }
 
 /**
@@ -1961,20 +1243,6 @@ after_period_timestampset(const Period *p, const TimestampSet *ts)
   return after_period_timestamp(p, t);
 }
 
-PG_FUNCTION_INFO_V1(After_period_timestampset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = after_period_timestampset(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the second one.
@@ -1984,18 +1252,6 @@ after_period_period(const Period *p1, const Period *p2)
 {
   int cmp = timestamp_cmp_internal(p2->upper, p1->lower);
   return (cmp < 0 || (cmp == 0 && (! p2->upper_inc || ! p1->lower_inc)));
-}
-
-PG_FUNCTION_INFO_V1(After_period_period);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(after_period_period(p1, p2));
 }
 
 /**
@@ -2009,20 +1265,6 @@ after_period_periodset(const Period *p, const PeriodSet *ps)
   return after_period_period(p, p1);
 }
 
-PG_FUNCTION_INFO_V1(After_period_periodset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = after_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the second one.
@@ -2032,20 +1274,6 @@ after_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = periodset_per_n(ps, 0);
   return after_period_timestamp(p, t);
-}
-
-PG_FUNCTION_INFO_V1(After_periodset_timestamp);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = after_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2060,21 +1288,6 @@ after_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return after_period_timestamp(p, t);
 }
 
-PG_FUNCTION_INFO_V1(After_periodset_timestampset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = after_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is strictly after the second one.
@@ -2084,20 +1297,6 @@ after_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, 0);
   return after_period_period(p1, p);
-}
-
-PG_FUNCTION_INFO_V1(After_periodset_period);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = after_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2110,21 +1309,6 @@ after_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   const Period *p1 = periodset_per_n(ps1, 0);
   const Period *p2 = periodset_per_n(ps2, ps2->count - 1);
   return after_period_period(p1, p2);
-}
-
-PG_FUNCTION_INFO_V1(After_periodset_periodset);
-/**
- * Return true if the first time value is strictly after the second one
- */
-PGDLLEXPORT Datum
-After_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = after_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -2141,20 +1325,6 @@ overbefore_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t <= t1);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_timestamp_timestampset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overbefore_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2164,18 +1334,6 @@ overbefore_timestamp_period(TimestampTz t, const Period *p)
 {
   int cmp = timestamp_cmp_internal(t, p->upper);
   return (cmp < 0 || (cmp == 0 && p->upper_inc));
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_timestamp_period);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overbefore_timestamp_period(t, p));
 }
 
 /**
@@ -2189,20 +1347,6 @@ overbefore_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
   return overbefore_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_timestamp_periodset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overbefore_timestamp_periodset(t, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2212,20 +1356,6 @@ overbefore_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   TimestampTz t1 = timestampset_time_n(ts, ts->count - 1);
   return (t1 <= t);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestamp);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = overbefore_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2241,21 +1371,6 @@ overbefore_timestampset_timestampset(const TimestampSet *ts1,
   return (t1 <= t2);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_timestampset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overbefore_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2265,20 +1380,6 @@ overbefore_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, ts->count - 1);
   return (overbefore_timestamp_period(t, p));
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_period);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = overbefore_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2293,21 +1394,6 @@ overbefore_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return (!after_timestamp_period(t, p));
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_timestampset_periodset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overbefore_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2316,18 +1402,6 @@ bool
 overbefore_period_timestamp(const Period *p, TimestampTz t)
 {
   return p->upper <= t;
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_period_timestamp);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_BOOL(overbefore_period_timestamp(p, t));
 }
 
 /**
@@ -2341,20 +1415,6 @@ overbefore_period_timestampset(const Period *p, const TimestampSet *ts)
   return (overbefore_period_timestamp(p, t));
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_period_timestampset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overbefore_period_timestampset(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2364,18 +1424,6 @@ overbefore_period_period(const Period *p1, const Period *p2)
 {
   int cmp = timestamp_cmp_internal(p1->upper, p2->upper);
   return (cmp < 0 || (cmp == 0 && (! p1->upper_inc || p2->upper_inc)));
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_period_period);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overbefore_period_period(p1, p2));
 }
 
 /**
@@ -2389,20 +1437,6 @@ overbefore_period_periodset(const Period *p, const PeriodSet *ps)
   return overbefore_period_period(p, p1);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_period_periodset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overbefore_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2412,20 +1446,6 @@ overbefore_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = periodset_per_n(ps, ps->count - 1);
   return overbefore_period_timestamp(p, t);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_periodset_timestamp);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = overbefore_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2440,21 +1460,6 @@ overbefore_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return (t1 <= t2);
 }
 
-PG_FUNCTION_INFO_V1(Overbefore_periodset_timestampset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overbefore_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not after the second one.
@@ -2464,20 +1469,6 @@ overbefore_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, ps->count - 1);
   return overbefore_period_period(p1, p);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_periodset_period);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = overbefore_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2490,21 +1481,6 @@ overbefore_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   const Period *p1 = periodset_per_n(ps1, ps1->count - 1);
   const Period *p2 = periodset_per_n(ps2, ps2->count - 1);
   return overbefore_period_period(p1, p2);
-}
-
-PG_FUNCTION_INFO_V1(Overbefore_periodset_periodset);
-/**
- * Return true if the first time value is not after the second one
- */
-PGDLLEXPORT Datum
-Overbefore_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = overbefore_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -2521,20 +1497,6 @@ overafter_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return (t >= t1);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_timestamp_timestampset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overafter_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2544,18 +1506,6 @@ overafter_timestamp_period(TimestampTz t, const Period *p)
 {
   int cmp = timestamp_cmp_internal(p->lower, t);
   return (cmp < 0 || (cmp == 0 && p->lower_inc));
-}
-
-PG_FUNCTION_INFO_V1(Overafter_timestamp_period);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overafter_timestamp_period(t, p));
 }
 
 /**
@@ -2569,20 +1519,6 @@ overafter_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
   return overafter_timestamp_period(t, p);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_timestamp_periodset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overafter_timestamp_periodset(t, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2592,20 +1528,6 @@ overafter_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
 {
   TimestampTz t1 = timestampset_time_n(ts, 0);
   return (t1 >= t);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_timestampset_timestamp);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = overafter_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2621,21 +1543,6 @@ overafter_timestampset_timestampset(const TimestampSet *ts1,
   return (t1 >= t2);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_timestampset_timestampset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overafter_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2645,20 +1552,6 @@ overafter_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   TimestampTz t = timestampset_time_n(ts, 0);
   return (overafter_timestamp_period(t, p));
-}
-
-PG_FUNCTION_INFO_V1(Overafter_timestampset_period);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = overafter_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2673,21 +1566,6 @@ overafter_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return (overafter_timestamp_period(t, p));
 }
 
-PG_FUNCTION_INFO_V1(Overafter_timestampset_periodset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overafter_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2696,18 +1574,6 @@ bool
 overafter_period_timestamp(const Period *p, TimestampTz t)
 {
   return (t <= p->lower);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_period_timestamp);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PG_RETURN_BOOL(overafter_period_timestamp(p, t));
 }
 
 /**
@@ -2721,20 +1587,6 @@ overafter_period_timestampset(const Period *p, const TimestampSet *ts)
   return (overafter_period_timestamp(p, t));
 }
 
-PG_FUNCTION_INFO_V1(Overafter_period_timestampset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overafter_period_timestampset(p, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2744,18 +1596,6 @@ overafter_period_period(const Period *p1, const Period *p2)
 {
   int cmp = timestamp_cmp_internal(p2->lower, p1->lower);
   return (cmp < 0 || (cmp == 0 && (! p1->lower_inc || p2->lower_inc)));
-}
-
-PG_FUNCTION_INFO_V1(Overafter_period_period);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_BOOL(overafter_period_period(p1, p2));
 }
 
 /**
@@ -2769,20 +1609,6 @@ overafter_period_periodset(const Period *p, const PeriodSet *ps)
   return overafter_period_period(p, p1);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_period_periodset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool result = overafter_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2792,20 +1618,6 @@ overafter_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
   const Period *p = periodset_per_n(ps, 0);
   return overafter_period_timestamp(p, t);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_periodset_timestamp);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool result = overafter_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2820,21 +1632,6 @@ overafter_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return (t1 >= t2);
 }
 
-PG_FUNCTION_INFO_V1(Overafter_periodset_timestampset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool result = overafter_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_BOOL(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_pos
  * @brief Return true if the first time value is not before the second one.
@@ -2844,20 +1641,6 @@ overafter_periodset_period(const PeriodSet *ps, const Period *p)
 {
   const Period *p1 = periodset_per_n(ps, 0);
   return overafter_period_period(p1, p);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_periodset_period);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool result = overafter_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_BOOL(result);
 }
 
 /**
@@ -2870,21 +1653,6 @@ overafter_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   const Period *p1 = periodset_per_n(ps1, 0);
   const Period *p2 = periodset_per_n(ps2, 0);
   return overafter_period_period(p1, p2);
-}
-
-PG_FUNCTION_INFO_V1(Overafter_periodset_periodset);
-/**
- * Return true if the first time value is not before the second one
- */
-PGDLLEXPORT Datum
-Overafter_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  bool result = overafter_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -2920,19 +1688,6 @@ union_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_timestamp_timestamp);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampSet *result = union_timestamp_timestamp(t1, t2);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the union of the two time values.
@@ -2964,65 +1719,42 @@ union_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
   return timestampset_make_free(times, k);
 }
 
-PG_FUNCTION_INFO_V1(Union_timestamp_timestampset);
 /**
- * Return the union of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
  */
-PGDLLEXPORT Datum
-Union_timestamp_timestampset(PG_FUNCTION_ARGS)
+PeriodSet *
+union_timestamp_period(TimestampTz t, const Period *p)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = union_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_timestamp_period);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
   period_set(t, t, true, true, &p1);
   PeriodSet *result = union_period_period(p, &p1);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_timestamp_periodset);
 /**
- * Return the union of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
  */
-PGDLLEXPORT Datum
-Union_timestamp_periodset(PG_FUNCTION_ARGS)
+PeriodSet *
+union_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   Period p;
   period_set(t, t, true, true, &p);
   PeriodSet *result = union_period_periodset(&p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Union_timestampset_timestamp);
 /**
- * Return the union of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
  */
-PGDLLEXPORT Datum
-Union_timestampset_timestamp(PG_FUNCTION_ARGS)
+TimestampSet *
+union_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampSet *result = union_timestamp_timestampset(t, ts);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_POINTER(result);
+  return union_timestamp_timestampset(t, ts);
 }
 
 /**
@@ -3030,60 +1762,65 @@ Union_timestampset_timestamp(PG_FUNCTION_ARGS)
  * @brief Return the union of the two time values.
  */
 TimestampSet *
-union_timestampset_timestampset(const TimestampSet *ts1, const TimestampSet *ts2)
+union_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
 {
   return setop_timestampset_timestampset(ts1, ts2, UNION);
 }
 
-PG_FUNCTION_INFO_V1(Union_timestampset_timestampset);
 /**
- * Return the union of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
  */
-PGDLLEXPORT Datum
-Union_timestampset_timestampset(PG_FUNCTION_ARGS)
+PeriodSet *
+union_timestampset_period(const TimestampSet *ts, const Period *p)
 {
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = union_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_timestampset_period);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
   PeriodSet *ps = timestampset_periodset(ts);
   PeriodSet *result = union_period_periodset(p, ps);
   pfree(ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_timestampset_periodset);
 /**
- * Return the union of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
  */
-PGDLLEXPORT Datum
-Union_timestampset_periodset(PG_FUNCTION_ARGS)
+PeriodSet *
+union_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
   PeriodSet *ps1 = timestampset_periodset(ts);
   PeriodSet *result = union_periodset_periodset(ps, ps1);
   pfree(ps1);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
+ */
+PeriodSet *
+union_period_timestamp(const Period *p, TimestampTz t)
+{
+  Period p1;
+  period_set(t, t, true, true, &p1);
+  PeriodSet *result = union_period_period(p, &p1);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
+ */
+PeriodSet *
+union_period_timestampset(const Period *p, const TimestampSet *ts)
+{
+  PeriodSet *ps = timestampset_periodset(ts);
+  PeriodSet *result = union_period_periodset(p, ps);
+  pfree(ps);
+  return result;
+}
 
 /**
  * @ingroup libmeos_time_oper_set
@@ -3119,49 +1856,6 @@ union_period_period(const Period *p1, const Period *p2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_period_timestamp);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p1;
-  period_set(t, t, true, true, &p1);
-  PeriodSet *result = union_period_period(p, &p1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_period_timestampset);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  PeriodSet *ps = timestampset_periodset(ts);
-  PeriodSet *result = union_period_periodset(p, ps);
-  pfree(ps);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_period_period);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PG_RETURN_POINTER(union_period_period(p1, p2));
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the union of the two time values.
@@ -3175,20 +1869,6 @@ union_period_periodset(const Period *p, const PeriodSet *ps)
   PeriodSet *result = union_periodset_periodset(ps1, ps);
   pfree(ps1);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Union_period_periodset);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = union_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
@@ -3206,20 +1886,6 @@ union_periodset_timestamp(PeriodSet *ps, TimestampTz t)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_periodset_timestamp);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PeriodSet *result = union_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the union of the two time values.
@@ -3233,33 +1899,14 @@ union_periodset_timestampset(PeriodSet *ps, TimestampSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_periodset_timestampset);
 /**
- * Return the union of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the union of the two time values
  */
-PGDLLEXPORT Datum
-Union_periodset_timestampset(PG_FUNCTION_ARGS)
+PeriodSet *
+union_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  PeriodSet *result = union_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Union_periodset_period);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PeriodSet *result = union_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_RETURN_POINTER(result);
+  return  union_period_periodset(p, ps);
 }
 
 /**
@@ -3363,100 +2010,80 @@ union_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Union_periodset_periodset);
-/**
- * Return the union of the two time values
- */
-PGDLLEXPORT Datum
-Union_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = union_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Intersection_timestamp_timestamp);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_timestamp_timestamp(PG_FUNCTION_ARGS)
+bool
+intersection_timestamp_timestamp(TimestampTz t1, TimestampTz t2,
+  TimestampTz *result)
 {
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
   if (t1 != t2)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t1);
+    return false;
+  *result  = t1;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_timestamp_timestampset);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_timestamp_timestampset(PG_FUNCTION_ARGS)
+bool
+intersection_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
+  TimestampTz *result)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  bool contains = contains_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 1);
-  if (! contains)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t);
+  if (! contains_timestampset_timestamp(ts, t))
+    return false;
+  *result  = t;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_timestamp_period);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_timestamp_period(PG_FUNCTION_ARGS)
+bool
+intersection_timestamp_period(TimestampTz t, const Period *p,
+  TimestampTz *result)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  bool contains = contains_period_timestamp(p, t);
-  if (! contains)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t);
+  if (! contains_period_timestamp(p, t))
+    return false;
+  *result  = t;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_timestamp_periodset);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_timestamp_periodset(PG_FUNCTION_ARGS)
+bool
+intersection_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
+  TimestampTz *result)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  bool contains = contains_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 1);
-  if (! contains)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t);
+  if (! contains_periodset_timestamp(ps, t))
+    return false;
+  *result  = t;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_timestampset_timestamp);
+/*****************************************************************************/
+
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_timestampset_timestamp(PG_FUNCTION_ARGS)
+bool
+intersection_timestampset_timestamp(const TimestampSet *ts, const TimestampTz t,
+  TimestampTz *result)
 {
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool contains = contains_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  if (! contains)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t);
+  if (! contains_timestampset_timestamp(ts, t))
+    return false;
+  *result  = t;
+  return true;
 }
 
 /**
@@ -3470,23 +2097,6 @@ intersection_timestampset_timestampset(const TimestampSet *ts1,
   return setop_timestampset_timestampset(ts1, ts2, INTER);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_timestampset_timestampset);
-/**
- * Return the intersection of the two time values
- */
-PGDLLEXPORT Datum
-Intersection_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = intersection_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the intersection of the two time values.
@@ -3495,22 +2105,6 @@ TimestampSet *
 intersection_timestampset_period(const TimestampSet *ts, const Period *p)
 {
   return setop_timestampset_period(ts, p, INTER);
-}
-
-PG_FUNCTION_INFO_V1(Intersection_timestampset_period);
-/**
- * @brief Return the intersection of the two time values.
- */
-PGDLLEXPORT Datum
-Intersection_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  TimestampSet *result = intersection_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -3523,55 +2117,30 @@ intersection_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
   return setop_timestampset_periodset(ts, ps, INTER);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_timestampset_periodset);
-/**
- * Return the intersection of the two time values
- */
-PGDLLEXPORT Datum
-Intersection_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  TimestampSet *result = intersection_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Intersection_period_timestamp);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_period_timestamp(PG_FUNCTION_ARGS)
+bool
+intersection_period_timestamp(const Period *p, TimestampTz t,
+  TimestampTz *result)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool contains = contains_period_timestamp(p, t);
-  if (! contains)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t);
+  if (! contains_period_timestamp(p, t))
+    return false;
+  *result  = t;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_period_timestampset);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_period_timestampset(PG_FUNCTION_ARGS)
+TimestampSet *
+intersection_period_timestampset(const Period *ps, const TimestampSet *ts)
 {
-  Period *ps = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = intersection_timestampset_period(ts, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return intersection_timestampset_period(ts, ps);
 }
 
 /**
@@ -3614,21 +2183,6 @@ intersection_period_period(const Period *p1, const Period *p2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_period_period);
-/**
- * Return the intersection of the two time values
- */
-PGDLLEXPORT Datum
-Intersection_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  Period *result = intersection_period_period(p1, p2);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_PERIOD_P(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the intersection of the two time values.
@@ -3663,71 +2217,40 @@ intersection_period_periodset(const Period *p, const PeriodSet *ps)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_period_periodset);
-/**
- * Return the intersection of the two time values
- */
-PGDLLEXPORT Datum
-Intersection_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = intersection_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Intersection_periodset_timestamp);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_periodset_timestamp(PG_FUNCTION_ARGS)
+bool
+intersection_periodset_timestamp(const PeriodSet *ps, TimestampTz t,
+  TimestampTz *result)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  bool contains = contains_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  if (! contains)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(t);
+  if (! contains_periodset_timestamp(ps, t))
+    return false;
+  *result = t;
+  return true;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_periodset_timestampset);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_periodset_timestampset(PG_FUNCTION_ARGS)
+TimestampSet *
+intersection_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = intersection_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return intersection_timestampset_periodset(ts, ps);
 }
 
-PG_FUNCTION_INFO_V1(Intersection_periodset_period);
 /**
- * Return the intersection of the two time values
+ * @ingroup libmeos_time_oper_set
+ * @brief Return the intersection of the two time values
  */
-PGDLLEXPORT Datum
-Intersection_periodset_period(PG_FUNCTION_ARGS)
+PeriodSet *
+intersection_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PeriodSet *result = intersection_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return intersection_period_periodset(p, ps);
 }
 
 /**
@@ -3771,23 +2294,6 @@ intersection_periodset_periodset(const PeriodSet *ps1,
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Intersection_periodset_periodset);
-/**
- * Return the intersection of the two time values
- */
-PGDLLEXPORT Datum
-Intersection_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = intersection_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Set difference
  * The functions produce new results that must be freed after
@@ -3806,21 +2312,6 @@ minus_timestamp_timestamp(TimestampTz t1, TimestampTz t2, TimestampTz *result)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Minus_timestamp_timestamp);
-/**
- * @brief Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampTz result;
-  if (! minus_timestamp_timestamp(t1, t2, &result))
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the difference of the two time values
@@ -3833,23 +2324,6 @@ minus_timestamp_timestampset(TimestampTz t, const TimestampSet *ts,
     return false;
   *result = t;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Minus_timestamp_timestampset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampTz result;
-  bool found = minus_timestamp_timestampset(t, ts, &result);
-  PG_FREE_IF_COPY(ts, 1);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 /**
@@ -3865,22 +2339,6 @@ minus_timestamp_period(TimestampTz t, const Period *p, TimestampTz *result)
   return true;
 }
 
-PG_FUNCTION_INFO_V1(Minus_timestamp_period);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  TimestampTz result;
-  bool found = minus_timestamp_period(t, p, &result);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the difference of the two time values
@@ -3893,23 +2351,6 @@ minus_timestamp_periodset(TimestampTz t, const PeriodSet *ps,
     return false;
   *result = t;
   return true;
-}
-
-PG_FUNCTION_INFO_V1(Minus_timestamp_periodset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  TimestampTz result;
-  bool found = minus_timestamp_periodset(t, ps, &result);
-  PG_FREE_IF_COPY(ps, 1);
-  if (! found)
-    PG_RETURN_NULL();
-  PG_RETURN_TIMESTAMPTZ(result);
 }
 
 /*****************************************************************************/
@@ -3937,22 +2378,6 @@ minus_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
   return timestampset_make_free(times, k);
 }
 
-PG_FUNCTION_INFO_V1(Minus_timestampset_timestamp);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  TimestampSet *result = minus_timestampset_timestamp(ts, t);
-  PG_FREE_IF_COPY(ts, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the difference of the two time values.
@@ -3962,23 +2387,6 @@ minus_timestampset_timestampset(const TimestampSet *ts1,
   const TimestampSet *ts2)
 {
   return setop_timestampset_timestampset(ts1, ts2, MINUS);
-}
-
-PG_FUNCTION_INFO_V1(Minus_timestampset_timestampset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts1 = PG_GETARG_TIMESTAMPSET_P(0);
-  TimestampSet *ts2 = PG_GETARG_TIMESTAMPSET_P(1);
-  TimestampSet *result = minus_timestampset_timestampset(ts1, ts2);
-  PG_FREE_IF_COPY(ts1, 0);
-  PG_FREE_IF_COPY(ts2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL() ;
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -3991,22 +2399,6 @@ minus_timestampset_period(const TimestampSet *ts, const Period *p)
   return setop_timestampset_period(ts, p, MINUS);
 }
 
-PG_FUNCTION_INFO_V1(Minus_timestampset_period);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestampset_period(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  TimestampSet *result = minus_timestampset_period(ts, p);
-  PG_FREE_IF_COPY(ts, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the difference of the two time values.
@@ -4015,23 +2407,6 @@ TimestampSet *
 minus_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
 {
   return setop_timestampset_periodset(ts, ps, MINUS);
-}
-
-PG_FUNCTION_INFO_V1(Minus_timestampset_periodset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  TimestampSet *result = minus_timestampset_periodset(ts, ps);
-  PG_FREE_IF_COPY(ts, 0);
-  PG_FREE_IF_COPY(ps, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************/
@@ -4087,22 +2462,6 @@ minus_period_timestamp(const Period *p, TimestampTz t)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Minus_period_timestamp);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *ps = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PeriodSet *result = minus_period_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the difference of the two time values.
@@ -4121,23 +2480,6 @@ minus_period_timestampset(const Period *p, const TimestampSet *ts)
   PeriodSet *result = minus_periodset_timestampset(ps, ts);
   pfree(ps);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Minus_period_timestampset);
-/**
- * Return the difference of the two time valuess
- */
-PGDLLEXPORT Datum
-Minus_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *ps = PG_GETARG_PERIOD_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  PeriodSet *result = minus_period_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -4223,21 +2565,6 @@ minus_period_period(const Period *p1, const Period *p2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Minus_period_period);
-/**
- * @brief Return the difference of the two time values.
- */
-PGDLLEXPORT Datum
-Minus_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  PeriodSet *result = minus_period_period(p1, p2);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * Return the difference of the two time values.
  */
@@ -4299,22 +2626,6 @@ minus_period_periodset(const Period *p, const PeriodSet *ps)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Minus_period_periodset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = minus_period_periodset(p, ps);
-  PG_FREE_IF_COPY(ps, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 /**
@@ -4339,22 +2650,6 @@ minus_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
   }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Minus_periodset_timestamp);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  PeriodSet *result = minus_periodset_timestamp(ps, t);
-  PG_FREE_IF_COPY(ps, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -4466,23 +2761,6 @@ minus_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Minus_periodset_timestampset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  PeriodSet *result = minus_periodset_timestampset(ps, ts);
-  PG_FREE_IF_COPY(ps, 0);
-  PG_FREE_IF_COPY(ts, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_set
  * @brief Return the difference of the two time values.
@@ -4505,22 +2783,6 @@ minus_periodset_period(const PeriodSet *ps, const Period *p)
   }
   PeriodSet *result = periodset_make_free(periods, k, NORMALIZE_NO);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(Minus_periodset_period);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_periodset_period(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  PeriodSet *result = minus_periodset_period(ps, p);
-  PG_FREE_IF_COPY(ps, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /**
@@ -4578,26 +2840,122 @@ minus_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(Minus_periodset_periodset);
-/**
- * Return the difference of the two time values
- */
-PGDLLEXPORT Datum
-Minus_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  PeriodSet *ps1 = PG_GETARG_PERIODSET_P(0);
-  PeriodSet *ps2 = PG_GETARG_PERIODSET_P(1);
-  PeriodSet *result = minus_periodset_periodset(ps1, ps2);
-  PG_FREE_IF_COPY(ps1, 0);
-  PG_FREE_IF_COPY(ps2, 1);
-  if (! result)
-    PG_RETURN_NULL() ;
-  PG_RETURN_POINTER(result);
-}
-
 /******************************************************************************
  * Distance functions returning an Interval
  ******************************************************************************/
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
+{
+  Interval *result;
+  if (t1 < t2)
+    result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
+      TimestampTzGetDatum(t2), TimestampTzGetDatum(t1)));
+  else
+    result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
+      TimestampTzGetDatum(t1), TimestampTzGetDatum(t2)));
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+{
+  Period p;
+  timestampset_bbox(ts, &p);
+  Interval *result = distance_period_timestamp(&p, t);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestamp_period(TimestampTz t, const Period *p)
+{
+  Interval *result = distance_period_timestamp(p, t);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+{
+  Period p;
+  periodset_bbox(ps, &p);
+  Interval *result = distance_period_timestamp(&p, t);
+  return result;
+}
+
+/******************************************************************************/
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+{
+  Period p;
+  timestampset_bbox(ts, &p);
+  Interval *result = distance_period_timestamp(&p, t);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
+{
+  Period p1, p2;
+  timestampset_bbox(ts1, &p1);
+  timestampset_bbox(ts2, &p2);
+  Interval *result = distance_period_period(&p1, &p2);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestampset_period(const TimestampSet *ts, const Period *p)
+{
+  Period p1;
+  timestampset_bbox(ts, &p1);
+  Interval *result = distance_period_period(&p1, p);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
+{
+  Period p1, p2;
+  timestampset_bbox(ts, &p1);
+  periodset_bbox(ps, &p2);
+  Interval *result = distance_period_period(&p1, &p2);
+  return result;
+}
+
+/******************************************************************************/
 
 /**
  * @ingroup libmeos_time_oper_dist
@@ -4624,6 +2982,19 @@ distance_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time valuess
+ */
+Interval *
+distance_period_timestampset(const Period *p, const TimestampSet *ts)
+{
+  Period p1;
+  timestampset_bbox(ts, &p1);
+  Interval *result = distance_period_period(p, &p1);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
  * @brief Return the distance between two periods.
  */
 Interval *
@@ -4645,232 +3016,59 @@ distance_period_period(const Period *p1, const Period *p2)
       TimestampTzGetDatum(p1->lower), TimestampTzGetDatum(p2->upper)));
 }
 
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
+ */
+Interval *
+distance_period_periodset(const Period *p, const PeriodSet *ps)
+{
+  Period p1;
+  periodset_bbox(ps, &p1);
+  Interval *result = distance_period_period(&p1, p);
+  return result;
+}
+
 /******************************************************************************/
 
-PG_FUNCTION_INFO_V1(Distance_timestamp_timestamp);
 /**
- * Return the distance of the two time values
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
  */
-PGDLLEXPORT Datum
-Distance_timestamp_timestamp(PG_FUNCTION_ARGS)
+Interval *
+distance_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 {
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  Interval *result;
-  if (t1 < t2)
-    result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(t2), TimestampTzGetDatum(t1)));
-  else
-    result = (Interval *) DatumGetPointer(call_function2(timestamp_mi,
-      TimestampTzGetDatum(t1), TimestampTzGetDatum(t2)));
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_timestamp_timestampset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Datum ts = PG_GETARG_DATUM(1);
   Period p;
-  timestampset_bbox_slice(ts, &p);
+  periodset_bbox(ps, &p);
   Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(Distance_timestamp_period);
 /**
- * Return the distance of the two time values
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
  */
-PGDLLEXPORT Datum
-Distance_timestamp_period(PG_FUNCTION_ARGS)
+Interval *
+distance_periodset_timestampset(const PeriodSet *ps, TimestampSet *ts)
 {
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  Interval *result = distance_period_timestamp(p, t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_timestamp_periodset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p;
-  periodset_bbox_slice(ps, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_timestampset_timestamp);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p;
-  timestampset_bbox_slice(ts, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_timestampset_timestampset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  Datum ts1 = PG_GETARG_DATUM(0);
-  Datum ts2 = PG_GETARG_DATUM(1);
   Period p1, p2;
-  timestampset_bbox_slice(ts1, &p1);
-  timestampset_bbox_slice(ts2, &p2);
+  periodset_bbox(ps, &p1);
+  timestampset_bbox(ts, &p2);
   Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
-PG_FUNCTION_INFO_V1(Distance_timestampset_period);
 /**
- * Return the distance of the two time values
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance of the two time values
  */
-PGDLLEXPORT Datum
-Distance_timestampset_period(PG_FUNCTION_ARGS)
+Interval *
+distance_periodset_period(const PeriodSet *ps, const Period *p)
 {
-  Datum ts = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
   Period p1;
-  timestampset_bbox_slice(ts, &p1);
+  periodset_bbox(ps, &p1);
   Interval *result = distance_period_period(&p1, p);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_timestampset_periodset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  timestampset_bbox_slice(ts, &p1);
-  periodset_bbox_slice(ps, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_period_timestamp);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Interval *result = distance_period_timestamp(p, t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_period_timestampset);
-/**
- * Return the distance of the two time valuess
- */
-PGDLLEXPORT Datum
-Distance_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p1;
-  timestampset_bbox_slice(ts, &p1);
-  Interval *result = distance_period_period(p, &p1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_period_period);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  Interval *result = distance_period_period(p1, p2);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_period_periodset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_period_periodset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p1;
-  periodset_bbox_slice(ps, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_periodset_timestamp);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p;
-  periodset_bbox_slice(ps, &p);
-  Interval *result = distance_period_timestamp(&p, t);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_periodset_timestampset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  periodset_bbox_slice(ps, &p1);
-  timestampset_bbox_slice(ts, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_periodset_period);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_periodset_period(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  periodset_bbox_slice(ps, &p1);
-  Interval *result = distance_period_period(&p1, p);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /**
@@ -4889,25 +3087,134 @@ distance_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 #endif
 
-PG_FUNCTION_INFO_V1(Distance_periodset_periodset);
-/**
- * Return the distance of the two time values
- */
-PGDLLEXPORT Datum
-Distance_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  Datum ps1 = PG_GETARG_DATUM(0);
-  Datum ps2 = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  periodset_bbox_slice(ps1, &p1);
-  periodset_bbox_slice(ps2, &p2);
-  Interval *result = distance_period_period(&p1, &p2);
-  PG_RETURN_POINTER(result);
-}
-
 /******************************************************************************
  * Distance functions returning a double representing the number of seconds
  ******************************************************************************/
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
+ */
+double
+distance_secs_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
+{
+  double result;
+  if (t1 < t2)
+    result = ((float8) t2 - (float8) t1) / USECS_PER_SEC;
+  else
+    result = ((float8) t1 - (float8) t2) / USECS_PER_SEC;
+  return result;
+}
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values.
+ */
+#if 0 /* not used */
+double
+distance_secs_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
+{
+  Period p;
+  timestampset_bbox(ts, &p);
+  double result = distance_secs_period_timestamp(&p, t);
+  return result;
+}
+#endif
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values.
+ */
+#if 0 /* not used */
+double
+distance_secs_timestamp_period(TimestampTz t, const Period *p)
+{
+  return distance_secs_period_timestamp(p, t);
+}
+#endif
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
+ */
+#if 0 /* not used */
+double
+distance_secs_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
+{
+  Period p;
+  periodset_bbox(ps, &p);
+  double result = distance_secs_period_timestamp(&p, t);
+  return result;
+}
+#endif
+
+/******************************************************************************/
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
+ */
+#if 0 /* not used */
+double
+distance_secs_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
+{
+  Period p;
+  timestampset_bbox(ts, &p);
+  double result = distance_secs_period_timestamp(&p, t);
+  return result;
+}
+#endif
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
+ */
+#if 0 /* not used */
+double
+distance_secs_timestampset_timestampset(const TimestampSet *ts1,
+  const TimestampSet *ts2)
+{
+  Period p1, p2;
+  timestampset_bbox(ts1, &p1);
+  timestampset_bbox(ts2, &p2);
+  double result = distance_secs_period_period(&p1, &p2);
+  return result;
+}
+#endif
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values.
+ */
+#if 0 /* not used */
+double
+distance_secs_timestampset_period(const TimestampSet *ts, const Period *p)
+{
+  Period p1;
+  timestampset_bbox(ts, &p1);
+  double result = distance_secs_period_period(&p1, p);
+  return result;
+}
+#endif
+
+/**
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
+ */
+#if 0 /* not used */
+double
+distance_secs_timestampset_periodset(const TimestampSet *ts,
+  const PeriodSet *ps)
+{
+  Period p1, p2;
+  timestampset_bbox(ts, &p1);
+  periodset_bbox(ps, &p2);
+  double result = distance_secs_period_period(&p1, &p2);
+  return result;
+}
+#endif
+
+/******************************************************************************/
 
 /**
  * @ingroup libmeos_time_oper_dist
@@ -4932,6 +3239,18 @@ distance_secs_period_timestamp(const Period *p, TimestampTz t)
 
 /**
  * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
+ */
+#if 0 /* not used */
+double
+distance_secs_period_timestampset(const Period *p, const TimestampSet *ts)
+{
+  return distance_secs_timestampset_period(ts, p);
+}
+#endif
+
+/**
+ * @ingroup libmeos_time_oper_dist
  * @brief Return the distance in seconds between two periods.
  */
 double
@@ -4951,299 +3270,6 @@ distance_secs_period_period(const Period *p1, const Period *p2)
     return ((float8) p1->lower - (float8) p2->upper) / USECS_PER_SEC;
 }
 
-/******************************************************************************/
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values
- */
-double
-distance_secs_timestamp_timestamp(TimestampTz t1, TimestampTz t2)
-{
-  double result;
-  if (t1 < t2)
-    result = ((float8) t2 - (float8) t1) / USECS_PER_SEC;
-  else
-    result = ((float8) t1 - (float8) t2) / USECS_PER_SEC;
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_timestamp(PG_FUNCTION_ARGS)
-{
-  TimestampTz t1 = PG_GETARG_TIMESTAMPTZ(0);
-  TimestampTz t2 = PG_GETARG_TIMESTAMPTZ(1);
-  double result = distance_secs_timestamp_timestamp(t1, t2);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values.
- */
-#if 0 /* not used */
-double
-distance_secs_timestamp_timestampset(TimestampTz t, const TimestampSet *ts)
-{
-  Period p;
-  timestampset_bbox(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  return result;
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_timestampset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_timestampset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p;
-  timestampset_bbox_slice(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values.
- */
-#if 0 /* not used */
-double
-distance_secs_timestamp_period(TimestampTz t, const Period *p)
-{
-  return distance_secs_period_timestamp(p, t);
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_period(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  double result = distance_secs_period_timestamp(p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values
- */
-#if 0 /* not used */
-double
-distance_secs_timestamp_periodset(TimestampTz t, const PeriodSet *ps)
-{
-  Period p;
-  periodset_bbox(ps, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  return result;
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestamp_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestamp_periodset(PG_FUNCTION_ARGS)
-{
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p;
-  periodset_bbox_slice(ps, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values
- */
-#if 0 /* not used */
-double
-distance_secs_timestampset_timestamp(const TimestampSet *ts, TimestampTz t)
-{
-  Period p;
-  timestampset_bbox(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  return result;
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_timestamp(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p;
-  timestampset_bbox_slice(ts, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values
- */
-#if 0 /* not used */
-double
-distance_secs_timestampset_timestampset(const TimestampSet *ts1,
-  const TimestampSet *ts2)
-{
-  Period p1, p2;
-  timestampset_bbox(ts1, &p1);
-  timestampset_bbox(ts2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  return result;
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_timestampset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_timestampset(PG_FUNCTION_ARGS)
-{
-  Datum ts1 = PG_GETARG_DATUM(0);
-  Datum ts2 = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  timestampset_bbox_slice(ts1, &p1);
-  timestampset_bbox_slice(ts2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values.
- */
-#if 0 /* not used */
-double
-distance_secs_timestampset_period(const TimestampSet *ts, const Period *p)
-{
-  Period p1;
-  timestampset_bbox(ts, &p1);
-  double result = distance_secs_period_period(&p1, p);
-  return result;
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_period(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  timestampset_bbox_slice(ts, &p1);
-  double result = distance_secs_period_period(&p1, p);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values
- */
-#if 0 /* not used */
-double
-distance_secs_timestampset_periodset(const TimestampSet *ts, const PeriodSet *ps)
-{
-  Period p1, p2;
-  timestampset_bbox(ts, &p1);
-  periodset_bbox(ps, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  return result;
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_timestampset_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_timestampset_periodset(PG_FUNCTION_ARGS)
-{
-  Datum ts = PG_GETARG_DATUM(0);
-  Datum ps = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  timestampset_bbox_slice(ts, &p1);
-  periodset_bbox_slice(ps, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_period_timestamp(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  double result = distance_secs_period_timestamp(p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * @ingroup libmeos_time_oper_dist
- * @brief Return the distance in seconds of the two time values
- */
-#if 0 /* not used */
-double
-distance_secs_period_timestampset(const Period *p, const TimestampSet *ts)
-{
-  return distance_secs_timestampset_period(ts, p);
-}
-#endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_timestampset);
-/**
- * Return the distance in seconds of the two time valuess
- */
-PGDLLEXPORT Datum
-Distance_secs_period_timestampset(PG_FUNCTION_ARGS)
-{
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p1;
-  timestampset_bbox_slice(ts, &p1);
-  double result = distance_secs_period_period(p, &p1);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(Distance_secs_period_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_period_period(PG_FUNCTION_ARGS)
-{
-  Period *p1 = PG_GETARG_PERIOD_P(0);
-  Period *p2 = PG_GETARG_PERIOD_P(1);
-  double result = distance_secs_period_period(p1, p2);
-  PG_RETURN_FLOAT8(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_dist
  * @brief Return the distance in seconds of the two time values
@@ -5259,20 +3285,20 @@ distance_secs_period_periodset(const Period *p, const PeriodSet *ps)
 }
 #endif
 
-PG_FUNCTION_INFO_V1(Distance_secs_period_periodset);
 /**
- * Return the distance in seconds of the two time values
+ * @ingroup libmeos_time_oper_dist
+ * @brief Return the distance in seconds of the two time values
  */
-PGDLLEXPORT Datum
-Distance_secs_period_periodset(PG_FUNCTION_ARGS)
+double
+distance_secs_period_periodset(const Period *p, const PeriodSet *ps)
 {
-  Period *p = PG_GETARG_PERIOD_P(0);
-  Datum ps = PG_GETARG_DATUM(1);
   Period p1;
-  periodset_bbox_slice(ps, &p1);
+  periodset_bbox(ps, &p1);
   double result = distance_secs_period_period(&p1, p);
-  PG_RETURN_FLOAT8(result);
+  return result;
 }
+
+/******************************************************************************/
 
 /**
  * @ingroup libmeos_time_oper_dist
@@ -5286,48 +3312,18 @@ distance_secs_periodset_timestamp(const PeriodSet *ps, TimestampTz t)
 }
 #endif
 
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_timestamp);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_timestamp(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p;
-  periodset_bbox_slice(ps, &p);
-  double result = distance_secs_period_timestamp(&p, t);
-  PG_RETURN_FLOAT8(result);
-}
-
 /**
  * @ingroup libmeos_time_oper_dist
  * @brief Return the distance in seconds of the two time values
  */
 #if 0 /* not used */
 double
-distance_secs_periodset_timestampset(const PeriodSet *ps, const TimestampSet *ts)
+distance_secs_periodset_timestampset(const PeriodSet *ps,
+  const TimestampSet *ts)
 {
   return distance_secs_timestampset_periodset(ts, ps);
 }
 #endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_timestampset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_timestampset(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  Datum ts = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  periodset_bbox_slice(ps, &p1);
-  timestampset_bbox_slice(ts, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
 
 /**
  * @ingroup libmeos_time_oper_dist
@@ -5340,21 +3336,6 @@ distance_secs_periodset_period(const PeriodSet *ps, const Period *p)
   return distance_secs_period_periodset(p, ps);
 }
 #endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_period);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_period(PG_FUNCTION_ARGS)
-{
-  Datum ps = PG_GETARG_DATUM(0);
-  Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  periodset_bbox_slice(ps, &p1);
-  double result = distance_secs_period_period(&p1, p);
-  PG_RETURN_FLOAT8(result);
-}
 
 /**
  * @ingroup libmeos_time_oper_dist
@@ -5371,21 +3352,5 @@ distance_secs_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
   return result;
 }
 #endif
-
-PG_FUNCTION_INFO_V1(Distance_secs_periodset_periodset);
-/**
- * Return the distance in seconds of the two time values
- */
-PGDLLEXPORT Datum
-Distance_secs_periodset_periodset(PG_FUNCTION_ARGS)
-{
-  Datum ps1 = PG_GETARG_DATUM(0);
-  Datum ps2 = PG_GETARG_DATUM(1);
-  Period p1, p2;
-  periodset_bbox_slice(ps1, &p1);
-  periodset_bbox_slice(ps2, &p2);
-  double result = distance_secs_period_period(&p1, &p2);
-  PG_RETURN_FLOAT8(result);
-}
 
 /******************************************************************************/

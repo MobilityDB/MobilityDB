@@ -53,7 +53,7 @@
 Temporal *
 teq_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_eq2, INVERTED);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_eq2, INVERT);
 }
 
 /**
@@ -63,7 +63,7 @@ teq_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 Temporal *
 teq_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_eq2, INVERTED_NO);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_eq2, INVERT_NO);
 }
 
 /**
@@ -87,7 +87,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tne_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_ne2, INVERTED);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_ne2, INVERT);
 }
 
 /**
@@ -97,7 +97,7 @@ tne_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 Temporal *
 tne_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_ne2, INVERTED_NO);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_ne2, INVERT_NO);
 }
 
 /**
@@ -121,7 +121,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tlt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_lt2, INVERTED);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_lt2, INVERT);
 }
 
 /**
@@ -131,7 +131,7 @@ tlt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 Temporal *
 tlt_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_lt2, INVERTED_NO);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_lt2, INVERT_NO);
 }
 
 /**
@@ -155,7 +155,7 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tle_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_le2, INVERTED);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_le2, INVERT);
 }
 
 /**
@@ -165,7 +165,7 @@ tle_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 Temporal *
 tle_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_le2, INVERTED_NO);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_le2, INVERT_NO);
 }
 
 /**
@@ -189,7 +189,7 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tgt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_gt2, INVERTED);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_gt2, INVERT);
 }
 
 /**
@@ -199,7 +199,7 @@ tgt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 Temporal *
 tgt_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_gt2, INVERTED_NO);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_gt2, INVERT_NO);
 }
 
 /**
@@ -223,7 +223,7 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tge_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_ge2, INVERTED);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_ge2, INVERT);
 }
 
 /**
@@ -233,7 +233,7 @@ tge_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 Temporal *
 tge_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 {
-  return tcomp_temporal_base(temp, base, basetype, &datum2_ge2, INVERTED_NO);
+  return tcomp_temporal_base(temp, base, basetype, &datum2_ge2, INVERT_NO);
 }
 
 /**
