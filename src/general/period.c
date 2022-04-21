@@ -438,7 +438,7 @@ timestamp_period(TimestampTz t)
  * Accessor functions
  *****************************************************************************/
 
-#if 0 /* not used */
+#ifdef MEOS
 /**
  * @ingroup libmeos_time_cast
  * @brief Return the lower bound value

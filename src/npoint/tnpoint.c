@@ -596,3 +596,162 @@ tnpoint_routes(const Temporal *temp, int *count)
 }
 
 /*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+/*****************************************************************************
+ * General functions
+ *****************************************************************************/
+
+/**
+ * Convert a C array of int64 values into a PostgreSQL array
+ */
+ArrayType *
+int64arr_to_array(const int64 *int64arr, int count)
+{
+  return construct_array((Datum *)int64arr, count, INT8OID, 8, true, 'd');
+}
+
+#if 0 /* not used */
+/**
+ * Convert a C array of network point values into a PostgreSQL array
+ */
+ArrayType *
+npointarr_to_array(Npoint **npointarr, int count)
+{
+  return construct_array((Datum *)npointarr, count, type_oid(T_NPOINT),
+    sizeof(Npoint), false, 'd');
+}
+#endif
+
+/**
+ * Convert a C array of network segment values into a PostgreSQL array
+ */
+ArrayType *
+nsegmentarr_to_array(Nsegment **nsegmentarr, int count)
+{
+  return construct_array((Datum *)nsegmentarr, count, type_oid(T_NSEGMENT),
+    sizeof(Nsegment), false, 'd');
+}
+
+/*****************************************************************************
+ * Input/output functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_in);
+/**
+ * Input function for temporal network points
+ */
+PGDLLEXPORT Datum
+Tnpoint_in(PG_FUNCTION_ARGS)
+{
+  char *input = PG_GETARG_CSTRING(0);
+  Oid temptypid = PG_GETARG_OID(1);
+  Temporal *result = temporal_parse(&input, oid_type(temptypid));
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_to_tgeompoint);
+/**
+ * Cast a temporal network point as a temporal geometric point
+ */
+PGDLLEXPORT Datum
+Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnpoint_to_tgeompoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tgeompoint_to_tnpoint);
+/**
+ * Cast a temporal geometric point as a temporal network point
+ */
+PGDLLEXPORT Datum
+Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeompoint_to_tnpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_round);
+/**
+ * @brief Set the precision of the fraction of the temporal network point to the
+ * number of decimal places.
+ */
+PGDLLEXPORT Datum
+Tnpoint_round(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum size = PG_GETARG_DATUM(1);
+  Temporal *result = tnpoint_round(temp, size);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Accessor functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_positions);
+/**
+ * Return the network segments covered by the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_positions(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  Nsegment **segments = tnpoint_positions(temp, &count);
+  ArrayType *result = nsegmentarr_to_array(segments, count);
+  pfree_array((void **) segments, count);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnpoint_route);
+/**
+ * Return the route of a temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_route(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int64 result = tnpoint_route(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT64(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnpoint_routes);
+/**
+ * Return the array of routes of a temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_routes(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  int64 *routes = tnpoint_routes(temp, &count);
+  ArrayType *result = int64arr_to_array(routes, count);
+  pfree(routes);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************/
+

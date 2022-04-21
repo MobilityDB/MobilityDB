@@ -1095,13 +1095,13 @@ temporal_period(const Temporal *temp, Period *p)
   return;
 }
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_box_cast
  * @brief Return the bounding box of the temporal number.
  */
-#if 0 /* not used */
 TBOX *
-tnumber_to_tbox(Temporal *temp)
+tnumber_tbox(Temporal *temp)
 {
   TBOX *result = (TBOX *) palloc(sizeof(TBOX));
   temporal_bbox(temp, result);

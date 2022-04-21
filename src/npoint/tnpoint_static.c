@@ -331,12 +331,26 @@ nsegment_write(Nsegment *ns, StringInfo buf)
  * Constructor functions
  *****************************************************************************/
 
-#if 0 /* not used */
+#ifdef MEOS
 /**
- * Set an network point value from arguments
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a network point value from the arguments.
+ */
+Npoint *
+npoint_make(int64 rid, double pos)
+{
+  /* Note: zero-fill is done in the npoint_set function */
+  Npoint *result = (Npoint *) palloc(sizeof(Npoint));
+  npoint_set(rid, pos, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Set a network point value from the arguments.
  */
 void
-npoint_set(Npoint *np, int64 rid, double pos)
+npoint_set(int64 rid, double pos, Npoint *np)
 {
   if (!route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
@@ -370,12 +384,26 @@ npoint_make(int64 rid, double pos)
   return result;
 }
 
-#if 0 /* not used */
+#ifdef MEOS
 /**
- * Set an network segment value from arguments
+ * @ingroup libmeos_temporal_constructor
+ * @brief Construct a network segment value from the arguments.
+ */
+Nsegment *
+nsegment_make(int64 rid, double pos1, double pos2)
+{
+  /* Note: zero-fill is done in the nsegment_set function */
+  Nsegment *result = (Nsegment *) palloc(sizeof(Nsegment));
+  nsegment_set(rid, pos1, pos2, result);
+  return result;
+}
+
+/**
+ * @ingroup libmeos_temporal_constructor
+ * @brief Set a network segment value from the arguments.
  */
 void
-nsegment_set(Nsegment *ns, int64 rid, double pos1, double pos2)
+nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
 {
   if (!route_exists(rid))
     ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),

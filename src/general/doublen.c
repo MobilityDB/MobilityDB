@@ -54,7 +54,7 @@
  * Functions
  *****************************************************************************/
 
-#if 0 /* not used */
+#ifdef MEOS
 /**
  * Create a double2 value from the double values
  */
@@ -101,7 +101,7 @@ double2_eq(const double2 *d1, const double2 *d2)
   return (d1->a == d2->a && d1->b == d2->b);
 }
 
-#if 0 /* Not used */
+#ifdef MEOS
 /**
  * Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
@@ -120,7 +120,7 @@ double2_cmp(double2 *d1, double2 *d2)
  * Functions
  *****************************************************************************/
 
-#if 0 /* not used */
+#ifdef MEOS
 /**
  * Create a double2 value from the double values
  */
@@ -169,7 +169,7 @@ double3_eq(const double3 *d1, const double3 *d2)
   return (d1->a == d2->a && d1->b == d2->b && d1->c == d2->c);
 }
 
-#if 0 /* Not used */
+#ifdef MEOS
 /**
  * Return -1, 0, or 1 depending on whether the first double2
  * is less than, equal, or greater than the second one
@@ -192,7 +192,7 @@ double3_cmp(double3 *d1, double3 *d2)
  * Functions
  *****************************************************************************/
 
-#if 0 /* not used */
+#ifdef MEOS
 /**
  * Create a double2 value from the double values
  */
