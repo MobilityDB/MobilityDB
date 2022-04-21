@@ -318,7 +318,6 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
   int countsplits;
   int *splits = tsequenceset_make_valid_gaps((const TInstant **) instants,
     count, true, true, linear, maxdist, maxt, &countsplits);
-  int newcount = 0;
   if (countsplits == 0)
   {
     /* There are no gaps  */
@@ -329,6 +328,7 @@ tsequenceset_make_gaps(const TInstant **instants, int count, bool linear,
   }
   else
   {
+    int newcount = 0;
     /* Split according to gaps  */
     const TInstant **newinsts = palloc(sizeof(TInstant *) * count);
     TSequence **sequences = palloc(sizeof(TSequence *) * (countsplits + 1));
