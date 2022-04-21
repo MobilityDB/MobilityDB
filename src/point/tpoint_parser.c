@@ -46,7 +46,7 @@
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_input_output
+ * @ingroup libmeos_box_input_output
  * @brief Parse a spatiotemporal box value from the buffer.
  */
 STBOX *

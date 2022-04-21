@@ -53,7 +53,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of the base value and the temporal value
  */
 Temporal *
@@ -63,7 +63,7 @@ teq_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal equality of the temporal value and base value
  */
 Temporal *
@@ -73,7 +73,7 @@ teq_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal inequality of the base value and the temporal value
  */
 Temporal *
@@ -83,7 +83,7 @@ tne_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal inequality of the temporal value and base value
  */
 Temporal *

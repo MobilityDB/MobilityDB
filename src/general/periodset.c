@@ -658,7 +658,7 @@ periodset_shift_tscale(const PeriodSet *ps, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return -1, 0, or 1 depending on whether the first period set value
  * is less than, equal, or greater than the second temporal value.
  *
@@ -693,7 +693,7 @@ periodset_cmp(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period set value is equal to the second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -716,7 +716,7 @@ periodset_eq(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period set value is different from the
  * second one.
  */
@@ -727,7 +727,7 @@ periodset_ne(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period set value is less than the second one
  */
 bool
@@ -738,7 +738,7 @@ periodset_lt(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period set value is less than or equal to
  * the second one
  */
@@ -750,7 +750,7 @@ periodset_le(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period set value is greater than or equal to
  * the second one
  */
@@ -762,7 +762,7 @@ periodset_ge(const PeriodSet *ps1, const PeriodSet *ps2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period set value is greater than the second
  * one
  */

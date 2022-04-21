@@ -126,7 +126,6 @@ geometry 'polygon((0 0,1 1,2 0.5,3 1,4 1,4 0,0 0))'))
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] inst Temporal point
@@ -147,7 +146,6 @@ tinterrel_tpointinst_geom(const TInstant *inst, Datum geom, bool tinter,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] ti Temporal point
@@ -387,7 +385,6 @@ tinterrel_tpointseq_geom1(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * The function splits the temporal point in an array of temporal point
@@ -412,7 +409,6 @@ tinterrel_tpointseq_geom(const TSequence *seq, Datum geom, const STBOX *box,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] ts Temporal point
@@ -447,7 +443,6 @@ tinterrel_tpointseqset_geom(const TSequenceSet *ts, Datum geom,
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_rel
  * @brief Evaluates tintersects/tdisjoint for a temporal point and a geometry.
  *
  * @param[in] temp Temporal point

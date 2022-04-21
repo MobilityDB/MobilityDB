@@ -107,8 +107,7 @@ tnpoint_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     period_deserialize(&period, &period_lower, &period_upper);
     time_lowers[notnull_cnt] = period_lower;
     time_uppers[notnull_cnt] = period_upper;
-    time_lengths[notnull_cnt] = period_to_secs(period_upper.t,
-      period_lower.t);
+    time_lengths[notnull_cnt] = period_to_secs(period_upper.t, period_lower.t);
 
     /* Increment our "good feature" count */
     notnull_cnt++;

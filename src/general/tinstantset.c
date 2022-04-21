@@ -64,7 +64,7 @@
 void *
 tinstantset_bbox_ptr(const TInstantSet *ti)
 {
-  return (void *)(((char *)ti) + double_pad(sizeof(TInstantSet)));
+  return (void *)(((char *) ti) + double_pad(sizeof(TInstantSet)));
 }
 
 /**
@@ -84,7 +84,7 @@ tinstantset_bbox(const TInstantSet *ti, void *box)
 static size_t *
 tinstantset_offsets_ptr(const TInstantSet *ti)
 {
-  return (size_t *)(((char *)ti) + double_pad(sizeof(TInstantSet)) +
+  return (size_t *)(((char *) ti) + double_pad(sizeof(TInstantSet)) +
     double_pad(ti->bboxsize));
 }
 
@@ -97,7 +97,7 @@ tinstantset_inst_n(const TInstantSet *ti, int index)
 {
   return (TInstant *)(
     /* start of data */
-    ((char *)ti) + double_pad(sizeof(TInstantSet)) + ti->bboxsize +
+    ((char *) ti) + double_pad(sizeof(TInstantSet)) + ti->bboxsize +
       ti->count * sizeof(size_t) +
       /* offset */
       (tinstantset_offsets_ptr(ti))[index]);
@@ -770,14 +770,14 @@ tinstantset_shift_tscale(const TInstantSet *ti, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
 tinstantset_ever_eq(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *)ti, value, EVER))
+  if (! temporal_bbox_ev_al_eq((Temporal *) ti, value, EVER))
     return false;
 
   CachedType basetype = temptype_basetype(ti->temptype);
@@ -791,19 +791,19 @@ tinstantset_ever_eq(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is always equal to the base value.
  */
 bool
 tinstantset_always_eq(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_eq((Temporal *)ti, value, ALWAYS))
+  if (! temporal_bbox_ev_al_eq((Temporal *) ti, value, ALWAYS))
     return false;
 
-  /* The bounding box test above is enough to compute
-   * the answer for temporal numbers and points */
-  if (tnumber_type(ti->temptype) || tspatial_type(ti->temptype))
+  /* The bounding box test above is enough to compute the answer for
+   * temporal numbers */
+  if (tnumber_type(ti->temptype))
     return true;
 
   CachedType basetype = temptype_basetype(ti->temptype);
@@ -819,14 +819,14 @@ tinstantset_always_eq(const TInstantSet *ti, Datum value)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever less than the base value.
  */
 bool
 tinstantset_ever_lt(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, EVER))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) ti, value, EVER))
     return false;
 
   CachedType basetype = temptype_basetype(ti->temptype);
@@ -840,7 +840,7 @@ tinstantset_ever_lt(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever less than or equal to the
  * base value
  */
@@ -848,7 +848,7 @@ bool
 tinstantset_ever_le(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, EVER))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) ti, value, EVER))
     return false;
 
   CachedType basetype = temptype_basetype(ti->temptype);
@@ -862,14 +862,14 @@ tinstantset_ever_le(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is always less than the base value.
  */
 bool
 tinstantset_always_lt(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, ALWAYS))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) ti, value, ALWAYS))
     return false;
 
   CachedType basetype = temptype_basetype(ti->temptype);
@@ -883,7 +883,7 @@ tinstantset_always_lt(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is always less than or equal to the
  * base value
  */
@@ -891,7 +891,7 @@ bool
 tinstantset_always_le(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
-  if (! temporal_bbox_ev_al_lt_le((Temporal *)ti, value, ALWAYS))
+  if (! temporal_bbox_ev_al_lt_le((Temporal *) ti, value, ALWAYS))
     return false;
 
   /* The bounding box test above is enough to compute
@@ -1181,7 +1181,7 @@ tinstantset_restrict_timestamp(const TInstantSet *ti, TimestampTz t, bool atfunc
     if (! tinstantset_find_timestamp(ti, t, &loc))
       return NULL;
     inst = tinstantset_inst_n(ti, loc);
-    return (Temporal *)tinstant_copy(inst);
+    return (Temporal *) tinstant_copy(inst);
   }
   else
   {
@@ -1521,7 +1521,7 @@ intersection_tinstantset_tinstantset(const TInstantSet *ti1, const TInstantSet *
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the timestamp.
  */
 bool
@@ -1532,7 +1532,7 @@ tinstantset_intersects_timestamp(const TInstantSet *ti, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the timestamp set.
  */
 bool
@@ -1546,7 +1546,7 @@ tinstantset_intersects_timestampset(const TInstantSet *ti,
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the period.
  */
 bool
@@ -1562,7 +1562,7 @@ tinstantset_intersects_period(const TInstantSet *ti, const Period *period)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the period set.
  */
 bool
@@ -1579,7 +1579,7 @@ tinstantset_intersects_periodset(const TInstantSet *ti, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighted average of the temporal number
  */
 double
@@ -1600,7 +1600,7 @@ tnumberinstset_twavg(const TInstantSet *ti)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the two temporal instant set values are equal.
  *
  * @pre The arguments are of the same base type
@@ -1632,7 +1632,7 @@ tinstantset_eq(const TInstantSet *ti1, const TInstantSet *ti2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  *

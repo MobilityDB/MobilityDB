@@ -2054,7 +2054,7 @@ temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value, bool ever)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
@@ -2074,7 +2074,7 @@ temporal_ever_eq(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is always equal to the base value.
  */
 bool
@@ -2094,7 +2094,7 @@ temporal_always_eq(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever less than the base value.
  */
 bool
@@ -2114,7 +2114,7 @@ temporal_ever_lt(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is always less than the base value.
  */
 bool
@@ -2134,7 +2134,7 @@ temporal_always_lt(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever less than or equal to the
  * base value.
  */
@@ -2155,7 +2155,7 @@ temporal_ever_le(const Temporal *temp, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is always less than or equal to the
  * base value.
  */
@@ -2775,7 +2775,7 @@ tnumber_minus_tbox(const Temporal *temp, const TBOX *box)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the timestamp
  */
 bool
@@ -2795,7 +2795,7 @@ temporal_intersects_timestamp(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the timestamp set
  */
 bool
@@ -2815,7 +2815,7 @@ temporal_intersects_timestampset(const Temporal *temp, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the period
  */
 bool
@@ -2835,7 +2835,7 @@ temporal_intersects_period(const Temporal *temp, const Period *p)
 }
 
 /**
- * @ingroup libmeos_temporal_restrict
+ * @ingroup libmeos_temporal_time
  * @brief Return true if the temporal value intersects the period set
  */
 bool
@@ -2859,7 +2859,7 @@ temporal_intersects_periodset(const Temporal *temp, const PeriodSet *ps)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the integral (area under the curve) of the temporal
  * number value
  */
@@ -2878,7 +2878,7 @@ tnumber_integral(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighted average of the temporal number
  */
 double
@@ -2902,7 +2902,7 @@ tnumber_twavg(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the two temporal values are equal.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -3008,7 +3008,7 @@ temporal_eq(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the two temporal values are different
  */
 bool
@@ -3021,7 +3021,7 @@ temporal_ne(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal value is
  * less than, equal, or greater than the second one.
  *
@@ -3096,7 +3096,7 @@ temporal_cmp(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is less than the second one
  */
 bool
@@ -3107,7 +3107,7 @@ temporal_lt(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
  */
@@ -3119,7 +3119,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  */
@@ -3131,7 +3131,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return true if the first temporal value is greater than the second one
  */
 bool

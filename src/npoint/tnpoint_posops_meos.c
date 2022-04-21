@@ -50,7 +50,7 @@
 /* geom op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry is strictly to the left of the temporal
  * network point
  */
@@ -61,7 +61,7 @@ left_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry does not extend to the right of the
  * temporal network point
  */
@@ -72,7 +72,7 @@ overleft_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry is strictly to the right of the temporal
  * network point
  */
@@ -83,7 +83,7 @@ right_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry does not extend to the left of the
  * temporal network point
  */
@@ -94,7 +94,7 @@ overright_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry is strictly below the temporal network
  * point
  */
@@ -105,7 +105,7 @@ below_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry does not extend above the temporal
  * network point
  */
@@ -116,7 +116,7 @@ overbelow_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry is strictly above the temporal network
  * point
  */
@@ -127,7 +127,7 @@ above_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the geometry does not extend below the temporal
  * network point
  */
@@ -141,7 +141,7 @@ overabove_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 /* Temporal op geom */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly to the left of
  * the geometry
  */
@@ -152,7 +152,7 @@ left_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend to the
  * right of the geometry
  */
@@ -163,7 +163,7 @@ overleft_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly to the right
  * of the geometry
  */
@@ -174,7 +174,7 @@ right_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend to the left
  * of the geometry
  */
@@ -185,7 +185,7 @@ overright_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly below the
  * geometry
  */
@@ -196,7 +196,7 @@ below_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend above the
  * geometry
  */
@@ -207,7 +207,7 @@ overbelow_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly above the
  * geometry
  */
@@ -218,7 +218,7 @@ above_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend below the
  * geometry
  */
@@ -232,7 +232,7 @@ overabove_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 /* stbox op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box is strictly to the left of the
  * temporal network point
  */
@@ -243,7 +243,7 @@ left_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box does not extend to the right of
  * the temporal network point
  */
@@ -255,7 +255,7 @@ overleft_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box is strictly to the right of the
  * temporal network point
  */
@@ -266,7 +266,7 @@ right_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box does not extend to the left of
  * the temporal network point
  */
@@ -278,7 +278,7 @@ overright_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box is strictly below the temporal
  * network point
  */
@@ -289,7 +289,7 @@ below_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box does not extend above the
  * temporal network point
  */
@@ -301,7 +301,7 @@ overbelow_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box is strictly above the
  * temporal network point
  */
@@ -312,7 +312,7 @@ above_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box does not extend below the
  * temporal network point
  */
@@ -324,7 +324,7 @@ overabove_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box is strictly before of the
  * temporal network point
  */
@@ -336,7 +336,7 @@ before_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box does not extend after the
  * temporal network point
  */
@@ -348,7 +348,7 @@ overbefore_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box is strictly after the
  * temporal network point
  */
@@ -359,7 +359,7 @@ after_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the spatiotemporal box does not extend before the
  * temporal network point
  */
@@ -374,7 +374,7 @@ overafter_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 /* Temporal op stbox */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly to the left of
  * the spatiotemporal box
  */
@@ -385,7 +385,7 @@ left_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend to the
  * right of the spatiotemporal box
  */
@@ -397,7 +397,7 @@ overleft_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly to the right
  * of the spatiotemporal box
  */
@@ -409,7 +409,7 @@ right_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend to the left
  * of the spatiotemporal box
  */
@@ -421,7 +421,7 @@ overright_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly below the
  * spatiotemporal box
  */
@@ -433,7 +433,7 @@ below_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend above the
  * spatiotemporal box
  */
@@ -445,7 +445,7 @@ overbelow_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly above the
  * spatiotemporal box
  */
@@ -457,7 +457,7 @@ above_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend below the
  * spatiotemporal box
  */
@@ -469,7 +469,7 @@ overabove_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly before the
  * spatiotemporal box
  */
@@ -481,7 +481,7 @@ before_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend after the
  * spatiotemporal box
  */
@@ -493,7 +493,7 @@ overbefore_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point is strictly after the
  * spatiotemporal box
  */
@@ -505,7 +505,7 @@ after_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal network point does not extend before the
  * spatiotemporal box
  */
@@ -520,7 +520,7 @@ overafter_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 /* Npoint op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point is strictly to the left of the
  * temporal point
  */
@@ -531,7 +531,7 @@ left_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point does not extend to the right of the
  * temporal point
  */
@@ -542,7 +542,7 @@ overleft_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point is strictly to the right of the
  * temporal point
  */
@@ -553,7 +553,7 @@ right_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point does not extend to the left of the
  * temporal point
  */
@@ -564,7 +564,7 @@ overright_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point is strictly below the temporal point
  */
 bool
@@ -574,7 +574,7 @@ below_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point does not extend above the temporal
  * point
  */
@@ -585,7 +585,7 @@ overbelow_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point is strictly above the temporal point
  */
 bool
@@ -595,7 +595,7 @@ above_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the network point does not extend below the temporal
  * point
  */
@@ -609,7 +609,7 @@ overabove_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 /* Temporal op Npoint */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point is strictly to the left of the
  * network point
  */
@@ -620,7 +620,7 @@ left_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point does not extend to the right of the
  * network point
  */
@@ -631,7 +631,7 @@ overleft_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point is strictly to the right of the
  * network point
  */
@@ -642,7 +642,7 @@ right_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point does not extend to the left of the
  * network point
  */
@@ -653,7 +653,7 @@ overright_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point is strictly below the network point
  */
 bool
@@ -663,7 +663,7 @@ below_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point does not extend above the network
  * point
  */
@@ -674,7 +674,7 @@ overbelow_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point is strictly above the network point
  */
 bool
@@ -684,7 +684,7 @@ above_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the temporal point does not extend below the network
  * point
  */
@@ -698,7 +698,7 @@ overabove_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 /* Temporal op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point is strictly to the
  * left of the second one
  */
@@ -709,7 +709,7 @@ left_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point does not extend to
  * the right of the second one
  */
@@ -720,7 +720,7 @@ overleft_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point is strictly to the
  * right of the second one
  */
@@ -731,7 +731,7 @@ right_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point does not extend to
  * the left of the second one
  */
@@ -742,7 +742,7 @@ overright_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point is strictly below
  * the second one
  */
@@ -753,7 +753,7 @@ below_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point does not extend above
  * the second one
  */
@@ -764,7 +764,7 @@ overbelow_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point is strictly above
  * the second one
  */
@@ -775,7 +775,7 @@ above_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point does not extend below
  * the second one
  */
@@ -786,7 +786,7 @@ overabove_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point is strictly before
  * the second one
  */
@@ -797,7 +797,7 @@ before_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point does not extend after
  * the second one
  */
@@ -808,7 +808,7 @@ overbefore_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point is strictly after
  * the second one
  */
@@ -819,7 +819,7 @@ after_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_pos
+ * @ingroup libmeos_temporal_pos
  * @brief Return true if the first temporal network point does not extend
  * before the second one
  */

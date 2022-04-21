@@ -143,12 +143,12 @@ textfunc_ttext_ttext(const Temporal *temp1, const Temporal *temp2,
  * Text concatenation
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(Textcat_base_ttext);
+PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
  * Return the concatenation of the text value and the temporal text values
  */
 PGDLLEXPORT Datum
-Textcat_base_ttext(PG_FUNCTION_ARGS)
+Textcat_text_ttext(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
@@ -157,12 +157,12 @@ Textcat_base_ttext(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(Textcat_ttext_base);
+PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
  * Return the concatenation of the temporal text value and the text value
  */
 PGDLLEXPORT Datum
-Textcat_ttext_base(PG_FUNCTION_ARGS)
+Textcat_ttext_text(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);

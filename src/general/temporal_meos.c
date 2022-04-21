@@ -71,7 +71,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the minimum base value
  */
 Temporal *
@@ -82,7 +82,7 @@ temporal_at_min(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the complement of the minimum base value
  */
 Temporal *
@@ -93,7 +93,7 @@ temporal_minus_min(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the maximum base value
  */
 Temporal *
@@ -104,7 +104,7 @@ temporal_at_max(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the complement of the maximum base value
  */
 Temporal *
@@ -117,7 +117,7 @@ temporal_minus_max(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the timestamp
  */
 Temporal *
@@ -128,7 +128,7 @@ temporal_at_timestamp(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the complement of the timestamp set
  */
 Temporal *
@@ -139,7 +139,7 @@ temporal_minus_timestamp(const Temporal *temp, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the timestamp set
  */
 Temporal *
@@ -150,7 +150,7 @@ temporal_at_timestampset(const Temporal *temp, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the complement of the timestamp set
  */
 Temporal *
@@ -161,7 +161,7 @@ temporal_minus_timestampset(const Temporal *temp, const TimestampSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the period set
  */
 Temporal *
@@ -172,7 +172,7 @@ temporal_at_periodset(const Temporal *temp, const PeriodSet *ps)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_restrict
  * @brief Restrict the temporal value to the complement of the period set
  */
 Temporal *

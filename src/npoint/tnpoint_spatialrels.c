@@ -100,8 +100,8 @@ spatialrel_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
       &sync1, &sync2))
     return -1;
 
-  Temporal *tpoint1 = tnpoint_to_tgeompoint(sync1);
-  Temporal *tpoint2 = tnpoint_to_tgeompoint(sync2);
+  Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -188,8 +188,8 @@ dwithin_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
       &sync1, &sync2))
     return -1;
 
-  Temporal *tpoint1 = tnpoint_to_tgeompoint(sync1);
-  Temporal *tpoint2 = tnpoint_to_tgeompoint(sync2);
+  Temporal *tpoint1 = tnpoint_tgeompoint(sync1);
+  Temporal *tpoint2 = tnpoint_tgeompoint(sync2);
   bool result = dwithin_tpoint_tpoint(tpoint1, tpoint2, dist);
   pfree(tpoint1); pfree(tpoint2);
   pfree(sync1); pfree(sync2);

@@ -63,7 +63,7 @@ double2_make(double a, double b)
 {
   /* Note: zero-fill is done in function double2_set */
   double2 *result = (double2 *) palloc(sizeof(double2));
-  double2_set(a, b, &result);
+  double2_set(a, b, result);
   return result;
 }
 #endif
@@ -129,7 +129,7 @@ double3_make(double a, double b, double c)
 {
   /* Note: zero-fill is done in function double3_set */
   double3 *result = (double3 *) palloc(sizeof(double3));
-  double3_set(a, b, c, &result);
+  double3_set(a, b, c, result);
   return result;
 }
 #endif
@@ -201,7 +201,7 @@ double4_make(double a, double b, double c, double d)
 {
   /* Note: zero-fill is done in function double4_set */
   double4 *result = (double4 *) palloc(sizeof(double4));
-  double4_set(a, b, c, d, &result);
+  double4_set(a, b, c, d, result);
   return result;
 }
 #endif

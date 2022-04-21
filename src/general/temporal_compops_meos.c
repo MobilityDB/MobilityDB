@@ -47,7 +47,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -57,7 +57,7 @@ teq_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal value and the base value.
  */
 Temporal *
@@ -67,7 +67,7 @@ teq_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *
@@ -81,7 +81,7 @@ teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -91,7 +91,7 @@ tne_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal value and the base value.
  */
 Temporal *
@@ -101,7 +101,7 @@ tne_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *
@@ -115,7 +115,7 @@ tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -125,7 +125,7 @@ tlt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal value and the base value.
  */
 Temporal *
@@ -135,7 +135,7 @@ tlt_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *
@@ -149,7 +149,7 @@ tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -159,7 +159,7 @@ tle_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal value and the base value.
  */
 Temporal *
@@ -169,7 +169,7 @@ tle_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *
@@ -183,7 +183,7 @@ tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -193,7 +193,7 @@ tgt_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal value and the base value.
  */
 Temporal *
@@ -203,7 +203,7 @@ tgt_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *
@@ -217,7 +217,7 @@ tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the base value and the temporal value.
  */
 Temporal *
@@ -227,7 +227,7 @@ tge_base_temporal(Datum base, CachedType basetype, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal value and the base value.
  */
 Temporal *
@@ -237,7 +237,7 @@ tge_temporal_base(const Temporal *temp, Datum base, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_comp
+ * @ingroup libmeos_temporal_comp
  * @brief Return the temporal comparison of the temporal values.
  */
 Temporal *

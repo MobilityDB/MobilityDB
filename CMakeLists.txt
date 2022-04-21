@@ -40,6 +40,10 @@ option(MEOS
   "
   OFF
 )
+if(MEOS)
+  add_definitions(-DMEOS)
+  message(STATUS "Building with the MEOS option")
+endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)

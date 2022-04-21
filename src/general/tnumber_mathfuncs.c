@@ -271,7 +271,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Round the temporal number to the number of decimal places
  */
 Temporal *
@@ -294,7 +294,7 @@ tnumber_round(const Temporal *temp, Datum digits)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Convert the temporal number from radians to degrees
  */
 Temporal *
@@ -319,7 +319,7 @@ tnumber_degrees(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the derivative of the temporal number.
  */
 TSequence *
@@ -358,7 +358,7 @@ tnumberseq_derivative(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the derivative of the temporal number
  */
 TSequenceSet *
@@ -377,7 +377,7 @@ tnumberseqset_derivative(const TSequenceSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the derivative of the temporal number
  */
 Temporal *

@@ -131,7 +131,7 @@
  * @code
  * // Transform the geometry to a geography
  * PGDLLEXPORT Datum
- * tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+ * tgeompoint_tgeogpoint(PG_FUNCTION_ARGS)
  * {
  *   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
  *   // We only need to fill these parameters for tfunc_temporal
@@ -2128,8 +2128,7 @@ efunc_tsequenceset_tsequenceset(const TSequenceSet *ts1,
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
- * Synchronizes the temporal values and applies to them the function
+ * @brief Synchronizes the temporal values and applies to them the function
  *
  * @param[in] temp1,temp2 Temporal values
  * @param[in] lfinfo Information about the lifted function

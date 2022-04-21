@@ -61,8 +61,15 @@ extern void npoint_write(const Npoint *np, StringInfo buf);
 /* Constructor functions */
 
 extern Npoint *npoint_make(int64 rid, double pos);
+extern void npoint_set(int64 rid, double pos, Npoint *np);
 extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
+extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
+
+/* Cast functions */
+
 extern Nsegment *npoint_nsegment(const Npoint *np);
+
+/* Input/output functions */
 
 extern char *nsegment_to_string(Nsegment *ns);
 extern Nsegment *nsegment_read(StringInfo buf);

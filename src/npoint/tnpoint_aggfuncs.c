@@ -65,7 +65,7 @@ Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
       PG_RETURN_NULL();
   }
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *temp1 = tnpoint_to_tgeompoint(temp);
+  Temporal *temp1 = tnpoint_tgeompoint(temp);
 
   geoaggstate_check_temp(state, temp1);
   Datum (*func)(Datum, Datum) = MOBDB_FLAGS_GET_Z(temp1->flags) ?

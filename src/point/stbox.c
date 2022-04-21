@@ -960,7 +960,7 @@ topo_stbox_stbox_init(const STBOX *box1, const STBOX *box2, bool *hasx,
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the first spatiotemporal box contains the second one.
  */
 bool
@@ -979,7 +979,7 @@ contains_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the first spatiotemporal box is contained by the
  * second one
  */
@@ -990,7 +990,7 @@ contained_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the spatiotemporal boxes overlap
  */
 bool
@@ -1009,7 +1009,7 @@ overlaps_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the spatiotemporal boxes are equal on the common
  * dimensions.
  */
@@ -1029,7 +1029,7 @@ same_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the spatiotemporal boxes are adjacent.
  */
 bool
@@ -1082,7 +1082,7 @@ pos_stbox_stbox_test(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly to the
  * left of the second one
  */
@@ -1096,7 +1096,7 @@ left_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
  */
@@ -1110,7 +1110,7 @@ overleft_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly to the right
  * of the second one
  */
@@ -1124,7 +1124,7 @@ right_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one.
  */
@@ -1138,7 +1138,7 @@ overright_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly below of
  * the second one.
  */
@@ -1152,7 +1152,7 @@ below_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one.
  */
@@ -1166,7 +1166,7 @@ overbelow_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly above of the
  * second one.
  */
@@ -1180,7 +1180,7 @@ above_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one.
  */
@@ -1194,7 +1194,7 @@ overabove_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly in front of
  * the second one.
  */
@@ -1208,7 +1208,7 @@ front_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one.
  */
@@ -1222,7 +1222,7 @@ overfront_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly back of the
  * second one
  */
@@ -1236,7 +1236,7 @@ back_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one.
  */
@@ -1250,7 +1250,7 @@ overback_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly before the
  * second one
  */
@@ -1263,7 +1263,7 @@ before_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend after the
  * second one
  */
@@ -1276,7 +1276,7 @@ overbefore_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first spatiotemporal box is strictly after
  * the second one.
  */
@@ -1289,7 +1289,7 @@ after_stbox_stbox(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend before the
  * second one.
  */
@@ -1306,7 +1306,7 @@ overafter_stbox_stbox(const STBOX *box1, const STBOX *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper_set
+ * @ingroup libmeos_box_set
  * @brief Return the union of the spatiotemporal boxes.
  */
 STBOX *
@@ -1326,7 +1326,7 @@ union_stbox_stbox(const STBOX *box1, const STBOX *box2, bool strict)
 }
 
 /**
- * @ingroup libmeos_box_oper_set
+ * @ingroup libmeos_box_set
  * @brief Return the intersection of the spatiotemporal boxes in the third argument
  */
 bool
@@ -1373,7 +1373,7 @@ inter_stbox_stbox(const STBOX *box1, const STBOX *box2, STBOX *result)
 }
 
 /**
- * @ingroup libmeos_box_oper_set
+ * @ingroup libmeos_box_set
  * @brief Return the union of the spatiotemporal boxes.
  */
 STBOX *
@@ -1396,7 +1396,7 @@ intersection_stbox_stbox(const STBOX *box1, const STBOX *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal, or greater than the second one
  */
@@ -1469,7 +1469,7 @@ stbox_cmp(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is less than the second one
  */
 bool
@@ -1480,7 +1480,7 @@ stbox_lt(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is less than or equal to
  * the second one
  */
@@ -1492,7 +1492,7 @@ stbox_le(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is greater than or equal to
  * the second one
  */
@@ -1504,7 +1504,7 @@ stbox_ge(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first spatiotemporal box is greater than the second one
  */
 bool
@@ -1515,7 +1515,7 @@ stbox_gt(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the two spatiotemporal boxes are equal.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1534,7 +1534,7 @@ stbox_eq(const STBOX *box1, const STBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the two spatiotemporal boxes are different
  */
 bool

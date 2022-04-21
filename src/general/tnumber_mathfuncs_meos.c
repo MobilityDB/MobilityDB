@@ -51,7 +51,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of the number and the temporal number
  */
 Temporal *
@@ -62,7 +62,7 @@ add_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of the temporal number and the number
  */
 Temporal *
@@ -73,7 +73,7 @@ add_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal addition of the temporal numbers
  */
 Temporal *
@@ -87,7 +87,7 @@ add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of the number and the temporal number
  */
 Temporal *
@@ -98,7 +98,7 @@ sub_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of the temporal number and the number
  */
 Temporal *
@@ -109,7 +109,7 @@ sub_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal subtraction of the temporal numbers
  */
 Temporal *
@@ -123,7 +123,7 @@ sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of the number and the temporal number
  */
 Temporal *
@@ -134,7 +134,7 @@ mult_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of the temporal number and the number
  */
 Temporal *
@@ -145,7 +145,7 @@ mult_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
  */
 Temporal *
@@ -160,7 +160,7 @@ mult_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of the number and the temporal number
  */
 Temporal *
@@ -171,7 +171,7 @@ div_number_tnumber(Datum number, CachedType basetype, const Temporal *tnumber)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal division of the temporal number and the number
  */
 Temporal *
@@ -182,7 +182,7 @@ div_tnumber_number(const Temporal *tnumber, Datum number, CachedType basetype)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_math
+ * @ingroup libmeos_temporal_math
  * @brief Return the temporal multiplication of the temporal numbers
  */
 Temporal *

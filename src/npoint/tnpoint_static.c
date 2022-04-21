@@ -331,10 +331,9 @@ nsegment_write(Nsegment *ns, StringInfo buf)
  * Constructor functions
  *****************************************************************************/
 
-#ifdef MEOS
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct a network point value from the arguments.
+ * @brief Construct an network point value from the arguments
  */
 Npoint *
 npoint_make(int64 rid, double pos)
@@ -362,32 +361,10 @@ npoint_set(int64 rid, double pos, Npoint *np)
   np->rid = rid;
   np->pos = pos;
 }
-#endif
 
 /**
  * @ingroup libmeos_temporal_constructor
- * @brief Construct an network point value from the arguments
- */
-Npoint *
-npoint_make(int64 rid, double pos)
-{
-  if (!route_exists(rid))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("there is no route with gid value %lu in table ways", rid)));
-  if (pos < 0 || pos > 1)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("the relative position must be a real number between 0 and 1")));
-
-  Npoint *result = (Npoint *) palloc(sizeof(Npoint));
-  result->rid = rid;
-  result->pos = pos;
-  return result;
-}
-
-#ifdef MEOS
-/**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct a network segment value from the arguments.
+ * @brief Construct an network segment value from the arguments
  */
 Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
@@ -416,31 +393,13 @@ nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns)
   ns->pos1 = Min(pos1, pos2);
   ns->pos2 = Max(pos1, pos2);
 }
-#endif
+
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_constructor
- * @brief Construct an network segment value from the arguments
- */
-Nsegment *
-nsegment_make(int64 rid, double pos1, double pos2)
-{
-  if (!route_exists(rid))
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("there is no route with gid value %lu in table ways", rid)));
-  if (pos1 < 0 || pos1 > 1 || pos2 < 0 || pos2 > 1)
-    ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
-      errmsg("The relative position of a network segment must be a real number between 0 and 1")));
-
-  Nsegment *result = (Nsegment *) palloc(sizeof(Nsegment));
-  result->rid = rid;
-  result->pos1 = Min(pos1, pos2);
-  result->pos2 = Max(pos1, pos2);
-  return result;
-}
-
-/**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_temporal_cast
  * @brief Construct an network segment value from the arguments
  */
 Nsegment *
@@ -454,7 +413,7 @@ npoint_nsegment(const Npoint *np)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_temporal_accesor
  * @brief Return the route of the network point
  */
 int64
@@ -464,7 +423,7 @@ npoint_route(Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_temporal_accesor
  * @brief Return the position of the network point
  */
 double
@@ -474,7 +433,7 @@ npoint_position(Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_temporal_accesor
  * @brief Return the route of the network segment
  */
 int64
@@ -484,7 +443,7 @@ nsegment_route(Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_temporal_accesor
  * @brief Return the start position of the network segment
  */
 double
@@ -494,7 +453,7 @@ nsegment_start_position(Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_constructor
+ * @ingroup libmeos_temporal_accesor
  * @brief Return the end position of the network segment
  */
 double
@@ -678,7 +637,7 @@ rid_from_geom(Datum geom)
 #endif
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_cast
  * @brief Transforms the network point into a geometry
  */
 Datum
@@ -691,7 +650,7 @@ npoint_geom(const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_cast
  * @brief Transforms the geometry into a network point
  */
 Npoint *
@@ -738,7 +697,7 @@ geom_npoint(Datum geom)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_cast
  * @brief Transforms the network segment into a geometry
  */
 Datum
@@ -757,7 +716,7 @@ nsegment_geom(const Nsegment *ns)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_cast
  * @brief Transforms the geometry into a network segment
  */
 Nsegment *
@@ -896,8 +855,6 @@ npoint_cmp(const Npoint *np1, const Npoint *np2)
   return 0;
 }
 
-/* Inequality operators using the npoint_cmp function */
-
 /**
  * @ingroup libmeos_temporal_comp
  * @brief Return true if the first network point is less than the second one
@@ -907,6 +864,41 @@ npoint_lt(const Npoint *np1, const Npoint *np2)
 {
   int cmp = npoint_cmp(np1, np2);
   return (cmp < 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network point is less than or equal to the
+ * second one
+ */
+bool
+npoint_le(const Npoint *np1, const Npoint *np2)
+{
+  int cmp = npoint_cmp(np1, np2);
+  return (cmp <= 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network point is greater than the second one
+ */
+bool
+npoint_gt(const Npoint *np1, const Npoint *np2)
+{
+  int cmp = npoint_cmp(np1, np2);
+  return (cmp > 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network point is greater than or equal to
+ * the second one
+ */
+bool
+npoint_ge(const Npoint *np1, const Npoint *np2)
+{
+  int cmp = npoint_cmp(np1, np2);
+  return (cmp >= 0);
 }
 
 /*****************************************************************************/
@@ -957,6 +949,52 @@ nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
   else if (ns1->pos2 > ns2->pos2)
     return 1;
   return 0;
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network segment is less than the second one
+ */
+bool
+nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
+{
+  int cmp = nsegment_cmp(ns1, ns2);
+  return (cmp < 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network segment is less than or equal to the
+ * second one
+ */
+bool
+nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
+{
+  int cmp = nsegment_cmp(ns1, ns2);
+  return (cmp <= 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network segment is greater than the second one
+ */
+bool
+nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
+{
+  int cmp = nsegment_cmp(ns1, ns2);
+  return (cmp > 0);
+}
+
+/**
+ * @ingroup libmeos_temporal_comp
+ * @brief Return true if the first network segment is greater than or equal to
+ * the second one
+ */
+bool
+nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
+{
+  int cmp = nsegment_cmp(ns1, ns2);
+  return (cmp >= 0);
 }
 
 /*****************************************************************************/
@@ -1336,8 +1374,7 @@ Npoint_lt(PG_FUNCTION_ARGS)
 {
   Npoint *np1 = PG_GETARG_NPOINT_P(0);
   Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  int cmp = npoint_cmp(np1, np2);
-  PG_RETURN_BOOL(cmp < 0);
+  PG_RETURN_BOOL(npoint_lt(np1, np2));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_le);
@@ -1350,8 +1387,7 @@ Npoint_le(PG_FUNCTION_ARGS)
 {
   Npoint *np1 = PG_GETARG_NPOINT_P(0);
   Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  int cmp = npoint_cmp(np1, np2);
-  PG_RETURN_BOOL(cmp <= 0);
+  PG_RETURN_BOOL(npoint_le(np1, np2));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_ge);
@@ -1364,8 +1400,7 @@ Npoint_ge(PG_FUNCTION_ARGS)
 {
   Npoint *np1 = PG_GETARG_NPOINT_P(0);
   Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  int cmp = npoint_cmp(np1, np2);
-  PG_RETURN_BOOL(cmp >= 0);
+  PG_RETURN_BOOL(npoint_ge(np1, np2));
 }
 
 PG_FUNCTION_INFO_V1(Npoint_gt);
@@ -1377,8 +1412,7 @@ Npoint_gt(PG_FUNCTION_ARGS)
 {
   Npoint *np1 = PG_GETARG_NPOINT_P(0);
   Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  int cmp = npoint_cmp(np1, np2);
-  PG_RETURN_BOOL(cmp > 0);
+  PG_RETURN_BOOL(npoint_gt(np1, np2));
 }
 
 /*****************************************************************************/
@@ -1431,8 +1465,7 @@ Nsegment_lt(PG_FUNCTION_ARGS)
 {
   Nsegment *ns1 = PG_GETARG_NSEGMENT_P(0);
   Nsegment *ns2 = PG_GETARG_NSEGMENT_P(1);
-  int cmp = nsegment_cmp(ns1, ns2);
-  PG_RETURN_BOOL(cmp < 0);
+  PG_RETURN_BOOL(nsegment_lt(ns1, ns2));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_le);
@@ -1445,8 +1478,7 @@ Nsegment_le(PG_FUNCTION_ARGS)
 {
   Nsegment *ns1 = PG_GETARG_NSEGMENT_P(0);
   Nsegment *ns2 = PG_GETARG_NSEGMENT_P(1);
-  int cmp = nsegment_cmp(ns1, ns2);
-  PG_RETURN_BOOL(cmp <= 0);
+  PG_RETURN_BOOL(nsegment_le(ns1, ns2));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_ge);
@@ -1459,8 +1491,7 @@ Nsegment_ge(PG_FUNCTION_ARGS)
 {
   Nsegment *ns1 = PG_GETARG_NSEGMENT_P(0);
   Nsegment *ns2 = PG_GETARG_NSEGMENT_P(1);
-  int cmp = nsegment_cmp(ns1, ns2);
-  PG_RETURN_BOOL(cmp >= 0);
+  PG_RETURN_BOOL(nsegment_ge(ns1, ns2));
 }
 
 PG_FUNCTION_INFO_V1(Nsegment_gt);
@@ -1472,8 +1503,7 @@ Nsegment_gt(PG_FUNCTION_ARGS)
 {
   Nsegment *ns1 = PG_GETARG_NSEGMENT_P(0);
   Nsegment *ns2 = PG_GETARG_NSEGMENT_P(1);
-  int cmp = nsegment_cmp(ns1, ns2);
-  PG_RETURN_BOOL(cmp > 0);
+  PG_RETURN_BOOL(nsegment_gt(ns1, ns2));
 }
 
 /*****************************************************************************/

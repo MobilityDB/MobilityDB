@@ -297,7 +297,7 @@ tpoint_stboxes(const Temporal *temp, int *count)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Generic bounding box function for a temporal point and a geometry.
  *
  * @param[in] temp Temporal point
@@ -320,7 +320,6 @@ boxop_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /**
- * @ingroup libmeos_temporal_oper_box
  * @brief Generic bounding box function for a temporal point and a
  * spatiotemporal box
  *
@@ -340,7 +339,6 @@ boxop_tpoint_stbox(const Temporal *temp, const STBOX *box,
 }
 
 /**
- * @ingroup libmeos_temporal_oper_box
  * @brief Generic bounding box function for two temporal points.
  *
  * @param[in] temp1,temp2 Temporal points

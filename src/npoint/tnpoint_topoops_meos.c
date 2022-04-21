@@ -50,7 +50,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the geometry and
  * the temporal network point overlap
  */
@@ -61,7 +61,7 @@ overlaps_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box and the spatiotemporal box of
  * the temporal network point overlap
  */
@@ -72,7 +72,7 @@ overlaps_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the network point and the
  * temporal network point overlap
  */
@@ -85,7 +85,7 @@ overlaps_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network point
  * and the geometry overlap
  */
@@ -96,7 +96,7 @@ overlaps_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * and the spatiotemporal box overlap
  */
@@ -108,7 +108,7 @@ overlaps_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network point
  * and the network point overlap
  */
@@ -119,7 +119,7 @@ overlaps_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network points
  * overlap
  */
@@ -134,7 +134,7 @@ overlaps_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the geometry contains the one of
  * the temporal network point
  */
@@ -145,7 +145,7 @@ contains_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box contains the one of the temporal
  * network point
  */
@@ -156,7 +156,7 @@ contains_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the network point contains
  * the one of the temporal network point
  */
@@ -169,7 +169,7 @@ contains_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the one of the geometry
  */
@@ -180,7 +180,7 @@ contains_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the spatiotemporal box
  */
@@ -192,7 +192,7 @@ contains_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * contain the one of the network point
  */
@@ -203,7 +203,7 @@ contains_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the first temporal network
  * point contain the one of the second temporal network point
  */
@@ -218,7 +218,7 @@ contains_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the geometry is contained by the
  * one of the temporal network point
  */
@@ -229,7 +229,7 @@ contained_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is contained by the one of the
  * temporal network point
  */
@@ -240,7 +240,7 @@ contained_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the network point is
  * contained by the one of the temporal network point
  */
@@ -253,7 +253,7 @@ contained_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained by the one of the geometry
  */
@@ -264,7 +264,7 @@ contained_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained by the spatiotemporal box
  */
@@ -276,7 +276,7 @@ contained_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point is
  * contained by the one of the network point
  */
@@ -287,7 +287,7 @@ contained_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the first temporal network
  * point is contained by the one of the second temporal network point
  */
@@ -302,9 +302,9 @@ contained_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal boxes of the geometry and the temporal
- * network point are equal in the common dimensions
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the spatiotemporal boxes of the geometry and the
+ * temporal network point are equal in the common dimensions
  */
 bool
 same_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
@@ -313,9 +313,9 @@ same_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
- * @brief Return true if the spatiotemporal box and the spatiotemporal box of the
- * temporal network point are equal in the common dimensions
+ * @ingroup libmeos_temporal_topo
+ * @brief Return true if the spatiotemporal box and the spatiotemporal box of
+ * the temporal network point are equal in the common dimensions
  */
 bool
 same_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
@@ -324,7 +324,7 @@ same_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the network point and the
  * temporal network point are equal in the common dimensions
  */
@@ -337,7 +337,7 @@ same_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network point
  * and the geometry are equal in the common dimensions
  */
@@ -348,7 +348,7 @@ same_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * and the spatiotemporal box are equal in the common dimensions
  */
@@ -360,7 +360,7 @@ same_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network point
  * and the network point are equal in the common dimensions
  */
@@ -371,7 +371,7 @@ same_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network points
  * are equal in the common dimensions
  */
@@ -386,7 +386,7 @@ same_tnpoint_tnpoint(const Temporal *tnpoint1, const Temporal *tnpoint2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the geometry and the
  * temporal network point are adjacent
  */
@@ -397,7 +397,7 @@ adjacent_geo_tnpoint(const GSERIALIZED *geo, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box and the spatiotemporal box of
  * the temporal network point are adjacent
  */
@@ -408,7 +408,7 @@ adjacent_stbox_tnpoint(const STBOX *stbox, const Temporal *tnpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the network point and the
  * temporal network point are adjacent
  */
@@ -421,7 +421,7 @@ adjacent_npoint_tnpoint(const Npoint *np, const Temporal *tnpoint)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network point
  * and the geometry are adjacent
  */
@@ -432,7 +432,7 @@ adjacent_tnpoint_geo(const Temporal *tnpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box of the temporal network point
  * and the spatiotemporal box are adjacent
  */
@@ -444,7 +444,7 @@ adjacent_tnpoint_stbox(const Temporal *tnpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network point
  * and the network point are adjacent
  */
@@ -455,7 +455,7 @@ adjacent_tnpoint_npoint(const Temporal *tnpoint, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_topo
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal boxes of the temporal network points
  * are adjacent
  */

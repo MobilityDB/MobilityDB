@@ -308,24 +308,6 @@ ensure_tgeo_type(CachedType temptype)
 }
 
 /*****************************************************************************
- * Oid functions
- *****************************************************************************/
-
-/**
- * Return the Oid of the range type corresponding to the base type
- */
-Oid
-basetype_rangeoid(CachedType basetype)
-{
-  ensure_tnumber_basetype(basetype);
-  if (basetype == T_INT4)
-    return type_oid(T_INTRANGE);
-  if (basetype == T_FLOAT8)
-    return type_oid(T_FLOATRANGE);
-  elog(ERROR, "unknown range type for base type: %d", basetype);
-}
-
-/*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
 
@@ -905,221 +887,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
 #endif
 
 /*****************************************************************************
- * Array functions
- *****************************************************************************/
-
-/**
- * Free a C array of pointers
- */
-void
-pfree_array(void **array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(array[i]);
-  pfree(array);
-  return;
-}
-
-/**
- * Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
-  pfree(array);
-  return;
-}
-
-/**
- * Return the string resulting from assembling the array of strings.
- * The function frees the memory of the input strings after finishing.
- */
-char *
-stringarr_to_string(char **strings, int count, int outlen,
-  char *prefix, char open, char close)
-{
-  char *result = palloc(strlen(prefix) + outlen + 3);
-  result[outlen] = '\0';
-  size_t pos = 0;
-  strcpy(result, prefix);
-  pos += strlen(prefix);
-  result[pos++] = open;
-  for (int i = 0; i < count; i++)
-  {
-    strcpy(result + pos, strings[i]);
-    pos += strlen(strings[i]);
-    result[pos++] = ',';
-    result[pos++] = ' ';
-    pfree(strings[i]);
-  }
-  result[pos - 2] = close;
-  result[pos - 1] = '\0';
-  pfree(strings);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing datums
- * If array elements are pass-by-ref data type, the returned Datums will
- * be pointers into the array object.
- */
-Datum *
-datumarr_extract(ArrayType *array, int *count)
-{
-  bool byval;
-  int16 typlen;
-  char align;
-  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
-  Datum *result;
-  deconstruct_array(array, array->elemtype, typlen, byval, align,
-    &result, NULL, count);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing timestamps
- */
-TimestampTz *
-timestamparr_extract(ArrayType *array, int *count)
-{
-  return (TimestampTz *) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing periods
- */
-Period **
-periodarr_extract(ArrayType *array, int *count)
-{
-  return (Period **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing ranges
- */
-RangeType **
-rangearr_extract(ArrayType *array, int *count)
-{
-  return (RangeType **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing temporal values
- */
-Temporal **
-temporalarr_extract(ArrayType *array, int *count)
-{
-  Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd',
-    (Datum **) &result, NULL, count);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Convert a C array of datums into a PostgreSQL array.
- * Note that the values will be copied into the object even if pass-by-ref type
- */
-ArrayType *
-datumarr_to_array(Datum *values, int count, CachedType type)
-{
-  int16 elmlen;
-  bool elmbyval;
-  char elmalign;
-  assert(count > 0);
-  Oid typid = type_oid(type);
-  get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
-    elmalign);
-  return result;
-}
-
-/**
- * Convert a C array of timestamps into a PostgreSQL array
- */
-ArrayType *
-timestamparr_to_array(const TimestampTz *times, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
-    8, true, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of periods into a PostgreSQL array
- */
-ArrayType *
-periodarr_to_array(const Period **periods, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) periods, count,
-    type_oid(T_PERIOD), sizeof(Period), false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of ranges into a PostgreSQL array
- */
-ArrayType *
-rangearr_to_array(RangeType **ranges, int count, CachedType type)
-{
-  assert(count > 0);
-  Oid typid = type_oid(type);
-  ArrayType *result = construct_array((Datum *) ranges, count, typid, -1,
-    false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of text values into a PostgreSQL array
- */
-ArrayType *
-strarr_to_textarray(char **strarr, int count)
-{
-  assert(count > 0);
-  text **textarr = (text **) palloc(sizeof(text *) * count);
-  for (int i = 0; i < count; i++)
-    textarr[i] = cstring_to_text(strarr[i]);
-  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
-    false, 'i');
-  pfree_array((void **)textarr, count);
-  return result;
-}
-
-/**
- * Convert a C array of temporal values into a PostgreSQL array
- */
-ArrayType *
-temporalarr_to_array(const Temporal **temporalarr, int count)
-{
-  assert(count > 0);
-  Oid temptypid = type_oid(temporalarr[0]->temptype);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
-    -1, false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of spatiotemporal boxes into a PostgreSQL array
- */
-ArrayType *
-stboxarr_to_array(STBOX *boxarr, int count)
-{
-  assert(count > 0);
-  STBOX **boxes = palloc(sizeof(STBOX *) * count);
-  for (int i = 0; i < count; i++)
-    boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
-  pfree(boxes);
-  return result;
-}
-
-/*****************************************************************************
  * Sort functions
  *****************************************************************************/
 
@@ -1568,6 +1335,245 @@ hypot4d(double x, double y, double z, double m)
   zx = z / x;
   mx = m / x;
   return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Oid functions
+ *****************************************************************************/
+
+/**
+ * Return the Oid of the range type corresponding to the base type
+ */
+Oid
+basetype_rangeoid(CachedType basetype)
+{
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
+    return type_oid(T_INTRANGE);
+  if (basetype == T_FLOAT8)
+    return type_oid(T_FLOATRANGE);
+  elog(ERROR, "unknown range type for base type: %d", basetype);
+}
+
+/*****************************************************************************
+ * Array functions
+ *****************************************************************************/
+
+/**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
+ * Free a C array of Datum pointers
+ */
+void
+pfree_datumarr(Datum *array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(DatumGetPointer(array[i]));
+  pfree(array);
+  return;
+}
+
+/**
+ * Return the string resulting from assembling the array of strings.
+ * The function frees the memory of the input strings after finishing.
+ */
+char *
+stringarr_to_string(char **strings, int count, int outlen,
+  char *prefix, char open, char close)
+{
+  char *result = palloc(strlen(prefix) + outlen + 3);
+  result[outlen] = '\0';
+  size_t pos = 0;
+  strcpy(result, prefix);
+  pos += strlen(prefix);
+  result[pos++] = open;
+  for (int i = 0; i < count; i++)
+  {
+    strcpy(result + pos, strings[i]);
+    pos += strlen(strings[i]);
+    result[pos++] = ',';
+    result[pos++] = ' ';
+    pfree(strings[i]);
+  }
+  result[pos - 2] = close;
+  result[pos - 1] = '\0';
+  pfree(strings);
+  return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing datums
+ * If array elements are pass-by-ref data type, the returned Datums will
+ * be pointers into the array object.
+ */
+Datum *
+datumarr_extract(ArrayType *array, int *count)
+{
+  bool byval;
+  int16 typlen;
+  char align;
+  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
+  Datum *result;
+  deconstruct_array(array, array->elemtype, typlen, byval, align,
+    &result, NULL, count);
+  return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing timestamps
+ */
+TimestampTz *
+timestamparr_extract(ArrayType *array, int *count)
+{
+  return (TimestampTz *) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing periods
+ */
+Period **
+periodarr_extract(ArrayType *array, int *count)
+{
+  return (Period **) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing ranges
+ */
+RangeType **
+rangearr_extract(ArrayType *array, int *count)
+{
+  return (RangeType **) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing temporal values
+ */
+Temporal **
+temporalarr_extract(ArrayType *array, int *count)
+{
+  Temporal **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd',
+    (Datum **) &result, NULL, count);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Convert a C array of datums into a PostgreSQL array.
+ * Note that the values will be copied into the object even if pass-by-ref type
+ */
+ArrayType *
+datumarr_to_array(Datum *values, int count, CachedType type)
+{
+  int16 elmlen;
+  bool elmbyval;
+  char elmalign;
+  assert(count > 0);
+  Oid typid = type_oid(type);
+  get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
+  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
+    elmalign);
+  return result;
+}
+
+/**
+ * Convert a C array of timestamps into a PostgreSQL array
+ */
+ArrayType *
+timestamparr_to_array(const TimestampTz *times, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
+    8, true, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of periods into a PostgreSQL array
+ */
+ArrayType *
+periodarr_to_array(const Period **periods, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array((Datum *) periods, count,
+    type_oid(T_PERIOD), sizeof(Period), false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of ranges into a PostgreSQL array
+ */
+ArrayType *
+rangearr_to_array(RangeType **ranges, int count, CachedType type)
+{
+  assert(count > 0);
+  Oid typid = type_oid(type);
+  ArrayType *result = construct_array((Datum *) ranges, count, typid, -1,
+    false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of text values into a PostgreSQL array
+ */
+ArrayType *
+strarr_to_textarray(char **strarr, int count)
+{
+  assert(count > 0);
+  text **textarr = (text **) palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    textarr[i] = cstring_to_text(strarr[i]);
+  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
+    false, 'i');
+  pfree_array((void **)textarr, count);
+  return result;
+}
+
+/**
+ * Convert a C array of temporal values into a PostgreSQL array
+ */
+ArrayType *
+temporalarr_to_array(const Temporal **temporalarr, int count)
+{
+  assert(count > 0);
+  Oid temptypid = type_oid(temporalarr[0]->temptype);
+  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
+    -1, false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of spatiotemporal boxes into a PostgreSQL array
+ */
+ArrayType *
+stboxarr_to_array(STBOX *boxarr, int count)
+{
+  assert(count > 0);
+  STBOX **boxes = palloc(sizeof(STBOX *) * count);
+  for (int i = 0; i < count; i++)
+    boxes[i] = &boxarr[i];
+  ArrayType *result = construct_array((Datum *) boxes, count,
+    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
+  pfree(boxes);
+  return result;
 }
 
 /*****************************************************************************/

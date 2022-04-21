@@ -56,7 +56,7 @@
 /* geo op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry is strictly to the left of the
  * temporal point
  */
@@ -67,7 +67,7 @@ left_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry does not extend to the right of the
  * temporal point
  */
@@ -78,7 +78,7 @@ overleft_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry is strictly to the right of the
  * temporal point
  */
@@ -89,7 +89,7 @@ right_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry does not extend to the left of the
  * temporal point
  */
@@ -100,7 +100,7 @@ overright_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry is strictly below the temporal point
  */
 bool
@@ -110,7 +110,7 @@ below_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry does not extend above the temporal point
  */
 bool
@@ -120,7 +120,7 @@ overbelow_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry is strictly above the temporal point
  */
 bool
@@ -130,7 +130,7 @@ above_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry does not extend below the temporal point
  */
 bool
@@ -140,7 +140,7 @@ overabove_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry is strictly in front of the temporal point
  */
 bool
@@ -150,7 +150,7 @@ front_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry does not extend to the back of the
  * temporal point
  */
@@ -161,7 +161,7 @@ overfront_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry is strictly back of the temporal point
  */
 bool
@@ -171,7 +171,7 @@ back_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the geometry does not extend to the front of the
  * temporal point
  */
@@ -185,7 +185,7 @@ overback_geo_tpoint(const GSERIALIZED *geo, const Temporal *tpoint)
 /* Temporal op geom */
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly to the left of
  * the geometry
  */
@@ -196,7 +196,7 @@ left_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the right of
  * the geometry
  */
@@ -207,7 +207,7 @@ overleft_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly to the right of
  * the geometry
  */
@@ -218,7 +218,7 @@ right_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the left of
  * the geometry
  */
@@ -229,7 +229,7 @@ overright_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly below the geometry
  */
 bool
@@ -239,7 +239,7 @@ below_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend above the geometry
  */
 bool
@@ -249,7 +249,7 @@ overbelow_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly above the geometry
  */
 bool
@@ -259,7 +259,7 @@ above_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend below the geometry
  */
 bool
@@ -269,7 +269,7 @@ overabove_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly in front of the geometry
  */
 bool
@@ -279,7 +279,7 @@ front_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the back of
  * the geometry
  */
@@ -290,7 +290,7 @@ overfront_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly back of the geometry
  */
 bool
@@ -300,7 +300,7 @@ back_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the front of
  * the geometry
  */
@@ -314,7 +314,7 @@ overback_tpoint_geo(const Temporal *tpoint, const GSERIALIZED *geo)
 /* stbox op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly to the left of the
  * temporal point
  */
@@ -325,7 +325,7 @@ left_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend to the right of
  * the temporal point
  */
@@ -336,7 +336,7 @@ overleft_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly to the right of the
  * temporal point
  */
@@ -347,7 +347,7 @@ right_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend to the left of
  * the temporal point
  */
@@ -358,7 +358,7 @@ overright_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly below the
  * temporal point
  */
@@ -369,7 +369,7 @@ below_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend above the
  * temporal point
  */
@@ -380,7 +380,7 @@ overbelow_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly above the temporal
  * point
  */
@@ -391,7 +391,7 @@ above_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend below the
  * temporal point
  */
@@ -402,7 +402,7 @@ overabove_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly in front of the
  * temporal point
  */
@@ -413,7 +413,7 @@ front_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend to the back of
  * the temporal point
  */
@@ -424,7 +424,7 @@ overfront_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly back of the
  * temporal point
  */
@@ -435,7 +435,7 @@ back_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend to the front of
  * the temporal point
  */
@@ -446,7 +446,7 @@ overback_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly before the temporal
  * point
  */
@@ -457,7 +457,7 @@ before_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend after the
  * temporal point
  */
@@ -468,7 +468,7 @@ overbefore_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box is strictly after the temporal
  * point
  */
@@ -479,7 +479,7 @@ after_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the spatiotemporal box does not extend before the
  * temporal point
  */
@@ -493,7 +493,7 @@ overafter_stbox_tpoint(const STBOX *stbox, const Temporal *tpoint)
 /* Temporal op stbox */
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly to the left of the
  * spatiotemporal box
  */
@@ -504,7 +504,7 @@ left_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the right of the
  * spatiotemporal box
  */
@@ -515,7 +515,7 @@ overleft_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly to the right of the
  * spatiotemporal box
  */
@@ -526,7 +526,7 @@ right_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the left of the
  * spatiotemporal box
  */
@@ -537,7 +537,7 @@ overright_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly below the
  * spatiotemporal box
  */
@@ -548,7 +548,7 @@ below_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend above the
  * spatiotemporal box
  */
@@ -559,7 +559,7 @@ overbelow_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly above the
  * spatiotemporal box
  */
@@ -570,7 +570,7 @@ above_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend below the
  * spatiotemporal box
  */
@@ -581,7 +581,7 @@ overabove_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly in front of the
  * spatiotemporal box
  */
@@ -592,7 +592,7 @@ front_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the back of the
  * spatiotemporal box
  */
@@ -603,7 +603,7 @@ overfront_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly back of the
  * spatiotemporal box
  */
@@ -614,7 +614,7 @@ back_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend to the front of the
  * spatiotemporal box
  */
@@ -625,7 +625,7 @@ overback_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly before the
  * spatiotemporal box
  */
@@ -636,7 +636,7 @@ before_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend after the
  * spatiotemporal box
  */
@@ -647,7 +647,7 @@ overbefore_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point is strictly after the
  * spatiotemporal box
  */
@@ -658,7 +658,7 @@ after_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the temporal point does not extend before the
  * spatiotemporal box
  */
@@ -672,7 +672,7 @@ overafter_tpoint_stbox(const Temporal *tpoint, const STBOX *stbox)
 /* Temporal op Temporal */
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly to the left of
  * the second one
  */
@@ -683,7 +683,7 @@ left_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend to the right
  * of the second one
  */
@@ -694,7 +694,7 @@ overleft_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly to the right of
  * the second one
  */
@@ -705,7 +705,7 @@ right_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend to the left
  * of the second one
  */
@@ -716,7 +716,7 @@ overright_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly below the
  * second one
  */
@@ -727,7 +727,7 @@ below_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend above the
  * second one
  */
@@ -738,7 +738,7 @@ overbelow_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly above the
  * second one
  */
@@ -749,7 +749,7 @@ above_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend below the
  * second one
  */
@@ -760,7 +760,7 @@ overabove_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly in front of the
  * second one
  */
@@ -771,7 +771,7 @@ front_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend to the back
  * of the second one
  */
@@ -782,7 +782,7 @@ overfront_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly back of the
  * second one
  */
@@ -793,7 +793,7 @@ back_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend to the front
  * of the second one
  */
@@ -804,7 +804,7 @@ overback_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly before the
  * second one
  */
@@ -815,7 +815,7 @@ before_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend after the
  * second one
  */
@@ -826,7 +826,7 @@ overbefore_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point is strictly after the
  * second one
  */
@@ -837,7 +837,7 @@ after_tpoint_tpoint(const Temporal* tpoint1, const Temporal *tpoint2)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_bbox
+ * @ingroup libmeos_temporal_topo
  * @brief Return true if the first temporal point does not extend before the
  * second one
  */

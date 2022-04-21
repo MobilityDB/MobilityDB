@@ -383,7 +383,7 @@ periodset_tbox(const PeriodSet *ps, TBOX *box)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_constructor
  * @brief Transform the integer and the timestamp to a temporal box
  */
 TBOX *
@@ -394,7 +394,7 @@ int_timestamp_to_tbox(int i, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_constructor
  * @brief Transform the integer and the timestamp to a temporal box
  */
 TBOX *
@@ -405,7 +405,7 @@ float_timestamp_to_tbox(double d, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_constructor
  * @brief Transform the integer and the period to a temporal box
  */
 TBOX *
@@ -417,7 +417,7 @@ int_period_to_tbox(int i, Period *p)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_constructor
  * @brief Transform the float and the period to a temporal box
  */
 TBOX *
@@ -428,7 +428,7 @@ float_period_to_tbox(double d, Period *p)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_constructor
  * @brief Transform the range and the timestamp to a temporal box
  */
 TBOX *
@@ -445,7 +445,7 @@ range_timestamp_to_tbox(RangeType *range, TimestampTz t)
 }
 
 /**
- * @ingroup libmeos_box_cast
+ * @ingroup libmeos_box_constructor
  * @brief Transform the range and the period to a temporal box
  */
 TBOX *
@@ -693,7 +693,7 @@ topo_tbox_tbox_init(const TBOX *box1, const TBOX *box2, bool *hasx, bool *hast)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the first temporal box contains the second one.
  */
 bool
@@ -709,7 +709,7 @@ contains_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the first temporal box is contained by the second one.
  */
 bool
@@ -719,7 +719,7 @@ contained_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the temporal boxes overlap.
  */
 bool
@@ -735,7 +735,7 @@ overlaps_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the temporal boxes are equal on the common dimensions.
  */
 bool
@@ -751,7 +751,7 @@ same_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_topo
+ * @ingroup libmeos_box_topo
  * @brief Return true if the temporal boxes are adjacent.
  */
 bool
@@ -779,7 +779,7 @@ adjacent_tbox_tbox(const TBOX *box1, const TBOX *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly to the left of
  * the second one.
  */
@@ -792,7 +792,7 @@ left_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend to the right
  * of the second one.
  */
@@ -805,7 +805,7 @@ overleft_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly to the right of
  * the second one.
  */
@@ -818,7 +818,7 @@ right_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend to the left of
  * the second one.
  */
@@ -831,7 +831,7 @@ overright_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly before
  * the second one.
  */
@@ -844,7 +844,7 @@ before_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend after
  * the second one.
  */
@@ -857,7 +857,7 @@ overbefore_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box is strictly after the
  * second one.
  */
@@ -870,7 +870,7 @@ after_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_pos
+ * @ingroup libmeos_box_pos
  * @brief Return true if the first temporal box does not extend before
  * the second one.
  */
@@ -887,7 +887,7 @@ overafter_tbox_tbox(const TBOX *box1, const TBOX *box2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper_set
+ * @ingroup libmeos_box_set
  * @brief Return the union of the temporal boxes.
  */
 TBOX *
@@ -917,7 +917,7 @@ union_tbox_tbox(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_set
+ * @ingroup libmeos_box_set
  * @brief Return the intersection of the temporal boxes.
  */
 bool
@@ -948,9 +948,8 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
   return true;
 }
 
-#ifdef MEOS
 /**
- * @ingroup libmeos_box_oper_set
+ * @ingroup libmeos_box_set
  * @brief Return the union of the spatiotemporal boxes.
  */
 TBOX *
@@ -964,14 +963,13 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
   }
   return result;
 }
-#endif
 
 /*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return -1, 0, or 1 depending on whether the first temporal box value
  * is less than, equal to, or greater than the second one.
  *
@@ -1020,7 +1018,7 @@ tbox_cmp(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the two temporal boxes are equal
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -1039,7 +1037,7 @@ tbox_eq(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the two temporal boxes are different
  */
 bool
@@ -1049,7 +1047,7 @@ tbox_ne(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box value is less than the second one
  */
 bool
@@ -1060,7 +1058,7 @@ tbox_lt(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box value is less than or equal to
  * the second one
  */
@@ -1072,7 +1070,7 @@ tbox_le(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box value is greater than or equal
  * to the second one
  */
@@ -1084,7 +1082,7 @@ tbox_ge(const TBOX *box1, const TBOX *box2)
 }
 
 /**
- * @ingroup libmeos_box_oper_comp
+ * @ingroup libmeos_box_comp
  * @brief Return true if the first temporal box value is greater than the second one
  */
 bool
@@ -1785,12 +1783,9 @@ Intersection_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBOX *box1 = PG_GETARG_TBOX_P(0);
   TBOX *box2 = PG_GETARG_TBOX_P(1);
-  TBOX *result = palloc(sizeof(TBOX));
-  if (! inter_tbox_tbox(box1, box2, result))
-  {
-    pfree(result);
+  TBOX *result = intersection_tbox_tbox(box1, box2);
+  if (! result)
     PG_RETURN_NULL();
-  }
   PG_RETURN_POINTER(result);
 }
 

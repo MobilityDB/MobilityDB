@@ -45,29 +45,29 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_text
  * @brief Return the concatenation of the text value and the temporal text values
  */
 Temporal *
-textcat_base_ttext(Datum value, Temporal *temp)
+textcat_text_ttext(Datum value, Temporal *temp)
 {
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT);
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_text
  * @brief Return the concatenation of the temporal text value and the text value
  */
 Temporal *
-textcat_ttext_base(const Temporal *temp, Datum value)
+textcat_ttext_text(const Temporal *temp, Datum value)
 {
   Temporal *result = textfunc_ttext_text(temp, value, &datum_textcat, INVERT_NO);
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_text
  * @brief Return the concatenation of the two temporal text values
  */
 Temporal *
@@ -80,7 +80,7 @@ textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_text
  * @brief Transform the temporal text value into uppercase
  */
 Temporal *
@@ -91,7 +91,7 @@ ttext_upper(const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_text
  * @brief Transform the temporal text value into lowercase
  */
 Temporal *

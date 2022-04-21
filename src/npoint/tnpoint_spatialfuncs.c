@@ -705,7 +705,7 @@ tnpoint_speed(Temporal *temp)
 Datum
 tnpoint_twcentroid(Temporal *temp)
 {
-  Temporal *tgeom = tnpoint_to_tgeompoint(temp);
+  Temporal *tgeom = tnpoint_tgeompoint(temp);
   Datum result = tpoint_twcentroid(tgeom);
   pfree(tgeom);
   return result;
@@ -910,12 +910,12 @@ tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *geo, bool atfunc)
   }
   ensure_has_not_Z_gs(geo);
 
-  Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, atfunc);
   Temporal *result = NULL;
   if (resultgeom != NULL)
   {
-    /* We do not call the function tgeompoint_to_tnpoint to avoid
+    /* We do not call the function tgeompoint_tnpoint to avoid
      * roundoff errors */
     PeriodSet *ps = temporal_time(resultgeom);
     result = temporal_restrict_periodset(temp, ps, REST_AT);

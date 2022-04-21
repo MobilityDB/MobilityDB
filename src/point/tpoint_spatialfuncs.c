@@ -775,11 +775,11 @@ point_on_segment(Datum start, Datum end, Datum point)
 }
 
 /*****************************************************************************
- * Ever equal comparison operator
+ * Ever/always equal comparison operators
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal point is ever equal to the point
  */
 bool
@@ -790,7 +790,7 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal point is ever equal to the point
  */
 bool
@@ -810,7 +810,7 @@ tpointinstset_ever_eq(const TInstantSet *ti, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal point is ever equal to the point
  */
 bool
@@ -867,7 +867,7 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal point is ever equal to the point
  */
 bool
@@ -887,7 +887,7 @@ tpointseqset_ever_eq(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_ever
+ * @ingroup libmeos_temporal_ever
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
@@ -910,6 +910,93 @@ tpoint_ever_eq(const Temporal *temp, Datum value)
     result = tpointseq_ever_eq((TSequence *) temp, value);
   else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_ever_eq((TSequenceSet *) temp, value);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if temporal value is always equal to the base value.
+ */
+bool
+tpointinst_always_eq(const TInstant *inst, Datum value)
+{
+  return tpointinst_ever_eq(inst, value);
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpointinstset_always_eq(const TInstantSet *ti, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) ti, value, ALWAYS))
+    return false;
+
+  /* The bounding box test above is enough to compute the answer for
+   * temporal points */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpointseq_always_eq(const TSequence *seq, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
+    return false;
+
+  /* The bounding box test above is enough to compute the answer for
+   * temporal numbers */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpointseqset_always_eq(const TSequenceSet *ts, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *)ts, value, ALWAYS))
+    return false;
+
+  /* The bounding box test above is enough to compute the answer for
+   * temporal numbers */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpoint_always_eq(const Temporal *temp, Datum value)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  if (gserialized_is_empty(gs))
+    return false;
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+
+  bool result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tpointinst_always_eq((TInstant *) temp, value);
+  else if (temp->subtype == INSTANTSET)
+    result = tpointinstset_always_eq((TInstantSet *) temp, value);
+  else if (temp->subtype == SEQUENCE)
+    result = tpointseq_always_eq((TSequence *) temp, value);
+  else /* temp->subtype == SEQUENCESET */
+    result = tpointseqset_always_eq((TSequenceSet *) temp, value);
   return result;
 }
 
@@ -3012,7 +3099,7 @@ tpoint_speed(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of the temporal geometry point.
  */
 Datum
@@ -3051,7 +3138,7 @@ tpointinstset_twcentroid(const TInstantSet *ti)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of the temporal geometry point.
  */
 Datum
@@ -3094,7 +3181,7 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of the temporal geometry point.
  */
 Datum
@@ -3150,7 +3237,7 @@ tpointseqset_twcentroid(const TSequenceSet *ts)
 }
 
 /**
- * @ingroup libmeos_temporal_spatial_accessor
+ * @ingroup libmeos_temporal_agg
  * @brief Return the time-weighed centroid of the temporal geometry point.
  */
 Datum
@@ -5143,13 +5230,7 @@ tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  bool isempty = gserialized_is_empty(gs);
-  bool result = false;
-  if (! isempty)
-    result = func(temp, PointerGetDatum(gs));
+  bool result = func(temp, PointerGetDatum(gs));
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   PG_RETURN_BOOL(result);
@@ -5172,7 +5253,7 @@ PG_FUNCTION_INFO_V1(Tpoint_always_eq);
 PGDLLEXPORT Datum
 Tpoint_always_eq(PG_FUNCTION_ARGS)
 {
-  return tpoint_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+  return tpoint_ev_al_comp_ext(fcinfo, &tpoint_always_eq);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
@@ -5182,7 +5263,7 @@ PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
 PGDLLEXPORT Datum
 Tpoint_ever_ne(PG_FUNCTION_ARGS)
 {
-  return ! tpoint_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+  return ! tpoint_ev_al_comp_ext(fcinfo, &tpoint_always_eq);
 }
 
 PG_FUNCTION_INFO_V1(Tpoint_always_ne);

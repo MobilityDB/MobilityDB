@@ -52,7 +52,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between the geometry point and the temporal
  * network point
  */
@@ -62,14 +62,14 @@ distance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
   if (gserialized_is_empty(geo))
     return NULL;
   ensure_point_type(geo);
-  Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo((const Temporal *) tempgeom, geo);
   pfree(tempgeom);
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between the temporal network point and
  * the network point
  */
@@ -77,14 +77,14 @@ Temporal *
 distance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   GSERIALIZED *geom = (GSERIALIZED *) DatumGetPointer(npoint_geom(np));
-  Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
   Temporal *result = distance_tpoint_geo(tempgeom, geom);
   pfree(DatumGetPointer(geom));
   return result;
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the temporal distance between the two temporal network points
  */
 Temporal *
@@ -96,8 +96,8 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
     &sync1, &sync2))
     return NULL;
 
-  Temporal *geomsync1 = tnpoint_to_tgeompoint(sync1);
-  Temporal *geomsync2 = tnpoint_to_tgeompoint(sync2);
+  Temporal *geomsync1 = tnpoint_tgeompoint(sync1);
+  Temporal *geomsync2 = tnpoint_tgeompoint(sync2);
   Temporal *result = distance_tpoint_tpoint(geomsync1, geomsync2);
   pfree(sync1); pfree(sync2);
   pfree(geomsync1); pfree(geomsync2);
@@ -109,7 +109,7 @@ distance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant of the temporal network point
  * and the geometry
  */
@@ -118,9 +118,9 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 {
   if (gserialized_is_empty(geo))
     return NULL;
-  Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
   TInstant *resultgeom = nai_tpoint_geo(tempgeom, geo);
-  /* We do not call the function tgeompointinst_to_tnpointinst to avoid
+  /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
@@ -131,7 +131,7 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant of the network point and the
  * temporal network point.
  */
@@ -140,9 +140,9 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   Datum geom = npoint_geom(np);
   GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-  Temporal *tempgeom = tnpoint_to_tgeompoint(temp);
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
   TInstant *resultgeom = nai_tpoint_geo(tempgeom, gs);
-  /* We do not call the function tgeompointinst_to_tnpointinst to avoid
+  /* We do not call the function tgeompointinst_tnpointinst to avoid
    * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   bool found = temporal_value_at_timestamp_inc(temp, resultgeom->t, &value);
@@ -155,7 +155,7 @@ nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant of the network point and the
  * temporal network point.
  */
@@ -166,7 +166,7 @@ nai_npoint_tnpoint(const Npoint *np, const Temporal *temp)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach instant of the two temporal network points
  */
 TInstant *
@@ -192,7 +192,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance of the temporal network point and the
  * geometry
  */
@@ -208,7 +208,7 @@ nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance of the temporal network point
  * and the network point
  */
@@ -226,7 +226,7 @@ nad_tnpoint_npoint(Temporal *temp, Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the nearest approach distance of the two temporal network
  * points
  */
@@ -245,7 +245,7 @@ nad_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between the
  * geometry and the temporal network point
  */
@@ -262,7 +262,7 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between the
  * network point and the temporal network point
  */
@@ -281,7 +281,7 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 }
 
 /**
- * @ingroup libmeos_temporal_oper_dist
+ * @ingroup libmeos_temporal_dist
  * @brief Return the line connecting the nearest approach point between the two
  * temporal networks
  */
@@ -295,8 +295,8 @@ shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
       &sync1, &sync2))
     return false;
 
-  Temporal *geomsync1 = tnpoint_to_tgeompoint(sync1);
-  Temporal *geomsync2 = tnpoint_to_tgeompoint(sync2);
+  Temporal *geomsync1 = tnpoint_tgeompoint(sync1);
+  Temporal *geomsync2 = tnpoint_tgeompoint(sync2);
   bool found = shortestline_tpoint_tpoint(geomsync1, geomsync2, result);
   pfree(geomsync1); pfree(geomsync2);
   return found;

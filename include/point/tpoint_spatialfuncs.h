@@ -129,6 +129,12 @@ extern bool tpointseq_ever_eq(const TSequence *seq, Datum value);
 extern bool tpointseqset_ever_eq(const TSequenceSet *ts, Datum value);
 extern bool tpoint_ever_eq(const Temporal *temp, Datum value);
 
+extern bool tpointinst_always_eq(const TInstant *inst, Datum value);
+extern bool tpointinstset_always_eq(const TInstantSet *ti, Datum value);
+extern bool tpointseq_always_eq(const TSequence *seq, Datum value);
+extern bool tpointseqset_always_eq(const TSequenceSet *ts, Datum value);
+extern bool tpoint_always_eq(const Temporal *temp, Datum value);
+
 /* Functions derived from PostGIS to increase floating-point precision */
 
 extern long double closest_point2d_on_segment_ratio(const POINT2D *p,

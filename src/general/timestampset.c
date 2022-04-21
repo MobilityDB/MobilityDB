@@ -464,7 +464,7 @@ timestampset_shift_tscale(const TimestampSet *ts, const Interval *start,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return -1, 0, or 1 depending on whether the first timestamp set
  * value is less than, equal, or greater than the second temporal value.
  *
@@ -497,7 +497,7 @@ timestampset_cmp(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first timestamp set value is equal to the
  * second one.
  *
@@ -521,7 +521,7 @@ timestampset_eq(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first timestamp set value is different from the
  * second one.
  *
@@ -534,7 +534,7 @@ timestampset_ne(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first timestamp set value is less than the second one
  */
 bool
@@ -545,7 +545,7 @@ timestampset_lt(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first timestamp set value is less than
  * or equal to the second one
  */
@@ -557,7 +557,7 @@ timestampset_le(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first timestamp set value is greater than
  * or equal to the second one
  */
@@ -569,7 +569,7 @@ timestampset_ge(const TimestampSet *ts1, const TimestampSet *ts2)
 }
 
 /**
- * @ingroup libmeos_time_oper
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first timestamp set value is greater than the second one
  */
 bool

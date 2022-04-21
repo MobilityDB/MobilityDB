@@ -532,7 +532,7 @@ period_shift_tscale(const Interval *start, const Interval *duration,
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period is equal to the second one.
  *
  * @note The internal B-tree comparator is not used to increase efficiency
@@ -547,7 +547,7 @@ period_eq(const Period *p1, const Period *p2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period is different from the second one.
  */
 bool
@@ -559,7 +559,7 @@ period_ne(const Period *p1, const Period *p2)
 /* B-tree comparator */
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return -1, 0, or 1 depending on whether the first period
  * is less than, equal, or greater than the second one.
  *
@@ -584,7 +584,7 @@ period_cmp(const Period *p1, const Period *p2)
 /* Inequality operators using the period_cmp function */
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period is less than the second one.
  */
 bool
@@ -595,7 +595,7 @@ period_lt(const Period *p1, const Period *p2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period is less than or equal to the
  * second one.
  */
@@ -607,7 +607,7 @@ period_le(const Period *p1, const Period *p2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period is greater than or equal to the
  * second one.
  */
@@ -619,7 +619,7 @@ period_ge(const Period *p1, const Period *p2)
 }
 
 /**
- * @ingroup libmeos_time_oper_comp
+ * @ingroup libmeos_time_comp
  * @brief Return true if the first period is greater than the second one.
  */
 bool

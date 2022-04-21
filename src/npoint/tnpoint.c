@@ -141,7 +141,7 @@ tnpointseqset_tgeompointseqset(const TSequenceSet *ts)
  * @brief Cast a temporal network point as a temporal geometric point.
  */
 Temporal *
-tnpoint_to_tgeompoint(const Temporal *temp)
+tnpoint_tgeompoint(const Temporal *temp)
 {
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -254,7 +254,7 @@ tgeompointseqset_tnpointseqset(const TSequenceSet *ts)
  * @brief Cast a temporal geometric point as a temporal network point.
  */
 Temporal *
-tgeompoint_to_tnpoint(const Temporal *temp)
+tgeompoint_tnpoint(const Temporal *temp)
 {
   int32_t srid_tpoint = tpoint_srid(temp);
   int32_t srid_ways = get_srid_ways();
@@ -277,7 +277,7 @@ tgeompoint_to_tnpoint(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup libmeos_temporal_transf
+ * @ingroup libmeos_temporal_spatial_transf
  * @brief Set the precision of the fraction of the temporal network point to the
  * number of decimal places.
  */
@@ -609,7 +609,7 @@ tnpoint_routes(const Temporal *temp, int *count)
  * Convert a C array of int64 values into a PostgreSQL array
  */
 ArrayType *
-int64arr_to_array(const int64 *int64arr, int count)
+int64arr_array(const int64 *int64arr, int count)
 {
   return construct_array((Datum *)int64arr, count, INT8OID, 8, true, 'd');
 }
@@ -619,7 +619,7 @@ int64arr_to_array(const int64 *int64arr, int count)
  * Convert a C array of network point values into a PostgreSQL array
  */
 ArrayType *
-npointarr_to_array(Npoint **npointarr, int count)
+npointarr_array(Npoint **npointarr, int count)
 {
   return construct_array((Datum *)npointarr, count, type_oid(T_NPOINT),
     sizeof(Npoint), false, 'd');
@@ -630,7 +630,7 @@ npointarr_to_array(Npoint **npointarr, int count)
  * Convert a C array of network segment values into a PostgreSQL array
  */
 ArrayType *
-nsegmentarr_to_array(Nsegment **nsegmentarr, int count)
+nsegmentarr_array(Nsegment **nsegmentarr, int count)
 {
   return construct_array((Datum *)nsegmentarr, count, type_oid(T_NSEGMENT),
     sizeof(Nsegment), false, 'd');
@@ -665,7 +665,7 @@ PGDLLEXPORT Datum
 Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tnpoint_to_tgeompoint(temp);
+  Temporal *result = tnpoint_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
@@ -678,7 +678,7 @@ PGDLLEXPORT Datum
 Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeompoint_to_tnpoint(temp);
+  Temporal *result = tgeompoint_tnpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -718,7 +718,7 @@ Tnpoint_positions(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   Nsegment **segments = tnpoint_positions(temp, &count);
-  ArrayType *result = nsegmentarr_to_array(segments, count);
+  ArrayType *result = nsegmentarr_array(segments, count);
   pfree_array((void **) segments, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
@@ -747,7 +747,7 @@ Tnpoint_routes(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
   int64 *routes = tnpoint_routes(temp, &count);
-  ArrayType *result = int64arr_to_array(routes, count);
+  ArrayType *result = int64arr_array(routes, count);
   pfree(routes);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
