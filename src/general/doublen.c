@@ -54,6 +54,20 @@
  * Functions
  *****************************************************************************/
 
+#if 0 /* not used */
+/**
+ * Create a double2 value from the double values
+ */
+double2 *
+double2_make(double a, double b)
+{
+  /* Note: zero-fill is done in function double2_set */
+  double2 *result = (double2 *) palloc(sizeof(double2));
+  double2_set(a, b, &result);
+  return result;
+}
+#endif
+
 /**
  * Set a double2 value from the double values
  */
@@ -105,6 +119,20 @@ double2_cmp(double2 *d1, double2 *d2)
 /*****************************************************************************
  * Functions
  *****************************************************************************/
+
+#if 0 /* not used */
+/**
+ * Create a double2 value from the double values
+ */
+double3 *
+double3_make(double a, double b, double c)
+{
+  /* Note: zero-fill is done in function double3_set */
+  double3 *result = (double3 *) palloc(sizeof(double3));
+  double3_set(a, b, c, &result);
+  return result;
+}
+#endif
 
 /**
  * Set a double3 value from the double values
@@ -164,6 +192,20 @@ double3_cmp(double3 *d1, double3 *d2)
  * Functions
  *****************************************************************************/
 
+#if 0 /* not used */
+/**
+ * Create a double2 value from the double values
+ */
+double4 *
+double4_make(double a, double b, double c, double d)
+{
+  /* Note: zero-fill is done in function double4_set */
+  double4 *result = (double4 *) palloc(sizeof(double4));
+  double4_set(a, b, c, d, &result);
+  return result;
+}
+#endif
+
 /**
  * Set a double4 value from the double values
  */
@@ -203,3 +245,218 @@ double4_eq(const double4 *d1, const double4 *d2)
 }
 
 /*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Input/Output functions
+ * Although doubleN are internal types, the doubleN_out function are
+ * implemented for debugging purposes.
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Double2_in);
+/**
+ * Input function for double2 values (stub only)
+ */
+PGDLLEXPORT Datum
+Double2_in(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type double2 is an internal type")));
+  PG_RETURN_POINTER(NULL);
+}
+
+PG_FUNCTION_INFO_V1(Double2_out);
+/**
+ * Output function for double2 values (stub only)
+ */
+PGDLLEXPORT Datum
+Double2_out(PG_FUNCTION_ARGS)
+{
+  double2 *d = (double2 *) PG_GETARG_POINTER(0);
+  char *result = psprintf("(%g,%g)", d->a, d->b);
+  PG_RETURN_CSTRING(result);
+}
+
+PG_FUNCTION_INFO_V1(Double2_recv);
+/**
+ * Receive function for double2 values
+ */
+PGDLLEXPORT Datum
+Double2_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  double2 *result = palloc(sizeof(double2));
+  const char *bytes = pq_getmsgbytes(buf, sizeof(double2));
+  memcpy(result, bytes, sizeof(double2));
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Double2_send);
+/**
+ * Send function for double2 values
+ */
+PGDLLEXPORT Datum
+Double2_send(PG_FUNCTION_ARGS)
+{
+  double2 *d = (double2 *) PG_GETARG_POINTER(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (void *) d, sizeof(double2));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/*****************************************************************************
+ * Input/Output functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Double3_in);
+/**
+ * Input function for double2 values (stub only)
+ */
+PGDLLEXPORT Datum
+Double3_in(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type double3 is an internal type")));
+  PG_RETURN_POINTER(NULL);
+}
+
+PG_FUNCTION_INFO_V1(Double3_out);
+/**
+ * Output function for double3 values (stub only)
+ */
+PGDLLEXPORT Datum
+Double3_out(PG_FUNCTION_ARGS)
+{
+  double3 *d = (double3 *) PG_GETARG_POINTER(0);
+  char *result = psprintf("(%g,%g,%g)", d->a, d->b, d->c);
+  PG_RETURN_CSTRING(result);
+}
+
+PG_FUNCTION_INFO_V1(Double3_recv);
+/**
+ * Receive function for double3 values
+ */
+PGDLLEXPORT Datum
+Double3_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  double3 *result = palloc(sizeof(double3));
+  const char *bytes = pq_getmsgbytes(buf, sizeof(double3));
+  memcpy(result, bytes, sizeof(double3));
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Double3_send);
+/**
+ * Send function for double3 values
+ */
+PGDLLEXPORT Datum
+Double3_send(PG_FUNCTION_ARGS)
+{
+  double3 *d = (double3 *) PG_GETARG_POINTER(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (void *) d, sizeof(double3));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/*****************************************************************************
+ * Input/Output functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Double4_in);
+/**
+ * Input function for double4 values (stub only)
+ */
+PGDLLEXPORT Datum
+Double4_in(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type double4 is an internal type")));
+  PG_RETURN_POINTER(NULL);
+}
+
+PG_FUNCTION_INFO_V1(Double4_out);
+/**
+ * Output function for double4 values (stub only)
+ */
+PGDLLEXPORT Datum
+Double4_out(PG_FUNCTION_ARGS)
+{
+  double4 *d = (double4 *) PG_GETARG_POINTER(0);
+  char *result = psprintf("(%g,%g,%g,%g)", d->a, d->b, d->c, d->d);
+  PG_RETURN_CSTRING(result);
+}
+
+PG_FUNCTION_INFO_V1(Double4_recv);
+/**
+ * Receive function for double4 values
+ */
+PGDLLEXPORT Datum
+Double4_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo)PG_GETARG_POINTER(0);
+  double4 *result = palloc(sizeof(double4));
+  const char *bytes = pq_getmsgbytes(buf, sizeof(double4));
+  memcpy(result, bytes, sizeof(double4));
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Double4_send);
+/**
+ * Send function for double3 values
+ */
+PGDLLEXPORT Datum
+Double4_send(PG_FUNCTION_ARGS)
+{
+  double4 *d = (double4 *) PG_GETARG_POINTER(0);
+  StringInfoData buf;
+  pq_begintypsend(&buf);
+  pq_sendbytes(&buf, (void *) d, sizeof(double4));
+  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tdouble2_in);
+/**
+ * Input function for the temporal double2 type (stub only)
+ */
+PGDLLEXPORT Datum
+Tdouble2_in(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type tdouble2 is an internal type")));
+  PG_RETURN_POINTER(NULL);
+}
+
+PG_FUNCTION_INFO_V1(Tdouble3_in);
+/**
+ * Input function for the temporal double3 type (stub only)
+ */
+PGDLLEXPORT Datum
+Tdouble3_in(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type tdouble3 is an internal type")));
+  PG_RETURN_POINTER(NULL);
+}
+
+PG_FUNCTION_INFO_V1(Tdouble4_in);
+/**
+ * Input function for the temporal double4 type (stub only)
+ */
+PGDLLEXPORT Datum
+Tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
+{
+  ereport(ERROR,(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+    errmsg("Type tdouble4 is an internal type")));
+  PG_RETURN_POINTER(NULL);
+}
+
+/*****************************************************************************/
+

@@ -631,14 +631,14 @@ CREATE OPERATOR ?= (
 
 CREATE FUNCTION always_eq(tgeompoint, geometry(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_always_eq'
+  AS 'MODULE_PATHNAME', 'Tpoint_always_eq'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   SUPPORT tpoint_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_eq(tgeogpoint, geography(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_always_eq'
+  AS 'MODULE_PATHNAME', 'Tpoint_always_eq'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   SUPPORT tpoint_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -659,11 +659,11 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(tgeompoint, geometry(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_ever_ne'
+  AS 'MODULE_PATHNAME', 'Tpoint_ever_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ever_ne(tgeogpoint, geography(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_ever_ne'
+  AS 'MODULE_PATHNAME', 'Tpoint_ever_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
@@ -681,11 +681,11 @@ CREATE OPERATOR ?<> (
 
 CREATE FUNCTION always_ne(tgeompoint, geometry(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_always_ne'
+  AS 'MODULE_PATHNAME', 'Tpoint_always_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION always_ne(tgeogpoint, geography(Point))
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_always_ne'
+  AS 'MODULE_PATHNAME', 'Tpoint_always_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (

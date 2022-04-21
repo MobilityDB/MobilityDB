@@ -61,6 +61,13 @@ extern Datum Tpoint_to_stbox(PG_FUNCTION_ARGS);
 extern Datum Geo_expand_spatial(PG_FUNCTION_ARGS);
 extern Datum Tpoint_expand_spatial(PG_FUNCTION_ARGS);
 
+/* Ever equal comparison operator */
+
+extern Datum Tpoint_ever_eq(PG_FUNCTION_ARGS);
+extern Datum Tpoint_always_eq(PG_FUNCTION_ARGS);
+extern Datum Tpoint_ever_ne(PG_FUNCTION_ARGS);
+extern Datum Tpoint_always_ne(PG_FUNCTION_ARGS);
+
 /* Temporal comparisons */
 
 extern Datum Teq_geo_tpoint(PG_FUNCTION_ARGS);

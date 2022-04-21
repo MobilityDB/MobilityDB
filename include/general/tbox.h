@@ -128,7 +128,7 @@ extern bool tbox_tmax(const TBOX *box, TimestampTz *result);
 /* Transformation functions */
 
 extern TBOX *tbox_expand_value(const TBOX *box, const double d);
-extern TBOX *tbox_expand_temporal(const TBOX *box, const Datum interval);
+extern TBOX *tbox_expand_temporal(const TBOX *box, const Interval *interval);
 extern TBOX *tbox_round(const TBOX *box, int size);
 
 /* Topological functions */

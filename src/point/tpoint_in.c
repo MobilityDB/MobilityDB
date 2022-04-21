@@ -883,7 +883,6 @@ tpoint_from_ewkb(uint8_t *wkb, int size)
   s.has_srid = false;
   s.linear = false;
   s.pos = wkb;
-
   return tpoint_from_wkb_state(&s);
 }
 
@@ -891,10 +890,115 @@ tpoint_from_ewkb(uint8_t *wkb, int size)
  * Input in HEXEWKB format
  *****************************************************************************/
 
+/**
+ * Return a temporal point from its HEXEWKB representation
+ */
+Temporal *
+tpoint_from_hexewkb(const char *hexwkb)
+{
+  int hexwkb_len = strlen(hexwkb);
+  uint8_t *wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
+  Temporal *result = tpoint_from_ewkb(wkb, hexwkb_len / 2);
+  pfree(wkb);
+  return result;
+}
 
 /*****************************************************************************
  * Input in EWKT format
  *****************************************************************************/
 
+/**
+ * This just does the same thing as the _in function, except it has to handle
+ * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
+*/
+Temporal *
+tpoint_from_ewkt(const char *wkt, CachedType temptype)
+{
+  Temporal *result = tpoint_parse((char **) &wkt, temptype);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+
+/*****************************************************************************
+ * Input in MFJSON format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_from_mfjson);
+/**
+ * Return a temporal point from its MF-JSON representation
+ */
+PGDLLEXPORT Datum
+Tpoint_from_mfjson(PG_FUNCTION_ARGS)
+{
+  text *mfjson_input = PG_GETARG_TEXT_P(0);
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  Temporal *result = tpoint_from_mfjson_ext(fcinfo, mfjson_input,
+    oid_type(temptypid));
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Input in EWKB format
+ * Please refer to the file tpoint_out.c where the binary format is explained
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_from_ewkb);
+/**
+ * Return a temporal point from its EWKB representation
+ */
+PGDLLEXPORT Datum
+Tpoint_from_ewkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Temporal *temp = tpoint_from_ewkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_POINTER(temp);
+}
+
+/*****************************************************************************
+ * Input in HEXEWKB format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_from_hexewkb);
+/**
+ * Return a temporal point from its HEXEWKB representation
+ */
+PGDLLEXPORT Datum
+Tpoint_from_hexewkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text2cstring(hexwkb_text);
+  Temporal *temp = tpoint_from_hexewkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_POINTER(temp);
+}
+
+/*****************************************************************************
+ * Input in EWKT format
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_from_ewkt);
+/**
+ * This just does the same thing as the _in function, except it has to handle
+ * a 'text' input. First, unwrap the text into a cstring, then do as tpoint_in
+*/
+PGDLLEXPORT Datum
+Tpoint_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  Oid temptypid = get_fn_expr_rettype(fcinfo->flinfo);
+  char *wkt = text2cstring(wkt_text);
+  Temporal *result = tpoint_from_ewkt(wkt, oid_type(temptypid));
+  PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_POINTER(result);
+}
 
 /*****************************************************************************/

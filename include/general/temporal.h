@@ -40,6 +40,7 @@
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
+#include <utils/lsyscache.h>
 #include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/tempcache.h"

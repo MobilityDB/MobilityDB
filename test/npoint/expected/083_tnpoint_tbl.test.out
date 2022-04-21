@@ -502,7 +502,7 @@ SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2
 WHERE t1.temp <= t2.temp;
  count 
 -------
-   100
+  5050
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint t1, tbl_tnpoint t2

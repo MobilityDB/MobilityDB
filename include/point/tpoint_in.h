@@ -57,6 +57,8 @@ extern TSequenceSet *tpointseqset_from_mfjson(json_object *mfjson, int srid,
 extern Temporal *tpoint_from_mfjson_ext(FunctionCallInfo fcinfo,
   text *mfjson_input, CachedType temptype);
 extern Temporal *tpoint_from_ewkb(uint8_t *wkb, int size);
+extern Temporal *tpoint_from_hexewkb(const char *hexwkb);
+extern Temporal *tpoint_from_ewkt(const char *wkt, Oid temptypid);
 
 /*****************************************************************************/
 

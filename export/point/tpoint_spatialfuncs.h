@@ -40,10 +40,6 @@
 
 /*****************************************************************************/
 
-/* Ever equal comparison operator */
-
-extern Datum Tpoint_ever_eq(PG_FUNCTION_ARGS);
-
 /* Trajectory functions */
 
 extern Datum Tpoint_get_trajectory(PG_FUNCTION_ARGS);
