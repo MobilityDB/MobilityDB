@@ -127,7 +127,7 @@ extern bool tpointinst_ever_eq(const TInstant *inst, Datum value);
 extern bool tpointinstset_ever_eq(const TInstantSet *ti, Datum value);
 extern bool tpointseq_ever_eq(const TSequence *seq, Datum value);
 extern bool tpointseqset_ever_eq(const TSequenceSet *ts, Datum value);
-extern bool tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs);
+extern bool tpoint_ever_eq(const Temporal *temp, Datum value);
 
 /* Functions derived from PostGIS to increase floating-point precision */
 

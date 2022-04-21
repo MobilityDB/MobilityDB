@@ -891,10 +891,11 @@ tpointseqset_ever_eq(const TSequenceSet *ts, Datum value)
  * @brief Return true if the temporal value is ever equal to the base value.
  */
 bool
-tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
+tpoint_ever_eq(const Temporal *temp, Datum value)
 {
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   if (gserialized_is_empty(gs))
-    PG_RETURN_BOOL(false);
+    return false;
   ensure_point_type(gs);
   ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
@@ -902,13 +903,13 @@ tpoint_ever_eq(const Temporal *temp, const GSERIALIZED *gs)
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tpointinst_ever_eq((TInstant *) temp, PointerGetDatum(gs));
+    result = tpointinst_ever_eq((TInstant *) temp, value);
   else if (temp->subtype == INSTANTSET)
-    result = tpointinstset_ever_eq((TInstantSet *) temp, PointerGetDatum(gs));
+    result = tpointinstset_ever_eq((TInstantSet *) temp, value);
   else if (temp->subtype == SEQUENCE)
-    result = tpointseq_ever_eq((TSequence *) temp, PointerGetDatum(gs));
+    result = tpointseq_ever_eq((TSequence *) temp, value);
   else /* temp->subtype == SEQUENCESET */
-    result = tpointseqset_ever_eq((TSequenceSet *) temp, PointerGetDatum(gs));
+    result = tpointseqset_ever_eq((TSequenceSet *) temp, value);
   return result;
 }
 
@@ -5125,6 +5126,74 @@ tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
 /*                        MobilityDB - PostgreSQL                            */
 /*****************************************************************************/
 /*****************************************************************************/
+
+/*****************************************************************************
+ * Ever/always functions
+ *****************************************************************************/
+
+/**
+ * Generic function for the temporal ever/always comparison operators
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always comparison
+ */
+static Datum
+tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const Temporal *, Datum))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+  bool isempty = gserialized_is_empty(gs);
+  bool result = false;
+  if (! isempty)
+    result = func(temp, PointerGetDatum(gs));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_ever_eq);
+/**
+ * Return true if the temporal value is ever equal to the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_ever_eq(PG_FUNCTION_ARGS)
+{
+  return tpoint_ev_al_comp_ext(fcinfo, &tpoint_ever_eq);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_always_eq);
+/**
+ * Return true if the temporal value is always equal to the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_always_eq(PG_FUNCTION_ARGS)
+{
+  return tpoint_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
+/**
+ * Return true if the temporal value is ever different from the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_ever_ne(PG_FUNCTION_ARGS)
+{
+  return ! tpoint_ev_al_comp_ext(fcinfo, &temporal_always_eq);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_always_ne);
+/**
+ * Return true if the temporal value is always different from the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_always_ne(PG_FUNCTION_ARGS)
+{
+  return ! tpoint_ev_al_comp_ext(fcinfo, &tpoint_ever_eq);
+}
 
 /*****************************************************************************
  * Trajectory function

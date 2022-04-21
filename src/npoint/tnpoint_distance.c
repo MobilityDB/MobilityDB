@@ -452,7 +452,7 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  TInstant *result = nai_tnpoint_npoint(temp, np);
+  TInstant *result = nai_npoint_tnpoint(np, temp);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_POINTER(result);
 }

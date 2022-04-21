@@ -35,6 +35,12 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DDEBUG_BUILD)
 endif()
 
+option(MEOS
+  "Set ON|OFF (default=OFF) to build the (Mobility Engine Open Source) MEOS library
+  "
+  OFF
+)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(CheckSymbolExists)
 

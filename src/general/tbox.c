@@ -948,6 +948,7 @@ inter_tbox_tbox(const TBOX *box1, const TBOX *box2, TBOX *result)
   return true;
 }
 
+#ifdef MEOS
 /**
  * @ingroup libmeos_box_oper_set
  * @brief Return the union of the spatiotemporal boxes.
@@ -963,6 +964,7 @@ intersection_tbox_tbox(const TBOX *box1, const TBOX *box2)
   }
   return result;
 }
+#endif
 
 /*****************************************************************************
  * Comparison functions

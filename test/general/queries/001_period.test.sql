@@ -116,6 +116,12 @@ SELECT tscale(period '(2000-01-01,2000-01-02]', '1 hour');
 SELECT tscale(period '[2000-01-01,2000-01-02)', '1 hour');
 SELECT tscale(period '(2000-01-01,2000-01-02)', '1 hour');
 
+SELECT shiftTscale(period '[2000-01-01,2000-01-01]', '5 min', '1 hour');
+SELECT shiftTscale(period '[2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftTscale(period '(2000-01-01,2000-01-02]', '5 min', '1 hour');
+SELECT shiftTscale(period '[2000-01-01,2000-01-02)', '5 min', '1 hour');
+SELECT shiftTscale(period '(2000-01-01,2000-01-02)', '5 min', '1 hour');
+
 SELECT period_cmp('[2000-01-01,2000-01-01]', '(2000-01-01,2000-01-02)');
 SELECT period_cmp('[2000-01-01, 2000-01-02]', '[2000-01-01, 2000-01-02)');
 SELECT period '[2000-01-01,2000-01-01]' = period '(2000-01-01,2000-01-02)';

@@ -960,8 +960,6 @@ PGDLLEXPORT Datum
 Touches_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int result = touches_tpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
@@ -1006,8 +1004,6 @@ PGDLLEXPORT Datum
 Dwithin_tpoint_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum param = PG_GETARG_DATUM(2);
   /* Store fcinfo into a global variable */

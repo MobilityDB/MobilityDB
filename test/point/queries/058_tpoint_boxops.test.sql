@@ -92,6 +92,9 @@ SELECT expandTemporal(stbox 'STBOX((1.0, 2.0), (1.0, 2.0))', '1 day');
 SELECT expandTemporal(stbox 'STBOX Z((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
 SELECT expandTemporal(stbox 'GEODSTBOX((1.0, 2.0, 3.0), (1.0, 2.0, 3.0))', '1 day');
 
+SELECT expandSpatial(geometry 'Linestring empty', 0.5);
+SELECT expandSpatial(geometry 'Linestring(1 1,2 2)', 0.5);
+
 -------------------------------------------------------------------------------
 
 SELECT geometry 'Point(1 1)' && tgeompoint 'Point(1 1)@2000-01-01';

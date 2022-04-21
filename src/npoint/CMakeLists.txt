@@ -1,3 +1,9 @@
+if(MEOS)
+  set(tnpoint_topoops_meos.c tnpoint_topoops_meos.c)
+  set(tnpoint_posops_meos.c tnpoint_posops_meos.c)
+  set(tnpoint_tempspatialrels_meos.c tnpoint_tempspatialrels_meos.c)
+endif()
+
 add_library(npoint OBJECT
   tnpoint.c
   tnpoint_aggfuncs.c
@@ -12,7 +18,7 @@ add_library(npoint OBJECT
   tnpoint_spatialrels.c
   tnpoint_static.c
   tnpoint_tempspatialrels.c
-  # tnpoint_topoops_meos.c
-  # tnpoint_posops_meos.c
-  # tnpoint_tempspatialrels_meos.c
+  ${tnpoint_topoops_meos.c}
+  ${tnpoint_posops_meos.c}
+  ${tnpoint_tempspatialrels_meos.c}
   )

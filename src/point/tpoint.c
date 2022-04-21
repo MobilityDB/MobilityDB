@@ -524,8 +524,6 @@ PGDLLEXPORT Datum
 Geo_expand_spatial(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
   double d = PG_GETARG_FLOAT8(1);
   STBOX *result = geo_expand_spatial(gs, d);
   PG_FREE_IF_COPY(gs, 0);
@@ -546,77 +544,7 @@ Tpoint_expand_spatial(PG_FUNCTION_ARGS)
   double d = PG_GETARG_FLOAT8(1);
   STBOX *result = tpoint_expand_spatial(temp, d);
   PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * Ever/always functions
- *****************************************************************************/
-
-/**
- * Generic function for the temporal ever/always comparison operators
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Specific function for the ever/always comparison
- */
-static Datum
-tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, Datum))
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  bool isempty = gserialized_is_empty(gs);
-  bool result = false;
-  if (! isempty)
-    result = func(temp, PointerGetDatum(gs));
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_BOOL(result);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_ever_eq);
-/**
- * Return true if the temporal value is ever equal to the base value
- */
-PGDLLEXPORT Datum
-Tpoint_ever_eq(PG_FUNCTION_ARGS)
-{
-  return tpoint_ev_al_comp_ext(fcinfo, &temporal_ever_eq);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_always_eq);
-/**
- * Return true if the temporal value is always equal to the base value
- */
-PGDLLEXPORT Datum
-Tpoint_always_eq(PG_FUNCTION_ARGS)
-{
-  return tpoint_ev_al_comp_ext(fcinfo, &temporal_always_eq);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
-/**
- * Return true if the temporal value is ever different from the base value
- */
-PGDLLEXPORT Datum
-Tpoint_ever_ne(PG_FUNCTION_ARGS)
-{
-  return ! tpoint_ev_al_comp_ext(fcinfo, &temporal_always_eq);
-}
-
-PG_FUNCTION_INFO_V1(Tpoint_always_ne);
-/**
- * Return true if the temporal value is always different from the base value
- */
-PGDLLEXPORT Datum
-Tpoint_always_ne(PG_FUNCTION_ARGS)
-{
-  return ! tpoint_ev_al_comp_ext(fcinfo, &temporal_ever_eq);
 }
 
 /*****************************************************************************
