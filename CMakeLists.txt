@@ -10,6 +10,20 @@ endif()
 
 # MobilityDB definitions
 
+# Option used for building the MEOS library
+option(MEOS
+  "Set ON|OFF (default=OFF) to build the (Mobility Engine Open Source) MEOS library
+  "
+  OFF
+)
+if(MEOS)
+  add_definitions(-DMEOS)
+  message(STATUS "Building the MEOS library")
+else()
+  message(STATUS "Building the MobilityDB library")
+endif()
+unset(MEOS CACHE)
+
 file(READ mobdb_version.txt ver)
 string(REGEX MATCH "MOBILITYDB_MAJOR_VERSION=([0-9]+)" _ ${ver})
 set(MOBILITYDB_MAJOR_VERSION ${CMAKE_MATCH_1})
@@ -22,7 +36,11 @@ set(PROJECT_VERSION_DEV ${CMAKE_MATCH_1})
 project(MobilityDB VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION})
 set(MOBILITYDB_VERSION "${MobilityDB_VERSION}")
 set(MOBILITYDB_LIB_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
+if(MEOS)
+set(MOBILITYDB_LIB_NAME "MEOS-${MOBILITYDB_LIB_VERSION}")
+else()
 set(MOBILITYDB_LIB_NAME "${CMAKE_PROJECT_NAME}-${MOBILITYDB_LIB_VERSION}")
+endif()
 set(MOBILITYDB_VERSION_STR "${PROJECT_NAME} ${MOBILITYDB_VERSION}${PROJECT_VERSION_DEV}")
 string(TOLOWER ${CMAKE_PROJECT_NAME} MOBILITYDB_LOWERCASE_NAME)
 set(MOBILITYDB_EXTENSION_FILE "${MOBILITYDB_LOWERCASE_NAME}--${MOBILITYDB_VERSION}.sql")
@@ -33,17 +51,6 @@ add_definitions(-DMOBILITYDB_VERSION_STR="${MOBILITYDB_VERSION_STR}")
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   message(STATUS "CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
   add_definitions(-DDEBUG_BUILD)
-endif()
-
-# Option used for building the MEOS library
-option(MEOS
-  "Set ON|OFF (default=OFF) to build the (Mobility Engine Open Source) MEOS library
-  "
-  OFF
-)
-if(MEOS)
-  add_definitions(-DMEOS)
-  message(STATUS "Building with the MEOS option")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -197,8 +204,10 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 #--------------------------------
 # Belongs to MobilityDB
 
-add_subdirectory(sql)
-add_subdirectory(test)
+if(NOT DEFINED MEOS)
+  add_subdirectory(sql)
+  add_subdirectory(test)
+endif()
 
 add_custom_target(sqlscript ALL DEPENDS ${CMAKE_BINARY_DIR}/${MOBILITYDB_EXTENSION_FILE})
 add_custom_target(control ALL DEPENDS ${CMAKE_BINARY_DIR}/mobilitydb.control)

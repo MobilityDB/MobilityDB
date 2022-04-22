@@ -61,7 +61,106 @@
 /* MobilityDB */
 #include "general/temporaltypes.h"
 
+/*****************************************************************************
+ * Global variables
+ *****************************************************************************/
+
+/**
+ * Global array that keeps type information for the temporal types defined
+ * in MobilityDB.
+ */
+
+static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
+
+#ifdef MEOS
+static temptype_cache_struct _temptype_cache[] =
+{
+  /* temptype    basetype     continuous basetype? */
+  {T_TDOUBLE2,   T_DOUBLE2,   true},
+  {T_TDOUBLE3,   T_DOUBLE3,   true},
+  {T_TDOUBLE4,   T_DOUBLE4,   true},
+  {T_TBOOL,      T_BOOL,      false},
+  {T_TINT,       T_INT4,      false},
+  {T_TFLOAT,     T_FLOAT8,    true},
+  {T_TEXT,       T_TEXT,      false},
+  {T_TGEOMPOINT, T_GEOMETRY,  true},
+  {T_TGEOGPOINT, T_GEOGRAPHY, true},
+  {T_TNPOINT,    T_NPOINT,    true},
+};
+#endif
+
+/*****************************************************************************
+ * Functions populating the Oid cache
+ *****************************************************************************/
+
+#ifdef MEOS
+/**
+ * Return the temporal type from the base type
+ * @note this function is defined again for MobilityDB below
+ */
+CachedType
+temptype_basetype(CachedType temptype)
+{
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptype == temptype)
+      return _temptype_cache[i].basetype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptype);
+}
+#endif
+
 /*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Global variables
+ *****************************************************************************/
+
+/**
+ * Global array for caching the names of the operators used in MobilityDB
+ * to avoid (slow) lookups. The array is initialized at the loading of
+ * the extension.
+ */
+const char *_op_names[] =
+{
+  [EQ_OP] = "=",
+  [NE_OP] = "<>",
+  [LT_OP] = "<",
+  [LE_OP] = "<=",
+  [GT_OP] = ">",
+  [GE_OP] = ">=",
+  [ADJACENT_OP] = "-|-",
+  [UNION_OP] = "+",
+  [MINUS_OP] = "-",
+  [INTERSECT_OP] = "*",
+  [OVERLAPS_OP] = "&&",
+  [CONTAINS_OP] = "@>",
+  [CONTAINED_OP] = "<@",
+  [SAME_OP] = "~=",
+  [LEFT_OP] = "<<",
+  [OVERLEFT_OP] = "&<",
+  [RIGHT_OP] = ">>",
+  [OVERRIGHT_OP] = "&>",
+  [BELOW_OP] = "<<|",
+  [OVERBELOW_OP] = "&<|",
+  [ABOVE_OP] = "|>>",
+  [OVERABOVE_OP] = "|&>",
+  [FRONT_OP] = "<</",
+  [OVERFRONT_OP] = "&</",
+  [BACK_OP] = "/>>",
+  [OVERBACK_OP] = "/&>",
+  [BEFORE_OP] = "<<#",
+  [OVERBEFORE_OP] = "&<#",
+  [AFTER_OP] = "#>>",
+  [OVERAFTER_OP] = "#&>"
+};
 
 /**
  * Global array for caching the names of the types used in MobilityDB
@@ -103,59 +202,10 @@ const char *_type_names[] =
 };
 
 /**
- * Global array for caching the names of the operators used in MobilityDB
- * to avoid (slow) lookups. The array is initialized at the loading of
- * the extension.
- */
-const char *_op_names[] =
-{
-  [EQ_OP] = "=",
-  [NE_OP] = "<>",
-  [LT_OP] = "<",
-  [LE_OP] = "<=",
-  [GT_OP] = ">",
-  [GE_OP] = ">=",
-  [ADJACENT_OP] = "-|-",
-  [UNION_OP] = "+",
-  [MINUS_OP] = "-",
-  [INTERSECT_OP] = "*",
-  [OVERLAPS_OP] = "&&",
-  [CONTAINS_OP] = "@>",
-  [CONTAINED_OP] = "<@",
-  [SAME_OP] = "~=",
-  [LEFT_OP] = "<<",
-  [OVERLEFT_OP] = "&<",
-  [RIGHT_OP] = ">>",
-  [OVERRIGHT_OP] = "&>",
-  [BELOW_OP] = "<<|",
-  [OVERBELOW_OP] = "&<|",
-  [ABOVE_OP] = "|>>",
-  [OVERABOVE_OP] = "|&>",
-  [FRONT_OP] = "<</",
-  [OVERFRONT_OP] = "&</",
-  [BACK_OP] = "/>>",
-  [OVERBACK_OP] = "/&>",
-  [BEFORE_OP] = "<<#",
-  [OVERBEFORE_OP] = "&<#",
-  [AFTER_OP] = "#>>",
-  [OVERAFTER_OP] = "#&>"
-};
-
-/*****************************************************************************
- * Global variables
- *****************************************************************************/
-
-/**
  * Global variable that states whether the temporal type cache has been
  * initialized.
  */
 bool _temptype_cache_ready = false;
-
-/**
- * Global array that keeps type information for the temporal types defined
- * in MobilityDB.
- */
-static temptype_cache_struct _temptype_cache[TEMPTYPE_CACHE_MAX_LEN];
 
 /**
  * Global variable that states whether the type and operator Oid caches
@@ -181,7 +231,7 @@ Oid _op_oids[sizeof(_op_names) / sizeof(char *)]
   [sizeof(_type_names) / sizeof(char *)];
 
 /*****************************************************************************
- * Functions populating the Oid cache
+ * Catalog functions
  *****************************************************************************/
 
 /**
@@ -240,26 +290,25 @@ populate_temptype_cache()
     while (HeapTupleIsValid(tuple))
     {
       bool isnull = false;
+      char *typname;
       /* All the following attributes are declared as NOT NULL in the table */
       _temptype_cache[i].temptypid = DatumGetObjectId(heap_getattr(tuple, 1, tupDesc, &isnull));
-      _temptype_cache[i].temptypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 2, tupDesc, &isnull)));
-      _temptype_cache[i].temptype = typname_type(_temptype_cache[i].temptypname);
+      typname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 2, tupDesc, &isnull)));
+      _temptype_cache[i].temptype = typname_type(typname);
+      pfree(typname);
       _temptype_cache[i].basetypid = DatumGetObjectId(heap_getattr(tuple, 3, tupDesc, &isnull));
-      _temptype_cache[i].basetypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 4, tupDesc, &isnull)));
-      _temptype_cache[i].basetype = typname_type(_temptype_cache[i].basetypname);
+      typname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 4, tupDesc, &isnull)));
+      _temptype_cache[i].basetype = typname_type(typname);
+      pfree(typname);
       _temptype_cache[i].basetyplen = DatumGetInt16(heap_getattr(tuple, 5, tupDesc, &isnull));
       _temptype_cache[i].basebyval = DatumGetObjectId(heap_getattr(tuple, 6, tupDesc, &isnull));
       _temptype_cache[i].basecont = DatumGetObjectId(heap_getattr(tuple, 7, tupDesc, &isnull));
       /* The box type attributes may be null or zero for internal types such as doubleN */
       _temptype_cache[i].boxtypid = InvalidOid;
-      _temptype_cache[i].boxtypname = "";
       _temptype_cache[i].boxtyplen = 0;
       _temptype_cache[i].boxtypid = DatumGetObjectId(heap_getattr(tuple, 8, tupDesc, &isnull));
       if (! isnull)
-      {
-        _temptype_cache[i].boxtypname = text_to_cstring(DatumGetTextP(heap_getattr(tuple, 9, tupDesc, &isnull)));
         _temptype_cache[i].boxtyplen = DatumGetInt16(heap_getattr(tuple, 10, tupDesc, &isnull));
-      }
       i++;
       if (i == TEMPTYPE_CACHE_MAX_LEN)
         elog(ERROR, "Cache for temporal types consumed, consider increasing TEMPORAL_TYPE_CACHE_MAX_LEN");
@@ -280,6 +329,58 @@ populate_temptype_cache()
     PG_RE_THROW();
   }
   PG_END_TRY();
+}
+
+/**
+ * Return the temporal type from the base type
+ * @note this function is defined again for MobilityDB below
+ */
+CachedType
+temptype_basetype(CachedType temptype)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptype == temptype)
+      return _temptype_cache[i].basetype;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptype);
+}
+
+/**
+ * Return the Oid of the base type from the temporal type
+ */
+Oid
+temptype_basetypid(CachedType temptype)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptype == temptype)
+      return _temptype_cache[i].basetypid;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptype);
+}
+
+/**
+ * Return the Oid of the base type from the Oid of the temporal type
+ */
+Oid
+temptypid_basetypid(Oid temptypid)
+{
+  if (!_temptype_cache_ready)
+    populate_temptype_cache();
+  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
+  {
+    if (_temptype_cache[i].temptypid == temptypid)
+      return _temptype_cache[i].basetypid;
+  }
+  /* We only arrive here on error */
+  elog(ERROR, "type %u is not a temporal type", temptypid);
 }
 
 /**
@@ -407,61 +508,6 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
   PG_RETURN_VOID();
 }
 
-/*****************************************************************************
- * Catalog functions
- *****************************************************************************/
-
-/**
- * Return the Oid of the base type from the temporal type
- */
-Oid
-temptype_basetypid(CachedType temptype)
-{
-  if (!_temptype_cache_ready)
-    populate_temptype_cache();
-  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
-  {
-    if (_temptype_cache[i].temptype == temptype)
-      return _temptype_cache[i].basetypid;
-  }
-  /* We only arrive here on error */
-  elog(ERROR, "type %u is not a temporal type", temptype);
-}
-
-/**
- * Return the Oid of the base type from the Oid of the temporal type
- */
-Oid
-temptypid_basetypid(Oid temptypid)
-{
-  if (!_temptype_cache_ready)
-    populate_temptype_cache();
-  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
-  {
-    if (_temptype_cache[i].temptypid == temptypid)
-      return _temptype_cache[i].basetypid;
-  }
-  /* We only arrive here on error */
-  elog(ERROR, "type %u is not a temporal type", temptypid);
-}
-
-/**
- * Return the temporal type from the base type
- */
-CachedType
-temptype_basetype(CachedType temptype)
-{
-  if (!_temptype_cache_ready)
-    populate_temptype_cache();
-  for (int i = 0; i < TEMPTYPE_CACHE_MAX_LEN; i++)
-  {
-    if (_temptype_cache[i].temptype == temptype)
-      return _temptype_cache[i].basetype;
-  }
-  /* We only arrive here on error */
-  elog(ERROR, "type %u is not a temporal type", temptype);
-}
-
 /**
  * Fetch from the cache the Oid of a type
  *
@@ -511,5 +557,7 @@ oid_type(Oid typid)
   ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR),
     errmsg("Unknown type Oid %d", typid)));
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

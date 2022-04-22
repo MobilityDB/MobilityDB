@@ -123,23 +123,28 @@ typedef enum
 
 /**
  * Structure to represent the temporal type cache array.
- * The array is sorted on the enum value corresponding to the `temptypid`
  */
+#ifndef MEOS
 typedef struct
 {
   Oid temptypid;          /**< Oid of the temporal type */
-  char *temptypname;      /**< Name of the temporal type */
   CachedType temptype;    /**< Enum value of the temporal type */
   Oid basetypid;          /**< Oid of the base type */
-  char *basetypname;      /**< Name of the base type */
   CachedType basetype;    /**< Enum value of the base type */
   int32 basetyplen;       /**< Length of the base type */
   bool basebyval;         /**< True if the base type is passed by value */
   bool basecont;          /**< True if the base type is continuous */
   Oid boxtypid;           /**< Oid of the box type */
-  char *boxtypname;       /**< Name of the box type */
   int32 boxtyplen;        /**< Length of the box type */
 } temptype_cache_struct;
+#else
+typedef struct
+{
+  CachedType temptype;    /**< Enum value of the temporal type */
+  CachedType basetype;    /**< Enum value of the base type */
+  bool basecont;          /**< True if the base type is continuous */
+} temptype_cache_struct;
+#endif
 
 #define TEMPTYPE_CACHE_MAX_LEN   16
 

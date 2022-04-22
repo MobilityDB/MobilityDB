@@ -148,20 +148,19 @@ basetype_length(CachedType basetype)
 {
   ensure_temporal_basetype(basetype);
   if (basetype == T_DOUBLE2)
-    return 16;
+    return sizeof(double2);
   if (basetype == T_DOUBLE3)
-    return 24;
+    return sizeof(double3);
   if (basetype == T_DOUBLE4)
-    return 32;
+    return sizeof(double4);
   if (basetype == T_TEXT)
     return -1;
   if (basetype == T_GEOMETRY || basetype == T_GEOGRAPHY)
     return -1;
   if (basetype == T_NPOINT)
-    return 16;
+    return sizeof(Npoint);
   elog(ERROR, "unknown basetype_length function for base type: %d", basetype);
 }
-
 
 /**
  * Return true if the type is a temporal alpha type (i.e., those whose
@@ -254,7 +253,7 @@ bool
 tspatial_type(CachedType temptype)
 {
   if (temptype == T_TGEOMPOINT || temptype == T_TGEOGPOINT ||
-    temptype == T_TNPOINT)
+      temptype == T_TNPOINT)
     return true;
   return false;
 }
