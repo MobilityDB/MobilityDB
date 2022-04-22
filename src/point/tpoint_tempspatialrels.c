@@ -1440,6 +1440,8 @@ tdwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 /*****************************************************************************
  * Generic functions for computing the temporal spatial relationships
  * with arbitrary geometries
@@ -1723,5 +1725,7 @@ Tdwithin_tpoint_tpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

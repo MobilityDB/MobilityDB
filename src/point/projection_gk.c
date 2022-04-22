@@ -286,6 +286,8 @@ tgeompoint_transform_gk(Temporal *temp)
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 PG_FUNCTION_INFO_V1(Geometry_transform_gk);
 /**
  * Transform a geometry into the Gauss-Krueger projection used in Secondo
@@ -312,6 +314,6 @@ Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+#endif /* #ifndef MEOS */
+
 /*****************************************************************************/
-
-

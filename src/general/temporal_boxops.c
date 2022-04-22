@@ -549,6 +549,8 @@ boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 /*****************************************************************************
  * Bounding box operators for temporal types: Generic functions
  * The inclusive/exclusive bounds are taken into account for the comparisons
@@ -1737,5 +1739,7 @@ Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   return boxop_tnumber_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

@@ -250,6 +250,8 @@ double4_eq(const double4 *d1, const double4 *d2)
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 /*****************************************************************************
  * Input/Output functions
  * Although doubleN are internal types, the doubleN_out function are
@@ -457,6 +459,8 @@ Tdouble4_in(PG_FUNCTION_ARGS __attribute__((unused)))
     errmsg("Type tdouble4 is an internal type")));
   PG_RETURN_POINTER(NULL);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/
 

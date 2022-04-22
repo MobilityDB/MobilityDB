@@ -35,6 +35,7 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
   add_definitions(-DDEBUG_BUILD)
 endif()
 
+# Option used for building the MEOS library
 option(MEOS
   "Set ON|OFF (default=OFF) to build the (Mobility Engine Open Source) MEOS library
   "
@@ -79,14 +80,6 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-
-# Compile option to store precomputed trajectories
-option(STORE_TRAJ
-  "Set ON|OFF (default=OFF) to store precomputed trajectories for temporal sequence points" OFF)
-if(STORE_TRAJ)
-  message(STATUS "Storing precomputed trajectories for temporal sequence points")
-  add_definitions(-DSTORE_TRAJ)
-endif()
 
 #-------------------------------------
 # Verify PostgreSQL Version

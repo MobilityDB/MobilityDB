@@ -3356,6 +3356,8 @@ distance_secs_periodset_periodset(const PeriodSet *ps1, const PeriodSet *ps2)
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 /*****************************************************************************/
 /* contains? */
 
@@ -6039,5 +6041,7 @@ Distance_secs_periodset_periodset(PG_FUNCTION_ARGS)
   double result = distance_secs_period_period(&p1, &p2);
   PG_RETURN_FLOAT8(result);
 }
+
+#endif /* #ifndef MEOS */
 
 /******************************************************************************/

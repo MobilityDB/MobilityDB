@@ -2398,6 +2398,8 @@ tpoint_AsMVTGeom(const Temporal *temp, const STBOX *bounds, int32_t extent,
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 /*****************************************************************************/
 
 PG_FUNCTION_INFO_V1(Tpoint_to_geo);
@@ -2532,5 +2534,7 @@ Tpoint_AsMVTGeom(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_DATUM(result);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

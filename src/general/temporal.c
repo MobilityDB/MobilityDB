@@ -3171,6 +3171,8 @@ temporal_hash(const Temporal *temp)
 /*****************************************************************************/
 /*****************************************************************************/
 
+#ifndef MEOS
+
 /*
  * This is required in a SINGLE file for builds against pgsql
  */
@@ -5289,5 +5291,7 @@ Temporal_hash(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_UINT32(result);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/
