@@ -36,15 +36,15 @@
 
 CREATE FUNCTION tnpoint_gist_consistent(internal, tnpoint, smallint, oid, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'stbox_gist_consistent'
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_gist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnpoint_gist_compress'
+  AS 'MODULE_PATHNAME', 'Tnpoint_gist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_spgist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tnpoint_spgist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

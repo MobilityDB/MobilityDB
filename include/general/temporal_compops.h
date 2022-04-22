@@ -44,33 +44,11 @@
 
 /*****************************************************************************/
 
-extern Datum teq_base_temporal(PG_FUNCTION_ARGS);
-extern Datum teq_temporal_base(PG_FUNCTION_ARGS);
-extern Datum teq_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum tne_base_temporal(PG_FUNCTION_ARGS);
-extern Datum tne_temporal_base(PG_FUNCTION_ARGS);
-extern Datum tne_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum tlt_base_temporal(PG_FUNCTION_ARGS);
-extern Datum tlt_temporal_base(PG_FUNCTION_ARGS);
-extern Datum tlt_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum tle_base_temporal(PG_FUNCTION_ARGS);
-extern Datum tle_temporal_base(PG_FUNCTION_ARGS);
-extern Datum tle_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum tgt_base_temporal(PG_FUNCTION_ARGS);
-extern Datum tgt_temporal_base(PG_FUNCTION_ARGS);
-extern Datum tgt_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum tge_base_temporal(PG_FUNCTION_ARGS);
-extern Datum tge_temporal_base(PG_FUNCTION_ARGS);
-extern Datum tge_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Temporal * tcomp_temporal_base1(const Temporal *temp, Datum value,
+extern Temporal *tcomp_temporal_base(const Temporal *temp, Datum value,
   Oid datumtypid, Datum (*func)(Datum, Datum, CachedType, CachedType),
   bool invert);
+extern Temporal *tcomp_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum, Oid, Oid));
 
 /*****************************************************************************/
 

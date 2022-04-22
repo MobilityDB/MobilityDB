@@ -633,6 +633,28 @@ SELECT maxValue(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-
 </programlisting>
 			</listitem>
 
+			<listitem id="minInstant">
+				<indexterm><primary><varname>minInstant</varname></primary></indexterm>
+				<para>Obtener el instante con el valor máximo</para>
+				<para><varname>minInstant(torder): base</varname></para>
+				<para>La función no tiene en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor mínimo, se devuelve el primero.</para>
+				<programlisting xml:space="preserve">
+SELECT minInstant(tfloat '{1@2012-01-01, 2@2012-01-03, 3@2012-01-05}');
+-- 1@2012-01-01
+</programlisting>
+			</listitem>
+
+			<listitem id="maxInstant">
+				<indexterm><primary><varname>maxInstant</varname></primary></indexterm>
+				<para>Obtener el instante con el valor máximo</para>
+				<para><varname>maxInstant(torder): base</varname></para>
+				<para>La función no tiene en cuenta si los límites son inclusivos o no. Si varios instantes tienen el valor máximo, se devuelve el primero.</para>
+				<programlisting xml:space="preserve">
+SELECT maxInstant(tfloat '{[1@2012-01-01, 2@2012-01-03), [3@2012-01-03, 5@2012-01-05)}');
+-- 5@2012-01-05
+</programlisting>
+			</listitem>
+
 			<listitem id="valueRange">
 				<indexterm><primary><varname>valueRange</varname></primary></indexterm>
 				<para>Obtener el rango de valores</para>

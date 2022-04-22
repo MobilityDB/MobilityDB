@@ -63,7 +63,7 @@
 /*****************************************************************************/
 
 /**
- * Returns the distance between the two geometries. When the first geometry
+ * Return the distance between the two geometries. When the first geometry
  * is a segment it also computes a value between 0 and 1 that represents
  * the location in the segment of the closest point to the second geometry,
  * as a fraction of total segment length.
@@ -71,7 +71,6 @@
  * @note Function inspired by PostGIS function lw_dist2d_distancepoint
  * from measures.c
  */
-
 static double
 lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
   long double *fraction)
@@ -154,7 +153,7 @@ lw_distance_fraction(const LWGEOM *lw1, const LWGEOM *lw2, int mode,
  *****************************************************************************/
 
 /**
- * Returns the value and timestamp at which the a temporal point segment and
+ * Return the value and timestamp at which the a temporal point segment and
  * a point are at the minimum distance. These are the turning points when
  * computing the temporal distance.
  *
@@ -184,7 +183,7 @@ tpoint_geo_min_dist_at_timestamp(const TInstant *start, const TInstant *end,
 }
 
 /**
- * Returns the value and timestamp at which the two temporal geometric point
+ * Return the value and timestamp at which the two temporal geometric point
  * segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
@@ -278,7 +277,7 @@ tgeompoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Returns the single timestamp at which the two temporal geographic point
+ * Return the single timestamp at which the two temporal geographic point
  * segments are at the minimum distance. These are the turning points
  * when computing the temporal distance.
  *
@@ -360,7 +359,7 @@ tgeogpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Returns the value and timestamp at which the two temporal point segments
+ * Return the value and timestamp at which the two temporal point segments
  * are at the minimum distance (dispatch function).
  *
  * @param[in] start1,end1 Instants defining the first segment
@@ -383,12 +382,19 @@ tpoint_min_dist_at_timestamp(const TInstant *start1, const TInstant *end1,
 /*****************************************************************************/
 
 /**
- * Returns the temporal distance between the temporal point and the
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the temporal distance between the temporal point and the
  * geometry/geography point (distpatch function)
  */
 Temporal *
-distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
+distance_tpoint_geo(const Temporal *temp, const GSERIALIZED *geo)
 {
+  if (gserialized_is_empty(geo))
+    return NULL;
+  ensure_point_type(geo);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(geo));
+  ensure_same_dimensionality_tpoint_gs(temp, geo);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) distance_fn(temp->flags);
@@ -401,63 +407,20 @@ distance_tpoint_geo_internal(const Temporal *temp, Datum geo)
   lfinfo.tpfunc_base = lfinfo.reslinear ?
     &tpoint_geo_min_dist_at_timestamp : NULL;
   lfinfo.tpfunc = NULL;
-  Temporal *result = tfunc_temporal_base(temp, geo, &lfinfo);
+  Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(geo), &lfinfo);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(distance_geo_tpoint);
 /**
- * Returns the temporal distance between the geometry/geography point
- * and the temporal point
- */
-PGDLLEXPORT Datum
-distance_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  ensure_point_type(gs);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(distance_tpoint_geo);
-/**
- * Returns the temporal distance between the temporal point and the
- * geometry/geography point
- */
-PGDLLEXPORT Datum
-distance_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  ensure_point_type(gs);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_geo_internal(temp, PointerGetDatum(gs));
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * Returns the temporal distance between the two temporal points
- * (dispatch function)
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the temporal distance between the two temporal points.
  */
 Temporal *
-distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
+distance_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) pt_distance_fn(temp1->flags);
@@ -473,33 +436,12 @@ distance_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(distance_tpoint_tpoint);
-/**
- * Returns the temporal distance between the two temporal points
- */
-PGDLLEXPORT Datum
-distance_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = distance_tpoint_tpoint_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
 /**
- * Returns the nearest approach instant between the temporal instant set point
+ * Return the nearest approach instant between the temporal instant set point
  * and the geometry/geography
  *
  * @param[in] ti Temporal point
@@ -530,7 +472,7 @@ NAI_tpointinstset_geo(const TInstantSet *ti, const LWGEOM *geo)
 /*****************************************************************************/
 
 /**
- * Returns the new current nearest approach instant between the temporal
+ * Return the new current nearest approach instant between the temporal
  * sequence point with stepwise interpolation and the geometry/geography
  *
  * @param[in] seq Temporal point
@@ -563,7 +505,7 @@ NAI_tpointseq_step_geo1(const TSequence *seq, const LWGEOM *geo,
 }
 
 /**
- * Returns the nearest approach instant between the temporal sequence
+ * Return the nearest approach instant between the temporal sequence
  * point with stepwise interpolation and the geometry/geography
  *
  * @param[in] seq Temporal point
@@ -578,7 +520,7 @@ NAI_tpointseq_step_geo(const TSequence *seq, const LWGEOM *geo)
 }
 
 /**
- * Returns the nearest approach instant between the temporal sequence set
+ * Return the nearest approach instant between the temporal sequence set
  * point with stepwise interpolation and the geometry/geography
  *
  * @param[in] ts Temporal point
@@ -601,7 +543,7 @@ NAI_tpointseqset_step_geo(const TSequenceSet *ts, const LWGEOM *geo)
 /*****************************************************************************/
 
 /**
- * Returns the distance and the timestamp of the nearest approach instant
+ * Return the distance and the timestamp of the nearest approach instant
  * between the temporal sequence point with linear interpolation and the
  * geometry/geography
  *
@@ -652,7 +594,7 @@ NAI_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Returns the distance and the timestamp of the nearest approach instant
+ * Return the distance and the timestamp of the nearest approach instant
  * between the temporal sequence point with linear interpolation and the
  * geometry/geography
  *
@@ -704,7 +646,7 @@ NAI_tpointseq_linear_geo2(const TSequence *seq, const LWGEOM *geo,
 }
 
 /**
- * Returns the nearest approach instant between the temporal sequence
+ * Return the nearest approach instant between the temporal sequence
  * point with linear interpolation and the geometry
  */
 static TInstant *
@@ -722,7 +664,7 @@ NAI_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
 }
 
 /**
- * Returns the nearest approach instant between the temporal sequence set
+ * Return the nearest approach instant between the temporal sequence set
  * point with linear interpolation and the geometry
  */
 static TInstant *
@@ -755,17 +697,18 @@ NAI_tpointseqset_linear_geo(const TSequenceSet *ts, const LWGEOM *geo)
 /*****************************************************************************/
 
 /**
- * Returns the nearest approach instant between the temporal point and
- * the geometry (dispatch function)
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach instant between the temporal point and
+ * the geometry.
  */
 TInstant *
-NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
-  GSERIALIZED *gs)
+nai_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  if (gserialized_is_empty(gs))
+    return NULL;
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
+
   LWGEOM *geo = lwgeom_from_gserialized(gs);
   TInstant *result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -785,57 +728,17 @@ NAI_tpoint_geo_internal(FunctionCallInfo fcinfo, const Temporal *temp,
   return result;
 }
 
-PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
 /**
- * Returns the nearest approach instant between the geometry and
- * the temporal point
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach instant between the temporal points.
  */
-PGDLLEXPORT Datum
-NAI_geo_tpoint(PG_FUNCTION_ARGS)
+TInstant *
+nai_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TInstant *result = NAI_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(NAI_tpoint_geo);
-/**
- * Returns the nearest approach instant between the temporal point
- * and the geometry
- */
-PGDLLEXPORT Datum
-NAI_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = NAI_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(NAI_tpoint_tpoint);
-/**
- * Returns the nearest approach instant between the temporal points
- */
-PGDLLEXPORT Datum
-NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   TInstant *result = NULL;
-  Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
+  Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
   if (dist != NULL)
   {
     const TInstant *min = temporal_min_instant(dist);
@@ -846,11 +749,7 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
     result = tinstant_make(value, min->t, temp1->temptype);
     pfree(dist); pfree(DatumGetPointer(value));
   }
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -858,72 +757,36 @@ NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the nearest approach distance between the temporal point and the
- * geometry (internal function)
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between the temporal point
+ * and the geometry
  */
-static Datum
-NAD_tpoint_geo_internal(FunctionCallInfo fcinfo, Temporal *temp,
-  GSERIALIZED *gs)
+double
+nad_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  if (gserialized_is_empty(gs))
+    return -1;
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   datum_func2 func = distance_fn(temp->flags);
-  Datum traj = tpoint_trajectory_internal(temp);
-  Datum result = func(traj, PointerGetDatum(gs));
+  Datum traj = tpoint_trajectory(temp);
+  double result = DatumGetFloat8(func(traj, PointerGetDatum(gs)));
   pfree(DatumGetPointer(traj));
   return result;
 }
 
-PG_FUNCTION_INFO_V1(NAD_geo_tpoint);
 /**
- * Returns the nearest approach distance between the geometry and
- * the temporal point
- */
-PGDLLEXPORT Datum
-NAD_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum result = NAD_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(NAD_tpoint_geo);
-/**
- * Returns the nearest approach distance between the temporal point
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between the spatiotemporal box
  * and the geometry
  */
-PGDLLEXPORT Datum
-NAD_tpoint_geo(PG_FUNCTION_ARGS)
+double
+nad_stbox_geo(const STBOX *box, const GSERIALIZED *gs)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = NAD_tpoint_geo_internal(fcinfo, temp, gs);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_DATUM(result);
-}
-
-/**
- * Returns the nearest approach distance between the spatiotemporal box and
- * the geometry (internal function)
- */
-static Datum
-NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
-  GSERIALIZED *gs)
-{
+    return -1;
   ensure_same_srid_stbox_gs(box, gs);
   ensure_same_spatial_dimensionality_stbox_gs(box, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   bool hasz = MOBDB_FLAGS_GET_Z(box->flags);
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(box->flags);
   datum_func2 func = distance_fn(box->flags);
@@ -940,51 +803,18 @@ NAD_stbox_geo_internal(FunctionCallInfo fcinfo, STBOX *box,
     stbox_gbox(box, &gbox);
     geo = call_function1(BOX2D_to_LWGEOM, PointerGetDatum(&gbox));
   }
-  Datum result = func(geo, PointerGetDatum(gs));
+  double result = DatumGetFloat8(func(geo, PointerGetDatum(gs)));
   pfree(DatumGetPointer(geo));
   return result;
 }
 
-PG_FUNCTION_INFO_V1(NAD_geo_stbox);
 /**
- * Returns the nearest approach distance between the geometry and
- * the spatiotemporal box
- */
-PGDLLEXPORT Datum
-NAD_geo_stbox(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  STBOX *box = PG_GETARG_STBOX_P(1);
-  Datum result = NAD_stbox_geo_internal(fcinfo, box, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(NAD_stbox_geo);
-/**
- * Returns the nearest approach distance between the spatiotemporal box
- * and the geometry
- */
-PGDLLEXPORT Datum
-NAD_stbox_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  Datum result = NAD_stbox_geo_internal(fcinfo, box, gs);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_DATUM(result);
-}
-
-/**
- * Returns the nearest approach distance between the spatio-temporal boxes
- * (internal function)
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between the spatio-temporal
+ * boxes.
  */
 double
-NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
+nad_stbox_stbox(const STBOX *box1, const STBOX *box2)
 {
   /* Test the validity of the arguments */
   ensure_has_X_stbox(box1); ensure_has_X_stbox(box2);
@@ -1033,29 +863,13 @@ NAD_stbox_stbox_internal(const STBOX *box1, const STBOX *box2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(NAD_stbox_stbox);
 /**
- * Returns the nearest approach distance between the spatio-temporal boxes
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between the temporal point
+ * and the spatio-temporal box
  */
-PGDLLEXPORT Datum
-NAD_stbox_stbox(PG_FUNCTION_ARGS)
-{
-  STBOX *box1 = PG_GETARG_STBOX_P(0);
-  STBOX *box2 = PG_GETARG_STBOX_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  double result = NAD_stbox_stbox_internal(box1, box2);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-/**
- * Returns the nearest approach distance between the temporal point and the
- * spatio-temporal box (internal function)
- */
-static double
-NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
+double
+nad_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   /* Test the validity of the arguments */
   ensure_has_X_stbox(box);
@@ -1084,10 +898,10 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   Datum geo1 = call_function2(LWGEOM_set_srid, geo,
     Int32GetDatum(box->srid));
   Temporal *temp1 = hast ?
-    temporal_restrict_period_internal(temp, &inter, REST_AT) :
+    temporal_restrict_period(temp, &inter, REST_AT) :
     (Temporal *) temp;
   /* Compute the result */
-  Datum traj = tpoint_trajectory_internal(temp1);
+  Datum traj = tpoint_trajectory(temp1);
   double result = DatumGetFloat8(func(traj, geo1));
 
   pfree(DatumGetPointer(traj));
@@ -1097,70 +911,22 @@ NAD_tpoint_stbox_internal(const Temporal *temp, STBOX *box)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(NAD_stbox_tpoint);
 /**
- * Returns the nearest approach distance between the spatio-temporal box and the
- * temporal point
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the nearest approach distance between the temporal points
  */
-PGDLLEXPORT Datum
-NAD_stbox_tpoint(PG_FUNCTION_ARGS)
+double
+nad_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  STBOX *box = PG_GETARG_STBOX_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  double result = NAD_tpoint_stbox_internal(temp, box);
-  PG_FREE_IF_COPY(temp, 1);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(NAD_tpoint_stbox);
-/**
- * Returns the nearest approach distance between the temporal point and the
- * spatio-temporal box
- */
-PGDLLEXPORT Datum
-NAD_tpoint_stbox(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  double result = NAD_tpoint_stbox_internal(temp, box);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(NAD_tpoint_tpoint);
-/**
- * Returns the nearest approach distance between the temporal points
- */
-PGDLLEXPORT Datum
-NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
   ensure_same_dimensionality(temp1->flags, temp2->flags);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
+  Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
   if (dist == NULL)
-  {
-    PG_FREE_IF_COPY(temp1, 0);
-    PG_FREE_IF_COPY(temp2, 1);
-    PG_RETURN_NULL();
-  }
+    return -1;
 
-  Datum result = temporal_min_value_internal(dist);
+  double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_DATUM(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -1168,74 +934,44 @@ NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the line connecting the nearest approach point between the
- * temporal instant point and the geometry (internal function)
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the line connecting the nearest approach point between the
+ * temporal point and the geometry.
  */
-static Datum
-shortestline_tpoint_geo_internal(Temporal *temp, GSERIALIZED *gs)
+bool
+shortestline_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs,
+  Datum *result)
 {
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  if (gserialized_is_empty(gs))
+    return false;
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp->flags);
   if (geodetic)
     ensure_has_not_Z_gs(gs);
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  Datum traj = tpoint_trajectory_internal(temp);
-  Datum result;
+  Datum traj = tpoint_trajectory(temp);
   if (geodetic)
-    result = call_function2(geography_shortestline, traj, PointerGetDatum(gs));
+    *result = call_function2(geography_shortestline, traj, PointerGetDatum(gs));
   else
-    result = MOBDB_FLAGS_GET_Z(temp->flags) ?
+    *result = MOBDB_FLAGS_GET_Z(temp->flags) ?
       call_function2(LWGEOM_shortestline3d, traj, PointerGetDatum(gs)) :
       call_function2(LWGEOM_shortestline2d, traj, PointerGetDatum(gs));
   pfree(DatumGetPointer(traj));
-  return result;
-}
-
-PG_FUNCTION_INFO_V1(shortestline_geo_tpoint);
-/**
- * Returns the line connecting the nearest approach point between the
- * geometry and the temporal instant point
- */
-PGDLLEXPORT Datum
-shortestline_geo_tpoint(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Datum result = shortestline_tpoint_geo_internal(temp, gs);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_DATUM(result);
-}
-
-PG_FUNCTION_INFO_V1(shortestline_tpoint_geo);
-/**
- * Returns the line connecting the nearest approach point between the
- * temporal instant point and the geometry/geography
- */
-PGDLLEXPORT Datum
-shortestline_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = shortestline_tpoint_geo_internal(temp, gs);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_DATUM(result);
+  return true;
 }
 
 /**
- * Returns the line connecting the nearest approach point between the
+ * @ingroup libmeos_temporal_dist
+ * @brief Return the line connecting the nearest approach point between the
  * temporal points
  */
 bool
-shortestline_tpoint_tpoint_internal(const Temporal *temp1,
-  const Temporal *temp2, Datum *line)
+shortestline_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  Datum *line)
 {
-  Temporal *dist = distance_tpoint_tpoint_internal(temp1, temp2);
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
+  Temporal *dist = distance_tpoint_tpoint(temp1, temp2);
   if (dist == NULL)
     return false;
   const TInstant *inst = temporal_min_instant(dist);
@@ -1248,27 +984,359 @@ shortestline_tpoint_tpoint_internal(const Temporal *temp1,
   return true;
 }
 
-PG_FUNCTION_INFO_V1(shortestline_tpoint_tpoint);
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Temporal distance
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Distance_geo_tpoint);
 /**
- * Returns the line connecting the nearest approach point between the
- * temporal points
+ * Return the temporal distance between the geometry/geography point
+ * and the temporal point
  */
 PGDLLEXPORT Datum
-shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
+Distance_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = distance_tpoint_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_tpoint_geo);
+/**
+ * Return the temporal distance between the temporal point and the
+ * geometry/geography point
+ */
+PGDLLEXPORT Datum
+Distance_tpoint_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = distance_tpoint_geo(temp, gs);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Distance_tpoint_tpoint);
+/**
+ * Return the temporal distance between the two temporal points
+ */
+PGDLLEXPORT Datum
+Distance_tpoint_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
-  Datum result;
-  bool found = shortestline_tpoint_tpoint_internal(temp1, temp2, &result);
+  Temporal *result = distance_tpoint_tpoint(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (!found)
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Nearest approach instant (NAI)
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(NAI_geo_tpoint);
+/**
+ * Return the nearest approach instant between the geometry and
+ * the temporal point
+ */
+PGDLLEXPORT Datum
+NAI_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tpoint_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(NAI_tpoint_geo);
+/**
+ * Return the nearest approach instant between the temporal point
+ * and the geometry
+ */
+PGDLLEXPORT Datum
+NAI_tpoint_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tpoint_geo(temp, gs);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(NAI_tpoint_tpoint);
+/**
+ * Return the nearest approach instant between the temporal points
+ */
+PGDLLEXPORT Datum
+NAI_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  TInstant *result = nai_tpoint_tpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Nearest approach distance (NAD)
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(NAD_geo_tpoint);
+/**
+ * Return the nearest approach distance between the geometry and
+ * the temporal point
+ */
+PGDLLEXPORT Datum
+NAD_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_tpoint_geo(temp, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_tpoint_geo);
+/**
+ * Return the nearest approach distance between the temporal point
+ * and the geometry
+ */
+PGDLLEXPORT Datum
+NAD_tpoint_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_tpoint_geo(temp, gs);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_geo_stbox);
+/**
+ * Return the nearest approach distance between the geometry and
+ * the spatiotemporal box
+ */
+PGDLLEXPORT Datum
+NAD_geo_stbox(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_stbox_geo(box, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_stbox_geo);
+/**
+ * Return the nearest approach distance between the spatiotemporal box
+ * and the geometry
+ */
+PGDLLEXPORT Datum
+NAD_stbox_geo(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_stbox_geo(box, gs);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_stbox_stbox);
+/**
+ * Return the nearest approach distance between the spatio-temporal boxes
+ */
+PGDLLEXPORT Datum
+NAD_stbox_stbox(PG_FUNCTION_ARGS)
+{
+  STBOX *box1 = PG_GETARG_STBOX_P(0);
+  STBOX *box2 = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_stbox_stbox(box1, box2);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_stbox_tpoint);
+/**
+ * Return the nearest approach distance between the spatio-temporal box and the
+ * temporal point
+ */
+PGDLLEXPORT Datum
+NAD_stbox_tpoint(PG_FUNCTION_ARGS)
+{
+  STBOX *box = PG_GETARG_STBOX_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_tpoint_stbox(temp, box);
+  PG_FREE_IF_COPY(temp, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_tpoint_stbox);
+/**
+ * Return the nearest approach distance between the temporal point and the
+ * spatio-temporal box
+ */
+PGDLLEXPORT Datum
+NAD_tpoint_stbox(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_tpoint_stbox(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(NAD_tpoint_tpoint);
+/**
+ * Return the nearest approach distance between the temporal points
+ */
+PGDLLEXPORT Datum
+NAD_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  double result = nad_tpoint_tpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
+ * ShortestLine
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Shortestline_geo_tpoint);
+/**
+ * Return the line connecting the nearest approach point between the
+ * geometry and the temporal instant point
+ */
+PGDLLEXPORT Datum
+Shortestline_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Datum result;
+  bool found = shortestline_tpoint_geo(temp, gs, &result);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (! found)
     PG_RETURN_NULL();
   PG_RETURN_DATUM(result);
 }
+
+PG_FUNCTION_INFO_V1(Shortestline_tpoint_geo);
+/**
+ * Return the line connecting the nearest approach point between the
+ * temporal instant point and the geometry/geography
+ */
+PGDLLEXPORT Datum
+Shortestline_tpoint_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  Datum result;
+  bool found = shortestline_tpoint_geo(temp, gs, &result);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Shortestline_tpoint_tpoint);
+/**
+ * Return the line connecting the nearest approach point between the
+ * temporal points
+ */
+PGDLLEXPORT Datum
+Shortestline_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Datum result;
+  bool found = shortestline_tpoint_tpoint(temp1, temp2, &result);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

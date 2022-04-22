@@ -43,24 +43,24 @@ SELECT register_temporal_type('tnpoint', 'npoint', true, 'stbox');
 
 CREATE FUNCTION tnpoint_in(cstring, oid, integer)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tnpoint_in'
+  AS 'MODULE_PATHNAME', 'Tnpoint_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_out(tnpoint)
+CREATE FUNCTION Temporal_out(tnpoint)
   RETURNS cstring
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_recv(internal, oid, integer)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_recv'
+  AS 'MODULE_PATHNAME', 'Temporal_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_send(tnpoint)
   RETURNS bytea
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnpoint_analyze(internal)
   RETURNS boolean
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tnpoint_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE tnpoint (
@@ -79,7 +79,7 @@ CREATE TYPE tnpoint (
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tnpoint(tnpoint, integer)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME','temporal_enforce_typmod'
+  AS 'MODULE_PATHNAME','Temporal_enforce_typmod'
   LANGUAGE 'c' IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;
@@ -90,39 +90,39 @@ CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPL
 
 CREATE FUNCTION tnpoint_inst(val npoint, t timestamptz)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tinstant_constructor'
+  AS 'MODULE_PATHNAME', 'Tinstant_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_instset(tnpoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tinstantset_constructor'
+  AS 'MODULE_PATHNAME', 'Tinstantset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(tnpoint[], lower_inc boolean DEFAULT true,
     upper_inc boolean DEFAULT true, linear boolean DEFAULT true)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tlinearseq_constructor'
+  AS 'MODULE_PATHNAME', 'Tlinearseq_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(tnpoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tsequenceset_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnpoint_instset(npoint, timestampset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tinstantset_from_base'
+  AS 'MODULE_PATHNAME', 'Tinstantset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(npoint, period, boolean DEFAULT true)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tsequence_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequence_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(npoint, periodset, boolean DEFAULT true)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tsequenceset_from_base'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_from_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear boolean DEFAULT true,
     maxdist float DEFAULT 0.0, maxt interval DEFAULT '0 minutes')
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tlinearseqset_constructor_gaps'
+  AS 'MODULE_PATHNAME', 'Tlinearseqset_constructor_gaps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -131,15 +131,15 @@ CREATE FUNCTION tnpoint_seqset_gaps(tnpoint[], linear boolean DEFAULT true,
 
 CREATE FUNCTION tgeompoint(tnpoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'tnpoint_to_tgeompoint'
+  AS 'MODULE_PATHNAME', 'Tnpoint_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint(tgeompoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tgeompoint_to_tnpoint'
+  AS 'MODULE_PATHNAME', 'Tgeompoint_to_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(tnpoint)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'temporal_to_period'
+  AS 'MODULE_PATHNAME', 'Temporal_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);
@@ -152,29 +152,29 @@ CREATE CAST (tnpoint AS period) WITH FUNCTION period(tnpoint);
 
 CREATE FUNCTION tnpoint_inst(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_instset(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_to_tinstantset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tinstantset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seq(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_seqset(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION toLinear(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tstep_to_linear'
+  AS 'MODULE_PATHNAME', 'Tempstep_to_templinear'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(tnpoint, int DEFAULT 0)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'tnpoint_round'
+  AS 'MODULE_PATHNAME', 'Tnpoint_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -183,15 +183,15 @@ CREATE FUNCTION round(tnpoint, int DEFAULT 0)
 
 CREATE FUNCTION appendInstant(tnpoint, tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_append_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION merge(tnpoint, tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_merge'
+  AS 'MODULE_PATHNAME', 'Temporal_merge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION merge(tnpoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_merge_array'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_array'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -200,156 +200,156 @@ CREATE FUNCTION merge(tnpoint[])
 
 CREATE FUNCTION tempSubtype(tnpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'temporal_subtype'
+  AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION interpolation(tnpoint)
   RETURNS text
-  AS 'MODULE_PATHNAME', 'temporal_interpolation'
+  AS 'MODULE_PATHNAME', 'Temporal_interpolation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(tnpoint)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'temporal_mem_size'
+  AS 'MODULE_PATHNAME', 'Temporal_memory_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- value is a reserved word in SQL
 CREATE FUNCTION getValue(tnpoint)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'tinstant_get_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_get_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tnpoint)
   RETURNS npoint[]
-  AS 'MODULE_PATHNAME', 'temporal_get_values'
+  AS 'MODULE_PATHNAME', 'Temporal_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION positions(tnpoint)
   RETURNS nsegment[]
-  AS 'MODULE_PATHNAME', 'tnpoint_positions'
+  AS 'MODULE_PATHNAME', 'Tnpoint_positions'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION route(tnpoint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'tnpoint_route'
+  AS 'MODULE_PATHNAME', 'Tnpoint_route'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION routes(tnpoint)
   RETURNS bigint[]
-  AS 'MODULE_PATHNAME', 'tnpoint_routes'
+  AS 'MODULE_PATHNAME', 'Tnpoint_routes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tnpoint)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'temporal_get_time'
+  AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tnpoint)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'tinstant_timestamp'
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tnpoint)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'temporal_start_value'
+  AS 'MODULE_PATHNAME', 'Temporal_start_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endValue(tnpoint)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'temporal_end_value'
+  AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(tnpoint)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'temporal_timespan'
+  AS 'MODULE_PATHNAME', 'Temporal_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(tnpoint)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'temporal_duration'
+  AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numInstants(tnpoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'temporal_num_instants'
+  AS 'MODULE_PATHNAME', 'Temporal_num_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startInstant(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_start_instant'
+  AS 'MODULE_PATHNAME', 'Temporal_start_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endInstant(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_end_instant'
+  AS 'MODULE_PATHNAME', 'Temporal_end_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION instantN(tnpoint, integer)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_instant_n'
+  AS 'MODULE_PATHNAME', 'Temporal_instant_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION instants(tnpoint)
   RETURNS tnpoint[]
-  AS 'MODULE_PATHNAME', 'temporal_instants'
+  AS 'MODULE_PATHNAME', 'Temporal_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numTimestamps(tnpoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'temporal_num_timestamps'
+  AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startTimestamp(tnpoint)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'temporal_start_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_start_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endTimestamp(tnpoint)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'temporal_end_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_end_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampN(tnpoint, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'temporal_timestamp_n'
+  AS 'MODULE_PATHNAME', 'Temporal_timestamp_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(tnpoint)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'temporal_timestamps'
+  AS 'MODULE_PATHNAME', 'Temporal_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numSequences(tnpoint)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'temporal_num_sequences'
+  AS 'MODULE_PATHNAME', 'Temporal_num_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startSequence(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_start_sequence'
+  AS 'MODULE_PATHNAME', 'Temporal_start_sequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endSequence(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_end_sequence'
+  AS 'MODULE_PATHNAME', 'Temporal_end_sequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sequenceN(tnpoint, integer)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_sequence_n'
+  AS 'MODULE_PATHNAME', 'Temporal_sequence_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION sequences(tnpoint)
   RETURNS tnpoint[]
-  AS 'MODULE_PATHNAME', 'temporal_sequences'
+  AS 'MODULE_PATHNAME', 'Temporal_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION segments(tnpoint)
   RETURNS tnpoint[]
-  AS 'MODULE_PATHNAME', 'temporal_segments'
+  AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -358,17 +358,17 @@ CREATE FUNCTION segments(tnpoint)
 
 CREATE FUNCTION shift(tnpoint, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_shift'
+  AS 'MODULE_PATHNAME', 'Temporal_shift'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tscale(tnpoint, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_shift_tscale'
+  AS 'MODULE_PATHNAME', 'Temporal_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -378,7 +378,7 @@ CREATE FUNCTION shiftTscale(tnpoint, interval, interval)
 #if POSTGRESQL_VERSION_NUMBER >= 120000
 CREATE FUNCTION tnpoint_supportfn(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnpoint_supportfn'
+  AS 'MODULE_PATHNAME', 'Tnpoint_supportfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
 
@@ -388,7 +388,7 @@ CREATE FUNCTION tnpoint_supportfn(internal)
 
 CREATE FUNCTION ever_eq(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_eq'
+  AS 'MODULE_PATHNAME', 'Temporal_ever_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
@@ -400,7 +400,7 @@ CREATE OPERATOR ?= (
 
 CREATE FUNCTION always_eq(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_always_eq'
+  AS 'MODULE_PATHNAME', 'Temporal_always_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
@@ -412,7 +412,7 @@ CREATE OPERATOR %= (
 
 CREATE FUNCTION ever_ne(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_ever_ne'
+  AS 'MODULE_PATHNAME', 'Temporal_ever_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
@@ -424,7 +424,7 @@ CREATE OPERATOR ?<> (
 
 CREATE FUNCTION always_ne(tnpoint, npoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_always_ne'
+  AS 'MODULE_PATHNAME', 'Temporal_always_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %<> (
@@ -440,72 +440,72 @@ CREATE OPERATOR %<> (
 
 CREATE FUNCTION atValue(tnpoint, npoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_at_value'
+  AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValue(tnpoint, npoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_minus_value'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atValues(tnpoint, npoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_at_values'
+  AS 'MODULE_PATHNAME', 'Temporal_at_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusValues(tnpoint, npoint[])
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_minus_values'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTimestamp(tnpoint, timestamptz)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTimestamp(tnpoint, timestamptz)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_minus_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
   RETURNS npoint
-  AS 'MODULE_PATHNAME', 'temporal_value_at_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTimestampSet(tnpoint, timestampset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_at_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_at_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusTimestampSet(tnpoint, timestampset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_minus_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atPeriod(tnpoint, period)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_at_period'
+  AS 'MODULE_PATHNAME', 'Temporal_at_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusPeriod(tnpoint, period)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_minus_period'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atPeriodSet(tnpoint, periodset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_at_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_at_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION minusPeriodSet(tnpoint, periodset)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_minus_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_minus_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION intersectsTimestamp(tnpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_intersects_timestamp'
+  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestamp'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   SUPPORT tnpoint_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -513,7 +513,7 @@ CREATE FUNCTION intersectsTimestamp(tnpoint, timestamptz)
 
 CREATE FUNCTION intersectsTimestampSet(tnpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_intersects_timestampset'
+  AS 'MODULE_PATHNAME', 'Temporal_intersects_timestampset'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   SUPPORT tnpoint_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -521,7 +521,7 @@ CREATE FUNCTION intersectsTimestampSet(tnpoint, timestampset)
 
 CREATE FUNCTION intersectsPeriod(tnpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_intersects_period'
+  AS 'MODULE_PATHNAME', 'Temporal_intersects_period'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   SUPPORT tnpoint_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -529,7 +529,7 @@ CREATE FUNCTION intersectsPeriod(tnpoint, period)
 
 CREATE FUNCTION intersectsPeriodSet(tnpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'temporal_intersects_periodset'
+  AS 'MODULE_PATHNAME', 'Temporal_intersects_periodset'
 #if POSTGRESQL_VERSION_NUMBER >= 120000
   SUPPORT tnpoint_supportfn
 #endif //POSTGRESQL_VERSION_NUMBER >= 120000
@@ -547,7 +547,7 @@ CREATE TYPE time_tnpoint AS (
 CREATE FUNCTION timeSplit(tnpoint, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tnpoint
-  AS 'MODULE_PATHNAME', 'temporal_time_split'
+  AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /******************************************************************************
@@ -556,31 +556,31 @@ CREATE FUNCTION timeSplit(tnpoint, bucket_width interval,
 
 CREATE FUNCTION tnpoint_lt(tnpoint, tnpoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'temporal_lt'
+  AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_le(tnpoint, tnpoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'temporal_le'
+  AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_eq(tnpoint, tnpoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'temporal_eq'
+  AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_ne(tnpoint, tnpoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'temporal_ne'
+  AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_ge(tnpoint, tnpoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'temporal_ge'
+  AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_gt(tnpoint, tnpoint)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'temporal_gt'
+  AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint_cmp(tnpoint, tnpoint)
   RETURNS int4
-  AS 'MODULE_PATHNAME', 'temporal_cmp'
+  AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR < (

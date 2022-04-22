@@ -426,12 +426,12 @@ tnumber_spgist_get_tbox(const ScanKeyData *scankey, TBOX *result)
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_config);
+PG_FUNCTION_INFO_V1(Tbox_spgist_config);
 /**
  * SP-GiST config function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_config(PG_FUNCTION_ARGS)
+Tbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   cfg->prefixType = type_oid(T_TBOX);  /* A type represented by its bounding box */
@@ -446,12 +446,12 @@ tbox_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_quadtree_choose);
+PG_FUNCTION_INFO_V1(Tbox_quadtree_choose);
 /**
  * SP-GiST choose function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_quadtree_choose(PG_FUNCTION_ARGS)
+Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -472,7 +472,7 @@ tbox_quadtree_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_quadtree_picksplit);
+PG_FUNCTION_INFO_V1(Tbox_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for temporal numbers
  *
@@ -480,7 +480,7 @@ PG_FUNCTION_INFO_V1(tbox_quadtree_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
+Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -544,12 +544,12 @@ tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_quadtree_inner_consistent);
+PG_FUNCTION_INFO_V1(Tbox_quadtree_inner_consistent);
 /**
  * SP-GiST inner consistent function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+Tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -731,12 +731,12 @@ tbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tbox_spgist_leaf_consistent);
+PG_FUNCTION_INFO_V1(Tbox_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal numbers
  */
 PGDLLEXPORT Datum
-tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
+Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -779,7 +779,7 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     {
       TBOX box;
       tnumber_spgist_get_tbox(&in->orderbys[i], &box);
-      distances[i] = NAD_tbox_tbox_internal(&box, key);
+      distances[i] = nad_tbox_tbox(&box, key);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;
@@ -793,12 +793,12 @@ tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_spgist_compress);
+PG_FUNCTION_INFO_V1(Tnumber_spgist_compress);
 /**
  * SP-GiST compress function for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_spgist_compress(PG_FUNCTION_ARGS)
+Tnumber_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
   TBOX *result = palloc(sizeof(TBOX));

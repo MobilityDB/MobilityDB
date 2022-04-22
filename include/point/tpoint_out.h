@@ -39,21 +39,32 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+/* MobilityDB */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
-extern Datum tpoint_as_text(PG_FUNCTION_ARGS);
-extern Datum tpoint_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum geoarr_as_text(PG_FUNCTION_ARGS);
-extern Datum geoarr_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum tpointarr_as_text(PG_FUNCTION_ARGS);
-extern Datum tpointarr_as_ewkt(PG_FUNCTION_ARGS);
-extern Datum tpoint_as_mfjson(PG_FUNCTION_ARGS);
-extern Datum tpoint_as_binary(PG_FUNCTION_ARGS);
-extern Datum tpoint_as_ewkb(PG_FUNCTION_ARGS);
-extern Datum tpoint_as_hexewkb(PG_FUNCTION_ARGS);
-
 extern char *ewkt_out(Oid typid, Datum value);
+
+extern char *tpoint_as_text(const Temporal *temp);
+extern char *tpoint_as_ewkt(const Temporal *temp);
+extern char **geoarr_as_text(const Datum *geoarr, int count, bool extended);
+extern char **tpointarr_as_text(const Temporal **temparr, int count,
+  bool extended);
+extern char *tpointinst_as_mfjson(const TInstant *inst, int precision,
+  const STBOX *bbox, char *srs);
+extern char *tpointinstset_as_mfjson(const TInstantSet *ti, int precision,
+  const STBOX *bbox, char *srs);
+extern char *tpointseq_as_mfjson(const TSequence *seq, int precision,
+  const STBOX *bbox, char *srs);
+extern char *tpointseqset_as_mfjson(const TSequenceSet *ts, int precision,
+  const STBOX *bbox, char *srs);
+extern char *tpoint_as_mfjson(const Temporal *temp, int precision,
+  int has_bbox, char *srs);
+extern uint8_t *tpoint_to_wkb(const Temporal *temp, uint8_t variant,
+  size_t *size_out);
+extern char *tpoint_as_hexewkb(const Temporal *temp, uint8_t variant,
+  size_t *size);
 
 /*****************************************************************************/
 

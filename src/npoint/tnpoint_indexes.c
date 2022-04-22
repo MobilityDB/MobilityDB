@@ -45,12 +45,12 @@
  * GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_gist_compress);
+PG_FUNCTION_INFO_V1(Tnpoint_gist_compress);
 /**
  * GiST compress function for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_gist_compress(PG_FUNCTION_ARGS)
+Tnpoint_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY* entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
@@ -69,12 +69,12 @@ tnpoint_gist_compress(PG_FUNCTION_ARGS)
  * SP-GiST compress function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_spgist_compress);
+PG_FUNCTION_INFO_V1(Tnpoint_spgist_compress);
 /**
  * SP-GiST compress function for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_spgist_compress(PG_FUNCTION_ARGS)
+Tnpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
   STBOX *result = (STBOX *) palloc(sizeof(STBOX));

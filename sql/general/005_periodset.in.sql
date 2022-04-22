@@ -40,27 +40,27 @@ CREATE TYPE periodset;
 
 CREATE FUNCTION periodset_in(cstring)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'periodset_in'
+  AS 'MODULE_PATHNAME', 'Periodset_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periodset_out(periodset)
   RETURNS cstring
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Periodset_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periodset_recv(internal)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'periodset_recv'
+  AS 'MODULE_PATHNAME', 'Periodset_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periodset_send(periodset)
   RETURNS bytea
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Periodset_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periodset_analyze(internal)
   RETURNS boolean
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Periodset_analyze'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE periodset (
@@ -81,7 +81,7 @@ CREATE TYPE periodset (
 
 CREATE FUNCTION periodset(period[])
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'periodset_constructor'
+  AS 'MODULE_PATHNAME', 'Periodset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -90,19 +90,19 @@ CREATE FUNCTION periodset(period[])
 
 CREATE FUNCTION periodset(timestamptz)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'timestamp_to_periodset'
+  AS 'MODULE_PATHNAME', 'Timestamp_to_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(timestampset)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'timestampset_to_periodset'
+  AS 'MODULE_PATHNAME', 'Timestampset_to_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset(period)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'period_to_periodset'
+  AS 'MODULE_PATHNAME', 'Period_to_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period(periodset)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'periodset_to_period'
+  AS 'MODULE_PATHNAME', 'Periodset_to_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (timestamptz AS periodset) WITH FUNCTION periodset(timestamptz);
@@ -116,72 +116,82 @@ CREATE CAST (periodset AS period) WITH FUNCTION period(periodset);
 
 CREATE FUNCTION memSize(periodset)
   RETURNS int
-  AS 'MODULE_PATHNAME', 'periodset_mem_size'
+  AS 'MODULE_PATHNAME', 'Periodset_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timespan(periodset)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'periodset_timespan'
+  AS 'MODULE_PATHNAME', 'Periodset_timespan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(periodset)
   RETURNS interval
-  AS 'MODULE_PATHNAME', 'periodset_duration'
+  AS 'MODULE_PATHNAME', 'Periodset_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numPeriods(periodset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'periodset_num_periods'
+  AS 'MODULE_PATHNAME', 'Periodset_num_periods'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startPeriod(periodset)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'periodset_start_period'
+  AS 'MODULE_PATHNAME', 'Periodset_start_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endPeriod(periodset)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'periodset_end_period'
+  AS 'MODULE_PATHNAME', 'Periodset_end_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periodN(periodset, integer)
   RETURNS period
-  AS 'MODULE_PATHNAME', 'periodset_period_n'
+  AS 'MODULE_PATHNAME', 'Periodset_period_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periods(periodset)
   RETURNS period[]
-  AS 'MODULE_PATHNAME', 'periodset_periods'
+  AS 'MODULE_PATHNAME', 'Periodset_periods'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numTimestamps(periodset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'periodset_num_timestamps'
+  AS 'MODULE_PATHNAME', 'Periodset_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startTimestamp(periodset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'periodset_start_timestamp'
+  AS 'MODULE_PATHNAME', 'Periodset_start_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION endTimestamp(periodset)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'periodset_end_timestamp'
+  AS 'MODULE_PATHNAME', 'Periodset_end_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestampN(periodset, integer)
   RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'periodset_timestamp_n'
+  AS 'MODULE_PATHNAME', 'Periodset_timestamp_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(periodset)
   RETURNS timestamptz[]
-  AS 'MODULE_PATHNAME', 'periodset_timestamps'
+  AS 'MODULE_PATHNAME', 'Periodset_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shift(periodset, interval)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'periodset_shift'
+  AS 'MODULE_PATHNAME', 'Periodset_shift'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tscale(periodset, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_tscale'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTscale(periodset, interval, interval)
+  RETURNS periodset
+  AS 'MODULE_PATHNAME', 'Periodset_shift_tscale'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -190,31 +200,31 @@ CREATE FUNCTION shift(periodset, interval)
 
 CREATE FUNCTION periodset_eq(periodset, periodset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'periodset_eq'
+  AS 'MODULE_PATHNAME', 'Periodset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_ne(periodset, periodset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'periodset_ne'
+  AS 'MODULE_PATHNAME', 'Periodset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_lt(periodset, periodset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'periodset_lt'
+  AS 'MODULE_PATHNAME', 'Periodset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_le(periodset, periodset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'periodset_le'
+  AS 'MODULE_PATHNAME', 'Periodset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_ge(periodset, periodset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'periodset_ge'
+  AS 'MODULE_PATHNAME', 'Periodset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_gt(periodset, periodset)
   RETURNS bool
-  AS 'MODULE_PATHNAME', 'periodset_gt'
+  AS 'MODULE_PATHNAME', 'Periodset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION periodset_cmp(periodset, periodset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'periodset_cmp'
+  AS 'MODULE_PATHNAME', 'Periodset_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
@@ -267,12 +277,12 @@ CREATE OPERATOR CLASS periodset_ops
 
 CREATE FUNCTION periodset_hash(periodset)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'periodset_hash'
+  AS 'MODULE_PATHNAME', 'Periodset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION periodset_hash_extended(periodset, bigint)
   RETURNS bigint
-  AS 'MODULE_PATHNAME', 'periodset_hash_extended'
+  AS 'MODULE_PATHNAME', 'Periodset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS periodset_hash_ops

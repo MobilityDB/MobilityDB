@@ -35,40 +35,40 @@
 
 CREATE FUNCTION frechetDistance(tgeompoint, tgeompoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'temporal_frechet_distance'
+  AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION frechetDistance(tgeogpoint, tgeogpoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'temporal_frechet_distance'
+  AS 'MODULE_PATHNAME', 'Temporal_frechet_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION frechetDistancePath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'temporal_frechet_path'
+  AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION frechetDistancePath(tgeogpoint, tgeogpoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'temporal_frechet_path'
+  AS 'MODULE_PATHNAME', 'Temporal_frechet_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION dynamicTimeWarp(tgeompoint, tgeompoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dynamicTimeWarp(tgeogpoint, tgeogpoint)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp'
+  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION dynamicTimeWarpPath(tgeompoint, tgeompoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION dynamicTimeWarpPath(tgeogpoint, tgeogpoint)
   RETURNS SETOF warp
-  AS 'MODULE_PATHNAME', 'temporal_dynamic_time_warp_path'
+  AS 'MODULE_PATHNAME', 'Temporal_dynamic_time_warp_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

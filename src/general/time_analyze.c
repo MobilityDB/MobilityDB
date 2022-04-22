@@ -52,6 +52,7 @@
 #include "general/timestampset.h"
 #include "general/period.h"
 #include "general/periodset.h"
+#include "general/time_ops.h"
 #include "general/temporal.h"
 #include "general/tempcache.h"
 
@@ -345,12 +346,12 @@ period_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   return;
 }
 
-PG_FUNCTION_INFO_V1(period_analyze);
+PG_FUNCTION_INFO_V1(Period_analyze);
 /**
  *  Compute statistics for period columns
  */
 PGDLLEXPORT Datum
-period_analyze(PG_FUNCTION_ARGS)
+Period_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;
@@ -381,12 +382,12 @@ timestampset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   return;
 }
 
-PG_FUNCTION_INFO_V1(timestampset_analyze);
+PG_FUNCTION_INFO_V1(Timestampset_analyze);
 /**
  * Compute statistics for timestamp set columns
  */
 PGDLLEXPORT Datum
-timestampset_analyze(PG_FUNCTION_ARGS)
+Timestampset_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;
@@ -417,12 +418,12 @@ periodset_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
   return;
 }
 
-PG_FUNCTION_INFO_V1(periodset_analyze);
+PG_FUNCTION_INFO_V1(Periodset_analyze);
 /**
  * Compute statistics for period set columns
  */
 PGDLLEXPORT Datum
-periodset_analyze(PG_FUNCTION_ARGS)
+Periodset_analyze(PG_FUNCTION_ARGS)
 {
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
   Form_pg_attribute attr = stats->attr;

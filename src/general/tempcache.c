@@ -412,7 +412,7 @@ fill_opcache(PG_FUNCTION_ARGS __attribute__((unused)))
  *****************************************************************************/
 
 /**
- * Returns the Oid of the base type from the temporal type
+ * Return the Oid of the base type from the temporal type
  */
 Oid
 temptype_basetypid(CachedType temptype)
@@ -429,7 +429,7 @@ temptype_basetypid(CachedType temptype)
 }
 
 /**
- * Returns the Oid of the base type from the Oid of the temporal type
+ * Return the Oid of the base type from the Oid of the temporal type
  */
 Oid
 temptypid_basetypid(Oid temptypid)
@@ -446,7 +446,7 @@ temptypid_basetypid(Oid temptypid)
 }
 
 /**
- * Returns the temporal type from the base type
+ * Return the temporal type from the base type
  */
 CachedType
 temptype_basetype(CachedType temptype)

@@ -145,8 +145,6 @@ typedef struct
 
 /*****************************************************************************/
 
-extern Datum fill_opcache(PG_FUNCTION_ARGS);
-
 /* Catalog functions */
 
 extern Oid temptype_basetypid(Oid temptypid);

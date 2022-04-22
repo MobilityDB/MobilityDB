@@ -62,7 +62,7 @@ void
 ensure_same_srid_tnpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
-    tnpoint_srid_internal(temp) != box->srid)
+    tnpoint_srid(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("The temporal network point and the box must be in the same SRID")));
 }
@@ -84,7 +84,7 @@ ensure_same_rid_tnpointinst(const TInstant *inst1, const TInstant *inst2)
  *****************************************************************************/
 
 /**
- * Returns true if the segment of the temporal network point value intersects
+ * Return true if the segment of the temporal network point value intersects
  * the base value at the timestamp
  *
  * @param[in] inst1,inst2 Temporal instants defining the segment
@@ -95,9 +95,9 @@ bool
 tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
   Datum value, TimestampTz *t)
 {
-  npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
-  npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
-  npoint *np = DatumGetNpoint(value);
+  Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
+  Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
+  Npoint *np = DatumGetNpointP(value);
   double min = Min(np1->pos, np2->pos);
   double max = Max(np1->pos, np2->pos);
   /* if value is to the left or to the right of the range */
@@ -130,12 +130,13 @@ tnpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
  * obtained from the bounding box. */
 
 /**
- * Returns the SRID of a temporal network point of sutbype instant
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the SRID of a temporal network point of subtype instant.
  */
-static int
+int
 tnpointinst_srid(const TInstant *inst)
 {
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   Datum line = route_geom(np->rid);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(line);
   int result = gserialized_get_srid(gs);
@@ -144,17 +145,18 @@ tnpointinst_srid(const TInstant *inst)
 }
 
 /**
- * Returns the SRID of a temporal network point (dispatch function)
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the SRID of a temporal network point
  */
 int
-tnpoint_srid_internal(const Temporal *temp)
+tnpoint_srid(const Temporal *temp)
 {
   if (temp->temptype != T_TNPOINT)
     elog(ERROR, "unknown temporal type: %d", temp->temptype);
   int result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = tnpointinst_srid((TInstant *) temp);
+    result = tnpointinst_srid((const TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
     result = tpointinstset_srid((TInstantSet *) temp);
   else if (temp->subtype == SEQUENCE)
@@ -164,22 +166,9 @@ tnpoint_srid_internal(const Temporal *temp)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_srid);
-/**
- * Returns the SRID of a temporal network point
- */
-PGDLLEXPORT Datum
-tnpoint_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = tnpoint_srid_internal(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_INT32(result);
-}
-
 /*****************************************************************************
  * NPoints Functions
- * Return the network points covered by the temporal npoint
+ * Return the network points covered by the temporal network point
  *****************************************************************************/
 
 /**
@@ -189,13 +178,13 @@ tnpoint_srid(PG_FUNCTION_ARGS)
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
-static npoint **
+static Npoint **
 tnpointinstset_npoints(const TInstantSet *ti, int *count)
 {
-  npoint **result = palloc(sizeof(npoint *) * ti->count);
+  Npoint **result = palloc(sizeof(Npoint *) * ti->count);
   for (int i = 0; i < ti->count; i++)
   {
-    npoint *np = DatumGetNpoint(tinstant_value(tinstantset_inst_n(ti, i)));
+    Npoint *np = DatumGetNpointP(tinstant_value(tinstantset_inst_n(ti, i)));
     result[i] = np;
   }
   *count = ti->count;
@@ -209,13 +198,13 @@ tnpointinstset_npoints(const TInstantSet *ti, int *count)
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
-static npoint **
+static Npoint **
 tnpointseq_step_npoints(const TSequence *seq, int *count)
 {
-  npoint **result = palloc(sizeof(npoint *) * seq->count);
+  Npoint **result = palloc(sizeof(Npoint *) * seq->count);
   for (int i = 0; i < seq->count; i++)
   {
-    npoint *np = DatumGetNpoint(tinstant_value(tsequence_inst_n(seq, i)));
+    Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, i)));
     result[i] = np;
   }
   *count = seq->count;
@@ -229,17 +218,17 @@ tnpointseq_step_npoints(const TSequence *seq, int *count)
  * @param[out] count Number of elements of the output array
  * @note Only the particular cases returning points are covered
  */
-static npoint **
+static Npoint **
 tnpointseqset_step_npoints(const TSequenceSet *ts, int *count)
 {
-  npoint **result = palloc(sizeof(npoint *) * ts->totalcount);
+  Npoint **result = palloc(sizeof(Npoint *) * ts->totalcount);
   int k = 0;
   for (int i = 0; i < ts->count; i++)
   {
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     for (int j = 0; j < seq->count; j++)
     {
-      npoint *np = DatumGetNpoint(tinstant_value(tsequence_inst_n(seq, j)));
+      Npoint *np = DatumGetNpointP(tinstant_value(tsequence_inst_n(seq, j)));
       result[k++] = np;
     }
   }
@@ -249,27 +238,29 @@ tnpointseqset_step_npoints(const TSequenceSet *ts, int *count)
 
 /*****************************************************************************
  * Geometric positions (Trajectotry) functions
- * Return the geometric positions covered by the temporal npoint
+ * Return the geometric positions covered by the temporal network point
  *****************************************************************************/
 
 /**
- * Return the geometry covered by the temporal network point
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] inst Temporal network point
  */
-static Datum
+Datum
 tnpointinst_geom(const TInstant *inst)
 {
-  npoint *np = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np = DatumGetNpointP(tinstant_value(inst));
   return npoint_geom(np);
 }
 
 /**
- * Return the geometry covered by the temporal network point
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] ti Temporal network point
  */
-static Datum
+Datum
 tnpointinstset_geom(const TInstantSet *ti)
 {
   /* Instantaneous sequence */
@@ -278,18 +269,19 @@ tnpointinstset_geom(const TInstantSet *ti)
 
   int count;
   /* The following function does not remove duplicate values */
-  npoint **points = tnpointinstset_npoints(ti, &count);
+  Npoint **points = tnpointinstset_npoints(ti, &count);
   Datum result = npointarr_geom(points, count);
   pfree(points);
   return result;
 }
 
 /**
- * Return the geometry covered by the temporal network point
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] seq Temporal network point
  */
-static Datum
+Datum
 tnpointseq_geom(const TSequence *seq)
 {
   /* Instantaneous sequence */
@@ -299,7 +291,7 @@ tnpointseq_geom(const TSequence *seq)
   Datum result;
   if (MOBDB_FLAGS_GET_LINEAR(seq->flags))
   {
-    nsegment *segment = tnpointseq_linear_positions(seq);
+    Nsegment *segment = tnpointseq_linear_positions(seq);
     result = nsegment_geom(segment);
     pfree(segment);
   }
@@ -307,7 +299,7 @@ tnpointseq_geom(const TSequence *seq)
   {
     int count;
     /* The following function does not remove duplicate values */
-    npoint **points = tnpointseq_step_npoints(seq, &count);
+    Npoint **points = tnpointseq_step_npoints(seq, &count);
     result = npointarr_geom(points, count);
     pfree(points);
   }
@@ -315,11 +307,12 @@ tnpointseq_geom(const TSequence *seq)
 }
 
 /**
- * Return the geometry covered by the temporal network point
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] ts Temporal network point
  */
-static Datum
+Datum
 tnpointseqset_geom(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
@@ -330,13 +323,13 @@ tnpointseqset_geom(const TSequenceSet *ts)
   Datum result;
   if (MOBDB_FLAGS_GET_LINEAR(ts->flags))
   {
-    nsegment **segments = tnpointseqset_positions(ts, &count);
+    Nsegment **segments = tnpointseqset_positions(ts, &count);
     result = nsegmentarr_geom(segments, count);
     pfree_array((void **) segments, count);
   }
   else
   {
-    npoint **points = tnpointseqset_step_npoints(ts, &count);
+    Npoint **points = tnpointseqset_step_npoints(ts, &count);
     result = npointarr_geom(points, count);
     pfree(points);
   }
@@ -344,8 +337,8 @@ tnpointseqset_geom(const TSequenceSet *ts)
 }
 
 /**
- * Return the geometry covered by the temporal network point
- * (dispatch function)
+ * @ingroup libmeos_temporal_accesor
+ * @brief Return the geometry covered by the temporal network point.
  *
  * @param[in] temp Temporal network point
  */
@@ -371,7 +364,7 @@ tnpoint_geom(const Temporal *temp)
  * @param[in] np1, np2 Network points
  */
 static Datum
-tnpointseqsegm_trajectory(const npoint *np1, const npoint *np2)
+tnpointseqsegm_trajectory(const Npoint *np1, const Npoint *np2)
 {
   assert(np1->rid == np2->rid && np1->pos != np2->pos);
 
@@ -395,19 +388,6 @@ tnpointseqsegm_trajectory(const npoint *np1, const npoint *np2)
   return traj;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_trajectory);
-/**
- * Return the geometry covered by the temporal network point
- */
-PGDLLEXPORT Datum
-tnpoint_trajectory(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tnpoint_geom(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
-}
-
 /*****************************************************************************
  * Geographical equality for network points
  *****************************************************************************/
@@ -418,7 +398,7 @@ tnpoint_trajectory(PG_FUNCTION_ARGS)
  * spatial point at the intersection of the two rids
  */
 bool
-npoint_same_internal(const npoint *np1, const npoint *np2)
+npoint_same(const Npoint *np1, const Npoint *np2)
 {
   /* Same route identifier */
   if (np1->rid == np2->rid)
@@ -430,18 +410,6 @@ npoint_same_internal(const npoint *np1, const npoint *np2)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(npoint_same);
-/**
- * Determines the spatial equality for network points
- */
-PGDLLEXPORT Datum
-npoint_same(PG_FUNCTION_ARGS)
-{
-  npoint *np1 = PG_GETARG_NPOINT(0);
-  npoint *np2 = PG_GETARG_NPOINT(1);
-  PG_RETURN_BOOL(npoint_same_internal(np1, np2));
-}
-
 /*****************************************************************************
  * Length functions
  *****************************************************************************/
@@ -449,7 +417,7 @@ npoint_same(PG_FUNCTION_ARGS)
 /**
  * Length traversed by the temporal network point
  */
-static double
+double
 tnpointseq_length(const TSequence *seq)
 {
   /* Instantaneous sequence */
@@ -457,13 +425,13 @@ tnpointseq_length(const TSequence *seq)
     return 0;
 
   const TInstant *inst = tsequence_inst_n(seq, 0);
-  npoint *np1 = DatumGetNpoint(tinstant_value(inst));
+  Npoint *np1 = DatumGetNpointP(tinstant_value(inst));
   double length = route_length(np1->rid);
   double fraction = 0;
   for (int i = 1; i < seq->count; i++)
   {
     inst = tsequence_inst_n(seq, i);
-    npoint *np2 = DatumGetNpoint(tinstant_value(inst));
+    Npoint *np2 = DatumGetNpointP(tinstant_value(inst));
     fraction += fabs(np2->pos - np1->pos);
     np1 = np2;
   }
@@ -473,7 +441,7 @@ tnpointseq_length(const TSequence *seq)
 /**
  * Length traversed by the temporal network point
  */
-static double
+double
 tnpointseqset_length(const TSequenceSet *ts)
 {
   double result = 0;
@@ -485,14 +453,12 @@ tnpointseqset_length(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_length);
 /**
  * Length traversed by the temporal network point
  */
-PGDLLEXPORT Datum
-tnpoint_length(PG_FUNCTION_ARGS)
+double
+tnpoint_length(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -503,12 +469,13 @@ tnpoint_length(PG_FUNCTION_ARGS)
     result = tnpointseq_length((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = tnpointseqset_length((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_FLOAT8(result);
+  return result;
 }
 
+/*****************************************************************************/
+
 /**
- * Cumulative length traversed by the temporal npoint
+ * Cumulative length traversed by the temporal network point
  */
 static TInstant *
 tnpointinst_set_zero(const TInstant *inst)
@@ -517,7 +484,7 @@ tnpointinst_set_zero(const TInstant *inst)
 }
 
 /**
- * Cumulative length traversed by the temporal npoint
+ * Cumulative length traversed by the temporal network point
  */
 static TInstantSet *
 tnpointinstset_set_zero(const TInstantSet *ti)
@@ -538,7 +505,7 @@ tnpointinstset_set_zero(const TInstantSet *ti)
 }
 
 /**
- * Cumulative length traversed by the temporal npoint
+ * Cumulative length traversed by the temporal network point
  */
 static TSequence *
 tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
@@ -571,14 +538,14 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
   /* Linear interpolation */
   {
     inst1 = tsequence_inst_n(seq, 0);
-    npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
+    Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
     double rlength = route_length(np1->rid);
     double length = prevlength;
     instants[0] = tinstant_make(Float8GetDatum(length), inst1->t, T_TFLOAT);
     for (int i = 1; i < seq->count; i++)
     {
       const TInstant *inst2 = tsequence_inst_n(seq, i);
-      npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
+      Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
       length += fabs(np2->pos - np1->pos) * rlength;
       instants[i] = tinstant_make(Float8GetDatum(length), inst2->t, T_TFLOAT);
       np1 = np2;
@@ -595,7 +562,7 @@ tnpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * Cumulative length traversed by the temporal npoint
+ * Cumulative length traversed by the temporal network point
  */
 static TSequenceSet *
 tnpointseqset_cumulative_length(const TSequenceSet *ts)
@@ -618,14 +585,12 @@ tnpointseqset_cumulative_length(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_cumulative_length);
 /**
- * Cumulative length traversed by the temporal npoint
+ * Cumulative length traversed by the temporal network point
  */
-PGDLLEXPORT Datum
-tnpoint_cumulative_length(PG_FUNCTION_ARGS)
+Temporal *
+tnpoint_cumulative_length(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -636,8 +601,7 @@ tnpoint_cumulative_length(PG_FUNCTION_ARGS)
     result = (Temporal *) tnpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tnpointseqset_cumulative_length((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -669,14 +633,14 @@ tnpointseq_speed(const TSequence *seq)
   /* Linear interpolation */
   {
     const TInstant *inst1 = tsequence_inst_n(seq, 0);
-    npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
+    Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
     double rlength = route_length(np1->rid);
     const TInstant *inst2 = NULL; /* make the compiler quiet */
     double speed = 0; /* make the compiler quiet */
     for (int i = 0; i < seq->count - 1; i++)
     {
       inst2 = tsequence_inst_n(seq, i + 1);
-      npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
+      Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
       double length = fabs(np2->pos - np1->pos) * rlength;
       speed = length / (((double)(inst2->t) - (double)(inst1->t)) / 1000000);
       instants[i] = tinstant_make(Float8GetDatum(speed), inst1->t, T_TFLOAT);
@@ -712,14 +676,12 @@ tnpointseqset_speed(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_speed);
 /**
  * Speed of the temporal network point
  */
-PGDLLEXPORT Datum
-tnpoint_speed(PG_FUNCTION_ARGS)
+Temporal *
+tnpoint_speed(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -730,29 +692,23 @@ tnpoint_speed(PG_FUNCTION_ARGS)
     result = (Temporal *) tnpointseq_speed((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tnpointseqset_speed((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
  * Time-weighed centroid for temporal network points
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_twcentroid);
 /**
- * Time-weighed centroid of the temporal network point
+ * Return the time-weighed centroid of the temporal network point
  */
-PGDLLEXPORT Datum
-tnpoint_twcentroid(PG_FUNCTION_ARGS)
+Datum
+tnpoint_twcentroid(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *tgeom = tnpoint_tgeompoint(temp);
-  Datum result = tpoint_twcentroid_internal(tgeom);
+  Datum result = tpoint_twcentroid(tgeom);
   pfree(tgeom);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -766,8 +722,8 @@ static TInstant **
 tnpointsegm_azimuth1(const TInstant *inst1, const TInstant *inst2,
   int *count)
 {
-  const npoint *np1 = DatumGetNpoint(tinstant_value(inst1));
-  const npoint *np2 = DatumGetNpoint(tinstant_value(inst2));
+  const Npoint *np1 = DatumGetNpointP(tinstant_value(inst1));
+  const Npoint *np2 = DatumGetNpointP(tinstant_value(inst2));
 
   /* Constant segment */
   if (np1->pos == np2->pos)
@@ -915,14 +871,12 @@ tnpointseqset_azimuth(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_azimuth);
 /**
  * Temporal azimuth of the temporal network point
  */
-PGDLLEXPORT Datum
-tnpoint_azimuth(PG_FUNCTION_ARGS)
+Temporal *
+tnpoint_azimuth(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -933,6 +887,183 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
     result = (Temporal *) tnpointseq_azimuth((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tnpointseqset_azimuth((TSequenceSet *) temp);
+  return result;
+}
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * Restrict a temporal network point to (the complement of) a geometry
+ */
+Temporal *
+tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *geo, bool atfunc)
+{
+  ensure_same_srid(tnpoint_srid(temp), gserialized_get_srid(geo));
+  if (gserialized_is_empty(geo))
+  {
+    Temporal *result = atfunc ? NULL : temporal_copy(temp);
+    if (atfunc)
+      return NULL;
+    return result;
+  }
+  ensure_has_not_Z_gs(geo);
+
+  Temporal *tempgeom = tnpoint_tgeompoint(temp);
+  Temporal *resultgeom = tpoint_restrict_geometry(tempgeom, geo, atfunc);
+  Temporal *result = NULL;
+  if (resultgeom != NULL)
+  {
+    /* We do not call the function tgeompoint_tnpoint to avoid
+     * roundoff errors */
+    PeriodSet *ps = temporal_time(resultgeom);
+    result = temporal_restrict_periodset(temp, ps, REST_AT);
+    pfree(resultgeom);
+    pfree(ps);
+  }
+  pfree(tempgeom);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Functions for spatial reference systems
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_get_srid);
+/**
+ * Return the SRID of a temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_get_srid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int result = tnpoint_srid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************
+ * Geometric positions (Trajectotry) functions
+ * Return the geometric positions covered by the temporal network point
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_get_trajectory);
+/**
+ * Return the geometry covered by the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_get_trajectory(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = tnpoint_geom(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Geographical equality for network points
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Npoint_same);
+/**
+ * Determines the spatial equality for network points
+ */
+PGDLLEXPORT Datum
+Npoint_same(PG_FUNCTION_ARGS)
+{
+  Npoint *np1 = PG_GETARG_NPOINT_P(0);
+  Npoint *np2 = PG_GETARG_NPOINT_P(1);
+  PG_RETURN_BOOL(npoint_same(np1, np2));
+}
+
+/*****************************************************************************
+ * Length functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_length);
+/**
+ * Length traversed by the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_length(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tnpoint_length(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Tnpoint_cumulative_length);
+/**
+ * Cumulative length traversed by the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_cumulative_length(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnpoint_cumulative_length(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Speed functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_speed);
+/**
+ * Speed of the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnpoint_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Time-weighed centroid for temporal network points
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_twcentroid);
+/**
+ * Return the time-weighed centroid of the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_twcentroid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = tnpoint_twcentroid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Temporal azimuth
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tnpoint_azimuth);
+/**
+ * Temporal azimuth of the temporal network point
+ */
+PGDLLEXPORT Datum
+Tnpoint_azimuth(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnpoint_azimuth(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
@@ -947,36 +1078,11 @@ tnpoint_azimuth(PG_FUNCTION_ARGS)
  * Restrict a temporal network point to (the complement of) a geometry
  */
 static Datum
-tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
+tnpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  ensure_same_srid(tnpoint_srid_internal(temp), gserialized_get_srid(gs));
-  if (gserialized_is_empty(gs))
-  {
-    Temporal *result = atfunc ? NULL : temporal_copy(temp);
-    PG_FREE_IF_COPY(temp, 0);
-    PG_FREE_IF_COPY(gs, 1);
-    if (atfunc)
-      PG_RETURN_NULL();
-    PG_RETURN_POINTER(result);
-  }
-  ensure_has_not_Z_gs(gs);
-
-  Temporal *tempgeom = tnpoint_tgeompoint(temp);
-  Temporal *resultgeom = tpoint_restrict_geometry_internal(tempgeom,
-    PointerGetDatum(gs), atfunc);
-  Temporal *result = NULL;
-  if (resultgeom != NULL)
-  {
-    /* We do not call the function tgeompoint_to_tnpoint to avoid
-     * roundoff errors */
-    PeriodSet *ps = temporal_get_time_internal(resultgeom);
-    result = temporal_restrict_periodset_internal(temp, ps, REST_AT);
-    pfree(resultgeom);
-    pfree(ps);
-  }
-  pfree(tempgeom);
+  Temporal *result = tnpoint_restrict_geometry(temp, gs, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (result == NULL)
@@ -984,24 +1090,26 @@ tnpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_at_geometry);
+PG_FUNCTION_INFO_V1(Tnpoint_at_geometry);
 /**
  * Restricts the temporal point to the geometry
  */
 PGDLLEXPORT Datum
-tnpoint_at_geometry(PG_FUNCTION_ARGS)
+Tnpoint_at_geometry(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geometry(fcinfo, REST_AT);
+  return tnpoint_restrict_geometry_ext(fcinfo, REST_AT);
 }
 
-PG_FUNCTION_INFO_V1(tnpoint_minus_geometry);
+PG_FUNCTION_INFO_V1(Tnpoint_minus_geometry);
 /**
  * Restrict the temporal point to the complement of the geometry
  */
 PGDLLEXPORT Datum
-tnpoint_minus_geometry(PG_FUNCTION_ARGS)
+Tnpoint_minus_geometry(PG_FUNCTION_ARGS)
 {
-  return tnpoint_restrict_geometry(fcinfo, REST_MINUS);
+  return tnpoint_restrict_geometry_ext(fcinfo, REST_MINUS);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

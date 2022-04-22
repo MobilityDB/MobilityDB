@@ -47,12 +47,12 @@
  * GiST compress method for temporal values
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(temporal_gist_compress);
+PG_FUNCTION_INFO_V1(Temporal_gist_compress);
 /**
  * GiST compress method for temporal values
  */
 PGDLLEXPORT Datum
-temporal_gist_compress(PG_FUNCTION_ARGS)
+Temporal_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)

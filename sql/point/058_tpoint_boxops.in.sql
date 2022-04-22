@@ -38,11 +38,11 @@
 
 CREATE FUNCTION stbox(tgeompoint)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'tpoint_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox(tgeogpoint)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'tpoint_to_stbox'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS stbox) WITH FUNCTION stbox(tgeompoint);
@@ -52,27 +52,27 @@ CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
 
 CREATE FUNCTION expandSpatial(geometry, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'geo_expand_spatial'
+  AS 'MODULE_PATHNAME', 'Geo_expand_spatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandSpatial(geography, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'geo_expand_spatial'
+  AS 'MODULE_PATHNAME', 'Geo_expand_spatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION expandSpatial(tgeompoint, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
+  AS 'MODULE_PATHNAME', 'Tpoint_expand_spatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandSpatial(tgeogpoint, float)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'tpoint_expand_spatial'
+  AS 'MODULE_PATHNAME', 'Tpoint_expand_spatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION stboxes(tgeompoint)
   RETURNS stbox[]
-  AS 'MODULE_PATHNAME', 'tpoint_stboxes'
+  AS 'MODULE_PATHNAME', 'Tpoint_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -81,35 +81,35 @@ CREATE FUNCTION stboxes(tgeompoint)
 
 CREATE FUNCTION contains_bbox(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -165,35 +165,35 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contains_bbox(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contains_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contains_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -249,23 +249,23 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contains_bbox(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Contains_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Contains_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Contains_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Contains_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -303,23 +303,23 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contains_bbox(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Contains_bbox_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Contains_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Contains_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Contains_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains_bbox(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contains_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Contains_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -359,35 +359,35 @@ CREATE OPERATOR @> (
 
 CREATE FUNCTION contained_bbox(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -443,23 +443,23 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION contained_bbox(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Contained_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Contained_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Contained_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Contained_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Contained_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -497,35 +497,35 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION contained_bbox(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Contained_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Contained_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -581,23 +581,23 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION contained_bbox(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Contained_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Contained_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Contained_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Contained_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained_bbox(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'contained_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Contained_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -637,35 +637,35 @@ CREATE OPERATOR <@ (
 
 CREATE FUNCTION overlaps_bbox(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -721,23 +721,23 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION overlaps_bbox(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Overlaps_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overlaps_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Overlaps_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overlaps_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overlaps_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -775,35 +775,35 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION overlaps_bbox(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Overlaps_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -859,23 +859,23 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION overlaps_bbox(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Overlaps_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Overlaps_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Overlaps_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Overlaps_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps_bbox(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'overlaps_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Overlaps_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -915,35 +915,35 @@ CREATE OPERATOR && (
 
 CREATE FUNCTION same_bbox(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Same_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Same_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Same_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Same_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -999,23 +999,23 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION same_bbox(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Same_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Same_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Same_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Same_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Same_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -1053,35 +1053,35 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION same_bbox(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Same_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Same_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Same_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Same_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Same_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Same_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Same_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -1137,23 +1137,23 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION same_bbox(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Same_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Same_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Same_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Same_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same_bbox(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'same_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Same_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -1193,35 +1193,35 @@ CREATE OPERATOR ~= (
 
 CREATE FUNCTION adjacent_bbox(timestamptz, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(timestampset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(period, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(periodset, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -1277,23 +1277,23 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION adjacent_bbox(geometry, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Adjacent_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(stbox, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Adjacent_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, geometry)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Adjacent_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Adjacent_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Adjacent_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -1331,35 +1331,35 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION adjacent_bbox(timestamptz, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestamp_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_timestamp_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestamp'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_timestamp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(timestampset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_timestampset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_timestampset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, timestampset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_timestampset'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_timestampset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(period, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_period_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_period_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, period)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_period'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_period'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(periodset, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_periodset_temporal'
+  AS 'MODULE_PATHNAME', 'Adjacent_periodset_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, periodset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_temporal_periodset'
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_periodset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -1415,23 +1415,23 @@ CREATE OPERATOR -|- (
 
 CREATE FUNCTION adjacent_bbox(geography, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Adjacent_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(stbox, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_stbox_tpoint'
+  AS 'MODULE_PATHNAME', 'Adjacent_stbox_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, geography)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Adjacent_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, stbox)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_stbox'
+  AS 'MODULE_PATHNAME', 'Adjacent_tpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent_bbox(tgeogpoint, tgeogpoint)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'adjacent_bbox_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Adjacent_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (

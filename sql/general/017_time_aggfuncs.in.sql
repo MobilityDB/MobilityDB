@@ -36,31 +36,31 @@
 
 CREATE FUNCTION tagg_serialize(internal)
   RETURNS bytea
-  AS 'MODULE_PATHNAME', 'tagg_serialize'
+  AS 'MODULE_PATHNAME', 'Tagg_serialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tagg_deserialize(bytea, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tagg_deserialize'
+  AS 'MODULE_PATHNAME', 'Tagg_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION timestampset_extent_transfn(period, timestampset)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Timestampset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION period_extent_transfn(period, period)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Period_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION periodset_extent_transfn(period, periodset)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Periodset_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION time_extent_combinefn(period, period)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Time_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(timestampset) (
@@ -88,23 +88,23 @@ CREATE TYPE tint;
 
 CREATE FUNCTION tcount_transfn(internal, timestampset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'timestampset_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Timestampset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, period)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'period_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Period_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, periodset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'periodset_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Periodset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_combinefn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_tagg_finalfn(internal)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(timestampset) (
@@ -141,29 +141,29 @@ CREATE AGGREGATE tcount(periodset) (
 
 CREATE FUNCTION timestampset_tunion_transfn(internal, timestampset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'timestampset_tunion_transfn'
+  AS 'MODULE_PATHNAME', 'Timestampset_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION period_tunion_transfn(internal, period)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'period_tunion_transfn'
+  AS 'MODULE_PATHNAME', 'Period_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION periodset_tunion_transfn(internal, periodset)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'periodset_tunion_transfn'
+  AS 'MODULE_PATHNAME', 'Periodset_tunion_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION time_tunion_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'time_tunion_combinefn'
+  AS 'MODULE_PATHNAME', 'Time_tunion_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION timestamp_tunion_finalfn(internal)
   RETURNS timestampset
-  AS 'MODULE_PATHNAME', 'timestamp_tunion_finalfn'
+  AS 'MODULE_PATHNAME', 'Timestamp_tunion_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION period_tunion_finalfn(internal)
   RETURNS periodset
-  AS 'MODULE_PATHNAME', 'period_tunion_finalfn'
+  AS 'MODULE_PATHNAME', 'Period_tunion_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tunion(timestampset) (

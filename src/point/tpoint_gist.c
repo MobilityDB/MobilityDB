@@ -80,69 +80,69 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
   switch (strategy)
   {
     case RTOverlapStrategyNumber:
-      retval = overlaps_stbox_stbox_internal(key, query);
+      retval = overlaps_stbox_stbox(key, query);
       break;
     case RTContainsStrategyNumber:
-      retval = contains_stbox_stbox_internal(key, query);
+      retval = contains_stbox_stbox(key, query);
       break;
     case RTContainedByStrategyNumber:
-      retval = contained_stbox_stbox_internal(key, query);
+      retval = contained_stbox_stbox(key, query);
       break;
     case RTSameStrategyNumber:
-      retval = same_stbox_stbox_internal(key, query);
+      retval = same_stbox_stbox(key, query);
       break;
     case RTAdjacentStrategyNumber:
-      retval = adjacent_stbox_stbox_internal(key, query);
+      retval = adjacent_stbox_stbox(key, query);
       break;
     case RTLeftStrategyNumber:
-      retval = left_stbox_stbox_internal(key, query);
+      retval = left_stbox_stbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
-      retval = overleft_stbox_stbox_internal(key, query);
+      retval = overleft_stbox_stbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = right_stbox_stbox_internal(key, query);
+      retval = right_stbox_stbox(key, query);
       break;
     case RTOverRightStrategyNumber:
-      retval = overright_stbox_stbox_internal(key, query);
+      retval = overright_stbox_stbox(key, query);
       break;
     case RTBelowStrategyNumber:
-      retval = below_stbox_stbox_internal(key, query);
+      retval = below_stbox_stbox(key, query);
       break;
     case RTOverBelowStrategyNumber:
-      retval = overbelow_stbox_stbox_internal(key, query);
+      retval = overbelow_stbox_stbox(key, query);
       break;
     case RTAboveStrategyNumber:
-      retval = above_stbox_stbox_internal(key, query);
+      retval = above_stbox_stbox(key, query);
       break;
     case RTOverAboveStrategyNumber:
-      retval = overabove_stbox_stbox_internal(key, query);
+      retval = overabove_stbox_stbox(key, query);
       break;
     case RTFrontStrategyNumber:
-      retval = front_stbox_stbox_internal(key, query);
+      retval = front_stbox_stbox(key, query);
       break;
     case RTOverFrontStrategyNumber:
-      retval = overfront_stbox_stbox_internal(key, query);
+      retval = overfront_stbox_stbox(key, query);
       break;
     case RTBackStrategyNumber:
-      retval = back_stbox_stbox_internal(key, query);
+      retval = back_stbox_stbox(key, query);
       break;
     case RTOverBackStrategyNumber:
-      retval = overback_stbox_stbox_internal(key, query);
+      retval = overback_stbox_stbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = /* before_stbox_stbox_internal(key, query) */
+      retval = /* before_stbox_stbox(key, query) */
         (key->tmax <= query->tmin);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = overbefore_stbox_stbox_internal(key, query);
+      retval = overbefore_stbox_stbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = /* after_stbox_stbox_internal(key, query)*/
+      retval = /* after_stbox_stbox(key, query)*/
         (key->tmin >= query->tmax);
       break;
     case RTOverAfterStrategyNumber:
-      retval = overafter_stbox_stbox_internal(key, query);
+      retval = overafter_stbox_stbox(key, query);
       break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);
@@ -155,7 +155,7 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
 /**
  * Internal-page consistent method for temporal points.
  *
- * Returns false if for all data items x below entry, the predicate
+ * Return false if for all data items x below entry, the predicate
  * x op query must be false, where op is the oper corresponding to strategy
  * in the pg_amop table.
  *
@@ -164,7 +164,7 @@ stbox_index_consistent_leaf(const STBOX *key, const STBOX *query,
  * @param[in] strategy Operator of the operator class being applied
  */
 static bool
-stbox_gist_consistent_internal(const STBOX *key, const STBOX *query,
+stbox_gist_consistent(const STBOX *key, const STBOX *query,
   StrategyNumber strategy)
 {
   bool retval;
@@ -173,63 +173,63 @@ stbox_gist_consistent_internal(const STBOX *key, const STBOX *query,
   {
     case RTOverlapStrategyNumber:
     case RTContainedByStrategyNumber:
-      retval = overlaps_stbox_stbox_internal(key, query);
+      retval = overlaps_stbox_stbox(key, query);
       break;
     case RTContainsStrategyNumber:
     case RTSameStrategyNumber:
-      retval = contains_stbox_stbox_internal(key, query);
+      retval = contains_stbox_stbox(key, query);
       break;
     case RTAdjacentStrategyNumber:
-      if (adjacent_stbox_stbox_internal(key, query))
+      if (adjacent_stbox_stbox(key, query))
         return true;
-      return overlaps_stbox_stbox_internal(key, query);
+      return overlaps_stbox_stbox(key, query);
     case RTLeftStrategyNumber:
-      retval = !overright_stbox_stbox_internal(key, query);
+      retval = !overright_stbox_stbox(key, query);
       break;
     case RTOverLeftStrategyNumber:
-      retval = !right_stbox_stbox_internal(key, query);
+      retval = !right_stbox_stbox(key, query);
       break;
     case RTRightStrategyNumber:
-      retval = !overleft_stbox_stbox_internal(key, query);
+      retval = !overleft_stbox_stbox(key, query);
       break;
     case RTOverRightStrategyNumber:
-      retval = !left_stbox_stbox_internal(key, query);
+      retval = !left_stbox_stbox(key, query);
       break;
     case RTBelowStrategyNumber:
-      retval = !overabove_stbox_stbox_internal(key, query);
+      retval = !overabove_stbox_stbox(key, query);
       break;
     case RTOverBelowStrategyNumber:
-      retval = !above_stbox_stbox_internal(key, query);
+      retval = !above_stbox_stbox(key, query);
       break;
     case RTAboveStrategyNumber:
-      retval = !overbelow_stbox_stbox_internal(key, query);
+      retval = !overbelow_stbox_stbox(key, query);
       break;
     case RTOverAboveStrategyNumber:
-      retval = !below_stbox_stbox_internal(key, query);
+      retval = !below_stbox_stbox(key, query);
       break;
     case RTFrontStrategyNumber:
-      retval = !overback_stbox_stbox_internal(key, query);
+      retval = !overback_stbox_stbox(key, query);
       break;
     case RTOverFrontStrategyNumber:
-      retval = !back_stbox_stbox_internal(key, query);
+      retval = !back_stbox_stbox(key, query);
       break;
     case RTBackStrategyNumber:
-      retval = !overfront_stbox_stbox_internal(key, query);
+      retval = !overfront_stbox_stbox(key, query);
       break;
     case RTOverBackStrategyNumber:
-      retval = !front_stbox_stbox_internal(key, query);
+      retval = !front_stbox_stbox(key, query);
       break;
     case RTBeforeStrategyNumber:
-      retval = !overafter_stbox_stbox_internal(key, query);
+      retval = !overafter_stbox_stbox(key, query);
       break;
     case RTOverBeforeStrategyNumber:
-      retval = !after_stbox_stbox_internal(key, query);
+      retval = !after_stbox_stbox(key, query);
       break;
     case RTAfterStrategyNumber:
-      retval = !overbefore_stbox_stbox_internal(key, query);
+      retval = !overbefore_stbox_stbox(key, query);
       break;
     case RTOverAfterStrategyNumber:
-      retval = !before_stbox_stbox_internal(key, query);
+      retval = !before_stbox_stbox(key, query);
       break;
     default:
       elog(ERROR, "unrecognized strategy number: %d", strategy);
@@ -323,12 +323,12 @@ tpoint_gist_get_stbox(FunctionCallInfo fcinfo, STBOX *result,
   return true;
 }
 
-PG_FUNCTION_INFO_V1(stbox_gist_consistent);
+PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
 /**
  * GiST consistent method for temporal points
  */
 PGDLLEXPORT Datum
-stbox_gist_consistent(PG_FUNCTION_ARGS)
+Stbox_gist_consistent(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
@@ -350,7 +350,7 @@ stbox_gist_consistent(PG_FUNCTION_ARGS)
   if (GIST_LEAF(entry))
     result = stbox_index_consistent_leaf(key, &query, strategy);
   else
-    result = stbox_gist_consistent_internal(key, &query, strategy);
+    result = stbox_gist_consistent(key, &query, strategy);
 
   PG_RETURN_BOOL(result);
 }
@@ -376,14 +376,14 @@ stbox_adjust(STBOX *box1, const STBOX *box2)
   return;
 }
 
-PG_FUNCTION_INFO_V1(stbox_gist_union);
+PG_FUNCTION_INFO_V1(Stbox_gist_union);
 /**
  * GiST union method for temporal points
  *
- * Returns the minimal bounding box that encloses all the entries in entryvec
+ * Return the minimal bounding box that encloses all the entries in entryvec
  */
 PGDLLEXPORT Datum
-stbox_gist_union(PG_FUNCTION_ARGS)
+Stbox_gist_union(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GISTENTRY *ent = entryvec->vector;
@@ -397,12 +397,12 @@ stbox_gist_union(PG_FUNCTION_ARGS)
  * GiST compress methods
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_gist_compress);
+PG_FUNCTION_INFO_V1(Tpoint_gist_compress);
 /**
  * GiST compress methods for temporal points
  */
 PGDLLEXPORT Datum
-tpoint_gist_compress(PG_FUNCTION_ARGS)
+Tpoint_gist_compress(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   if (entry->leafkey)
@@ -443,7 +443,7 @@ stbox_union_rt(const STBOX *a, const STBOX *b, STBOX *new)
 }
 
 /**
- * Returns the size of a spatiotemporal box for penalty-calculation purposes.
+ * Return the size of a spatiotemporal box for penalty-calculation purposes.
  * The result can be +Infinity, but not NaN.
  */
 static double
@@ -472,7 +472,7 @@ stbox_size(const STBOX *box)
 }
 
 /**
- * Returns the amount by which the union of the two boxes is larger than
+ * Return the amount by which the union of the two boxes is larger than
  * the original STBOX's volume.  The result can be +Infinity, but not NaN.
  */
 static double
@@ -484,13 +484,13 @@ stbox_penalty(const STBOX *original, const STBOX *new)
 }
 
 
-PG_FUNCTION_INFO_V1(stbox_gist_penalty);
+PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
  * GiST penalty method for temporal points.
  * As in the R-tree paper, we use change in area as our penalty metric
  */
 PGDLLEXPORT Datum
-stbox_gist_penalty(PG_FUNCTION_ARGS)
+Stbox_gist_penalty(PG_FUNCTION_ARGS)
 {
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
   GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
@@ -693,7 +693,7 @@ stbox_gist_consider_split(ConsiderSplitContext *context, int dimNum,
   return;
 }
 
-PG_FUNCTION_INFO_V1(stbox_gist_picksplit);
+PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
  * GiST picksplit method for temporal points.
  *
@@ -719,7 +719,7 @@ PG_FUNCTION_INFO_V1(stbox_gist_picksplit);
  * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 PGDLLEXPORT Datum
-stbox_gist_picksplit(PG_FUNCTION_ARGS)
+Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
   GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
   GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
@@ -1098,16 +1098,16 @@ stbox_gist_picksplit(PG_FUNCTION_ARGS)
  * GiST same method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_gist_same);
+PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
  * GiST same method for temporal points.
  *
- * Returns true only when boxes are exactly the same.  We can't use fuzzy
+ * Return true only when boxes are exactly the same.  We can't use fuzzy
  * comparisons here without breaking index consistency; therefore, this isn't
  * equivalent to stbox_same().
  */
 PGDLLEXPORT Datum
-stbox_gist_same(PG_FUNCTION_ARGS)
+Stbox_gist_same(PG_FUNCTION_ARGS)
 {
   STBOX *b1 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(0));
   STBOX *b2 = (STBOX *)DatumGetPointer(PG_GETARG_DATUM(1));
@@ -1130,13 +1130,13 @@ stbox_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_gist_distance);
+PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
  * GiST support function. Take in a query and an entry and return the "distance"
  * between them.
 */
-Datum
-stbox_gist_distance(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Stbox_gist_distance(PG_FUNCTION_ARGS)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   Oid typid = PG_GETARG_OID(3);
@@ -1158,7 +1158,7 @@ stbox_gist_distance(PG_FUNCTION_ARGS)
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves */
-  distance = NAD_stbox_stbox_internal(key, &query);
+  distance = nad_stbox_stbox(key, &query);
 
   PG_RETURN_FLOAT8(distance);
 }

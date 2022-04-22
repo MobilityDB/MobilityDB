@@ -55,15 +55,21 @@ extern bool p_cbracket(char **str);
 extern bool p_oparen(char **str);
 extern bool p_cparen(char **str);
 extern bool p_comma(char **str);
-
-extern TBOX *tbox_parse(char **str);
 extern Datum basetype_parse(char **str, Oid basetypid);
 extern double double_parse(char **str);
 extern TimestampTz timestamp_parse(char **str);
+
+extern TBOX *tbox_parse(char **str);
 extern TimestampSet *timestampset_parse(char **str);
 extern Period *period_parse(char **str, bool make);
 extern PeriodSet *periodset_parse(char **str);
-extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end, bool make);
+extern TInstant *tinstant_parse(char **str, CachedType temptype, bool end,
+  bool make);
+extern TInstantSet *tinstantset_parse(char **str, CachedType temptype);
+extern TSequence *tsequence_parse(char **str, CachedType temptype, bool linear,
+  bool end, bool make);
+extern TSequenceSet *tsequenceset_parse(char **str, CachedType temptype,
+  bool linear);
 extern Temporal *temporal_parse(char **str, CachedType temptype);
 
 /*****************************************************************************/

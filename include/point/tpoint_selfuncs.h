@@ -94,13 +94,10 @@
 
 /*****************************************************************************/
 
-extern Datum tpoint_sel(PG_FUNCTION_ARGS);
-extern Datum tpoint_joinsel(PG_FUNCTION_ARGS);
-
-extern float8 tpoint_sel_internal(PlannerInfo *root, Oid operid, List *args,
+extern float8 tpoint_sel(PlannerInfo *root, Oid operid, List *args,
   int varRelid, TemporalFamily tempfamily);
 
-extern float8 tpoint_joinsel_internal(PlannerInfo *root, Oid operid, List *args,
+extern float8 tpoint_joinsel(PlannerInfo *root, Oid operid, List *args,
   JoinType jointype, SpecialJoinInfo *sjinfo, int mode,
   TemporalFamily tempFamily);
 

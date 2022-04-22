@@ -28,37 +28,25 @@
  *****************************************************************************/
 
 /**
- * @file tnpoint_posops.c
- * Relative position operators for temporal network points.
+ * @file tpoint_spgist.h
+ * SP-GiST implementation of 8-dimensional oct-tree over temporal points
  */
 
-#ifndef __TNPOINT_POSOPS_H__
-#define __TNPOINT_POSOPS_H__
+#ifndef __TPOINT_SPGIST_H__
+#define __TPOINT_SPGIST_H__
 
 /* PostgreSQL */
 #include <postgres.h>
-#include <catalog/pg_type.h>
-#include <fmgr.h>
 
 /*****************************************************************************/
 
-extern Datum left_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overleft_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum right_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overright_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum below_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overbelow_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum above_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overabove_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum left_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overleft_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum right_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overright_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum below_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overbelow_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum above_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum overabove_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_config(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_choose(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_picksplit(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_inner_consistent(PG_FUNCTION_ARGS);
+extern Datum Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+extern Datum Tpoint_spgist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 
-#endif /* __TNPOINT_POSOPS_H__ */
+#endif

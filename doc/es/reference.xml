@@ -139,6 +139,14 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="time_tscale"><varname>tscale</varname></link>: Escalar el valor de tiempo a un intervalo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="time_shiftTscale"><varname>shiftTscale</varname></link>: Desplazar y escalar el valor de tiempo con los intervalos</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="floatrange_round"><varname>round</varname></link>: Redondear los límites de un rango flotante a un número de decimales</para>
 				</listitem>
 			</itemizedlist>
@@ -709,6 +717,14 @@
 
 				<listitem>
 					<para><link linkend="maxValue"><varname>maxValue</varname></link>: Obtener el valor máximo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="minInstant"><varname>minInstant</varname></link>: Obtener el instante con el valor mínimo</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="maxInstant"><varname>maxInstant</varname></link>: Obtener el instante con el valor máximo</para>
 				</listitem>
 
 				<listitem>

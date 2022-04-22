@@ -34,23 +34,23 @@
 
 CREATE FUNCTION tint_wmin_transfn(internal, tint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_wmin_transfn'
+  AS 'MODULE_PATHNAME', 'Tint_wmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_wmax_transfn(internal, tint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_wmax_transfn'
+  AS 'MODULE_PATHNAME', 'Tint_wmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_wsum_transfn(internal, tint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_wsum_transfn'
+  AS 'MODULE_PATHNAME', 'Tint_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION wcount_transfn(internal, tint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_wcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION wavg_transfn(internal, tint, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_wavg_transfn'
+  AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wmin(tint, interval) (
@@ -103,23 +103,23 @@ CREATE AGGREGATE wavg(tint, interval) (
 
 CREATE FUNCTION tfloat_wmin_transfn(internal, tfloat, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_wmin_transfn'
+  AS 'MODULE_PATHNAME', 'Tfloat_wmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_wmax_transfn(internal, tfloat, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_wmax_transfn'
+  AS 'MODULE_PATHNAME', 'Tfloat_wmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_wsum_transfn(internal, tfloat, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_wsum_transfn'
+  AS 'MODULE_PATHNAME', 'Tfloat_wsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION wcount_transfn(internal, tfloat, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_wcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION wavg_transfn(internal, tfloat, interval)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_wavg_transfn'
+  AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE wmin(tfloat, interval) (

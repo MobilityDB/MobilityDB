@@ -44,27 +44,41 @@
 
 /*****************************************************************************/
 
-extern Datum npoint_to_stbox(PG_FUNCTION_ARGS);
-extern Datum npoint_timestamp_to_stbox(PG_FUNCTION_ARGS);
-extern Datum npoint_period_to_stbox(PG_FUNCTION_ARGS);
-extern Datum tnpoint_to_stbox(PG_FUNCTION_ARGS);
+extern bool npoint_stbox(const Npoint *np, STBOX *box);
+extern bool nsegment_stbox(STBOX *box, const Nsegment *ns);
+extern bool npoint_timestamp_to_stbox(const Npoint *np, TimestampTz t, STBOX *box);
+extern bool npoint_period_to_stbox(const Npoint *np, const Period *p, STBOX *box);
 
-extern bool npoint_stbox(const npoint *np, STBOX *box);
 extern void tnpointinst_make_stbox(const TInstant *inst, STBOX *box);
 extern void tnpointinstarr_stbox(const TInstant **inst, int count, STBOX *box);
 extern void tnpointseq_make_stbox(const TInstant **inst, int count,
   bool linear, STBOX *box);
 
-extern Datum overlaps_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum adjacent_bbox_tnpoint_npoint(PG_FUNCTION_ARGS);
+/*****************************************************************************/
+
+extern Datum boxop_geo_tnpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tnpoint_geo_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_stbox_tnpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial);
+extern Datum boxop_tnpoint_stbox_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial);
+extern Datum boxop_npoint_tnpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tnpoint_npoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+extern Datum boxop_tnpoint_tnpoint_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const STBOX *, const STBOX *));
+
+extern int boxop_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo,
+  bool (*func)(const STBOX *, const STBOX *), bool invert);
+extern int boxop_tnpoint_stbox(const Temporal *temp, const STBOX *box,
+  bool (*func)(const STBOX *, const STBOX *), bool spatial, bool invert);
+extern bool boxop_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  bool (*func)(const STBOX *, const STBOX *), bool invert);
+extern bool boxop_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const STBOX *, const STBOX *));
 
 /*****************************************************************************/
 

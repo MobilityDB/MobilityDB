@@ -48,33 +48,17 @@
 /* General functions */
 
 extern const TInstant *tinstantset_inst_n(const TInstantSet *ti, int index);
-extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
-extern void tinstantset_bbox(const TInstantSet *ti, void *box);
-extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern TInstantSet *tinstantset_make(const TInstant **instants, int count,
   bool merge);
 extern TInstantSet *tinstantset_make_free(TInstant **instants, int count,
   bool merge);
 extern TInstantSet *tinstantset_copy(const TInstantSet *ti);
+
+extern void *tinstantset_bbox_ptr(const TInstantSet *ti);
+extern void tinstantset_bbox(const TInstantSet *ti, void *box);
+extern TInstantSet *tinstantset_make1(const TInstant **instants, int count);
 extern bool tinstantset_find_timestamp(const TInstantSet *ti, TimestampTz t,
   int *pos);
-
-/* Append and merge functions */
-
-extern TInstantSet *tinstantset_append_tinstant(const TInstantSet *ti,
-  const TInstant *inst);
-extern Temporal *tinstantset_merge(const TInstantSet *ti1,
-  const TInstantSet *ti2);
-extern Temporal *tinstantset_merge_array(const TInstantSet **tis, int count);
-
-/* Intersection functions */
-
-extern bool intersection_tinstantset_tinstant(const TInstantSet *ti,
-  const TInstant *inst, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstant_tinstantset(const TInstant *inst,
-  const TInstantSet *ti, TInstant **inter1, TInstant **inter2);
-extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1,
-  const TInstantSet *ti2, TInstantSet **inter1, TInstantSet **inter2);
 
 /* Input/output functions */
 
@@ -85,42 +69,36 @@ extern TInstantSet *tinstantset_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
 
-extern TInstantSet *tinstantset_from_base_internal(Datum value,
-  CachedType temptype, const TimestampSet *ts);
-
-extern Datum tinstantset_from_base(PG_FUNCTION_ARGS);
-
-/* Cast functions */
-
-TInstantSet *tintinstset_to_tfloatinstset(const TInstantSet *ti);
-TInstantSet *tfloatinstset_to_tintinstset(const TInstantSet *ti);
-
-/* Transformation functions */
-
-extern TInstantSet *tinstant_to_tinstantset(const TInstant *inst);
-extern TInstantSet *tsequence_to_tinstantset(const TSequence *seq);
-extern TInstantSet *tsequenceset_to_tinstantset(const TSequenceSet *ts);
-extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
-  const Interval *start, const Interval *duration);
+extern TInstantSet *tinstantset_from_base(Datum value, CachedType temptype,
+  const TimestampSet *ts);
 
 /* Accessor functions */
 
-extern int tinstantset_values(const TInstantSet *ti, Datum *result);
-extern ArrayType *tinstantset_values_array(const TInstantSet *ti);
-extern ArrayType *tfloatinstset_ranges_array(const TInstantSet *ti);
-extern PeriodSet *tinstantset_get_time(const TInstantSet *ti);
+extern Datum *tinstantset_values(const TInstantSet *ti, int *count);
+extern RangeType **tfloatinstset_ranges(const TInstantSet *ti, int *count);
+extern PeriodSet *tinstantset_time(const TInstantSet *ti);
 extern Datum tinstantset_min_value(const TInstantSet *ti);
 extern Datum tinstantset_max_value(const TInstantSet *ti);
 extern void tinstantset_period(const TInstantSet *ti, Period *p);
-extern Datum tinstantset_timespan(const TInstantSet *ti);
-extern ArrayType *tinstantset_segments_array(const TInstantSet *ti);
-extern const TInstant **tinstantset_instants(const TInstantSet *ti,
-  int *count);
-extern ArrayType *tinstantset_instants_array(const TInstantSet *ti);
+extern Interval *tinstantset_timespan(const TInstantSet *ti);
+extern TSequence **tinstantset_sequences(const TInstantSet *ti);
+extern const TInstant **tinstantset_instants(const TInstantSet *ti);
 extern TimestampTz tinstantset_start_timestamp(const TInstantSet *ti);
 extern TimestampTz tinstantset_end_timestamp(const TInstantSet *ti);
 extern TimestampTz *tinstantset_timestamps(const TInstantSet *ti);
-extern ArrayType *tinstantset_timestamps_array(const TInstantSet *ti);
+
+/* Cast functions */
+
+TInstantSet *tintinstset_tfloatinstset(const TInstantSet *ti);
+TInstantSet *tfloatinstset_tintinstset(const TInstantSet *ti);
+
+/* Transformation functions */
+
+extern TInstantSet *tinstant_tinstantset(const TInstant *inst);
+extern TInstantSet *tsequence_tinstantset(const TSequence *seq);
+extern TInstantSet *tsequenceset_tinstantset(const TSequenceSet *ts);
+extern TInstantSet *tinstantset_shift_tscale(const TInstantSet *ti,
+  const Interval *start, const Interval *duration);
 
 /* Ever/always comparison operators */
 
@@ -142,10 +120,9 @@ extern TInstantSet *tnumberinstset_restrict_range(const TInstantSet *ti,
 extern TInstantSet *tnumberinstset_restrict_ranges(const TInstantSet *ti,
   RangeType **normranges, int count, bool atfunc);
 extern const TInstant *tinstantset_min_instant(const TInstantSet *ti);
+extern const TInstant *tinstantset_max_instant(const TInstantSet *ti);
 extern TInstantSet *tinstantset_restrict_minmax(const TInstantSet *ti,
   bool min, bool atfunc);
-extern bool tinstantset_value_at_timestamp(const TInstantSet *ti,
-  TimestampTz t, Datum *result);
 extern Temporal *tinstantset_restrict_timestamp(const TInstantSet *ti,
   TimestampTz t, bool atfunc);
 extern TInstantSet *tinstantset_restrict_timestampset(const TInstantSet *ti,
@@ -154,6 +131,26 @@ extern TInstantSet *tinstantset_restrict_period(const TInstantSet *ti,
   const Period *p, bool atfunc);
 extern TInstantSet *tinstantset_restrict_periodset(const TInstantSet *ti,
   const PeriodSet *ps, bool atfunc);
+
+extern bool tinstantset_value_at_timestamp(const TInstantSet *ti,
+  TimestampTz t, Datum *result);
+
+/* Append and merge functions */
+
+extern TInstantSet *tinstantset_append_tinstant(const TInstantSet *ti,
+  const TInstant *inst);
+extern Temporal *tinstantset_merge(const TInstantSet *ti1,
+  const TInstantSet *ti2);
+extern Temporal *tinstantset_merge_array(const TInstantSet **tis, int count);
+
+/* Intersection functions */
+
+extern bool intersection_tinstantset_tinstant(const TInstantSet *ti,
+  const TInstant *inst, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tinstant_tinstantset(const TInstant *inst,
+  const TInstantSet *ti, TInstant **inter1, TInstant **inter2);
+extern bool intersection_tinstantset_tinstantset(const TInstantSet *ti1,
+  const TInstantSet *ti2, TInstantSet **inter1, TInstantSet **inter2);
 
 /* Intersects Functions */
 

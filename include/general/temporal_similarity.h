@@ -33,6 +33,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
+/* PostgreSQL */
+#include "temporal.h"
 
 /*****************************************************************************/
 
@@ -65,11 +67,12 @@ typedef struct
 
 /*****************************************************************************/
 
-extern Datum temporal_frechet_distance(PG_FUNCTION_ARGS);
-extern Datum temporal_dynamic_time_warp(PG_FUNCTION_ARGS);
+extern double temporal_similarity(Temporal *temp1, Temporal *temp2,
+  SimFunc simfunc);
+extern Match *temporal_similarity_path(Temporal *temp1, Temporal *temp2,
+  int *count, SimFunc simfunc);
 
 /*****************************************************************************/
 
 #endif /* __TEMPORAL_SIMILARITY_H__ */
 
-/*****************************************************************************/

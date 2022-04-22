@@ -38,15 +38,15 @@
 
 CREATE FUNCTION distance(geometry, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Distance_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(tgeompoint, geometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Distance_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(tgeompoint, tgeompoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Distance_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -69,15 +69,15 @@ CREATE OPERATOR <-> (
 
 CREATE FUNCTION distance(geography, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Distance_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(tgeogpoint, geography)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Distance_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(tgeogpoint, tgeogpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Distance_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
@@ -267,28 +267,28 @@ CREATE OPERATOR |=| (
 
 CREATE FUNCTION shortestLine(geometry, tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tgeompoint, geometry)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Shortestline_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tgeompoint, tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'shortestline_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION shortestLine(geography, tgeogpoint)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'shortestline_geo_tpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_geo_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tgeogpoint, geography)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'shortestline_tpoint_geo'
+  AS 'MODULE_PATHNAME', 'Shortestline_tpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tgeogpoint, tgeogpoint)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'shortestline_tpoint_tpoint'
+  AS 'MODULE_PATHNAME', 'Shortestline_tpoint_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

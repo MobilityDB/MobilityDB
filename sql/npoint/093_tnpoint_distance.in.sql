@@ -34,23 +34,23 @@
 
 CREATE FUNCTION temporal_distance(geometry, tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_geo_tnpoint'
+  AS 'MODULE_PATHNAME', 'Distance_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(npoint, tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_npoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Distance_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(tnpoint, geometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnpoint_geo'
+  AS 'MODULE_PATHNAME', 'Distance_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(tnpoint, npoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnpoint_npoint'
+  AS 'MODULE_PATHNAME', 'Distance_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_distance(tnpoint, tnpoint)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'distance_tnpoint_tnpoint'
+  AS 'MODULE_PATHNAME', 'Distance_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (

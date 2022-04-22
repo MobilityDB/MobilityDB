@@ -44,25 +44,25 @@ CREATE TYPE index_stbox AS (
 CREATE FUNCTION multidimGrid(bounds stbox, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS SETOF index_stbox
-  AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
+  AS 'MODULE_PATHNAME', 'Stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION multidimGrid(bounds stbox, size float,
   duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
   timestamptz DEFAULT '2000-01-03')
   RETURNS SETOF index_stbox
-  AS 'MODULE_PATHNAME', 'stbox_multidim_grid'
+  AS 'MODULE_PATHNAME', 'Stbox_multidim_grid'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION multidimTile(point geometry, size float,
     sorigin geometry DEFAULT 'Point(0 0 0)')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION multidimTile(point geometry, "time" timestamptz,
     size float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03')
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'stbox_multidim_tile'
+  AS 'MODULE_PATHNAME', 'Stbox_multidim_tile'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -75,7 +75,7 @@ CREATE TYPE point_tpoint AS (
 CREATE FUNCTION spaceSplit(tgeompoint, float,
     sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE)
   RETURNS SETOF point_tpoint
-  AS 'MODULE_PATHNAME', 'tpoint_space_split'
+  AS 'MODULE_PATHNAME', 'Tpoint_space_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 CREATE TYPE point_time_tpoint AS (
@@ -88,7 +88,7 @@ CREATE FUNCTION spaceTimeSplit(tgeompoint, float, interval,
     sorigin geometry DEFAULT 'Point(0 0 0)',
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE)
   RETURNS SETOF point_time_tpoint
-  AS 'MODULE_PATHNAME', 'tpoint_space_time_split'
+  AS 'MODULE_PATHNAME', 'Tpoint_space_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
 /*****************************************************************************/

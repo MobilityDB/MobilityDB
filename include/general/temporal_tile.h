@@ -131,24 +131,16 @@ typedef struct ValueTimeSplitState
 
 /*****************************************************************************/
 
-extern double float_bucket_internal(double value, double size,
-  double origin);
-extern TimestampTz timestamptz_bucket_internal(TimestampTz timestamp,
-  int64 tunits, TimestampTz torigin);
+extern double float_bucket(double value, double size, double origin);
+extern TimestampTz timestamptz_bucket(TimestampTz timestamp, int64 tunits,
+  TimestampTz torigin);
 extern int64 get_interval_units(Interval *interval);
 
-extern Datum number_bucket(PG_FUNCTION_ARGS);
-extern Datum timestamptz_bucket(PG_FUNCTION_ARGS);
-extern Datum range_bucket_list(PG_FUNCTION_ARGS);
-extern Datum range_bucket(PG_FUNCTION_ARGS);
-extern Datum period_bucket_list(PG_FUNCTION_ARGS);
-extern Datum period_bucket(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_split(PG_FUNCTION_ARGS);
-extern Datum temporal_time_split(PG_FUNCTION_ARGS);
-extern Datum tbox_multidim_grid(PG_FUNCTION_ARGS);
-extern Datum tbox_multidim_tile(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_time_split(PG_FUNCTION_ARGS);
+extern Temporal **temporal_time_split(Temporal *temp, TimestampTz start,
+  TimestampTz end, int64 tunits, TimestampTz torigin, int count,
+  TimestampTz **buckets, int *newcount);
+
+/*****************************************************************************/
 
 #endif /* __TEMPORAL_TILE_H__ */
 
-/*****************************************************************************/

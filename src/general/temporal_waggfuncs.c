@@ -124,7 +124,7 @@ tsequence_extend(const TSequence *seq, const Interval *interval, bool min,
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false ;
 
     /* Stepwise interpolation or constant segment */
-    if (!linear || datum_eq(value1, value2, basetype))
+    if (! linear || datum_eq(value1, value2, basetype))
     {
       TimestampTz upper = DatumGetTimestampTz(DirectFunctionCall2(
         timestamptz_pl_interval, TimestampTzGetDatum(inst2->t),
@@ -669,83 +669,83 @@ temporal_wagg_transform_transfn(FunctionCallInfo fcinfo, datum_func2 func,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tint_wmin_transfn);
+PG_FUNCTION_INFO_V1(Tint_wmin_transfn);
 /**
  * Transition function for moving window minimun aggregation for temporal integer values
  */
 PGDLLEXPORT Datum
-tint_wmin_transfn(PG_FUNCTION_ARGS)
+Tint_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transfn(fcinfo, &datum_min_int32, GET_MIN, CROSSINGS);
 }
 
-PG_FUNCTION_INFO_V1(tfloat_wmin_transfn);
+PG_FUNCTION_INFO_V1(Tfloat_wmin_transfn);
 /**
  * Transition function for moving window minimun
  */
 PGDLLEXPORT Datum
-tfloat_wmin_transfn(PG_FUNCTION_ARGS)
+Tfloat_wmin_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transfn(fcinfo, &datum_min_float8, GET_MIN, CROSSINGS);
 }
 
-PG_FUNCTION_INFO_V1(tint_wmax_transfn);
+PG_FUNCTION_INFO_V1(Tint_wmax_transfn);
 /**
  * Transition function for moving window maximun aggregation for temporal integer values
  */
 PGDLLEXPORT Datum
-tint_wmax_transfn(PG_FUNCTION_ARGS)
+Tint_wmax_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transfn(fcinfo, &datum_max_int32, GET_MAX, CROSSINGS);
 }
 
-PG_FUNCTION_INFO_V1(tfloat_wmax_transfn);
+PG_FUNCTION_INFO_V1(Tfloat_wmax_transfn);
 /**
  * Transition function for moving window maximun aggregation for temporal float values
  */
 PGDLLEXPORT Datum
-tfloat_wmax_transfn(PG_FUNCTION_ARGS)
+Tfloat_wmax_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transfn(fcinfo, &datum_max_float8, GET_MAX, CROSSINGS);
 }
 
-PG_FUNCTION_INFO_V1(tint_wsum_transfn);
+PG_FUNCTION_INFO_V1(Tint_wsum_transfn);
 /**
  * Transition function for moving window sum aggregation for temporal inter values
  */
 PGDLLEXPORT Datum
-tint_wsum_transfn(PG_FUNCTION_ARGS)
+Tint_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transfn(fcinfo, &datum_sum_int32, GET_MIN, CROSSINGS_NO);
 }
 
-PG_FUNCTION_INFO_V1(tfloat_wsum_transfn);
+PG_FUNCTION_INFO_V1(Tfloat_wsum_transfn);
 /**
  * Transition function for moving window sum aggregation for temporal float values
  */
 PGDLLEXPORT Datum
-tfloat_wsum_transfn(PG_FUNCTION_ARGS)
+Tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transfn(fcinfo, &datum_sum_float8, GET_MIN, CROSSINGS);
 }
 
-PG_FUNCTION_INFO_V1(temporal_wcount_transfn);
+PG_FUNCTION_INFO_V1(Temporal_wcount_transfn);
 /**
  * Transition function for moving window count aggregation for temporal values
  */
 PGDLLEXPORT Datum
-temporal_wcount_transfn(PG_FUNCTION_ARGS)
+Temporal_wcount_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transform_transfn(fcinfo, &datum_sum_int32,
     &temporal_transform_wcount);
 }
 
-PG_FUNCTION_INFO_V1(tnumber_wavg_transfn);
+PG_FUNCTION_INFO_V1(Tnumber_wavg_transfn);
 /**
  * Transition function for moving window average aggregation for temporal values
  */
 PGDLLEXPORT Datum
-tnumber_wavg_transfn(PG_FUNCTION_ARGS)
+Tnumber_wavg_transfn(PG_FUNCTION_ARGS)
 {
   return temporal_wagg_transform_transfn(fcinfo, &datum_sum_double2,
     &tnumber_transform_wavg);

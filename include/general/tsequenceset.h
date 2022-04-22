@@ -47,14 +47,17 @@
 
 /* General functions */
 
-extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
-extern void tsequenceset_bbox(const TSequenceSet *ts, void *box);
 extern const TSequence *tsequenceset_seq_n(const TSequenceSet *ts, int index);
 extern TSequenceSet *tsequenceset_make(const TSequence **sequences, int count,
   bool normalize);
 extern TSequenceSet * tsequenceset_make_free(TSequence **sequences, int count,
   bool normalize);
+extern TSequenceSet *tsequenceset_make_gaps(const TInstant **instants,
+  int count, bool linear, float maxdist, Interval *maxt);
 extern TSequenceSet *tsequenceset_copy(const TSequenceSet *ts);
+
+extern void *tsequenceset_bbox_ptr(const TSequenceSet *ts);
+extern void tsequenceset_bbox(const TSequenceSet *ts, void *box);
 extern bool tsequenceset_find_timestamp(const TSequenceSet *ts, TimestampTz t,
   int *loc);
 
@@ -97,66 +100,66 @@ extern char *tsequenceset_to_string(const TSequenceSet *ts,
 extern void tsequenceset_write(const TSequenceSet *ts, StringInfo buf);
 extern TSequenceSet *tsequenceset_read(StringInfo buf, CachedType temptype);
 
-/* Cast functions */
-
-extern RangeType *tfloatseqset_to_range(const TSequenceSet *ts);
-extern TSequenceSet *tintseqset_to_tfloatseqset(const TSequenceSet *ts);
-extern TSequenceSet *tfloatseqset_to_tintseqset(const TSequenceSet *ts);
-
 /* Constructor functions */
 
-extern Datum tsequenceset_from_base(PG_FUNCTION_ARGS);
-
-extern TSequenceSet *tsequenceset_from_base_internal(Datum value,
-  CachedType temptype, const PeriodSet *ps, bool linear);
-
-/* Transformation functions */
-
-extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst,
-  bool linear);
-extern TSequenceSet *tinstantset_to_tsequenceset(const TInstantSet *ti,
-  bool linear);
-extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
-extern TSequenceSet *tstepseqset_to_linear(const TSequenceSet *ts);
-extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts,
-  const Interval *start, const Interval *duration);
+extern TSequenceSet *tsequenceset_from_base(Datum value, CachedType temptype,
+  const PeriodSet *ps, bool linear);
 
 /* Accessor functions */
 
-extern int tsequenceset_values(const TSequenceSet *ts, Datum *result);
-extern ArrayType *tsequenceset_values_array(const TSequenceSet *ts);
-extern ArrayType *tfloatseqset_ranges_array(const TSequenceSet *ts);
+extern Datum *tsequenceset_values(const TSequenceSet *ts, int *count);
+extern RangeType **tfloatseqset_ranges(const TSequenceSet *ts, int *count);
 extern const TInstant *tsequenceset_min_instant(const TSequenceSet *ts);
+extern const TInstant *tsequenceset_max_instant(const TSequenceSet *ts);
 extern Datum tsequenceset_min_value(const TSequenceSet *ts);
 extern Datum tsequenceset_max_value(const TSequenceSet *ts);
-extern PeriodSet *tsequenceset_get_time(const TSequenceSet *ts);
-extern Datum tsequenceset_timespan(const TSequenceSet *ts);
-extern Datum tsequenceset_duration(const TSequenceSet *ts);
+extern PeriodSet *tsequenceset_time(const TSequenceSet *ts);
+extern Interval *tsequenceset_timespan(const TSequenceSet *ts);
+extern Interval *tsequenceset_duration(const TSequenceSet *ts);
 extern void tsequenceset_period(const TSequenceSet *ts, Period *p);
-extern const TSequence **tsequenceset_sequences(const TSequenceSet *ts);
-extern ArrayType *tsequenceset_sequences_array(const TSequenceSet *ts);
-extern ArrayType *tsequenceset_segments_array(const TSequenceSet *ts);
+extern const TSequence **tsequenceset_sequences_p(const TSequenceSet *ts);
+extern TSequence **tsequenceset_sequences(const TSequenceSet *ts);
+extern TSequence **tsequenceset_segments(const TSequenceSet *ts, int *count);
 extern int tsequenceset_num_instants(const TSequenceSet *ts);
 extern const TInstant *tsequenceset_inst_n(const TSequenceSet *ts, int n);
-extern const TInstant **tsequenceset_instants(const TSequenceSet *ts,
-  int *count);
-extern ArrayType *tsequenceset_instants_array(const TSequenceSet *ts);
+extern const TInstant **tsequenceset_instants(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_start_timestamp(const TSequenceSet *ts);
 extern TimestampTz tsequenceset_end_timestamp(const TSequenceSet *ts);
 extern int tsequenceset_num_timestamps(const TSequenceSet *ts);
 extern bool tsequenceset_timestamp_n(const TSequenceSet *ts, int n,
   TimestampTz *result);
-extern int tsequenceset_timestamps(const TSequenceSet *ts,
+extern TimestampTz *tsequenceset_timestamps(const TSequenceSet *ts, int *count);
+extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts,
+  TimestampTz t, Datum *result);
+extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts,
+  TimestampTz t, Datum *result);
+
+extern int tsequenceset_timestamps1(const TSequenceSet *ts,
   TimestampTz *result);
-extern ArrayType *tsequenceset_timestamps_array(const TSequenceSet *ts);
+
+/* Cast functions */
+
+extern RangeType *tfloatseqset_range(const TSequenceSet *ts);
+extern TSequenceSet *tintseqset_tfloatseqset(const TSequenceSet *ts);
+extern TSequenceSet *tfloatseqset_tintseqset(const TSequenceSet *ts);
+
+/* Transformation functions */
+
+extern TSequenceSet *tinstant_tsequenceset(const TInstant *inst,
+  bool linear);
+extern TSequenceSet *tinstantset_tsequenceset(const TInstantSet *ti,
+  bool linear);
+extern TSequenceSet *tsequence_tsequenceset(const TSequence *seq);
+extern TSequenceSet *tstepseqset_tlinearseqset(const TSequenceSet *ts);
+extern TSequenceSet *tsequenceset_shift_tscale(const TSequenceSet *ts,
+  const Interval *start, const Interval *duration);
 
 /* Ever/always comparison operators */
 
 extern bool tsequenceset_ever_eq(const TSequenceSet *ts, Datum value);
+extern bool tsequenceset_always_eq(const TSequenceSet *ts, Datum value);
 extern bool tsequenceset_ever_lt(const TSequenceSet *ts, Datum value);
 extern bool tsequenceset_ever_le(const TSequenceSet *ts, Datum value);
-
-extern bool tsequenceset_always_eq(const TSequenceSet *ts, Datum value);
 extern bool tsequenceset_always_lt(const TSequenceSet *ts, Datum value);
 extern bool tsequenceset_always_le(const TSequenceSet *ts, Datum value);
 
@@ -172,13 +175,8 @@ extern TSequenceSet *tnumberseqset_restrict_ranges(const TSequenceSet *ts,
   RangeType **normranges, int count, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_minmax(const TSequenceSet *ts,
   bool min, bool atfunc);
-
 extern Temporal *tsequenceset_restrict_timestamp(const TSequenceSet *ts,
   TimestampTz t, bool atfunc);
-extern bool tsequenceset_value_at_timestamp(const TSequenceSet *ts,
-  TimestampTz t, Datum *result);
-extern bool tsequenceset_value_at_timestamp_inc(const TSequenceSet *ts,
-  TimestampTz t, Datum *result);
 extern Temporal *tsequenceset_restrict_timestampset(const TSequenceSet *ts1,
   const TimestampSet *ts2, bool atfunc);
 extern TSequenceSet *tsequenceset_restrict_period(const TSequenceSet *ts,

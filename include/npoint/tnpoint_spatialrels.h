@@ -39,31 +39,26 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
+/* MobilityDB */
+#include "general/temporal.h"
+#include "npoint/tnpoint.h"
 
 /*****************************************************************************/
 
-extern Datum contains_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Datum spatialrel_tnpoint_geo(const Temporal *temp, Datum geom,
+  Datum (*func)(Datum, Datum), bool invert);
+extern Datum spatialrel_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  Datum (*func)(Datum, Datum), bool invert);
+extern int spatialrel_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum));
 
-extern Datum disjoint_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum disjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Datum spatialrel3_tnpoint_geom(const Temporal *temp, Datum geom,
+  Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
+extern Datum spatialrel3_tnpoint_npoint(const Temporal *temp, const Npoint *np,
+  Datum param, Datum (*func)(Datum, Datum, Datum), bool invert);
 
-extern Datum intersects_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum intersects_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum touches_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum touches_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum touches_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum touches_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum dwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern int dwithin_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum param);
 
 /*****************************************************************************/
 

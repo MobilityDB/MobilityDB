@@ -205,7 +205,7 @@ gk(Datum point)
  * Transform a geometry into the Gauss-Kruger projection used in Secondo
  */
 static GSERIALIZED *
-geometry_transform_gk_internal(GSERIALIZED *gs)
+geometry_transform_gk(GSERIALIZED *gs)
 {
   GSERIALIZED *result = NULL; /* keep compiler quiet */
   int geotype = gserialized_get_type(gs);
@@ -262,27 +262,12 @@ geometry_transform_gk_internal(GSERIALIZED *gs)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(geometry_transform_gk);
-/**
- * Transform a geometry into the Gauss-Krueger projection used in Secondo
- */
-PGDLLEXPORT Datum
-geometry_transform_gk(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *result = NULL;
-  result = geometry_transform_gk_internal(gs);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tgeompoint_transform_gk);
 /**
  * Transform a temporal point into the Gauss-Krueger projection used in Secondo
  */
-PGDLLEXPORT Datum
-tgeompoint_transform_gk(PG_FUNCTION_ARGS)
+Temporal *
+tgeompoint_transform_gk(Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -292,10 +277,43 @@ tgeompoint_transform_gk(PG_FUNCTION_ARGS)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+PG_FUNCTION_INFO_V1(Geometry_transform_gk);
+/**
+ * Transform a geometry into the Gauss-Krueger projection used in Secondo
+ */
+PGDLLEXPORT Datum
+Geometry_transform_gk(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = NULL;
+  result = geometry_transform_gk(gs);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tgeompoint_transform_gk);
+/**
+ * Transform a temporal point into the Gauss-Krueger projection used in Secondo
+ */
+PGDLLEXPORT Datum
+Tgeompoint_transform_gk(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeompoint_transform_gk(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }
 
+#endif /* #ifndef MEOS */
+
 /*****************************************************************************/
-
-

@@ -55,26 +55,21 @@ extern Datum geom_touches(Datum geom1, Datum geom2);
 extern Datum geom_dwithin2d(Datum geom1, Datum geom2, Datum dist);
 extern Datum geom_dwithin3d(Datum geom1, Datum geom2, Datum dist);
 extern Datum geog_dwithin(Datum geog1, Datum geog2, Datum dist);
+
 extern datum_func3 get_dwithin_fn(int16 flags1, int16 flags2);
 
 /*****************************************************************************/
 
-extern Datum contains_geo_tpoint(PG_FUNCTION_ARGS);
+extern int spatialrel_tpoint_tpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum (*func)(Datum, Datum));
 
-extern Datum disjoint_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum disjoint_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum disjoint_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum intersects_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum intersects_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum intersects_tpoint_tpoint(PG_FUNCTION_ARGS);
-
-extern Datum touches_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum touches_tpoint_geo(PG_FUNCTION_ARGS);
-
-extern Datum dwithin_geo_tpoint(PG_FUNCTION_ARGS);
-extern Datum dwithin_tpoint_geo(PG_FUNCTION_ARGS);
-extern Datum dwithin_tpoint_tpoint(PG_FUNCTION_ARGS);
+extern int contains_geo_tpoint(GSERIALIZED *geo, Temporal *temp);
+extern int disjoint_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int intersects_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int dwithin_tpoint_geo(Temporal *temp, GSERIALIZED *gs, Datum param);
+extern int dwithin_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2,
+  Datum dist);
 
 /*****************************************************************************/
 

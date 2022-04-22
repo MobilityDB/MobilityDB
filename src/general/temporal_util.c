@@ -55,7 +55,7 @@
  *****************************************************************************/
 
 /**
- * Returns true if the temporal type is an EXTERNAL temporal type
+ * Return true if the temporal type is an EXTERNAL temporal type
  *
  * @note Function used in particular in the indexes
  */
@@ -96,7 +96,7 @@ ensure_temporal_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the temporal type is continuous
+ * Return true if the temporal type is continuous
  */
 bool
 temptype_continuous(CachedType temptype)
@@ -121,7 +121,7 @@ ensure_temptype_continuous(CachedType temptype)
 }
 
 /**
- * Returns true if the values of the type are passed by value.
+ * Return true if the values of the type are passed by value.
  *
  * This function is called only for the base types of the temporal types
  * To avoid a call of the slow function get_typbyval (which makes a lookup
@@ -137,7 +137,7 @@ basetype_byvalue(CachedType basetype)
 }
 
 /**
- * Returns the length of type
+ * Return the length of type
  *
  * This function is called only for the base types of the temporal types
  * passed by reference. To avoid a call of the slow function get_typlen
@@ -164,7 +164,7 @@ basetype_length(CachedType basetype)
 
 
 /**
- * Returns true if the type is a temporal alpha type (i.e., those whose
+ * Return true if the type is a temporal alpha type (i.e., those whose
  * bounding box is a period) supported by MobilityDB
  */
 bool
@@ -176,7 +176,7 @@ talpha_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is a temporal number type
+ * Return true if the type is a temporal number type
  */
 bool
 tnumber_type(CachedType temptype)
@@ -187,7 +187,7 @@ tnumber_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is a number base type supported by MobilityDB
+ * Return true if the type is a number base type supported by MobilityDB
  */
 void
 ensure_tnumber_type(CachedType temptype)
@@ -209,7 +209,7 @@ tnumber_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a number base type supported by MobilityDB
+ * Return true if the type is a number base type supported by MobilityDB
  */
 void
 ensure_tnumber_basetype(CachedType basetype)
@@ -220,7 +220,7 @@ ensure_tnumber_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a range number type
+ * Return true if the type is a range number type
  *
  * @note Function used in particular in the indexes
  */
@@ -244,7 +244,7 @@ ensure_tnumber_rangetype(CachedType rangetype)
 }
 
 /**
- * Returns true if the type is a spatiotemporal type
+ * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBOX. Therefore it is
@@ -260,7 +260,7 @@ tspatial_type(CachedType temptype)
 }
 
 /**
- * Returns true if the type is a spatiotemporal type
+ * Return true if the type is a spatiotemporal type
  *
  * @note This function is used for features common to all spatiotemporal types,
  * in particular, all of them use the same bounding box STBOX
@@ -275,7 +275,7 @@ tspatial_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a point base type supported by MobilityDB
+ * Return true if the type is a point base type supported by MobilityDB
  */
 bool
 tgeo_basetype(CachedType basetype)
@@ -286,7 +286,7 @@ tgeo_basetype(CachedType basetype)
 }
 
 /**
- * Returns true if the type is a temporal point type supported by MobilityDB
+ * Return true if the type is a temporal point type supported by MobilityDB
  */
 bool
 tgeo_type(CachedType temptype)
@@ -308,31 +308,13 @@ ensure_tgeo_type(CachedType temptype)
 }
 
 /*****************************************************************************
- * Oid functions
- *****************************************************************************/
-
-/**
- * Returns the Oid of the range type corresponding to the base type
- */
-Oid
-basetype_rangeoid(CachedType basetype)
-{
-  ensure_tnumber_basetype(basetype);
-  if (basetype == T_INT4)
-    return type_oid(T_INTRANGE);
-  if (basetype == T_FLOAT8)
-    return type_oid(T_FLOATRANGE);
-  elog(ERROR, "unknown range type for base type: %d", basetype);
-}
-
-/*****************************************************************************
  * Comparison functions on datums
  *****************************************************************************/
 
 /* Version of the functions where the types of both arguments is equal */
 
 /**
- * Returns true if the two values are equal
+ * Return true if the two values are equal
  */
 bool
 datum_eq(Datum l, Datum r, CachedType type)
@@ -341,7 +323,7 @@ datum_eq(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the two values are different
+ * Return true if the two values are different
  */
 bool
 datum_ne(Datum l, Datum r, CachedType type)
@@ -350,7 +332,7 @@ datum_ne(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is less than the second one
+ * Return true if the first value is less than the second one
  */
 bool
 datum_lt(Datum l, Datum r, CachedType type)
@@ -359,7 +341,7 @@ datum_lt(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is less than or equal to the second one
+ * Return true if the first value is less than or equal to the second one
  */
 bool
 datum_le(Datum l, Datum r, CachedType type)
@@ -368,7 +350,7 @@ datum_le(Datum l, Datum r, CachedType type)
 }
 
 /**
- * Returns true if the first value is greater than the second one
+ * Return true if the first value is greater than the second one
  */
 bool
 datum_gt(Datum l, Datum r, CachedType type)
@@ -376,15 +358,16 @@ datum_gt(Datum l, Datum r, CachedType type)
   return datum_lt2(r, l, type, type);
 }
 
+#if 0 /* Not used */
 /**
- * Returns true if the first value is greater than or equal to the second one
- * This function is currently not used
+ * Return true if the first value is greater than or equal to the second one
+ */
 bool
 datum_ge(Datum l, Datum r, CachedType type)
 {
   return datum_eq2(l, r, type, type) || datum_lt2(r, l, type, type);
 }
-*/
+#endif
 
 /*****************************************************************************/
 
@@ -394,7 +377,7 @@ datum_ge(Datum l, Datum r, CachedType type)
  */
 
 /**
- * Returns true if the two values are equal even if their type is not the same
+ * Return true if the two values are equal even if their type is not the same
  * (base type dispatch function)
  */
 bool
@@ -427,12 +410,12 @@ datum_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
     //  return DatumGetBool(call_function2(geography_eq, l, r));
     return datum_point_eq(l, r);
   if (typel == T_NPOINT && typel == typer)
-    return npoint_eq_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+    return npoint_eq(DatumGetNpointP(l), DatumGetNpointP(r));
   elog(ERROR, "unknown datum_eq2 function for base type: %d", typel);
 }
 
 /**
- * Returns true if the two values are different
+ * Return true if the two values are different
  */
 bool
 datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -441,7 +424,7 @@ datum_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns true if the first value is less than the second one
+ * Return true if the first value is less than the second one
  * (base type dispatch function)
  */
 bool
@@ -467,13 +450,13 @@ datum_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
   if (typel == T_GEOGRAPHY && typel == typer)
     return DatumGetBool(call_function2(geography_lt, l, r));
   if (typel == T_NPOINT && typel == typer)
-    return npoint_lt_internal(DatumGetNpoint(l), DatumGetNpoint(r));
+    return npoint_lt(DatumGetNpointP(l), DatumGetNpointP(r));
   elog(ERROR, "unknown datum_lt2 function for base type: %d", typel);
 }
 
 
 /**
- * Returns true if the first value is less than or equal to the second one
+ * Return true if the first value is less than or equal to the second one
  */
 bool
 datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -482,7 +465,7 @@ datum_le2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns true if the first value is greater than the second one
+ * Return true if the first value is greater than the second one
  */
 bool
 datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -491,7 +474,7 @@ datum_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns true if the first value is greater than or equal to the second one
+ * Return true if the first value is greater than or equal to the second one
  */
 bool
 datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -502,7 +485,7 @@ datum_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
 /*****************************************************************************/
 
 /**
- * Returns a Datum true if the two values are equal
+ * Return a Datum true if the two values are equal
  */
 Datum
 datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -511,7 +494,7 @@ datum2_eq2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the two values are different
+ * Return a Datum true if the two values are different
  */
 Datum
 datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -520,7 +503,7 @@ datum2_ne2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is less than the second one
+ * Return a Datum true if the first value is less than the second one
  */
 Datum
 datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -529,7 +512,7 @@ datum2_lt2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is less than or equal to the second one
+ * Return a Datum true if the first value is less than or equal to the second one
  */
 Datum
 datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -538,7 +521,7 @@ datum2_le2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is greater than the second one
+ * Return a Datum true if the first value is greater than the second one
  */
 Datum
 datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -547,7 +530,7 @@ datum2_gt2(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns a Datum true if the first value is greater than or equal to the second one
+ * Return a Datum true if the first value is greater than or equal to the second one
  */
 Datum
 datum2_ge2(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -904,217 +887,6 @@ CallerFInfoFunctionCall4(PGFunction func, FmgrInfo *flinfo, Oid collid,
 #endif
 
 /*****************************************************************************
- * Array functions
- *****************************************************************************/
-
-/**
- * Free a C array of pointers
- */
-void
-pfree_array(void **array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(array[i]);
-  pfree(array);
-  return;
-}
-
-/**
- * Free a C array of Datum pointers
- */
-void
-pfree_datumarr(Datum *array, int count)
-{
-  for (int i = 0; i < count; i++)
-    pfree(DatumGetPointer(array[i]));
-  pfree(array);
-  return;
-}
-
-/**
- * Returns the string resulting from assembling the array of strings.
- * The function frees the memory of the input strings after finishing.
- */
-char *
-stringarr_to_string(char **strings, int count, int outlen,
-  char *prefix, char open, char close)
-{
-  char *result = palloc(strlen(prefix) + outlen + 3);
-  result[outlen] = '\0';
-  size_t pos = 0;
-  strcpy(result, prefix);
-  pos += strlen(prefix);
-  result[pos++] = open;
-  for (int i = 0; i < count; i++)
-  {
-    strcpy(result + pos, strings[i]);
-    pos += strlen(strings[i]);
-    result[pos++] = ',';
-    result[pos++] = ' ';
-    pfree(strings[i]);
-  }
-  result[pos - 2] = close;
-  result[pos - 1] = '\0';
-  pfree(strings);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing datums
- * If array elements are pass-by-ref data type, the returned Datums will
- * be pointers into the array object.
- */
-Datum *
-datumarr_extract(ArrayType *array, int *count)
-{
-  bool byval;
-  int16 typlen;
-  char align;
-  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
-  Datum *result;
-  deconstruct_array(array, array->elemtype, typlen, byval, align,
-    &result, NULL, count);
-  return result;
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing timestamps
- */
-TimestampTz *
-timestamparr_extract(ArrayType *array, int *count)
-{
-  return (TimestampTz *) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing periods
- */
-Period **
-periodarr_extract(ArrayType *array, int *count)
-{
-  return (Period **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing ranges
- */
-RangeType **
-rangearr_extract(ArrayType *array, int *count)
-{
-  return (RangeType **) datumarr_extract(array, count);
-}
-
-/**
- * Extract a C array from a PostgreSQL array containing temporal values
- */
-Temporal **
-temporalarr_extract(ArrayType *array, int *count)
-{
-  Temporal **result;
-  deconstruct_array(array, array->elemtype, -1, false, 'd',
-    (Datum **) &result, NULL, count);
-  return result;
-}
-
-/*****************************************************************************/
-
-/**
- * Convert a C array of datums into a PostgreSQL array.
- * Note that the values will be copied into the object even if pass-by-ref type
- */
-ArrayType *
-datumarr_to_array(Datum *values, int count, CachedType type)
-{
-  int16 elmlen;
-  bool elmbyval;
-  char elmalign;
-  assert(count > 0);
-  Oid typid = type_oid(type);
-  get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
-  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
-    elmalign);
-  return result;
-}
-
-/**
- * Convert a C array of timestamps into a PostgreSQL array
- */
-ArrayType *
-timestamparr_to_array(const TimestampTz *times, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
-    8, true, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of periods into a PostgreSQL array
- */
-ArrayType *
-periodarr_to_array(const Period **periods, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) periods, count,
-    type_oid(T_PERIOD), sizeof(Period), false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of ranges into a PostgreSQL array
- */
-ArrayType *
-rangearr_to_array(RangeType **ranges, int count, CachedType type)
-{
-  assert(count > 0);
-  Oid typid = type_oid(type);
-  ArrayType *result = construct_array((Datum *) ranges, count, typid, -1,
-    false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of text values into a PostgreSQL array
- */
-ArrayType *
-textarr_to_array(text **textarr, int count)
-{
-  assert(count > 0);
-  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
-    false, 'i');
-  return result;
-}
-
-/**
- * Convert a C array of temporal values into a PostgreSQL array
- */
-ArrayType *
-temporalarr_to_array(const Temporal **temporalarr, int count)
-{
-  assert(count > 0);
-  Oid temptypid = type_oid(temporalarr[0]->temptype);
-  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
-    -1, false, 'd');
-  return result;
-}
-
-/**
- * Convert a C array of spatiotemporal boxes into a PostgreSQL array
- */
-ArrayType *
-stboxarr_to_array(STBOX *boxarr, int count)
-{
-  assert(count > 0);
-  STBOX **boxes = palloc(sizeof(STBOX *) * count);
-  for (int i = 0; i < count; i++)
-    boxes[i] = &boxarr[i];
-  ArrayType *result = construct_array((Datum *) boxes, count,
-    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
-  pfree(boxes);
-  return result;
-}
-
-/*****************************************************************************
  * Sort functions
  *****************************************************************************/
 
@@ -1152,7 +924,7 @@ timestamp_sort_cmp(const TimestampTz *l, const TimestampTz *r)
 static int
 period_sort_cmp(const Period **l, const Period **r)
 {
-  return period_cmp_internal(*l, *r);
+  return period_cmp(*l, *r);
 }
 
 /**
@@ -1182,7 +954,7 @@ tseqarr_sort_cmp(TSequence **l, TSequence **r)
 {
   Period lp = (*l)->period;
   Period rp = (*r)->period;
-  return period_cmp_internal(&lp, &rp);
+  return period_cmp(&lp, &rp);
 }
 
 /*****************************************************************************/
@@ -1207,27 +979,26 @@ timestamparr_sort(TimestampTz *times, int count)
     (qsort_comparator) &timestamp_sort_cmp);
 }
 
+#if 0 /* Not used */
 /**
  * Sort function for double2
- * This function is currently not used
+ */
 void
 double2arr_sort(double2 *doubles, int count)
 {
-  qsort(doubles, count, sizeof(double2),
-    (qsort_comparator) &double2_cmp);
+  qsort(doubles, count, sizeof(double2), (qsort_comparator) &double2_cmp);
 }
-*/
 
 /**
  * Sort function for double3
- * This function is currently not used
+ */
 void
 double3arr_sort(double3 *triples, int count)
 {
   qsort(triples, count, sizeof(double3),
     (qsort_comparator) &double3_cmp);
 }
-*/
+#endif
 
 /**
  * Sort function for periods
@@ -1348,7 +1119,7 @@ text_cmp(text *arg1, text *arg2, Oid collid)
  *****************************************************************************/
 
 /**
- * Returns the addition of the two numbers
+ * Return the addition of the two numbers
  */
 Datum
 datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1372,7 +1143,7 @@ datum_add(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns the subtraction of the two numbers
+ * Return the subtraction of the two numbers
  */
 Datum
 datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1396,7 +1167,7 @@ datum_sub(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns the multiplication of the two numbers
+ * Return the multiplication of the two numbers
  */
 Datum
 datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1420,7 +1191,7 @@ datum_mult(Datum l, Datum r, CachedType typel, CachedType typer)
 }
 
 /**
- * Returns the division of the two numbers
+ * Return the division of the two numbers
  */
 Datum
 datum_div(Datum l, Datum r, CachedType typel, CachedType typer)
@@ -1565,5 +1336,248 @@ hypot4d(double x, double y, double z, double m)
   mx = m / x;
   return x * sqrt(1.0 + (yx * yx) + (zx * zx) + (mx * mx));
 }
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Oid functions
+ *****************************************************************************/
+
+/**
+ * Return the Oid of the range type corresponding to the base type
+ */
+Oid
+basetype_rangeoid(CachedType basetype)
+{
+  ensure_tnumber_basetype(basetype);
+  if (basetype == T_INT4)
+    return type_oid(T_INTRANGE);
+  if (basetype == T_FLOAT8)
+    return type_oid(T_FLOATRANGE);
+  elog(ERROR, "unknown range type for base type: %d", basetype);
+}
+
+/*****************************************************************************
+ * Array functions
+ *****************************************************************************/
+
+/**
+ * Free a C array of pointers
+ */
+void
+pfree_array(void **array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(array[i]);
+  pfree(array);
+  return;
+}
+
+/**
+ * Free a C array of Datum pointers
+ */
+void
+pfree_datumarr(Datum *array, int count)
+{
+  for (int i = 0; i < count; i++)
+    pfree(DatumGetPointer(array[i]));
+  pfree(array);
+  return;
+}
+
+/**
+ * Return the string resulting from assembling the array of strings.
+ * The function frees the memory of the input strings after finishing.
+ */
+char *
+stringarr_to_string(char **strings, int count, int outlen,
+  char *prefix, char open, char close)
+{
+  char *result = palloc(strlen(prefix) + outlen + 3);
+  result[outlen] = '\0';
+  size_t pos = 0;
+  strcpy(result, prefix);
+  pos += strlen(prefix);
+  result[pos++] = open;
+  for (int i = 0; i < count; i++)
+  {
+    strcpy(result + pos, strings[i]);
+    pos += strlen(strings[i]);
+    result[pos++] = ',';
+    result[pos++] = ' ';
+    pfree(strings[i]);
+  }
+  result[pos - 2] = close;
+  result[pos - 1] = '\0';
+  pfree(strings);
+  return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing datums
+ * If array elements are pass-by-ref data type, the returned Datums will
+ * be pointers into the array object.
+ */
+Datum *
+datumarr_extract(ArrayType *array, int *count)
+{
+  bool byval;
+  int16 typlen;
+  char align;
+  get_typlenbyvalalign(array->elemtype, &typlen, &byval, &align);
+  Datum *result;
+  deconstruct_array(array, array->elemtype, typlen, byval, align,
+    &result, NULL, count);
+  return result;
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing timestamps
+ */
+TimestampTz *
+timestamparr_extract(ArrayType *array, int *count)
+{
+  return (TimestampTz *) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing periods
+ */
+Period **
+periodarr_extract(ArrayType *array, int *count)
+{
+  return (Period **) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing ranges
+ */
+RangeType **
+rangearr_extract(ArrayType *array, int *count)
+{
+  return (RangeType **) datumarr_extract(array, count);
+}
+
+/**
+ * Extract a C array from a PostgreSQL array containing temporal values
+ */
+Temporal **
+temporalarr_extract(ArrayType *array, int *count)
+{
+  Temporal **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd',
+    (Datum **) &result, NULL, count);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * Convert a C array of datums into a PostgreSQL array.
+ * Note that the values will be copied into the object even if pass-by-ref type
+ */
+ArrayType *
+datumarr_to_array(Datum *values, int count, CachedType type)
+{
+  int16 elmlen;
+  bool elmbyval;
+  char elmalign;
+  assert(count > 0);
+  Oid typid = type_oid(type);
+  get_typlenbyvalalign(typid, &elmlen, &elmbyval, &elmalign);
+  ArrayType *result = construct_array(values, count, typid, elmlen, elmbyval,
+    elmalign);
+  return result;
+}
+
+/**
+ * Convert a C array of timestamps into a PostgreSQL array
+ */
+ArrayType *
+timestamparr_to_array(const TimestampTz *times, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array((Datum *) times, count, TIMESTAMPTZOID,
+    8, true, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of periods into a PostgreSQL array
+ */
+ArrayType *
+periodarr_to_array(const Period **periods, int count)
+{
+  assert(count > 0);
+  ArrayType *result = construct_array((Datum *) periods, count,
+    type_oid(T_PERIOD), sizeof(Period), false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of ranges into a PostgreSQL array
+ */
+ArrayType *
+rangearr_to_array(RangeType **ranges, int count, CachedType type)
+{
+  assert(count > 0);
+  Oid typid = type_oid(type);
+  ArrayType *result = construct_array((Datum *) ranges, count, typid, -1,
+    false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of text values into a PostgreSQL array
+ */
+ArrayType *
+strarr_to_textarray(char **strarr, int count)
+{
+  assert(count > 0);
+  text **textarr = (text **) palloc(sizeof(text *) * count);
+  for (int i = 0; i < count; i++)
+    textarr[i] = cstring_to_text(strarr[i]);
+  ArrayType *result = construct_array((Datum *) textarr, count, TEXTOID, -1,
+    false, 'i');
+  pfree_array((void **)textarr, count);
+  return result;
+}
+
+/**
+ * Convert a C array of temporal values into a PostgreSQL array
+ */
+ArrayType *
+temporalarr_to_array(const Temporal **temporalarr, int count)
+{
+  assert(count > 0);
+  Oid temptypid = type_oid(temporalarr[0]->temptype);
+  ArrayType *result = construct_array((Datum *) temporalarr, count, temptypid,
+    -1, false, 'd');
+  return result;
+}
+
+/**
+ * Convert a C array of spatiotemporal boxes into a PostgreSQL array
+ */
+ArrayType *
+stboxarr_to_array(STBOX *boxarr, int count)
+{
+  assert(count > 0);
+  STBOX **boxes = palloc(sizeof(STBOX *) * count);
+  for (int i = 0; i < count; i++)
+    boxes[i] = &boxarr[i];
+  ArrayType *result = construct_array((Datum *) boxes, count,
+    type_oid(T_STBOX), sizeof(STBOX), false, 'd');
+  pfree(boxes);
+  return result;
+}
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

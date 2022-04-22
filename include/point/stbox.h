@@ -38,6 +38,8 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
+#include <libpq/pqformat.h>
+/* PostGIS */
 #include <liblwgeom.h>
 /* MobilityDB */
 #include "general/timetypes.h"
@@ -94,43 +96,20 @@ extern void ensure_has_T_stbox(const STBOX *box);
 
 /* Input/Ouput functions */
 
-extern Datum stbox_in(PG_FUNCTION_ARGS);
-extern Datum stbox_out(PG_FUNCTION_ARGS);
-extern Datum stbox_send(PG_FUNCTION_ARGS);
-extern Datum stbox_recv(PG_FUNCTION_ARGS);
+extern char *stbox_to_string(const STBOX *box);
+extern void stbox_write(const STBOX *box, StringInfo buf);
+extern STBOX *stbox_read(StringInfo buf);
 
 /* Constructor functions */
 
-extern Datum stbox_constructor_t(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_z(PG_FUNCTION_ARGS);
-extern Datum stbox_constructor_zt(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_t(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_z(PG_FUNCTION_ARGS);
-extern Datum geodstbox_constructor_zt(PG_FUNCTION_ARGS);
 
 /* Casting */
 
-extern Datum stbox_to_period(PG_FUNCTION_ARGS);
-extern Datum stbox_to_box2d(PG_FUNCTION_ARGS);
-extern Datum stbox_to_box3d(PG_FUNCTION_ARGS);
-extern Datum stbox_to_geometry(PG_FUNCTION_ARGS);
-
 extern void stbox_gbox(const STBOX *box, GBOX * gbox);
 extern void stbox_box3d(const STBOX *box, BOX3D *box3d);
+extern Datum stbox_geometry(const STBOX *box);
 
 /* Transform a <Type> to a STBOX */
-
-extern Datum box2d_to_stbox(PG_FUNCTION_ARGS);
-extern Datum box3d_to_stbox(PG_FUNCTION_ARGS);
-extern Datum geo_to_stbox(PG_FUNCTION_ARGS);
-extern Datum timestamp_to_stbox(PG_FUNCTION_ARGS);
-extern Datum timestampset_to_stbox(PG_FUNCTION_ARGS);
-extern Datum period_to_stbox(PG_FUNCTION_ARGS);
-extern Datum periodset_to_stbox(PG_FUNCTION_ARGS);
-extern Datum geo_timestamp_to_stbox(PG_FUNCTION_ARGS);
-extern Datum geo_period_to_stbox(PG_FUNCTION_ARGS);
 
 extern bool geo_stbox(const GSERIALIZED *gs, STBOX *box);
 extern void timestamp_stbox(TimestampTz t, STBOX *box);
@@ -139,109 +118,80 @@ extern void timestampset_stbox_slice(Datum tsdatum, STBOX *box);
 extern void period_stbox(const Period *p, STBOX *box);
 extern void periodset_stbox(const PeriodSet *ps, STBOX *box);
 extern void periodset_stbox_slice(Datum psdatum, STBOX *box);
+extern STBOX *geo_timestamp_to_stbox(const GSERIALIZED *gs, TimestampTz t);
+extern STBOX *geo_period_to_stbox(const GSERIALIZED *gs, const Period *p);
 
 /* Accessor functions */
 
-extern Datum stbox_hasx(PG_FUNCTION_ARGS);
-extern Datum stbox_hasz(PG_FUNCTION_ARGS);
-extern Datum stbox_hast(PG_FUNCTION_ARGS);
-extern Datum stbox_isgeodetic(PG_FUNCTION_ARGS);
-extern Datum stbox_xmin(PG_FUNCTION_ARGS);
-extern Datum stbox_xmax(PG_FUNCTION_ARGS);
-extern Datum stbox_ymin(PG_FUNCTION_ARGS);
-extern Datum stbox_ymax(PG_FUNCTION_ARGS);
-extern Datum stbox_zmin(PG_FUNCTION_ARGS);
-extern Datum stbox_zmax(PG_FUNCTION_ARGS);
-extern Datum stbox_tmin(PG_FUNCTION_ARGS);
-extern Datum stbox_tmax(PG_FUNCTION_ARGS);
+extern bool stbox_hasx(const STBOX *box);
+extern bool stbox_hasz(const STBOX *box);
+extern bool stbox_hast(const STBOX *box);
+extern bool stbox_isgeodetic(const STBOX *box);
+extern bool stbox_xmin(const STBOX *box, double *result);
+extern bool stbox_xmax(const STBOX *box, double *result);
+extern bool stbox_ymin(const STBOX *box, double *result);
+extern bool stbox_ymax(const STBOX *box, double *result);
+extern bool stbox_zmin(const STBOX *box, double *result);
+extern bool stbox_zmax(const STBOX *box, double *result);
+extern bool stbox_tmin(const STBOX *box, TimestampTz *result);
+extern bool stbox_tmax(const STBOX *box, TimestampTz *result);
 
 /* SRID functions */
 
-extern Datum stbox_srid(PG_FUNCTION_ARGS);
-extern Datum stbox_set_srid(PG_FUNCTION_ARGS);
-extern Datum stbox_transform(PG_FUNCTION_ARGS);
+extern int32 stbox_get_srid(const STBOX *box);
+extern STBOX * stbox_set_srid(const STBOX *box, int32 srid);
+extern STBOX * stbox_transform(const STBOX *box, int32 srid);
 
 /* Transformation functions */
 
-extern Datum stbox_expand_spatial(PG_FUNCTION_ARGS);
-extern Datum stbox_expand_temporal(PG_FUNCTION_ARGS);
-extern Datum stbox_round(PG_FUNCTION_ARGS);
-
-extern STBOX *stbox_expand_spatial_internal(const STBOX *box, double d);
-extern STBOX *stbox_expand_temporal_internal(const STBOX *box, Datum interval);
+extern STBOX *stbox_expand_spatial(const STBOX *box, double d);
+extern STBOX *stbox_expand_temporal(const STBOX *box, Datum interval);
+extern STBOX *stbox_round(const STBOX *box, Datum prec);
 
 /* Topological operators */
 
-extern Datum contains_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum contained_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum same_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum adjacent_stbox_stbox(PG_FUNCTION_ARGS);
-
-extern bool contains_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool contained_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overlaps_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool same_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool adjacent_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern bool contains_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool contained_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overlaps_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool same_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool adjacent_stbox_stbox(const STBOX *box1, const STBOX *box2);
 
 /* Position operators */
 
-extern Datum left_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overleft_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum right_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overright_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum below_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overbelow_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum above_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overabove_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum front_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overfront_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum back_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overback_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum before_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overbefore_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum after_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum overafter_stbox_stbox(PG_FUNCTION_ARGS);
-
-extern bool left_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overleft_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool right_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overright_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool below_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overbelow_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool above_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overabove_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool front_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overfront_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool back_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overback_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool before_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overbefore_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool after_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
-extern bool overafter_stbox_stbox_internal(const STBOX *box1, const STBOX *box2);
+extern bool left_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overleft_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool right_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overright_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool below_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overbelow_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool above_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overabove_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool front_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overfront_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool back_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overback_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool before_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overbefore_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool after_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool overafter_stbox_stbox(const STBOX *box1, const STBOX *box2);
 
 /* Set operators */
 
-extern Datum union_stbox_stbox(PG_FUNCTION_ARGS);
-extern Datum intersection_stbox_stbox(PG_FUNCTION_ARGS);
-
-/* Extent aggregation */
-
-extern Datum stbox_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum stbox_extent_combinefn(PG_FUNCTION_ARGS);
+extern STBOX *union_stbox_stbox(const STBOX *box1, const STBOX *box2,
+  bool strict);
+extern STBOX *intersection_stbox_stbox(const STBOX *box1, const STBOX *box2);
+extern bool inter_stbox_stbox(const STBOX *box1, const STBOX *box2,
+  STBOX *result);
 
 /* Comparison functions */
 
-extern Datum stbox_cmp(PG_FUNCTION_ARGS);
-extern Datum stbox_eq(PG_FUNCTION_ARGS);
-extern Datum stbox_ne(PG_FUNCTION_ARGS);
-extern Datum stbox_lt(PG_FUNCTION_ARGS);
-extern Datum stbox_le(PG_FUNCTION_ARGS);
-extern Datum stbox_gt(PG_FUNCTION_ARGS);
-extern Datum stbox_ge(PG_FUNCTION_ARGS);
-
-extern int stbox_cmp_internal(const STBOX *box1, const STBOX *box2);
-extern bool stbox_eq_internal(const STBOX *box1, const STBOX *box2);
+extern bool stbox_eq(const STBOX *box1, const STBOX *box2);
+extern bool stbox_ne(const STBOX *box1, const STBOX *box2);
+extern int stbox_cmp(const STBOX *box1, const STBOX *box2);
+extern bool stbox_lt(const STBOX *box1, const STBOX *box2);
+extern bool stbox_le(const STBOX *box1, const STBOX *box2);
+extern bool stbox_gt(const STBOX *box1, const STBOX *box2);
+extern bool stbox_ge(const STBOX *box1, const STBOX *box2);
 
 /*****************************************************************************/
 

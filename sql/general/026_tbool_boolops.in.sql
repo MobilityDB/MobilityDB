@@ -38,15 +38,15 @@
 
 CREATE FUNCTION temporal_and(boolean, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tand_bool_tbool'
+  AS 'MODULE_PATHNAME', 'Tand_bool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_and(tbool, boolean)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tand_tbool_bool'
+  AS 'MODULE_PATHNAME', 'Tand_tbool_bool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_and(tbool, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tand_tbool_tbool'
+  AS 'MODULE_PATHNAME', 'Tand_tbool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR & (
@@ -71,15 +71,15 @@ CREATE OPERATOR & (
 
 CREATE FUNCTION temporal_or(boolean, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tor_bool_tbool'
+  AS 'MODULE_PATHNAME', 'Tor_bool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_or(tbool, boolean)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tor_tbool_bool'
+  AS 'MODULE_PATHNAME', 'Tor_tbool_bool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_or(tbool, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tor_tbool_tbool'
+  AS 'MODULE_PATHNAME', 'Tor_tbool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR | (
@@ -104,7 +104,7 @@ CREATE OPERATOR | (
 
 CREATE FUNCTION temporal_not(tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tnot_tbool'
+  AS 'MODULE_PATHNAME', 'Tnot_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~ (

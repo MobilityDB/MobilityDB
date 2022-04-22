@@ -72,78 +72,59 @@ extern void tsequenceset_make_bbox(const TSequence **seqs, int count,
 
 /* Bounding box operators for temporal types */
 
-extern Datum contains_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_temporal_temporal(PG_FUNCTION_ARGS);
+extern Datum boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
+  bool (*func)(const Period *, const Period *), bool invert);
+extern Datum boxop_temporal_timestampset(const Temporal *temp,
+  const TimestampSet *ts, bool (*func)(const Period *, const Period *),
+  bool invert);
+extern Datum boxop_temporal_period(const Temporal *temp, const Period *p,
+  bool (*func)(const Period *, const Period *), bool invert);
+extern bool boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
+  bool (*func)(const Period *, const Period *), bool invert);
+extern bool boxop_temporal_temporal(const Temporal *temp1,
+  const Temporal *temp2, bool (*func)(const Period *, const Period *));
 
-extern Datum contained_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum overlaps_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum same_bbox_period_temporal(PG_FUNCTION_ARGS);
-extern Datum same_bbox_temporal_period(PG_FUNCTION_ARGS);
-extern Datum same_bbox_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum contains_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum contained_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum same_bbox_range_tnumber(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tbox_tnumber(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tnumber_range(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tnumber_tbox(PG_FUNCTION_ARGS);
-extern Datum same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS);
-
-extern Datum boxop_timestamp_temporal(FunctionCallInfo fcinfo,
+extern Datum boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_timestamp(FunctionCallInfo fcinfo,
+extern Datum boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_timestampset_temporal(FunctionCallInfo fcinfo,
+extern Datum boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_timestampset(FunctionCallInfo fcinfo,
+extern Datum boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_period_temporal(FunctionCallInfo fcinfo,
+extern Datum boxop_period_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_period(FunctionCallInfo fcinfo,
+extern Datum boxop_temporal_period_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_periodset_temporal(FunctionCallInfo fcinfo,
+extern Datum boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_periodset(FunctionCallInfo fcinfo,
+extern Datum boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
-extern Datum boxop_temporal_temporal(FunctionCallInfo fcinfo,
+extern Datum boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *));
 
-extern Datum boxop_number_tnumber(FunctionCallInfo fcinfo,
+extern bool boxop_tnumber_number(const Temporal *temp, Datum value,
+  CachedType basetype, bool (*func)(const TBOX *, const TBOX *), bool invert);
+extern int boxop_tnumber_range(const Temporal *temp, const RangeType *range,
+  bool (*func)(const TBOX *, const TBOX *), bool invert);
+extern bool boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
+  bool (*func)(const TBOX *, const TBOX *), bool invert);
+extern bool boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_number(FunctionCallInfo fcinfo,
+
+extern Datum boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_range_tnumber(FunctionCallInfo fcinfo,
+extern Datum boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_range(FunctionCallInfo fcinfo,
+extern Datum boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tbox_tnumber(FunctionCallInfo fcinfo,
+extern Datum boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_tbox(FunctionCallInfo fcinfo,
+extern Datum boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
-extern Datum boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
+extern Datum boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const TBOX *, const TBOX *));
+extern Datum boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *));
 
 /*****************************************************************************/

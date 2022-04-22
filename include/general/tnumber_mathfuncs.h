@@ -40,6 +40,8 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+/* PostgreSQL */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
@@ -56,23 +58,30 @@ typedef enum
 
 /*****************************************************************************/
 
+extern bool tnumber_mult_tp_at_timestamp(const TInstant *start1,
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  Datum *value, TimestampTz *t);
+extern bool tnumber_div_tp_at_timestamp(const TInstant *start1,
+  const TInstant *end1, const TInstant *start2, const TInstant *end2,
+  Datum *value, TimestampTz *t);
+
+extern Temporal *arithop_tnumber_number(const Temporal *temp, Datum value,
+  CachedType basetype, TArithmetic oper,
+  Datum (*func)(Datum, Datum, CachedType, CachedType), bool invert);
+extern Temporal *arithop_tnumber_tnumber(const Temporal *temp1,
+  const Temporal *temp2, TArithmetic oper,
+  Datum (*func)(Datum, Datum, Oid, Oid),
+  bool (*tpfunc)(const TInstant *, const TInstant *, const TInstant *,
+    const TInstant *, Datum *, TimestampTz *));
+
 extern Datum datum_round_float(Datum value, Datum prec);
 
-extern Datum add_base_temporal(PG_FUNCTION_ARGS);
-extern Datum add_temporal_base(PG_FUNCTION_ARGS);
-extern Datum add_temporal_temporal(PG_FUNCTION_ARGS);
+extern Temporal *tnumber_round(const Temporal *temp, Datum digits);
+extern Temporal *tnumber_degrees(const Temporal *temp);
 
-extern Datum sub_base_temporal(PG_FUNCTION_ARGS);
-extern Datum sub_temporal_base(PG_FUNCTION_ARGS);
-extern Datum sub_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum mult_base_temporal(PG_FUNCTION_ARGS);
-extern Datum mult_temporal_base(PG_FUNCTION_ARGS);
-extern Datum mult_temporal_temporal(PG_FUNCTION_ARGS);
-
-extern Datum div_base_temporal(PG_FUNCTION_ARGS);
-extern Datum div_temporal_base(PG_FUNCTION_ARGS);
-extern Datum div_temporal_temporal(PG_FUNCTION_ARGS);
+extern TSequence *tnumberseq_derivative(const TSequence *seq);
+extern TSequenceSet *tnumberseqset_derivative(const TSequenceSet *ts);
+extern Temporal *tnumber_derivative(const Temporal *temp);
 
 /*****************************************************************************/
 

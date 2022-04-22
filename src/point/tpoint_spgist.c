@@ -566,12 +566,12 @@ tpoint_spgist_get_stbox(const ScanKeyData *scankey, STBOX *result)
  * SP-GiST config function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_spgist_config);
+PG_FUNCTION_INFO_V1(Stbox_spgist_config);
 /**
  * SP-GiST config function for temporal points
  */
 PGDLLEXPORT Datum
-stbox_spgist_config(PG_FUNCTION_ARGS)
+Stbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
   Oid stbox_oid = type_oid(T_STBOX);
@@ -587,12 +587,12 @@ stbox_spgist_config(PG_FUNCTION_ARGS)
  * SP-GiST choose function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_quadtree_choose);
+PG_FUNCTION_INFO_V1(Stbox_quadtree_choose);
 /**
  * SP-GiST choose function for temporal points
  */
 PGDLLEXPORT Datum
-stbox_quadtree_choose(PG_FUNCTION_ARGS)
+Stbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
@@ -613,7 +613,7 @@ stbox_quadtree_choose(PG_FUNCTION_ARGS)
  * SP-GiST pick-split function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_quadtree_picksplit);
+PG_FUNCTION_INFO_V1(Stbox_quadtree_picksplit);
 /**
  * SP-GiST pick-split function for temporal points
  *
@@ -621,7 +621,7 @@ PG_FUNCTION_INFO_V1(stbox_quadtree_picksplit);
  * point as the median of the coordinates of the boxes.
  */
 PGDLLEXPORT Datum
-stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
+Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
@@ -723,12 +723,12 @@ stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
  * SP-GiST inner consistent functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_quadtree_inner_consistent);
+PG_FUNCTION_INFO_V1(Stbox_quadtree_inner_consistent);
 /**
  * SP-GiST inner consistent functions for temporal points
  */
 PGDLLEXPORT Datum
-stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+Stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
   spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
@@ -938,12 +938,12 @@ stbox_quadtree_inner_consistent(PG_FUNCTION_ARGS)
  * SP-GiST leaf-level consistency function
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(stbox_spgist_leaf_consistent);
+PG_FUNCTION_INFO_V1(Stbox_spgist_leaf_consistent);
 /**
  * SP-GiST leaf-level consistency function for temporal points
  */
 PGDLLEXPORT Datum
-stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
+Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 {
   spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
   spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
@@ -986,7 +986,7 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     {
       STBOX box;
       if (tpoint_spgist_get_stbox(&in->orderbys[i], &box))
-        distances[i] = NAD_stbox_stbox_internal(&box, key);
+        distances[i] = nad_stbox_stbox(&box, key);
       else
         /* If empty geometry */
         distances[i] = DBL_MAX;
@@ -1001,12 +1001,12 @@ stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
  * SP-GiST compress functions
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_spgist_compress);
+PG_FUNCTION_INFO_V1(Tpoint_spgist_compress);
 /**
  * SP-GiST compress functions for temporal points
  */
 PGDLLEXPORT Datum
-tpoint_spgist_compress(PG_FUNCTION_ARGS)
+Tpoint_spgist_compress(PG_FUNCTION_ARGS)
 {
   Datum tempdatum = PG_GETARG_DATUM(0);
   STBOX *result = palloc(sizeof(STBOX));

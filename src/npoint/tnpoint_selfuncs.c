@@ -77,28 +77,28 @@ tnpoint_cachedop(Oid operid, CachedOp *cachedOp)
  * Restriction selectivity
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_sel);
+PG_FUNCTION_INFO_V1(Tnpoint_sel);
 /**
  * Estimate the restriction selectivity of the operators for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_sel(PG_FUNCTION_ARGS)
+Tnpoint_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_generic(fcinfo, TNPOINTTYPE);
+  return temporal_sel_ext(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************
  * Join selectivity
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_joinsel);
+PG_FUNCTION_INFO_V1(Tnpoint_joinsel);
 /**
  * Estimate the join selectivity of the operators for temporal network points
  */
 PGDLLEXPORT Datum
-tnpoint_joinsel(PG_FUNCTION_ARGS)
+Tnpoint_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_generic(fcinfo, TNPOINTTYPE);
+  return temporal_joinsel_ext(fcinfo, TNPOINTTYPE);
 }
 
 /*****************************************************************************/

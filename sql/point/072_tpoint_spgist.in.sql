@@ -34,27 +34,27 @@
 
 CREATE FUNCTION stbox_spgist_config(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Stbox_spgist_config'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_quadtree_choose(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Stbox_quadtree_choose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_quadtree_picksplit(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Stbox_quadtree_picksplit'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_quadtree_inner_consistent(internal, internal)
   RETURNS void
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Stbox_quadtree_inner_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_spgist_leaf_consistent(internal, internal)
   RETURNS bool
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Stbox_spgist_leaf_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpoint_spgist_compress(internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tpoint_spgist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

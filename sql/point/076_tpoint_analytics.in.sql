@@ -38,36 +38,36 @@
 
 CREATE FUNCTION asGeometry(tgeompoint)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asGeometry(tgeompoint, boolean DEFAULT FALSE)
   RETURNS geometry
-  AS 'MODULE_PATHNAME', 'tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeompoint AS geometry) WITH FUNCTION asGeometry(tgeompoint);
 
 CREATE FUNCTION asGeography(tgeogpoint)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asGeography(tgeogpoint, boolean DEFAULT FALSE)
   RETURNS geography
-  AS 'MODULE_PATHNAME', 'tpoint_to_geo'
+  AS 'MODULE_PATHNAME', 'Tpoint_to_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tgeogpoint AS geography) WITH FUNCTION asGeography(tgeogpoint);
 
 CREATE FUNCTION tgeompoint(geometry)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'geo_to_tpoint'
+  AS 'MODULE_PATHNAME', 'Geo_to_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (geometry AS tgeompoint) WITH FUNCTION tgeompoint(geometry);
 
 CREATE FUNCTION tgeogpoint(geography)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'geo_to_tpoint'
+  AS 'MODULE_PATHNAME', 'Geo_to_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
@@ -76,24 +76,24 @@ CREATE CAST (geography AS tgeogpoint) WITH FUNCTION tgeogpoint(geography);
 
 CREATE FUNCTION geoMeasure(tgeompoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geometry
-AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
+AS 'MODULE_PATHNAME', 'Tpoint_to_geo_measure'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geoMeasure(tgeogpoint, tfloat, boolean DEFAULT FALSE)
 RETURNS geography
-AS 'MODULE_PATHNAME', 'tpoint_to_geo_measure'
+AS 'MODULE_PATHNAME', 'Tpoint_to_geo_measure'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
 CREATE FUNCTION simplify(tfloat, float8)
 RETURNS tfloat
-AS 'MODULE_PATHNAME', 'tfloat_simplify'
+AS 'MODULE_PATHNAME', 'Tfloat_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION simplify(tgeompoint, float8, float8 DEFAULT -1.0)
 RETURNS tgeompoint
-AS 'MODULE_PATHNAME', 'tpoint_simplify'
+AS 'MODULE_PATHNAME', 'Tpoint_simplify'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE TYPE geom_times AS (
@@ -105,7 +105,7 @@ CREATE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
   extent int4 DEFAULT 4096, buffer int4 DEFAULT 256, clip bool DEFAULT TRUE)
 -- RETURNS tgeompoint
 RETURNS geom_times
-AS 'MODULE_PATHNAME','AsMVTGeom'
+AS 'MODULE_PATHNAME','Tpoint_AsMVTGeom'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

@@ -122,7 +122,7 @@ store_fcinfo(FunctionCallInfo fcinfo)
   FLAGS_GET_VERSBIT2(GS_FLAGS(gs)) * 8 )
 
 /**
- * Returns a 2D point from the datum
+ * Return a 2D point from the datum
  */
 POINT2D
 datum_point2d(Datum geom)
@@ -133,7 +133,7 @@ datum_point2d(Datum geom)
 }
 
 /**
- * Returns a 3DZ point from the datum
+ * Return a 3DZ point from the datum
  */
 POINT3DZ
 datum_point3dz(Datum geom)
@@ -144,7 +144,7 @@ datum_point3dz(Datum geom)
 }
 
 /**
- * Returns a 4D point from the datum
+ * Return a 4D point from the datum
  * @note The M dimension is ignored
  */
 void
@@ -171,7 +171,7 @@ datum_point4d(Datum geom, POINT4D *p)
 /*****************************************************************************/
 
 /**
- * Returns a pointer to a 2D point from the datum
+ * Return a pointer to a 2D point from the datum
  */
 const POINT2D *
 datum_point2d_p(Datum geom)
@@ -181,7 +181,7 @@ datum_point2d_p(Datum geom)
 }
 
 /**
- * Returns a 2D point from the serialized geometry
+ * Return a 2D point from the serialized geometry
  */
 const POINT2D *
 gserialized_point2d_p(const GSERIALIZED *gs)
@@ -190,7 +190,7 @@ gserialized_point2d_p(const GSERIALIZED *gs)
 }
 
 /**
- * Returns a pointer to a 3DZ point from the datum
+ * Return a pointer to a 3DZ point from the datum
  */
 const POINT3DZ *
 datum_point3dz_p(Datum geom)
@@ -200,7 +200,7 @@ datum_point3dz_p(Datum geom)
 }
 
 /**
- * Returns a 3DZ point from the serialized geometry
+ * Return a 3DZ point from the serialized geometry
  */
 const POINT3DZ *
 gserialized_point3dz_p(const GSERIALIZED *gs)
@@ -209,7 +209,7 @@ gserialized_point3dz_p(const GSERIALIZED *gs)
 }
 
 /**
- * Returns true if the two points are equal
+ * Return true if the two points are equal
  */
 bool
 datum_point_eq(Datum geopoint1, Datum geopoint2)
@@ -236,7 +236,7 @@ datum_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /**
- * Returns true if the two points are equal
+ * Return true if the two points are equal
  */
 Datum
 datum2_point_eq(Datum geopoint1, Datum geopoint2)
@@ -245,7 +245,7 @@ datum2_point_eq(Datum geopoint1, Datum geopoint2)
 }
 
 /**
- * Returns true if the two points are equal
+ * Return true if the two points are equal
  */
 Datum
 datum2_point_ne(Datum geopoint1, Datum geopoint2)
@@ -314,7 +314,7 @@ pt_distance_fn(int16 flags)
 }
 
 /**
- * Returns the 2D distance between the two geometries
+ * Return the 2D distance between the two geometries
  */
 Datum
 geom_distance2d(Datum geom1, Datum geom2)
@@ -327,7 +327,7 @@ geom_distance2d(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the 3D distance between the two geometries
+ * Return the 3D distance between the two geometries
  */
 Datum
 geom_distance3d(Datum geom1, Datum geom2)
@@ -340,7 +340,7 @@ geom_distance3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the distance between the two geographies
+ * Return the distance between the two geographies
  */
 Datum
 geog_distance(Datum geog1, Datum geog2)
@@ -350,7 +350,7 @@ geog_distance(Datum geog1, Datum geog2)
 }
 
 /**
- * Returns the 2D distance between the two geometric points
+ * Return the 2D distance between the two geometric points
  */
 Datum
 pt_distance2d(Datum geom1, Datum geom2)
@@ -361,7 +361,7 @@ pt_distance2d(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the 3D distance between the two geometric points
+ * Return the 3D distance between the two geometric points
  */
 Datum
 pt_distance3d(Datum geom1, Datum geom2)
@@ -372,7 +372,7 @@ pt_distance3d(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the 2D intersection between the two geometries
+ * Return the 2D intersection between the two geometries
  */
 Datum
 geom_intersection2d(Datum geom1, Datum geom2)
@@ -397,15 +397,16 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 {
   if (tgeo_type(temp1->temptype))
   {
-    ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
+    ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
     ensure_same_dimensionality(temp1->flags, temp2->flags);
   }
   return;
 }
 
+#if 0 /* Not used */
 /**
  * Ensure that the spatial argument has planar coordinates
- * THIS FUNCTION IS CURRENTLY NOT USED
+ */
 void
 ensure_not_geodetic_gs(const GSERIALIZED *gs)
 {
@@ -413,7 +414,7 @@ ensure_not_geodetic_gs(const GSERIALIZED *gs)
     elog(ERROR, "Only planar coordinates supported");
   return;
 }
-*/
+#endif
 
 /**
  * Ensure that the spatiotemporal argument has planar coordinates
@@ -483,7 +484,7 @@ void
 ensure_same_srid_tpoint_stbox(const Temporal *temp, const STBOX *box)
 {
   if (MOBDB_FLAGS_GET_X(box->flags) &&
-    tpoint_srid_internal(temp) != box->srid)
+    tpoint_srid(temp) != box->srid)
     ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
       errmsg("Operation on mixed SRID")));
   return;
@@ -662,7 +663,7 @@ ensure_non_empty(const GSERIALIZED *gs)
 }
 
 /*****************************************************************************
- * Returns true if a point is in a segment (2D, 3D, or geodetic).
+ * Return true if a point is in a segment (2D, 3D, or geodetic).
  * For 2D/3D points we proceed as follows.
  * If the cross product of (B-A) and (p-A) is 0, then the points A, B,
  * and p are aligned. To know if p is between A and B, we also have to
@@ -671,7 +672,7 @@ ensure_non_empty(const GSERIALIZED *gs)
  * https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
  *****************************************************************************/
 /*
- * Returns true if point p is in the segment defined by A and B (2D)
+ * Return true if point p is in the segment defined by A and B (2D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
  */
@@ -688,7 +689,7 @@ point2d_on_segment(const POINT2D *p, const POINT2D *A, const POINT2D *B)
 }
 
 /*
- * Returns true if point p is in the segment defined by A and B (3D)
+ * Return true if point p is in the segment defined by A and B (3D)
  * @note The test of p = A or p = B MUST BE done in the calling function
  *   to take care of the inclusive/exclusive bounds for temporal sequences
  */
@@ -709,7 +710,7 @@ point3dz_on_segment(const POINT3DZ *p, const POINT3DZ *A, const POINT3DZ *B)
 }
 
 /**
- * Returns true if point p is in the segment defined by A and B (geodetic)
+ * Return true if point p is in the segment defined by A and B (geodetic)
  */
 static long double
 point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
@@ -742,7 +743,8 @@ point_on_segment_sphere(const POINT4D *p, const POINT4D *A, const POINT4D *B)
 }
 
 /**
- * Determine if a point is in a segment (dispatch function)
+ * Determine if a point is in a segment.
+ *
  * @param[in] start,end Points defining the segment
  * @param[in] point Point
  */
@@ -773,13 +775,14 @@ point_on_segment(Datum start, Datum end, Datum point)
 }
 
 /*****************************************************************************
- * Ever equal comparison operator
+ * Ever/always equal comparison operators
  *****************************************************************************/
 
 /**
- * Returns true if the temporal point is ever equal to the point
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal point is ever equal to the point
  */
-static bool
+bool
 tpointinst_ever_eq(const TInstant *inst, Datum value)
 {
   Datum value1 = tinstant_value(inst);
@@ -787,9 +790,10 @@ tpointinst_ever_eq(const TInstant *inst, Datum value)
 }
 
 /**
- * Returns true if the temporal point is ever equal to the point
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal point is ever equal to the point
  */
-static bool
+bool
 tpointinstset_ever_eq(const TInstantSet *ti, Datum value)
 {
   /* Bounding box test */
@@ -806,9 +810,10 @@ tpointinstset_ever_eq(const TInstantSet *ti, Datum value)
 }
 
 /**
- * Returns true if the temporal point is ever equal to the point
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal point is ever equal to the point
  */
-static bool
+bool
 tpointseq_ever_eq(const TSequence *seq, Datum value)
 {
   int i;
@@ -862,9 +867,10 @@ tpointseq_ever_eq(const TSequence *seq, Datum value)
 }
 
 /**
- * Returns true if the temporal point is ever equal to the point
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal point is ever equal to the point
  */
-static bool
+bool
 tpointseqset_ever_eq(const TSequenceSet *ts, Datum value)
 {
   /* Bounding box test */
@@ -881,12 +887,19 @@ tpointseqset_ever_eq(const TSequenceSet *ts, Datum value)
 }
 
 /**
- * Returns true if the temporal value is ever equal to the base value
- * (internal function)
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is ever equal to the base value.
  */
-static bool
-tpoint_ever_eq_internal(const Temporal *temp, Datum value)
+bool
+tpoint_ever_eq(const Temporal *temp, Datum value)
 {
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  if (gserialized_is_empty(gs))
+    return false;
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -900,24 +913,91 @@ tpoint_ever_eq_internal(const Temporal *temp, Datum value)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_ever_eq);
+/*****************************************************************************/
+
 /**
- * Returns true if the temporal value is ever equal to the base value
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if temporal value is always equal to the base value.
  */
-Datum
-tpoint_ever_eq(PG_FUNCTION_ARGS)
+bool
+tpointinst_always_eq(const TInstant *inst, Datum value)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  return tpointinst_ever_eq(inst, value);
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpointinstset_always_eq(const TInstantSet *ti, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) ti, value, ALWAYS))
+    return false;
+
+  /* The bounding box test above is enough to compute the answer for
+   * temporal points */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpointseq_always_eq(const TSequence *seq, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *) seq, value, ALWAYS))
+    return false;
+
+  /* The bounding box test above is enough to compute the answer for
+   * temporal numbers */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpointseqset_always_eq(const TSequenceSet *ts, Datum value)
+{
+  /* Bounding box test */
+  if (! temporal_bbox_ev_al_eq((Temporal *)ts, value, ALWAYS))
+    return false;
+
+  /* The bounding box test above is enough to compute the answer for
+   * temporal numbers */
+  return true;
+}
+
+/**
+ * @ingroup libmeos_temporal_ever
+ * @brief Return true if the temporal value is always equal to the base value.
+ */
+bool
+tpoint_always_eq(const Temporal *temp, Datum value)
+{
+  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   if (gserialized_is_empty(gs))
-    PG_RETURN_BOOL(false);
+    return false;
   ensure_point_type(gs);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
   ensure_same_dimensionality_tpoint_gs(temp, gs);
-  bool result = tpoint_ever_eq_internal(temp, PointerGetDatum(gs));
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_BOOL(result);
+
+  bool result;
+  ensure_valid_tempsubtype(temp->subtype);
+  if (temp->subtype == INSTANT)
+    result = tpointinst_always_eq((TInstant *) temp, value);
+  else if (temp->subtype == INSTANTSET)
+    result = tpointinstset_always_eq((TInstantSet *) temp, value);
+  else if (temp->subtype == SEQUENCE)
+    result = tpointseq_always_eq((TSequence *) temp, value);
+  else /* temp->subtype == SEQUENCESET */
+    result = tpointseqset_always_eq((TSequenceSet *) temp, value);
+  return result;
 }
 
 /*****************************************************************************
@@ -951,7 +1031,7 @@ lw_seg_interact(const POINT2D p1, const POINT2D p2, const POINT2D q1,
 }
 
 /**
- * Returns a long double between 0 and 1 representing the location of the
+ * Return a long double between 0 and 1 representing the location of the
  * closest point on the segment to the given point, as a fraction of total
  * segment length (2D version)
  *
@@ -1001,7 +1081,7 @@ closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
 }
 
 /**
- * Returns a float between 0 and 1 representing the location of the closest
+ * Return a float between 0 and 1 representing the location of the closest
  * point on the segment to the given point, as a fraction of total segment
  * length (3D version)
  *
@@ -1053,7 +1133,7 @@ closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
 }
 
 /**
- * Returns a float between 0 and 1 representing the location of the closest
+ * Return a float between 0 and 1 representing the location of the closest
  * point on the geography segment to the given point, as a fraction of total
  * segment length
  *
@@ -1151,7 +1231,7 @@ point_make(double x, double y, double z, bool hasz, bool geodetic,
 }
 
 /**
- * Returns a point interpolated from the geometry/geography segment with
+ * Return a point interpolated from the geometry/geography segment with
  * respect to the fraction of its total length
  *
  * @param[in] start,end Points defining the segment
@@ -1195,7 +1275,7 @@ geosegm_interpolate_point(Datum start, Datum end, long double ratio)
 }
 
 /**
- * Returns a float between 0 and 1 representing the location of the closest
+ * Return a float between 0 and 1 representing the location of the closest
  * point on the geometry segment to the given point, as a fraction of total
  * segment length
  *
@@ -1273,7 +1353,7 @@ geosegm_locate_point(Datum start, Datum end, Datum point, double *dist)
  *****************************************************************************/
 
 /**
- * Returns true if the segment of the temporal point value intersects
+ * Return true if the segment of the temporal point value intersects
  * the base value at the timestamp
  *
  * @param[in] inst1,inst2 Temporal instants defining the segment
@@ -1309,7 +1389,7 @@ tpointsegm_intersection_value(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Returns true if the two segments of the temporal geometric point
+ * Return true if the two segments of the temporal geometric point
  * values intersect at the timestamp
  *
  * @param[in] start1,end1 Temporal instants defining the first segment
@@ -1417,7 +1497,7 @@ tgeompointsegm_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Returns true if the two segments of the temporal geographic point
+ * Return true if the two segments of the temporal geographic point
  * values intersect at the timestamp
  *
  * @param[in] start1,end1 Temporal instants defining the first segment
@@ -1471,7 +1551,7 @@ tgeogpointsegm_intersection(const TInstant *start1, const TInstant *end1,
 }
 
 /**
- * Returns true if the three values are collinear
+ * Return true if the three values are collinear
  *
  * @param[in] value1,value2,value3 Input values
  * @param[in] ratio Value in [0,1] representing the duration of the
@@ -1582,12 +1662,13 @@ line_make(Datum value1, Datum value2)
 /*****************************************************************************/
 
 /**
- * Compute the trajectory of a temporal instant set point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Compute the trajectory of a temporal instant set point
  *
  * @param[in] ti Temporal value
  * @note Notice that this function does not remove duplicate points
  */
-static Datum
+Datum
 tpointinstset_trajectory(const TInstantSet *ti)
 {
   /* Singleton instant set */
@@ -1611,12 +1692,13 @@ tpointinstset_trajectory(const TInstantSet *ti)
 }
 
 /**
- * Returns the trajectory of a temporal sequence point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the trajectory of a temporal sequence point
  *
  * @param[in] seq Temporal sequence
  * @note Since the sequence has been already validated there is no
- * verification of the input in this function, in particular for
- * geographies it is supposed that the composing points are geodetic
+ * verification of the input in this function, in particular for geographies
+ * it is supposed that the composing points are geodetic
  */
 Datum
 tpointseq_trajectory(const TSequence *seq)
@@ -1650,13 +1732,12 @@ tpointseq_trajectory(const TSequence *seq)
 }
 
 /**
- * Returns the trajectory of a temporal point with sequence set
- * type from the precomputed trajectories of its composing segments
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the trajectory of a temporal point with sequence set type
  *
- * @note The resulting trajectory must be freed by the calling function.
- * The function does not remove duplicates point/linestring components.
+ * @note The function does not remove duplicates point/linestring components.
  */
-static Datum
+Datum
 tpointseqset_trajectory(const TSequenceSet *ts)
 {
   /* Singleton sequence set */
@@ -1726,13 +1807,12 @@ tpointseqset_trajectory(const TSequenceSet *ts)
   return result;
 }
 
-/*****************************************************************************/
-
 /**
- * Returns the trajectory of a temporal point (dispatch function)
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the trajectory of a temporal point.
  */
 Datum
-tpoint_trajectory_internal(const Temporal *temp)
+tpoint_trajectory(const Temporal *temp)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1747,25 +1827,13 @@ tpoint_trajectory_internal(const Temporal *temp)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_trajectory);
-/**
- * Returns the trajectory of a temporal point
- */
-PGDLLEXPORT Datum
-tpoint_trajectory(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tpoint_trajectory_internal(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
-}
-
 /*****************************************************************************
  * Functions for spatial reference systems
  *****************************************************************************/
 
 /**
- * Returns the SRID of a temporal instant point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal instant point.
  */
 int
 tpointinst_srid(const TInstant *inst)
@@ -1775,7 +1843,8 @@ tpointinst_srid(const TInstant *inst)
 }
 
 /**
- * Returns the SRID of a temporal instant set point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal instant set point.
  */
 int
 tpointinstset_srid(const TInstantSet *ti)
@@ -1785,7 +1854,8 @@ tpointinstset_srid(const TInstantSet *ti)
 }
 
 /**
- * Returns the SRID of a temporal sequence point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal sequence point.
  */
 int
 tpointseq_srid(const TSequence *seq)
@@ -1795,7 +1865,8 @@ tpointseq_srid(const TSequence *seq)
 }
 
 /**
- * Returns the SRID of a temporal sequence set point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal sequence set point.
  */
 int
 tpointseqset_srid(const TSequenceSet *ts)
@@ -1805,10 +1876,11 @@ tpointseqset_srid(const TSequenceSet *ts)
 }
 
 /**
- * Returns the SRID of a temporal point (dispatch function)
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the SRID of a temporal point.
  */
 int
-tpoint_srid_internal(const Temporal *temp)
+tpoint_srid(const Temporal *temp)
 {
   int result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -1823,26 +1895,14 @@ tpoint_srid_internal(const Temporal *temp)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_srid);
-/**
- * Returns the SRID of a temporal point
- */
-PGDLLEXPORT Datum
-tpoint_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = tpoint_srid_internal(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_INT32(result);
-}
-
 /*****************************************************************************/
 
 /**
- * Set the SRID of a temporal instant point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the SRID of a temporal instant point
  */
-static TInstant *
-tpointinst_set_srid(TInstant *inst, int32 srid)
+TInstant *
+tpointinst_set_srid(const TInstant *inst, int32 srid)
 {
   TInstant *result = tinstant_copy(inst);
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(tinstant_value_ptr(result));
@@ -1851,10 +1911,11 @@ tpointinst_set_srid(TInstant *inst, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal instant set point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the SRID of a temporal instant set point
  */
-static TInstantSet *
-tpointinstset_set_srid(TInstantSet *ti, int32 srid)
+TInstantSet *
+tpointinstset_set_srid(const TInstantSet *ti, int32 srid)
 {
   TInstantSet *result = tinstantset_copy(ti);
   for (int i = 0; i < ti->count; i++)
@@ -1869,10 +1930,11 @@ tpointinstset_set_srid(TInstantSet *ti, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal sequence point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the SRID of a temporal sequence point
  */
-static TSequence *
-tpointseq_set_srid(TSequence *seq, int32 srid)
+TSequence *
+tpointseq_set_srid(const TSequence *seq, int32 srid)
 {
   GSERIALIZED *gs;
   TSequence *result = tsequence_copy(seq);
@@ -1894,10 +1956,11 @@ tpointseq_set_srid(TSequence *seq, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal sequence set point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the SRID of a temporal sequence set point
  */
-static TSequenceSet *
-tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
+TSequenceSet *
+tpointseqset_set_srid(const TSequenceSet *ts, int32 srid)
 {
   STBOX *box;
   TSequenceSet *result = tsequenceset_copy(ts);
@@ -1924,10 +1987,11 @@ tpointseqset_set_srid(TSequenceSet *ts, int32 srid)
 }
 
 /**
- * Set the SRID of a temporal point (dispatch function)
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the SRID of a temporal point.
  */
-static Temporal *
-tpoint_set_srid_internal(Temporal *temp, int32 srid)
+Temporal *
+tpoint_set_srid(const Temporal *temp, int32 srid)
 {
   Temporal *result;
   if (temp->subtype == INSTANT)
@@ -1943,24 +2007,11 @@ tpoint_set_srid_internal(Temporal *temp, int32 srid)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_set_srid);
-/**
- * Set the SRID of a temporal point
- */
-PGDLLEXPORT Datum
-tpoint_set_srid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int32 srid = PG_GETARG_INT32(1);
-  Temporal *result = tpoint_set_srid_internal(temp, srid);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************/
 
 /**
- * Transform a temporal instant point into another spatial reference system
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Transform a temporal point into another spatial reference system
  */
 TInstant *
 tpointinst_transform(const TInstant *inst, Datum srid)
@@ -1972,9 +2023,10 @@ tpointinst_transform(const TInstant *inst, Datum srid)
 }
 
 /**
- * Transform a temporal instant set point into another spatial reference system
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Transform a temporal point into another spatial reference system
  */
-static TInstantSet *
+TInstantSet *
 tpointinstset_transform(const TInstantSet *ti, Datum srid)
 {
   /* Singleton instant set */
@@ -2007,9 +2059,10 @@ tpointinstset_transform(const TInstantSet *ti, Datum srid)
 }
 
 /**
- * Transform a temporal sequence point into another spatial reference system
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Transform a temporal point into another spatial reference system
  */
-static TSequence *
+TSequence *
 tpointseq_transform(const TSequence *seq, Datum srid)
 {
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
@@ -2018,7 +2071,7 @@ tpointseq_transform(const TSequence *seq, Datum srid)
   if (seq->count == 1)
   {
     TInstant *inst = tpointinst_transform(tsequence_inst_n(seq, 0), srid);
-    TSequence *result = tinstant_to_tsequence(inst, linear);
+    TSequence *result = tinstant_tsequence(inst, linear);
     pfree(inst);
     return result;
   }
@@ -2059,19 +2112,20 @@ tpointseq_transform(const TSequence *seq, Datum srid)
 }
 
 /**
- * Transform a temporal sequence set point into another spatial reference system
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Transform a temporal point into another spatial reference system
  *
  * @note In order to do a SINGLE call to the PostGIS transform function we do
  * not iterate through the sequences and call the transform for the sequence
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseqset_transform(const TSequenceSet *ts, Datum srid)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
   {
     TSequence *seq = tpointseq_transform(tsequenceset_seq_n(ts, 0), srid);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq);
+    TSequenceSet *result = tsequence_tsequenceset(seq);
     pfree(seq);
     return result;
   }
@@ -2127,18 +2181,13 @@ tpointseqset_transform(const TSequenceSet *ts, Datum srid)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_transform);
 /**
- * Transform a temporal point into another spatial reference system
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Transform a temporal point into another spatial reference system
  */
-PGDLLEXPORT Datum
-tpoint_transform(PG_FUNCTION_ARGS)
+Temporal *
+tpoint_transform(const Temporal *temp, Datum srid)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum srid = PG_GETARG_DATUM(1);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -2149,8 +2198,7 @@ tpoint_transform(PG_FUNCTION_ARGS)
     result = (Temporal *) tpointseq_transform((TSequence *) temp, srid);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_transform((TSequenceSet *) temp, srid);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -2159,14 +2207,11 @@ tpoint_transform(PG_FUNCTION_ARGS)
  * since the geography point keeps a bounding box
  *****************************************************************************/
 
-/** Symbolic constants for transforming tgeompoint <-> tgeogpoint */
-#define GEOM_TO_GEOG        true
-#define GEOG_TO_GEOM        false
-
 /**
- * Converts the temporal point to a geometry/geography point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert the temporal point to a geometry/geography point
  */
-static TInstant *
+TInstant *
 tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 {
   Datum point = (oper == GEOM_TO_GEOG) ?
@@ -2177,9 +2222,10 @@ tgeompointinst_tgeogpointinst(const TInstant *inst, bool oper)
 }
 
 /**
- * Converts the temporal point to a geometry/geography point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert the temporal point to a geometry/geography point
  */
-static TInstantSet *
+TInstantSet *
 tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
 {
   /* Construct a multipoint with all the points */
@@ -2219,9 +2265,10 @@ tgeompointinstset_tgeogpointinstset(const TInstantSet *ti, bool oper)
 }
 
 /**
- * Converts the temporal point to a geometry/geography point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert the temporal point to a geometry/geography point
  */
-static TSequence *
+TSequence *
 tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 {
   /* Construct a multipoint with all the points */
@@ -2262,9 +2309,10 @@ tgeompointseq_tgeogpointseq(const TSequence *seq, bool oper)
 }
 
 /**
- * Converts the temporal point to a geometry/geography point
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert the temporal point to a geometry/geography point
  */
-static TSequenceSet *
+TSequenceSet *
 tgeompointseqset_tgeogpointseqset(const TSequenceSet *ts, bool oper)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
@@ -2277,10 +2325,10 @@ tgeompointseqset_tgeogpointseqset(const TSequenceSet *ts, bool oper)
 }
 
 /**
- * Converts the temporal point to a geometry/geography point
- * (dispatch function)
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Convert the temporal point to a geometry/geography point.
  */
-static Temporal *
+Temporal *
 tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
 {
   Temporal *result;
@@ -2298,32 +2346,6 @@ tgeompoint_tgeogpoint(const Temporal *temp, bool oper)
     result = (Temporal *) tgeompointseqset_tgeogpointseqset(
       (TSequenceSet *) temp, oper);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(tgeompoint_to_tgeogpoint);
-/**
- * Converts a temporal geometry point to a temporal geography point
- */
-PGDLLEXPORT Datum
-tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tgeogpoint_to_tgeompoint);
-/**
- * Converts a temporal geography point to a temporal geometry point
- */
-PGDLLEXPORT Datum
-tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -2359,9 +2381,8 @@ round_point(POINTARRAY *points, uint32_t i, Datum prec, bool hasz,
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_point(Datum value, Datum prec)
+datum_round_point(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == POINTTYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2388,9 +2409,8 @@ round_linestring(LWLINE *lwline, Datum prec, bool hasz, bool hasm)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_linestring(Datum value, Datum prec)
+datum_round_linestring(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == LINETYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2417,9 +2437,8 @@ round_triangle(LWTRIANGLE *lwtriangle, Datum prec, bool hasz, bool hasm)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_triangle(Datum value, Datum prec)
+datum_round_triangle(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == TRIANGLETYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2447,9 +2466,8 @@ round_circularstring(LWCIRCSTRING *lwcircstring, Datum prec,
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_circularstring(Datum value, Datum prec)
+datum_round_circularstring(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == CIRCSTRINGTYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2481,9 +2499,8 @@ round_polygon(LWPOLY *lwpoly, Datum prec, bool hasz, bool hasm)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_polygon(Datum value, Datum prec)
+datum_round_polygon(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == POLYGONTYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2513,9 +2530,8 @@ round_multipoint(LWMPOINT *lwmpoint, Datum prec, bool hasz, bool hasm)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_multipoint(Datum value, Datum prec)
+datum_round_multipoint(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == MULTIPOINTTYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2547,9 +2563,8 @@ round_multilinestring(LWMLINE *lwmline, Datum prec, bool hasz, bool hasm)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_multilinestring(Datum value, Datum prec)
+datum_round_multilinestring(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == MULTILINETYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2579,9 +2594,8 @@ round_multipolygon(LWMPOLY *lwmpoly, Datum prec, bool hasz, bool hasm)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_multipolygon(Datum value, Datum prec)
+datum_round_multipolygon(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == MULTIPOLYGONTYPE);
   bool hasz = (bool) FLAGS_GET_Z(GS_FLAGS(gs));
   bool hasm = (bool) FLAGS_GET_M(GS_FLAGS(gs));
@@ -2596,9 +2610,8 @@ datum_round_multipolygon(Datum value, Datum prec)
  * Set the precision of the coordinates to the number of decimal places
  */
 static Datum
-datum_round_geometrycollection(Datum value, Datum prec)
+datum_round_geometrycollection(GSERIALIZED *gs, Datum prec)
 {
-  GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
   assert(gserialized_get_type(gs) == COLLECTIONTYPE);
   LWCOLLECTION *lwcol = lwgeom_as_lwcollection(lwgeom_from_gserialized(gs));
   int ngeoms = lwcol->ngeoms;
@@ -2632,60 +2645,48 @@ datum_round_geometrycollection(Datum value, Datum prec)
 }
 
 /**
- * Set the precision of the coordinates to the number of decimal places
- * @pre The geometry is NOT empty
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the precision of the coordinates to the number of decimal places.
+ *
  * @note Currently not all geometry types are allowed
  */
-static Datum
+Datum
 datum_round_geo(Datum value, Datum prec)
 {
   GSERIALIZED *gs = (GSERIALIZED *) DatumGetPointer(value);
+  if (gserialized_is_empty(gs))
+    return PointerGetDatum(gserialized_copy(gs));
+
   uint32_t type = gserialized_get_type(gs);
   if (type == POINTTYPE)
-    return datum_round_point(value, prec);
+    return datum_round_point(gs, prec);
   if (type == LINETYPE)
-    return datum_round_linestring(value, prec);
+    return datum_round_linestring(gs, prec);
   if (type == TRIANGLETYPE)
-    return datum_round_triangle(value, prec);
+    return datum_round_triangle(gs, prec);
   if (type == CIRCSTRINGTYPE)
-    return datum_round_circularstring(value, prec);
+    return datum_round_circularstring(gs, prec);
   if (type == POLYGONTYPE)
-    return datum_round_polygon(value, prec);
+    return datum_round_polygon(gs, prec);
   if (type == MULTIPOINTTYPE)
-    return datum_round_multipoint(value, prec);
+    return datum_round_multipoint(gs, prec);
   if (type == MULTILINETYPE)
-    return datum_round_multilinestring(value, prec);
+    return datum_round_multilinestring(gs, prec);
   if (type == MULTIPOLYGONTYPE)
-    return datum_round_multipolygon(value, prec);
+    return datum_round_multipolygon(gs, prec);
   if (type == COLLECTIONTYPE)
-    return datum_round_geometrycollection(value, prec);
+    return datum_round_geometrycollection(gs, prec);
   elog(ERROR, "Unsupported geometry type");
 }
 
-PG_FUNCTION_INFO_V1(geo_round);
 /**
- * Sets the precision of the coordinates of the geometry
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Set the precision of the coordinates of the temporal point to the
+ * number of decimal places.
  */
-PGDLLEXPORT Datum
-geo_round(PG_FUNCTION_ARGS)
+Temporal *
+tpoint_round(const Temporal *temp, Datum prec)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_POINTER(gserialized_copy(gs));
-  Datum prec = PG_GETARG_DATUM(1);
-  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), prec));
-}
-
-PG_FUNCTION_INFO_V1(tpoint_round);
-/**
- * Set the precision of the coordinates of the temporal point to the number
- * of decimal places
- */
-PGDLLEXPORT Datum
-tpoint_round(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum prec = PG_GETARG_DATUM(1);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -2696,8 +2697,7 @@ tpoint_round(PG_FUNCTION_ARGS)
   lfinfo.tpfunc_base = NULL;
   lfinfo.tpfunc = NULL;
   Temporal *result = tfunc_temporal(temp, &lfinfo);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -2738,30 +2738,29 @@ point_get_z(Datum point)
 }
 
 /**
- * Get the X coordinates of the temporal point (internal function)
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Get the one of the coordinates of the temporal point as a temporal
+ * float.
+ *
+ * param[in] temp Temporal point
+ * param[in] coord Coordinate number where 0 = X, 1 = Y, 2 = Z
  */
-static Temporal *
-tpoint_get_coord_internal(const Temporal *temp, char c)
+Temporal *
+tpoint_get_coord(const Temporal *temp, int coord)
 {
   ensure_tgeo_type(temp->temptype);
-  if (c == 'z')
+  if (coord == 2)
     ensure_has_Z(temp->flags);
   /* We only need to fill these parameters for tfunc_temporal */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  assert(c == 'x' || c == 'y' || c == 'z');
-  switch(c)
-  {
-    case 'x':
-      lfinfo.func = (varfunc) &point_get_x;
-      break;
-    case 'y':
-      lfinfo.func = (varfunc) &point_get_y;
-      break;
-    default: /* c == 'z' */
-      lfinfo.func = (varfunc) &point_get_z;
-      break;
-  }
+  assert(coord >= 0 && coord <= 2);
+  if (coord == 0)
+    lfinfo.func = (varfunc) &point_get_x;
+  else if (coord == 1)
+    lfinfo.func = (varfunc) &point_get_y;
+  else /* coord == 2 */
+    lfinfo.func = (varfunc) &point_get_z;
   lfinfo.numparam = 0;
   lfinfo.restype = T_TFLOAT;
   lfinfo.tpfunc_base = NULL;
@@ -2770,51 +2769,12 @@ tpoint_get_coord_internal(const Temporal *temp, char c)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_get_x);
-/**
- * Get the X coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_x(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpoint_get_coord_internal(temp, 'x');
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_get_y);
-/**
- * Get the Y coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_y(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpoint_get_coord_internal(temp, 'y');
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_get_z);
-/**
- * Get the Z coordinates of the temporal point
- */
-PGDLLEXPORT Datum
-tpoint_get_z(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpoint_get_coord_internal(temp, 'z');
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Length functions
  *****************************************************************************/
 
 /**
- * Returns the length traversed by the temporal sequence point with plannar
+ * Return the length traversed by the temporal sequence point with plannar
  * coordinates
  * @pre The temporal point has linear interpolation
  */
@@ -2837,7 +2797,7 @@ tpointseq_length_2d(const TSequence *seq)
 }
 
 /**
- * Returns the length traversed by the temporal sequence point with plannar
+ * Return the length traversed by the temporal sequence point with plannar
  * coordinates
  * @pre The temporal point has linear interpolation
  */
@@ -2861,9 +2821,10 @@ tpointseq_length_3d(const TSequence *seq)
 }
 
 /**
- * Returns the length traversed by the temporal sequence point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the length traversed by the temporal sequence point.
  */
-static double
+double
 tpointseq_length(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -2886,9 +2847,10 @@ tpointseq_length(const TSequence *seq)
 }
 
 /**
- * Returns the length traversed by the temporal sequence set point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the length traversed by the temporal sequence set point.
  */
-static double
+double
 tpointseqset_length(const TSequenceSet *ts)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(ts->flags));
@@ -2898,14 +2860,13 @@ tpointseqset_length(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_length);
 /**
- * Returns the length traversed by the temporal sequence (set) point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the length traversed by the temporal sequence (set) point
  */
-PGDLLEXPORT Datum
-tpoint_length(PG_FUNCTION_ARGS)
+double
+tpoint_length(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = 0.0;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -2915,25 +2876,26 @@ tpoint_length(PG_FUNCTION_ARGS)
     result = tpointseq_length((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_length((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_FLOAT8(result);
+  return result;
 }
 
 /*****************************************************************************/
 
 /**
- * Returns the cumulative length traversed by the temporal instant point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the cumulative length traversed by the temporal point.
  */
-static TInstant *
+TInstant *
 tpointinst_cumulative_length(const TInstant *inst)
 {
   return tinstant_make(Float8GetDatum(0.0), inst->t, T_TFLOAT);
 }
 
 /**
- * Returns the cumulative length traversed by the temporal instant set point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the cumulative length traversed by the temporal point.
  */
-static TInstantSet *
+TInstantSet *
 tpointinstset_cumulative_length(const TInstantSet *ti)
 {
   TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
@@ -2947,9 +2909,10 @@ tpointinstset_cumulative_length(const TInstantSet *ti)
 }
 
 /**
- * Returns the cumulative length traversed by the temporal sequence point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the cumulative length traversed by the temporal point.
  */
-static TSequence *
+TSequence *
 tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 {
   bool linear = MOBDB_FLAGS_GET_LINEAR(seq->flags);
@@ -2960,7 +2923,7 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
   {
     inst = tsequence_inst_n(seq, 0);
     TInstant *inst1 = tinstant_make(Float8GetDatum(0), inst->t, T_TFLOAT);
-    TSequence *result = tinstant_to_tsequence(inst1, linear);
+    TSequence *result = tinstant_tsequence(inst1, linear);
     pfree(inst1);
     return result;
   }
@@ -3003,9 +2966,10 @@ tpointseq_cumulative_length(const TSequence *seq, double prevlength)
 }
 
 /**
- * Returns the cumulative length traversed by the temporal sequence set point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the cumulative length traversed by the temporal point.
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseqset_cumulative_length(const TSequenceSet *ts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
@@ -3028,18 +2992,15 @@ tpointseqset_cumulative_length(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_cumulative_length);
 /**
- * Returns the cumulative length traversed by the temporal point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the cumulative length traversed by the temporal point.
  */
-PGDLLEXPORT Datum
-tpoint_cumulative_length(PG_FUNCTION_ARGS)
+Temporal *
+tpoint_cumulative_length(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_cumulative_length((TInstant *) temp);
   else if (temp->subtype == INSTANTSET)
@@ -3048,8 +3009,7 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
     result = (Temporal *) tpointseq_cumulative_length((TSequence *) temp, 0);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_cumulative_length((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -3057,10 +3017,11 @@ tpoint_cumulative_length(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the speed of the temporal point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the speed of the temporal point.
  * @pre The temporal point has linear interpolation
  */
-static TSequence *
+TSequence *
 tpointseq_speed(const TSequence *seq)
 {
   assert(MOBDB_FLAGS_GET_LINEAR(seq->flags));
@@ -3096,9 +3057,10 @@ tpointseq_speed(const TSequence *seq)
 }
 
 /**
- * Returns the speed of the temporal point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the speed of the temporal point
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseqset_speed(const TSequenceSet *ts)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ts->count);
@@ -3113,17 +3075,14 @@ tpointseqset_speed(const TSequenceSet *ts)
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_speed);
 /**
- * Returns the speed of the temporal point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the speed of the temporal point
  */
-PGDLLEXPORT Datum
-tpoint_speed(PG_FUNCTION_ARGS)
+Temporal *
+tpoint_speed(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *result = NULL;
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   ensure_linear_interpolation(temp->flags);
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET)
@@ -3132,10 +3091,7 @@ tpoint_speed(PG_FUNCTION_ARGS)
     result = (Temporal *) tpointseq_speed((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_speed((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -3143,10 +3099,10 @@ tpoint_speed(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point of
- * instant set type
+ * @ingroup libmeos_temporal_agg
+ * @brief Return the time-weighed centroid of the temporal geometry point.
  */
-static Datum
+Datum
 tpointinstset_twcentroid(const TInstantSet *ti)
 {
   int srid = tpointinstset_srid(ti);
@@ -3182,10 +3138,10 @@ tpointinstset_twcentroid(const TInstantSet *ti)
 }
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point of
- * sequence type
+ * @ingroup libmeos_temporal_agg
+ * @brief Return the time-weighed centroid of the temporal geometry point.
  */
-static Datum
+Datum
 tpointseq_twcentroid(const TSequence *seq)
 {
   int srid = tpointseq_srid(seq);
@@ -3225,10 +3181,10 @@ tpointseq_twcentroid(const TSequence *seq)
 }
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point of
- * sequence set type
+ * @ingroup libmeos_temporal_agg
+ * @brief Return the time-weighed centroid of the temporal geometry point.
  */
-static Datum
+Datum
 tpointseqset_twcentroid(const TSequenceSet *ts)
 {
   int srid = tpointseqset_srid(ts);
@@ -3281,11 +3237,11 @@ tpointseqset_twcentroid(const TSequenceSet *ts)
 }
 
 /**
- * Returns the time-weighed centroid of the temporal geometry point
- * (dispatch function)
+ * @ingroup libmeos_temporal_agg
+ * @brief Return the time-weighed centroid of the temporal geometry point.
  */
 Datum
-tpoint_twcentroid_internal(const Temporal *temp)
+tpoint_twcentroid(const Temporal *temp)
 {
   Datum result;
   ensure_valid_tempsubtype(temp->subtype);
@@ -3300,25 +3256,12 @@ tpoint_twcentroid_internal(const Temporal *temp)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_twcentroid);
-/**
- * Returns the time-weighed centroid of the temporal geometry point
- */
-PGDLLEXPORT Datum
-tpoint_twcentroid(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum result = tpoint_twcentroid_internal(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_DATUM(result);
-}
-
 /*****************************************************************************
  * Temporal azimuth
  *****************************************************************************/
 
 /**
- * Returns the azimuth of the two geometry points
+ * Return the azimuth of the two geometry points
  */
 static Datum
 geom_azimuth(Datum geom1, Datum geom2)
@@ -3331,7 +3274,7 @@ geom_azimuth(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the azimuth the two geography points
+ * Return the azimuth the two geography points
  */
 static Datum
 geog_azimuth(Datum geom1, Datum geom2)
@@ -3341,8 +3284,7 @@ geog_azimuth(Datum geom1, Datum geom2)
 }
 
 /**
- * Returns the temporal azimuth of the temporal geometry point of
- * sequence type
+ * Return the temporal azimuth of the temporal geometry point.
  *
  * @param[out] result Array on which the pointers of the newly constructed
  * sequences are stored
@@ -3408,10 +3350,10 @@ tpointseq_azimuth1(const TSequence *seq, TSequence **result)
 }
 
 /**
- * Returns the temporal azimuth of the temporal geometry point
- * of sequence type
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal azimuth of the temporal geometry point.
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseq_azimuth(const TSequence *seq)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
@@ -3421,11 +3363,11 @@ tpointseq_azimuth(const TSequence *seq)
 }
 
 /**
- * Returns the temporal azimuth of the temporal geometry point
- * of sequence set type
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal azimuth of the temporal geometry point.
  */
-static TSequenceSet *
-tpointseqset_azimuth(TSequenceSet *ts)
+TSequenceSet *
+tpointseqset_azimuth(const TSequenceSet *ts)
 {
   if (ts->count == 1)
     return tpointseq_azimuth(tsequenceset_seq_n(ts, 0));
@@ -3441,16 +3383,13 @@ tpointseqset_azimuth(TSequenceSet *ts)
   return tsequenceset_make_free(sequences, k, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_azimuth);
 /**
- * Returns the temporal azimuth of the temporal geometry point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal azimuth of the temporal geometry point.
  */
-PGDLLEXPORT Datum
-tpoint_azimuth(PG_FUNCTION_ARGS)
+Temporal *
+tpoint_azimuth(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
   Temporal *result = NULL;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT || temp->subtype == INSTANTSET ||
@@ -3461,10 +3400,7 @@ tpoint_azimuth(PG_FUNCTION_ARGS)
     result = (Temporal *) tpointseq_azimuth((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_azimuth((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  return result;
 }
 
 /*****************************************************************************
@@ -3519,7 +3455,7 @@ geom_bearing(Datum point1, Datum point2)
 }
 
 /**
- * Computes the bearing between two geographic points
+ * Compute the bearing between two geographic points
  * Derived from https://gist.github.com/jeromer/2005586
  *
  * N.B. In PostGIS, for geodetic coordinates, X is longitude and Y is latitude
@@ -3577,7 +3513,7 @@ get_bearing_fn(int16 flags)
 }
 
 /**
- * Returns the value and timestamp at which the a temporal point segment
+ * Return the value and timestamp at which the a temporal point segment
  * and a point are at the minimum bearing
  *
  * @param[in] start,end Instants defining the segment
@@ -3643,7 +3579,7 @@ tpoint_geo_min_bearing_at_timestamp(const TInstant *start, const TInstant *end,
 }
 
 /**
- * Returns the value and timestamp at which the two temporal point segments
+ * Return the value and timestamp at which the two temporal point segments
  * are at the minimum bearing
  *
  * @param[in] start1,end1 Instants defining the first segment
@@ -3710,42 +3646,42 @@ tpointsegm_min_bearing_at_timestamp(const TInstant *start1,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(bearing_geo_geo);
 /**
- * Returns the temporal bearing between the geometry/geography points
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal bearing between the geometry/geography points
  *
  * @note The following function is meant to be included in PostGIS one day
  */
-PGDLLEXPORT Datum
-bearing_geo_geo(PG_FUNCTION_ARGS)
+bool
+bearing_geo_geo(const GSERIALIZED *geo1, const GSERIALIZED *geo2,
+  Datum *result)
 {
-  GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
-  ensure_point_type(gs1); ensure_point_type(gs2);
-  ensure_same_geodetic_gs(gs1, gs2);
-  ensure_same_srid(gserialized_get_srid(gs1), gserialized_get_srid(gs2));
-  ensure_same_dimensionality_gs(gs1, gs2);
-  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
-    PG_RETURN_NULL();
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Datum result = FLAGS_GET_GEODETIC(GS_FLAGS(gs1)) ?
-    geog_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2)) :
-    geom_bearing(PointerGetDatum(gs1), PointerGetDatum(gs2));
-  PG_FREE_IF_COPY(gs1, 0);
-  PG_FREE_IF_COPY(gs2, 1);
-  PG_RETURN_DATUM(result);
+  ensure_point_type(geo1); ensure_point_type(geo2);
+  ensure_same_geodetic_gs(geo1, geo2);
+  ensure_same_srid(gserialized_get_srid(geo1), gserialized_get_srid(geo2));
+  ensure_same_dimensionality_gs(geo1, geo2);
+  if (gserialized_is_empty(geo1) || gserialized_is_empty(geo2))
+    return false;
+  *result = FLAGS_GET_GEODETIC(GS_FLAGS(geo1)) ?
+    geog_bearing(PointerGetDatum(geo1), PointerGetDatum(geo2)) :
+    geom_bearing(PointerGetDatum(geo1), PointerGetDatum(geo2));
+  return true;
 }
 
-/*****************************************************************************/
-
 /**
- * Returns the temporal bearing between the temporal point and the
- * geometry/geography point (distpatch function)
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal bearing between the temporal point and the
+ * geometry/geography point.
  */
-static Temporal *
-bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
+Temporal *
+bearing_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool invert)
 {
+  if (gserialized_is_empty(gs))
+    return NULL;
+  ensure_point_type(gs);
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+  ensure_same_dimensionality_tpoint_gs(temp, gs);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) get_bearing_fn(temp->flags);
@@ -3758,63 +3694,19 @@ bearing_tpoint_geo_internal(const Temporal *temp, Datum geo, bool invert)
   lfinfo.discont = CONTINUOUS;
   lfinfo.tpfunc_base = &tpoint_geo_min_bearing_at_timestamp;
   lfinfo.tpfunc = NULL;
-  Temporal *result = (Temporal *) tfunc_temporal_base(temp, geo, &lfinfo);
+  Temporal *result = tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
   return result;
 }
 
-PG_FUNCTION_INFO_V1(bearing_geo_tpoint);
 /**
- * Returns the temporal bearing between the geometry/geography point
- * and the temporal point
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return the temporal bearing between the two temporal points
  */
-PGDLLEXPORT Datum
-bearing_geo_tpoint(PG_FUNCTION_ARGS)
+Temporal *
+bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  ensure_point_type(gs);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = bearing_tpoint_geo_internal(temp, PointerGetDatum(gs), INVERT);
-  PG_FREE_IF_COPY(gs, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(bearing_tpoint_geo);
-/**
- * Returns the temporal bearing between the temporal point and the
- * geometry/geography point
- */
-PGDLLEXPORT Datum
-bearing_tpoint_geo(PG_FUNCTION_ARGS)
-{
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-    PG_RETURN_NULL();
-  ensure_point_type(gs);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  ensure_same_dimensionality_tpoint_gs(temp, gs);
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = bearing_tpoint_geo_internal(temp, PointerGetDatum(gs), INVERT_NO);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  PG_RETURN_POINTER(result);
-}
-
-/**
- * Returns the temporal bearing between the two temporal points
- * (dispatch function)
- */
-static Temporal *
-bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
-{
+  ensure_same_srid(tpoint_srid(temp1), tpoint_srid(temp2));
+  ensure_same_dimensionality(temp1->flags, temp2->flags);
   datum_func2 func = get_bearing_fn(temp1->flags);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -3833,28 +3725,6 @@ bearing_tpoint_tpoint_internal(const Temporal *temp1, const Temporal *temp2)
     &tpointsegm_min_bearing_at_timestamp : NULL;
   Temporal *result = tfunc_temporal_temporal(temp1, temp2, &lfinfo);
   return result;
-}
-
-PG_FUNCTION_INFO_V1(bearing_tpoint_tpoint);
-/**
- * Returns the temporal bearing between the two temporal points
- */
-PGDLLEXPORT Datum
-bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  ensure_same_srid(tpoint_srid_internal(temp1), tpoint_srid_internal(temp2));
-  ensure_same_dimensionality(temp1->flags, temp2->flags);
-
-  /* Store fcinfo into a global variable */
-  store_fcinfo(fcinfo);
-  Temporal *result = bearing_tpoint_tpoint_internal(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -3876,7 +3746,7 @@ enum
 
 /**
  * Finds the UNIQUE point of intersection p between two closed
- * collinear segments ab and cd. Returns p and a MOBDB_SEG_INTER_TYPE value.
+ * collinear segments ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value.
  * Notice that if the segments overlap no point is returned since they
  * can be an infinite number of them.
  * This function is called after verifying that the points
@@ -3916,7 +3786,7 @@ parseg2d_intersection(const POINT2D a, const POINT2D b, const POINT2D c,
 
 /**
  * Finds the UNIQUE point of intersection p between two closed segments
- * ab and cd. Returns p and a MOBDB_SEG_INTER_TYPE value. Notice that if the
+ * ab and cd. Return p and a MOBDB_SEG_INTER_TYPE value. Notice that if the
  * segments overlap no point is returned since they can be an infinite
  * number of them
  */
@@ -4123,7 +3993,7 @@ tpointseq_linear_find_splits(const TSequence *seq, int *count)
  *****************************************************************************/
 
 /**
- * Determine whether a temporal point is self-intersecting
+ * Return true if the temporal point does not self-intersect.
  *
  * @param[in] temp Temporal point
  * @param[in] count Number of instants of the temporal point
@@ -4155,25 +4025,26 @@ tpoint_instarr_is_simple(const Temporal *temp, int count)
 }
 
 /**
- * Determine whether a temporal point is self-intersecting
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return true if the temporal point does not self-intersect.
  *
  * @param[in] ti Temporal point
  */
-static bool
+bool
 tpointinstset_is_simple(const TInstantSet *ti)
 {
   if (ti->count == 1)
     return true;
-
   return tpoint_instarr_is_simple((const Temporal *) ti, ti->count);
 }
 
 /**
- * Determine whether a temporal point is self-intersecting
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return true if the temporal point does not self-intersect.
  *
  * @param[in] seq Temporal point
  */
-static bool
+bool
 tpointseq_is_simple(const TSequence *seq)
 {
   if (seq->count <= 2)
@@ -4189,11 +4060,12 @@ tpointseq_is_simple(const TSequence *seq)
 }
 
 /**
- * Determine whether a temporal point is self-intersecting
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return true if the temporal point does not self-intersect.
  *
  * @param[in] ts Temporal point
  */
-static bool
+bool
 tpointseqset_is_simple(const TSequenceSet *ts)
 {
   bool result = true;
@@ -4207,14 +4079,13 @@ tpointseqset_is_simple(const TSequenceSet *ts)
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_is_simple);
 /**
- * Determine whether a temporal point is self-intersecting
+ * @ingroup libmeos_temporal_spatial_accessor
+ * @brief Return true if the temporal point does not self-intersect.
  */
-PGDLLEXPORT Datum
-tpoint_is_simple(PG_FUNCTION_ARGS)
+bool
+tpoint_is_simple(const Temporal *temp)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   bool result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
@@ -4225,14 +4096,13 @@ tpoint_is_simple(PG_FUNCTION_ARGS)
     result = tpointseq_is_simple((TSequence *) temp);
   else /* temp->subtype == SEQUENCESET */
     result = tpointseqset_is_simple((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BOOL(result);
+  return result;
 }
 
 /*****************************************************************************/
 
 /**
- * Split a temporal point into an array of non self-intersecting pieces
+ * Split a temporal point into an array of non self-intersecting pieces.
  *
  * @param[in] ti Temporal point
  * @param[in] splits Bool array stating the splits
@@ -4264,13 +4134,14 @@ tpointinstset_split(const TInstantSet *ti, bool *splits, int count)
 }
 
 /**
- * Split a temporal point into an array of non self-intersecting pieces
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Split a temporal point into an array of non self-intersecting pieces.
  *
  * @param[in] ti Temporal point
  * @param[in] count Number of elements in the resulting array
  */
-static TInstantSet **
-tpointinstset_make_simple1(const TInstantSet *ti, int *count)
+TInstantSet **
+tpointinstset_make_simple(const TInstantSet *ti, int *count)
 {
   TInstantSet **result;
   /* Special case when the input instant set has 1 instant */
@@ -4297,21 +4168,6 @@ tpointinstset_make_simple1(const TInstantSet *ti, int *count)
   result = tpointinstset_split(ti, splits, numsplits + 1);
   pfree(splits);
   *count = numsplits + 1;
-  return result;
-}
-
-/**
- * Split a temporal point into an array of non self-intersecting pieces
- *
- * @param[in] ti Temporal point
- */
-static ArrayType *
-tpointinstset_make_simple(const TInstantSet *ti)
-{
-  int count;
-  TInstantSet **instsets = tpointinstset_make_simple1(ti, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) instsets, count);
-  pfree_array((void **) instsets, count);
   return result;
 }
 
@@ -4371,15 +4227,16 @@ tpointseq_split(const TSequence *seq, bool *splits, int count)
   {
     /* Construct piece containing last instant of sequence */
     instants[0] = (TInstant *) tsequence_inst_n(seq, seq->count - 1);
-    result[k++] = tsequence_make((const TInstant **) instants, seq->count - start,
-      true, seq->period.upper_inc, linear, NORMALIZE_NO);
+    result[k++] = tsequence_make((const TInstant **) instants,
+      seq->count - start, true, seq->period.upper_inc, linear, NORMALIZE_NO);
   }
   pfree(instants);
   return result;
 }
 
 /**
- * Split a temporal point into an array of non self-intersecting pieces
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Split a temporal point into an array of non self-intersecting pieces.
  *
  * @param[in] seq Temporal point
  * @param[out] count Number of elements in the resulting array
@@ -4419,31 +4276,18 @@ tpointseq_make_simple(const TSequence *seq, int *count)
 }
 
 /**
- * Split a temporal point into an array of non self-intersecting pieces
- *
- * @param[in] seq Temporal point
- */
-static ArrayType *
-tpointseq_make_simple_array(const TSequence *seq)
-{
-  int count;
-  TSequence **sequences = tpointseq_make_simple(seq, &count);
-  ArrayType *result = temporalarr_to_array((const Temporal **) sequences, count);
-  pfree_array((void **) sequences, count);
-  return result;
-}
-
-/**
- * Split a temporal point into an array of non self-intersecting pieces
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Split a temporal point into an array of non self-intersecting pieces.
  *
  * @param[in] ts Temporal point
+ * @param[out] count Number of elements in the output array
  */
-static ArrayType *
-tpointseqset_make_simple(const TSequenceSet *ts)
+TSequence **
+tpointseqset_make_simple(const TSequenceSet *ts, int *count)
 {
   /* Singleton sequence set */
   if (ts->count == 1)
-    return tpointseq_make_simple_array(tsequenceset_seq_n(ts, 0));
+    return tpointseq_make_simple(tsequenceset_seq_n(ts, 0), count);
 
   /* General case */
   TSequence ***sequences = palloc0(sizeof(TSequence **) * ts->count);
@@ -4456,34 +4300,34 @@ tpointseqset_make_simple(const TSequenceSet *ts)
     totalcount += countseqs[i];
   }
   assert(totalcount > 0);
-  TSequence **allseqs = tseqarr2_to_tseqarr(sequences, countseqs,
-    ts->count, totalcount);
-  ArrayType *result = temporalarr_to_array((const Temporal **) allseqs,
+  TSequence **result = tseqarr2_to_tseqarr(sequences, countseqs, ts->count,
     totalcount);
-  pfree_array((void **) allseqs, totalcount);
+  *count = totalcount;
   return result;
 }
 
-PG_FUNCTION_INFO_V1(tpoint_make_simple);
 /**
- * Split a temporal point into an array of non self-intersecting pieces
+ * @ingroup libmeos_temporal_spatial_transf
+ * @brief Split a temporal point into an array of non self-intersecting pieces.
  */
-PGDLLEXPORT Datum
-tpoint_make_simple(PG_FUNCTION_ARGS)
+Temporal **
+tpoint_make_simple(const Temporal *temp, int *count)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  ArrayType *result;
+  Temporal **result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
-    result = temporalarr_to_array((const Temporal **) &temp, 1);
+  {
+    result = palloc0(sizeof(TInstant *));
+    result[0] = (Temporal *) tinstant_copy((TInstant *) temp);
+    *count = 1;
+  }
   else if (temp->subtype == INSTANTSET)
-    result = tpointinstset_make_simple((TInstantSet *) temp);
+    result = (Temporal **) tpointinstset_make_simple((TInstantSet *) temp, count);
   else if (temp->subtype == SEQUENCE)
-    result = tpointseq_make_simple_array((TSequence *) temp);
+    result = (Temporal **) tpointseq_make_simple((TSequence *) temp, count);
   else /* temp->subtype == SEQUENCESET */
-    result = tpointseqset_make_simple((TSequenceSet *) temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
+    result = (Temporal **) tpointseqset_make_simple((TSequenceSet *) temp, count);
+  return result;
 }
 
 /*****************************************************************************
@@ -4493,9 +4337,10 @@ tpoint_make_simple(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * Restricts the temporal instant point to the (complement of the) geometry
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restricts the temporal point to the (complement of the) geometry.
  */
-static TInstant *
+TInstant *
 tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
 {
   bool inter = DatumGetBool(geom_intersects2d(tinstant_value(inst), geom));
@@ -4505,9 +4350,10 @@ tpointinst_restrict_geometry(const TInstant *inst, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the temporal instant set point to the (complement of the) geometry
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restricts the temporal point to the (complement of the) geometry.
  */
-static TInstantSet *
+TInstantSet *
 tpointinstset_restrict_geometry(const TInstantSet *ti, Datum geom, bool atfunc)
 {
   const TInstant **instants = palloc(sizeof(TInstant *) * ti->count);
@@ -4600,7 +4446,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
 /*****************************************************************************/
 
 /**
- * Returns the timestamp at which the segment of the temporal value takes
+ * Return the timestamp at which the segment of the temporal value takes
  * the base value
  *
  * This function must take into account the roundoff errors and thus it uses
@@ -4614,7 +4460,7 @@ tpointseq_step_at_geometry(const TSequence *seq, Datum geom, int *count)
  * @param[in] inst1,inst2 Temporal values
  * @param[in] value Base value
  * @param[out] t Timestamp
- * @result Returns true if the base value is found in the temporal value
+ * @result Return true if the base value is found in the temporal value
  * @pre The segment is not constant and has linear interpolation
  * @note The resulting timestamp may be at an exclusive bound
  */
@@ -4672,7 +4518,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
 }
 
 /**
- * Returns the timestamp at which the temporal value takes the base value
+ * Return the timestamp at which the temporal value takes the base value
  *
  * This function is called by the atGeometry function to find the timestamp
  * at which an intersection point found by PostGIS is located. This function
@@ -4683,7 +4529,7 @@ tpointsegm_timestamp_at_value1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] seq Temporal value
  * @param[in] value Base value
  * @param[out] t Timestamp
- * @result Returns true if the base value is found in the temporal value
+ * @result Return true if the base value is found in the temporal value
  * @pre The base value is known to belong to the temporal sequence (taking
  * into account roundoff errors), the temporal sequence has linear
  * interpolation, and it simple
@@ -4927,7 +4773,7 @@ tpointseq_linear_at_geometry(const TSequence *seq, Datum geom, int *count)
 }
 
 /**
- * Restricts the temporal sequence point to the geometry
+ * Restricts the temporal point to the (complement of the) geometry.
  *
  * The function splits the temporal point in an array of temporal point
  * sequences that are simple (that is, not self-intersecting) and loops
@@ -4979,7 +4825,7 @@ tpointseq_at_geometry(const TSequence *seq, Datum geom, int *count)
  * @param[out] count Number of elements in the resulting array
  */
 static TSequence **
-tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
+tpointseq_minus_geometry(const TSequence *seq, Datum geom, int *count)
 {
   int countinter;
   TSequence **sequences = tpointseq_at_geometry(seq, geom, &countinter);
@@ -4995,7 +4841,7 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
   for (int i = 0; i < countinter; i++)
     periods[i] = &sequences[i]->period;
   PeriodSet *ps1 = periodset_make(periods, countinter, NORMALIZE_NO);
-  PeriodSet *ps2 = minus_period_periodset_internal(&seq->period, ps1);
+  PeriodSet *ps2 = minus_period_periodset(&seq->period, ps1);
   pfree(ps1); pfree(periods);
   if (ps2 == NULL)
   {
@@ -5009,18 +4855,19 @@ tpointseq_minus_geometry1(const TSequence *seq, Datum geom, int *count)
 }
 
 /**
- * Restricts the temporal sequence point to the (complement of the) geometry
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restricts the temporal point to the (complement of the) geometry.
  *
- @note The test for instantaneous sequences is done at the function
- tpointseq_at_geometry since the latter function is called for each sequence
- of a sequence set
+ * @note The test for instantaneous sequences is done at the function
+ * tpointseq_at_geometry since the latter function is called for each sequence
+ * of a sequence set
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
 {
   int count;
   TSequence **sequences = atfunc ? tpointseq_at_geometry(seq, geom, &count) :
-    tpointseq_minus_geometry1(seq, geom, &count);
+    tpointseq_minus_geometry(seq, geom, &count);
   if (sequences == NULL)
     return NULL;
 
@@ -5030,14 +4877,15 @@ tpointseq_restrict_geometry(const TSequence *seq, Datum geom, bool atfunc)
 }
 
 /**
- * Restricts the temporal sequence set point to the (complement of the) geometry
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restricts the temporal point to the (complement of the) geometry.
  *
  * @param[in] ts Temporal point
  * @param[in] geom Geometry
  * @param[in] box Bounding box of the geometry
  * @param[in] atfunc True when the restriction is at, false for minus
  */
-static TSequenceSet *
+TSequenceSet *
 tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
   const STBOX *box, bool atfunc)
 {
@@ -5054,7 +4902,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
     const TSequence *seq = tsequenceset_seq_n(ts, i);
     /* Bounding box test */
     STBOX *box1 = tsequence_bbox_ptr(seq);
-    bool overlaps = overlaps_stbox_stbox_internal(box1, box);
+    bool overlaps = overlaps_stbox_stbox(box1, box);
     if (atfunc)
     {
       if (overlaps)
@@ -5065,7 +4913,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
     }
     else
     {
-      if (!overlaps)
+      if (! overlaps)
       {
         sequences[i] = palloc(sizeof(TSequence *));
         sequences[i][0] = tsequence_copy(seq);
@@ -5074,7 +4922,7 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
       }
       else
       {
-        sequences[i] = tpointseq_minus_geometry1(seq, geom, &countseqs[i]);
+        sequences[i] = tpointseq_minus_geometry(seq, geom, &countseqs[i]);
         totalcount += countseqs[i];
       }
     }
@@ -5090,94 +4938,49 @@ tpointseqset_restrict_geometry(const TSequenceSet *ts, Datum geom,
 }
 
 /**
- * Restricts the temporal point to the (complement of the) geometry
- * (dispatch function)
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restricts the temporal point to the (complement of the) geometry.
  *
  * @pre The arguments are of the same dimensionality, have the same SRID,
  * and the geometry is not empty
  */
 Temporal *
-tpoint_restrict_geometry_internal(const Temporal *temp, Datum geom, bool atfunc)
+tpoint_restrict_geometry(const Temporal *temp, const GSERIALIZED *gs,
+  bool atfunc)
 {
+  if (gserialized_is_empty(gs))
+  {
+    if (atfunc)
+      return NULL;
+    else
+      return temporal_copy(temp);
+  }
+  ensure_same_srid(tpoint_srid(temp), gserialized_get_srid(gs));
+
   /* Bounding box test */
   STBOX box1, box2;
   temporal_bbox(temp, &box1);
   /* Non-empty geometries have a bounding box */
-  geo_stbox((GSERIALIZED *) DatumGetPointer(geom), &box2);
-  if (!overlaps_stbox_stbox_internal(&box1, &box2))
+  geo_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
   Temporal *result;
   ensure_valid_tempsubtype(temp->subtype);
   if (temp->subtype == INSTANT)
     result = (Temporal *) tpointinst_restrict_geometry((TInstant *) temp,
-      geom, atfunc);
+      PointerGetDatum(gs), atfunc);
   else if (temp->subtype == INSTANTSET)
     result = (Temporal *) tpointinstset_restrict_geometry((TInstantSet *) temp,
-      geom, atfunc);
+      PointerGetDatum(gs), atfunc);
   else if (temp->subtype == SEQUENCE)
     result = (Temporal *) tpointseq_restrict_geometry((TSequence *) temp,
-      geom, atfunc);
+      PointerGetDatum(gs), atfunc);
   else /* temp->subtype == SEQUENCESET */
     result = (Temporal *) tpointseqset_restrict_geometry((TSequenceSet *) temp,
-      geom, &box2, atfunc);
+      PointerGetDatum(gs), &box2, atfunc);
 
   return result;
-}
-
-/**
- * Restricts the temporal point to the (complement of the) geometry
- *
- * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
- */
-static Datum
-tpoint_restrict_geometry(FunctionCallInfo fcinfo, bool atfunc)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  if (gserialized_is_empty(gs))
-  {
-    PG_FREE_IF_COPY(gs, 1);
-    if (atfunc)
-    {
-      PG_FREE_IF_COPY(temp, 0);
-      PG_RETURN_NULL();
-    }
-    else
-    {
-      Temporal *result = temporal_copy(temp);
-      PG_FREE_IF_COPY(temp, 0);
-      PG_RETURN_POINTER(result);
-    }
-  }
-  ensure_same_srid(tpoint_srid_internal(temp), gserialized_get_srid(gs));
-  Temporal *result = tpoint_restrict_geometry_internal(temp,
-    PointerGetDatum(gs), atfunc);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result == NULL)
-    PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_at_geometry);
-/**
- * Restricts the temporal point to the geometry
- */
-PGDLLEXPORT Datum
-tpoint_at_geometry(PG_FUNCTION_ARGS)
-{
-  return tpoint_restrict_geometry(fcinfo, REST_AT);
-}
-
-PG_FUNCTION_INFO_V1(tpoint_minus_geometry);
-/**
- * Restrict the temporal point to the complement of the geometry
- */
-PGDLLEXPORT Datum
-tpoint_minus_geometry(PG_FUNCTION_ARGS)
-{
-  return tpoint_restrict_geometry(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/
@@ -5262,14 +5065,13 @@ tpoint_add_z(Temporal *temp, Temporal *temp_z, int srid)
 }
 
 /**
- * Restrict the temporal point to the spatiotemporal box
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal point to the spatiotemporal box.
  *
- * @pre The arguments are of the same dimensionality and
- * have the same SRID
+ * @pre The arguments are of the same dimensionality and have the same SRID
  */
 Temporal *
-tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
-  bool upper_inc)
+tpoint_at_stbox(const Temporal *temp, const STBOX *box, bool upper_inc)
 {
   /* At least one of MOBDB_FLAGS_GET_X and MOBDB_FLAGS_GET_T is true */
   bool hasx = MOBDB_FLAGS_GET_X(box->flags);
@@ -5280,7 +5082,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
   /* Bounding box test */
   STBOX box1;
   temporal_bbox(temp, &box1);
-  if (!overlaps_stbox_stbox_internal(box, &box1))
+  if (! overlaps_stbox_stbox(box, &box1))
     return NULL;
 
   Temporal *temp1;
@@ -5288,7 +5090,7 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
   {
     Period p;
     period_set(box->tmin, box->tmax, true, upper_inc, &p);
-    temp1 = temporal_restrict_period_internal(temp, &p, REST_AT);
+    temp1 = temporal_restrict_period(temp, &p, REST_AT);
     /* Despite the bounding box test above, temp1 may be NULL due to
      * exclusive bounds */
     if (temp1 == NULL)
@@ -5301,11 +5103,11 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
   if (hasx)
   {
     /* Split the temporal point into temporal floats for each coordinate */
-    Temporal *temp_x = tpoint_get_coord_internal(temp1, 'x');
-    Temporal *temp_y = tpoint_get_coord_internal(temp1, 'y');
+    Temporal *temp_x = tpoint_get_coord(temp1, 0);
+    Temporal *temp_y = tpoint_get_coord(temp1, 1);
     Temporal *temp_z = NULL;
     if (hasz)
-      temp_z = tpoint_get_coord_internal(temp1, 'z');
+      temp_z = tpoint_get_coord(temp1, 2);
     RangeType *range_x = range_make(Float8GetDatum(box->xmin),
       Float8GetDatum(box->xmax), true, upper_inc, T_FLOAT8);
     RangeType *range_y = range_make(Float8GetDatum(box->ymin),
@@ -5314,16 +5116,16 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
     if (hasz)
       range_z = range_make(Float8GetDatum(box->zmin), Float8GetDatum(box->zmax),
         true, upper_inc, T_FLOAT8);
-    Temporal *at_temp_x = tnumber_restrict_range_internal(temp_x, range_x, REST_AT);
-    Temporal *at_temp_y = tnumber_restrict_range_internal(temp_y, range_y, REST_AT);
+    Temporal *at_temp_x = tnumber_restrict_range(temp_x, range_x, REST_AT);
+    Temporal *at_temp_y = tnumber_restrict_range(temp_y, range_y, REST_AT);
     Temporal *at_temp_z = NULL;
     if (hasz)
-      at_temp_z = tnumber_restrict_range_internal(temp_z, range_z, REST_AT);
+      at_temp_z = tnumber_restrict_range(temp_z, range_z, REST_AT);
     Temporal *result2D = NULL;
     if (at_temp_x != NULL && at_temp_y != NULL && (! hasz || at_temp_z != NULL))
     {
       /* Combine the temporal floats for each coordinate into a temporal point */
-      int srid = tpoint_srid_internal(temp1);
+      int srid = tpoint_srid(temp1);
       bool geodetic = MOBDB_FLAGS_GET_GEODETIC(temp1->flags);
       result2D = tpoint_assemble_coords_xy(at_temp_x, at_temp_y, srid,
         geodetic);
@@ -5348,34 +5150,35 @@ tpoint_at_stbox_internal(const Temporal *temp, const STBOX *box,
 }
 
 /**
- * Restrict the temporal point to the complement of the spatiotemporal box
- * (internal function)
-
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal point to the complement of the spatiotemporal
+ * box.
+ *
  * We cannot make the difference from each dimension separately, i.e.,
  * restrict at the period and then restrict to the polygon. Therefore, we
  * compute the atStbox and then compute the complement of the value obtained.
  *
  * @pre The arguments are of the same dimensionality and have the same SRID
  */
-static Temporal *
-tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
+Temporal *
+tpoint_minus_stbox(const Temporal *temp, const STBOX *box)
 {
   /* Bounding box test */
   STBOX box1;
   temporal_bbox(temp, &box1);
-  if (!overlaps_stbox_stbox_internal(box, &box1))
+  if (! overlaps_stbox_stbox(box, &box1))
     return temporal_copy(temp);
 
   Temporal *result = NULL;
-  Temporal *temp1 = tpoint_at_stbox_internal(temp, box, UPPER_INC);
+  Temporal *temp1 = tpoint_at_stbox(temp, box, UPPER_INC);
   if (temp1 != NULL)
   {
-    PeriodSet *ps1 = temporal_get_time_internal(temp);
-    PeriodSet *ps2 = temporal_get_time_internal(temp1);
-    PeriodSet *ps = minus_periodset_periodset_internal(ps1, ps2);
+    PeriodSet *ps1 = temporal_time(temp);
+    PeriodSet *ps2 = temporal_time(temp1);
+    PeriodSet *ps = minus_periodset_periodset(ps1, ps2);
     if (ps != NULL)
     {
-      result = temporal_restrict_periodset_internal(temp, ps, true);
+      result = temporal_restrict_periodset(temp, ps, true);
       pfree(ps);
     }
     pfree(temp1); pfree(ps1); pfree(ps2);
@@ -5384,15 +5187,15 @@ tpoint_minus_stbox_internal(const Temporal *temp, const STBOX *box)
 }
 
 /**
- * Restrict the temporal point to (the complement of) the spatiotemporal box
+ * @ingroup libmeos_temporal_restrict
+ * @brief Restrict the temporal point to (the complement of) the spatiotemporal
+ * box.
  *
- * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
+ * @note Mixing 2D/3D is enabled to compute, for example, 2.5D operations.
  */
-static Datum
-tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
+Temporal *
+tpoint_restrict_stbox(const Temporal *temp, const STBOX *box, bool atfunc)
 {
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  STBOX *box = PG_GETARG_STBOX_P(1);
   ensure_common_dimension(temp->flags, box->flags);
   if (MOBDB_FLAGS_GET_X(box->flags))
   {
@@ -5400,32 +5203,533 @@ tpoint_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
     ensure_same_srid_tpoint_stbox(temp, box);
     ensure_same_spatial_dimensionality(temp->flags, box->flags);
   }
-  Temporal *result = atfunc ? tpoint_at_stbox_internal(temp, box, UPPER_INC) :
-    tpoint_minus_stbox_internal(temp, box);
+  Temporal *result = atfunc ? tpoint_at_stbox(temp, box, UPPER_INC) :
+    tpoint_minus_stbox(temp, box);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Ever/always functions
+ *****************************************************************************/
+
+/**
+ * Generic function for the temporal ever/always comparison operators
+ *
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Specific function for the ever/always comparison
+ */
+static Datum
+tpoint_ev_al_comp_ext(FunctionCallInfo fcinfo,
+  bool (*func)(const Temporal *, Datum))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  bool result = func(temp, PointerGetDatum(gs));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_ever_eq);
+/**
+ * Return true if the temporal value is ever equal to the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_ever_eq(PG_FUNCTION_ARGS)
+{
+  return tpoint_ev_al_comp_ext(fcinfo, &tpoint_ever_eq);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_always_eq);
+/**
+ * Return true if the temporal value is always equal to the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_always_eq(PG_FUNCTION_ARGS)
+{
+  return tpoint_ev_al_comp_ext(fcinfo, &tpoint_always_eq);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_ever_ne);
+/**
+ * Return true if the temporal value is ever different from the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_ever_ne(PG_FUNCTION_ARGS)
+{
+  return ! tpoint_ev_al_comp_ext(fcinfo, &tpoint_always_eq);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_always_ne);
+/**
+ * Return true if the temporal value is always different from the base value
+ */
+PGDLLEXPORT Datum
+Tpoint_always_ne(PG_FUNCTION_ARGS)
+{
+  return ! tpoint_ev_al_comp_ext(fcinfo, &tpoint_ever_eq);
+}
+
+/*****************************************************************************
+ * Trajectory function
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_get_trajectory);
+/**
+ * Return the trajectory of a temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_get_trajectory(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = tpoint_trajectory(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Functions for spatial reference systems
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_get_srid);
+/**
+ * Return the SRID of a temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_get_srid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int result = tpoint_srid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_INT32(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_set_srid);
+/**
+ * Set the SRID of a temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_set_srid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int32 srid = PG_GETARG_INT32(1);
+  Temporal *result = tpoint_set_srid(temp, srid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_transform);
+/**
+ * Transform a temporal point into another spatial reference system
+ */
+PGDLLEXPORT Datum
+Tpoint_transform(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum srid = PG_GETARG_DATUM(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = tpoint_transform(temp, srid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Cast functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tgeompoint_to_tgeogpoint);
+/**
+ * Convert a temporal geometry point to a temporal geography point
+ */
+PGDLLEXPORT Datum
+Tgeompoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeompoint_tgeogpoint(temp, GEOM_TO_GEOG);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tgeogpoint_to_tgeompoint);
+/**
+ * Convert a temporal geography point to a temporal geometry point
+ */
+PGDLLEXPORT Datum
+Tgeogpoint_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeompoint_tgeogpoint(temp, GEOG_TO_GEOM);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Set precision of the coordinates
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Geo_round);
+/**
+ * Sets the precision of the coordinates of the geometry
+ */
+PGDLLEXPORT Datum
+Geo_round(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Datum prec = PG_GETARG_DATUM(1);
+  PG_RETURN_POINTER(datum_round_geo(PointerGetDatum(gs), prec));
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_round);
+/**
+ * Set the precision of the coordinates of the temporal point to the number
+ * of decimal places
+ */
+PGDLLEXPORT Datum
+Tpoint_round(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum prec = PG_GETARG_DATUM(1);
+  Temporal *result = tpoint_round(temp, prec);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Functions for extracting coordinates
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_get_x);
+/**
+ * Get the X coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_get_x(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpoint_get_coord(temp, 0);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_get_y);
+/**
+ * Get the Y coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_get_y(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpoint_get_coord(temp, 1);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_get_z);
+/**
+ * Get the Z coordinates of the temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_get_z(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpoint_get_coord(temp, 2);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Length functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_length);
+/**
+ * Return the length traversed by the temporal sequence (set) point
+ */
+PGDLLEXPORT Datum
+Tpoint_length(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double result = tpoint_length(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_cumulative_length);
+/**
+ * Return the cumulative length traversed by the temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_cumulative_length(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = tpoint_cumulative_length(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Speed functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_speed);
+/**
+ * Return the speed of the temporal point
+ */
+PGDLLEXPORT Datum
+Tpoint_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = tpoint_speed(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_at_stbox);
+/*****************************************************************************
+ * Time-weighed centroid for temporal geometry points
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_twcentroid);
+/**
+ * Return the time-weighed centroid of the temporal geometry point
+ */
+PGDLLEXPORT Datum
+Tpoint_twcentroid(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum result = tpoint_twcentroid(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_DATUM(result);
+}
+
+/*****************************************************************************
+ * Temporal azimuth
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_azimuth);
+/**
+ * Return the temporal azimuth of the temporal geometry point
+ */
+PGDLLEXPORT Datum
+Tpoint_azimuth(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = tpoint_azimuth(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Temporal bearing
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Bearing_geo_geo);
+/**
+ * Return the temporal bearing between the geometry/geography points
+ *
+ * @note The following function is meant to be included in PostGIS one day
+ */
+PGDLLEXPORT Datum
+Bearing_geo_geo(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *geo1 = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *geo2 = PG_GETARG_GSERIALIZED_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Datum result;
+  bool found = bearing_geo_geo(geo1, geo2, &result);
+  PG_FREE_IF_COPY(geo1, 0);
+  PG_FREE_IF_COPY(geo2, 1);
+  if (! found)
+    PG_RETURN_NULL();
+  PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(Bearing_geo_tpoint);
+/**
+ * Return the temporal bearing between the geometry/geography point
+ * and the temporal point
+ */
+PGDLLEXPORT Datum
+Bearing_geo_tpoint(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = bearing_tpoint_geo(temp, gs, INVERT);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Bearing_tpoint_geo);
+/**
+ * Return the temporal bearing between the temporal point and the
+ * geometry/geography point
+ */
+PGDLLEXPORT Datum
+Bearing_tpoint_geo(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = bearing_tpoint_geo(temp, gs, INVERT_NO);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Bearing_tpoint_tpoint);
+/**
+ * Return the temporal bearing between the two temporal points
+ */
+PGDLLEXPORT Datum
+Bearing_tpoint_tpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
+  Temporal *result = bearing_tpoint_tpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Non self-intersecting (a.k.a. simple) functions
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_is_simple);
+/**
+ * Return true if the temporal point does not self-intersect.
+ */
+PGDLLEXPORT Datum
+Tpoint_is_simple(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(tpoint_is_simple(temp));
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_make_simple);
+/**
+ * Split a temporal point into an array of non self-intersecting pieces
+ */
+PGDLLEXPORT Datum
+Tpoint_make_simple(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int count;
+  Temporal **pieces = tpoint_make_simple(temp, &count);
+  ArrayType *result = temporalarr_to_array((const Temporal **) pieces, count);
+  pfree_array((void **) pieces, count);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Restriction functions
+ *****************************************************************************/
+
+/**
+ * Restricts the temporal point to the (complement of the) geometry
+ *
+ * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
+ */
+static Datum
+tpoint_restrict_geometry_ext(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *geo = PG_GETARG_GSERIALIZED_P(1);
+  Temporal *result = tpoint_restrict_geometry(temp, geo, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(geo, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_at_geometry);
+/**
+ * Restricts the temporal point to the geometry
+ */
+PGDLLEXPORT Datum
+Tpoint_at_geometry(PG_FUNCTION_ARGS)
+{
+  return tpoint_restrict_geometry_ext(fcinfo, REST_AT);
+}
+
+PG_FUNCTION_INFO_V1(Tpoint_minus_geometry);
+/**
+ * Restrict the temporal point to the complement of the geometry
+ */
+PGDLLEXPORT Datum
+Tpoint_minus_geometry(PG_FUNCTION_ARGS)
+{
+  return tpoint_restrict_geometry_ext(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Tpoint_at_stbox);
 /**
  * Restricts the temporal value to the spatiotemporal box
  */
 PGDLLEXPORT Datum
-tpoint_at_stbox(PG_FUNCTION_ARGS)
+Tpoint_at_stbox(PG_FUNCTION_ARGS)
 {
-  return tpoint_restrict_stbox(fcinfo, REST_AT);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  Temporal *result = tpoint_restrict_stbox(temp, box, REST_AT);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_minus_stbox);
+PG_FUNCTION_INFO_V1(Tpoint_minus_stbox);
 /**
  * Restricts the temporal value to the complement of the spatiotemporal box
  */
 PGDLLEXPORT Datum
-tpoint_minus_stbox(PG_FUNCTION_ARGS)
+Tpoint_minus_stbox(PG_FUNCTION_ARGS)
 {
-  return tpoint_restrict_stbox(fcinfo, REST_MINUS);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  STBOX *box = PG_GETARG_STBOX_P(1);
+  Temporal *result = tpoint_restrict_stbox(temp, box, REST_MINUS);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/

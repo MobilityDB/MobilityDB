@@ -47,13 +47,13 @@
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnpoint_tcentroid_transfn);
+PG_FUNCTION_INFO_V1(Tnpoint_tcentroid_transfn);
 /**
  * Transition function for temporal centroid aggregation of temporal network
  * points
  */
 PGDLLEXPORT Datum
-tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
+Tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -83,7 +83,7 @@ tnpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
     struct GeoAggregateState extra =
     {
-      .srid = tpoint_srid_internal(temp1),
+      .srid = tpoint_srid(temp1),
       .hasz = MOBDB_FLAGS_GET_Z(temp1->flags) != 0
     };
     aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));

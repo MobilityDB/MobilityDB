@@ -40,6 +40,7 @@
 #include <catalog/pg_type.h>
 #include <lib/stringinfo.h>
 #include <utils/array.h>
+#include <utils/lsyscache.h>
 #include <utils/rangetypes.h>
 /* MobilityDB */
 #include "general/tempcache.h"
@@ -478,10 +479,6 @@ extern void _PG_init(void);
 
 /* Typmod functions */
 
-extern Datum temporal_typmod_in(PG_FUNCTION_ARGS);
-extern Datum temporal_typmod_out(PG_FUNCTION_ARGS);
-extern Datum temporal_enforce_typmod(PG_FUNCTION_ARGS);
-
 extern const char *tempsubtype_name(int16 subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 
@@ -490,6 +487,10 @@ extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 extern void ensure_valid_tempsubtype(int16 type);
 extern void ensure_valid_tempsubtype_all(int16 type);
 extern void ensure_seq_subtypes(int16 subtype);
+extern void ensure_tinstarr(const TInstant **instants, int count);
+extern int *tsequenceset_make_valid_gaps(const TInstant **instants, int count,
+  bool lower_inc, bool upper_inc, bool linear, double maxdist, Interval *maxt,
+  int *countsplits);
 extern void ensure_linear_interpolation(int16 flags);
 extern void ensure_common_dimension(int16 flags1, int16 flags2);
 extern void ensure_same_temptype(const Temporal *temp1,
@@ -516,202 +517,157 @@ extern void temporal_bbox_slice(Datum tempdatum, void *box);
 extern Temporal *temporal_copy(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
   const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
+extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
 
 /* Version functions */
 
-extern Datum mobilitydb_version(PG_FUNCTION_ARGS);
-extern Datum mobilitydb_full_version(PG_FUNCTION_ARGS);
 
 /* Input/output functions */
 
-extern Datum temporal_in(PG_FUNCTION_ARGS);
-extern Datum temporal_out(PG_FUNCTION_ARGS);
-extern Datum temporal_send(PG_FUNCTION_ARGS);
-extern Datum temporal_recv(PG_FUNCTION_ARGS);
-
-extern Temporal* temporal_read(StringInfo buf, CachedType temptype);
+extern char *temporal_to_string(const Temporal *temp,
+  char *(*value_out)(Oid, Datum));
 extern void temporal_write(const Temporal* temp, StringInfo buf);
+extern Temporal* temporal_read(StringInfo buf, CachedType temptype);
 
 /* Constructor functions */
-
-extern Datum tinstant_constructor(PG_FUNCTION_ARGS);
-extern Datum tinstantset_constructor(PG_FUNCTION_ARGS);
-extern Datum tlinearseq_constructor(PG_FUNCTION_ARGS);
-extern Datum tstepseq_constructor(PG_FUNCTION_ARGS);
-extern Datum tsequenceset_constructor(PG_FUNCTION_ARGS);
-extern Datum tstepseqset_constructor_gaps(PG_FUNCTION_ARGS);
-extern Datum tlinearseqset_constructor_gaps(PG_FUNCTION_ARGS);
 
 extern Temporal *temporal_from_base(const Temporal *temp, Datum value,
   CachedType basetype, bool linear);
 
 /* Append and merge functions */
 
-extern Datum temporal_append_tinstant(PG_FUNCTION_ARGS);
-extern Datum temporal_merge(PG_FUNCTION_ARGS);
-extern Datum temporal_merge_array(PG_FUNCTION_ARGS);
+extern Temporal *temporal_append_tinstant(const Temporal *temp,
+  const Temporal *inst);
+extern Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *temporal_merge_array(Temporal **temparr, int count);
 
 /* Cast functions */
 
-extern Datum tint_to_range(PG_FUNCTION_ARGS);
-extern Datum tfloat_to_range(PG_FUNCTION_ARGS);
-extern Datum tint_to_tfloat(PG_FUNCTION_ARGS);
-extern Datum tfloat_to_tint(PG_FUNCTION_ARGS);
-extern Datum temporal_to_period(PG_FUNCTION_ARGS);
-
+extern RangeType *tint_range(const Temporal *temp);
+extern RangeType *tfloat_range(const Temporal *temp);
+extern Temporal *tint_tfloat(const Temporal *temp);
+extern Temporal *tfloat_tint(const Temporal *temp);
 extern void temporal_period(const Temporal *temp, Period *p);
+extern TBOX *tnumber_to_tbox(Temporal *temp);
 
 /* Transformation functions */
 
-extern Datum temporal_to_tinstant(PG_FUNCTION_ARGS);
-extern Datum temporal_to_tinstantset(PG_FUNCTION_ARGS);
-extern Datum temporal_to_tsequence(PG_FUNCTION_ARGS);
-extern Datum temporal_to_tsequenceset(PG_FUNCTION_ARGS);
-extern Datum tstep_to_linear(PG_FUNCTION_ARGS);
-extern Datum temporal_shift(PG_FUNCTION_ARGS);
-extern Datum temporal_tscale(PG_FUNCTION_ARGS);
-extern Datum temporal_shift_tscale(PG_FUNCTION_ARGS);
+extern Temporal *temporal_tinstant(const Temporal *temp);
+extern Temporal *temporal_tinstantset(const Temporal *temp);
+extern Temporal *temporal_tsequence(const Temporal *temp);
+extern Temporal *temporal_tsequenceset(const Temporal *temp);
+extern Temporal *tempstep_templinear(const Temporal *temp);
+extern Temporal *temporal_shift_tscale(const Temporal *temp, bool shift,
+  bool tscale, Interval *start, Interval *duration);
 
 /* Accessor functions */
 
-extern Datum temporal_subtype(PG_FUNCTION_ARGS);
-extern Datum temporal_interpolation(PG_FUNCTION_ARGS);
-extern Datum temporal_mem_size(PG_FUNCTION_ARGS);
-extern Datum temporal_get_values(PG_FUNCTION_ARGS);
-extern Datum tfloat_get_ranges(PG_FUNCTION_ARGS);
-extern Datum tinstant_get_value(PG_FUNCTION_ARGS);
-extern Datum temporal_get_time(PG_FUNCTION_ARGS);
-extern Datum tinstant_timestamp(PG_FUNCTION_ARGS);
-extern Datum tnumber_value_range(PG_FUNCTION_ARGS);
-extern Datum temporal_start_value(PG_FUNCTION_ARGS);
-extern Datum temporal_end_value(PG_FUNCTION_ARGS);
-extern Datum temporal_min_value(PG_FUNCTION_ARGS);
-extern Datum temporal_max_value(PG_FUNCTION_ARGS);
-extern Datum temporal_timespan(PG_FUNCTION_ARGS);
-extern Datum temporal_duration(PG_FUNCTION_ARGS);
-extern Datum temporal_num_sequences(PG_FUNCTION_ARGS);
-extern Datum temporal_start_sequence(PG_FUNCTION_ARGS);
-extern Datum temporal_end_sequence(PG_FUNCTION_ARGS);
-extern Datum temporal_sequence_n(PG_FUNCTION_ARGS);
-extern Datum temporal_sequences(PG_FUNCTION_ARGS);
-extern Datum temporal_segments(PG_FUNCTION_ARGS);
-extern Datum temporal_num_instants(PG_FUNCTION_ARGS);
-extern Datum temporal_start_instant(PG_FUNCTION_ARGS);
-extern Datum temporal_end_instant(PG_FUNCTION_ARGS);
-extern Datum temporal_instant_n(PG_FUNCTION_ARGS);
-extern Datum temporal_instants(PG_FUNCTION_ARGS);
-extern Datum temporal_num_timestamps(PG_FUNCTION_ARGS);
-extern Datum temporal_start_timestamp(PG_FUNCTION_ARGS);
-extern Datum temporal_end_timestamp(PG_FUNCTION_ARGS);
-extern Datum temporal_timestamp_n(PG_FUNCTION_ARGS);
-extern Datum temporal_timestamps(PG_FUNCTION_ARGS);
-
-extern PeriodSet *temporal_get_time_internal(const Temporal *temp);
-extern RangeType *tnumber_value_range_internal(const Temporal *temp);
-extern TInstant *temporal_start_instant_internal(const Temporal *temp);
+extern char *temporal_subtype(const Temporal *temp);
+extern char *temporal_interpolation(const Temporal *temp);
+extern Datum *temporal_values(const Temporal *temp, int *count);
+extern RangeType **tfloat_ranges(const Temporal *temp, int *count);
+extern PeriodSet *temporal_time(const Temporal *temp);
+extern RangeType *tnumber_range(const Temporal *temp);
+extern Datum temporal_start_value(Temporal *temp);
+extern Datum temporal_end_value(Temporal *temp);
 extern const TInstant *temporal_min_instant(const Temporal *temp);
-extern Datum temporal_min_value_internal(const Temporal *temp);
-extern const TInstant *tinstarr_inst_n(const Temporal *temp, int n);
-extern const TInstant **temporal_instants_internal(const Temporal *temp,
+extern const TInstant *temporal_max_instant(const Temporal *temp);
+extern Datum temporal_min_value(const Temporal *temp);
+extern Datum temporal_max_value(const Temporal *temp);
+extern Interval *temporal_timespan(const Temporal *temp);
+extern Interval *temporal_duration(const Temporal *temp);
+extern int temporal_num_sequences(const Temporal *temp);
+extern TSequence *temporal_start_sequence(const Temporal *temp);
+extern TSequence *temporal_end_sequence(const Temporal *temp);
+extern TSequence *temporal_sequence_n(const Temporal *temp, int i);
+extern TSequence **temporal_sequences(const Temporal *temp, int *count);
+extern TSequence **temporal_segments(const Temporal *temp, int *count);
+extern int temporal_num_instants(const Temporal *temp);
+extern const TInstant *temporal_start_instant(const Temporal *temp);
+extern const TInstant *temporal_end_instant(const Temporal *temp);
+extern const TInstant *temporal_instant_n(Temporal *temp, int n);
+extern const TInstant **temporal_instants(const Temporal *temp,
   int *count);
+extern int temporal_num_timestamps(const Temporal *temp);
+extern TimestampTz temporal_start_timestamp(const Temporal *temp);
+extern TimestampTz temporal_end_timestamp(Temporal *temp);
+extern bool temporal_timestamp_n(Temporal *temp, int n, TimestampTz *result);
+extern TimestampTz *temporal_timestamps(const Temporal *temp, int *count);
 
 /* Ever/always equal operators */
-
-extern Datum temporal_ever_eq(PG_FUNCTION_ARGS);
-extern Datum temporal_always_eq(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_ne(PG_FUNCTION_ARGS);
-extern Datum temporal_always_ne(PG_FUNCTION_ARGS);
-
-extern Datum temporal_ever_lt(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_le(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_gt(PG_FUNCTION_ARGS);
-extern Datum temporal_ever_ge(PG_FUNCTION_ARGS);
-extern Datum temporal_always_lt(PG_FUNCTION_ARGS);
-extern Datum temporal_always_le(PG_FUNCTION_ARGS);
-extern Datum temporal_always_gt(PG_FUNCTION_ARGS);
-extern Datum temporal_always_ge(PG_FUNCTION_ARGS);
 
 extern bool temporal_bbox_ev_al_eq(const Temporal *temp, Datum value,
   bool ever);
 extern bool temporal_bbox_ev_al_lt_le(const Temporal *temp, Datum value,
   bool ever);
-extern bool temporal_ever_eq_internal(const Temporal *temp, Datum value);
+extern bool temporal_ever_eq(const Temporal *temp, Datum value);
+extern bool temporal_always_eq(const Temporal *temp, Datum value);
+extern bool temporal_ever_lt(const Temporal *temp, Datum value);
+extern bool temporal_always_lt(const Temporal *temp, Datum value);
+extern bool temporal_ever_le(const Temporal *temp, Datum value);
+extern bool temporal_always_le(const Temporal *temp, Datum value);
 
 /* Restriction functions */
-
-extern Datum temporal_at_value(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_value(PG_FUNCTION_ARGS);
-extern Datum temporal_at_values(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_values(PG_FUNCTION_ARGS);
-extern Datum tnumber_at_range(PG_FUNCTION_ARGS);
-extern Datum tnumber_minus_range(PG_FUNCTION_ARGS);
-extern Datum tnumber_at_ranges(PG_FUNCTION_ARGS);
-extern Datum tnumber_minus_ranges(PG_FUNCTION_ARGS);
-extern Datum temporal_at_min(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_min(PG_FUNCTION_ARGS);
-extern Datum temporal_at_max(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_max(PG_FUNCTION_ARGS);
-extern Datum temporal_at_timestamp(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_timestamp(PG_FUNCTION_ARGS);
-extern Datum temporal_value_at_timestamp(PG_FUNCTION_ARGS);
-extern Datum temporal_at_timestampset(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_timestampset(PG_FUNCTION_ARGS);
-extern Datum temporal_at_period(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_period(PG_FUNCTION_ARGS);
-extern Datum temporal_at_periodset(PG_FUNCTION_ARGS);
-extern Datum temporal_minus_periodset(PG_FUNCTION_ARGS);
-extern Datum tnumber_at_tbox(PG_FUNCTION_ARGS);
-extern Datum tnumber_minus_tbox(PG_FUNCTION_ARGS);
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
 extern Datum *temporal_bbox_restrict_values(const Temporal *temp,
   const Datum *values, int count, int *newcount);
 extern RangeType **tnumber_bbox_restrict_ranges(const Temporal *temp,
   RangeType **ranges, int count, int *newcount);
+extern Temporal *temporal_restrict_minmax(const Temporal *temp, bool min,
+  bool atfunc);
 
-extern Temporal *temporal_restrict_value_internal(const Temporal *temp,
+extern Temporal *temporal_restrict_value(const Temporal *temp,
   Datum value, bool atfunc);
-extern Temporal *tnumber_restrict_range_internal(const Temporal *temp,
+extern Temporal *temporal_restrict_values(const Temporal *temp, Datum *values,
+  int count, bool atfunc);
+extern Temporal *tnumber_restrict_range(const Temporal *temp,
  RangeType *range, bool atfunc);
-extern Temporal *temporal_restrict_timestamp_internal(const Temporal *temp,
-  TimestampTz t, bool atfunc);
+extern Temporal *tnumber_restrict_ranges(const Temporal *temp,
+  RangeType **ranges, int count, bool atfunc);
 extern bool temporal_value_at_timestamp_inc(const Temporal *temp,
   TimestampTz t, Datum *value);
-extern Temporal *temporal_restrict_period_internal(const Temporal *temp,
+extern bool temporal_value_at_timestamp(const Temporal *temp, TimestampTz t,
+  Datum *result);
+
+extern Temporal *temporal_restrict_timestamp(const Temporal *temp,
+  TimestampTz t, bool atfunc);
+extern Temporal *temporal_restrict_timestampset(const Temporal *temp,
+  const TimestampSet *ts, bool atfunc);
+extern Temporal *temporal_restrict_period(const Temporal *temp,
   const Period *ps, bool atfunc);
-extern Temporal *temporal_restrict_periodset_internal(const Temporal *temp,
+extern Temporal *temporal_restrict_periodset(const Temporal *temp,
   const PeriodSet *ps, bool atfunc);
-extern Temporal *tnumber_at_tbox_internal(const Temporal *temp, const TBOX *box);
-extern Temporal *tnumber_minus_tbox_internal(const Temporal *temp, const TBOX *box);
+extern Temporal *tnumber_at_tbox(const Temporal *temp, const TBOX *box);
+extern Temporal *tnumber_minus_tbox(const Temporal *temp, const TBOX *box);
 
 /* Intersects functions */
 
-extern Datum temporal_intersects_timestamp(PG_FUNCTION_ARGS);
-extern Datum temporal_intersects_timestampset(PG_FUNCTION_ARGS);
-extern Datum temporal_intersects_period(PG_FUNCTION_ARGS);
-extern Datum temporal_intersects_periodset(PG_FUNCTION_ARGS);
+extern bool temporal_intersects_timestamp(const Temporal *temp, TimestampTz t);
+extern bool temporal_intersects_timestampset(const Temporal *temp,
+  const TimestampSet *ts);
+extern bool temporal_intersects_period(const Temporal *temp, const Period *p);
+extern bool temporal_intersects_periodset(const Temporal *temp,
+  const PeriodSet *ps);
 
 /* Local aggregate functions */
 
-extern Datum tnumber_integral(PG_FUNCTION_ARGS);
-extern Datum tnumber_twavg(PG_FUNCTION_ARGS);
+extern double tnumber_integral(const Temporal *temp);
+extern double tnumber_twavg(const Temporal *temp);
 
 /* Comparison functions */
 
-extern Datum temporal_eq(PG_FUNCTION_ARGS);
-extern Datum temporal_ne(PG_FUNCTION_ARGS);
-
-extern Datum temporal_cmp(PG_FUNCTION_ARGS);
-extern Datum temporal_lt(PG_FUNCTION_ARGS);
-extern Datum temporal_le(PG_FUNCTION_ARGS);
-extern Datum temporal_ge(PG_FUNCTION_ARGS);
-extern Datum temporal_gt(PG_FUNCTION_ARGS);
+extern bool temporal_eq(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
+extern int temporal_cmp(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_lt(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_le(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_gt(const Temporal *temp1, const Temporal *temp2);
+extern bool temporal_ge(const Temporal *temp1, const Temporal *temp2);
 
 /* Functions for defining hash index */
 
-extern Datum temporal_hash(PG_FUNCTION_ARGS);
-
-extern uint32 temporal_hash_internal(const Temporal *temp);
+extern uint32 temporal_hash(const Temporal *temp);
 
 /*****************************************************************************/
 

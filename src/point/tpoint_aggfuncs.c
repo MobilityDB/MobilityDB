@@ -90,7 +90,7 @@ geoaggstate_check_state(const SkipList *state1, const SkipList *state2)
 void
 geoaggstate_check_temp(const SkipList *state, const Temporal *t)
 {
-  geoaggstate_check(state, tpoint_srid_internal(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
+  geoaggstate_check(state, tpoint_srid(t), MOBDB_FLAGS_GET_Z(t->flags) != 0);
   return;
 }
 
@@ -210,28 +210,28 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * Extent
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_extent_transfn);
+PG_FUNCTION_INFO_V1(Tpoint_extent_transfn);
 /**
  * Transition function for temporal extent aggregation of temporal point values
  */
 PGDLLEXPORT Datum
-tpoint_extent_transfn(PG_FUNCTION_ARGS)
+Tpoint_extent_transfn(PG_FUNCTION_ARGS)
 {
   STBOX *box = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
 
   /* Can't do anything with null inputs */
-  if (!box && !temp)
+  if (! box && ! temp)
     PG_RETURN_NULL();
   STBOX *result = palloc0(sizeof(STBOX));
   /* Null box and non-null temporal, return the bbox of the temporal */
-  if (!box && temp)
+  if (temp && ! box )
   {
     temporal_bbox(temp, result);
     PG_RETURN_POINTER(result);
   }
   /* Non-null box and null temporal, return the box */
-  if (box && !temp)
+  if (box && ! temp)
   {
     memcpy(result, box, sizeof(STBOX));
     PG_RETURN_POINTER(result);
@@ -247,20 +247,20 @@ tpoint_extent_transfn(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_extent_combinefn);
+PG_FUNCTION_INFO_V1(Tpoint_extent_combinefn);
 /**
  * Combine function for temporal extent aggregation of temporal point values
  */
 PGDLLEXPORT Datum
-tpoint_extent_combinefn(PG_FUNCTION_ARGS)
+Tpoint_extent_combinefn(PG_FUNCTION_ARGS)
 {
   STBOX *box1 = PG_ARGISNULL(0) ? NULL : PG_GETARG_STBOX_P(0);
   STBOX *box2 = PG_ARGISNULL(1) ? NULL : PG_GETARG_STBOX_P(1);
-  if (!box2 && !box1)
+  if (! box2 && ! box1)
     PG_RETURN_NULL();
-  if (box1 && !box2)
+  if (box1 && ! box2)
     PG_RETURN_POINTER(box1);
-  if (box2 && !box1)
+  if (box2 && ! box1)
     PG_RETURN_POINTER(box2);
 
   /* Both boxes are not null */
@@ -276,18 +276,18 @@ tpoint_extent_combinefn(PG_FUNCTION_ARGS)
  * Centroid
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_tcentroid_transfn);
+PG_FUNCTION_INFO_V1(Tpoint_tcentroid_transfn);
 /**
  * Transition function for temporal centroid aggregation of temporal point values
  */
 PGDLLEXPORT Datum
-tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
+Tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 {
   SkipList *state = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
   Temporal *temp = PG_ARGISNULL(1) ? NULL : PG_GETARG_TEMPORAL_P(1);
   /* Can't do anything with null inputs */
-  if (!state && !temp)
+  if (! state && ! temp)
     PG_RETURN_NULL();
   /* Non-null state and null temporal, return the state */
   if (state && ! temp)
@@ -311,7 +311,7 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
     state = skiplist_make(fcinfo, (void **) temparr, count, TEMPORAL);
     struct GeoAggregateState extra =
     {
-      .srid = tpoint_srid_internal(temp),
+      .srid = tpoint_srid(temp),
       .hasz = MOBDB_FLAGS_GET_Z(temp->flags) != 0
     };
     aggstate_set_extra(fcinfo, state, &extra, sizeof(struct GeoAggregateState));
@@ -324,12 +324,12 @@ tpoint_tcentroid_transfn(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tpoint_tcentroid_combinefn);
+PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
  * Combine function for temporal centroid aggregation of temporal point values
  */
 PGDLLEXPORT Datum
-tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
+Tpoint_tcentroid_combinefn(PG_FUNCTION_ARGS)
 {
   SkipList *state1 = PG_ARGISNULL(0) ? NULL :
     (SkipList *) PG_GETARG_POINTER(0);
@@ -435,12 +435,12 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int srid)
   return tsequenceset_make_free(newsequences, count, NORMALIZE);
 }
 
-PG_FUNCTION_INFO_V1(tpoint_tcentroid_finalfn);
+PG_FUNCTION_INFO_V1(Tpoint_tcentroid_finalfn);
 /**
  * Final function for temporal centroid aggregation of temporal point values
  */
 PGDLLEXPORT Datum
-tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
+Tpoint_tcentroid_finalfn(PG_FUNCTION_ARGS)
 {
   /* The final function is strict, we do not need to test for null values */
   SkipList *state = (SkipList *) PG_GETARG_POINTER(0);

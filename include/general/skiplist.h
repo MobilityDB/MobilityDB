@@ -91,11 +91,6 @@ typedef struct
 
 /*****************************************************************************/
 
-extern Datum tagg_serialize(PG_FUNCTION_ARGS);
-extern Datum tagg_deserialize(PG_FUNCTION_ARGS);
-
-/*****************************************************************************/
-
 extern SkipList *skiplist_make(FunctionCallInfo fcinfo, void **values,
   int count, SkipListElemType elemtype);
 extern void *skiplist_headval(SkipList *list);

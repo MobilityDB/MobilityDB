@@ -42,8 +42,6 @@
 
 /*****************************************************************************/
 
-extern Datum tnpoint_gist_compress(PG_FUNCTION_ARGS);
-extern Datum tnpoint_spgist_compress(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

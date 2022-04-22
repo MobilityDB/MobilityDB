@@ -45,9 +45,6 @@
 
 /*****************************************************************************/
 
-extern Datum tnpoint_sel(PG_FUNCTION_ARGS);
-extern Datum tnpoint_joinsel(PG_FUNCTION_ARGS);
-
 extern bool tnpoint_cachedop(Oid operid, CachedOp *cachedOp);
 
 /*****************************************************************************/

@@ -63,10 +63,6 @@ extern int float8_qsort_cmp(const void *a1, const void *a2);
 extern void period_compute_stats1(VacAttrStats *stats, int non_null_cnt,
   int *slot_idx, PeriodBound *lowers, PeriodBound *uppers, float8 *lengths);
 
-extern Datum period_analyze(PG_FUNCTION_ARGS);
-extern Datum timestampset_analyze(PG_FUNCTION_ARGS);
-extern Datum periodset_analyze(PG_FUNCTION_ARGS);
-
 /*****************************************************************************/
 
 #endif

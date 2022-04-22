@@ -239,7 +239,8 @@ basetype_parse(char **str, Oid basetypid)
 /*****************************************************************************/
 
 /**
- * Parse a temporal box value from the buffer
+ * @ingroup libmeos_box_input_output
+ * @brief Parse a temporal box value from the buffer.
  */
 TBOX *
 tbox_parse(char **str)
@@ -318,7 +319,7 @@ tbox_parse(char **str)
 /* Time Types */
 
 /**
- * Parse a timestamp value from the buffer
+ * Parse a timestamp value from the buffer.
  */
 TimestampTz
 timestamp_parse(char **str)
@@ -337,39 +338,8 @@ timestamp_parse(char **str)
 }
 
 /**
- * Parse a period value from the buffer
- */
-Period *
-period_parse(char **str, bool make)
-{
-  bool lower_inc = false, upper_inc = false;
-  if (p_obracket(str))
-    lower_inc = true;
-  else if (p_oparen(str))
-    lower_inc = false;
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period")));
-
-  TimestampTz lower = timestamp_parse(str);
-  p_comma(str);
-  TimestampTz upper = timestamp_parse(str);
-
-  if (p_cbracket(str))
-    upper_inc = true;
-  else if (p_cparen(str))
-    upper_inc = false;
-  else
-    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-      errmsg("Could not parse period")));
-
-  if (! make)
-    return NULL;
-  return period_make(lower, upper, lower_inc, upper_inc);
-}
-
-/**
- * Parse a timestamp set value from the buffer
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a timestamp set value from the buffer.
  */
 TimestampSet *
 timestampset_parse(char **str)
@@ -403,7 +373,41 @@ timestampset_parse(char **str)
 }
 
 /**
- * Parse a period set value from the buffer
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a period value from the buffer.
+ */
+Period *
+period_parse(char **str, bool make)
+{
+  bool lower_inc = false, upper_inc = false;
+  if (p_obracket(str))
+    lower_inc = true;
+  else if (p_oparen(str))
+    lower_inc = false;
+  else
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+      errmsg("Could not parse period")));
+
+  TimestampTz lower = timestamp_parse(str);
+  p_comma(str);
+  TimestampTz upper = timestamp_parse(str);
+
+  if (p_cbracket(str))
+    upper_inc = true;
+  else if (p_cparen(str))
+    upper_inc = false;
+  else
+    ereport(ERROR, (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+      errmsg("Could not parse period")));
+
+  if (! make)
+    return NULL;
+  return period_make(lower, upper, lower_inc, upper_inc);
+}
+
+/**
+ * @ingroup libmeos_time_input_output
+ * @brief Parse a period set value from the buffer.
  */
 PeriodSet *
 periodset_parse(char **str)
@@ -442,7 +446,8 @@ periodset_parse(char **str)
 /* Temporal Types */
 
 /**
- * Parse a temporal instant value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal instant value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -464,12 +469,13 @@ tinstant_parse(char **str, CachedType temptype, bool end, bool make)
 }
 
 /**
- * Parse a temporal instant set value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal instant set value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Oid of the base type
  */
-static TInstantSet *
+TInstantSet *
 tinstantset_parse(char **str, CachedType temptype)
 {
   p_whitespace(str);
@@ -504,7 +510,8 @@ tinstantset_parse(char **str, CachedType temptype)
 }
 
 /**
- * Parse a temporal sequence value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal sequence value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -513,8 +520,9 @@ tinstantset_parse(char **str, CachedType temptype)
  * no moreinput after the sequence
  * @param[in] make Set to false for the first pass to do not create the instant
  */
-static TSequence *
-tsequence_parse(char **str, CachedType temptype, bool linear, bool end, bool make)
+TSequence *
+tsequence_parse(char **str, CachedType temptype, bool linear, bool end,
+  bool make)
 {
   p_whitespace(str);
   bool lower_inc = false, upper_inc = false;
@@ -560,13 +568,14 @@ tsequence_parse(char **str, CachedType temptype, bool linear, bool end, bool mak
 }
 
 /**
- * Parse a temporal sequence set value from the buffer
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal sequence set value from the buffer.
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type
  * @param[in] linear True when the interpolation is linear
  */
-static TSequenceSet *
+TSequenceSet *
 tsequenceset_parse(char **str, CachedType temptype, bool linear)
 {
   p_whitespace(str);
@@ -601,7 +610,8 @@ tsequenceset_parse(char **str, CachedType temptype, bool linear)
 }
 
 /**
- * Parse a temporal value from the buffer (dispatch function)
+ * @ingroup libmeos_temporal_input_output
+ * @brief Parse a temporal value from the buffer (dispatch function).
  *
  * @param[in] str Input string
  * @param[in] temptype Temporal type

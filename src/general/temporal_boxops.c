@@ -68,7 +68,7 @@
  *****************************************************************************/
 
 /**
- * Returns the size in bytes to read from toast to get the basic
+ * Return the size in bytes to read from toast to get the basic
  * information from a temporal: Temporal struct (i.e., TInstant,
  * TInstantSet, TSequence, or TSequenceSet) and bounding box size
 */
@@ -81,7 +81,7 @@ temporal_max_header_size(void)
 }
 
 /**
- * Returns true if the bounding boxes are equal
+ * Return true if the bounding boxes are equal
  *
  * @param[in] box1,box2 Bounding boxes
  * @param[in] temptype Temporal type
@@ -92,22 +92,22 @@ temporal_bbox_eq(const void *box1, const void *box2, CachedType temptype)
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    return period_eq_internal((Period *) box1, (Period *) box2);
+    return period_eq((Period *) box1, (Period *) box2);
   if (tnumber_type(temptype))
-    return tbox_eq_internal((TBOX *) box1, (TBOX *) box2);
+    return tbox_eq((TBOX *) box1, (TBOX *) box2);
   if (tspatial_type(temptype))
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
-    // return stbox_eq_internal((STBOX *) box1, (STBOX *) box2);
+    // return stbox_eq((STBOX *) box1, (STBOX *) box2);
     // Problem raised in the test file 51_tpoint_tbl.test.out
     // Look for temp != merge in that file for 2 other cases where
     // a problem still remains (result != 0) even with the _cmp function
-    return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2) == 0;
+    return stbox_cmp((STBOX *) box1, (STBOX *) box2) == 0;
   elog(ERROR, "unknown bounding box function for temporal type: %d", temptype);
 }
 
 /**
- * Returns -1, 0, or 1 depending on whether the first bounding box
+ * Return -1, 0, or 1 depending on whether the first bounding box
  * is less than, equal, or greater than the second one
  *
  * @param[in] box1,box2 Bounding boxes
@@ -119,11 +119,11 @@ temporal_bbox_cmp(const void *box1, const void *box2, CachedType temptype)
   /* Only external types have bounding box */
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    return period_cmp_internal((Period *) box1, (Period *) box2);
+    return period_cmp((Period *) box1, (Period *) box2);
   if (tnumber_type(temptype))
-    return tbox_cmp_internal((TBOX *) box1, (TBOX *) box2);
+    return tbox_cmp((TBOX *) box1, (TBOX *) box2);
   if (tspatial_type(temptype))
-    return stbox_cmp_internal((STBOX *) box1, (STBOX *) box2);
+    return stbox_cmp((STBOX *) box1, (STBOX *) box2);
   elog(ERROR, "unknown bounding box function for temporal type: %d", temptype);
 }
 
@@ -141,7 +141,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
 {
   ensure_temporal_type(temptype);
   if (talpha_type(temptype))
-    period_shift_tscale((Period *) box, start, duration);
+    period_shift_tscale(start, duration, (Period *) box);
   else if (tnumber_type(temptype))
     tbox_shift_tscale(start, duration, (TBOX *) box);
   else if (tspatial_type(temptype))
@@ -159,7 +159,7 @@ temporal_bbox_shift_tscale(void *box, const Interval *start,
  *****************************************************************************/
 
 /**
- * Returns true if the base type does not have bounding box
+ * Return true if the base type does not have bounding box
  */
 static bool
 temptype_without_bbox(CachedType temptype)
@@ -171,7 +171,7 @@ temptype_without_bbox(CachedType temptype)
 }
 
 /**
- * Returns the size of the bounding box
+ * Return the size of the bounding box
  */
 size_t
 temporal_bbox_size(CachedType temptype)
@@ -307,7 +307,7 @@ tsequence_make_bbox(const TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the array
  */
 static void
-tseqarr_to_period_internal(const TSequence **sequences, int count,
+tseqarr_to_period(const TSequence **sequences, int count,
   Period *period)
 {
   const Period *first = &sequences[0]->period;
@@ -325,7 +325,7 @@ tseqarr_to_period_internal(const TSequence **sequences, int count,
  * @param[in] count Number of elements in the array
  */
 static void
-tnumberseqarr_to_tbox_internal(const TSequence **sequences, int count,
+tnumberseqarr_to_tbox(const TSequence **sequences, int count,
   TBOX *box)
 {
   memcpy(box, tsequence_bbox_ptr(sequences[0]), sizeof(TBOX));
@@ -347,9 +347,9 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
   /* Only external types have bounding box */ // TODO
   ensure_temporal_type(sequences[0]->temptype);
   if (talpha_type(sequences[0]->temptype))
-    tseqarr_to_period_internal(sequences, count, (Period *) box);
+    tseqarr_to_period(sequences, count, (Period *) box);
   else if (tnumber_type(sequences[0]->temptype))
-    tnumberseqarr_to_tbox_internal(sequences, count, (TBOX *) box);
+    tnumberseqarr_to_tbox(sequences, count, (TBOX *) box);
   else if (tspatial_type(sequences[0]->temptype))
     tpointseqarr_stbox(sequences, count, (STBOX *) box);
   else
@@ -364,21 +364,211 @@ tsequenceset_make_bbox(const TSequence **sequences, int count, void *box)
  *****************************************************************************/
 
 /**
+ * Generic bounding box operator for a temporal value and a timestamp.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the timestamp is the first argument of the
+ * function
+ */
+Datum
+boxop_temporal_timestamp(const Temporal *temp, TimestampTz t,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1, p2;
+  temporal_period(temp, &p1);
+  period_set(t, t, true, true, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  return result;
+}
+
+/**
+ * Generic bounding box operator for a period and a temporal value.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] ts Timestamp set
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the timestamp set is the first argument of the
+ * function
+ */
+Datum
+boxop_temporal_timestampset(const Temporal *temp, const TimestampSet *ts,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1, p2;
+  temporal_period(temp, &p1);
+  timestampset_period(ts, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  return result;
+}
+
+/**
+ * Generic bounding box operator for a period and a temporal value.
+ *
+ * @param[in] temp Temporal value
+ * @param[in] p Period
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the period is the first argument of the
+ * function
+ */
+Datum
+boxop_temporal_period(const Temporal *temp, const Period *p,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1;
+  temporal_period(temp, &p1);
+  bool result = invert ? func(p, &p1) : func(&p1, p);
+  return result;
+}
+
+/**
+ * Generic bounding box operator for a temporal value and a periodset
+ *
+ * @param[in] temp Temporal value
+ * @param[in] ps Period set
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the period set is the first argument of the
+ * function
+ */
+bool
+boxop_temporal_periodset(const Temporal *temp, const PeriodSet *ps,
+  bool (*func)(const Period *, const Period *), bool invert)
+{
+  Period p1, p2;
+  temporal_period(temp, &p1);
+  periodset_period(ps, &p2);
+  bool result = invert ? func(&p2, &p1) : func(&p1, &p2);
+  return result;
+}
+
+/**
+ * Generic bounding box operator for two temporal values
+ *
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] func Bounding box function
+ */
+bool
+boxop_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const Period *, const Period *))
+{
+  Period p1, p2;
+  temporal_period(temp1, &p1);
+  temporal_period(temp2, &p2);
+  bool result = func(&p1, &p2);
+  return result;
+}
+
+/*****************************************************************************
+ * Bounding box operators for temporal number types: Generic functions
+ *****************************************************************************/
+
+/**
+ * Generic bounding box operator for a temporal number and a number
+ *
+ * @param[in] temp Temporal number
+ * @param[in] number Type
+ * @param[in] basetype Base type value
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the base value is the first argument of the
+ * function
+ */
+bool
+boxop_tnumber_number(const Temporal *temp, Datum number, CachedType basetype,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  TBOX box1, box2;
+  temporal_bbox(temp, &box1);
+  number_tbox(number, basetype, &box2);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return result;
+}
+
+/**
+ * Generic bounding box operator for a temporal number and a range
+ *
+ * @param[in] temp Temporal number
+ * @param[in] range Range
+ * @param[in] func Bounding box function
+ * @param[in] invert True when the range is the first argument of the function.
+ */
+int
+boxop_tnumber_range(const Temporal *temp, const RangeType *range,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  /* Return false on empty range excepted for contains */
+  char flags = range_get_flags(range);
+  if (flags & RANGE_EMPTY)
+    return -1;
+  TBOX box1, box2;
+  temporal_bbox(temp, &box1);
+  range_tbox(range, &box2);
+  bool result = invert ? func(&box2, &box1) : func(&box1, &box2);
+  return (result ? 1 : 0);
+}
+
+/**
+ * Generic bounding box operator for a temporal number and a temporal box
+ *
+ * @param[in] temp Temporal number
+ * @param[in] box Bounding box
+ * @param[in] invert True when the bounding box is the first argument of the
+ * function
+ * @param[in] func Bounding box function
+ */
+bool
+boxop_tnumber_tbox(const Temporal *temp, const TBOX *box,
+  bool (*func)(const TBOX *, const TBOX *), bool invert)
+{
+  TBOX box1;
+  temporal_bbox(temp, &box1);
+  bool result = invert ? func(box, &box1) : func(&box1, box);
+  return result;
+}
+
+/**
+ * Generic bounding box operator for two temporal numbers
+ *
+ * @param[in] temp1,temp2 Temporal numbers
+ * @param[in] func Bounding box function
+ */
+bool
+boxop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
+  bool (*func)(const TBOX *, const TBOX *))
+{
+  TBOX box1, box2;
+  temporal_bbox(temp1, &box1);
+  temporal_bbox(temp2, &box2);
+  bool result = func(&box1, &box2);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Bounding box operators for temporal types: Generic functions
+ * The inclusive/exclusive bounds are taken into account for the comparisons
+ *****************************************************************************/
+
+/**
  * Generic bounding box operator for a timestamp and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_timestamp_temporal(FunctionCallInfo fcinfo,
+boxop_timestamp_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  period_set(t, t, true, true, &p2);
-  bool result = func(&p2, &p1);
+  bool result = boxop_temporal_timestamp(temp, t, func, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -387,18 +577,15 @@ boxop_timestamp_temporal(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a timestamp
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_timestamp(FunctionCallInfo fcinfo,
+boxop_temporal_timestamp_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  period_set(t, t, true, true, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_timestamp(temp, t, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -407,18 +594,15 @@ boxop_temporal_timestamp(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a timestampset and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_timestampset_temporal(FunctionCallInfo fcinfo,
+boxop_timestampset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  timestampset_period(ts, &p2);
-  bool result = func(&p2, &p1);
+  bool result = boxop_temporal_timestampset(temp, ts, func, true);
   PG_FREE_IF_COPY(ts, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -428,18 +612,15 @@ boxop_timestampset_temporal(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a timestampset
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_timestampset(FunctionCallInfo fcinfo,
+boxop_temporal_timestampset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampSet *ts = PG_GETARG_TIMESTAMPSET_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  timestampset_period(ts, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_timestampset(temp, ts, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ts, 1);
   PG_RETURN_BOOL(result);
@@ -449,17 +630,15 @@ boxop_temporal_timestampset(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a period and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_period_temporal(FunctionCallInfo fcinfo,
+boxop_period_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Period *p = PG_GETARG_PERIOD_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1;
-  temporal_period(temp, &p1);
-  bool result = func(p, &p1);
+  bool result = boxop_temporal_period(temp, p, func, true);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -468,17 +647,15 @@ boxop_period_temporal(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a period
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_period(FunctionCallInfo fcinfo,
+boxop_temporal_period_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Period *p = PG_GETARG_PERIOD_P(1);
-  Period p1;
-  temporal_period(temp, &p1);
-  bool result = func(&p1, p);
+  bool result = boxop_temporal_period(temp, p, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -487,18 +664,15 @@ boxop_temporal_period(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a periodset and a temporal value
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_periodset_temporal(FunctionCallInfo fcinfo,
+boxop_periodset_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   PeriodSet *ps = PG_GETARG_PERIODSET_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  periodset_period(ps, &p2);
-  bool result = func(&p2, &p1);
+  bool result = boxop_temporal_periodset(temp, ps, func, true);
   PG_FREE_IF_COPY(ps, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
@@ -508,18 +682,15 @@ boxop_periodset_temporal(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal value and a periodset
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_periodset(FunctionCallInfo fcinfo,
+boxop_temporal_periodset_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   PeriodSet *ps = PG_GETARG_PERIODSET_P(1);
-  Period p1, p2;
-  temporal_period(temp, &p1);
-  periodset_period(ps, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_periodset(temp, ps, func, false);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(ps, 1);
   PG_RETURN_BOOL(result);
@@ -529,18 +700,15 @@ boxop_temporal_periodset(FunctionCallInfo fcinfo,
  * Generic bounding box operator for two temporal values
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_temporal_temporal(FunctionCallInfo fcinfo,
+boxop_temporal_temporal_ext(FunctionCallInfo fcinfo,
   bool (*func)(const Period *, const Period *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  Period p1, p2;
-  temporal_period(temp1, &p1);
-  temporal_period(temp2, &p2);
-  bool result = func(&p1, &p2);
+  bool result = boxop_temporal_temporal(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);
@@ -550,547 +718,502 @@ boxop_temporal_temporal(FunctionCallInfo fcinfo,
  * Bounding box operators for temporal types
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_timestamp_temporal);
+PG_FUNCTION_INFO_V1(Contains_timestamp_temporal);
 /**
- * Returns true if the timestamp and the bounding period of the temporal value
- * overlap
+ * Return true if the timestamp contains the bounding period of the temporal
+ * value
  */
 PGDLLEXPORT Datum
-contains_bbox_timestamp_temporal(PG_FUNCTION_ARGS)
+Contains_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal(fcinfo,
-    &contains_period_period_internal);
+  return boxop_timestamp_temporal_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_timestamp);
+PG_FUNCTION_INFO_V1(Contains_temporal_timestamp);
 /**
- * Returns true if the bounding period of the temporal value and the timestamp
- * overlap
+ * Return true if the bounding period of the temporal value contains the
+ * timestamp
  */
 PGDLLEXPORT Datum
-contains_bbox_temporal_timestamp(PG_FUNCTION_ARGS)
+Contains_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp(fcinfo,
-    &contains_period_period_internal);
+  return boxop_temporal_timestamp_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Contains_timestampset_temporal);
 /**
- * Returns true if the timestampset and the bounding period of the temporal
- * value overlap
+ * Return true if the bounding period of the timestampset contains the bounding
+ * period of the temporal value
  */
 PGDLLEXPORT Datum
-contains_bbox_timestampset_temporal(PG_FUNCTION_ARGS)
+Contains_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal(fcinfo,
-    &contains_period_period_internal);
+  return boxop_timestampset_temporal_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Contains_temporal_timestampset);
 /**
- * Returns true if the bounding period of the temporal value and the timestampset
- * overlap
+ * Return true if the bounding period of the temporal value contains the
+ * bounding period of the timestampset
  */
 PGDLLEXPORT Datum
-contains_bbox_temporal_timestampset(PG_FUNCTION_ARGS)
+Contains_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset(fcinfo,
-    &contains_period_period_internal);
+  return boxop_temporal_timestampset_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_period_temporal);
+PG_FUNCTION_INFO_V1(Contains_period_temporal);
 /**
- * Returns true if the period contains the bounding period of the temporal value
+ * Return true if the period contains the bounding period of the temporal value
  */
 PGDLLEXPORT Datum
-contains_bbox_period_temporal(PG_FUNCTION_ARGS)
+Contains_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal(fcinfo,
-    &contains_period_period_internal);
+  return boxop_period_temporal_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_period);
+PG_FUNCTION_INFO_V1(Contains_temporal_period);
 /**
- * Returns true if the bounding period of the temporal value contains the period
+ * Return true if the bounding period of the temporal value contains the period
  */
 PGDLLEXPORT Datum
-contains_bbox_temporal_period(PG_FUNCTION_ARGS)
+Contains_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period(fcinfo,
-    &contains_period_period_internal);
+  return boxop_temporal_period_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_periodset_temporal);
+PG_FUNCTION_INFO_V1(Contains_periodset_temporal);
 /**
- * Returns true if the periodset and the bounding period of the temporal value
- * overlap
+ * Return true if the bounding period of the periodset contains the bounding
+ * period of the temporal value
  */
 PGDLLEXPORT Datum
-contains_bbox_periodset_temporal(PG_FUNCTION_ARGS)
+Contains_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal(fcinfo,
-    &contains_period_period_internal);
+  return boxop_periodset_temporal_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_periodset);
+PG_FUNCTION_INFO_V1(Contains_temporal_periodset);
 /**
- * Returns true if the bounding period of the temporal value and the periodset
- * overlap
+ * Return true if the bounding period of the temporal value contains the
+ * bounding period of the periodset
  */
 PGDLLEXPORT Datum
-contains_bbox_temporal_periodset(PG_FUNCTION_ARGS)
+Contains_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset(fcinfo,
-    &contains_period_period_internal);
+  return boxop_temporal_periodset_ext(fcinfo, &contains_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_temporal_temporal);
+PG_FUNCTION_INFO_V1(Contains_temporal_temporal);
 /**
- * Returns true if the bounding period of the first temporal value contains
+ * Return true if the bounding period of the first temporal value contains
  * the bounding period of the second one.
  */
 PGDLLEXPORT Datum
-contains_bbox_temporal_temporal(PG_FUNCTION_ARGS)
+Contains_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal(fcinfo,
-    &contains_period_period_internal);
+  return boxop_temporal_temporal_ext(fcinfo, &contains_period_period);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contained_bbox_timestamp_temporal);
+PG_FUNCTION_INFO_V1(Contained_timestamp_temporal);
 /**
- * Returns true if the timestamp and the bounding period of the temporal value
- * overlap
- */
-PGDLLEXPORT Datum
-contained_bbox_timestamp_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_timestamp_temporal(fcinfo,
-    &contained_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_timestamp);
-/**
- * Returns true if the bounding period of the temporal value and the timestamp
- * overlap
- */
-PGDLLEXPORT Datum
-contained_bbox_temporal_timestamp(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_timestamp(fcinfo,
-    &contained_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_timestampset_temporal);
-/**
- * Returns true if the timestampset and the bounding period of the temporal
- * value overlap
- */
-PGDLLEXPORT Datum
-contained_bbox_timestampset_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_timestampset_temporal(fcinfo,
-    &contained_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_timestampset);
-/**
- * Returns true if the bounding period of the temporal value and the timestampset
- * overlap
- */
-PGDLLEXPORT Datum
-contained_bbox_temporal_timestampset(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_timestampset(fcinfo,
-    &contained_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_period_temporal);
-/**
- * Returns true if the period is contained the bounding period of the
+ * Return true if the timestamp is contained in the bounding period of the
  * temporal value
  */
 PGDLLEXPORT Datum
-contained_bbox_period_temporal(PG_FUNCTION_ARGS)
+Contained_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal(fcinfo,
-    &contained_period_period_internal);
+  return boxop_timestamp_temporal_ext(fcinfo, &contained_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_period);
+PG_FUNCTION_INFO_V1(Contained_temporal_timestamp);
 /**
- * Returns true if the bounding period of the temporal value is contained in
+ * Return true if the bounding period of the temporal value is contained in
+ * the timestamp
+ */
+PGDLLEXPORT Datum
+Contained_temporal_timestamp(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestamp_ext(fcinfo, &contained_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Contained_timestampset_temporal);
+/**
+ * Return true if the bounding period of the timestampset is contained in the
+ * bounding period of the temporal value overlap
+ */
+PGDLLEXPORT Datum
+Contained_timestampset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_timestampset_temporal_ext(fcinfo, &contained_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Contained_temporal_timestampset);
+/**
+ * Return true if the bounding period of the temporal value is contained in
+ * the bounding period of the timestampset
+ */
+PGDLLEXPORT Datum
+Contained_temporal_timestampset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestampset_ext(fcinfo, &contained_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Contained_period_temporal);
+/**
+ * Return true if the period is contained the bounding period of the temporal
+ * value
+ */
+PGDLLEXPORT Datum
+Contained_period_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_period_temporal_ext(fcinfo, &contained_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Contained_temporal_period);
+/**
+ * Return true if the bounding period of the temporal value is contained in
  * the period
  */
 PGDLLEXPORT Datum
-contained_bbox_temporal_period(PG_FUNCTION_ARGS)
+Contained_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period(fcinfo,
-    &contained_period_period_internal);
+  return boxop_temporal_period_ext(fcinfo, &contained_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_periodset_temporal);
+PG_FUNCTION_INFO_V1(Contained_periodset_temporal);
 /**
- * Returns true if the periodset and the bounding period of the temporal value
- * overlap
+ * Return true if the bounding period of the periodset is contained in the
+ * bounding period of the temporal value
  */
 PGDLLEXPORT Datum
-contained_bbox_periodset_temporal(PG_FUNCTION_ARGS)
+Contained_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal(fcinfo,
-    &contained_period_period_internal);
+  return boxop_periodset_temporal_ext(fcinfo, &contained_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_periodset);
+PG_FUNCTION_INFO_V1(Contained_temporal_periodset);
 /**
- * Returns true if the bounding period of the temporal value and the periodset
- * overlap
+ * Return true if the bounding period of the temporal value is contained in
+ * the bounding period of the periodset
  */
 PGDLLEXPORT Datum
-contained_bbox_temporal_periodset(PG_FUNCTION_ARGS)
+Contained_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset(fcinfo,
-    &contained_period_period_internal);
+  return boxop_temporal_periodset_ext(fcinfo, &contained_period_period);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_temporal_temporal);
+PG_FUNCTION_INFO_V1(Contained_temporal_temporal);
 /**
- * Returns true if the bounding period of the first temporal value is contained in
- * the bounding period of the second one.
+ * Return true if the bounding period of the first temporal value is contained
+ * in the bounding period of the second one.
  */
 PGDLLEXPORT Datum
-contained_bbox_temporal_temporal(PG_FUNCTION_ARGS)
+Contained_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal(fcinfo,
-    &contained_period_period_internal);
+  return boxop_temporal_temporal_ext(fcinfo, &contained_period_period);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_timestamp_temporal);
+PG_FUNCTION_INFO_V1(Overlaps_timestamp_temporal);
 /**
- * Returns true if the timestamp and the bounding period of the temporal value
+ * Return true if the timestamp and the bounding period of the temporal value
  * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_timestamp_temporal(PG_FUNCTION_ARGS)
+Overlaps_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestamp_temporal(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_timestamp_temporal_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_timestamp);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_timestamp);
 /**
- * Returns true if the bounding period of the temporal value and the timestamp
+ * Return true if the bounding period of the temporal value and the timestamp
  * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_temporal_timestamp(PG_FUNCTION_ARGS)
+Overlaps_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestamp(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_temporal_timestamp_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_timestampset_temporal);
+PG_FUNCTION_INFO_V1(Overlaps_timestampset_temporal);
 /**
- * Returns true if the timestampset and the bounding period of the temporal
- * value overlap
+ * Return true if the bounding period the timestampset and the bounding period
+ * of the temporal value overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_timestampset_temporal(PG_FUNCTION_ARGS)
+Overlaps_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_timestampset_temporal(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_timestampset_temporal_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_timestampset);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_timestampset);
 /**
- * Returns true if the bounding period of the temporal value and the timestampset
+ * Return true if the bounding period of the temporal value and the bounding
+ * period the timestampset overlap
+ */
+PGDLLEXPORT Datum
+Overlaps_temporal_timestampset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_timestampset_ext(fcinfo, &overlaps_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Overlaps_period_temporal);
+/**
+ * Return true if the period and the bounding period of the temporal value
  * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_temporal_timestampset(PG_FUNCTION_ARGS)
+Overlaps_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_timestampset(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_period_temporal_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_period_temporal);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_period);
 /**
- * Returns true if the period and the bounding period of the temporal value
+ * Return true if the bounding period of the temporal value and the period
  * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_period_temporal(PG_FUNCTION_ARGS)
+Overlaps_temporal_period(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_temporal_period_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_period);
+PG_FUNCTION_INFO_V1(Overlaps_periodset_temporal);
 /**
- * Returns true if the bounding period of the temporal value and the period
- * overlap
+ * Return true if the bounding period the periodset and the bounding period of
+ * the temporal value overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_temporal_period(PG_FUNCTION_ARGS)
+Overlaps_periodset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_periodset_temporal_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_periodset_temporal);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_periodset);
 /**
- * Returns true if the periodset and the bounding period of the temporal value
- * overlap
+ * Return true if the bounding period of the temporal value and the bounding
+ * period the periodset overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_periodset_temporal(PG_FUNCTION_ARGS)
+Overlaps_temporal_periodset(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_temporal_periodset_ext(fcinfo, &overlaps_period_period);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_periodset);
+PG_FUNCTION_INFO_V1(Overlaps_temporal_temporal);
 /**
- * Returns true if the bounding period of the temporal value and the periodset
- * overlap
+ * Return true if the bounding periods of the temporal values overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_temporal_periodset(PG_FUNCTION_ARGS)
+Overlaps_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset(fcinfo,
-    &overlaps_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(overlaps_bbox_temporal_temporal);
-/**
- * Returns true if the bounding periods of the temporal values overlap
- */
-PGDLLEXPORT Datum
-overlaps_bbox_temporal_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_temporal(fcinfo,
-    &overlaps_period_period_internal);
+  return boxop_temporal_temporal_ext(fcinfo, &overlaps_period_period);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(same_bbox_timestamp_temporal);
+PG_FUNCTION_INFO_V1(Same_timestamp_temporal);
 /**
- * Returns true if the timestamp and the bounding period of the temporal value
- * overlap
- */
-PGDLLEXPORT Datum
-same_bbox_timestamp_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_timestamp_temporal(fcinfo,
-    &period_eq_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_temporal_timestamp);
-/**
- * Returns true if the bounding period of the temporal value and the timestamp
- * overlap
- */
-PGDLLEXPORT Datum
-same_bbox_temporal_timestamp(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_timestamp(fcinfo,
-    &period_eq_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_timestampset_temporal);
-/**
- * Returns true if the timestampset and the bounding period of the temporal
- * value overlap
- */
-PGDLLEXPORT Datum
-same_bbox_timestampset_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_timestampset_temporal(fcinfo,
-    &period_eq_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_temporal_timestampset);
-/**
- * Returns true if the bounding period of the temporal value and the timestampset
- * overlap
- */
-PGDLLEXPORT Datum
-same_bbox_temporal_timestampset(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_timestampset(fcinfo,
-    &period_eq_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_period_temporal);
-/**
- * Returns true if the period and the bounding period of the temporal value
+ * Return true if the timestamp and the bounding period of the temporal value
  * are equal
  */
 PGDLLEXPORT Datum
-same_bbox_period_temporal(PG_FUNCTION_ARGS)
+Same_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal(fcinfo,
-    &period_eq_internal);
+  return boxop_timestamp_temporal_ext(fcinfo, &period_eq);
 }
 
-PG_FUNCTION_INFO_V1(same_bbox_temporal_period);
+PG_FUNCTION_INFO_V1(Same_temporal_timestamp);
 /**
- * Returns true if the bounding period of the temporal value and the period
+ * Return true if the bounding period of the temporal value and the timestamp
  * are equal
  */
 PGDLLEXPORT Datum
-same_bbox_temporal_period(PG_FUNCTION_ARGS)
+Same_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period(fcinfo,
-    &period_eq_internal);
+  return boxop_temporal_timestamp_ext(fcinfo, &period_eq);
 }
 
-PG_FUNCTION_INFO_V1(same_bbox_periodset_temporal);
+PG_FUNCTION_INFO_V1(Same_timestampset_temporal);
 /**
- * Returns true if the periodset and the bounding period of the temporal value
- * overlap
+ * Return true if the bounding period of the timestampset and the bounding
+ * period of the temporal value are equal
  */
 PGDLLEXPORT Datum
-same_bbox_periodset_temporal(PG_FUNCTION_ARGS)
+Same_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal(fcinfo,
-    &period_eq_internal);
+  return boxop_timestampset_temporal_ext(fcinfo, &period_eq);
 }
 
-PG_FUNCTION_INFO_V1(same_bbox_temporal_periodset);
+PG_FUNCTION_INFO_V1(Same_temporal_timestampset);
 /**
- * Returns true if the bounding period of the temporal value and the periodset
- * overlap
+ * Return true if the bounding period of the temporal value and the bounding
+ * period of the timestampset are equal
  */
 PGDLLEXPORT Datum
-same_bbox_temporal_periodset(PG_FUNCTION_ARGS)
+Same_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset(fcinfo,
-    &period_eq_internal);
+  return boxop_temporal_timestampset_ext(fcinfo, &period_eq);
 }
 
-PG_FUNCTION_INFO_V1(same_bbox_temporal_temporal);
+PG_FUNCTION_INFO_V1(Same_period_temporal);
 /**
- * Returns true if the bounding periods of the temporal values are equal
+ * Return true if the period and the bounding period of the temporal value
+ * are equal
  */
 PGDLLEXPORT Datum
-same_bbox_temporal_temporal(PG_FUNCTION_ARGS)
+Same_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal(fcinfo,
-    &period_eq_internal);
+  return boxop_period_temporal_ext(fcinfo, &period_eq);
+}
+
+PG_FUNCTION_INFO_V1(Same_temporal_period);
+/**
+ * Return true if the bounding period of the temporal value and the period
+ * are equal
+ */
+PGDLLEXPORT Datum
+Same_temporal_period(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_period_ext(fcinfo, &period_eq);
+}
+
+PG_FUNCTION_INFO_V1(Same_periodset_temporal);
+/**
+ * Return true if the bounding period of the periodset and the bounding period
+ * of the temporal value are equal
+ */
+PGDLLEXPORT Datum
+Same_periodset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_periodset_temporal_ext(fcinfo, &period_eq);
+}
+
+PG_FUNCTION_INFO_V1(Same_temporal_periodset);
+/**
+ * Return true if the bounding period of the temporal value and the bounding
+ * period of the periodset are equal
+ */
+PGDLLEXPORT Datum
+Same_temporal_periodset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_periodset_ext(fcinfo, &period_eq);
+}
+
+PG_FUNCTION_INFO_V1(Same_temporal_temporal);
+/**
+ * Return true if the bounding periods of the temporal values are equal
+ */
+PGDLLEXPORT Datum
+Same_temporal_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_temporal_ext(fcinfo, &period_eq);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_timestamp_temporal);
+PG_FUNCTION_INFO_V1(Adjacent_timestamp_temporal);
 /**
- * Returns true if the timestamp and the bounding period of the temporal value
- * overlap
- */
-PGDLLEXPORT Datum
-adjacent_bbox_timestamp_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_timestamp_temporal(fcinfo,
-    &adjacent_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_timestamp);
-/**
- * Returns true if the bounding period of the temporal value and the timestamp
- * overlap
- */
-PGDLLEXPORT Datum
-adjacent_bbox_temporal_timestamp(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_timestamp(fcinfo,
-    &adjacent_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(adjacent_bbox_timestampset_temporal);
-/**
- * Returns true if the timestampset and the bounding period of the temporal
- * value overlap
- */
-PGDLLEXPORT Datum
-adjacent_bbox_timestampset_temporal(PG_FUNCTION_ARGS)
-{
-  return boxop_timestampset_temporal(fcinfo,
-    &adjacent_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_timestampset);
-/**
- * Returns true if the bounding period of the temporal value and the timestampset
- * overlap
- */
-PGDLLEXPORT Datum
-adjacent_bbox_temporal_timestampset(PG_FUNCTION_ARGS)
-{
-  return boxop_temporal_timestampset(fcinfo,
-    &adjacent_period_period_internal);
-}
-
-PG_FUNCTION_INFO_V1(adjacent_bbox_period_temporal);
-/**
- * Returns true if the period and the bounding period of the temporal value
+ * Return true if the timestamp and the bounding period of the temporal value
  * are adjacent
  */
 PGDLLEXPORT Datum
-adjacent_bbox_period_temporal(PG_FUNCTION_ARGS)
+Adjacent_timestamp_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_period_temporal(fcinfo,
-    &adjacent_period_period_internal);
+  return boxop_timestamp_temporal_ext(fcinfo, &adjacent_period_period);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_period);
+PG_FUNCTION_INFO_V1(Adjacent_temporal_timestamp);
 /**
- * Returns true if the bounding period of the temporal value and the period
+ * Return true if the bounding period of the temporal value and the timestamp
  * are adjacent
  */
 PGDLLEXPORT Datum
-adjacent_bbox_temporal_period(PG_FUNCTION_ARGS)
+Adjacent_temporal_timestamp(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_period(fcinfo,
-    &adjacent_period_period_internal);
+  return boxop_temporal_timestamp_ext(fcinfo, &adjacent_period_period);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_periodset_temporal);
+PG_FUNCTION_INFO_V1(Adjacent_timestampset_temporal);
 /**
- * Returns true if the periodset and the bounding period of the temporal value
- * overlap
+ * Return true if the bounding period of the timestampset and the bounding
+ * period of the temporal value are adjacent
  */
 PGDLLEXPORT Datum
-adjacent_bbox_periodset_temporal(PG_FUNCTION_ARGS)
+Adjacent_timestampset_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_periodset_temporal(fcinfo,
-    &adjacent_period_period_internal);
+  return boxop_timestampset_temporal_ext(fcinfo, &adjacent_period_period);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_periodset);
+PG_FUNCTION_INFO_V1(Adjacent_temporal_timestampset);
 /**
- * Returns true if the bounding period of the temporal value and the periodset
- * overlap
+ * Return true if the bounding period of the temporal value and the bounding
+ * period of the timestampset are adjacent
  */
 PGDLLEXPORT Datum
-adjacent_bbox_temporal_periodset(PG_FUNCTION_ARGS)
+Adjacent_temporal_timestampset(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_periodset(fcinfo,
-    &adjacent_period_period_internal);
+  return boxop_temporal_timestampset_ext(fcinfo, &adjacent_period_period);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_temporal_temporal);
+PG_FUNCTION_INFO_V1(Adjacent_period_temporal);
 /**
- * Returns true if the bounding periods of the temporal values are adjacent
+ * Return true if the period and the bounding period of the temporal value
+ * are adjacent
  */
 PGDLLEXPORT Datum
-adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
+Adjacent_period_temporal(PG_FUNCTION_ARGS)
 {
-  return boxop_temporal_temporal(fcinfo,
-    &adjacent_period_period_internal);
+  return boxop_period_temporal_ext(fcinfo, &adjacent_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_temporal_period);
+/**
+ * Return true if the bounding period of the temporal value and the period
+ * are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_temporal_period(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_period_ext(fcinfo, &adjacent_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_periodset_temporal);
+/**
+ * Return true if the bounding period of the periodset and the bounding period
+ * of the temporal value are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_periodset_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_periodset_temporal_ext(fcinfo, &adjacent_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_temporal_periodset);
+/**
+ * Return true if the bounding period of the temporal value and the bounding
+ * period of the periodset are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_temporal_periodset(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_periodset_ext(fcinfo, &adjacent_period_period);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_temporal_temporal);
+/**
+ * Return true if the bounding periods of the temporal values are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_temporal_temporal(PG_FUNCTION_ARGS)
+{
+  return boxop_temporal_temporal_ext(fcinfo, &adjacent_period_period);
 }
 
 /*****************************************************************************
@@ -1101,19 +1224,16 @@ adjacent_bbox_temporal_temporal(PG_FUNCTION_ARGS)
  * Generic bounding box operator for a number and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_number_tnumber(FunctionCallInfo fcinfo,
+boxop_number_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  TBOX box1, box2;
-  number_tbox(value, basetype, &box1);
-  temporal_bbox(temp, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_number(temp, value, basetype, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -1122,19 +1242,16 @@ boxop_number_tnumber(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal number and a number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_number(FunctionCallInfo fcinfo,
+boxop_tnumber_number_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
   CachedType basetype = oid_type(get_fn_expr_argtype(fcinfo->flinfo, 1));
-  TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  number_tbox(value, basetype, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_number(temp, value, basetype, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -1143,24 +1260,19 @@ boxop_tnumber_number(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a range and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_range_tnumber(FunctionCallInfo fcinfo,
+boxop_range_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   RangeType *range = PG_GETARG_RANGE_P(0);
-  /* Return false on empty range excepted for contained */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
-    PG_RETURN_BOOL(func == &contained_tbox_tbox_internal);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TBOX box1, box2;
-  range_tbox(range, &box1);
-  temporal_bbox(temp, &box2);
-  bool result = func(&box1, &box2);
+  int result = boxop_tnumber_range(temp, range, func, INVERT);
   PG_FREE_IF_COPY(range, 0);
   PG_FREE_IF_COPY(temp, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
@@ -1168,24 +1280,19 @@ boxop_range_tnumber(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal number and a range
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_range(FunctionCallInfo fcinfo,
+boxop_tnumber_range_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   RangeType *range = PG_GETARG_RANGE_P(1);
-  /* Return false on empty range excepted for contains */
-  char flags = range_get_flags(range);
-  if (flags & RANGE_EMPTY)
-    PG_RETURN_BOOL(func == &contains_tbox_tbox_internal);
-  TBOX box1, box2;
-  temporal_bbox(temp, &box1);
-  range_tbox(range, &box2);
-  bool result = func(&box1, &box2);
+  int result = boxop_tnumber_range(temp, range, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(range, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
 
@@ -1193,17 +1300,15 @@ boxop_tnumber_range(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal box and a temporal number
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_tbox_tnumber(FunctionCallInfo fcinfo,
+boxop_tbox_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   TBOX *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  TBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(box, &box1);
+  bool result = boxop_tnumber_tbox(temp, box, func, INVERT);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_BOOL(result);
 }
@@ -1212,17 +1317,15 @@ boxop_tbox_tnumber(FunctionCallInfo fcinfo,
  * Generic bounding box operator for a temporal number and a temporal box
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_tbox(FunctionCallInfo fcinfo,
+boxop_tnumber_tbox_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBOX *box = PG_GETARG_TBOX_P(1);
-  TBOX box1;
-  temporal_bbox(temp, &box1);
-  bool result = func(&box1, box);
+  bool result = boxop_tnumber_tbox(temp, box, func, INVERT_NO);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_BOOL(result);
 }
@@ -1231,18 +1334,15 @@ boxop_tnumber_tbox(FunctionCallInfo fcinfo,
  * Generic bounding box operator for two temporal numbers
  *
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
+ * @param[in] func Bounding box function
  */
 Datum
-boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
+boxop_tnumber_tnumber_ext(FunctionCallInfo fcinfo,
   bool (*func)(const TBOX *, const TBOX *))
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  TBOX box1, box2;
-  temporal_bbox(temp1, &box1);
-  temporal_bbox(temp2, &box2);
-  bool result = func(&box1, &box2);
+  bool result = boxop_tnumber_tnumber(temp1, temp2, func);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   PG_RETURN_BOOL(result);
@@ -1252,384 +1352,394 @@ boxop_tnumber_tnumber(FunctionCallInfo fcinfo,
  * Bounding box operators for temporal numbers
  *****************************************************************************/
 
-PG_FUNCTION_INFO_V1(contains_bbox_number_tnumber);
+PG_FUNCTION_INFO_V1(Contains_number_tnumber);
 /**
- * Returns true if the range and the bounding box of the temporal number overlap
+ * Return true if the range contains the bounding box of the temporal number
  */
 PGDLLEXPORT Datum
-contains_bbox_number_tnumber(PG_FUNCTION_ARGS)
+Contains_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_number_tnumber(fcinfo, &contains_tbox_tbox_internal);
+  return boxop_number_tnumber_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(contains_bbox_tnumber_number);
+PG_FUNCTION_INFO_V1(Contains_tnumber_number);
 /**
- * Returns true if the bounding box of the temporal number and the
- * the range overlap
- */
-PGDLLEXPORT Datum
-contains_bbox_tnumber_number(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_number(fcinfo, &contains_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_range_tnumber);
-/**
- * Returns true if the range contains the bounding box of the temporal number
- */
-PGDLLEXPORT Datum
-contains_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_range_tnumber(fcinfo, &contains_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_tnumber_range);
-/**
- * Returns true if the bounding box of the temporal number contains the range
- */
-PGDLLEXPORT Datum
-contains_bbox_tnumber_range(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_range(fcinfo, &contains_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_tbox_tnumber);
-/**
- * Returns true if the temporal box contains the bounding box of the
- * temporal number
- */
-PGDLLEXPORT Datum
-contains_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_tbox_tnumber(fcinfo, &contains_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tbox);
-/**
- * Returns true if the bounding box of the temporal number contains the temporal box
- */
-PGDLLEXPORT Datum
-contains_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_tbox(fcinfo, &contains_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contains_bbox_tnumber_tnumber);
-/**
- * Returns true if the bounding box of the first temporal number contains the one
- * of the second temporal number
- */
-PGDLLEXPORT Datum
-contains_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_tnumber(fcinfo, &contains_tbox_tbox_internal);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(contained_bbox_number_tnumber);
-/**
- * Returns true if the range and the bounding box of the temporal number overlap
- */
-PGDLLEXPORT Datum
-contained_bbox_number_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_number_tnumber(fcinfo, &contained_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_tnumber_number);
-/**
- * Returns true if the bounding box of the temporal number and the
- * the range overlap
- */
-PGDLLEXPORT Datum
-contained_bbox_tnumber_number(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_number(fcinfo, &contained_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_range_tnumber);
-/**
- * Returns true if the range is contained in the bounding box of the temporal number
- */
-PGDLLEXPORT Datum
-contained_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_range_tnumber(fcinfo, &contained_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(contained_bbox_tnumber_range);
-/**
- * Returns true if the bounding box of the temporal number is contained in
+ * Return true if the bounding box of the temporal number contains the
  * the range
  */
 PGDLLEXPORT Datum
-contained_bbox_tnumber_range(PG_FUNCTION_ARGS)
+Contains_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tnumber_number_ext(fcinfo, &contains_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_tbox_tnumber);
+PG_FUNCTION_INFO_V1(Contains_range_tnumber);
 /**
- * Returns true if the temporal box is contained in the bounding box
+ * Return true if the range contains the bounding box of the temporal number
+ */
+PGDLLEXPORT Datum
+Contains_range_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_range_tnumber_ext(fcinfo, &contains_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contains_tnumber_range);
+/**
+ * Return true if the bounding box of the temporal number contains the range
+ */
+PGDLLEXPORT Datum
+Contains_tnumber_range(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_range_ext(fcinfo, &contains_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contains_tbox_tnumber);
+/**
+ * Return true if the temporal box contains the bounding box of the
+ * temporal number
+ */
+PGDLLEXPORT Datum
+Contains_tbox_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_tbox_tnumber_ext(fcinfo, &contains_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contains_tnumber_tbox);
+/**
+ * Return true if the bounding box of the temporal number contains the temporal
+ * box
+ */
+PGDLLEXPORT Datum
+Contains_tnumber_tbox(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_tbox_ext(fcinfo, &contains_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contains_tnumber_tnumber);
+/**
+ * Return true if the bounding box of the first temporal number contains the one
+ * of the second temporal number
+ */
+PGDLLEXPORT Datum
+Contains_tnumber_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_tnumber_ext(fcinfo, &contains_tbox_tbox);
+}
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Contained_number_tnumber);
+/**
+ * Return true if the range is contained in the bounding box of the temporal
+ * number
+ */
+PGDLLEXPORT Datum
+Contained_number_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_number_tnumber_ext(fcinfo, &contained_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contained_tnumber_number);
+/**
+ * Return true if the bounding box of the temporal number is contained in the
+ * the range
+ */
+PGDLLEXPORT Datum
+Contained_tnumber_number(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_number_ext(fcinfo, &contained_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contained_range_tnumber);
+/**
+ * Return true if the range is contained in the bounding box of the temporal
+ * number
+ */
+PGDLLEXPORT Datum
+Contained_range_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_range_tnumber_ext(fcinfo, &contained_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contained_tnumber_range);
+/**
+ * Return true if the bounding box of the temporal number is contained in
+ * the range
+ */
+PGDLLEXPORT Datum
+Contained_tnumber_range(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_range_ext(fcinfo, &contained_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Contained_tbox_tnumber);
+/**
+ * Return true if the temporal box is contained in the bounding box
  * of the temporal number
  */
 PGDLLEXPORT Datum
-contained_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
+Contained_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tbox_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tbox);
+PG_FUNCTION_INFO_V1(Contained_tnumber_tbox);
 /**
- * Returns true if the bounding box of the temporal number is contained in
+ * Return true if the bounding box of the temporal number is contained in
  * the temporal box
  */
 PGDLLEXPORT Datum
-contained_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
+Contained_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tnumber_tbox_ext(fcinfo, &contained_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(contained_bbox_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Contained_tnumber_tnumber);
 /**
- * Returns true if the bounding box of the first temporal number is contained
+ * Return true if the bounding box of the first temporal number is contained
  * in the one of the second temporal number
  */
 PGDLLEXPORT Datum
-contained_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
+Contained_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber(fcinfo, &contained_tbox_tbox_internal);
+  return boxop_tnumber_tnumber_ext(fcinfo, &contained_tbox_tbox);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_number_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_number_tnumber);
 /**
- * Returns true if the range and the bounding box of the temporal number overlap
+ * Return true if the number and the bounding box of the temporal number
+ * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_number_tnumber(PG_FUNCTION_ARGS)
+Overlaps_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_number_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_number_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_number);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_number);
 /**
- * Returns true if the bounding box of the temporal number and the
- * the range overlap
+ * Return true if the bounding box of the temporal number and the number
+ * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_tnumber_number(PG_FUNCTION_ARGS)
+Overlaps_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_number(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tnumber_number_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_range_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_range_tnumber);
 /**
- * Returns true if the range and the bounding box of the temporal number overlap
+ * Return true if the range and the bounding box of the temporal number
+ * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_range_tnumber(PG_FUNCTION_ARGS)
+Overlaps_range_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_range_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_range);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_range);
 /**
- * Returns true if the bounding box of the temporal number and the
- * the range overlap
+ * Return true if the bounding box of the temporal number and the range
+ * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_tnumber_range(PG_FUNCTION_ARGS)
+Overlaps_tnumber_range(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tnumber_range_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tbox_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_tbox_tnumber);
 /**
- * Returns true if the temporal box and the bounding box
- * of the temporal number overlap
+ * Return true if the temporal box and the bounding box of the temporal number
+ * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
+Overlaps_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tbox_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tbox);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_tbox);
 /**
- * Returns true if the bounding box of the temporal number and the
- * temporal box overlap
+ * Return true if the bounding box of the temporal number and the temporal box
+ * overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
+Overlaps_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox(fcinfo, &overlaps_tbox_tbox_internal);
+  return boxop_tnumber_tbox_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(overlaps_bbox_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Overlaps_tnumber_tnumber);
 /**
- * Returns true if the bounding boxes of the temporal numbers overlap
+ * Return true if the bounding boxes of the temporal numbers overlap
  */
 PGDLLEXPORT Datum
-overlaps_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
+Overlaps_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber(fcinfo, &overlaps_tbox_tbox_internal);
-}
-
-/*****************************************************************************/
-
-PG_FUNCTION_INFO_V1(same_bbox_number_tnumber);
-/**
- * Returns true if the range and the bounding box of the temporal number overlap
- */
-PGDLLEXPORT Datum
-same_bbox_number_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_number_tnumber(fcinfo, &same_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_number);
-/**
- * Returns true if the bounding box of the temporal number and the
- * the range overlap
- */
-PGDLLEXPORT Datum
-same_bbox_tnumber_number(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_number(fcinfo, &same_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_range_tnumber);
-/**
- * Returns true if the range and the bounding box of the temporal number
- * are equal on the common dimensions
- */
-PGDLLEXPORT Datum
-same_bbox_range_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_range_tnumber(fcinfo, &same_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_range);
-/**
- * Returns true if the bounding box of the temporal number and the
- * the range are equal on the common dimensions
- */
-PGDLLEXPORT Datum
-same_bbox_tnumber_range(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_range(fcinfo, &same_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_tbox_tnumber);
-/**
- * Returns true if the temporal box and the bounding box
- * of the temporal number are equal in the common dimensions
- */
-PGDLLEXPORT Datum
-same_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_tbox_tnumber(fcinfo, &same_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_tbox);
-/**
- * Returns true if the bounding box of the temporal number and the
- * temporal box are equal in the common dimensions
- */
-PGDLLEXPORT Datum
-same_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_tbox(fcinfo, &same_tbox_tbox_internal);
-}
-
-PG_FUNCTION_INFO_V1(same_bbox_tnumber_tnumber);
-/**
- * Returns true if the bounding boxes of the temporal numbers are equal
- * in the common dimensions
- */
-PGDLLEXPORT Datum
-same_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
-{
-  return boxop_tnumber_tnumber(fcinfo, &same_tbox_tbox_internal);
+  return boxop_tnumber_tnumber_ext(fcinfo, &overlaps_tbox_tbox);
 }
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_number_tnumber);
+PG_FUNCTION_INFO_V1(Same_number_tnumber);
 /**
- * Returns true if the range and the bounding box of the temporal number overlap
+ * Return true if the number and the bounding box of the temporal number are
+ * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_number_tnumber(PG_FUNCTION_ARGS)
+Same_number_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_number_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_number_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_number);
+PG_FUNCTION_INFO_V1(Same_tnumber_number);
 /**
- * Returns true if the bounding box of the temporal number and the
- * the range overlap
+ * Return true if the bounding box of the temporal number and the number are
+ * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_tnumber_number(PG_FUNCTION_ARGS)
+Same_tnumber_number(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_number(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_number_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_range_tnumber);
+PG_FUNCTION_INFO_V1(Same_range_tnumber);
 /**
- * Returns true if the range and the bounding box of the temporal number
- * are adjancent
+ * Return true if the range and the bounding box of the temporal number are
+ * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_range_tnumber(PG_FUNCTION_ARGS)
+Same_range_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_range_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_range_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_range);
+PG_FUNCTION_INFO_V1(Same_tnumber_range);
 /**
- * Returns true if the bounding box of the temporal number and the
- * the range are adjacent
+ * Return true if the bounding box of the temporal number and the range are
+ * equal on the common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_tnumber_range(PG_FUNCTION_ARGS)
+Same_tnumber_range(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_range(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_range_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_tbox_tnumber);
+PG_FUNCTION_INFO_V1(Same_tbox_tnumber);
 /**
- * Returns true if the temporal box and the bounding box
- * of the temporal number are adjacent
+ * Return true if the temporal box and the bounding box of the temporal number
+ * are equal in the common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_tbox_tnumber(PG_FUNCTION_ARGS)
+Same_tbox_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tbox_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tbox_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tbox);
+PG_FUNCTION_INFO_V1(Same_tnumber_tbox);
 /**
- * Returns true if the bounding box of the temporal number and the
- * temporal box are adjacent
+ * Return true if the bounding box of the temporal number and the temporal box
+ * are equal in the common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_tnumber_tbox(PG_FUNCTION_ARGS)
+Same_tnumber_tbox(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tbox(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_tbox_ext(fcinfo, &same_tbox_tbox);
 }
 
-PG_FUNCTION_INFO_V1(adjacent_bbox_tnumber_tnumber);
+PG_FUNCTION_INFO_V1(Same_tnumber_tnumber);
 /**
- * Returns true if the bounding boxes of the temporal numbers are adjacent
+ * Return true if the bounding boxes of the temporal numbers are equal in the
+ * common dimensions
  */
 PGDLLEXPORT Datum
-adjacent_bbox_tnumber_tnumber(PG_FUNCTION_ARGS)
+Same_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
-  return boxop_tnumber_tnumber(fcinfo, &adjacent_tbox_tbox_internal);
+  return boxop_tnumber_tnumber_ext(fcinfo, &same_tbox_tbox);
 }
+
+/*****************************************************************************/
+
+PG_FUNCTION_INFO_V1(Adjacent_number_tnumber);
+/**
+ * Return true if the number and the bounding box of the temporal number are
+ * adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_number_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_number_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_number);
+/**
+ * Return true if the bounding box of the temporal number and the number are
+ * adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_tnumber_number(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_number_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_range_tnumber);
+/**
+ * Return true if the range and the bounding box of the temporal number are
+ * adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_range_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_range_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_range);
+/**
+ * Return true if the bounding box of the temporal number and the range are
+ * adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_tnumber_range(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_range_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_tbox_tnumber);
+/**
+ * Return true if the temporal box and the bounding box of the temporal number
+ * are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_tbox_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_tbox_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_tbox);
+/**
+ * Return true if the bounding box of the temporal number and the temporal box
+ * are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_tnumber_tbox(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_tbox_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+PG_FUNCTION_INFO_V1(Adjacent_tnumber_tnumber);
+/**
+ * Return true if the bounding boxes of the temporal numbers are adjacent
+ */
+PGDLLEXPORT Datum
+Adjacent_tnumber_tnumber(PG_FUNCTION_ARGS)
+{
+  return boxop_tnumber_tnumber_ext(fcinfo, &adjacent_tbox_tbox);
+}
+
+#endif /* #ifndef MEOS */
+
 /*****************************************************************************/

@@ -39,30 +39,38 @@
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <fmgr.h>
+/* MobilityDB */
+#include "general/temporal.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 
-extern Datum tcontains_geo_tnpoint(PG_FUNCTION_ARGS);
+extern Temporal *tinterrel_tnpoint_npoint(const Temporal *temp,
+  const Npoint *np, bool tinter, bool restr, Datum atvalue);
+extern Temporal *tinterrel_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *geo, bool tinter, bool restr, Datum atvalue);
 
-extern Datum tdisjoint_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdisjoint_tnpoint_npoint(PG_FUNCTION_ARGS);
+extern Temporal *tcontains_geo_tnpoint(GSERIALIZED *geo, Temporal *temp,
+  bool restr, Datum atvalue);
+extern Temporal *ttouches_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *geo, bool restr, Datum atvalue);
+extern Temporal *ttouches_geo_tnpoint(const GSERIALIZED *geo,
+  const Temporal *temp,  bool restr, Datum atvalue);
+extern Temporal *ttouches_tnpoint_npoint(const Temporal *temp,
+  const Npoint *np, bool restr, Datum atvalue);
+extern Temporal *ttouches_npoint_tnpoint(const Npoint *np,
+  const Temporal *temp, bool restr, Datum atvalue);
+extern Temporal *tdwithin_tnpoint_geo(Temporal *temp, GSERIALIZED *geo,
+  Datum dist, bool restr, Datum atvalue);
+extern Temporal *tdwithin_geo_tnpoint(GSERIALIZED *gs, Temporal *temp,
+  Datum dist, bool restr, Datum atvalue);
+extern Temporal *tdwithin_tnpoint_npoint(Temporal *temp, Npoint *np,
+  Datum dist, bool restr, Datum atvalue);
+extern Temporal *tdwithin_npoint_tnpoint(Npoint *np, Temporal *temp,
+  Datum dist, bool restr, Datum atvalue);
+extern Temporal *tdwithin_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2,
+  Datum dist, bool restr, Datum atvalue);
 
-extern Datum tintersects_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tintersects_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tintersects_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tintersects_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum ttouches_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum ttouches_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum ttouches_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum ttouches_tnpoint_npoint(PG_FUNCTION_ARGS);
-
-extern Datum tdwithin_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdwithin_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum tdwithin_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum tdwithin_tnpoint_npoint(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

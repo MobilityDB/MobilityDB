@@ -58,21 +58,23 @@ extern bool tnpointsegm_intersection_value(const TInstant *inst1,
 
 /* Functions for spatial reference systems */
 
-extern int tnpoint_srid_internal(const Temporal *temp);
-
-extern Datum tnpoint_trajectory(PG_FUNCTION_ARGS);
-
-extern bool npoint_same_internal(const npoint *np1, const npoint *np2);
-
+extern int tnpointinst_srid(const TInstant *inst);
+extern int tnpoint_srid(const Temporal *temp);
+extern Datum tnpointinst_geom(const TInstant *inst);
+extern Datum tnpointinstset_geom(const TInstantSet *ti);
+extern Datum tnpointseq_geom(const TSequence *seq);
+extern Datum tnpointseqset_geom(const TSequenceSet *ts);
 extern Datum tnpoint_geom(const Temporal *temp);
 
-extern Datum tnpoint_length(PG_FUNCTION_ARGS);
-extern Datum tnpoint_cumulative_length(PG_FUNCTION_ARGS);
-extern Datum tnpoint_speed(PG_FUNCTION_ARGS);
-extern Datum tnpoint_twcentroid(PG_FUNCTION_ARGS);
-extern Datum tnpoint_azimuth(PG_FUNCTION_ARGS);
-extern Datum tnpoint_at_geometry(PG_FUNCTION_ARGS);
-extern Datum tnpoint_minus_geometry(PG_FUNCTION_ARGS);
+extern bool npoint_same(const Npoint *np1, const Npoint *np2);
+
+extern double tnpoint_length(Temporal *temp);
+extern Temporal *tnpoint_cumulative_length(Temporal *temp);
+extern Temporal *tnpoint_speed(Temporal *temp);
+extern Datum tnpoint_twcentroid(Temporal *temp);
+extern Temporal *tnpoint_azimuth(Temporal *temp);
+extern Temporal *tnpoint_restrict_geometry(Temporal *temp, GSERIALIZED *gs,
+  bool atfunc);
 
 /*****************************************************************************/
 

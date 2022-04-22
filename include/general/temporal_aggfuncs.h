@@ -57,7 +57,7 @@ extern Datum datum_sum_double3(Datum l, Datum r);
 extern Datum datum_sum_double4(Datum l, Datum r);
 
 /* Generic aggregation functions */
- 
+
 extern TInstant **tinstant_tagg(TInstant **instants1, int count1,
   TInstant **instants2, int count2, Datum (*func)(Datum, Datum), int *newcount);
 extern TSequence **tsequence_tagg(TSequence **sequences1, int count1,
@@ -71,37 +71,6 @@ extern SkipList *temporal_tagg_combinefn1(FunctionCallInfo fcinfo,
 
 /*****************************************************************************/
 
-extern Datum temporal_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_extent_combinefn(PG_FUNCTION_ARGS);
-extern Datum tnumber_extent_transfn(PG_FUNCTION_ARGS);
-extern Datum tnumber_extent_combinefn(PG_FUNCTION_ARGS);
-
-extern Datum tbool_tand_transfn(PG_FUNCTION_ARGS);
-extern Datum tbool_tand_combinefn(PG_FUNCTION_ARGS);
-extern Datum tbool_tor_transfn(PG_FUNCTION_ARGS);
-extern Datum tbool_tor_combinefn(PG_FUNCTION_ARGS);
-extern Datum tint_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum tint_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum tint_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum tint_tmax_combinefn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tmax_combinefn(PG_FUNCTION_ARGS);
-extern Datum tint_tsum_transfn(PG_FUNCTION_ARGS);
-extern Datum tint_tsum_combinefn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tsum_transfn(PG_FUNCTION_ARGS);
-extern Datum tfloat_tsum_combinefn(PG_FUNCTION_ARGS);
-extern Datum temporal_tcount_transfn(PG_FUNCTION_ARGS);
-extern Datum temporal_tcount_combinefn(PG_FUNCTION_ARGS);
-extern Datum tnumber_tavg_transfn(PG_FUNCTION_ARGS);
-extern Datum tnumber_tavg_combinefn(PG_FUNCTION_ARGS);
-extern Datum temporal_tagg_finalfn(PG_FUNCTION_ARGS);
-extern Datum tnumber_tavg_finalfn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmin_transfn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmin_combinefn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmax_transfn(PG_FUNCTION_ARGS);
-extern Datum ttext_tmax_combinefn(PG_FUNCTION_ARGS);
 
 /*****************************************************************************/
 

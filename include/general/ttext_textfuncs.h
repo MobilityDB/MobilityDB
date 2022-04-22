@@ -39,14 +39,21 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <catalog/pg_type.h>
+/* PostgreSQL */
+#include "general/temporal.h"
 
 /*****************************************************************************/
 
-extern Datum textcat_base_ttext(PG_FUNCTION_ARGS);
-extern Datum textcat_ttext_base(PG_FUNCTION_ARGS);
-extern Datum textcat_ttext_ttext(PG_FUNCTION_ARGS);
-extern Datum ttext_upper(PG_FUNCTION_ARGS);
-extern Datum ttext_lower(PG_FUNCTION_ARGS);
+extern Datum datum_textcat(Datum l, Datum r);
+extern Datum datum_lower(Datum value);
+extern Datum datum_upper(Datum value);
+
+extern Temporal *textfunc_ttext(const Temporal *temp,
+  Datum (*func)(Datum value));
+extern Temporal *textfunc_ttext_text(const Temporal *temp, Datum value,
+  datum_func2 func, bool invert);
+extern Temporal *textfunc_ttext_ttext(const Temporal *temp1,
+  const Temporal *temp2, datum_func2 func);
 
 /*****************************************************************************/
 

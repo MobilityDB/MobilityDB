@@ -40,15 +40,15 @@
 
 CREATE FUNCTION temporal_teq(boolean, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tbool, boolean)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tbool, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
@@ -73,23 +73,23 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION temporal_teq(integer, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, integer)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
@@ -120,23 +120,23 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION temporal_teq(integer, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, integer, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tint, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -145,23 +145,23 @@ CREATE FUNCTION temporal_teq(tint, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_teq(float, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(float, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tfloat, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tfloat, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tfloat, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
@@ -192,23 +192,23 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION temporal_teq(float, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(float, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tfloat, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tfloat, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(tfloat, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -217,15 +217,15 @@ CREATE FUNCTION temporal_teq(tfloat, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_teq(text, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(ttext, text)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(ttext, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #= (
@@ -246,15 +246,15 @@ CREATE OPERATOR #= (
 
 CREATE FUNCTION temporal_teq(text, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_base_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(ttext, text, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_base'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_teq(ttext, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'teq_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Teq_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -265,15 +265,15 @@ CREATE FUNCTION temporal_teq(ttext, ttext, atvalue bool)
 
 CREATE FUNCTION temporal_tne(boolean, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tbool, boolean)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tbool, tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
@@ -298,23 +298,23 @@ CREATE OPERATOR #<> (
 
 CREATE FUNCTION temporal_tne(integer, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, integer)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
@@ -345,23 +345,23 @@ CREATE OPERATOR #<> (
 
 CREATE FUNCTION temporal_tne(integer, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, integer, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tint, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -370,23 +370,23 @@ CREATE FUNCTION temporal_tne(tint, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tne(float, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(float, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tfloat, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tfloat, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tfloat, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
@@ -417,23 +417,23 @@ CREATE OPERATOR #<> (
 
 CREATE FUNCTION temporal_tne(float, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(float, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tfloat, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tfloat, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(tfloat, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -442,15 +442,15 @@ CREATE FUNCTION temporal_tne(tfloat, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tne(text, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(ttext, text)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(ttext, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<> (
@@ -471,15 +471,15 @@ CREATE OPERATOR #<> (
 
 CREATE FUNCTION temporal_tne(text, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(ttext, text, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tne(ttext, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tne_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tne_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 
@@ -491,23 +491,23 @@ CREATE FUNCTION temporal_tne(ttext, ttext, atvalue bool)
 
 CREATE FUNCTION temporal_tlt(integer, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, integer)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #< (
@@ -538,23 +538,23 @@ CREATE OPERATOR #< (
 
 CREATE FUNCTION temporal_tlt(integer, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, integer, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tint, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -563,23 +563,23 @@ CREATE FUNCTION temporal_tlt(tint, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tlt(float, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(float, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tfloat, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tfloat, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tfloat, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #< (
@@ -610,23 +610,23 @@ CREATE OPERATOR #< (
 
 CREATE FUNCTION temporal_tlt(float, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(float, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tfloat, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tfloat, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(tfloat, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -635,15 +635,15 @@ CREATE FUNCTION temporal_tlt(tfloat, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tlt(text, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(ttext, text)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(ttext, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #< (
@@ -664,15 +664,15 @@ CREATE OPERATOR #< (
 
 CREATE FUNCTION temporal_tlt(text, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(ttext, text, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tlt(ttext, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tlt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tlt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -683,23 +683,23 @@ CREATE FUNCTION temporal_tlt(ttext, ttext, atvalue bool)
 
 CREATE FUNCTION temporal_tgt(integer, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, integer)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #> (
@@ -730,23 +730,23 @@ CREATE OPERATOR #> (
 
 CREATE FUNCTION temporal_tgt(integer, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, integer, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tint, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -755,27 +755,27 @@ CREATE FUNCTION temporal_tgt(tint, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tgt(float, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(float, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, int)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #> (
@@ -806,27 +806,27 @@ CREATE OPERATOR #> (
 
 CREATE FUNCTION temporal_tgt(float, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(float, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, int, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(tfloat, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -835,15 +835,15 @@ CREATE FUNCTION temporal_tgt(tfloat, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tgt(text, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(ttext, text)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(ttext, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #> (
@@ -864,15 +864,15 @@ CREATE OPERATOR #> (
 
 CREATE FUNCTION temporal_tgt(text, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(ttext, text, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tgt(ttext, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tgt_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tgt_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -883,23 +883,23 @@ CREATE FUNCTION temporal_tgt(ttext, ttext, atvalue bool)
 
 CREATE FUNCTION temporal_tle(integer, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, integer)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<= (
@@ -930,23 +930,23 @@ CREATE OPERATOR #<= (
 
 CREATE FUNCTION temporal_tle(integer, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, integer, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tint, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -955,23 +955,23 @@ CREATE FUNCTION temporal_tle(tint, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tle(float, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(float, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tfloat, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tfloat, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tfloat, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<= (
@@ -1002,23 +1002,23 @@ CREATE OPERATOR #<= (
 
 CREATE FUNCTION temporal_tle(float, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(float, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tfloat, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tfloat, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(tfloat, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -1027,15 +1027,15 @@ CREATE FUNCTION temporal_tle(tfloat, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tle(text, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(ttext, text)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(ttext, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #<= (
@@ -1056,15 +1056,15 @@ CREATE OPERATOR #<= (
 
 CREATE FUNCTION temporal_tle(text, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(ttext, text, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tle(ttext, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tle_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tle_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
@@ -1075,23 +1075,23 @@ CREATE FUNCTION temporal_tle(ttext, ttext, atvalue bool)
 
 CREATE FUNCTION temporal_tge(integer, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, integer)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>= (
@@ -1122,23 +1122,23 @@ CREATE OPERATOR #>= (
 
 CREATE FUNCTION temporal_tge(integer, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, integer, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tint, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -1147,27 +1147,27 @@ CREATE FUNCTION temporal_tge(tint, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tge(float, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(float, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, int)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, float)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, tint)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, tfloat)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>= (
@@ -1198,27 +1198,27 @@ CREATE OPERATOR #>= (
 
 CREATE FUNCTION temporal_tge(float, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(float, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, int, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, float, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, tint, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(tfloat, tfloat, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -1227,15 +1227,15 @@ CREATE FUNCTION temporal_tge(tfloat, tfloat, atvalue bool)
 
 CREATE FUNCTION temporal_tge(text, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(ttext, text)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(ttext, ttext)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>= (
@@ -1256,15 +1256,15 @@ CREATE OPERATOR #>= (
 
 CREATE FUNCTION temporal_tge(text, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_base_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(ttext, text, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_base'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_tge(ttext, ttext, atvalue bool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'tge_temporal_temporal'
+  AS 'MODULE_PATHNAME', 'Tge_temporal_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/

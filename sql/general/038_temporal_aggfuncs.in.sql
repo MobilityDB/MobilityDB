@@ -34,15 +34,15 @@
 
 CREATE FUNCTION temporal_extent_transfn(period, tbool)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_extent_transfn(period, ttext)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_extent_combinefn(period, period)
   RETURNS period
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tbool) (
@@ -60,15 +60,15 @@ CREATE AGGREGATE extent(ttext) (
 
 CREATE FUNCTION tnumber_extent_transfn(tbox, tint)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tnumber_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tnumber_extent_transfn(tbox, tfloat)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tnumber_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tnumber_extent_combinefn(tbox, tbox)
   RETURNS tbox
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Tnumber_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE extent(tint) (
@@ -88,27 +88,27 @@ CREATE AGGREGATE extent(tfloat) (
 
 CREATE FUNCTION tcount_transfn(internal, tbool)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tand_transfn(internal, tbool)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbool_tand_transfn'
+  AS 'MODULE_PATHNAME', 'Tbool_tand_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tand_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbool_tand_combinefn'
+  AS 'MODULE_PATHNAME', 'Tbool_tand_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tor_transfn(internal, tbool)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbool_tor_transfn'
+  AS 'MODULE_PATHNAME', 'Tbool_tor_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tor_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tbool_tor_combinefn'
+  AS 'MODULE_PATHNAME', 'Tbool_tor_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbool_tagg_finalfn(internal)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tcount(tbool) (
@@ -143,43 +143,43 @@ CREATE AGGREGATE tor(tbool) (
 
 CREATE FUNCTION tint_tmin_transfn(internal, tint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_tmin_transfn'
+  AS 'MODULE_PATHNAME', 'Tint_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_tmin_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_tmin_combinefn'
+  AS 'MODULE_PATHNAME', 'Tint_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_tmax_transfn(internal, tint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_tmax_transfn'
+  AS 'MODULE_PATHNAME', 'Tint_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_tmax_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_tmax_combinefn'
+  AS 'MODULE_PATHNAME', 'Tint_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_tsum_transfn(internal, tint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_tsum_transfn'
+  AS 'MODULE_PATHNAME', 'Tint_tsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tint_tsum_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tint_tsum_combinefn'
+  AS 'MODULE_PATHNAME', 'Tint_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tavg_transfn(internal, tint)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_tavg_transfn'
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tavg_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_tavg_combinefn'
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tavg_finalfn(internal)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'tnumber_tavg_finalfn'
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tmin(tint) (
@@ -230,39 +230,39 @@ CREATE AGGREGATE tavg(tint) (
 
 CREATE FUNCTION tfloat_tmin_transfn(internal, tfloat)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_tmin_transfn'
+  AS 'MODULE_PATHNAME', 'Tfloat_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tmin_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_tmin_combinefn'
+  AS 'MODULE_PATHNAME', 'Tfloat_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tmax_transfn(internal, tfloat)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_tmax_transfn'
+  AS 'MODULE_PATHNAME', 'Tfloat_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tmax_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_tmax_combinefn'
+  AS 'MODULE_PATHNAME', 'Tfloat_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tsum_transfn(internal, tfloat)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_tsum_transfn'
+  AS 'MODULE_PATHNAME', 'Tfloat_tsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tsum_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tfloat_tsum_combinefn'
+  AS 'MODULE_PATHNAME', 'Tfloat_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, tfloat)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloat_tagg_finalfn(internal)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tavg_transfn(internal, tfloat)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'tnumber_tavg_transfn'
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE tmin(tfloat) (
@@ -315,27 +315,27 @@ CREATE AGGREGATE tavg(tfloat) (
 
 CREATE FUNCTION ttext_tmin_transfn(internal, ttext)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'ttext_tmin_transfn'
+  AS 'MODULE_PATHNAME', 'Ttext_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_tmin_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'ttext_tmin_combinefn'
+  AS 'MODULE_PATHNAME', 'Ttext_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_tmax_transfn(internal, ttext)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'ttext_tmax_transfn'
+  AS 'MODULE_PATHNAME', 'Ttext_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_tmax_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'ttext_tmax_combinefn'
+  AS 'MODULE_PATHNAME', 'Ttext_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tcount_transfn(internal, ttext)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'temporal_tcount_transfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttext_tagg_finalfn(internal)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'temporal_tagg_finalfn'
+  AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE AGGREGATE tmin(ttext) (
@@ -370,24 +370,24 @@ CREATE AGGREGATE tcount(ttext) (
 
 CREATE FUNCTION temporal_merge_transfn(internal, tbool)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_merge_transfn(internal, tint)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_merge_transfn(internal, tfloat)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION temporal_merge_transfn(internal, ttext)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION temporal_merge_combinefn(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME'
+  AS 'MODULE_PATHNAME', 'Temporal_merge_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE merge(tbool) (

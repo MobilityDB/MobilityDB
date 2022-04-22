@@ -51,7 +51,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(geometry 'SRID=5676;Li
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
  count 
 -------
-     1
+     2
 (1 row)
 
 DROP INDEX tbl_tnpoint_rtree_idx;
@@ -109,7 +109,7 @@ SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(geometry 'SRID=5676;Li
 SELECT COUNT(*) FROM tbl_tnpoint WHERE k < 76 AND dwithin(temp, tnpoint '[NPoint(1, 0.0)@2001-01-01, NPoint(1, 0.5)@2001-02-01]', 5);
  count 
 -------
-     1
+     2
 (1 row)
 
 DROP INDEX tbl_tnpoint_quadtree_idx;

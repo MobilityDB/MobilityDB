@@ -63,7 +63,7 @@
  *****************************************************************************/
 
 /**
- * Binary search on an array of range bounds. Returns greatest index of range
+ * Binary search on an array of range bounds. Return greatest index of range
  * bound in array which is less(less or equal) than given range bound. If all
  * range bounds in array are greater or equal(greater) than given range bound,
  * return -1. When "equal" flag is set conditions in brackets are used.
@@ -649,7 +649,7 @@ calc_hist_selectivity(TypeCacheEntry *typcache, VariableStatData *vardata,
  *****************************************************************************/
 
 /**
- * Returns the enum value associated to the operator
+ * Return the enum value associated to the operator
  */
 bool
 tnumber_cachedop(Oid operid, CachedOp *cachedOp)
@@ -731,7 +731,7 @@ tnumber_const_to_tbox(const Node *other, TBOX *box)
 }
 
 /**
- * Returns the range operator associated to the enum value
+ * Return the range operator associated to the enum value
  */
 static Oid
 tnumber_rangeop(CachedOp cachedOp)
@@ -766,7 +766,7 @@ tnumber_rangeop(CachedOp cachedOp)
 }
 
 /**
- * Returns a default selectivity estimate for the operator when we don't
+ * Return a default selectivity estimate for the operator when we don't
  * have statistics or cannot use them for some reason.
  */
 float8
@@ -807,7 +807,7 @@ tnumber_sel_default(CachedOp operator)
 }
 
 /**
- * Returns an estimate of the selectivity of the temporal search box and the
+ * Return an estimate of the selectivity of the temporal search box and the
  * operator for columns of temporal numbers. For the traditional comparison
  * operators (<, <=, ...) we follow the approach for range types in
  * PostgreSQL, this function computes the selectivity for <, <=, >, and >=,
@@ -919,20 +919,20 @@ tnumber_sel_box(VariableStatData *vardata, TBOX *box, CachedOp cachedOp,
 
 /*****************************************************************************/
 
-PG_FUNCTION_INFO_V1(tnumber_sel);
+PG_FUNCTION_INFO_V1(Tnumber_sel);
 /**
  * Estimate the selectivity value of the operators for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_sel(PG_FUNCTION_ARGS)
+Tnumber_sel(PG_FUNCTION_ARGS)
 {
-  return temporal_sel_generic(fcinfo, TNUMBERTYPE);
+  return temporal_sel_ext(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/
 
 /**
- * Returns a default join selectivity estimate for given operator, when we
+ * Return a default join selectivity estimate for given operator, when we
  * don't have statistics or cannot use them for some reason.
  */
 float8
@@ -985,14 +985,14 @@ tnumber_joinsel_components(CachedOp cachedOp, CachedType oprleft,
   return true;
 }
 
-PG_FUNCTION_INFO_V1(tnumber_joinsel);
+PG_FUNCTION_INFO_V1(Tnumber_joinsel);
 /**
  * Estimate the join selectivity value of the operators for temporal numbers
  */
 PGDLLEXPORT Datum
-tnumber_joinsel(PG_FUNCTION_ARGS)
+Tnumber_joinsel(PG_FUNCTION_ARGS)
 {
-  return temporal_joinsel_generic(fcinfo, TNUMBERTYPE);
+  return temporal_joinsel_ext(fcinfo, TNUMBERTYPE);
 }
 
 /*****************************************************************************/

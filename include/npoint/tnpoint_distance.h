@@ -38,32 +38,34 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <catalog/pg_type.h>
-/* PostgreSQL */
+/* MobilityDB */
 #include "general/temporal.h"
+#include "npoint/tnpoint_static.h"
 
 /*****************************************************************************/
 
-extern Datum distance_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum distance_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum distance_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum distance_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum distance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern Temporal *distance_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *geo);
+extern Temporal *distance_tnpoint_npoint(const Temporal *temp,
+  const Npoint *np);
+extern Temporal *distance_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2);
 
-extern Datum NAI_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum NAI_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum NAD_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_geo_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_geo(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
-extern Datum shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
+extern TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *geo);
+extern TInstant *nai_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern TInstant *nai_tnpoint_tnpoint(const Temporal *temp,
+  const Temporal *temp2);
+
+extern double nad_tnpoint_geo(Temporal *temp, GSERIALIZED *geo);
+extern double nad_tnpoint_npoint(Temporal *temp, Npoint *np);
+extern double nad_tnpoint_tnpoint(Temporal *temp1, Temporal *temp2);
+
+extern bool shortestline_tnpoint_geo(const Temporal *temp,
+  const GSERIALIZED *geo, Datum *result);
+extern Datum shortestline_tnpoint_npoint(const Temporal *temp,
+  const Npoint *np);
+extern bool shortestline_tnpoint_tnpoint(const Temporal *temp1,
+  const Temporal *temp2, Datum *result);
 
 /*****************************************************************************/
 

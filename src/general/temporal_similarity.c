@@ -195,63 +195,25 @@ tinstarr_similarity(const TInstant **instants1, int count1,
 }
 
 /**
- * Compute the similarity distance between two temporal values
- * (internal function).
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the similarity distance between two temporal values.
  *
  * @param[in] temp1,temp2 Temporal values
  * @param[in] simfunc Similarity function, i.e., Frechet or DTW
  */
 double
-temporal_similarity_internal(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
+temporal_similarity(Temporal *temp1, Temporal *temp2, SimFunc simfunc)
 {
   double result;
   int count1, count2;
-  const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
-  const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
+  const TInstant **instants1 = temporal_instants(temp1, &count1);
+  const TInstant **instants2 = temporal_instants(temp2, &count2);
   result = count1 > count2 ?
     tinstarr_similarity(instants1, count1, instants2, count2, simfunc) :
     tinstarr_similarity(instants2, count2, instants1, count1, simfunc);
   /* Free memory */
   pfree(instants1); pfree(instants2);
   return result;
-}
-
-/*****************************************************************************
- * Linear space computation of the similarity distance
- *****************************************************************************/
-
-Datum
-temporal_similarity(FunctionCallInfo fcinfo, SimFunc simfunc)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  /* Store fcinfo into a global variable for temporal geographic points */
-  if (temp1->temptype == T_TGEOGPOINT)
-    store_fcinfo(fcinfo);
-  double result = temporal_similarity_internal(temp1, temp2, simfunc);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_FLOAT8(result);
-}
-
-PG_FUNCTION_INFO_V1(temporal_frechet_distance);
-/**
- * Compute the discrete Frechet distance between two temporal values.
- */
-PGDLLEXPORT Datum
-temporal_frechet_distance(PG_FUNCTION_ARGS)
-{
-  return temporal_similarity(fcinfo, FRECHET);
-}
-
-PG_FUNCTION_INFO_V1(temporal_dynamic_time_warp);
-/**
- * Compute the Dynamic Time Match (DTW) distance between two temporal values.
- */
-PGDLLEXPORT Datum
-temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
-{
-  return temporal_similarity(fcinfo, DYNTIMEWARP);
 }
 
 /*****************************************************************************
@@ -447,6 +409,77 @@ tinstarr_similarity_matrix(const TInstant **instants1, int count1,
 }
 
 /*****************************************************************************
+ * Quadratic space computation of the similarity path
+ *****************************************************************************/
+
+/**
+ * @ingroup libmeos_temporal_similarity
+ * @brief Compute the similarity path between two temporal values
+ */
+Match *
+temporal_similarity_path(Temporal *temp1, Temporal *temp2, int *count,
+  SimFunc simfunc)
+{
+  int count1, count2;
+  const TInstant **instants1 = temporal_instants(temp1, &count1);
+  const TInstant **instants2 = temporal_instants(temp2, &count2);
+  Match *result = count1 > count2 ?
+    tinstarr_similarity_matrix(instants1, count1, instants2, count2,
+      count, simfunc) :
+    tinstarr_similarity_matrix(instants2, count2, instants1, count1,
+      count, simfunc);
+  /* Free memory */
+  pfree(instants1); pfree(instants2);
+  return result;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*                        MobilityDB - PostgreSQL                            */
+/*****************************************************************************/
+/*****************************************************************************/
+
+#ifndef MEOS
+
+/*****************************************************************************
+ * Linear space computation of the similarity distance
+ *****************************************************************************/
+
+Datum
+temporal_similarity_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable for temporal geographic points */
+  if (temp1->temptype == T_TGEOGPOINT)
+    store_fcinfo(fcinfo);
+  double result = temporal_similarity(temp1, temp2, simfunc);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_FLOAT8(result);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_frechet_distance);
+/**
+ * Compute the discrete Frechet distance between two temporal values.
+ */
+PGDLLEXPORT Datum
+Temporal_frechet_distance(PG_FUNCTION_ARGS)
+{
+  return temporal_similarity_ext(fcinfo, FRECHET);
+}
+
+PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp);
+/**
+ * Compute the Dynamic Time Match (DTW) distance between two temporal values.
+ */
+PGDLLEXPORT Datum
+Temporal_dynamic_time_warp(PG_FUNCTION_ARGS)
+{
+  return temporal_similarity_ext(fcinfo, DYNTIMEWARP);
+}
+
+/*****************************************************************************
  * Compute the similarity path between two temporal values from the distance
  * matrix
  *****************************************************************************/
@@ -489,26 +522,6 @@ similarity_path_state_next(SimilarityPathState *state)
   return;
 }
 
-/*****************************************************************************/
-
-/**
- * Compute the similarity path between two temporal values (internal function)
- */
-Match *
-temporal_similarity_path_internal(Temporal *temp1, Temporal *temp2, int *count,
-  SimFunc simfunc)
-{
-  int count1, count2;
-  const TInstant **instants1 = temporal_instants_internal(temp1, &count1);
-  const TInstant **instants2 = temporal_instants_internal(temp2, &count2);
-  Match *result = count1 > count2 ?
-    tinstarr_similarity_matrix(instants1, count1, instants2, count2, count, simfunc) :
-    tinstarr_similarity_matrix(instants2, count2, instants1, count1, count, simfunc);
-  /* Free memory */
-  pfree(instants1); pfree(instants2);
-  return result;
-}
-
 /*****************************************************************************
  * Quadratic space computation of the similarity path
  *****************************************************************************/
@@ -517,7 +530,7 @@ temporal_similarity_path_internal(Temporal *temp1, Temporal *temp2, int *count,
  * Compute the Dynamic Time Match (DTW) path between two temporal values.
  */
 Datum
-temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
+temporal_similarity_path_ext(FunctionCallInfo fcinfo, SimFunc simfunc)
 {
   FuncCallContext *funcctx;
   SimilarityPathState *state;
@@ -542,7 +555,7 @@ temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     /* Compute the path */
     int count;
-    Match *path = temporal_similarity_path_internal(temp1, temp2, &count,
+    Match *path = temporal_similarity_path(temp1, temp2, &count,
       simfunc);
     /* Create function state */
     funcctx->user_fctx = similarity_path_state_make(path, count);
@@ -580,32 +593,26 @@ temporal_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
   SRF_RETURN_NEXT(funcctx, result);
 }
 
-/*****************************************************************************
- * Quadratic space computation of the discrete Frechet path
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(temporal_frechet_path);
+PG_FUNCTION_INFO_V1(Temporal_frechet_path);
 /**
  * Compute the Frechet path between two temporal values.
  */
-Datum
-temporal_frechet_path(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Temporal_frechet_path(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_path(fcinfo, FRECHET);
+  return temporal_similarity_path_ext(fcinfo, FRECHET);
 }
 
-/*****************************************************************************
- * Quadratic space computation of the Dynamic Time Match (DTW) path
- *****************************************************************************/
-
-PG_FUNCTION_INFO_V1(temporal_dynamic_time_warp_path);
+PG_FUNCTION_INFO_V1(Temporal_dynamic_time_warp_path);
 /**
  * Compute the Dynamic Time Warp (DTW) path between two temporal values.
  */
-Datum
-temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum
+Temporal_dynamic_time_warp_path(PG_FUNCTION_ARGS)
 {
-  return temporal_similarity_path(fcinfo, DYNTIMEWARP);
+  return temporal_similarity_path_ext(fcinfo, DYNTIMEWARP);
 }
+
+#endif /* #ifndef MEOS */
 
 /*****************************************************************************/
